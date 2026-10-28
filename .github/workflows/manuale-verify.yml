@@ -106,6 +106,9 @@ jobs:
       comprehensive: ${{ inputs.comprehensive }}
       appliance_scope: ${{ (inputs.comprehensive || steps.plan.outputs.historical_rehearsal == 'true') && 'full' || 'compatibility' }}
       appliance_required: ${{ inputs.comprehensive || inputs.appliance || steps.plan.outputs.historical_rehearsal == 'true' }}
+      release_binding: ${{ steps.binding.outputs.release_binding }}
+      release_binding_release: ${{ steps.binding.outputs.release_binding_release }}
+      release_binding_revision: ${{ steps.binding.outputs.release_binding_revision }}
     env:
       RELEASE_VERSION: ${{ inputs.release }}
       # Bounded parallel capture shards (1..4 or auto: sized from runner CPUs and memory).
@@ -238,6 +241,24 @@ jobs:
           python3 docs/scripts/manuale_timing.py stage evidence-release-binding --
           python3 docs/scripts/manuale-cache.py store-bind --run "$RUNNER_TEMP/manuale-run"
           --output "$RUNNER_TEMP/manuale-run/release-binding.json"
+      - name: Verify the release binding against this exact release identity
+        # Fails unless release-binding.json exists, is intact, names this commit,
+        # the pinned manual revision and this version, and equals the binding
+        # recomputed from the run's evidence. The gate requires it for Mode C.
+        id: binding
+        env:
+          MANUAL_REVISION: ${{ steps.pin.outputs.manual_revision }}
+          APPLICATION_REVISION: ${{ github.sha }}
+        run: |
+          python3 docs/scripts/manuale-cache.py store-verify-binding --run "$RUNNER_TEMP/manuale-run" \
+            --binding "$RUNNER_TEMP/manuale-run/release-binding.json" \
+            --application-revision "$APPLICATION_REVISION" --manual-revision "$MANUAL_REVISION" \
+            --release "$RELEASE_VERSION" --output "$RUNNER_TEMP/manuale-run/release-binding-verification.json"
+          {
+            echo 'release_binding=verified'
+            echo "release_binding_release=$RELEASE_VERSION"
+            echo "release_binding_revision=$APPLICATION_REVISION"
+          } >> "$GITHUB_OUTPUT"
       - name: Stage this run's fresh evidence as a store candidate
         # Trusted refs only; PR runs never produce a trusted baseline. The
         # candidate becomes trusted only after every gate and the whole run passed.
@@ -276,8 +297,15 @@ jobs:
           python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run"
           --phase baseline --output "$RUNNER_TEMP/manuale-baseline.tar.gz"
       - name: Retain candidate baseline for successful-run admission
-        # Skipped only when every workflow and page reused admitted evidence.
-        if: ${{ steps.seal.outputs.sealed == 'true' }}
+        # Skipped when every workflow and page reused admitted evidence, and on
+        # every pull request run: only trusted-ref producers (default branch or
+        # release tag; push, release, dispatch or schedule) may be admitted, so
+        # a PR run never uploads an artifact under the admitted baseline name.
+        if: >-
+          ${{ steps.seal.outputs.sealed == 'true' &&
+              !startsWith(github.event_name, 'pull_request') &&
+              (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
+               startsWith(github.ref, 'refs/tags/')) }}
         uses: actions/upload-artifact@v4
         with:
           name: manuale-verified-baseline
@@ -313,6 +341,7 @@ jobs:
             ${{ runner.temp }}/manuale-run/evaluation.json
             ${{ runner.temp }}/manuale-run/embedded-manual.json
             ${{ runner.temp }}/manuale-run/release-binding.json
+            ${{ runner.temp }}/manuale-run/release-binding-verification.json
             ${{ runner.temp }}/manuale-run/evidence-reuse.json
             ${{ runner.temp }}/manuale-store/store-restore.json
             ${{ runner.temp }}/manuale-store/store-plan.json

@@ -1,5 +1,9 @@
 """Release graph invariants; the rehearsal separately exercises real artifacts."""
 import ast
+import json
+import os
+import subprocess
+import tempfile
 import itertools
 import re
 from pathlib import Path
@@ -81,3 +85,92 @@ class ReleaseWorkflowTests(unittest.TestCase):
                     manual == 'success' or event == 'push' and manual == 'skipped') and (
                     quality == 'success' or event == 'push' and quality == 'skipped')
                 self.assertEqual(permitted, expected)
+
+
+FAKE_CACHE = '''import json, sys
+from pathlib import Path
+args = sys.argv[1:]
+def value(name):
+    return args[args.index(name) + 1] if name in args else None
+if value('--output'):
+    Path(value('--output')).write_text('{}')
+if args[0] == 'store-merge' and Path(value('--candidate'), 'entries.json').is_file():
+    store = Path(value('--store'))
+    store.mkdir(parents=True, exist_ok=True)
+    (store / 'index.json').write_text(Path(value('--candidate'), 'entries.json').read_text())
+    (store / 'blobs' / 'sha256').mkdir(parents=True, exist_ok=True)
+    (store / 'blobs' / 'sha256' / ('0' * 64)).write_bytes(b'png')
+'''
+FAKE_TIMING = '''import subprocess, sys
+raise SystemExit(subprocess.run(sys.argv[sys.argv.index('--') + 1:]).returncode)
+'''
+
+
+class EvidenceStoreAvailabilityTests(unittest.TestCase):
+    """Store publication never blocks image publication and tolerates an empty store."""
+
+    def setUp(self):
+        self.images = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
+        self.release = yaml.safe_load((ROOT / '.github/workflows/manuale-release.yml').read_text())
+        self.publisher = yaml.safe_load((ROOT / '.github/workflows/manuale-evidence-publish.yml').read_text())
+
+    def test_store_publication_runs_after_authorization_outside_the_image_chain(self):
+        self.assertIs(self.images['manual-release']['with']['evidence_store'], False)
+        store = self.images['manual-evidence-store']
+        self.assertEqual(store['uses'], './.github/workflows/manuale-evidence-publish.yml')
+        self.assertEqual(store['needs'], 'manual-release')
+        self.assertIn("needs.manual-release.result == 'success'", store['if'])
+        self.assertIn("!startsWith(github.event_name, 'pull_request')", store['if'])
+        for name, job in self.images.items():
+            needs = job.get('needs', [])
+            self.assertNotIn('manual-evidence-store', [needs] if isinstance(needs, str) else needs, name)
+            self.assertNotIn('manual-evidence-store', json.dumps(job.get('if', '')), name)
+        # Direct release rehearsals still publish the store, after their own authorization only.
+        for trigger in ('workflow_call', 'workflow_dispatch'):
+            self.assertIs(self.release[True][trigger]['inputs']['evidence_store']['default'], True)
+        job = self.release['jobs']['evidence-store']
+        self.assertEqual(job['needs'], 'authorize')
+        self.assertIn("needs.authorize.result == 'success'", job['if'])
+        self.assertIn('inputs.evidence_store', job['if'])
+        self.assertIn("!startsWith(github.event_name, 'pull_request')", job['if'])
+
+    def test_store_uploads_are_guarded_and_never_fail_on_missing_files(self):
+        job = self.publisher['jobs']['publish']
+        self.assertIn("!startsWith(github.event_name, 'pull_request')", job['if'])
+        self.assertIn('refs/tags/', job['if'])
+        uploads = [step for step in job['steps'] if step.get('uses', '').startswith('actions/upload-artifact')]
+        self.assertEqual(len(uploads), 2)
+        for step in uploads:
+            self.assertIn("steps.merge.outputs.publish == 'true'", step['if'])
+            self.assertNotEqual(step['with']['if-no-files-found'], 'error')
+        blobs = next(step for step in uploads if step['with']['name'] == 'manuale-evidence-store-blobs')
+        self.assertIn("steps.merge.outputs.blobs == 'true'", blobs['if'])
+
+    def run_merge(self, entries=None, *, candidate=True):
+        step = next(step for step in self.publisher['jobs']['publish']['steps'] if step.get('id') == 'merge')
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / 'docs/scripts').mkdir(parents=True)
+            (root / 'docs/scripts/manuale-cache.py').write_text(FAKE_CACHE)
+            (root / 'docs/scripts/manuale_timing.py').write_text(FAKE_TIMING)
+            candidate_dir = root / 'candidate'
+            candidate_dir.mkdir()
+            if candidate:
+                (candidate_dir / 'index.json').write_text('{}')
+            if entries is not None:
+                (candidate_dir / 'entries.json').write_text(json.dumps({'format': 1, 'entries': entries}))
+            output = root / 'github-output'
+            environment = {'PATH': os.environ['PATH'], 'RUNNER_TEMP': str(root), 'STORE': str(root / 'store'),
+                           'CANDIDATE': str(candidate_dir), 'GITHUB_OUTPUT': str(output), 'GITHUB_RUN_ID': '7',
+                           'GH_TOKEN': ''}
+            result = subprocess.run(['bash', '-e', '-o', 'pipefail', '-c', step['run']], cwd=root, env=environment,
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            return dict(line.split('=', 1) for line in output.read_text().split())
+
+    def test_empty_or_absent_store_publishes_nothing_without_failing(self):
+        self.assertEqual(self.run_merge(candidate=False), {'publish': 'false'})
+        self.assertEqual(self.run_merge(), {'publish': 'false', 'blobs': 'false'})
+        self.assertEqual(self.run_merge({}), {'publish': 'false', 'blobs': 'false'})
+        self.assertEqual(self.run_merge({'unit/' + 'a' * 64: {'producer_run_id': '7'}}),
+                         {'publish': 'true', 'blobs': 'true'})

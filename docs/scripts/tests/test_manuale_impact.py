@@ -124,8 +124,10 @@ FILES = {
     'BE/application/views/gamma_views.py': 'def gamma(request):\n    return 1\n',
     'BE/application/agent/__init__.py': '',
     'BE/application/agent/core.py': 'def answer(question):\n    return question\n',
+    'BE/application/agent/prompts.py': "SYSTEM = 'Rispondi in italiano.'\n",
     'BE/application/mcp_server/__init__.py': '',
     'BE/application/mcp_server/server.py': 'def serve():\n    return 1\n',
+    'BE/application/mcp_server/schema.py': 'def get_full_schema():\n    return {}\n',
     'BE/application/mcp_server/security.py': 'def owner_only(user):\n    return user.is_owner\n',
     'BE/application/management/__init__.py': '',
     'BE/application/management/commands/__init__.py': '',
@@ -281,9 +283,9 @@ class ImpactFixtureTest(unittest.TestCase):
                 self.assertTrue(all(report['checks'].values()))
 
     def test_bot_answer_code_runs_bot_contracts_only(self):
-        report = self.repo.classify('BE/application/agent/core.py')
+        report = self.repo.classify('BE/application/agent/prompts.py')
         self.assertFormat(report)
-        self.assertEqual(self.entry(report, 'BE/application/agent/core.py')['category'], 'bot')
+        self.assertEqual(self.entry(report, 'BE/application/agent/prompts.py')['category'], 'bot')
         self.assertEqual(report['mode'], 'unaffected')
         self.assertEqual(report['checks'], {'bot': True, 'mcp': False, 'security': False, 'runtime': False})
 
@@ -292,10 +294,41 @@ class ImpactFixtureTest(unittest.TestCase):
         self.assertEqual(self.entry(report, 'BE/application/mcp_server/security.py')['category'], 'security')
         self.assertEqual(report['mode'], 'full')
         self.assertTrue(report['checks']['mcp'] and report['checks']['security'])
-        report = self.repo.classify('BE/application/mcp_server/server.py')
-        self.assertEqual(self.entry(report, 'BE/application/mcp_server/server.py')['category'], 'mcp')
+        report = self.repo.classify('BE/application/mcp_server/schema.py')
+        self.assertEqual(self.entry(report, 'BE/application/mcp_server/schema.py')['category'], 'mcp')
         self.assertEqual(report['mode'], 'unaffected')
         self.assertEqual(report['checks'], {'bot': False, 'mcp': True, 'security': False, 'runtime': False})
+
+    def test_bot_and_mcp_tenant_auth_and_owner_code_is_security(self):
+        for path in ('BE/application/mcp_server/query_builder.py', 'BE/application/mcp_server/server.py',
+                     'BE/application/mcp_server/attendance.py', 'BE/application/mcp_server/exporters/__init__.py',
+                     'BE/application/chat/consumers.py', 'BE/application/chat/views.py',
+                     'BE/application/agent/core.py', 'BE/application/manuale/tools.py',
+                     'BE/application/manuale/views.py', 'BE/application/manuale/index.py',
+                     'BE/application/management/commands/run_mcp_server.py',
+                     'BE/application/management/commands/run_agent.py'):
+            with self.subTest(path=path):
+                report = self.repo.classify(path)
+                self.assertEqual(self.entry(report, path)['category'], 'security', self.entry(report, path)['reason'])
+                self.assertEqual(report['mode'], 'full')
+                self.assertTrue(all(report['checks'].values()))
+
+    def test_manual_bot_mcp_tests_and_release_contracts_trigger_checks(self):
+        for path in ('BE/application/tests/test_manuale_reader.py', 'BE/application/tests/test_agent_routing.py',
+                     'BE/application/tests/test_mcp_stdio.py', 'BE/application/tests/test_ai_provider.py'):
+            with self.subTest(path=path):
+                report = self.repo.classify(path)
+                self.assertEqual(self.entry(report, path)['category'], 'mcp')
+                self.assertTrue(report['checks']['bot'] and report['checks']['mcp'])
+        for path in ('TESTS/contracts/test_manual.py', 'TESTS/browser/manual-release.mjs', 'TESTS/mcp/manual.py',
+                     '.github/workflows/publish-images.yml'):
+            with self.subTest(path=path):
+                report = self.repo.classify(path)
+                self.assertEqual(self.entry(report, path)['category'], 'shared-contract')
+                self.assertEqual(report['mode'], 'full')
+                self.assertTrue(report['full_verification_required'])
+        self.assertEqual(self.entry(self.repo.classify('TESTS/contracts/test_access.py'),
+                                    'TESTS/contracts/test_access.py')['category'], 'unrelated')
 
     def test_transitive_dependencies(self):
         cases = {
@@ -488,6 +521,152 @@ class ImpactFixtureTest(unittest.TestCase):
                          ['alpha', 'beta'])
 
 
+STRING_REFERENCED = {
+    'BE/core/settings.py': ("MIDDLEWARE = [\n    'django.middleware.common.CommonMiddleware',\n"
+                            "    'instance.restore.locking.RestoreMaintenanceMiddleware',\n]\n"
+                            "REST_FRAMEWORK = {'DEFAULT_AUTHENTICATION_CLASSES': ['instance.auth_backend.ScopedAuth']}\n"
+                            "EMAIL_BACKEND = 'instance.mail.EmailBackend'\n"),
+    'BE/instance/__init__.py': '',
+    'BE/instance/restore/__init__.py': '',
+    'BE/instance/restore/locking.py': ('def restore_locked():\n    return False\n\n\n'
+                                       'class RestoreMaintenanceMiddleware:\n    def __call__(self, request):\n'
+                                       '        return restore_locked()\n'),
+    'BE/instance/auth_backend.py': 'class ScopedAuth:\n    pass\n',
+    'BE/instance/mail.py': ('class EmailBackend:\n    def send(self):\n        return 1\n\n\n'
+                            'def unused():\n    return 0\n'),
+    'BE/instance/views.py': ('class InstanceManifestView:\n    pass\n\n\n'
+                             'class InstanceStatusView:\n    def get(self):\n        return 1\n'),
+    'BE/instance/integration_configuration.py': ('def decrypt_secret(value):\n    return value\n\n\n'
+                                                 'def encrypt_secret(value):\n    return value\n\n\n'
+                                                 'def retired():\n    return 0\n'),
+    'BE/instance/integrations.py': ('from .integration_configuration import encrypt_secret\n\n\n'
+                                    'def save(request):\n    return encrypt_secret(request)\n'),
+    'BE/instance/urls.py': ("from django.urls import path\nfrom .views import InstanceStatusView\n"
+                            "from .integrations import save\n"
+                            "urlpatterns = [path('status', InstanceStatusView.as_view()), path('integrations', save)]\n"),
+    'BE/application/manuale/__init__.py': '',
+    'BE/application/manuale/answers.py': ("ASSISTANT_INSTRUCTION = 'x'\n\n\ndef _reader_strings(value):\n"
+                                          "    return [value]\n\n\ndef helper():\n    return _reader_strings(1)\n"),
+    'BE/application/manuale/index.py': 'FORMAT = 1\n',
+    'BE/application/manuale/availability.py': ('STATE = 1\n\n\ndef verify_capture_frame(root, capture):\n'
+                                               '    return True\n'),
+    'BE/application/chat/__init__.py': '',
+    'BE/application/chat/consumers.py': ('from application.manuale.answers import helper\n\n\n'
+                                         'def receive(text):\n    return helper()\n'),
+    'BE/application/views/alpha_views.py': (
+        'from application.models import Thing\nfrom application.services.alpha_service import compute\n'
+        'from application.manuale.answers import ASSISTANT_INSTRUCTION\nfrom application.manuale.index import FORMAT\n'
+        'from application.manuale.availability import STATE\n'
+        'from instance.views import InstanceManifestView\n'
+        'from instance.integration_configuration import decrypt_secret\n'
+        'from instance.restore.locking import restore_locked\n\n\n'
+        'def alpha_list(request):\n'
+        '    return compute(Thing), ASSISTANT_INSTRUCTION, FORMAT, STATE, InstanceManifestView, decrypt_secret, '
+        'restore_locked\n'),
+}
+
+
+class ImpactNarrowingSafetyTest(unittest.TestCase):
+    """Symbol narrowing never hides a file's own category nor code reached through settings or URL tables."""
+
+    def setUp(self):
+        self.repo = Repository()
+        self.addCleanup(self.repo.close)
+        self.repo.write(STRING_REFERENCED)
+        self.repo.base = self.repo.commit('string-referenced runtime code')
+
+    def edit(self, path, old, new):
+        text = STRING_REFERENCED[path]
+        self.assertIn(old, text)
+        report = self.repo.change({path: text.replace(old, new)})
+        return report, next(item for item in report['files'] if item['path'] == path)
+
+    def test_middleware_named_in_settings_is_security(self):
+        report, item = self.edit('BE/instance/restore/locking.py', 'return restore_locked()',
+                                 'return not restore_locked()')
+        self.assertEqual(item['category'], 'security', item['reason'])
+        self.assertIn('MIDDLEWARE', item['reason'])
+        self.assertEqual(report['mode'], 'full')
+        self.assertTrue(report['full_verification_required'])
+        self.assertTrue(all(report['checks'].values()))
+
+    def test_authentication_class_named_in_settings_is_security(self):
+        report, item = self.edit('BE/instance/auth_backend.py', 'pass', 'scope = 1')
+        self.assertEqual(item['category'], 'security', item['reason'])
+        self.assertIn('DEFAULT_AUTHENTICATION_CLASSES', item['reason'])
+        self.assertEqual(report['mode'], 'full')
+
+    def test_settings_named_backend_is_a_global_dependency(self):
+        self.assertIn('BE/instance/mail.py', impact.workflow_dependencies(self.repo.root, 'beta'))
+        report, item = self.edit('BE/instance/mail.py', 'return 1', 'return 2')
+        self.assertEqual(item['category'], 'behavior', item['reason'])
+        self.assertEqual(report['affected_workflows'], ['alpha', 'beta'])
+        self.repo.base = self.repo.git('rev-parse', 'HEAD')
+        text = STRING_REFERENCED['BE/instance/mail.py'].replace('return 1', 'return 2')
+        report = self.repo.change({'BE/instance/mail.py': text.replace('return 0', 'return -1')})
+        self.assertEqual(report['files'][0]['category'], 'unrelated', report['files'][0]['reason'])
+
+    def test_bot_file_keeps_bot_checks_when_narrowed(self):
+        # A changed symbol reachable at runtime (Bot consumer) but outside every slice: whole file.
+        report, item = self.edit('BE/application/manuale/answers.py', 'return [value]', 'return [str(value)]')
+        self.assertEqual(item['category'], 'behavior', item['reason'])
+        self.assertIn('_reader_strings', item['reason'])
+        self.assertEqual(report['affected_workflows'], ['alpha'])
+        self.assertTrue(report['checks']['bot'])
+        # A provably unreferenced new symbol: no capture, but the Bot contracts still run.
+        self.repo.base = self.repo.git('rev-parse', 'HEAD')
+        text = STRING_REFERENCED['BE/application/manuale/answers.py'].replace('return [value]', 'return [str(value)]')
+        report = self.repo.change({'BE/application/manuale/answers.py': text + '\n\ndef spare():\n    return 0\n'})
+        item = report['files'][0]
+        self.assertEqual(item['category'], 'bot', item['reason'])
+        self.assertEqual(report['mode'], 'unaffected')
+        self.assertTrue(report['checks']['bot'])
+
+    def test_shared_corpus_file_keeps_mcp_and_bot_checks_when_narrowed(self):
+        report, item = self.edit('BE/application/manuale/availability.py', 'return True', 'return False')
+        self.assertEqual(item['category'], 'mcp', item['reason'])
+        self.assertEqual(report['mode'], 'unaffected')
+        self.assertEqual(report['checks'], {'bot': True, 'mcp': True, 'security': False, 'runtime': False})
+
+    def test_routed_view_outside_every_slice_falls_back_to_the_whole_file(self):
+        report, item = self.edit('BE/instance/views.py', 'return 1', 'return 2')
+        self.assertEqual(item['category'], 'behavior', item['reason'])
+        self.assertIn('InstanceStatusView', item['reason'])
+        self.assertEqual(report['affected_workflows'], ['alpha'])
+        self.assertEqual(report['mode'], 'behavioral')
+
+    def test_helper_imported_by_unsliced_runtime_code_falls_back_to_the_whole_file(self):
+        path = 'BE/instance/integration_configuration.py'
+        report, item = self.edit(path, 'def encrypt_secret(value):\n    return value',
+                                 'def encrypt_secret(value):\n    return value[::-1]')
+        self.assertEqual(item['category'], 'behavior', item['reason'])
+        self.assertEqual(report['affected_workflows'], ['alpha'])
+        # A symbol no runtime code reaches is still narrowed away.
+        self.repo.base = self.repo.git('rev-parse', 'HEAD')
+        text = STRING_REFERENCED[path].replace('def encrypt_secret(value):\n    return value',
+                                               'def encrypt_secret(value):\n    return value[::-1]')
+        report = self.repo.change({path: text.replace('return 0', 'return 1')})
+        self.assertEqual(report['files'][0]['category'], 'unrelated', report['files'][0]['reason'])
+        self.assertEqual(report['mode'], 'unaffected')
+
+
+class OverlayTree:
+    """A tree with a few files replaced in memory (head side of a real-repository scenario)."""
+
+    def __init__(self, tree, overrides):
+        self.root, self.label, self.files = tree.root, 'overlay', tree.files
+        self._tree, self._overrides = tree, overrides
+
+    def signature(self):
+        return self._tree.signature() + json.dumps(self._overrides, sort_keys=True)
+
+    def exists(self, relative):
+        return self._tree.exists(relative)
+
+    def read(self, relative):
+        return self._overrides[relative] if relative in self._overrides else self._tree.read(relative)
+
+
 class ImpactRepositoryTest(unittest.TestCase):
     """Smoke checks against the real registry and maintained impact map."""
 
@@ -518,10 +697,42 @@ class ImpactRepositoryTest(unittest.TestCase):
         self.assertEqual(report['mode'], 'behavioral')
         self.assertIn('account-two-factor', report['affected_workflows'])
         self.assertLess(len(report['affected_workflows']), len(self.dependencies))
-        report = impact.analyze(ROOT, ['BE/application/agent/core.py'], base=None, head=None)
+        report = impact.analyze(ROOT, ['BE/application/agent/prompts.py'], base=None, head=None)
         self.assertEqual((report['mode'], report['checks']['bot']), ('unaffected', True))
+        report = impact.analyze(ROOT, ['BE/application/mcp_server/schema.py'], base=None, head=None)
+        self.assertEqual((report['mode'], report['checks']['mcp']), ('unaffected', True))
+        for path in ('BE/application/mcp_server/query_builder.py', 'BE/application/chat/consumers.py'):
+            report = impact.analyze(ROOT, [path], base=None, head=None)
+            self.assertEqual(report['files'][0]['category'], 'security', path)
+            self.assertTrue(report['full_verification_required'])
         report = impact.analyze(ROOT, ['BE/core/middleware.py'], base=None, head=None)
         self.assertTrue(report['full_verification_required'])
+
+    def test_verified_symbol_narrowing_escapes_are_closed(self):
+        """Real symbols that were narrowed to `unrelated` although runtime code reaches them."""
+        base = impact.WorkTree(ROOT)
+        cases = {
+            ('BE/instance/restore/locking.py', 'class RestoreMaintenanceMiddleware'): ('security', 'full'),
+            ('BE/application/manuale/answers.py', 'def _reader_strings'): (None, 'bot'),
+            ('BE/application/manuale/index.py', 'def verify_capture_frame'): ('security', 'full'),
+            ('BE/instance/views.py', 'class InstanceStatusView'): (None, None),
+            ('BE/instance/integration_configuration.py', 'def encrypt_secret'): (None, None),
+        }
+        for (path, marker), (category, expectation) in cases.items():
+            with self.subTest(path=path):
+                lines = base.read(path).split('\n')
+                index = next(number for number, line in enumerate(lines) if line.startswith(marker))
+                lines.insert(index + 1, '    _impact_probe = 1')
+                report = impact.analyze_trees(OverlayTree(base, {path: '\n'.join(lines)}), base, [path])
+                item = report['files'][0]
+                self.assertNotEqual(item['category'], 'unrelated', item['reason'])
+                self.assertNotEqual(report['mode'], 'unaffected', item['reason'])
+                if category:
+                    self.assertEqual(item['category'], category, item['reason'])
+                if expectation == 'full':
+                    self.assertTrue(report['full_verification_required'])
+                elif expectation:
+                    self.assertTrue(report['checks'][expectation], item['reason'])
 
     def test_every_tracked_top_level_area_is_mapped(self):
         """New top-level areas must be classified explicitly; this lists those that would be unknown."""

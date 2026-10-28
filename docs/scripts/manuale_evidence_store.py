@@ -914,6 +914,36 @@ def compact(store, application, *, trusted_producers, reference_date, repository
 SELECTION_FILE = 'evidence-store-selection.json'
 SELECTION_PURPOSE = 'reused-workflow-evidence-not-fresh-capture'
 ORIGIN_MANIFEST_PURPOSE = 'evidence-store-origin'
+# The authenticated producer runs (the `store-producers` record: GitHub API
+# lookups) a selection was materialized with. Without it nothing is admitted.
+TRUSTED_PRODUCERS_FILE = 'trusted-producers.json'
+
+
+def trusted_producers_record(trusted, *, repository):
+    """The `store-producers` record shape, for a selection's trusted-producers.json."""
+    return {'format': FORMAT, 'repository': repository, 'trusted': dict(trusted or {}), 'rejected': {}}
+
+
+def selection_trust(selection_dir, selection, *, repository=None):
+    """(trusted producers, repository) of a selection; raises when it carries no authenticated record.
+
+    A selection directory assembled by hand (or copied without the record that
+    materialize wrote next to it) is never trusted: admission needs the same
+    authenticated producer records the store planner used, bound by sha256 to
+    the selection file.
+    """
+    path = Path(selection_dir) / TRUSTED_PRODUCERS_FILE
+    if path.is_symlink() or not path.is_file():
+        raise UntrustedProducer('selection has no authenticated trusted-producers record')
+    record_bytes, record = _read_json_bytes(path, TRUSTED_PRODUCERS_FILE)
+    if selection.get('trusted_producers_sha256') != digest(record_bytes):
+        raise CorruptEvidence('trusted-producers record differs from the one bound to the selection')
+    if (not isinstance(record, dict) or record.get('format') != FORMAT or not isinstance(record.get('trusted'), dict)
+            or not isinstance(record.get('repository'), str) or '/' not in record['repository']):
+        raise UntrustedProducer('trusted-producers record is malformed')
+    if repository is not None and record['repository'] != repository:
+        raise UntrustedProducer('trusted-producers record belongs to another repository')
+    return record['trusted'], record['repository']
 
 
 def store_origin_manifest(manifest, evidence, origin_release):
@@ -939,7 +969,7 @@ def store_origin_manifest(manifest, evidence, origin_release):
                                'evidence_sha256': manifest['files']['evidence.json']}}
 
 
-def _admit_one(state, selection_dir, item, recipes, registry_value, *, repository, default_branch):
+def _admit_one(state, selection_dir, item, recipes, registry_value, *, repository, default_branch, trusted):
     identifier = _check_workflow_id(item.get('workflow_id'))
     if identifier not in recipes:
         raise IncompatibleEvidence('workflow is not in the current registry')
@@ -961,11 +991,9 @@ def _admit_one(state, selection_dir, item, recipes, registry_value, *, repositor
     origin = _validate_origin(manifest['origin'])
     if item.get('origin') != origin or item.get('producer') != manifest['producer']:
         raise CorruptEvidence('selection provenance differs from the materialized manifest')
-    # Structural trust is re-checked here; the authenticated GitHub run lookup
-    # happened when the store was planned and materialized.
-    reason = producer_rejection(manifest['producer'], repository=repository, default_branch=default_branch)
-    if reason:
-        raise UntrustedProducer(reason)
+    # The producer claim must equal its authenticated GitHub run record (looked
+    # up when the store was planned and materialized) and pass the trust rules.
+    _check_producer(manifest['producer'], trusted, repository=repository, default_branch=default_branch)
     if manifest['producer']['head_sha'] != origin['application_revision']:
         raise UntrustedProducer('evidence origin commit differs from its producer commit')
     if origin['reference_date'] != state['reference_date']:
@@ -1054,6 +1082,8 @@ def _admit_one(state, selection_dir, item, recipes, registry_value, *, repositor
 def admit_selection(state, selection_dir, *, exclude=(), repository=None, default_branch='main'):
     """Admit a store-materialized selection as explicit per-workflow provenance.
 
+    The selection must carry the authenticated trusted-producers record it was
+    materialized with (``selection_trust``); otherwise nothing is admitted.
     Every hash is re-verified (selection -> manifest -> evidence/report ->
     screenshots), the fingerprint is recomputed from the target checkout and
     the same report/editorial gates as a whole-run baseline apply. Anything
@@ -1066,6 +1096,7 @@ def admit_selection(state, selection_dir, *, exclude=(), repository=None, defaul
             or selection.get('purpose') != SELECTION_PURPOSE or selection.get('schema_version') != SCHEMA_VERSION
             or not isinstance(selection.get('materialized'), list)):
         raise IncompatibleEvidence('Not a current evidence-store selection')
+    trusted, repository = selection_trust(selection_dir, selection, repository=repository)
     registry_value, recipes = _registry(state['application'])
     admitted, rejected = {}, []
     for item in selection['materialized']:
@@ -1077,7 +1108,8 @@ def admit_selection(state, selection_dir, *, exclude=(), repository=None, defaul
             raise CorruptEvidence('Duplicate workflow in the evidence-store selection')
         try:
             admitted[identifier] = _admit_one(state, selection_dir, item, recipes, registry_value,
-                                              repository=repository, default_branch=default_branch)
+                                              repository=repository, default_branch=default_branch,
+                                              trusted=trusted)
         except (OSError, ValueError, KeyError, TypeError) as exc:
             rejected.append({'workflow_id': identifier, 'reason': type(exc).__name__ + ': ' + str(exc)})
     return {'admitted': admitted, 'rejected': rejected}

@@ -33,10 +33,14 @@ def passing_results(scope='full'):
                        *[check + ' (recorded)' for check in ci.REQUIRED_RELEASE_CHECKS]]}
 
 
-def needs(contracts='success', verify='success', appliance='success', *, comprehensive='true', scope='full', required='true'):
+def needs(contracts='success', verify='success', appliance='success', *, comprehensive='true', scope='full', required='true',
+          binding=('verified', RELEASE, REVISION)):
+    outputs = {'comprehensive': comprehensive, 'appliance_scope': scope, 'appliance_required': required, 'mode': 'reuse'}
+    if binding:
+        outputs.update(release_binding=binding[0], release_binding_release=binding[1],
+                       release_binding_revision=binding[2])
     return {'contracts': {'result': contracts, 'outputs': {}},
-            'verify': {'result': verify, 'outputs': {'comprehensive': comprehensive, 'appliance_scope': scope,
-                                                     'appliance_required': required, 'mode': 'reuse'}},
+            'verify': {'result': verify, 'outputs': outputs},
             'appliance': {'result': appliance, 'outputs': {}}}
 
 
@@ -67,6 +71,19 @@ class GateFunctionTests(unittest.TestCase):
         for name, value in reduced.items():
             with self.subTest(name):
                 self.assertTrue(self.failures(value))
+
+    def test_release_requires_a_verified_binding_for_this_exact_identity(self):
+        cases = {'missing': None, 'unverified': ('', RELEASE, REVISION),
+                 'another release': ('verified', '9.9.9', REVISION),
+                 'another revision': ('verified', RELEASE, 'b' * 40)}
+        for name, binding in cases.items():
+            with self.subTest(name):
+                failures = self.failures(needs(binding=binding))
+                self.assertTrue(any('release binding' in failure for failure in failures), failures)
+        # Incremental runs still verify the binding in the job, but it does not gate them here.
+        self.assertEqual(self.failures(needs(contracts='skipped', comprehensive='false', scope='compatibility',
+                                             binding=None), results=passing_results('compatibility'),
+                                       comprehensive=False), [])
 
     def test_appliance_results_must_be_complete_and_bound_to_this_release(self):
         results = passing_results()
@@ -161,6 +178,25 @@ class ReleaseWorkflowGateTests(unittest.TestCase):
         contracts = '\n'.join(step.get('run', '') for step in jobs['contracts']['steps'])
         for suite in ('--suite python', '--suite node --with-browser', '--suite bot-mcp'):
             self.assertIn(suite, contracts)
+
+    def test_verify_job_generates_and_verifies_the_release_binding(self):
+        verify = self.shared['jobs']['verify']
+        steps = verify['steps']
+        names = [step.get('id') or step.get('name') for step in steps]
+        bind = next(index for index, step in enumerate(steps) if 'store-bind ' in step.get('run', ''))
+        check = names.index('binding')
+        self.assertLess(bind, check)
+        step = steps[check]
+        self.assertIn('store-verify-binding', step['run'])
+        self.assertIn('release-binding.json', step['run'])
+        self.assertNotIn('continue-on-error', step)
+        self.assertNotIn('if', step)
+        self.assertEqual(step['env']['APPLICATION_REVISION'], '${{ github.sha }}')
+        self.assertEqual(step['env']['MANUAL_REVISION'], '${{ steps.pin.outputs.manual_revision }}')
+        for key in ('release_binding', 'release_binding_release', 'release_binding_revision'):
+            self.assertEqual(verify['outputs'][key], '${{ steps.binding.outputs.%s }}' % key)
+        gate = next(item for item in self.shared['jobs']['gate']['steps'] if item.get('id') == 'gate')
+        self.assertEqual(gate['env']['APPLICATION_REVISION'], '${{ github.sha }}')
 
     def test_gate_jobs_cannot_be_skipped_into_success(self):
         gate = self.shared['jobs']['gate']

@@ -231,7 +231,8 @@ verification. Schedules and `force_full` also run full verification.
 - **Trust** comes only from the GitHub API: the producer run must be a
   successful push, release, schedule or dispatch of an approved workflow on the
   default branch or a release tag in this repository. PR artifacts are never a
-  trusted baseline, and PR runs never publish the store. Download digests must
+  trusted baseline (neither the store nor the whole-run baseline), and PR runs
+  never publish the store or upload a whole-run baseline. Download digests must
   match the artifact digest the API reports.
 - **Admission** (`admit_selection`, used by `manuale.py --reuse-store`)
   re-verifies selection, manifest, evidence record, report and screenshot
@@ -244,13 +245,16 @@ verification. Schedules and `force_full` also run full verification.
 - **Release identity** is application commit + manual revision + version.
   `store-bind` writes `release-binding.json` for every workflow (fresh,
   store-reused, baseline-reused). The binding is rebuilt for every release and
-  is rejected for any other identity.
+  is rejected for any other identity: `store-verify-binding` checks it in every
+  verify run, and the Mode C gate requires that verification.
 
 ### Expected behavior per scenario
 
 Impact CLI results (`manuale-ci.py plan --base HEAD --changed-file PATH`,
-working-tree edits in a scratch worktree of this branch). "Mode" is the CI
-decision; "workflows" is the affected count out of 60. Wall times are not
+working-tree edits in a scratch worktree of this branch, re-run after the
+narrowing and classification fixes). "Mode" is the CI decision; "workflows" is
+the affected count out of 60. "New function" appends an unreferenced function;
+"body of" inserts a statement into an existing symbol. Wall times are not
 measured yet (see "After").
 
 | Change | Category | Mode | Workflows | Jobs started |
@@ -260,20 +264,77 @@ measured yet (see "After").
 | `UI/src/routes/profile/sections/TwoFactor.svelte` (recipe UI) | behavior | behavioral | 4 | plan, offline, verify (4 fresh captures), appliance (compatibility) |
 | `selfhost/tests/browser/manuale/scenario.mjs` (shared capture tool) | capture-tooling | behavioral | 60 | plan, offline, verify (all captures), appliance (compatibility) |
 | New function in `BE/core/authentication.py` (auth) | security | full | 60 | plan, offline, verify forced full, full appliance rehearsal |
-| New function in `BE/application/agent/core.py` (Bot) | bot | unaffected | 0 | plan, offline with the Bot suites |
-| New function in `BE/application/mcp_server/server.py` (MCP) | mcp | unaffected | 0 | plan, offline with the MCP suites |
+| New function in `BE/application/agent/prompts.py` (Bot) | bot | unaffected | 0 | plan, offline with the Bot suites |
+| New function in `BE/application/manuale/answers.py` (Bot, unreferenced symbol) | bot | unaffected | 0 | plan, offline with the Bot suites |
+| Body of `_reader_strings` in `BE/application/manuale/answers.py` | behavior | behavioral | 60 | verify (all captures), Bot + MCP suites |
+| New function in `BE/application/mcp_server/schema.py` (MCP) | mcp | unaffected | 0 | plan, offline with the MCP suites |
+| New function in `BE/application/agent/core.py` (tenant/identity injection) | security | full | 60 | as for auth |
+| New function in `BE/application/mcp_server/server.py` (MCP tool dispatch) | security | full | 60 | as for auth |
 | New function in `BE/application/mcp_server/security.py` (MCP auth) | security | full | 60 | as for auth |
+| Body of `RestoreMaintenanceMiddleware` in `BE/instance/restore/locking.py` (named in `MIDDLEWARE`) | security | full | 60 | as for auth |
+| Body of `InstanceStatusView` in `BE/instance/views.py` (routed, outside every slice) | behavior | behavioral | 60 | verify (all captures) |
+| `BE/application/tests/test_manuale_reader.py` (manual backend test) | mcp | unaffected | 0 | plan, offline with the Bot + MCP suites |
+| `.github/workflows/publish-images.yml` | shared-contract | full | 60 | as for auth |
 | New function in `BE/communications/views.py` | behavior | behavioral | 3 | verify with the 3 communication workflows |
+
+Changes from the previous table: `agent/core.py` and `mcp_server/server.py`
+moved from Bot-only/MCP-only to `security` (they inject or strip the tenant and
+user identity of every tool call), so the Bot-only and MCP-only rows now use
+`agent/prompts.py` and `mcp_server/schema.py`. Edits to existing symbols that
+runtime code reaches outside every workflow slice (`_reader_strings`,
+`InstanceStatusView`) were `unrelated`/unaffected before and now select every
+workflow that uses the file (all 60 here, because the global closure reaches
+these modules).
 
 `BE/communications/views.py` is already covered: the
 `communication-message-compose`, `communication-welcome-state` and
 `communication-workflow-manage` recipes declare it, and a changed function used
 only by the staff board selects all 60 workflows through the dashboard recipes.
-No extra mapping was needed. The impact CLI took 4 to 5 s per call on a
+No extra mapping was needed. The impact CLI took 2.0 to 4.1 s per call on a
 developer laptop (local measurement, not GitHub Actions).
 
 ### Limitations and trade-offs
 
+- Symbol narrowing only removes work it can prove. A changed top-level
+  symbol outside every workflow slice is narrowed away only when no runtime
+  entry point (URL tables and settings followed) reaches it; otherwise the
+  whole file is classified, which for modules in the global closure means all
+  60 workflows. Bot/MCP files keep their contract checks even when no capture
+  is affected. Modules named by dotted strings in settings and URL tables are
+  global dependencies (and part of every fingerprint); modules named under
+  `python.security_settings` (MIDDLEWARE, authentication, permission, session,
+  CSRF, token, throttle and similar settings) are `security`.
+- Bot/MCP code that injects, strips or filters tenant and user identity
+  (`agent/core.py`, `mcp_server/server.py`, `query_builder.py`,
+  `attendance.py`, `exporters/__init__.py`, `chat/consumers.py`,
+  `chat/views.py`, `manuale/tools.py`, `manuale/views.py`, `manuale/index.py`
+  and the `run_agent`/`run_mcp_server` commands) is `security`, so edits there
+  run full verification. Bot-only and MCP-only fast paths remain for prompts,
+  routing, providers, callbacks, `answers.py`, schema and the exporters.
+- Backend tests of the manual, Bot and MCP areas run the offline Bot and MCP
+  suites. The installed-release manual contracts (`TESTS/contracts/test_manual.py`,
+  `TESTS/browser/manual-release.mjs`, `TESTS/mcp/manual.py`) and
+  `publish-images.yml` run full verification.
+- Only push, release, dispatch or schedule runs of an approved workflow on the
+  default branch or a release tag (same repository, commit on the default
+  branch) are admitted as a whole-run baseline. Merged pull request runs no
+  longer qualify, and pull request runs do not upload `manuale-verified-baseline`,
+  so a merged change seeds the baseline only after its first trusted run.
+- `--reuse-store` admits nothing unless the selection directory holds the
+  `trusted-producers.json` record (the `store-producers` shape) that
+  `store-materialize` wrote and bound by sha256 into the selection, and every
+  manifest producer equals an authenticated record. There is no local opt-out:
+  a developer reuses store evidence by materializing it with a
+  `store-producers` record, never from a hand-made selection.
+- Every verify run checks `release-binding.json` with `store-verify-binding`
+  against the commit, pinned manual revision and version, and against the
+  binding recomputed from the run's evidence. The gate blocks Mode C unless the
+  verify job reports a verified binding for exactly this release and commit.
+- Store publication cannot block image publication: `publish-images.yml`
+  calls `manuale-release.yml` with `evidence_store: false` and runs the
+  publisher as a separate job after `manual-release` succeeded, which no
+  publication job depends on. An empty merged store uploads nothing instead of
+  failing.
 - The store fingerprint uses the precise impact closure. Production files that
   the older prefix-based reuse contract lists but the impact analysis proves
   unreachable are not part of the fingerprint, so a store entry can be reused
@@ -302,8 +363,8 @@ developer laptop (local measurement, not GitHub Actions).
   out of memory in the frontend build). The default is `auto` (2 on a
   4 vCPU / 16 GB hosted runner) and can be set with
   `vars.MANUALE_CAPTURE_CONCURRENCY`.
-- `actionlint` passed on the workflows. Embedded shell was not checked because
-  `shellcheck` was not installed.
+- `actionlint` 1.7.7 passed on the workflows. Embedded shell was not checked
+  because `shellcheck` was not installed.
 
 ### Optimizations not implemented
 

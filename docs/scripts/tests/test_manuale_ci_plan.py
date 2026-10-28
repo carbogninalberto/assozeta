@@ -89,7 +89,7 @@ class DecisionTests(unittest.TestCase):
         self.assertEqual((unaffected['verify'], unaffected['content'], unaffected['force_full']), (False, False, False))
         self.assertFalse(unaffected['browser_helpers'])
         bot = ci.ci_decision(report(checks={'bot': True, 'mcp': False, 'security': False, 'runtime': False}),
-                             forced=False, changed=['BE/application/agent/core.py'])
+                             forced=False, changed=['BE/application/agent/prompts.py'])
         self.assertEqual((bot['verify'], bot['bot'], bot['mcp']), (False, True, False))
         content = ci.ci_decision(report('content'), forced=False, changed=['manuale/docs/a.mdx'])
         self.assertEqual((content['verify'], content['content'], content['bot'], content['mcp']), (False, True, True, True))

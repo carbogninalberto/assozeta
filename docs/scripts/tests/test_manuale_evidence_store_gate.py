@@ -114,12 +114,63 @@ class StoreGateTests(GateFixture):
         entry = self.evidence._verify(self.store, 'unit-members', fingerprint, schema_version=1, trust=None)
         selection = self.f.root / 'pr-selection'
         record = self.evidence.materialize(entry, selection)
-        (selection / 'evidence-store-selection.json').write_text(json.dumps({
-            'format': 1, 'purpose': 'reused-workflow-evidence-not-fresh-capture', 'schema_version': 1,
-            'materialized': [record], 'rejected': [], 'capture_workflows': []}))
+        value = {'format': 1, 'purpose': 'reused-workflow-evidence-not-fresh-capture', 'schema_version': 1,
+                 'materialized': [record], 'rejected': [], 'capture_workflows': []}
+        (selection / 'evidence-store-selection.json').write_text(json.dumps(value))
+        # Hand-made selection without an authenticated producer record: nothing is trusted.
+        with self.assertRaisesRegex(self.evidence.UntrustedProducer, 'trusted-producers'):
+            self.admit(selection)
+        # Even a record that lists the PR run cannot make it a trusted producer.
+        self.write_trust(selection, value, {'3002': producer})
         result = self.admit(selection)
         self.assertEqual(result['admitted'], {})
         self.assertIn('UntrustedProducer', result['rejected'][0]['reason'])
+
+    def write_trust(self, selection, value, trusted, repository=REPOSITORY):
+        record = self.evidence._json_bytes(self.evidence.trusted_producers_record(trusted, repository=repository))
+        (selection / self.evidence.TRUSTED_PRODUCERS_FILE).write_bytes(record)
+        value['trusted_producers_sha256'] = self.evidence.digest(record)
+        (selection / 'evidence-store-selection.json').write_text(json.dumps(value))
+
+    def test_selection_without_an_authenticated_producer_record_is_never_trusted(self):
+        selection = self.materialize()
+        self.assertEqual(sorted(self.admit(selection)['admitted']), ['unit-members'])
+        record_path = selection / self.evidence.TRUSTED_PRODUCERS_FILE
+        original_record = record_path.read_bytes()
+        value = json.loads((selection / 'evidence-store-selection.json').read_text())
+        # Removed record (e.g. a selection copied or assembled by hand): the whole selection is refused.
+        record_path.unlink()
+        with self.assertRaisesRegex(self.evidence.UntrustedProducer, 'no authenticated trusted-producers'):
+            self.admit(selection)
+        # Edited record bytes no longer match the sha256 bound into the selection.
+        record_path.write_bytes(original_record.replace(b'"3001"', b'"3001" '))
+        with self.assertRaisesRegex(self.evidence.CorruptEvidence, 'trusted-producers'):
+            self.admit(selection)
+        # A consistent record for another repository is refused.
+        self.write_trust(selection, dict(value), self.trusted, repository='someone/else')
+        with self.assertRaisesRegex(self.evidence.UntrustedProducer, 'another repository'):
+            self.admit(selection)
+        # A consistent record that does not authenticate this producer run admits nothing.
+        self.write_trust(selection, dict(value), {})
+        result = self.admit(selection)
+        self.assertEqual(result['admitted'], {})
+        self.assertIn('not an authenticated trusted producer', result['rejected'][0]['reason'])
+        # A record whose authenticated run differs from the manifest claim admits nothing.
+        self.write_trust(selection, dict(value), {'3001': {**self.producer, 'head_sha': 'c' * 40}})
+        result = self.admit(selection)
+        self.assertEqual(result['admitted'], {})
+        self.assertIn('differs from its authenticated run', result['rejected'][0]['reason'])
+        # The runner treats a refused selection as a cold miss: every workflow is captured fresh.
+        record_path.unlink()
+        self.state['manual_repository'] = str(self.f.root / 'manual-source')
+        args = fixtures.SimpleNamespace(command='run', changed_since=None, manual_changed_since=None,
+                                        no_cache=True, reuse_store=str(selection))
+        runner = fixtures.runner
+        with patch.object(runner, 'retained_evidence_helper', return_value=reuse), \
+                patch.object(runner, 'evidence_store_gate', return_value=self.evidence):
+            runner.reuse_inputs(self.state, args)
+        self.assertEqual(self.state['selected_recipes'], ['unit-members'])
+        self.assertNotIn('evidence_reuse', self.state)
 
     def test_changed_dependency_or_explicit_selection_keeps_the_workflow_fresh(self):
         selection = self.materialize()
@@ -184,6 +235,44 @@ class StoreGateTests(GateFixture):
         with self.assertRaises(ValueError):
             self.evidence.verify_release_binding(binding, application_revision=self.state['application_input']['revision'],
                                                  manual_revision='b' * 40, release='another-release')
+
+    def test_release_verification_requires_the_exact_binding_of_this_run(self):
+        selection = self.materialize()
+        admitted = self.admit(selection)['admitted']
+        self.state['selected_recipes'] = []
+        reuse.build_reuse_plan(self.state, None, stage=True, admitted=admitted)
+        run = Path(self.state['run'])
+        self.state['evidence_reuse'] = {'path': 'evidence-reuse.json',
+                                        'sha256': reuse.file_hash(run, 'evidence-reuse.json'),
+                                        'reused_recipes': ['unit-members']}
+        self.state['manual_input'] = {'revision': 'b' * 40}
+        fixtures.write(run, 'run.json', self.state)
+        identity = {'application_revision': self.state['application_input']['revision'],
+                    'manual_revision': 'b' * 40, 'release': self.state['release']}
+        path = run / 'release-binding.json'
+        with patch.object(cache, 'reuse_module', return_value=reuse):
+            with self.assertRaisesRegex(ValueError, 'Missing'):
+                cache.verify_run_binding(run, path, **identity)
+            binding = cache.bind_run(run)
+            path.write_text(json.dumps(binding))
+            result = cache.verify_run_binding(run, path, **identity)
+            self.assertEqual((result['status'], result['release_identity']), ('verified', identity))
+            for change in ({'release': 'another-release'}, {'manual_revision': 'c' * 40},
+                           {'application_revision': 'd' * 40}):
+                with self.subTest(change=change), self.assertRaises(ValueError):
+                    cache.verify_run_binding(run, path, **{**identity, **change})
+            # Intact bytes for this identity, but evidence that differs from the run's own.
+            forged = json.loads(json.dumps(binding))
+            forged['evidence'][0]['provenance'] = 'fresh'
+            body = {key: value for key, value in forged.items() if key != 'binding_sha256'}
+            forged['binding_sha256'] = self.evidence.digest(self.evidence.canonical(body))
+            path.write_text(json.dumps(forged))
+            with self.assertRaisesRegex(ValueError, "differs from the run's verified evidence"):
+                cache.verify_run_binding(run, path, **identity)
+            # Edited bytes.
+            path.write_text(json.dumps({**binding, 'sources': {}}))
+            with self.assertRaisesRegex(ValueError, 'changed'):
+                cache.verify_run_binding(run, path, **identity)
 
 
 class StoreMaintenanceTests(GateFixture):

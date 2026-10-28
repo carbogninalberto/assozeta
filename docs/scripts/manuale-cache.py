@@ -1250,10 +1250,20 @@ def materialize_store(store_path, plan, application, output, *, trusted_producer
             materialized.append(store.materialize(entry, output))
         except ValueError as exc:
             rejected.append({'workflow_id': identifier, 'reason': type(exc).__name__ + ': ' + str(exc)})
+    # The authenticated producer records travel with the selection: the
+    # consumer gate admits nothing without them (and only matching producers).
+    repositories = sorted({record.get('repository') for record in (trusted_producers or {}).values()
+                           if isinstance(record, dict) and isinstance(record.get('repository'), str)})
+    record_repository = repository or (repositories[0] if len(repositories) == 1 else None)
+    record_bytes = store._json_bytes(store.trusted_producers_record(trusted_producers, repository=record_repository))
+    temporary = output / (store.TRUSTED_PRODUCERS_FILE + '.tmp')
+    temporary.write_bytes(record_bytes)
+    temporary.replace(output / store.TRUSTED_PRODUCERS_FILE)
     selection = {'format': 1, 'purpose': 'reused-workflow-evidence-not-fresh-capture',
                  'schema_version': schema_version, 'materialized': materialized, 'rejected': rejected,
                  'capture_workflows': sorted(set(plan.get('capture_workflows', []))
-                                             | {item['workflow_id'] for item in rejected})}
+                                             | {item['workflow_id'] for item in rejected}),
+                 'trusted_producers_sha256': _digest_bytes(record_bytes)}
     _write_json(output / 'evidence-store-selection.json', selection)
     return selection
 
@@ -1451,6 +1461,27 @@ def bind_run(run, *, manual_revision=None, release=None):
                                  release=release or state['release'], sources=sources)
 
 
+def verify_run_binding(run, binding_path, *, application_revision, manual_revision, release):
+    """Fail unless release-binding.json exists, is intact, names exactly this release identity and
+    equals the binding recomputed from the run's verified fresh and reused evidence."""
+    store = _evidence_store()
+    binding = _read_json(binding_path, 'release binding')
+    store.verify_release_binding(binding, application_revision=application_revision,
+                                 manual_revision=manual_revision, release=release)
+    state = _read_json(owned(Path(run).resolve(), 'run.json'), 'run.json')
+    if state.get('application_input', {}).get('revision') != application_revision:
+        raise store.IncompatibleEvidence('Verified run belongs to another application revision')
+    if state.get('manual_input', {}).get('revision') != manual_revision:
+        raise store.IncompatibleEvidence('Verified run belongs to another manual revision')
+    if state.get('release') != release:
+        raise store.IncompatibleEvidence('Verified run belongs to another release version')
+    expected = bind_run(run, manual_revision=manual_revision, release=release)
+    if store.canonical(expected) != store.canonical(binding):
+        raise store.IncompatibleEvidence("Release binding differs from the run's verified evidence")
+    return {'format': 1, 'status': 'verified', 'binding_sha256': binding['binding_sha256'],
+            'release_identity': binding['release_identity'], 'workflows': len(binding['evidence'])}
+
+
 def reuse_module():
     return _trusted_reuse()
 
@@ -1459,7 +1490,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('export', 'import', 'store-publish', 'store-producers',
                                             'store-plan', 'store-materialize', 'store-bind', 'store-fetch',
-                                            'store-merge', 'store-compact'))
+                                            'store-merge', 'store-compact', 'store-verify-binding'))
     parser.add_argument('--run', type=Path)
     parser.add_argument('--archive', type=Path)
     parser.add_argument('--output', type=Path)
@@ -1478,6 +1509,7 @@ def main():
     parser.add_argument('--selection', type=Path)
     parser.add_argument('--fresh', action='append', default=[], help='store-bind: freshly captured workflow id')
     parser.add_argument('--application-revision')
+    parser.add_argument('--binding', type=Path, help='store-verify-binding: release-binding.json to verify')
     parser.add_argument('--release')
     parser.add_argument('--kind', choices=('index', 'blobs'), default='index', help='store-fetch: which artifact')
     parser.add_argument('--producer-run', help='store-fetch: only this producer run (blobs of the restored index)')
@@ -1545,6 +1577,15 @@ def main():
             parser.error('--store is required')
         result = compact_store(args.store, args.application, trusted_producers=_trusted_file(args.trusted_producers),
                                reference_date=args.reference_date, repository=args.repository)
+    elif args.command == 'store-verify-binding':
+        if not args.run or not args.binding or not args.application_revision or not args.release \
+                or not args.manual_revision or args.manual_revision == 'auto':
+            parser.error('--run, --binding, --application-revision, --manual-revision and --release are required')
+        result = verify_run_binding(args.run, args.binding, application_revision=args.application_revision,
+                                    manual_revision=args.manual_revision, release=args.release)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            _write_json(args.output, result)
     elif args.command == 'store-bind' and args.run:
         if not args.output:
             parser.error('--output is required')

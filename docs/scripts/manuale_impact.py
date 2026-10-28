@@ -562,17 +562,62 @@ class Graph:
             elif kind == 'chain':
                 result |= self._resolve_chain(relative, value, chain)
             elif kind == 'dotted':
-                parts = value.split('.')
-                rest = []
-                while parts and not self._module_file(parts):
-                    rest.insert(0, parts.pop())
-                if parts:
-                    result.add((self._module_file(parts), rest[0] if rest else WHOLE))
+                target = self.dotted_node(value)
+                if target:
+                    result.add(target)
             elif kind == 'template':
                 result |= {(target, WHOLE) for target in self._template_targets(value)}
         if info['opaque']:
             result = {(target, WHOLE) for target, _ in result}
         return result
+
+    def dotted_node(self, value):
+        """(file, symbol) named by a dotted module string such as 'pkg.module.Class'; None if unresolvable."""
+        parts = value.split('.')
+        rest = []
+        while parts and not self._module_file(parts):
+            rest.insert(0, parts.pop())
+        return (self._module_file(parts), rest[0] if rest else WHOLE) if parts else None
+
+    def string_references(self, relative):
+        """[(node, setting keys)] for every dotted module string in a Python file (settings, URL tables).
+
+        The keys are the assignment target and enclosing dict keys, e.g. ('REST_FRAMEWORK',
+        'DEFAULT_AUTHENTICATION_CLASSES'), so callers can tell middleware or authentication
+        settings from other string references.
+        """
+        tree = self._parse(relative)
+        if not tree:
+            return []
+        found = []
+
+        def visit(node, keys):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                if len(node.value) < 200 and self._dotted.match(node.value):
+                    target = self.dotted_node(node.value)
+                    if target:
+                        found.append((target, keys))
+                return
+            if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                names = tuple(_dotted_name(target) for target in targets if _dotted_name(target))
+                visit(node.value, keys + names)
+                return
+            if isinstance(node, ast.Dict):
+                for key, value in zip(node.keys, node.values):
+                    label = (key.value,) if isinstance(key, ast.Constant) and isinstance(key.value, str) else ()
+                    if key is not None and not label:
+                        visit(key, keys)
+                    visit(value, keys + label)
+                return
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr in (
+                    'append', 'extend', 'insert') and _dotted_name(node.func.value):
+                keys = keys + (_dotted_name(node.func.value),)
+            for child in ast.iter_child_nodes(node):
+                visit(child, keys)
+
+        visit(tree, ())
+        return found
 
     # ---- templates
     def _template_targets(self, name):
@@ -729,8 +774,11 @@ class Context:
             symbol = MODULE if group.get('symbols') == 'module' else WHOLE
             self.global_seeds |= {(name, symbol) for name in expand(tree, group['match'])}
         self.global_seeds |= self._beat_seeds()
+        self.string_seeds, self.security_strings = self._string_seeds()
+        self.global_seeds |= self.string_seeds
         self._dependencies = None
         self._runtime = None
+        self._runtime_nodes = None
         self._ui_reachable = None
         self._evidence = None
         self._reviewed = None
@@ -772,6 +820,26 @@ class Context:
         """file -> {symbol -> workflow ids}."""
         self._build()
         return self._reverse
+
+    def _string_seeds(self):
+        """Modules named by dotted strings in settings and URL tables (hubs that are not followed).
+
+        Django loads MIDDLEWARE, AUTHENTICATION_BACKENDS, REST_FRAMEWORK classes, email/cache
+        backends, schedulers and the like by string on every request or at startup, so each named
+        symbol is a global dependency of every workflow. Names under a security setting
+        (impact-map.json python.security_settings) make the whole module a security input.
+        """
+        markers = [marker.upper() for marker in self.map['python'].get('security_settings', [])]
+        seeds, security = set(), {}
+        for relative, hub in sorted(self.map.get('hubs', {}).items()):
+            if hub.get('follow') != 'none' or not relative.endswith('.py'):
+                continue
+            for node, keys in self.graph.string_references(relative):
+                seeds.add(node)
+                labels = [key for key in keys if any(marker in key.upper() for marker in markers)]
+                if labels:
+                    security.setdefault(node[0], set()).add(f'{relative} {"/".join(keys)}')
+        return seeds, security
 
     def _beat_seeds(self):
         """Periodic tasks run during captures: scheduled task bodies plus every task module's import code."""
@@ -843,8 +911,14 @@ class Context:
             python = self.map['python']
             entries = {name for name in expand(self.tree, python.get('runtime_entries', []))
                        if not matches_any(name, python.get('runtime_entry_exclude', []))}
-            self._runtime = {relative for relative, _ in self.graph.closure(entries, respect_hubs=False)}
+            self._runtime_nodes = frozenset(self.graph.closure(entries | self.string_seeds, respect_hubs=False))
+            self._runtime = {relative for relative, _ in self._runtime_nodes}
         return self._runtime
+
+    def runtime_symbols(self, relative):
+        """Top-level symbols of relative reachable from a runtime entry point (URL tables and settings followed)."""
+        self.runtime_reachable()
+        return {symbol for name, symbol in self._runtime_nodes if name == relative}
 
     def ui_reachable(self):
         if self._ui_reachable is None:
@@ -950,16 +1024,28 @@ def _classify(head, base, path):
               ' (absent from the analysed tree)' if not in_head else '')
     contexts = [ctx for ctx in (head, base) if ctx]
     symbols = _changed_symbols(head, base, path) if in_head and in_base else None
+    uncertain = _uncertain_symbols(head, path, symbols)
+    if uncertain:
+        symbols = None  # cannot prove the changed symbols unreferenced: classify the whole file
     # Base-side closures matter only for paths gone from head (removed or renamed away): a
     # modified file's former importers are changed files themselves and classified at head.
     dependents = head.dependents(path, symbols) | (base.dependents(path) if base and not in_head else set())
     narrowed = f' Changed symbols: {_short(symbols, 4)}.' if symbols else ''
+    if uncertain:
+        narrowed = (f' Changed symbol(s) {_short(uncertain, 4)} are reachable at runtime (URL tables, settings or '
+                    'imports) but outside every workflow slice; the whole file is classified.')
     reviewed = set().union(*(ctx.reviewed_pages(path) for ctx in contexts))
     rule = head.rule(path) or (base.rule(path) if base else None)
     category = rule['category'] if rule else None
     reason = rule['reason'] if rule else ''
     checks = set(rule.get('checks', [])) if rule else set()
     handler = rule.get('handler') if rule else None
+    named = set().union(*(ctx.security_strings.get(path, ()) for ctx in contexts))
+    if named and category not in ('security', 'shared-contract'):
+        whole = head.dependents(path) | (base.dependents(path) if base else set())
+        return _entry(path, 'security', whole, f'Module loaded by a security setting ({_short(named, 3)}): '
+                      f'middleware, authentication or permission code; comprehensive security and runtime '
+                      f'checks{status}.', head.workflow_pages(whole) | reviewed, {'bot', 'mcp'})
 
     if category in ('security', 'shared-contract'):
         return _entry(path, category, dependents, reason + status, head.workflow_pages(dependents) | reviewed, checks)
@@ -977,10 +1063,15 @@ def _classify(head, base, path):
                       f'{narrowed}{extra}',
                       head.workflow_pages(dependents) | reviewed, checks)
     if symbols is not None and not dependents and head.reverse.get(path):
+        detail = (f'changed top-level symbol(s) {_short(symbols, 4)} are not referenced by any workflow\'s '
+                  'dependency slice nor reachable from any runtime entry point' if symbols else
+                  'the syntax tree is unchanged (comments or formatting only)')
+        if category in ('bot', 'mcp'):
+            # The file's own contract checks always run; only the capture selection is narrowed.
+            return _entry(path, category, (), f'{reason} No captured workflow is affected: {detail}{status}.',
+                          reviewed, checks | {category})
         if reviewed:
             return _reviewed(path, status, reviewed)
-        detail = (f'changed top-level symbol(s) {_short(symbols, 4)} are not referenced by any workflow\'s '
-                  'dependency slice' if symbols else 'the syntax tree is unchanged (comments or formatting only)')
         return _entry(path, 'unrelated', (), f'Python module used by captured workflows, but {detail}.')
     if handler:
         return _HANDLERS[handler](head, base, path, rule, status, reviewed, checks)
@@ -1001,6 +1092,23 @@ def _classify(head, base, path):
             return _entry(path, 'unrelated', (), 'Backend module not importable from any runtime entry point '
                           f'(dead code; any future importer is classified on its own){status}.')
     return _unknown(path, status)
+
+
+def _uncertain_symbols(ctx, path, symbols):
+    """Changed symbols outside every workflow slice that runtime code can still reach.
+
+    Workflow slices do not expand URL tables or settings, so a routed view, a middleware or a
+    helper imported only by unsliced runtime code may still run during captures. Only symbols
+    unreachable from every runtime entry point are proven unreferenced; the others make the
+    classification fall back to the whole file.
+    """
+    if not symbols:
+        return set()
+    visited = ctx.reverse.get(path, {})
+    if not visited or path not in ctx.runtime_reachable():
+        return set()
+    runtime = ctx.runtime_symbols(path)
+    return {symbol for symbol in symbols if not visited.get(symbol) and (WHOLE in runtime or symbol in runtime)}
 
 
 def _changed_symbols(head, base, path):

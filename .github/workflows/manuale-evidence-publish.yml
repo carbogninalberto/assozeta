@@ -74,7 +74,21 @@ jobs:
           python3 docs/scripts/manuale_timing.py stage evidence-store-merge -- \
             python3 docs/scripts/manuale-cache.py store-merge --candidate "$CANDIDATE" --store "$STORE" \
             --run-id "$GITHUB_RUN_ID"
-          echo 'publish=true' >> "$GITHUB_OUTPUT"
+          # An empty store (nothing verified to carry forward) is not an error:
+          # nothing is uploaded and the next run starts cold.
+          entries=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1])).get("entries") or {}))' \
+            "$STORE/index.json" 2>/dev/null || echo 0)
+          if [[ "$entries" -gt 0 ]]; then
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'The merged store holds no verified entries; nothing is published.'
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+          fi
+          if [[ "$entries" -gt 0 && -n "$(find "$STORE/blobs" -type f -print -quit 2>/dev/null)" ]]; then
+            echo 'blobs=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'blobs=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Upload the trusted store index
         if: ${{ steps.merge.outputs.publish == 'true' }}
         uses: actions/upload-artifact@v4
@@ -83,15 +97,15 @@ jobs:
           path: |
             ${{ runner.temp }}/manuale-store/index.json
             ${{ runner.temp }}/manuale-store/workflows/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 90
       - name: Upload the trusted store screenshots
-        if: ${{ steps.merge.outputs.publish == 'true' }}
+        if: ${{ steps.merge.outputs.publish == 'true' && steps.merge.outputs.blobs == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: manuale-evidence-store-blobs
           path: ${{ runner.temp }}/manuale-store/blobs/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 90
       - name: Summarize store publication
         if: always()

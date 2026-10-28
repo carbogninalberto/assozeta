@@ -426,7 +426,7 @@ def baseline_metadata(repository, policy, *, root=ROOT, api=None):
             continue
         run = api(f'repos/{repository}/actions/runs/{identifier}')
         reason = policy.producer_rejection(run, artifact, repository, accepted_source=policy.accepted_source(
-            run, repository, default_ref, root=root, api=api))
+            run, repository, default_ref, root=root, api=api), default_branch=info['default_branch'])
         if reason:
             rejected += 1
             continue
@@ -551,6 +551,15 @@ def gate_failures(needs, *, comprehensive, release, revision, results=None):
             failures.append('verification did not run in comprehensive release mode')
         if scope != 'full':
             failures.append('release requires the full historical appliance rehearsal, not ' + str(scope))
+        # release-binding.json must have been generated and verified for exactly
+        # this commit and version (store-verify-binding in the verify job).
+        if outputs_.get('release_binding') != 'verified':
+            failures.append('release binding of the workflow evidence is missing or unverified')
+        else:
+            if outputs_.get('release_binding_release') != release:
+                failures.append('release binding belongs to another release')
+            if outputs_.get('release_binding_revision') != revision:
+                failures.append('release binding belongs to another application revision')
     elif result('contracts') not in ('success', 'skipped'):
         failures.append('verifier contracts did not succeed (' + result('contracts') + ')')
     if appliance_required:
