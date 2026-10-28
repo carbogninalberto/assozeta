@@ -17,7 +17,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "BE/application/signals.py": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f",
     "UI/src/components/inputs/email-builder/EmailBuilder.svelte": "96085ea1094e0a8ef3c48e38b9ad17b31f9a1d2eb35447a42d10ed5b5de3352d",
     "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
-    "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
+    "UI/src/routes/profile/sections/TwoFactor.svelte": "6c079d040bf2551fd692e72f165098658e634f4e447ed737d163036c0832996b",
     "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e",
     "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
     "UI/src/routes/login/Login.svelte": "1510aacbaefbe51d95da6a5b1f7cac164bc7318bc4e733fefe50c4e39755e5f0",
