@@ -145,6 +145,9 @@ class Repository:
         (self.root / 'docs/scripts').mkdir(parents=True, exist_ok=True)
         shutil.copy(SCRIPTS / 'manuale_impact.py', self.root / 'docs/scripts/manuale_impact.py')
         self.git('init', '-q')
+        # No detached auto-gc/maintenance may still write when the directory is removed.
+        self.git('config', 'gc.auto', '0')
+        self.git('config', 'maintenance.auto', 'false')
         self.base = self.commit('base')
 
     def git(self, *args):

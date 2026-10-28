@@ -111,8 +111,10 @@ jobs:
       release_binding_revision: ${{ steps.binding.outputs.release_binding_revision }}
     env:
       RELEASE_VERSION: ${{ inputs.release }}
-      # Bounded parallel capture shards (1..4 or auto: sized from runner CPUs and memory).
-      MANUALE_CAPTURE_CONCURRENCY: ${{ vars.MANUALE_CAPTURE_CONCURRENCY || 'auto' }}
+      # Capture shards (1..4 or auto). Sequential by default: on 4 vCPU hosted
+      # runners two concurrent stacks made unrelated workflows time out and were
+      # not faster. Opt in with vars.MANUALE_CAPTURE_CONCURRENCY on larger runners.
+      MANUALE_CAPTURE_CONCURRENCY: ${{ vars.MANUALE_CAPTURE_CONCURRENCY || '1' }}
       # Opt-in BuildKit layer cache for run-owned images (set the variable to gha).
       MANUALE_BUILDX_CACHE: ${{ vars.MANUALE_BUILDX_CACHE || '' }}
     steps:

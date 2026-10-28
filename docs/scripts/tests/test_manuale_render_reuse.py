@@ -361,6 +361,44 @@ class RenderReuseFixtureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'compiled-page-source-changed|current-target-differs'):
             render_reuse.validate_render_reuse(self.target['state'])
 
+    def test_retained_plan_from_an_earlier_renderer_is_integrity_checked_not_rejected(self):
+        plan = render_reuse.plan_render_reuse(self.target['state'], self.baseline_run)
+        self.copy_anchors(plan)
+        state = self.target['state']
+        self.assertTrue(render_reuse.validate_retained_render_reuse(state)['renderer_compatible'])
+        # A newer renderer (as when Mintlify-era baselines meet the reader renderer).
+        with patch.object(render_reuse, 'READER_RENDERER', 'next-reader-renderer'):
+            with self.assertRaisesRegex(ValueError, 'renderer-inputs-changed-after-plan'):
+                render_reuse.validate_render_reuse(state)
+            retained = render_reuse.validate_retained_render_reuse(state)
+            self.assertFalse(retained['renderer_compatible'])
+            self.assertEqual(retained['reused_pages'], plan['reused_pages'])
+            # The run's own recorded inputs, plan and origin files must still be intact.
+            tool = self.target['application'] / 'selfhost/tests/browser/manuale/compile.mjs'
+            original = tool.read_bytes()
+            tool.write_bytes(original + b'// changed\n')
+            with self.assertRaisesRegex(ValueError, 'retained-renderer-input-changed'):
+                render_reuse.validate_retained_render_reuse(state)
+            tool.write_bytes(original)
+            origin = self.target_run / plan['pages']['docs/one']['origin_record']['path']
+            original = origin.read_bytes()
+            origin.write_bytes(original + b'\n')
+            with self.assertRaisesRegex(ValueError, 'retained-render-origin-changed'):
+                render_reuse.validate_retained_render_reuse(state)
+            origin.write_bytes(original)
+            inputs = self.target_run / render_reuse.RENDER_INPUTS
+            original = inputs.read_bytes()
+            inputs.write_bytes(original.replace(b'}', b',"extra":"x"}', 1))
+            with self.assertRaisesRegex(ValueError, 'retained-renderer-inputs-inconsistent'):
+                render_reuse.validate_retained_render_reuse(state)
+            inputs.write_bytes(original)
+            self.assertFalse(render_reuse.validate_retained_render_reuse(state)['renderer_compatible'])
+        # Any other validation failure is still fatal for a retained run.
+        layout = self.target_run / plan['pages']['docs/one']['render']['layouts'][0]['path']
+        layout.write_bytes(layout.read_bytes() + b'mutated')
+        with self.assertRaisesRegex(ValueError, 'staged-layout-evidence-invalid'):
+            render_reuse.validate_retained_render_reuse(state)
+
     def test_two_generations_keep_the_earliest_origin_and_report(self):
         first = render_reuse.plan_render_reuse(self.target['state'], self.baseline_run)
         self.copy_anchors(first)

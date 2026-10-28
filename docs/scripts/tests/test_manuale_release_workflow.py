@@ -106,6 +106,12 @@ raise SystemExit(subprocess.run(sys.argv[sys.argv.index('--') + 1:]).returncode)
 '''
 
 
+class CaptureConcurrencyDefaultTests(unittest.TestCase):
+    def test_ci_captures_sequentially_unless_explicitly_configured(self):
+        verify = yaml.safe_load((ROOT / '.github/workflows/manuale-verify.yml').read_text())['jobs']['verify']
+        self.assertEqual(verify['env']['MANUALE_CAPTURE_CONCURRENCY'], "${{ vars.MANUALE_CAPTURE_CONCURRENCY || '1' }}")
+
+
 class EvidenceStoreAvailabilityTests(unittest.TestCase):
     """Store publication never blocks image publication and tolerates an empty store."""
 

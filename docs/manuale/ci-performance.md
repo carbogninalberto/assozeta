@@ -335,6 +335,18 @@ developer laptop (local measurement, not GitHub Actions).
   publisher as a separate job after `manual-release` succeeded, which no
   publication job depends on. An empty merged store uploads nothing instead of
   failing.
+- No trusted whole-run baseline or evidence store exists yet for this
+  verifier. Every `manuale-verified-baseline` from main was sealed by the
+  Mintlify-era render gate. Its retained render-reuse plan could not match the
+  reader renderer's inputs, so the import rejected the whole baseline
+  (`RenderReuseError: renderer-inputs-changed-after-plan`). The import now
+  checks such a plan for integrity only, and its pages render fresh. A branch
+  that carries this change also changes `docs/scripts/manuale*` relative to
+  every main baseline, so `verification_decision` still runs full
+  verification until a push to main with this verifier seals a new baseline
+  and populates the store. Content-mode and behavioral narrowing therefore
+  start working after that first trusted run, not on branches based on this
+  change.
 - The store fingerprint uses the precise impact closure. Production files that
   the older prefix-based reuse contract lists but the impact analysis proves
   unreachable are not part of the fingerprint, so a store entry can be reused
@@ -359,10 +371,15 @@ developer laptop (local measurement, not GitHub Actions).
   `test_mcp_stdio.py`. `mcp_server/security.py` is classified `security` and
   runs full verification.
 - `MANUALE_BUILDX_CACHE=gha` is opt-in and was not exercised on GitHub Actions.
-- Bounded capture shards were not measured on real Docker (a local run ran
-  out of memory in the frontend build). The default is `auto` (2 on a
-  4 vCPU / 16 GB hosted runner) and can be set with
-  `vars.MANUALE_CAPTURE_CONCURRENCY`.
+- Capture shards are off by default in CI (`MANUALE_CAPTURE_CONCURRENCY=1`).
+  With `auto` (2 shards on a 4 vCPU / 16 GB hosted runner), full captures on
+  this branch failed 8 or 9 different workflows per run, with a different set
+  each time and mostly click timeouts or browser errors (runs 40770979959,
+  40771977869, 40774163486, 40774816473). The shards ran as separate private
+  stacks, so no state was shared, and the capture step still took about 32 min.
+  The same 60 workflows had passed sequentially in 32 to 43 min on earlier
+  full runs (40688878441, 40609557271, 40570118972). Sharding remains opt-in
+  through `vars.MANUALE_CAPTURE_CONCURRENCY` for larger runners.
 - `actionlint` 1.7.7 passed on the workflows. Embedded shell was not checked
   because `shellcheck` was not installed.
 

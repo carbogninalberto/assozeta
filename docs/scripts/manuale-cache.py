@@ -413,7 +413,7 @@ def _validate_render_evidence(run, state, manifest, compiled, render, verified_p
     return layout_proofs
 
 
-def _validate_evaluated_evidence(run, state, *, require_source_repositories=False):
+def _validate_evaluated_evidence(run, state, *, require_source_repositories=False, retained=False):
     application_revision, manual_revision = _validate_state(
         state, run=run if require_source_repositories else None,
         require_source_repositories=require_source_repositories,
@@ -557,8 +557,10 @@ def _validate_evaluated_evidence(run, state, *, require_source_repositories=Fals
                    'render.json', 'compile.json'} | scenario_proofs | layout_proofs
     if state.get('render_reuse') or (run / 'render-reuse.json').exists():
         sys.path.insert(0, str(ROOT / 'BE'))
-        from application.manuale.render_reuse import validate_render_reuse
-        render_plan = validate_render_reuse(state)
+        from application.manuale.render_reuse import validate_render_reuse, validate_retained_render_reuse
+        # An imported baseline may come from an earlier renderer: its plan is
+        # integrity-checked, and its pages are never reused by this renderer.
+        render_plan = validate_retained_render_reuse(state) if retained else validate_render_reuse(state)
         proof_files.update(('render-reuse.json', 'render-inputs.json'))
         manual_files.update(path.removeprefix('manual/') for path in render_plan['render_inputs']
                             if path.startswith('manual/'))
@@ -1031,7 +1033,7 @@ def import_cache(archive_path, output, manual_repository, *, register=True):
             state['manual_repository'] = str(Path(manual_repository).resolve())
             _write_json(result / 'run.json', state)
             _verify_git_overlay(result / 'application', payload['revision'])
-            validated = _validate_evaluated_evidence(result, state)
+            validated = _validate_evaluated_evidence(result, state, retained=True)
             _verify_member_scope(result, state, inventory, validated)
             _check_clean_repository(result / 'application', payload['revision'], 'application')
             if state['application_input']['revision'] != payload['revision']:
