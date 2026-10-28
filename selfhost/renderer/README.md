@@ -11,7 +11,8 @@ dependencies are not included.
 
 - `puppeteer-core` 25.16.0 controls Chrome Headless Shell 156.0.8078.47.
 - `POST /render` accepts Assozeta's existing JSON payload and returns PDF bytes.
-- `GET /healthz` opens and closes a page, matching Compose and diagnostics.
+- `GET /healthz` opens and closes a page in an existing browser without
+  acquiring or queuing for another render slot.
 - Browser processes are bounded by `RENDER_POOL_SIZE` and requests wait for a
   bounded acquisition timeout. Every render receives a fresh browser context;
   cookies, storage, caches that matter to a context, and service workers do not
@@ -32,7 +33,7 @@ dependencies are not included.
 | `RENDER_ALLOWED_HOSTS` | `api` | Comma-separated exact hostname allowlist |
 | `RENDER_POOL_SIZE` | `2` | Maximum concurrent browser processes |
 | `RENDER_POOL_ACQUIRE_TIMEOUT_MS` | `30000` | Maximum wait for a browser slot |
-| `RENDER_REQUEST_TIMEOUT_MS` | `55000` | Total per-request budget, below the backend's 60-second limit |
+| `RENDER_REQUEST_TIMEOUT_MS` | `55000` | Total per-request budget, below the backend's 60-second limit; values above 55000 are rejected |
 | `RENDER_BROWSER_MAX_AGE_MS` | `600000` | Browser lifetime before recycling |
 | `RENDER_BROWSER_MAX_REQUESTS` | `100` | Renders before browser recycling |
 | `RENDER_MEMORY_LIMIT_MB` | container cgroup limit | Optional memory-pressure override |

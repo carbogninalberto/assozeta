@@ -63,6 +63,18 @@ function withTimeout(promise, timeoutMs, message) {
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
+async function closeBrowser(browser) {
+    try {
+        await withTimeout(browser.close(), 5000, 'Renderer browser shutdown timed out');
+    } catch (_) {
+        try {
+            browser.process()?.kill('SIGKILL');
+        } catch (_) {
+            // The process may already have exited.
+        }
+    }
+}
+
 export class BrowserPool extends EventEmitter {
     constructor({
         launchBrowser,
@@ -87,6 +99,7 @@ export class BrowserPool extends EventEmitter {
         this.idle = [];
         this.waiters = [];
         this.launching = 0;
+        this.closing = 0;
         this.leases = 0;
         this.shuttingDown = false;
         this.lastMemory = {usedBytes: null, currentBytes: null, limitBytes: memoryLimitBytes};
@@ -102,7 +115,7 @@ export class BrowserPool extends EventEmitter {
 
     async warmUp() {
         let firstError;
-        while (this.resources.size + this.launching < this.warmSize) {
+        while (this.resources.size + this.launching + this.closing < this.warmSize) {
             try {
                 const resource = await this._launch();
                 this.idle.push(resource);
@@ -127,7 +140,7 @@ export class BrowserPool extends EventEmitter {
             const resource = await this._takeAvailable();
             if (resource) return this._lease(resource);
 
-            if (this.resources.size + this.launching < this.size) {
+            if (this.resources.size + this.launching + this.closing < this.size) {
                 const remaining = deadline - Date.now();
                 if (remaining <= 0) break;
                 try {
@@ -205,6 +218,7 @@ export class BrowserPool extends EventEmitter {
             leased: this.leases,
             waiting: this.waiters.length,
             launching: this.launching,
+            closing: this.closing,
             max: this.size,
             memory: {...this.lastMemory},
             metrics: {...this.metrics},
@@ -216,7 +230,10 @@ export class BrowserPool extends EventEmitter {
         this._rejectWaiters();
 
         try {
-            await this._waitFor(() => this.leases === 0 && this.launching === 0, timeoutMs);
+            await this._waitFor(
+                () => this.leases === 0 && this.launching === 0 && this.closing === 0,
+                timeoutMs,
+            );
         } catch (_) {
             // Force-close remaining browsers if an in-flight request does not stop.
         }
@@ -249,7 +266,7 @@ export class BrowserPool extends EventEmitter {
                     'Renderer browser launch timed out',
                 );
             } catch (error) {
-                launch.then(lateBrowser => lateBrowser.close(), () => {});
+                launch.then(lateBrowser => closeBrowser(lateBrowser), () => {});
                 throw error;
             }
             const resource = {
@@ -267,7 +284,7 @@ export class BrowserPool extends EventEmitter {
                 this._signal();
             });
             if (this.shuttingDown) {
-                await browser.close().catch(() => {});
+                await closeBrowser(browser);
                 throw new PoolUnavailableError('Renderer is shutting down');
             }
             this.resources.add(resource);
@@ -318,15 +335,16 @@ export class BrowserPool extends EventEmitter {
         resource.destroying = true;
         this._removeIdle(resource);
         this.resources.delete(resource);
+        this.closing++;
         this.metrics.destroyed++;
-        if (resource.connected) {
-            await withTimeout(
-                resource.browser.close(),
-                5000,
-                'Renderer browser shutdown timed out',
-            ).catch(() => {});
+        try {
+            if (resource.connected) {
+                await closeBrowser(resource.browser);
+            }
+        } finally {
+            this.closing--;
+            this._signal();
         }
-        this._signal();
     }
 
     _wait(timeoutMs) {

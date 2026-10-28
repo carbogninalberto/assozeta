@@ -40,11 +40,15 @@ const acquireTimeoutMs = positiveInt(
     30000,
     'RENDER_POOL_ACQUIRE_TIMEOUT_MS',
 );
+const MAX_REQUEST_TIMEOUT_MS = 55000;
 const requestTimeoutMs = positiveInt(
     process.env.RENDER_REQUEST_TIMEOUT_MS,
-    55000,
+    MAX_REQUEST_TIMEOUT_MS,
     'RENDER_REQUEST_TIMEOUT_MS',
 );
+if (requestTimeoutMs > MAX_REQUEST_TIMEOUT_MS) {
+    throw new Error(`RENDER_REQUEST_TIMEOUT_MS must not exceed ${MAX_REQUEST_TIMEOUT_MS}`);
+}
 const browserMaxAgeMs = positiveInt(
     process.env.RENDER_BROWSER_MAX_AGE_MS,
     10 * 60 * 1000,
@@ -68,6 +72,7 @@ const hostResolverRules = [
     'MAP * ~NOTFOUND',
     ...[...allowedHosts].map(host => `EXCLUDE ${host}`),
 ].join(', ');
+const testCertificateSpki = process.env.RENDER_TEST_CERTIFICATE_SPKI || '';
 
 const browserPool = new BrowserPool({
     launchBrowser: () => puppeteer.launch({
@@ -81,20 +86,23 @@ const browserPool = new BrowserPool({
             '--disable-background-timer-throttling',
             '--disable-component-update',
             '--disable-default-apps',
-            '--disable-dev-shm-usage',
             '--disable-extensions',
             '--disable-renderer-backgrounding',
             '--disable-sync',
+            '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
             `--host-resolver-rules=${hostResolverRules}`,
             '--metrics-recording-only',
             '--mute-audio',
             '--no-default-browser-check',
             '--no-first-run',
+            ...(testCertificateSpki
+                ? [`--ignore-certificate-errors-spki-list=${testCertificateSpki}`]
+                : []),
             // Docker's default seccomp profile does not provide Chromium's
             // user-namespace sandbox. The service remains non-root with all
             // capabilities dropped, a read-only root, and no-new-privileges.
             '--no-sandbox',
-            '--disable-features=AutofillServerCommunication,MediaRouter,OptimizationHints,OptimizationGuideModelDownloading,ServiceWorker,Translate',
+            '--disable-features=AutofillServerCommunication,MediaRouter,OptimizationHints,OptimizationGuideModelDownloading,Translate',
         ],
     }),
     size: poolSize,
@@ -193,15 +201,28 @@ function sendJson(response, status, payload, headers = {}) {
     response.end(body);
 }
 
-async function readJson(request) {
+async function readJson(request, signal) {
+    if (signal?.aborted) {
+        throw signal.reason || new RenderAbortedError();
+    }
     const chunks = [];
     let size = 0;
-    for await (const chunk of request) {
-        size += chunk.length;
-        if (size > 1024 * 1024) {
-            throw new RenderRequestError('Request body exceeds 1 MiB', 413);
+    const abortBody = () => request.destroy(signal.reason);
+    signal?.addEventListener('abort', abortBody, {once: true});
+    try {
+        for await (const chunk of request) {
+            size += chunk.length;
+            if (size > 1024 * 1024) {
+                throw new RenderRequestError('Request body exceeds 1 MiB', 413);
+            }
+            chunks.push(chunk);
         }
-        chunks.push(chunk);
+    } catch (error) {
+        if (error instanceof RenderRequestError) throw error;
+        if (signal?.aborted) throw signal.reason || error;
+        throw error;
+    } finally {
+        signal?.removeEventListener('abort', abortBody);
     }
     try {
         return JSON.parse(Buffer.concat(chunks).toString('utf8'));
@@ -309,11 +330,33 @@ async function renderPdf(payload, signal) {
         );
         contextCreated = true;
         const page = await abortable(browserContext.newPage(), signal);
-        await page.setRequestInterception(true);
-        await page.setBypassServiceWorker(true);
-        await page.setJavaScriptEnabled(payload.device?.javascriptEnabled !== false);
-        await page.evaluateOnNewDocument(() => {
-            for (const name of ['WebSocket', 'Worker', 'SharedWorker']) {
+        await abortable(page.setRequestInterception(true), signal);
+        await abortable(page.setBypassServiceWorker(true), signal);
+        await abortable(
+            page.setJavaScriptEnabled(payload.device?.javascriptEnabled !== false),
+            signal,
+        );
+        await abortable(page.evaluateOnNewDocument(() => {
+            const blockServiceWorkerRegistration = target => {
+                try {
+                    Object.defineProperty(target, 'register', {
+                        configurable: false,
+                        writable: false,
+                        value: () => Promise.reject(
+                            new Error('Service workers are disabled during PDF rendering'),
+                        ),
+                    });
+                } catch (_) {
+                    // The browser-level service-worker bypass remains active.
+                }
+            };
+            if (navigator.serviceWorker) {
+                blockServiceWorkerRegistration(navigator.serviceWorker);
+            }
+            if (globalThis.ServiceWorkerContainer?.prototype) {
+                blockServiceWorkerRegistration(globalThis.ServiceWorkerContainer.prototype);
+            }
+            for (const name of ['WebSocket', 'Worker', 'SharedWorker', 'RTCPeerConnection']) {
                 class Blocked {
                     constructor() {
                         throw new Error(`${name}s are disabled during PDF rendering`);
@@ -325,16 +368,24 @@ async function renderPdf(payload, signal) {
                     value: Blocked,
                 });
             }
-        });
-        await page.setViewport({width, height, deviceScaleFactor});
+        }), signal);
+        await abortable(page.setViewport({width, height, deviceScaleFactor}), signal);
         await page.setDefaultTimeout(Math.max(gotoTimeout, pdfTimeout));
         await page.setDefaultNavigationTimeout(gotoTimeout);
-        if (payload.device?.userAgent) await page.setUserAgent(payload.device.userAgent);
-        if (payload.device?.timezone) await page.emulateTimezone(payload.device.timezone);
+        try {
+            if (payload.device?.userAgent) {
+                await abortable(page.setUserAgent(payload.device.userAgent), signal);
+            }
+            if (payload.device?.timezone) {
+                await abortable(page.emulateTimezone(payload.device.timezone), signal);
+            }
+        } catch (error) {
+            throw new RenderRequestError(`Invalid device option: ${error.message}`);
+        }
 
-        const cdp = await page.createCDPSession();
-        await cdp.send('Network.enable');
-        await cdp.send('Network.setBlockedURLs', {urls: ['ws://*', 'wss://*']});
+        const cdp = await abortable(page.createCDPSession(), signal);
+        await abortable(cdp.send('Network.enable'), signal);
+        await abortable(cdp.send('Network.setBlockedURLs', {urls: ['ws://*', 'wss://*']}), signal);
         browserContext.on('targetcreated', target => {
             void (async () => {
                 if (target.type() !== 'page') return;
@@ -424,7 +475,7 @@ async function renderPdf(payload, signal) {
 
         const requestedWait = payload.render?.waitUntil;
         const waitUntil = requestedWait?.startsWith('networkidle')
-            ? ['load', 'networkidle2']
+            ? ['load', requestedWait === 'networkidle0' ? 'networkidle0' : 'networkidle2']
             : ['load'];
         let response;
         try {
@@ -480,27 +531,33 @@ async function renderPdf(payload, signal) {
         if (error?.name === 'TimeoutError') error.statusCode = 504;
         throw error;
     } finally {
+        let contextCloseFailed = false;
         if (browserContext) {
-            await withDeadline(
-                browserContext.close(),
-                5000,
-                'Browser context close timed out',
-            ).catch(() => {});
+            try {
+                await withDeadline(
+                    browserContext.close(),
+                    4000,
+                    'Browser context close timed out',
+                );
+            } catch {
+                contextCloseFailed = true;
+            }
         }
-        browserPool.release(resource, {destroy: failed || !resource.connected});
+        browserPool.release(resource, {
+            destroy: failed || contextCloseFailed || !resource.connected,
+        });
     }
 }
 
 async function healthCheck() {
-    await withDeadline(browserPool.probeBrowser(async browser => {
-        const browserContext = await browser.createBrowserContext();
-        try {
-            const page = await browserContext.newPage();
-            await page.close();
-        } finally {
-            await browserContext.close().catch(() => {});
-        }
-    }), 2500, 'Renderer health check timed out');
+    await withDeadline(
+        browserPool.probeBrowser(async browser => {
+            const page = await browser.newPage();
+            await page.close().catch(() => {});
+        }),
+        2500,
+        'Renderer health check timed out',
+    );
 }
 
 const server = http.createServer(async (request, response) => {
@@ -536,7 +593,7 @@ const server = http.createServer(async (request, response) => {
     response.once('close', abortOnClose);
 
     try {
-        const payload = await readJson(request);
+        const payload = await readJson(request, controller.signal);
         if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
             throw new RenderRequestError('Request body must be a JSON object');
         }

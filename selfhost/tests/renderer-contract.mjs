@@ -2,8 +2,13 @@
 
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import fs from 'node:fs';
 import http from 'node:http';
+import https from 'node:https';
 import net from 'node:net';
+import os from 'node:os';
+import path from 'node:path';
 import {deflateSync} from 'node:zlib';
 
 const image = process.argv[2] || 'assozeta-renderer:test';
@@ -51,6 +56,11 @@ function resetHeaders() {
     fixture.state.websocketAttempts = 0;
     fixture.state.popupTargets = 0;
     fixture.state.stateReports.length = 0;
+    fixture.state.stateSetReports.length = 0;
+    fixture.state.protocolReports.length = 0;
+    fixture.state.serviceWorkerCapability = null;
+    fixture.state.abortedRequests = 0;
+    fixture.state.ipLiteralRequests = 0;
 }
 
 function fixturePng() {
@@ -101,6 +111,47 @@ function fixturePng() {
     ]);
 }
 
+function createTestCertificate() {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'assozeta-renderer-tls-'));
+    const keyPath = path.join(directory, 'key.pem');
+    const certificatePath = path.join(directory, 'certificate.pem');
+    const result = spawnSync('openssl', [
+        'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+        '-keyout', keyPath,
+        '-out', certificatePath,
+        '-days', '1',
+        '-subj', '/CN=api.renderer.test',
+        '-addext', 'subjectAltName=DNS:api.renderer.test',
+    ], {encoding: 'utf8'});
+    if (result.status !== 0) {
+        fs.rmSync(directory, {recursive: true, force: true});
+        throw new Error(`Test certificate generation failed:\n${result.stderr || result.stdout}`);
+    }
+    const publicKey = spawnSync('openssl', [
+        'x509',
+        '-in', certificatePath,
+        '-pubkey',
+        '-noout',
+    ], {encoding: 'utf8'});
+    const publicKeyDer = spawnSync('openssl', [
+        'pkey',
+        '-pubin',
+        '-outform', 'DER',
+    ], {input: Buffer.from(publicKey.stdout || '')});
+    if (publicKey.status !== 0 || publicKeyDer.status !== 0) {
+        fs.rmSync(directory, {recursive: true, force: true});
+        throw new Error(
+            `Test certificate key extraction failed:\n${publicKey.stderr || publicKeyDer.stderr}`,
+        );
+    }
+    return {
+        directory,
+        key: fs.readFileSync(keyPath),
+        certificate: fs.readFileSync(certificatePath),
+        spki: createHash('sha256').update(publicKeyDer.stdout).digest('base64'),
+    };
+}
+
 function headerAt(fixtureHost, pathname) {
     return fixture.state.headers.find(entry => (
         entry.host === fixtureHost && entry.pathname === pathname
@@ -142,6 +193,10 @@ function invoiceBody(assetOrigin, title = 'Ricevuta dimostrativa', blockedOrigin
   <img src="${blockedOrigin}/blocked-asset.svg" width="1" height="1" alt="">
   <img class="signature" src="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="260" height="90"><path d="M10 60 Q60 5 100 55 T200 40" fill="none" stroke="#14558b" stroke-width="4"/></svg>')}">
   <iframe src="/fixture/frame-same-origin" title="Iframe interno"></iframe>
+  <script>
+    document.documentElement.dataset.inlineScript = 'executed';
+    new Image().src = '/fixture/invoice-inline-script';
+  </script>
 </body>
 </html>`;
 }
@@ -152,11 +207,17 @@ async function startFixture() {
         port,
         headers: [],
         serviceWorkerRequests: 0,
+        serviceWorkerCapability: null,
         stateReports: [],
+        stateSetReports: [],
         activeConcurrent: 0,
         maxConcurrent: 0,
         websocketAttempts: 0,
         popupTargets: 0,
+        protocolReports: [],
+        abortedRequests: 0,
+        ipLiteralRequests: 0,
+        gatewayIp: '',
     };
 
     const server = http.createServer(async (request, response) => {
@@ -170,7 +231,7 @@ async function startFixture() {
         });
 
         const apiOrigin = `http://api.renderer.test:${port}`;
-        const assetOrigin = `http://assets.renderer.test:${port}`;
+        const assetOrigin = `http://assets.other.test:${port}`;
         const blockedOrigin = `http://blocked.renderer.test:${port}`;
         const html = body => {
             response.writeHead(200, {'content-type': 'text/html; charset=utf-8'});
@@ -214,8 +275,22 @@ async function startFixture() {
             response.writeHead(302, {location: `${assetOrigin}/fixture/invoice`});
             return response.end();
         }
+        if (url.pathname === '/fixture/redirect-cross-back') {
+            response.writeHead(302, {location: `${assetOrigin}/fixture/redirect-back-to-api`});
+            return response.end();
+        }
+        if (url.pathname === '/fixture/redirect-back-to-api') {
+            response.writeHead(302, {location: `${apiOrigin}/fixture/invoice`});
+            return response.end();
+        }
         if (url.pathname === '/fixture/redirect-blocked') {
             response.writeHead(302, {location: `http://blocked.renderer.test:${port}/fixture/invoice`});
+            return response.end();
+        }
+        if (url.pathname === '/fixture/redirect-ip') {
+            response.writeHead(302, {
+                location: `http://${state.gatewayIp}:${port}/fixture/ip-literal-target`,
+            });
             return response.end();
         }
         if (url.pathname === '/fixture/redirect-get-only') {
@@ -225,21 +300,54 @@ async function startFixture() {
         }
         if (url.pathname === '/fixture/slow') {
             const delay = Math.min(Number(url.searchParams.get('delay') || 1000), 30000);
+            let aborted = false;
+            response.once('close', () => {
+                if (!response.writableEnded) {
+                    aborted = true;
+                    state.abortedRequests++;
+                }
+            });
             if (request.method === 'GET' && url.searchParams.has('concurrent')) {
                 state.activeConcurrent++;
                 state.maxConcurrent = Math.max(state.maxConcurrent, state.activeConcurrent);
             }
-            await new Promise(resolve => setTimeout(resolve, delay));
-            if (request.method === 'GET' && url.searchParams.has('concurrent')) state.activeConcurrent--;
+            try {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } finally {
+                if (request.method === 'GET' && url.searchParams.has('concurrent')) {
+                    state.activeConcurrent--;
+                }
+            }
+            if (aborted || response.destroyed) return;
             return html(invoiceBody(assetOrigin, 'Documento con attesa', blockedOrigin));
+        }
+        if (url.pathname === '/fixture/concurrent') {
+            const delay = Math.min(Number(url.searchParams.get('delay') || 100), 30000);
+            if (request.method === 'GET') {
+                state.activeConcurrent++;
+                state.maxConcurrent = Math.max(state.maxConcurrent, state.activeConcurrent);
+            }
+            await new Promise(resolve => setTimeout(resolve, delay));
+            if (request.method === 'GET') state.activeConcurrent--;
+            return html('<!doctype html><html><body><h1>Concorrenza dimostrativa</h1></body></html>');
         }
         if (url.pathname === '/fixture/state-set') {
             return html(`<!doctype html><html><body><script>
                 localStorage.setItem('renderer-state', 'leaked-local-storage');
                 sessionStorage.setItem('renderer-state', 'leaked-session-storage');
                 document.cookie = 'renderer_state=leaked-cookie; path=/';
+                const written = new URLSearchParams({
+                    local: localStorage.getItem('renderer-state') || '',
+                    session: sessionStorage.getItem('renderer-state') || '',
+                    cookie: document.cookie,
+                });
+                new Image().src = '/fixture/state-set-report?' + written.toString();
                 document.body.textContent = 'state stored';
                 </script></body></html>`);
+        }
+        if (url.pathname === '/fixture/state-set-report') {
+            state.stateSetReports.push(Object.fromEntries(url.searchParams));
+            return html('reported');
         }
         if (url.pathname === '/fixture/frame-same-origin') {
             return html('<p>Iframe same-origin dimostrativo</p>');
@@ -260,15 +368,9 @@ async function startFixture() {
             state.stateReports.push(Object.fromEntries(url.searchParams));
             return html('reported');
         }
-        if (url.pathname === '/fixture/register-sw') {
-            return html(`<!doctype html><html><body><script>
-                navigator.serviceWorker.register('/service-worker.js').catch(() => {});
-                document.body.textContent = 'service worker requested';
-                </script></body></html>`);
-        }
         if (url.pathname === '/fixture/popup') {
             return html(`<!doctype html><html><body><script>
-                window.open('http://blocked.renderer.test:${port}/fixture/popup-target', '_blank');
+                window.open('http://api.renderer.test:${port}/fixture/popup-target', '_blank');
                 document.body.textContent = 'popup requested';
                 </script></body></html>`);
         }
@@ -277,27 +379,61 @@ async function startFixture() {
             return html('popup target');
         }
         if (url.pathname === '/fixture/websocket') {
+            const source = url.searchParams.get('source') || 'page';
             return html(`<!doctype html><html><body><script>
-                new WebSocket('ws://api.renderer.test:${port}/socket');
+                const result = api => {
+                    try {
+                        api();
+                        return 'allowed';
+                    } catch (_) {
+                        return 'blocked';
+                    }
+                };
+                const websocket = result(() => new WebSocket('ws://api.renderer.test:${port}/socket'));
+                const rtc = result(() => new RTCPeerConnection());
+                const report = new URLSearchParams({source: '${source}', websocket, rtc});
+                new Image().src = '/fixture/protocol-report?' + report.toString();
                 document.body.textContent = 'websocket requested';
                 </script></body></html>`);
         }
+        if (url.pathname === '/fixture/protocol-report') {
+            state.protocolReports.push(Object.fromEntries(url.searchParams));
+            return html('reported');
+        }
         if (url.pathname === '/fixture/worker-websocket') {
             return html(`<!doctype html><html><body><script>
-                const source = URL.createObjectURL(new Blob([
-                    "new WebSocket('ws://blocked.renderer.test/socket')"
-                ], {type: 'text/javascript'}));
-                new Worker(source);
+                let worker = 'allowed';
+                try {
+                    const source = URL.createObjectURL(new Blob([
+                        "new WebSocket('ws://api.renderer.test:${port}/socket')"
+                    ], {type: 'text/javascript'}));
+                    new Worker(source);
+                } catch (_) {
+                    worker = 'blocked';
+                }
+                const report = new URLSearchParams({source: 'worker', worker});
+                new Image().src = '/fixture/protocol-report?' + report.toString();
                 document.body.textContent = 'worker requested';
                 </script></body></html>`);
         }
         if (url.pathname === '/fixture/iframe-websocket') {
-            return html('<!doctype html><html><body><iframe src="/fixture/websocket"></iframe></body></html>');
+            return html(`<!doctype html><html><body>
+                <iframe src="${assetOrigin}/fixture/websocket?source=iframe"></iframe>
+                </body></html>`);
         }
-        if (url.pathname === '/service-worker.js') {
-            state.serviceWorkerRequests++;
-            response.writeHead(200, {'content-type': 'text/javascript'});
-            return response.end('self.addEventListener("fetch", () => {});');
+        if (url.pathname === '/fixture/blank-iframe-websocket') {
+            return html(`<!doctype html><html><body><script>
+                const frame = document.createElement('iframe');
+                document.body.appendChild(frame);
+                let websocket = 'allowed';
+                try {
+                    new frame.contentWindow.WebSocket('ws://api.renderer.test:${port}/socket');
+                } catch (_) {
+                    websocket = 'blocked';
+                }
+                const report = new URLSearchParams({source: 'blank-iframe', websocket});
+                new Image().src = '/fixture/protocol-report?' + report.toString();
+                </script></body></html>`);
         }
         if (url.pathname === '/asset.css') {
             response.writeHead(200, {'content-type': 'text/css'});
@@ -306,6 +442,10 @@ async function startFixture() {
         if (url.pathname === '/asset.js') {
             response.writeHead(200, {'content-type': 'text/javascript'});
             return response.end('document.documentElement.dataset.externalScript = "loaded";');
+        }
+        if (url.pathname === '/fixture/invoice-inline-script') {
+            response.writeHead(200, {'content-type': 'image/gif'});
+            return response.end(Buffer.from('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==', 'base64'));
         }
         if (url.pathname === '/asset.svg') {
             response.writeHead(200, {'content-type': 'image/svg+xml'});
@@ -316,6 +456,15 @@ async function startFixture() {
             return response.end(fixturePng());
         }
         if (url.pathname === '/frame') return html('<p>Iframe dimostrativo</p>');
+        if (url.pathname === '/fixture/ip-literal') {
+            return html(`<!doctype html><html><body>
+                <img src="http://${state.gatewayIp}:${port}/fixture/ip-literal-target" width="1" height="1">
+                </body></html>`);
+        }
+        if (url.pathname === '/fixture/ip-literal-target') {
+            state.ipLiteralRequests++;
+            return html('IP literal target');
+        }
         if (url.pathname === '/fixture/server-error') {
             response.writeHead(500, {'content-type': 'text/html'});
             return response.end('<h1>Errore sintetico</h1>');
@@ -332,7 +481,88 @@ async function startFixture() {
         server.once('error', reject);
         server.listen(port, '0.0.0.0', resolve);
     });
-    return {server, state};
+
+    const certificate = createTestCertificate();
+    const securePort = await freePort();
+    const secureOrigin = `https://api.renderer.test:${securePort}`;
+    const secureServer = https.createServer({
+        key: certificate.key,
+        cert: certificate.certificate,
+    }, (request, response) => {
+        const url = new URL(request.url, secureOrigin);
+        state.headers.push({
+            host: (request.headers.host || '').split(':')[0],
+            pathname: url.pathname,
+            auth: request.headers['x-render-auth'] || '',
+            method: request.method,
+        });
+        if (url.pathname === '/fixture/register-sw') {
+            response.writeHead(200, {'content-type': 'text/html; charset=utf-8'});
+            return response.end(`<!doctype html><html><body><script>
+                const serviceWorkerAvailable = 'serviceWorker' in navigator;
+                const outcome = promise => Promise.resolve(promise)
+                    .then(() => 'allowed', () => 'blocked');
+                const direct = serviceWorkerAvailable
+                    ? outcome(navigator.serviceWorker.register('/service-worker.js'))
+                    : Promise.resolve('unavailable');
+                let prototype = 'unavailable';
+                if (serviceWorkerAvailable) {
+                    try {
+                        prototype = outcome(
+                            ServiceWorkerContainer.prototype.register.call(
+                                navigator.serviceWorker,
+                                '/service-worker-prototype.js',
+                            ),
+                        );
+                    } catch (_) {
+                        prototype = 'blocked';
+                    }
+                }
+                Promise.all([direct, prototype]).then(([directResult, prototypeResult]) => {
+                    const capability = new URLSearchParams({
+                        secure: String(window.isSecureContext),
+                        serviceWorkerAvailable: String(serviceWorkerAvailable),
+                        direct: directResult,
+                        prototype: prototypeResult,
+                    });
+                    new Image().src = '/fixture/service-worker-capability?' + capability.toString();
+                });
+                document.body.textContent = 'service worker requested';
+                </script></body></html>`);
+        }
+        if (url.pathname === '/fixture/service-worker-capability') {
+            state.serviceWorkerCapability = Object.fromEntries(url.searchParams);
+            response.writeHead(200, {'content-type': 'text/html; charset=utf-8'});
+            return response.end('reported');
+        }
+        if (url.pathname === '/service-worker.js') {
+            state.serviceWorkerRequests++;
+            response.writeHead(200, {'content-type': 'text/javascript'});
+            return response.end('self.addEventListener("fetch", () => {});');
+        }
+        response.writeHead(404, {'content-type': 'text/html; charset=utf-8'});
+        response.end('not found');
+    });
+    await new Promise((resolve, reject) => {
+        secureServer.once('error', reject);
+        secureServer.listen(securePort, '0.0.0.0', resolve);
+    });
+    return {
+        server,
+        secureServer,
+        secureOrigin,
+        testCertificateSpki: certificate.spki,
+        state,
+        close: async () => {
+            secureServer.closeAllConnections?.();
+            server.closeAllConnections?.();
+            await Promise.all([
+                new Promise(resolve => secureServer.close(resolve)),
+                new Promise(resolve => server.close(resolve)),
+            ]);
+            fs.rmSync(certificate.directory, {recursive: true, force: true});
+        },
+    };
 }
 
 async function waitForHealth(origin, timeoutMs = 90000) {
@@ -361,7 +591,9 @@ async function render(origin, payload) {
 async function expectPdf(origin, pathname, fixturePort, options = {}) {
     const response = await render(origin, {
         type: 'pdf',
-        url: `http://api.renderer.test:${fixturePort}${pathname}`,
+        url: /^https?:\/\//.test(pathname)
+            ? pathname
+            : `http://api.renderer.test:${fixturePort}${pathname}`,
         headers: options.headers || {'x-render-auth': 'fixture-secret-marker'},
         device: {width: 1920, height: 1080, scale: 1},
         render: {
@@ -391,6 +623,15 @@ async function expectPdf(origin, pathname, fixturePort, options = {}) {
     return pdf;
 }
 
+async function waitFor(predicate, message, timeoutMs = 5000) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+        if (predicate()) return;
+        await new Promise(resolve => setTimeout(resolve, 25));
+    }
+    throw new Error(message);
+}
+
 async function main() {
     fixture = await startFixture();
     const rendererPort = await freePort();
@@ -401,7 +642,7 @@ async function main() {
         'run', '--detach', '--name', name,
         '--publish', `127.0.0.1:${rendererPort}:3000`,
         '--add-host', 'api.renderer.test:host-gateway',
-        '--add-host', 'assets.renderer.test:host-gateway',
+        '--add-host', 'assets.other.test:host-gateway',
         '--add-host', 'blocked.renderer.test:host-gateway',
         '--read-only',
         '--tmpfs', '/tmp:rw,size=512m,mode=1777',
@@ -409,19 +650,32 @@ async function main() {
         '--security-opt', 'no-new-privileges:true',
         '--pids-limit', '512',
         '--shm-size', '1g',
-        '--env', 'RENDER_ALLOWED_HOSTS=api.renderer.test,assets.renderer.test',
+        '--env', `RENDER_TEST_CERTIFICATE_SPKI=${fixture.testCertificateSpki}`,
+        '--env', 'RENDER_ALLOWED_HOSTS=api.renderer.test,assets.other.test',
         '--env', 'RENDER_POOL_SIZE=2',
-        '--env', 'RENDER_POOL_ACQUIRE_TIMEOUT_MS=10000',
+        '--env', 'RENDER_POOL_ACQUIRE_TIMEOUT_MS=30000',
         image,
     ];
     containers.push(name);
     docker(...dockerRun);
+    fixture.state.gatewayIp = docker(
+        'exec', name, 'getent', 'ahostsv4', 'blocked.renderer.test',
+    ).split(/\s+/)[0];
 
     try {
         const health = await waitForHealth(rendererOrigin);
         assert.equal(health.status, 'ok');
         assert.equal(health.pool.max, 2);
         assert.equal(docker('exec', name, 'id', '-u'), '1000');
+
+        await Promise.all(Array.from({length: 2}, () => expectPdf(
+            rendererOrigin,
+            '/fixture/concurrent?delay=100',
+            fixture.state.port,
+        )));
+        const primedHealth = await waitForHealth(rendererOrigin);
+        assert.equal(primedHealth.pool.browserCount, 2);
+        resetHeaders();
 
         for (const [pathname, title] of [
             ['/fixture/invoice', 'Fattura'],
@@ -433,12 +687,23 @@ async function main() {
             assert.ok(pdf.length > 1000, `${title} PDF is unexpectedly small`);
         }
         for (const pathname of ('/asset.css /asset.svg /pixel.png'.split(' '))) {
+            const requests = fixture.state.headers.filter(entry => entry.pathname === pathname);
             assert.ok(
-                fixture.state.headers.filter(entry => entry.pathname === pathname).length >= 4,
+                requests.length >= 4,
                 `${pathname} was not requested by every representative document`,
             );
-            assert.equal(headerAt('assets.renderer.test', pathname)?.auth || '', '');
+            assert.ok(requests.every(entry => entry.auth === ''), `${pathname} leaked authentication headers`);
         }
+        assert.ok(
+            fixture.state.headers.filter(entry => entry.pathname === '/fixture/invoice-inline-script').length >= 4,
+            'inline JavaScript did not generate its request for every representative document',
+        );
+        assert.ok(
+            fixture.state.headers
+                .filter(entry => entry.pathname === '/fixture/invoice-inline-script')
+                .every(entry => entry.auth === ''),
+            'inline-script image leaked authentication headers',
+        );
         assert.ok(headerAt('api.renderer.test', '/fixture/frame-same-origin'));
         assert.equal(headerAt('api.renderer.test', '/fixture/frame-same-origin')?.auth || '', '');
         assert.equal(headerAt('blocked.renderer.test', '/blocked-asset.svg'), undefined);
@@ -457,15 +722,30 @@ async function main() {
         resetHeaders();
         await expectPdf(rendererOrigin, '/fixture/redirect-cross', fixture.state.port);
         assert.equal(headerAt('api.renderer.test', '/fixture/redirect-cross')?.auth, 'fixture-secret-marker');
-        assert.equal(headerAt('assets.renderer.test', '/fixture/invoice')?.auth || '', '');
+        const crossOriginInvoiceRequests = fixture.state.headers
+            .filter(entry => entry.pathname === '/fixture/invoice');
+        assert.ok(crossOriginInvoiceRequests.length > 0);
+        assert.ok(crossOriginInvoiceRequests.every(entry => entry.auth === ''));
+
+        resetHeaders();
+        await expectPdf(rendererOrigin, '/fixture/redirect-cross-back', fixture.state.port);
+        assert.equal(headerAt('api.renderer.test', '/fixture/redirect-cross-back')?.auth, 'fixture-secret-marker');
+        const crossBackRequests = fixture.state.headers
+            .filter(entry => entry.pathname === '/fixture/redirect-back-to-api');
+        const returnedInvoiceRequests = fixture.state.headers
+            .filter(entry => entry.pathname === '/fixture/invoice');
+        assert.ok(crossBackRequests.length > 0);
+        assert.ok(crossBackRequests.every(entry => entry.auth === ''));
+        assert.ok(returnedInvoiceRequests.length > 0);
+        assert.ok(returnedInvoiceRequests.every(entry => entry.auth === ''));
 
         resetHeaders();
         await expectPdf(rendererOrigin, '/fixture/external-assets', fixture.state.port);
-        assert.equal(headerAt('assets.renderer.test', '/asset.css')?.auth || '', '');
-        assert.equal(headerAt('assets.renderer.test', '/asset.js')?.auth || '', '');
-        assert.equal(headerAt('assets.renderer.test', '/asset.svg')?.auth || '', '');
-        assert.ok(headerAt('assets.renderer.test', '/frame'));
-        assert.equal(headerAt('assets.renderer.test', '/frame')?.auth || '', '');
+        for (const pathname of ['/asset.css', '/asset.js', '/asset.svg', '/frame']) {
+            const requests = fixture.state.headers.filter(entry => entry.pathname === pathname);
+            assert.ok(requests.length > 0, `${pathname} was not requested`);
+            assert.ok(requests.every(entry => entry.auth === ''), `${pathname} leaked authentication headers`);
+        }
 
         resetHeaders();
         let response = await render(rendererOrigin, {
@@ -473,8 +753,23 @@ async function main() {
             url: `http://api.renderer.test:${fixture.state.port}/fixture/redirect-blocked`,
             headers: {'x-render-auth': 'fixture-secret-marker'},
         });
-        assert.notEqual(response.status, 200);
+        assert.equal(response.status, 400);
+        assert.match((await response.json()).error, /Redirect host is not allowed/);
         assert.equal(headerAt('blocked.renderer.test', '/fixture/invoice'), undefined);
+
+        resetHeaders();
+        await expectPdf(rendererOrigin, '/fixture/ip-literal', fixture.state.port);
+        assert.equal(fixture.state.ipLiteralRequests, 0);
+
+        resetHeaders();
+        response = await render(rendererOrigin, {
+            type: 'pdf',
+            url: `http://api.renderer.test:${fixture.state.port}/fixture/redirect-ip`,
+            headers: {'x-render-auth': 'fixture-secret-marker'},
+        });
+        assert.equal(response.status, 400);
+        assert.match((await response.json()).error, /Redirect host is not allowed/);
+        assert.equal(fixture.state.ipLiteralRequests, 0);
 
         resetHeaders();
         response = await render(rendererOrigin, {
@@ -484,6 +779,11 @@ async function main() {
         });
         assert.notEqual(response.status, 200);
         assert.equal(headerAt('blocked.renderer.test', '/fixture/popup-target'), undefined);
+        assert.equal(fixture.state.headers.filter(entry => entry.method === 'HEAD').length, 0);
+        assert.equal(
+            fixture.state.headers.filter(entry => entry.method === 'GET' && entry.pathname === '/fixture/redirect-get-only').length,
+            1,
+        );
 
         response = await render(rendererOrigin, {
             type: 'pdf',
@@ -496,12 +796,23 @@ async function main() {
         await expectPdf(rendererOrigin, '/fixture/state-check', fixture.state.port, {
             render: {waitTime: 1000},
         });
+        assert.deepEqual(fixture.state.stateSetReports, [{
+            local: 'leaked-local-storage',
+            session: 'leaked-session-storage',
+            cookie: 'renderer_state=leaked-cookie',
+        }]);
         assert.deepEqual(fixture.state.stateReports, [{local: '', session: '', cookie: ''}]);
 
         resetHeaders();
-        await expectPdf(rendererOrigin, '/fixture/register-sw', fixture.state.port, {
+        await expectPdf(rendererOrigin, `${fixture.secureOrigin}/fixture/register-sw`, fixture.state.port, {
             pdf: {format: 'A4'},
         });
+        assert.equal(fixture.state.serviceWorkerCapability?.secure, 'true');
+        assert.equal(fixture.state.serviceWorkerCapability?.serviceWorkerAvailable, 'true');
+        assert.equal(fixture.state.serviceWorkerCapability?.direct, 'blocked');
+        assert.equal(fixture.state.serviceWorkerCapability?.prototype, 'blocked');
+        assert.equal(headerAt('api.renderer.test', '/fixture/register-sw')?.auth, 'fixture-secret-marker');
+        assert.equal(headerAt('api.renderer.test', '/fixture/service-worker-capability')?.auth || '', '');
         assert.equal(fixture.state.serviceWorkerRequests, 0);
         await expectPdf(rendererOrigin, '/fixture/popup', fixture.state.port);
         assert.equal(fixture.state.popupTargets, 0);
@@ -511,26 +822,43 @@ async function main() {
         assert.equal(fixture.state.websocketAttempts, 0);
         await expectPdf(rendererOrigin, '/fixture/iframe-websocket', fixture.state.port);
         assert.equal(fixture.state.websocketAttempts, 0);
+        await expectPdf(rendererOrigin, '/fixture/blank-iframe-websocket', fixture.state.port);
+        assert.equal(fixture.state.websocketAttempts, 0);
+        await waitFor(
+            () => ['page', 'worker', 'iframe', 'blank-iframe'].every(source => (
+                fixture.state.protocolReports.some(report => report.source === source)
+            )),
+            'Protocol-blocking reports were not generated',
+        );
+        const reportFor = source => fixture.state.protocolReports.find(report => report.source === source);
+        assert.equal(reportFor('page').websocket, 'blocked');
+        assert.equal(reportFor('page').rtc, 'blocked');
+        assert.equal(reportFor('worker').worker, 'blocked');
+        assert.equal(reportFor('iframe').websocket, 'blocked');
+        assert.equal(reportFor('iframe').rtc, 'blocked');
+        assert.equal(reportFor('blank-iframe').websocket, 'blocked');
 
         resetHeaders();
-        const concurrent = await Promise.all(Array.from({length: 4}, () => expectPdf(
+        const concurrentPromises = Array.from({length: 2}, () => expectPdf(
             rendererOrigin,
-            '/fixture/slow?delay=700&concurrent=1',
+            '/fixture/concurrent?delay=5000',
             fixture.state.port,
-        )));
-        assert.equal(concurrent.length, 4);
-        assert.ok(fixture.state.maxConcurrent >= 1);
-        assert.ok(fixture.state.maxConcurrent <= 2);
-
-        const exhaustionPromises = Array.from({length: 3}, () => render(rendererOrigin, {
-            type: 'pdf',
-            url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=15000`,
-        }));
-        await new Promise(resolve => setTimeout(resolve, 200));
-        response = await fetch(`${rendererOrigin}/healthz`, {signal: AbortSignal.timeout(3000)});
-        assert.equal(response.status, 200);
-        const exhaustion = await Promise.all(exhaustionPromises);
-        assert.deepEqual(exhaustion.map(item => item.status).sort(), [200, 200, 503]);
+        ));
+        const saturationDeadline = Date.now() + 10000;
+        while (fixture.state.maxConcurrent < 2 && Date.now() < saturationDeadline) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        assert.equal(fixture.state.maxConcurrent, 2);
+        const saturatedHealth = await fetch(
+            `${rendererOrigin}/healthz`,
+            {signal: AbortSignal.timeout(3000)},
+        );
+        assert.equal(saturatedHealth.status, 200);
+        const saturatedHealthBody = await saturatedHealth.json();
+        assert.equal(saturatedHealthBody.pool.leased, 2);
+        const concurrent = await Promise.all(concurrentPromises);
+        assert.equal(concurrent.length, 2);
+        assert.equal(fixture.state.maxConcurrent, 2);
 
         response = await render(rendererOrigin, {
             type: 'pdf',
@@ -540,16 +868,44 @@ async function main() {
         assert.equal(response.status, 504);
         await waitForHealth(rendererOrigin);
 
-        await assert.rejects(fetch(`${rendererOrigin}/render`, {
+        resetHeaders();
+        const disconnectController = new AbortController();
+        const disconnectedRequest = fetch(`${rendererOrigin}/render`, {
             method: 'POST',
             headers: {'content-type': 'application/json'},
             body: JSON.stringify({
                 type: 'pdf',
-                url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=5000`,
+                url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=5000&concurrent=1`,
             }),
-            signal: AbortSignal.timeout(200),
-        }));
-        await waitForHealth(rendererOrigin);
+            signal: disconnectController.signal,
+        });
+        await waitFor(
+            () => fixture.state.activeConcurrent > 0,
+            'Disconnected render did not reach the fixture',
+        );
+        disconnectController.abort();
+        await assert.rejects(disconnectedRequest);
+        await waitFor(
+            () => fixture.state.abortedRequests > 0,
+            'Disconnected browser request remained active',
+            3000,
+        );
+        await waitFor(
+            () => fixture.state.activeConcurrent === 0,
+            'Disconnected fixture request did not finish cleanup',
+            10000,
+        );
+        let disconnectedHealth;
+        const disconnectDeadline = Date.now() + 3000;
+        while (Date.now() < disconnectDeadline) {
+            const candidate = await waitForHealth(rendererOrigin);
+            if (candidate.pool.leased === 0) {
+                disconnectedHealth = candidate;
+                break;
+            }
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        assert.ok(disconnectedHealth, 'Client disconnect did not release its render lease');
         await expectPdf(rendererOrigin, '/fixture/invoice', fixture.state.port);
 
         response = await render(rendererOrigin, {
@@ -576,6 +932,12 @@ async function main() {
             type: 'pdf',
             url: `http://api.renderer.test:${fixture.state.port}/fixture/invoice`,
             device: {width: 0},
+        });
+        assert.equal(response.status, 400);
+        response = await render(rendererOrigin, {
+            type: 'pdf',
+            url: `http://api.renderer.test:${fixture.state.port}/fixture/invoice`,
+            device: {timezone: 'Invalid/RendererTimezone'},
         });
         assert.equal(response.status, 400);
         response = await fetch(`${rendererOrigin}/render`, {
@@ -608,49 +970,104 @@ async function main() {
             },
         });
 
+        const beforeCrash = await waitForHealth(rendererOrigin);
         const browserKiller = `
             const fs = require('fs');
+            let killed = 0;
             for (const pid of fs.readdirSync('/proc').filter(name => /^\\d+$/.test(name))) {
                 if (Number(pid) === process.pid) continue;
                 try {
-                    if (fs.readFileSync('/proc/' + pid + '/cmdline').toString().includes('headless_shell')) {
+                    if (fs.readFileSync('/proc/' + pid + '/cmdline').toString().includes('chrome-headless-shell')) {
                         process.kill(Number(pid), 'SIGKILL');
+                        killed++;
                     }
                 } catch (_) {}
             }
+            console.log(killed);
         `;
-        docker('exec', name, 'node', '-e', browserKiller);
-        await waitForHealth(rendererOrigin);
+        const killedProcesses = Number(docker('exec', name, 'node', '-e', browserKiller));
+        assert.ok(killedProcesses > 0, 'Crash-recovery fixture did not kill a browser process');
+        const recoveredHealth = await waitForHealth(rendererOrigin);
+        assert.ok(
+            recoveredHealth.pool.metrics.launched > beforeCrash.pool.metrics.launched,
+            'Renderer did not relaunch after the browser crash',
+        );
         await expectPdf(rendererOrigin, '/fixture/invoice', fixture.state.port);
 
-        const timeoutPort = await freePort();
-        const timeoutOrigin = `http://127.0.0.1:${timeoutPort}`;
-        const timeoutName = `assozeta-renderer-deadline-${process.pid}-${Date.now()}`;
-        containers.push(timeoutName);
+        const poolPort = await freePort();
+        const poolOrigin = `http://127.0.0.1:${poolPort}`;
+        const poolName = `assozeta-renderer-pool-${process.pid}-${Date.now()}`;
+        containers.push(poolName);
         docker(
-            'run', '--detach', '--name', timeoutName,
-            '--publish', `127.0.0.1:${timeoutPort}:3000`,
+            'run', '--detach', '--name', poolName,
+            '--publish', `127.0.0.1:${poolPort}:3000`,
             '--add-host', 'api.renderer.test:host-gateway',
             '--read-only',
             '--tmpfs', '/tmp:rw,size=512m,mode=1777',
             '--cap-drop', 'ALL',
             '--security-opt', 'no-new-privileges:true',
+            '--shm-size', '1g',
             '--env', 'RENDER_ALLOWED_HOSTS=api.renderer.test',
             '--env', 'RENDER_POOL_SIZE=1',
-            '--env', 'RENDER_REQUEST_TIMEOUT_MS=1500',
+            '--env', 'RENDER_POOL_ACQUIRE_TIMEOUT_MS=1000',
+            '--env', 'RENDER_REQUEST_TIMEOUT_MS=30000',
             image,
         );
-        await waitForHealth(timeoutOrigin);
-        const deadlineStarted = Date.now();
-        response = await render(timeoutOrigin, {
+        await waitForHealth(poolOrigin);
+
+        const occupied = render(poolOrigin, {
             type: 'pdf',
-            url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=5000`,
+            url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=5000&concurrent=1`,
+        });
+        await waitFor(
+            () => fixture.state.activeConcurrent > 0,
+            'Occupied render request did not reach the fixture',
+        );
+        const exhausted = await render(poolOrigin, {
+            type: 'pdf',
+            url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=1000`,
+        });
+        assert.equal(exhausted.status, 503);
+        assert.equal(exhausted.headers.get('retry-after'), '5');
+        assert.match((await exhausted.json()).error, /pool acquisition timed out/i);
+        assert.equal((await occupied).status, 200);
+        docker('stop', '--time', '10', poolName);
+
+        response = await fetch(`${rendererOrigin}/healthz`, {signal: AbortSignal.timeout(3000)});
+        assert.equal(response.status, 200);
+
+        const deadlinePort = await freePort();
+        const deadlineOrigin = `http://127.0.0.1:${deadlinePort}`;
+        const deadlineName = `assozeta-renderer-deadline-${process.pid}-${Date.now()}`;
+        containers.push(deadlineName);
+        docker(
+            'run', '--detach', '--name', deadlineName,
+            '--publish', `127.0.0.1:${deadlinePort}:3000`,
+            '--add-host', 'api.renderer.test:host-gateway',
+            '--read-only',
+            '--tmpfs', '/tmp:rw,size=512m,mode=1777',
+            '--cap-drop', 'ALL',
+            '--security-opt', 'no-new-privileges:true',
+            '--shm-size', '1g',
+            '--env', 'RENDER_ALLOWED_HOSTS=api.renderer.test',
+            '--env', 'RENDER_POOL_SIZE=1',
+            '--env', 'RENDER_REQUEST_TIMEOUT_MS=12000',
+            image,
+        );
+        await waitForHealth(deadlineOrigin);
+
+        const deadlineStarted = Date.now();
+        response = await render(deadlineOrigin, {
+            type: 'pdf',
+            url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=30000`,
             render: {timeout: 120000},
         });
         const deadlineElapsed = Date.now() - deadlineStarted;
         assert.equal(response.status, 504);
-        assert.ok(deadlineElapsed < 60000, `total deadline took ${deadlineElapsed} ms`);
-        docker('stop', '--time', '10', timeoutName);
+        assert.match((await response.json()).error, /total timeout/i);
+        assert.ok(deadlineElapsed >= 10000, `total deadline fired too early after ${deadlineElapsed} ms`);
+        assert.ok(deadlineElapsed < 20000, `total deadline took ${deadlineElapsed} ms`);
+        docker('stop', '--time', '10', deadlineName);
 
         console.log('Renderer API, security, isolation, pool and recovery contracts passed.');
         passed = true;
@@ -673,7 +1090,7 @@ async function main() {
 try {
     await main();
 } finally {
-    if (fixture?.server) await new Promise(resolve => fixture.server.close(resolve));
+    if (fixture?.close) await fixture.close();
     for (const container of containers) {
         try {
             docker('rm', '--force', container);

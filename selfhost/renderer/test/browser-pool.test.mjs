@@ -165,6 +165,49 @@ test('recycles a browser after its request budget is spent', async () => {
     await pool.drain();
 });
 
+test('counts a browser that is still closing against the pool bound', async () => {
+    let finishClose;
+    const firstBrowser = new FakeBrowser();
+    firstBrowser.close = () => new Promise(resolve => {
+        finishClose = () => {
+            firstBrowser.connected = false;
+            firstBrowser.emit('disconnected');
+            resolve();
+        };
+    });
+    let launches = 0;
+    const pool = new BrowserPool({
+        launchBrowser: async () => {
+            launches++;
+            return launches === 1 ? firstBrowser : new FakeBrowser();
+        },
+        size: 1,
+        warmSize: 1,
+        browserMaxRequests: 1,
+    });
+    await pool.warmUp();
+
+    const first = await pool.acquire();
+    pool.release(first);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(pool.getStats().closing, 1);
+
+    let replacementAcquired = false;
+    const replacementPromise = pool.acquire().then(resource => {
+        replacementAcquired = true;
+        return resource;
+    });
+    await new Promise(resolve => setTimeout(resolve, 20));
+    assert.equal(replacementAcquired, false);
+    assert.equal(launches, 1);
+
+    finishClose();
+    const replacement = await replacementPromise;
+    assert.equal(launches, 2);
+    pool.release(replacement);
+    await pool.drain();
+});
+
 test('fails acquisition when all browsers remain leased', async () => {
     const launcher = fakeLauncher();
     const pool = new BrowserPool({

@@ -37,6 +37,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         chrome-headless-shell@156.0.8078.47 \
         --path "$PUPPETEER_CACHE_DIR" \
         --install-deps \
+    && apt-get purge -y unzip \
     && rm -rf /var/lib/apt/lists/* /root/.npm \
     && chmod -R a+rX "$PUPPETEER_CACHE_DIR"
 

@@ -228,6 +228,7 @@ async function measure(image, fixture) {
         'run', '--detach', '--rm', '--name', name,
         '--publish', `127.0.0.1:${port}:3000`,
         '--add-host', 'api.renderer.test:host-gateway',
+        '--shm-size', '1g',
         '--env', 'RENDER_ALLOWED_HOSTS=api.renderer.test',
         '--env', 'RENDER_POOL_SIZE=2',
         image,
