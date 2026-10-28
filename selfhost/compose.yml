@@ -76,6 +76,7 @@ services:
       - minio_data:/data
     networks:
       - internal
+      - renderer_egress
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://127.0.0.1:9000/minio/health/live"]
@@ -122,8 +123,9 @@ services:
     tmpfs:
       - /tmp:size=512m,mode=1777
     networks:
-      - internal
+      - renderer_egress
     restart: unless-stopped
+    stop_grace_period: 35s
     security_opt:
       - no-new-privileges:true
     logging: *default-logging
@@ -153,6 +155,9 @@ services:
 
   api:
     <<: *backend
+    networks:
+      - internal
+      - renderer_egress
     volumes:
       - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
       - django_static:/app/staticfiles
@@ -236,6 +241,7 @@ services:
 
 networks:
   internal:
+  renderer_egress:
 
 volumes:
   updater_status:

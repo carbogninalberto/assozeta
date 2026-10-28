@@ -107,7 +107,7 @@ function headerAt(fixtureHost, pathname) {
     ));
 }
 
-function invoiceBody(assetOrigin, title = 'Ricevuta dimostrativa') {
+function invoiceBody(assetOrigin, title = 'Ricevuta dimostrativa', blockedOrigin) {
     return `<!doctype html>
 <html lang="it">
 <head>
@@ -139,6 +139,7 @@ function invoiceBody(assetOrigin, title = 'Ricevuta dimostrativa') {
   </table>
   <p class="page-break">Contenuto multilingua: Ελληνικά · Русский · 日本語 · العربية.</p>
   <img src="${assetOrigin}/pixel.png" width="20" height="20" alt="Pixel dimostrativo">
+  <img src="${blockedOrigin}/blocked-asset.svg" width="1" height="1" alt="">
   <img class="signature" src="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="260" height="90"><path d="M10 60 Q60 5 100 55 T200 40" fill="none" stroke="#14558b" stroke-width="4"/></svg>')}">
   <iframe src="/fixture/frame-same-origin" title="Iframe interno"></iframe>
 </body>
@@ -170,22 +171,23 @@ async function startFixture() {
 
         const apiOrigin = `http://api.renderer.test:${port}`;
         const assetOrigin = `http://assets.renderer.test:${port}`;
+        const blockedOrigin = `http://blocked.renderer.test:${port}`;
         const html = body => {
             response.writeHead(200, {'content-type': 'text/html; charset=utf-8'});
             response.end(body);
         };
 
-        if (url.pathname === '/fixture/invoice') return html(invoiceBody(assetOrigin, 'Fattura dimostrativa'));
-        if (url.pathname === '/fixture/receipt') return html(invoiceBody(assetOrigin));
+        if (url.pathname === '/fixture/invoice') return html(invoiceBody(assetOrigin, 'Fattura dimostrativa', blockedOrigin));
+        if (url.pathname === '/fixture/receipt') return html(invoiceBody(assetOrigin, undefined, blockedOrigin));
         if (url.pathname === '/fixture/subscription') {
-            return html(invoiceBody(assetOrigin, 'Tesseramento dimostrativo'));
+            return html(invoiceBody(assetOrigin, 'Tesseramento dimostrativo', blockedOrigin));
         }
         if (url.pathname === '/fixture/multi') {
             const rows = Array.from(
                 {length: 80},
                 (_, index) => `<tr><td>Riga dimostrativa ${index + 1}</td><td>€ ${index + 1},00</td></tr>`,
             ).join('');
-            return html(invoiceBody(assetOrigin, 'Elenco multipagina').replace(
+            return html(invoiceBody(assetOrigin, 'Elenco multipagina', blockedOrigin).replace(
                 '<tr><td>Corso dimostrativo — accenti àèìòù</td><td>€ 120,00</td></tr>',
                 rows,
             ));
@@ -217,7 +219,7 @@ async function startFixture() {
             return response.end();
         }
         if (url.pathname === '/fixture/redirect-get-only') {
-            if (request.method === 'HEAD') return html(invoiceBody(assetOrigin));
+            if (request.method === 'HEAD') return html(invoiceBody(assetOrigin, undefined, blockedOrigin));
             response.writeHead(302, {location: `http://blocked.renderer.test:${port}/fixture/popup-target`});
             return response.end();
         }
@@ -229,7 +231,7 @@ async function startFixture() {
             }
             await new Promise(resolve => setTimeout(resolve, delay));
             if (request.method === 'GET' && url.searchParams.has('concurrent')) state.activeConcurrent--;
-            return html(invoiceBody(assetOrigin, 'Documento con attesa'));
+            return html(invoiceBody(assetOrigin, 'Documento con attesa', blockedOrigin));
         }
         if (url.pathname === '/fixture/state-set') {
             return html(`<!doctype html><html><body><script>
@@ -279,6 +281,18 @@ async function startFixture() {
                 new WebSocket('ws://api.renderer.test:${port}/socket');
                 document.body.textContent = 'websocket requested';
                 </script></body></html>`);
+        }
+        if (url.pathname === '/fixture/worker-websocket') {
+            return html(`<!doctype html><html><body><script>
+                const source = URL.createObjectURL(new Blob([
+                    "new WebSocket('ws://blocked.renderer.test/socket')"
+                ], {type: 'text/javascript'}));
+                new Worker(source);
+                document.body.textContent = 'worker requested';
+                </script></body></html>`);
+        }
+        if (url.pathname === '/fixture/iframe-websocket') {
+            return html('<!doctype html><html><body><iframe src="/fixture/websocket"></iframe></body></html>');
         }
         if (url.pathname === '/service-worker.js') {
             state.serviceWorkerRequests++;
@@ -427,6 +441,7 @@ async function main() {
         }
         assert.ok(headerAt('api.renderer.test', '/fixture/frame-same-origin'));
         assert.equal(headerAt('api.renderer.test', '/fixture/frame-same-origin')?.auth || '', '');
+        assert.equal(headerAt('blocked.renderer.test', '/blocked-asset.svg'), undefined);
         assert.equal(fixture.state.headers.filter(entry => entry.method === 'HEAD').length, 0);
         assert.equal(
             fixture.state.headers.filter(entry => entry.method === 'GET' && entry.pathname === '/fixture/invoice').length,
@@ -491,6 +506,10 @@ async function main() {
         await expectPdf(rendererOrigin, '/fixture/popup', fixture.state.port);
         assert.equal(fixture.state.popupTargets, 0);
         await expectPdf(rendererOrigin, '/fixture/websocket', fixture.state.port);
+        assert.equal(fixture.state.websocketAttempts, 0);
+        await expectPdf(rendererOrigin, '/fixture/worker-websocket', fixture.state.port);
+        assert.equal(fixture.state.websocketAttempts, 0);
+        await expectPdf(rendererOrigin, '/fixture/iframe-websocket', fixture.state.port);
         assert.equal(fixture.state.websocketAttempts, 0);
 
         resetHeaders();

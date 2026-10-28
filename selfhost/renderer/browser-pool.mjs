@@ -188,7 +188,7 @@ export class BrowserPool extends EventEmitter {
         let leased;
         let resource = [...this.resources].find(item => item.connected && !item.destroying);
         if (!resource) {
-            leased = await this.acquire({timeoutMs: 1500});
+            leased = await this.acquire();
             resource = leased;
         }
         try {

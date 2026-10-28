@@ -64,6 +64,10 @@ const allowedHosts = new Set(
         .map(host => host.trim().toLowerCase())
         .filter(Boolean),
 );
+const hostResolverRules = [
+    'MAP * ~NOTFOUND',
+    ...[...allowedHosts].map(host => `EXCLUDE ${host}`),
+].join(', ');
 
 const browserPool = new BrowserPool({
     launchBrowser: () => puppeteer.launch({
@@ -81,7 +85,7 @@ const browserPool = new BrowserPool({
             '--disable-extensions',
             '--disable-renderer-backgrounding',
             '--disable-sync',
-            '--disable-web-sockets',
+            `--host-resolver-rules=${hostResolverRules}`,
             '--metrics-recording-only',
             '--mute-audio',
             '--no-default-browser-check',
@@ -280,8 +284,19 @@ async function renderPdf(payload, signal) {
         : {};
     const restrictedNames = new Set(Object.keys(extraHeaders).map(name => name.toLowerCase()));
 
-    const resource = await browserPool.acquire();
+    const acquisition = browserPool.acquire();
+    let resource;
+    try {
+        resource = await abortable(acquisition, signal);
+    } catch (error) {
+        acquisition.then(
+            lateResource => browserPool.release(lateResource, {countRender: false}),
+            () => {},
+        );
+        throw error;
+    }
     let browserContext;
+    let contextCreated = false;
     let failed = false;
     try {
         if (!resource.browser.connected) {
@@ -292,24 +307,27 @@ async function renderPdf(payload, signal) {
             resource.browser.createBrowserContext(),
             signal,
         );
+        contextCreated = true;
         const page = await abortable(browserContext.newPage(), signal);
         await page.setRequestInterception(true);
         await page.setBypassServiceWorker(true);
         await page.setJavaScriptEnabled(payload.device?.javascriptEnabled !== false);
         await page.evaluateOnNewDocument(() => {
-            class BlockedWebSocket {
-                constructor() {
-                    throw new Error('WebSockets are disabled during PDF rendering');
+            for (const name of ['WebSocket', 'Worker', 'SharedWorker']) {
+                class Blocked {
+                    constructor() {
+                        throw new Error(`${name}s are disabled during PDF rendering`);
+                    }
                 }
+                Object.defineProperty(globalThis, name, {
+                    configurable: false,
+                    writable: false,
+                    value: Blocked,
+                });
             }
-            Object.defineProperty(window, 'WebSocket', {
-                configurable: false,
-                writable: false,
-                value: BlockedWebSocket,
-            });
         });
         await page.setViewport({width, height, deviceScaleFactor});
-        await page.setDefaultTimeout(gotoTimeout);
+        await page.setDefaultTimeout(Math.max(gotoTimeout, pdfTimeout));
         await page.setDefaultNavigationTimeout(gotoTimeout);
         if (payload.device?.userAgent) await page.setUserAgent(payload.device.userAgent);
         if (payload.device?.timezone) await page.emulateTimezone(payload.device.timezone);
@@ -317,9 +335,6 @@ async function renderPdf(payload, signal) {
         const cdp = await page.createCDPSession();
         await cdp.send('Network.enable');
         await cdp.send('Network.setBlockedURLs', {urls: ['ws://*', 'wss://*']});
-        page.on('websocket', webSocket => {
-            void Promise.resolve(webSocket.close()).catch(() => {});
-        });
         browserContext.on('targetcreated', target => {
             void (async () => {
                 if (target.type() !== 'page') return;
@@ -431,6 +446,7 @@ async function renderPdf(payload, signal) {
         }
 
         if (waitTime > 0) await abortableDelay(waitTime, signal);
+        if (requestGuardError) throw requestGuardError;
 
         const options = payload.pdf || {};
         const format = options.format || 'A4';
@@ -457,7 +473,10 @@ async function renderPdf(payload, signal) {
         );
         return Buffer.from(pdf);
     } catch (error) {
-        failed = !(error instanceof RenderRequestError);
+        failed = (
+            !(error instanceof RenderRequestError)
+            && (contextCreated || !resource.connected)
+        );
         if (error?.name === 'TimeoutError') error.statusCode = 504;
         throw error;
     } finally {
