@@ -2681,6 +2681,18 @@
           "result": "Mutation control: fails Go.",
           "artifact": "quality-reports/go-migration/attendance-mark-absent-http-mutation-r1/results.json",
           "receipt_sha256": "2f6fd890b9d48f9fc532d8ee011674e33729aab89dc94e043cd035d578fa1a20"
+        },
+        {
+          "revision": "committing change, before the Go fix",
+          "result": "RED: Django 20/20 with a family case through a deleted subscription; Go 403 on that case (it filtered deleted subscriptions).",
+          "artifact": "quality-reports/go-migration/attendance-mark-absent-http-red-r2/results.json",
+          "receipt_sha256": "07516fac26b07a50b192cc51c0cc25c83921cfccb152ee16dd78184b264b5bce"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 20/20 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/attendance-mark-absent-http-versioned-r6/results.json",
+          "receipt_sha256": "5c59c079766316f2e136e1193f8d8df2d4fe3aea04b3ccb7ccd9e4580901083b"
         }
       ],
       "notes": [

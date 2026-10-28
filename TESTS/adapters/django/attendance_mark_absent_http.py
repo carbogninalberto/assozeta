@@ -50,11 +50,16 @@ def seed_fixture(apps, private_work, raw):
                 associated_event=day['associated_event'])])
             fixture['created'].append((AttendanceDay, day['id']))
         from application.models import CourseSubscription
-        from application.tests.fixtures.factories import create_test_subscription
+        from application.tests.fixtures.factories import create_test_associate, create_test_subscription
         ids = source['ids']
         for row in source['subscriptions'].values():
-            subscription = create_test_subscription(sport_association=SportAssociation._base_manager.get(pk=ids[row['association']]),
-                user=User._base_manager.get(pk=ids[row['user']]), subscription_id=row['id'])
+            association, user = SportAssociation._base_manager.get(pk=ids[row['association']]), User._base_manager.get(pk=ids[row['user']])
+            extra = {}
+            if 'tax_code' in row:
+                extra['associate'] = create_test_associate(sport_association=association, user=user, tax_code=row['tax_code'],
+                                                         deleted=row.get('associate_deleted', False))
+            subscription = create_test_subscription(sport_association=association, user=user, subscription_id=row['id'],
+                                                    deleted=row.get('deleted', False), **extra)
             fixture['created'].append((type(subscription.associate), subscription.associate_id))
             fixture['created'].append((type(subscription), subscription.pk))
         for row in source['course_subscriptions'].values():

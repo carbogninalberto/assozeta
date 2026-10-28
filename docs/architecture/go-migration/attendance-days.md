@@ -34,7 +34,9 @@ null JSON columns as `'null'`; the earlier delete families pass again.
   non-string reports `'<type>' object has no attribute 'replace'`).
 - The course subscription must exist (not soft-deleted) for the day's course and
   association, within the impersonation boundary and, for athletes, the family
-  visibility rules; otherwise `403 Iscrizione al corso non disponibile.` Under an
+  visibility rules (tax codes come from `Subscription.objects`, which has no
+  soft-delete filter, so a deleted subscription still extends the family);
+  otherwise `403 Iscrizione al corso non disponibile.` Under an
   association-scoped impersonation the identity layer first checks the body's
   `course_subscription_id` (`403 Risorsa non disponibile per questo utente e
   associazione.`).
@@ -55,5 +57,8 @@ cases. The Django reference corrected one expectation, confirmed in
 
 **Mark-absent:** `TESTS/fixtures/attendance_mark_absent_http.json` authors 19
 cases, including a scoped athlete impersonation. Django passed them on the
-first run, Go failed with 404 before any Go code, and Go now passes 19/19 on all
-four transports; lowercasing the ID before comparing fails the run.
+first run, Go failed with 404 before any Go code, and Go passed 19/19 on all
+four transports; lowercasing the ID before comparing fails the run. A 20th case
+(family visibility through a deleted subscription) then passed on Django and
+failed on Go, which had filtered deleted subscriptions; after the fix Go passes
+20/20 on all four transports.

@@ -94,13 +94,14 @@ func (t *attendanceDayTransaction) DayForMark(ctx context.Context, id string, as
 // CourseSubscriptionVisible mirrors scoped_queryset(CourseSubscription).filter(pk=..., course=...,
 // subscription__sport_association=...) with the impersonation boundary and, for an
 // athlete, both the scoped family visibility and the view's own athlete filter.
+// Subscription.objects has no soft-delete filter; Associate.objects excludes deleted rows.
 func (t *attendanceDayTransaction) CourseSubscriptionVisible(ctx context.Context, id, course, association string, scope *string, athlete *string) (bool, error) {
 	var visible bool
 	err := t.tx.GetContext(ctx, &visible, `WITH tax AS (
   SELECT a.tax_code FROM application_subscription s JOIN application_associate a ON a.associate_id=s.associate_id
-  WHERE s.user_id=$5::uuid AND s.sport_association_id=$3::uuid AND NOT s.deleted AND a.tax_code IS NOT NULL AND a.tax_code<>''),
+  WHERE s.user_id=$5::uuid AND s.sport_association_id=$3::uuid AND a.tax_code IS NOT NULL AND a.tax_code<>''),
  tax_scoped AS (SELECT a.tax_code FROM application_subscription s JOIN application_associate a ON a.associate_id=s.associate_id
-  WHERE s.user_id=$5::uuid AND s.sport_association_id=$4::uuid AND NOT s.deleted AND a.tax_code IS NOT NULL AND a.tax_code<>''),
+  WHERE s.user_id=$5::uuid AND s.sport_association_id=$4::uuid AND a.tax_code IS NOT NULL AND a.tax_code<>''),
  members AS (SELECT associate_id FROM application_associate WHERE sport_association_id=$4::uuid AND NOT deleted
   AND (user_id=$5::uuid OR tax_code IN (SELECT tax_code FROM tax_scoped)))
  SELECT EXISTS(SELECT 1 FROM application_coursesubscription cs JOIN application_subscription s ON s.subscription_id=cs.subscription_id
@@ -109,7 +110,7 @@ func (t *attendanceDayTransaction) CourseSubscriptionVisible(ctx context.Context
   WHERE NOT cs.deleted AND cs.course_subscription_id=$1::uuid AND cs.course_id=$2::uuid AND s.sport_association_id=$3::uuid
   AND ($4::uuid IS NULL OR (s.sport_association_id=$4::uuid AND c.sport_association_id=$4::uuid
        AND ($5::uuid IS NULL OR s.subscription_id IN (SELECT subscription_id FROM application_subscription
-            WHERE sport_association_id=$4::uuid AND NOT deleted AND (user_id=$5::uuid OR associate_id IN (SELECT associate_id FROM members))))))
+            WHERE sport_association_id=$4::uuid AND (user_id=$5::uuid OR associate_id IN (SELECT associate_id FROM members))))))
   AND ($5::uuid IS NULL OR s.user_id=$5::uuid OR sa.user_id=$5::uuid OR sa.tax_code IN (SELECT tax_code FROM tax)))`,
 		id, course, association, scope, athlete)
 	return visible, err

@@ -17,10 +17,17 @@ IDS, COURSES, REGISTRIES = BASE['ids'], BASE['courses'], BASE['registries']
 ids = iter(f'a1000000-0000-4000-8000-{870001 + n:012d}' for n in range(20))
 SUBSCRIPTIONS = {'owner_sub': {'id': next(ids), 'association': 'own_association', 'user': 'owner'},
                  'athlete_sub': {'id': next(ids), 'association': 'own_association', 'user': 'athlete'},
-                 'foreign_sub': {'id': next(ids), 'association': 'foreign_association', 'user': 'foreign_owner'}}
+                 'foreign_sub': {'id': next(ids), 'association': 'foreign_association', 'user': 'foreign_owner'},
+                 # Subscription.objects has no soft-delete filter and the tax-code join ignores
+                 # the associate's deletion: a deleted subscription of a deleted associate
+                 # still extends the athlete's family visibility to an active relative.
+                 'ghost_sub': {'id': next(ids), 'association': 'own_association', 'user': 'athlete', 'tax_code': 'FMLTAX80A01H501Z',
+                               'deleted': True, 'associate_deleted': True},
+                 'cousin_sub': {'id': next(ids), 'association': 'own_association', 'user': 'owner', 'tax_code': 'FMLTAX80A01H501Z'}}
 COURSE_SUBSCRIPTIONS = {'cs1': {'id': next(ids), 'course': 'own', 'subscription': 'owner_sub'},
                         'cs2': {'id': next(ids), 'course': 'own', 'subscription': 'athlete_sub'},
-                        'csf': {'id': next(ids), 'course': 'foreign', 'subscription': 'foreign_sub'}}
+                        'csf': {'id': next(ids), 'course': 'foreign', 'subscription': 'foreign_sub'},
+                        'csc': {'id': next(ids), 'course': 'own', 'subscription': 'cousin_sub'}}
 CS = {label: row['id'] for label, row in COURSE_SUBSCRIPTIONS.items()}
 DAYS = {'day': {'id': next(ids), 'registry': 'own', 'title': 'Allenamento', 'date': '2026-11-05T18:00:00Z',
                 'attendees': [{'course_subscription_id': CS['cs1']}], 'expected_absences': None, 'auto_marked': False, 'associated_event': None},
@@ -75,6 +82,11 @@ add('owner-scoped-athlete-marks-present', 'owner', 'day', 200, PRESENT, body={'c
     headers={'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']},
     effect=saved(entry(CS['cs1']) + entry(CS['cs2']), entry(UPPER),
                  {'attendees': [dumps(entry(CS['cs1'])), dumps(entry(CS['cs1']) + entry(CS['cs2']))]}, impersonation='owner_athlete'))
+add('owner-scoped-athlete-family-through-deleted-subscription', 'owner', 'day', 200, PRESENT,
+    body={'course_subscription_id': CS['csc'], 'absent': False}, headers={'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']},
+    effect=saved(entry(CS['cs1']) + entry(CS['cs2']) + entry(CS['csc']), entry(UPPER),
+                 {'attendees': [dumps(entry(CS['cs1']) + entry(CS['cs2'])), dumps(entry(CS['cs1']) + entry(CS['cs2']) + entry(CS['csc']))]},
+                 impersonation='owner_athlete'))
 add('restricted-missing-permission', 'restricted_collaborator', 'day', 403, {'detail': 'Missing permission: association.courses.attendance.update'},
     body={'course_subscription_id': CS['cs1']})
 add('admin-without-session', 'admin', 'day', 403, {'detail': 'Seleziona un utente da impersonificare per accedere a questa sezione.'}, body={})
