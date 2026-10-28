@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -33,30 +32,8 @@ func paymentJSON(text *string) (any, error) {
 	return dto.ParseReferenceJSON([]byte(*text))
 }
 
-// paymentMetaDescription is `meta and 'description' in meta` then meta['description'].
-func paymentMetaDescription(meta any) (*string, bool, error) {
-	if !dto.PythonTruthy(meta) {
-		return nil, false, nil
-	}
-	present, err := dto.PythonContains(meta, "description")
-	if err != nil || !present {
-		return nil, false, err
-	}
-	value, err := dto.PythonIndex(meta, "description")
-	if err != nil {
-		return nil, false, err
-	}
-	if value == nil {
-		return nil, true, nil
-	}
-	text, ok := value.(string)
-	if !ok {
-		return nil, false, ErrPaymentSaveFailed
-	}
-	return &text, true, nil
-}
-
-// paymentSaveDefaults is Payment.save()'s default category and description.
+// paymentSaveDefaults is Payment.save()'s default category, then the shared
+// ResolvePaymentDescription port of its description hook.
 func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransaction, row *domain.PaymentSaveRow, changes map[string][2]string) error {
 	if row.CategoryID == nil {
 		id, name, err := tx.DefaultPaymentCategory(ctx)
@@ -70,76 +47,33 @@ func paymentSaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransactio
 	}
 	meta, err := paymentJSON(row.Meta)
 	if err != nil {
-		return err
+		return ErrPaymentSaveFailed
 	}
-	old := row.Description
-	if row.Description == nil {
-		var description *string
-		switch row.Subject {
-		case 2:
-			linked, err := tx.PaymentLinkedName(ctx, row.ID)
-			if err != nil {
-				return err
-			}
-			if linked.Found {
-				text, present, err := paymentMetaDescription(meta)
-				if err != nil {
-					return err
-				}
-				if present {
-					description = text
-				} else {
-					description = linked.Title
-				}
-			} else {
-				course, err := paymentJSON(row.Course)
-				if err != nil {
-					return err
-				}
-				if dto.PythonTruthy(course) {
-					present, err := dto.PythonContains(course, "label")
-					if err != nil {
-						return ErrPaymentSaveFailed
-					}
-					if present {
-						label, err := dto.PythonIndex(course, "label")
-						text, ok := label.(string)
-						if err != nil || !ok {
-							return ErrPaymentSaveFailed
-						}
-						joined := text + ", "
-						description = &joined
-					}
-				}
-			}
-			if description == nil {
-				text := "Quota Corso"
-				description = &text
-			}
-		case 1:
-			text := "Iscrizione"
-			description = &text
-		case 0:
-			description = row.CategoryName
-		case 3:
-			// f"Trasferimento da {self.custom_accounts.name} ..." needs
-			// attributes the model does not provide.
-			return ErrPaymentSaveFailed
-		}
-		row.Description = description
+	course, err := paymentJSON(row.Course)
+	if err != nil {
+		return ErrPaymentSaveFailed
 	}
-	if row.Description != nil && strings.ToLower(*row.Description) == "quota corso" {
-		text, present, err := paymentMetaDescription(meta)
+	input := domain.PaymentDescriptionInput{Subject: row.Subject, Description: row.Description, CategoryName: row.CategoryName, Meta: meta, Course: course}
+	if row.Subject == 2 && row.Description == nil {
+		linked, err := tx.PaymentLinkedName(ctx, row.ID)
 		if err != nil {
 			return err
 		}
-		if present {
-			row.Description = text
+		if linked.Found {
+			input.Related[linked.Slot] = &domain.PaymentDescriptionRelation{Title: linked.Title, Meta: meta, MissingCarnet: linked.MissingCarnet}
 		}
 	}
-	if !samePointer(old, row.Description) {
-		changes["description"] = [2]string{pythonOptional(old), pythonOptional(row.Description)}
+	description, err := ResolvePaymentDescription(ctx, input)
+	if errors.Is(err, domain.ErrPaymentDescription) {
+		return ErrPaymentSaveFailed
 	}
+	if err != nil {
+		return err
+	}
+	if !samePointer(row.Description, description) {
+		changes["description"] = [2]string{pythonOptional(row.Description), pythonOptional(description)}
+	}
+	row.Description = description
 	return nil
 }
 

@@ -61,24 +61,27 @@ func (t *paymentArchiveTransaction) DefaultPaymentCategory(ctx context.Context) 
 }
 
 func (t *paymentArchiveTransaction) PaymentLinkedName(ctx context.Context, payment string) (domain.PaymentLinkedName, error) {
-	for _, query := range []string{
-		`SELECT c.title FROM application_coursesubscription s JOIN application_course c ON c.course_id=s.course_id
+	for slot, query := range []string{
+		`SELECT c.title, false AS missing FROM application_coursesubscription s JOIN application_course c ON c.course_id=s.course_id
  WHERE s.payment_id=$1 ORDER BY s.course_subscription_id LIMIT 1`,
-		`SELECT c.title FROM application_coursesubscriptioninstallment i
+		`SELECT c.title, false AS missing FROM application_coursesubscriptioninstallment i
  JOIN application_coursesubscription s ON s.course_subscription_id=i.course_subscription_id
  JOIN application_course c ON c.course_id=s.course_id WHERE i.payment_id=$1 ORDER BY i.course_subscription_installment_id LIMIT 1`,
-		`SELECT k.title FROM application_carnetsubscription s JOIN application_carnet k ON k.carnet_id=s.carnet_id_id
- WHERE s.payment_id=$1 ORDER BY s.carnet_subscription_id LIMIT 1`,
+		`SELECT k.title, k.carnet_id IS NULL AS missing FROM application_carnetsubscription s
+ LEFT JOIN application_carnet k ON k.carnet_id=s.carnet_id_id WHERE s.payment_id=$1 ORDER BY s.carnet_subscription_id LIMIT 1`,
 	} {
-		var title *string
-		err := t.tx.GetContext(ctx, &title, query, payment)
+		var row struct {
+			Title   *string `db:"title"`
+			Missing bool    `db:"missing"`
+		}
+		err := t.tx.GetContext(ctx, &row, query, payment)
 		if errors.Is(err, sql.ErrNoRows) {
 			continue
 		}
 		if err != nil {
 			return domain.PaymentLinkedName{}, err
 		}
-		return domain.PaymentLinkedName{Found: true, Title: title}, nil
+		return domain.PaymentLinkedName{Found: true, Slot: slot, Title: row.Title, MissingCarnet: row.Missing}, nil
 	}
 	return domain.PaymentLinkedName{}, nil
 }

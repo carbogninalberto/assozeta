@@ -29,7 +29,9 @@ Django remains the production execution owner.
 
 ## Go implementation
 
-One owned transaction locks the payment, applies the save defaults, updates
+One owned transaction locks the payment, applies the save defaults (the
+description through the shared `ResolvePaymentDescription` port also used by
+automatic subscription archiving), updates
 `archived`, `payment_category_id` and `description` only (not Django's
 full-row save), and appends the audit entry and index.
 

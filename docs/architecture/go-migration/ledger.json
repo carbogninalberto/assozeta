@@ -10451,11 +10451,12 @@
       },
       "status": "implementing",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/payment_archive.go",
+        "BE_GO/internal/handler/payment_archive.go",
         "BE_GO/internal/repository/payment_archive.go",
         "BE_GO/internal/service/payment_archive.go",
-        "BE_GO/internal/handler/payment_archive.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/internal/service/payment_description.go"
       ],
       "dependencies": [
         "Existing identity resolution, permission registry and audit index",
@@ -10497,16 +10498,16 @@
           "receipt_sha256": "4222e2e546ca22f5f7a7c3e07345da4f63b6a1ddf2d68cec9230d9a0743f94a3"
         },
         {
-          "revision": "committing change",
+          "revision": "committing change (shared ResolvePaymentDescription)",
           "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, audit and index effects.",
-          "artifact": "quality-reports/go-migration/payment-archive-http-versioned-r1/results.json",
-          "receipt_sha256": "f8dfa296b00b19bd26931de61e3ab6d8714cda2446a61cbdd8fb62a58f04c5c6"
+          "artifact": "quality-reports/go-migration/payment-archive-http-versioned-r2/results.json",
+          "receipt_sha256": "06094abfd7561a807b44baeadfb7274b1ad3b742a3896b40594dcac7a80cf6fc"
         },
         {
-          "revision": "committing change skipping the quota corso override",
+          "revision": "committing change with the shared quota corso override disabled",
           "result": "Mutation control: fails Go on that case.",
-          "artifact": "quality-reports/go-migration/payment-archive-http-mutation-r1/results.json",
-          "receipt_sha256": "d1c0287fadcc1142b87979eb70ad169591ddd76708e38db23ead2bb21195a46a"
+          "artifact": "quality-reports/go-migration/payment-archive-http-mutation-r2/results.json",
+          "receipt_sha256": "e197a0c27339b43299835257c7786423276b44962b26d13adc1b4a509d617842"
         }
       ],
       "notes": [

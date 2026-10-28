@@ -26,7 +26,10 @@ type PaymentSaveRow struct {
 // carnet subscription paid by the payment, with its course or carnet title.
 type PaymentLinkedName struct {
 	Found bool
-	Title *string
+	// Slot is the relation kind (course subscription, installment, carnet).
+	Slot          int
+	Title         *string
+	MissingCarnet bool
 }
 
 type PaymentArchiveEvent struct {
