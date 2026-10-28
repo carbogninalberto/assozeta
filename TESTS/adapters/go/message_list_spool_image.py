@@ -34,7 +34,7 @@ HASH = re.compile(r'[0-9a-f]{64}\Z')
 IMAGE = re.compile(r'sha256:[0-9a-f]{64}\Z')
 REVISION = re.compile(r'[0-9a-f]{40}\Z')
 OWNER = re.compile(r'az-category-image-[0-9a-f]{32}\Z')
-SCHEMA = {'applied_migrations': 547, 'remaining_plan': 0, 'mode': 'full-migration-history'}
+SCHEMA = {'applied_migrations': 548, 'remaining_plan': 0, 'mode': 'full-migration-history'}
 REMAINING = ['request-cancellation', 'storage-failure']
 OWNED = ('TESTS/adapters/go/message_list_spool_image.py',
          'TESTS/test_message_list_spool_image.py',

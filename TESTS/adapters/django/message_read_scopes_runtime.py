@@ -87,7 +87,7 @@ def acceptance(report):
         need(report['complete_message_family_parity'] is False, 'receipt.bounded')
         need(binding_valid(report['source_sha256'], report['source_sha256_after'], report['go_build_source_sha256'])
              and report['source_sha256'] == source_hashes(), 'receipt.source')
-        need(report['schema'] == {'applied_migrations': 547, 'remaining_plan': 0,
+        need(report['schema'] == {'applied_migrations': 548, 'remaining_plan': 0,
                                  'mode': 'full-migration-history'}, 'receipt.schema')
         need(report['cleanup_verified'] is True and report['owned_directory_removed'] is True
              and report['private_directory_removed'] is True and report['environment_restored'] is True, 'receipt.cleanup')
@@ -302,7 +302,7 @@ def execute_private(reuse, args, report, private_output, private_values, tool_en
                 override.enable()
                 connections.close_all()
                 report['schema'] = reuse.migrate_full_schema(log)
-                contract.require(report['schema']['applied_migrations'] == 547, 'schema.exact-migrations')
+                contract.require(report['schema']['applied_migrations'] == 548, 'schema.exact-migrations')
                 original_state = adapter.snapshot_state(apps)
                 raw = redis.Redis(host='127.0.0.1', port=redis_port, db=1,
                                   password='synthetic-identity-only', decode_responses=False,

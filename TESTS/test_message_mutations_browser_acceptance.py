@@ -133,7 +133,7 @@ def complete_report():
         input_binding=frozen, native_build=frozen['native'],
         sensitive_cleanup=dict(verified=True, errors=[], results=dict.fromkeys(
             ('tokenized_fixture_removed', 'private_sql_log_removed', 'private_query_observation_removed'), True)),
-        schema=dict(mode='full-migration-history', remaining_plan=0, applied_migrations=547),
+        schema=dict(mode='full-migration-history', remaining_plan=0, applied_migrations=548),
         private_io_bounds=dict(connect_seconds=5, redis_socket_seconds=5, statement_seconds=30,
             lock_seconds=5, execution_seconds=1500, cleanup_grace_seconds=180),
         fixtures=[fixture_receipt(version) for version in ('v1', 'v2')],

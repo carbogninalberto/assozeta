@@ -207,7 +207,7 @@ def validate_report(report):
              and sources == source_hashes() == report['source_sha256_after'] == report['build_source_sha256']
              and report['go_build_source_sha256'] == _go_sources(sources)
              and report['source_unchanged'] is True, 'receipt.source')
-        need(report['schema'] == {'applied_migrations': 547, 'remaining_plan': 0,
+        need(report['schema'] == {'applied_migrations': 548, 'remaining_plan': 0,
                                  'mode': 'full-migration-history'}
              and type(report['schema']['applied_migrations']) is int
              and type(report['schema']['remaining_plan']) is int

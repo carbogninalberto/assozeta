@@ -31,7 +31,7 @@ class AcceptanceControls(unittest.TestCase):
             'go_build_source_sha256': self.hashes, 'source_unchanged': True,
             'python': {'python': cli.production_python_version(), 'sha256': 'c' * 64},
             'go_toolchain': {'required': '1.25.12', 'actual': '1.25.12', 'local': True},
-            'schema': {'applied_migrations': 547, 'remaining_plan': 0, 'mode': 'full-migration-history'},
+            'schema': {'applied_migrations': 548, 'remaining_plan': 0, 'mode': 'full-migration-history'},
             'audit_resolvers_after_migration': True,
             'service_binary_sha256': dict.fromkeys(cli.TOOLS, 'd' * 64),
             'go_artifact': {'server_sha256': 'e' * 64, 'codec_sha256': 'f' * 64,

@@ -376,7 +376,7 @@ def execute_owned(private, service_report, cleanup, report, tools):
             try:
                 connections.close_all()
                 schema = lifecycle.migrate_full_schema(log)
-                if schema != {"mode": "full-migration-history", "applied_migrations": 547,
+                if schema != {"mode": "full-migration-history", "applied_migrations": 548,
                               "remaining_plan": 0}:
                     raise AcceptanceFailure("migration-count")
                 report["schema"] = schema

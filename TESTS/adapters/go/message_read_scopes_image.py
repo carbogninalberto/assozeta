@@ -224,7 +224,7 @@ def runtime_acceptance(report):
         sources = report['source_sha256']
         need(bool(sources) and sources == report['source_sha256_at_server_start']
              == report['source_sha256_after'] == source_hashes(), 'receipt.source')
-        need(report['schema'] == {'applied_migrations': 547, 'remaining_plan': 0,
+        need(report['schema'] == {'applied_migrations': 548, 'remaining_plan': 0,
                                  'mode': 'full-migration-history'}, 'receipt.schema')
         need(report['python']['python'] == '3.13.16' and _hash(report['python']['sha256']), 'receipt.python')
         need(report['cleanup_verified'] is True and report['environment_restored'] is True
@@ -324,7 +324,7 @@ def execute_workloads(reuse, proof, work, log, tools, build, report, private_val
         override.enable()
         connections.close_all()
         evidence['schema'] = reuse.migrate_full_schema(log)
-        need(evidence['schema'] == {'applied_migrations': 547, 'remaining_plan': 0,
+        need(evidence['schema'] == {'applied_migrations': 548, 'remaining_plan': 0,
                                    'mode': 'full-migration-history'}, 'schema.exact')
         original_state = adapter.snapshot_state(apps)
         raw = redis.Redis(host='127.0.0.1', port=proof.redis_port, db=1,

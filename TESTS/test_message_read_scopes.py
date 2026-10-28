@@ -527,7 +527,7 @@ class RuntimeControls(unittest.TestCase):
                 reuse = SimpleNamespace(owned_message_database=owned,
                     private_environment=lambda *args: ({}, set()), apply_private_environment=lambda env: None,
                     initialize_django_apps=lambda: (apps, None), cache_override=lambda port: {},
-                    migrate_full_schema=lambda log: {'applied_migrations': 547},
+                    migrate_full_schema=lambda log: {'applied_migrations': 548},
                     django_application=django, owned_caddy=caddy)
                 report = {'workloads': [], 'lifecycle_workloads': []}
                 with patch.dict(sys.modules, modules), patch.object(runtime, 'go_service', new=golang), \
@@ -709,7 +709,7 @@ class RuntimeControls(unittest.TestCase):
             reuse = SimpleNamespace(owned_message_database=owned,
                 private_environment=lambda *args: ({}, set()), apply_private_environment=lambda env: None,
                 initialize_django_apps=lambda: (None, None), cache_override=lambda port: {},
-                migrate_full_schema=lambda log: {'applied_migrations': 547})
+                migrate_full_schema=lambda log: {'applied_migrations': 548})
 
             def broken_seed(*args):
                 private.mkdir()
@@ -809,7 +809,7 @@ class RuntimeControls(unittest.TestCase):
         hashes = runtime.source_hashes()
         report = {'runtime_executed': True, 'errors': [], 'cleanup_errors': [], 'versioned': versioned,
                   'source_sha256': hashes, 'source_sha256_after': hashes.copy(),
-                  'go_build_source_sha256': hashes.copy(), 'schema': {'applied_migrations': 547,
+                  'go_build_source_sha256': hashes.copy(), 'schema': {'applied_migrations': 548,
                   'remaining_plan': 0, 'mode': 'full-migration-history'}, 'cleanup_verified': True,
                   'fixture_cleanup': {'verified': True, 'results': dict.fromkeys(runtime.FIXTURE_CLEANUP, True)},
                   'go_artifact': {'server_sha256': 'a' * 64, 'codec_sha256': 'b' * 64, 'process_exit': 0},

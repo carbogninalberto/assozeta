@@ -11,7 +11,7 @@ jobs:
     name: Message reads on Django and Go
     runs-on: ubuntu-24.04
     # Includes locked UI/browser installs, Chromium, a sourcemapped Vite build,
-    # native codec/Go builds, and independent full-547-migration runtimes.
+    # native codec/Go builds, and independent full-548-migration runtimes.
     # Keep the original 60m for existing gates/cold caches, plus 30m for mutation
     # acceptance (1500s + 180s cleanup < 30m), 3m upload and 2m offline controls.
     timeout-minutes: 95

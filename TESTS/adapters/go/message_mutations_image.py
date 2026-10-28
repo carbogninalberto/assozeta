@@ -53,7 +53,7 @@ FIXTURE_CLEANUP = ('rows', 'cache', 'sequences', 'private_fixture')
 SERVICES = packaged.SERVICES
 RESOURCES = packaged.RESOURCES
 PRIVATE_CHECKS = packaged.PRIVATE_CHECKS
-SCHEMA = {'applied_migrations': 547, 'remaining_plan': 0, 'mode': 'full-migration-history'}
+SCHEMA = {'applied_migrations': 548, 'remaining_plan': 0, 'mode': 'full-migration-history'}
 EXPECTED_CASES = 119
 BUILD_KEYS = ('success', 'source_stable', 'tracked_context_exact', 'cleanup_verified',
               'private_directory_removed', 'source_revision', 'packaged_revision',

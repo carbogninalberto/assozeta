@@ -11,7 +11,7 @@ jobs:
     name: Historical read with ${{ matrix.first }} first
     runs-on: ubuntu-24.04
     # The focused runtime is short, but hosted setup, dependency installation,
-    # the Go build, a 547-migration import and both transports need headroom.
+    # the Go build, a 548-migration import and both transports need headroom.
     timeout-minutes: 20
     strategy:
       fail-fast: false

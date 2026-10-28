@@ -36,7 +36,7 @@ def runtime_receipt():
     sources = image.source_hashes()
     result = {'success': True, 'runtime_executed': True, 'versioned': True,
         'errors': [], 'cleanup_errors': [], 'complete_message_family_parity': False,
-        'schema': {'applied_migrations': 547, 'remaining_plan': 0, 'mode': 'full-migration-history'},
+        'schema': {'applied_migrations': 548, 'remaining_plan': 0, 'mode': 'full-migration-history'},
         'source_sha256': sources, 'source_sha256_at_server_start': sources,
         'source_sha256_after': sources, 'cleanup_verified': True,
         'environment_restored': True, 'private_directory_removed': True,
@@ -443,7 +443,7 @@ class PackagedControls(unittest.TestCase):
              patch.object(reuse, 'apply_private_environment'), \
              patch.object(reuse, 'initialize_django_apps', return_value=(apps, None)), \
              patch.object(reuse, 'migrate_full_schema', return_value={
-                 'applied_migrations': 547, 'remaining_plan': 0, 'mode': 'full-migration-history'}), \
+                 'applied_migrations': 548, 'remaining_plan': 0, 'mode': 'full-migration-history'}), \
              patch.object(image.adapter, 'snapshot_state', return_value=baseline), \
              patch.object(cache, 'snapshot_historical_read_cache', return_value=baseline), \
              patch.object(image.adapter, 'seed_fixture', return_value=fixture) as seed, \
@@ -595,7 +595,7 @@ class CleanupCancellationControls(unittest.TestCase):
                 (reuse, 'apply_private_environment', lambda _: None),
                 (reuse, 'initialize_django_apps', lambda: (object(), None)),
                 (reuse, 'cache_override', lambda _: {}),
-                (reuse, 'migrate_full_schema', lambda _: {'applied_migrations': 547,
+                (reuse, 'migrate_full_schema', lambda _: {'applied_migrations': 548,
                     'remaining_plan': 0, 'mode': 'full-migration-history'}),
                 (image.adapter, 'snapshot_state', lambda _: 'baseline'),
                 (cache, 'snapshot_historical_read_cache', lambda _: 'baseline'),

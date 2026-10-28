@@ -30,7 +30,7 @@ from TESTS.adapters.go.read_route_locales_image import (
 GO_REQUIRED_FILES = ('Dockerfile', 'go.mod', 'go.sum', 'cmd/server/main.go',
                      'THIRD_PARTY_NOTICES.md')
 # Full Django migration history for this frozen historical source.
-PINNED_APPLIED_MIGRATIONS = 547
+PINNED_APPLIED_MIGRATIONS = 548
 CLOCK_QUERY = 'SELECT clock_timestamp()'
 CLOCK_DOMAIN = 'shared Docker Linux kernel CLOCK_REALTIME'
 BOOT_ID = re.compile(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}')
