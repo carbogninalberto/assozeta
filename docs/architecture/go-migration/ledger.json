@@ -4601,25 +4601,71 @@
         "target": "carnet_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "PR #28 association scoping",
+        "Existing identity resolution, permission registry and audit index",
+        "application_carnet, application_carnetsubscription (+ course links)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet/<uid>/delete",
+          "/api/v2/carnet/<uid>/delete",
+          "/api/carnet/<uid>/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {\"msg\": \"Carnet deleted successfully.\"}.",
+        "errors": "401; 403 Not allowed. / administrator without impersonation / missing permission / scoped athlete session; 404 Carnet not found.; 500 non-UUID.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.delete.",
+        "resource_scope": "A carnet of the scope user's association.",
+        "side_effects": "Deletes the carnet, its carnet subscriptions and their course links; one auditlog delete entry per deleted model row.",
+        "transaction": "One transaction (Django collector).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_delete_http.json",
+        "TESTS/fixtures/generate_carnet_delete_http.py",
+        "TESTS/contracts/test_carnet_delete_http.py",
+        "TESTS/adapters/django/carnet_delete_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 14/14; Go without the route on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-delete-http-red-r1/results.json",
+          "receipt_sha256": "4ed3bc0a2016c53425a1bc43273c2b62cfe1df51895c64f9c131235dc316598d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 14/14 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/carnet-delete-http-versioned-r1/results.json",
+          "receipt_sha256": "3549ab88f82cb50c8cbdc26292d653622d9b88897eccb82edcc47c89181e9420"
+        },
+        {
+          "revision": "committing change without the actor index",
+          "result": "Mutation control: fails Go on the owner case.",
+          "artifact": "quality-reports/go-migration/carnet-delete-http-mutation-r1/results.json",
+          "receipt_sha256": "5ef398e407d5e011672f828664841b593ac302f721ad6596cab65ba24161917f"
+        }
+      ],
+      "notes": [
+        "Implementing: parity with the PR #28 contract including cascade audit and index rows on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet/<str:uid>/info -> carnet_info",
