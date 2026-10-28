@@ -185,7 +185,7 @@ class RenderReuseFixtureTests(unittest.TestCase):
         })
         return plan
 
-    def test_runner_warm_path_never_launches_browser_or_mintlify(self):
+    def test_runner_warm_path_never_launches_a_process(self):
         spec = importlib.util.spec_from_file_location('render_test_runner', ROOT / 'docs/scripts/manuale.py')
         runner = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(runner)
@@ -193,7 +193,7 @@ class RenderReuseFixtureTests(unittest.TestCase):
         state['tooling_hashes'] = {}
         state['reuse_evidence'] = str(self.baseline_run)
         (self.target_run / 'render.json').unlink()
-        with patch.object(runner.subprocess, 'Popen', side_effect=AssertionError('Warm path launched a browser')):
+        with patch.object(runner.subprocess, 'Popen', side_effect=AssertionError('Warm path launched a process')):
             runner.verify(state)
         report = json.loads((self.target_run / 'render.json').read_text())
         self.assertEqual(report['mode'], 'retained-only')
@@ -235,13 +235,19 @@ class RenderReuseFixtureTests(unittest.TestCase):
     def test_renderer_inputs_are_deterministic_and_missing_tools_fail(self):
         first = render_reuse.renderer_inputs(self.target['state'])
         self.assertEqual(first, render_reuse.renderer_inputs(self.target['state']))
-        self.assertIn('application/selfhost/tests/browser/manuale/verify.mjs', first)
+        # The in-app reader projection replaced the Mintlify preview renderer.
+        self.assertNotIn('application/selfhost/tests/browser/manuale/verify.mjs', first)
+        self.assertNotIn('application/selfhost/tests/browser/playwright.manual.config.mjs', first)
+        self.assertEqual(first['renderer'], 'assozeta-reader/1')
+        self.assertEqual(first['renderer/index.py'], render_reuse.digest(
+            (ROOT / 'BE/application/manuale/index.py').read_bytes()))
+        self.assertIn('renderer/reader_render.py', first)
         self.assertIn('application/selfhost/tests/browser/manuale/compile.mjs', first)
         self.assertIn('application/selfhost/tests/browser/package-lock.json', first)
         self.assertIn('manual/mint.json', first)
         write(self.target['manual'], 'docs.json', {'navigation': {'pages': ['docs/one']}})
         self.assertIn('manual/docs.json', render_reuse.renderer_inputs(self.target['state']))
-        (self.target['application'] / 'selfhost/tests/browser/manuale/verify.mjs').unlink()
+        (self.target['application'] / 'selfhost/tests/browser/manuale/compile.mjs').unlink()
         with self.assertRaisesRegex(ValueError, 'missing-renderer-input'):
             render_reuse.renderer_inputs(self.target['state'])
 
