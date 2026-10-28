@@ -15,7 +15,7 @@ const reviewed = {
   "BE/application/serializers/balance_sheet.py": "718b937c896e289fcf232351859da538de98ea829511f1b93baefdbf45d7019e",
   "BE/application/models/balance_sheet_models.py": "08aef0835594ebea11087743e7e327289c2682a0944bc492eb9b2739c72b2aca",
   "BE/application/utils/balance_sheet_utils.py": "16edc940ec32f5a0ec086edd1a8b1852af19994a4f8499441297b2b7e79cd317",
-  "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
+  "BE/application/utils/api_utils.py": "f74b51ea79b5e61bed75b981abe19f57df37349e3e6eb9c04fc47b01575f3249",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "BE/application/impersonation.py": "04337e8ece4eb8027f396392835170e56ff176a06b2565b70c87455417b5035e",
   "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
