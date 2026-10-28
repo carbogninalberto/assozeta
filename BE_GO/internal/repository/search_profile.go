@@ -72,3 +72,10 @@ func (r *SearchProfiles) Tags(ctx context.Context, association string) ([]domain
 	err := r.db.SelectContext(ctx, &rows, `SELECT tag_id, tag_name FROM application_coursetags WHERE sport_association_id=$1`, association)
 	return rows, err
 }
+
+// OrderedTags is CourseTags.objects.filter(sport_association=...).order_by('tag_name').
+func (r *SearchProfiles) OrderedTags(ctx context.Context, association string) ([]domain.SearchProfileTag, error) {
+	rows := []domain.SearchProfileTag{}
+	err := r.db.SelectContext(ctx, &rows, `SELECT tag_id, tag_name FROM application_coursetags WHERE sport_association_id=$1 ORDER BY tag_name`, association)
+	return rows, err
+}

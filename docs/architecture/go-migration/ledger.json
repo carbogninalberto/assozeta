@@ -6323,8 +6323,13 @@
         "target": "course_tags_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/course_tags_list.go",
+        "BE_GO/internal/handler/course_tags_list.go",
+        "BE_GO/internal/repository/search_profile.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -6339,9 +6344,30 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_tags_list_http.json",
+        "TESTS/fixtures/generate_course_tags_list_http.py",
+        "TESTS/contracts/test_course_tags_list_http.py",
+        "TESTS/adapters/django/course_tags_list_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 12/12; Go 404.",
+          "artifact": "quality-reports/go-migration/course-tags-list-http-red-r1/results.json",
+          "receipt_sha256": "00ddbda7b5be4b1cc33b9c55ad9d6f40f87e3ee3ae1c90a38671ab6b499cc310"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 12/12 on four transports.",
+          "artifact": "quality-reports/go-migration/course-tags-list-http-versioned-r1/results.json",
+          "receipt_sha256": "bb6ea7f0015d55631675518a5b93ce40f70885101a6187711a4cf7a1599ec266"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity on four transports; mutation control not yet run."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:documents/<str:pk>/delete -> DocumentArchiveViewSet.as_view({'delete': 'delete'})",
