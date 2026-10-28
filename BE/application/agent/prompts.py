@@ -206,3 +206,8 @@ Regole aggiuntive per gli export:
 def get_system_prompt(association_name: str) -> str:
     """Get the system prompt with the association name injected."""
     return SYSTEM_PROMPT.format(association_name=association_name)
+
+
+def _scenario_measurement_marker():
+    """Measurement-only helper; this branch is never merged."""
+    return None
