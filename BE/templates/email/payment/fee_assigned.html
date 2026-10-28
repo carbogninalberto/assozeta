@@ -1,0 +1,10 @@
+{% extends "email/_base.html" %}
+{% block title %}Nuova quota associativa {{ settings.WHITELABEL_NAME }}{% endblock %}
+{% block preheader %}Nuova quota associativa{% endblock %}
+{% block aria_label %}Nuova quota associativa{% endblock %}
+{% block content %}
+<p style="font-family: 'Poppins', sans-serif">Ciao <b>{{ recipient_name }}</b>,</p>
+<p class="sm-leading-8" style="font-family: 'Poppins', sans-serif; margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000">Ti è stata assegnata la quota associativa &quot;{{ fee_name }}&quot; con importo {{ amount }} €.</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 16px">Per maggiori informazioni, visita il tuo profilo su {{ application_name }}.</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0">Cordialmente,<br>{{ association_name }}</p>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "email/_base.html" %}
+{% block title %}Pagamento in attesa {{ settings.WHITELABEL_NAME }}{% endblock %}
+{% block preheader %}Pagamento in attesa{% endblock %}
+{% block aria_label %}Pagamento in attesa{% endblock %}
+{% block content %}
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px">Ciao <b>{{ recipient_name }}</b>,</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000">Ti informiamo che il pagamento di {{ amount }}€ {{ description }}è in attesa di pagamento.</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px">Per favore procedi con il pagamento.</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 16px">Se hai un già un account {{ application_name }}, puoi vedere i dettagli del pagamento online cliccando <a href="{{ application_url }}">qui</a>.</p>
+{% if online_payments_enabled %}<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px">Puoi pagare online!</p>{% endif %}
+<p style="font-family: 'Poppins', sans-serif; margin: 0">Cordiali saluti,<br>{{ association_name }}</p>
+{% endblock %}

@@ -11,6 +11,7 @@ from io import StringIO
 import datetime
 
 from django.db.models import Q, Prefetch
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from rest_framework import status
@@ -332,23 +333,16 @@ def invoice_send(request, uid):
         return Response({"msg": "Nessuna email associata."}, status=status.HTTP_412_PRECONDITION_FAILED)
 
     if invoice.payment and email is not None:
-
-        email_html = f"""
-        Ciao {name},<br>
-        ecco la tua ricevuta di {float(invoice.membership_fee) + float(invoice.activity_fee)}€ n. {invoice.number} del {invoice.payment.payment_date.strftime('%d/%m/%Y')}.<br>
-        <br>
-        {invoice.description}
-        <br>
-        <br>
-        <a href="{APP_URL}/api/document/retrieve/{invoice.invoice_id}?download=true&token={invoice.document_pdf.token}">Scarica la ricevuta</a><br>
-        <br>
-        se non riesci a scaricare la ricevuta, copia e incolla il seguente link nel tuo browser:<br>
-        {APP_URL}/api/document/retrieve/{invoice.invoice_id}?download=true&token={invoice.document_pdf.token}<br>
-        <br>
-        <br>
-        Cordiali saluti,<br>
-        {sport_association.denomination}
-        """
+        download_url = f"{APP_URL}/api/document/retrieve/{invoice.invoice_id}?download=true&token={invoice.document_pdf.token}"
+        email_html = render_to_string('email/payment/payment_receipt.html', {
+            'recipient_name': name,
+            'amount': float(invoice.membership_fee) + float(invoice.activity_fee),
+            'receipt_number': invoice.number,
+            'payment_date': invoice.payment.payment_date.strftime('%d/%m/%Y'),
+            'description': invoice.description,
+            'download_url': download_url,
+            'association_name': sport_association.denomination,
+        })
 
         send_mail_async.apply_async(
             kwargs={
