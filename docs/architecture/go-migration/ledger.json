@@ -14951,25 +14951,72 @@
         "target": "supplier_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/suppliers.go",
+        "BE_GO/internal/dto/suppliers.go",
+        "BE_GO/internal/repository/suppliers.go",
+        "BE_GO/internal/service/suppliers.go",
+        "BE_GO/internal/handler/suppliers.go",
+        "BE_GO/internal/dto/drf_pagination.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_supplierandcustomers, application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/supplier/<uid>/info",
+          "/api/v2/supplier/<uid>/info",
+          "/api/supplier/<uid>/info"
+        ],
+        "request": "No body; optional X-Group-Id.",
+        "response": "200 {\"data\": SupplierSerializer}.",
+        "errors": "400 malformed UUID; 401; 403 (empty body for athletes); 403 administrator without impersonation or missing permission; 404 {\"msg\": \"Supplier not found.\"}; 500 missing association.",
+        "resource_scope": "A live supplier of the scope user's association (group-aware).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.management.suppliers.read.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/suppliers_http.json",
+        "TESTS/fixtures/generate_suppliers_http.py",
+        "TESTS/contracts/test_suppliers_http.py",
+        "TESTS/adapters/django/suppliers_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/drf_pagination_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 48/48 after one source-confirmed correction (database ctype case folding); Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/suppliers-http-red-r1/results.json",
+          "receipt_sha256": "da155109581d4f9c05b497e2181b562c6794ec859ecd3e456da30921ce07abc9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 48/48 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged on every case.",
+          "artifact": "quality-reports/go-migration/suppliers-http-versioned-r1/results.json",
+          "receipt_sha256": "c1c4229cf9b6062b7e94ed0d0d1f078d8afc5cb157647cee3bf63fedc755b8c6"
+        },
+        {
+          "revision": "committing change without LIKE escaping",
+          "result": "Mutation control: fails Go on the percent search.",
+          "artifact": "quality-reports/go-migration/suppliers-http-mutation-r1/results.json",
+          "receipt_sha256": "22f603f54fff5c518c07f29be99d25cc417e4e0090a6e02725778d2e99ed0e56"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity proven on four transports; ordering by relation paths is not ported (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:supplier/<str:uid>/update -> supplier_update",
@@ -15091,25 +15138,72 @@
         "target": "supplier_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/suppliers.go",
+        "BE_GO/internal/dto/suppliers.go",
+        "BE_GO/internal/repository/suppliers.go",
+        "BE_GO/internal/service/suppliers.go",
+        "BE_GO/internal/handler/suppliers.go",
+        "BE_GO/internal/dto/drf_pagination.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_supplierandcustomers, application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/supplier/list",
+          "/api/v2/supplier/list",
+          "/api/supplier/list"
+        ],
+        "request": "Query: all, query[generalSearch], sort[field], sort[sort], pagination[page], pagination[perpage]; optional X-Group-Id.",
+        "response": "200 {\"data\": [SupplierSerializer], \"meta\": {total, page, pages, perpage}}; with all, {\"data\": [...]} unordered.",
+        "errors": "401; 403 (empty body for athletes); 403 administrator without impersonation or missing permission; 404 Invalid page.; 500 unknown ordering or missing association.",
+        "resource_scope": "Live suppliers of the scope user's association (group-aware).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.management.suppliers.read.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/suppliers_http.json",
+        "TESTS/fixtures/generate_suppliers_http.py",
+        "TESTS/contracts/test_suppliers_http.py",
+        "TESTS/adapters/django/suppliers_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/drf_pagination_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 48/48 after one source-confirmed correction (database ctype case folding); Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/suppliers-http-red-r1/results.json",
+          "receipt_sha256": "da155109581d4f9c05b497e2181b562c6794ec859ecd3e456da30921ce07abc9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 48/48 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged on every case.",
+          "artifact": "quality-reports/go-migration/suppliers-http-versioned-r1/results.json",
+          "receipt_sha256": "c1c4229cf9b6062b7e94ed0d0d1f078d8afc5cb157647cee3bf63fedc755b8c6"
+        },
+        {
+          "revision": "committing change without LIKE escaping",
+          "result": "Mutation control: fails Go on the percent search.",
+          "artifact": "quality-reports/go-migration/suppliers-http-mutation-r1/results.json",
+          "receipt_sha256": "22f603f54fff5c518c07f29be99d25cc417e4e0090a6e02725778d2e99ed0e56"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity proven on four transports; ordering by relation paths is not ported (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:templates/<str:pk>/delete -> SportAssociationModuleTemplatesViewSet.as_view({'delete': 'delete'})",
