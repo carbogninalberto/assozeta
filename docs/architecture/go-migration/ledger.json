@@ -12791,25 +12791,78 @@
         "target": "search_profile",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/search_profile.go",
+        "BE_GO/internal/dto/search_profile.go",
+        "BE_GO/internal/repository/search_profile.go",
+        "BE_GO/internal/service/search_profile.go",
+        "BE_GO/internal/handler/search_profile.go",
+        "BE_GO/internal/service/integration_secrets.go",
+        "BE_GO/internal/service/stripe_availability.go",
+        "BE_GO/internal/service/association_profile.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and scoped request checks",
+        "Login image processor (compress_base64)",
+        "Association profile port",
+        "bakney_user, application_sportassociation, application_course (+tags, locations), application_coursesubscription, application_carnet, application_coursetags, instance_instanceconfiguration"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/search/profile/<username>",
+          "/api/v2/search/profile/<username>",
+          "/api/search/profile/<username>"
+        ],
+        "request": "Query module_info (presence).",
+        "response": "200 {\"data\": athlete user | module profile | public profile with courses, carnets, tags}.",
+        "errors": "401 invalid credentials; 403 administrator without impersonation or scoped session for another association; 404 user not found; 500 missing association.",
+        "authentication": "Optional (AllowAny).",
+        "permissions": "Registry exempt.",
+        "resource_scope": "Public profile data of the named user.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/search_profile_http.json",
+        "TESTS/fixtures/generate_search_profile_http.py",
+        "TESTS/contracts/test_search_profile_http.py",
+        "TESTS/adapters/django/search_profile_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/service/search_profile_test.go",
+        "BE_GO/internal/service/integration_secrets_test.go",
+        "BE_GO/internal/service/stripe_availability_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/search-profile.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 16/16 after two source-confirmed corrections; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/search-profile-http-red-r1/results.json",
+          "receipt_sha256": "dbcbcd6ee1cc5bced6acca0a0e36646d07834bddef4e97df2209d9fd62740214"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 16/16 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/search-profile-http-versioned-r1/results.json",
+          "receipt_sha256": "60c3317a09620fad0a2c6e8240811c45f03ed11c8621812015edede2fb5775c7"
+        },
+        {
+          "revision": "committing change counting deleted course subscriptions",
+          "result": "Mutation control: fails Go on the public case.",
+          "artifact": "quality-reports/go-migration/search-profile-http-mutation-r1/results.json",
+          "receipt_sha256": "c9b4f60cec9513060a52a19621f80ab496b26c73f1ebcadba10f905c139d3a24"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports; X-Group-Id course filtering and an instance-configured Stripe are not exercised over HTTP."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:sport-associations/<uid>/admin-update -> sport_association_admin_update",

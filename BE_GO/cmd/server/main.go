@@ -182,6 +182,11 @@ func run() (runErr error) {
 	associationListHandler := handler.NewAssociationListHandler(service.NewAssociationList(repository.NewAssociationList(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	associationAdminHandler := handler.NewAssociationAdminHandler(service.NewAssociationAdmin(repository.NewAssociationAdmin(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	balanceAccountsHandler := handler.NewBalanceAccountsHandler(service.NewBalanceAccounts(repository.NewBalanceAccounts(db)), service.NewBalanceSheets(repository.NewBalanceAccounts(db), service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now)), service.NewActorAuthentication(accounts, tokens), identities)
+	searchProfileHandler := handler.NewSearchProfileHandler(service.NewSearchProfiles(repository.NewSearchProfiles(db),
+		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), images,
+		service.NewStripeAvailability(repository.NewSocialConfiguration(db), service.StripeEnvironment{PublicKey: cfg.StripePublicKey != "", Secret: cfg.StripeSecretConfigured, Webhook: cfg.StripeEnabled}, cfg.SessionSecret),
+		domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled}, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities)
 	auditSummaryHandler := handler.NewAuditSummaryHandler(service.NewAuditSummaries(repository.NewAuditSummaries(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	suppliersHandler := handler.NewSuppliersHandler(service.NewSuppliers(repository.NewSuppliers(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	carnetListHandler := handler.NewCarnetListHandler(service.NewCarnetLists(repository.NewCarnetList(db), time.Now), service.NewCarnetInfos(repository.NewCarnetList(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
@@ -229,6 +234,7 @@ func run() (runErr error) {
 	e.Any("/check-inconsistencies", inconsistenciesHandler.Check, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/carnet/list", carnetListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/carnet/:uid/info", carnetListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/search/profile/:username", searchProfileHandler.Profile, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/stats", auditSummaryHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/models", auditSummaryHandler.Models, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/supplier/list", suppliersHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
