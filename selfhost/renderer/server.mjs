@@ -1,6 +1,28 @@
+import fs from 'node:fs';
 import http from 'node:http';
-import {chromium} from 'playwright-core';
+import {
+    Browser,
+    computeExecutablePath,
+    detectBrowserPlatform,
+} from '@puppeteer/browsers';
+import puppeteer from 'puppeteer-core';
 import {BrowserPool, PoolUnavailableError} from './browser-pool.mjs';
+
+const PINNED_BROWSER_BUILD = '156.0.8078.47';
+const BROWSER_CACHE_DIR = process.env.PUPPETEER_CACHE_DIR || '/opt/puppeteer';
+const platform = detectBrowserPlatform();
+if (!platform) {
+    throw new Error(`Unsupported host platform: ${process.platform}/${process.arch}`);
+}
+const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || computeExecutablePath({
+    browser: Browser.CHROMEHEADLESSSHELL,
+    buildId: PINNED_BROWSER_BUILD,
+    cacheDir: BROWSER_CACHE_DIR,
+    platform,
+});
+if (!fs.existsSync(executablePath)) {
+    throw new Error(`Pinned Chromium executable is missing: ${executablePath}`);
+}
 
 function positiveInt(value, fallback, label) {
     if (value == null || value === '') return fallback;
@@ -17,6 +39,11 @@ const acquireTimeoutMs = positiveInt(
     process.env.RENDER_POOL_ACQUIRE_TIMEOUT_MS,
     30000,
     'RENDER_POOL_ACQUIRE_TIMEOUT_MS',
+);
+const requestTimeoutMs = positiveInt(
+    process.env.RENDER_REQUEST_TIMEOUT_MS,
+    55000,
+    'RENDER_REQUEST_TIMEOUT_MS',
 );
 const browserMaxAgeMs = positiveInt(
     process.env.RENDER_BROWSER_MAX_AGE_MS,
@@ -39,13 +66,13 @@ const allowedHosts = new Set(
 );
 
 const browserPool = new BrowserPool({
-    launchBrowser: () => chromium.launch({
+    launchBrowser: () => puppeteer.launch({
+        executablePath,
         headless: true,
-        // Playwright disables the Chromium sandbox in containers. The service
-        // still runs as node with no-new-privileges and all capabilities dropped.
-        chromiumSandbox: false,
         timeout: 30000,
+        protocolTimeout: requestTimeoutMs + 5000,
         args: [
+            '--block-new-web-contents',
             '--disable-background-networking',
             '--disable-background-timer-throttling',
             '--disable-component-update',
@@ -54,11 +81,16 @@ const browserPool = new BrowserPool({
             '--disable-extensions',
             '--disable-renderer-backgrounding',
             '--disable-sync',
+            '--disable-web-sockets',
             '--metrics-recording-only',
             '--mute-audio',
             '--no-default-browser-check',
             '--no-first-run',
-            '--disable-features=AutofillServerCommunication,MediaRouter,OptimizationHints,OptimizationGuideModelDownloading,Translate',
+            // Docker's default seccomp profile does not provide Chromium's
+            // user-namespace sandbox. The service remains non-root with all
+            // capabilities dropped, a read-only root, and no-new-privileges.
+            '--no-sandbox',
+            '--disable-features=AutofillServerCommunication,MediaRouter,OptimizationHints,OptimizationGuideModelDownloading,ServiceWorker,Translate',
         ],
     }),
     size: poolSize,
@@ -76,6 +108,76 @@ class RenderRequestError extends Error {
     }
 }
 
+class RenderAbortedError extends Error {
+    constructor(message = 'Render request was aborted') {
+        super(message);
+        this.name = 'RenderAbortedError';
+        this.statusCode = 499;
+    }
+}
+
+class RenderTimeoutError extends Error {
+    constructor(message = 'Render request exceeded its total timeout') {
+        super(message);
+        this.name = 'RenderTimeoutError';
+        this.statusCode = 504;
+    }
+}
+
+function abortable(promise, signal) {
+    if (!signal) return promise;
+    if (signal.aborted) {
+        return Promise.reject(signal.reason || new RenderAbortedError());
+    }
+    return new Promise((resolve, reject) => {
+        const onAbort = () => reject(signal.reason || new RenderAbortedError());
+        signal.addEventListener('abort', onAbort, {once: true});
+        Promise.resolve(promise).then(
+            value => {
+                signal.removeEventListener('abort', onAbort);
+                resolve(value);
+            },
+            error => {
+                signal.removeEventListener('abort', onAbort);
+                reject(error);
+            },
+        );
+    });
+}
+
+function abortableDelay(milliseconds, signal) {
+    if (signal?.aborted) {
+        return Promise.reject(signal.reason || new RenderAbortedError());
+    }
+    return new Promise((resolve, reject) => {
+        let onAbort;
+        const cleanup = () => {
+            clearTimeout(timer);
+            if (onAbort) signal.removeEventListener('abort', onAbort);
+        };
+        const timer = setTimeout(() => {
+            cleanup();
+            resolve();
+        }, milliseconds);
+        if (signal) {
+            onAbort = () => {
+                cleanup();
+                reject(signal.reason || new RenderAbortedError());
+            };
+            signal.addEventListener('abort', onAbort, {once: true});
+        }
+    });
+}
+
+function withDeadline(promise, milliseconds, message) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new RenderTimeoutError(message)), milliseconds);
+        timer.unref();
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 function sendJson(response, status, payload, headers = {}) {
     const body = JSON.stringify(payload);
     response.writeHead(status, {
@@ -90,7 +192,6 @@ function sendJson(response, status, payload, headers = {}) {
 async function readJson(request) {
     const chunks = [];
     let size = 0;
-
     for await (const chunk of request) {
         size += chunk.length;
         if (size > 1024 * 1024) {
@@ -98,7 +199,6 @@ async function readJson(request) {
         }
         chunks.push(chunk);
     }
-
     try {
         return JSON.parse(Buffer.concat(chunks).toString('utf8'));
     } catch (_) {
@@ -154,173 +254,173 @@ function clampNonNegative(value, fallback, max = SAFE_MAX_WAIT_MS, label = 'valu
     return number;
 }
 
-function requestIsHealthy(browser) {
-    return browser.isConnected();
+function strippedHeaders(headers, restrictedNames) {
+    const result = {...headers};
+    for (const name of Object.keys(result)) {
+        if (restrictedNames.has(name.toLowerCase())) delete result[name];
+    }
+    return result;
 }
 
-async function resolveNavigation(context, target, extraHeaders, timeout) {
-    if (Object.keys(extraHeaders).length === 0) {
-        return {url: target, authAllowed: true};
-    }
-
-    let current = target;
-    let authAllowed = true;
-    const visited = new Set();
-    for (let redirects = 0; redirects <= 10; redirects++) {
-        if (visited.has(current.href)) {
-            throw new RenderRequestError('Target redirect loop detected');
-        }
-        visited.add(current.href);
-
-        const response = await context.request.fetch(current.href, {
-            method: 'HEAD',
-            headers: authAllowed ? extraHeaders : {},
-            maxRedirects: 0,
-            failOnStatusCode: false,
-            timeout,
-        });
-        const status = response.status();
-        const location = response.headers().location;
-        await response.dispose();
-
-        if (status < 300 || status >= 400 || !location) {
-            return {url: current, authAllowed};
-        }
-        let next;
-        try {
-            next = new URL(location, current);
-        } catch (_) {
-            throw new RenderRequestError('Target returned an invalid redirect location');
-        }
-        if (!['http:', 'https:'].includes(next.protocol)) {
-            throw new RenderRequestError('Redirect uses an unsupported protocol');
-        }
-        if (!allowedHosts.has(next.hostname.toLowerCase())) {
-            throw new RenderRequestError(`Redirect host is not allowed: ${next.hostname}`);
-        }
-        authAllowed = authAllowed && next.origin === target.origin;
-        current = next;
-    }
-    throw new RenderRequestError('Target exceeded the redirect limit');
-}
-
-async function renderPdf(payload) {
+async function renderPdf(payload, signal) {
     const target = validateTarget(payload.url);
-
     const width = clampPositiveInt(payload.device?.width, 1920, SAFE_MAX_DIMENSION, 'viewport width');
     const height = clampPositiveInt(payload.device?.height, 1080, SAFE_MAX_DIMENSION, 'viewport height');
     const deviceScaleFactor = clampPositiveFloat(payload.device?.scale, 1, SAFE_MAX_SCREEN_SCALE, 'device scale');
-
     const gotoTimeout = clampPositiveInt(payload.render?.timeout, 30000, 120000, 'navigation timeout');
     const waitTime = clampNonNegative(payload.render?.waitTime, 0, SAFE_MAX_WAIT_MS, 'waitTime');
-
     const pdfScale = clampPositiveFloat(payload.pdf?.scale, 1, SAFE_MAX_SCALE, 'PDF scale');
     const pdfTimeout = clampPositiveInt(payload.pdf?.timeout, gotoTimeout, 120000, 'PDF timeout');
-
-    const targetOrigin = target.origin;
     const extraHeaders = payload.headers && typeof payload.headers === 'object'
-        ? Object.fromEntries(Object.entries(payload.headers).map(([key, value]) => [key, String(value)]))
+        ? Object.fromEntries(
+            Object.entries(payload.headers)
+                .filter(([, value]) => value != null)
+                .map(([key, value]) => [key, String(value)]),
+        )
         : {};
+    const restrictedNames = new Set(Object.keys(extraHeaders).map(name => name.toLowerCase()));
 
     const resource = await browserPool.acquire();
-    let context;
+    let browserContext;
     let failed = false;
     try {
-        if (!requestIsHealthy(resource.browser)) {
+        if (!resource.browser.connected) {
             failed = true;
             throw new PoolUnavailableError('Renderer browser disconnected');
         }
-
-        context = await resource.browser.newContext({
-            viewport: {width, height},
-            deviceScaleFactor,
-            userAgent: payload.device?.userAgent || undefined,
-            locale: payload.device?.locale || undefined,
-            timezoneId: payload.device?.timezone || undefined,
-            javaScriptEnabled: payload.device?.javascriptEnabled !== false,
-            serviceWorkers: 'block',
+        browserContext = await abortable(
+            resource.browser.createBrowserContext(),
+            signal,
+        );
+        const page = await abortable(browserContext.newPage(), signal);
+        await page.setRequestInterception(true);
+        await page.setBypassServiceWorker(true);
+        await page.setJavaScriptEnabled(payload.device?.javascriptEnabled !== false);
+        await page.evaluateOnNewDocument(() => {
+            class BlockedWebSocket {
+                constructor() {
+                    throw new Error('WebSockets are disabled during PDF rendering');
+                }
+            }
+            Object.defineProperty(window, 'WebSocket', {
+                configurable: false,
+                writable: false,
+                value: BlockedWebSocket,
+            });
         });
-        const page = await context.newPage();
-        const navigation = await resolveNavigation(
-            context,
-            target,
-            extraHeaders,
-            gotoTimeout,
-        );
-        const restrictedNames = new Set(
-            Object.keys(extraHeaders).map(name => name.toLowerCase()),
-        );
-        const authorizedNavigations = new WeakSet();
+        await page.setViewport({width, height, deviceScaleFactor});
+        await page.setDefaultTimeout(gotoTimeout);
+        await page.setDefaultNavigationTimeout(gotoTimeout);
+        if (payload.device?.userAgent) await page.setUserAgent(payload.device.userAgent);
+        if (payload.device?.timezone) await page.emulateTimezone(payload.device.timezone);
+
+        const cdp = await page.createCDPSession();
+        await cdp.send('Network.enable');
+        await cdp.send('Network.setBlockedURLs', {urls: ['ws://*', 'wss://*']});
+        page.on('websocket', webSocket => {
+            void Promise.resolve(webSocket.close()).catch(() => {});
+        });
+        browserContext.on('targetcreated', target => {
+            void (async () => {
+                if (target.type() !== 'page') return;
+                const popup = await target.page();
+                if (!popup || popup === page) return;
+                await popup.setRequestInterception(true);
+                popup.on('request', request => request.abort('blockedbyclient').catch(() => {}));
+                await popup.close().catch(() => {});
+            })().catch(error => console.error('[renderer] Popup cleanup failed:', error));
+        });
+
+        const authorizedInitialNavigations = new WeakSet();
         let initialNavigationStarted = false;
+        let requestGuardError;
 
-        await page.route('**/*', async route => {
-            const request = route.request();
-            let requestUrl;
-            try {
-                requestUrl = new URL(request.url());
-            } catch (_) {
-                await route.abort('blockedbyclient').catch(() => {});
-                return;
-            }
+        page.on('request', request => {
+            void (async () => {
+                try {
+                    let requestUrl;
+                    try {
+                        requestUrl = new URL(request.url());
+                    } catch (_) {
+                        await request.abort('blockedbyclient');
+                        return;
+                    }
 
-            if (!['http:', 'https:'].includes(requestUrl.protocol)) {
-                if (/^(data|blob|about|javascript):/i.test(requestUrl.protocol)) {
-                    await route.continue().catch(() => {});
-                    return;
+                    if (requestUrl.protocol === 'ws:' || requestUrl.protocol === 'wss:') {
+                        await request.abort('blockedbyclient');
+                        return;
+                    }
+                    if (!['http:', 'https:'].includes(requestUrl.protocol)) {
+                        if (/^(data|blob|about|javascript):/i.test(requestUrl.protocol)) {
+                            await request.continue();
+                            return;
+                        }
+                        await request.abort('blockedbyclient');
+                        return;
+                    }
+
+                    const isMainNavigation = (
+                        request.isNavigationRequest()
+                        && request.frame() === page.mainFrame()
+                    );
+                    if (!allowedHosts.has(requestUrl.hostname.toLowerCase())) {
+                        console.error(`[renderer] Blocked request to disallowed host: ${requestUrl.hostname}`);
+                        if (isMainNavigation) {
+                            requestGuardError ||= new RenderRequestError(
+                                `Redirect host is not allowed: ${requestUrl.hostname}`,
+                            );
+                        }
+                        await request.abort('blockedbyclient');
+                        return;
+                    }
+
+                    const chain = request.redirectChain();
+                    const isInitialNavigation = (
+                        isMainNavigation
+                        && !initialNavigationStarted
+                        && chain.length === 0
+                        && requestUrl.origin === target.origin
+                    );
+                    const isAuthorizedRedirect = (
+                        isMainNavigation
+                        && chain.length > 0
+                        && authorizedInitialNavigations.has(chain[0])
+                        && [...chain, request].every(item => (
+                            new URL(item.url()).origin === target.origin
+                        ))
+                    );
+                    const authorized = isInitialNavigation || isAuthorizedRedirect;
+                    if (authorized) {
+                        initialNavigationStarted = true;
+                        authorizedInitialNavigations.add(request);
+                    }
+
+                    const headers = strippedHeaders(request.headers(), restrictedNames);
+                    if (authorized && Object.keys(extraHeaders).length > 0) {
+                        Object.assign(headers, extraHeaders);
+                    }
+                    await request.continue({headers});
+                } catch (error) {
+                    requestGuardError ||= error;
+                    await request.abort('failed').catch(() => {});
                 }
-                console.error(`[renderer] Blocked non-HTTP network request: ${requestUrl.href}`);
-                await route.abort('blockedbyclient').catch(() => {});
-                return;
-            }
-
-            if (!allowedHosts.has(requestUrl.hostname.toLowerCase())) {
-                console.error(`[renderer] Blocked request to disallowed host: ${requestUrl.hostname}`);
-                await route.abort('blockedbyclient').catch(() => {});
-                return;
-            }
-
-            const headers = {...request.headers()};
-            const isTopLevelNavigation = (
-                request.isNavigationRequest()
-                && request.frame() === page.mainFrame()
-            );
-            let authorized = false;
-            if (isTopLevelNavigation) {
-                const redirectedFrom = request.redirectedFrom();
-                authorized = (
-                    navigation.authAllowed
-                    && (
-                        (
-                            !initialNavigationStarted
-                            && requestUrl.origin === target.origin
-                        )
-                        || (
-                            redirectedFrom
-                            && authorizedNavigations.has(redirectedFrom)
-                            && requestUrl.origin === target.origin
-                        )
-                    )
-                );
-                if (authorized) {
-                    initialNavigationStarted = true;
-                    authorizedNavigations.add(request);
-                }
-            }
-
-            if (authorized) {
-                Object.assign(headers, extraHeaders);
-            } else {
-                for (const name of Object.keys(headers)) {
-                    if (restrictedNames.has(name.toLowerCase())) delete headers[name];
-                }
-            }
-            await route.continue({headers}).catch(() => {});
+            })();
         });
 
-        page.setDefaultTimeout(gotoTimeout);
-        const waitUntil = payload.render?.waitUntil?.startsWith('networkidle') ? 'networkidle' : 'load';
-        const response = await page.goto(navigation.url.toString(), {waitUntil, timeout: gotoTimeout});
-
+        const requestedWait = payload.render?.waitUntil;
+        const waitUntil = requestedWait?.startsWith('networkidle')
+            ? ['load', 'networkidle2']
+            : ['load'];
+        let response;
+        try {
+            response = await abortable(
+                page.goto(target.toString(), {waitUntil, timeout: gotoTimeout}),
+                signal,
+            );
+        } catch (error) {
+            throw requestGuardError || error;
+        }
+        if (requestGuardError) throw requestGuardError;
         if (!response) {
             throw new RenderRequestError('Navigation produced no response (possible network error)');
         }
@@ -330,60 +430,58 @@ async function renderPdf(payload) {
             );
         }
 
-        if (waitTime > 0) {
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
+        if (waitTime > 0) await abortableDelay(waitTime, signal);
 
         const options = payload.pdf || {};
+        const format = options.format || 'A4';
         const size = options.width || options.height
             ? {width: options.width, height: options.height}
-            : {format: options.format || 'A4'};
-        const pdf = await page.pdf({
-            ...size,
-            landscape: Boolean(options.landscape),
-            printBackground: options.printBackground !== false,
-            displayHeaderFooter: Boolean(options.displayHeaderFooter),
-            headerTemplate: options.headerTemplate || '',
-            footerTemplate: options.footerTemplate || '',
-            margin: options.margin || {top: '1cm', right: '0', bottom: '1cm', left: '0'},
-            preferCSSPageSize: Boolean(options.preferCSSPageSize),
-            omitBackground: Boolean(options.omitBackground),
-            pageRanges: options.pageRanges || undefined,
-            scale: pdfScale,
-            timeout: pdfTimeout,
-        });
-        return pdf;
+            : format.toLowerCase() === 'a4'
+                ? {width: '595.92pt', height: '842.88pt'}
+                : {format};
+        const pdf = await abortable(
+            withDeadline(page.pdf({
+                ...size,
+                landscape: Boolean(options.landscape),
+                printBackground: options.printBackground !== false,
+                displayHeaderFooter: Boolean(options.displayHeaderFooter),
+                headerTemplate: options.headerTemplate || '',
+                footerTemplate: options.footerTemplate || '',
+                margin: options.margin || {top: '1cm', right: '0', bottom: '1cm', left: '0'},
+                preferCSSPageSize: Boolean(options.preferCSSPageSize),
+                omitBackground: Boolean(options.omitBackground),
+                pageRanges: options.pageRanges || undefined,
+                scale: pdfScale,
+            }), pdfTimeout, 'PDF generation timed out'),
+            signal,
+        );
+        return Buffer.from(pdf);
     } catch (error) {
-        failed = true;
-        if (error?.name === 'TimeoutError') {
-            error.statusCode = 504;
-        }
+        failed = !(error instanceof RenderRequestError);
+        if (error?.name === 'TimeoutError') error.statusCode = 504;
         throw error;
     } finally {
-        if (context) {
-            await context.close().catch(() => {});
+        if (browserContext) {
+            await withDeadline(
+                browserContext.close(),
+                5000,
+                'Browser context close timed out',
+            ).catch(() => {});
         }
         browserPool.release(resource, {destroy: failed || !resource.connected});
     }
 }
 
 async function healthCheck() {
-    const resource = await browserPool.acquire({timeoutMs: 10000});
-    let context;
-    let failed = false;
-    try {
-        context = await resource.browser.newContext({serviceWorkers: 'block'});
-        const page = await context.newPage();
-        await page.close();
-    } catch (error) {
-        failed = true;
-        throw error;
-    } finally {
-        if (context) {
-            await context.close().catch(() => {});
+    await withDeadline(browserPool.probeBrowser(async browser => {
+        const browserContext = await browser.createBrowserContext();
+        try {
+            const page = await browserContext.newPage();
+            await page.close();
+        } finally {
+            await browserContext.close().catch(() => {});
         }
-        browserPool.release(resource, {countRender: false, destroy: failed || !resource.connected});
-    }
+    }), 2500, 'Renderer health check timed out');
 }
 
 const server = http.createServer(async (request, response) => {
@@ -407,6 +505,17 @@ const server = http.createServer(async (request, response) => {
         return;
     }
 
+    const controller = new AbortController();
+    const abortOnClose = () => {
+        if (!response.writableEnded) controller.abort(new RenderAbortedError());
+    };
+    const timeout = setTimeout(() => {
+        controller.abort(new RenderTimeoutError());
+    }, requestTimeoutMs);
+    timeout.unref();
+    request.once('aborted', abortOnClose);
+    response.once('close', abortOnClose);
+
     try {
         const payload = await readJson(request);
         if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -418,23 +527,28 @@ const server = http.createServer(async (request, response) => {
         if (!payload.url || typeof payload.url !== 'string') {
             throw new RenderRequestError('A target URL is required');
         }
-
-        const pdf = await renderPdf(payload);
+        const pdf = await renderPdf(payload, controller.signal);
+        if (response.destroyed) return;
         response.writeHead(200, {
             'content-type': 'application/pdf',
             'content-length': pdf.length,
             'cache-control': 'no-store',
         });
-        response.end(Buffer.from(pdf));
+        response.end(pdf);
     } catch (error) {
+        if (response.destroyed) return;
         console.error('[renderer]', error);
-        const status = error.statusCode || 400;
+        const status = error.statusCode || 502;
         sendJson(
             response,
             status,
             {error: error.message || 'Rendering failed'},
             status === 503 ? {'retry-after': '5'} : {},
         );
+    } finally {
+        clearTimeout(timeout);
+        request.off('aborted', abortOnClose);
+        response.off('close', abortOnClose);
     }
 });
 

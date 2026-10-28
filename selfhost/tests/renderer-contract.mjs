@@ -24,6 +24,14 @@ function docker(...args) {
     return result.stdout.trim();
 }
 
+function dockerCombinedOutput(...args) {
+    const result = spawnSync('docker', [...dockerContextArgs, ...args], {
+        encoding: 'utf8',
+        maxBuffer: 10 * 1024 * 1024,
+    });
+    return `${result.stdout || ''}${result.stderr || ''}`.trim();
+}
+
 async function freePort() {
     return new Promise((resolve, reject) => {
         const server = net.createServer();
@@ -40,6 +48,8 @@ function resetHeaders() {
     fixture.state.maxConcurrent = 0;
     fixture.state.activeConcurrent = 0;
     fixture.state.serviceWorkerRequests = 0;
+    fixture.state.websocketAttempts = 0;
+    fixture.state.popupTargets = 0;
     fixture.state.stateReports.length = 0;
 }
 
@@ -143,6 +153,8 @@ async function startFixture() {
         stateReports: [],
         activeConcurrent: 0,
         maxConcurrent: 0,
+        websocketAttempts: 0,
+        popupTargets: 0,
     };
 
     const server = http.createServer(async (request, response) => {
@@ -152,6 +164,7 @@ async function startFixture() {
             host,
             pathname: url.pathname,
             auth: request.headers['x-render-auth'] || '',
+            method: request.method,
         });
 
         const apiOrigin = `http://api.renderer.test:${port}`;
@@ -190,12 +203,21 @@ async function startFixture() {
             response.writeHead(302, {location: `${apiOrigin}/fixture/invoice`});
             return response.end();
         }
+        if (url.pathname === '/fixture/redirect-chain') {
+            response.writeHead(302, {location: `${apiOrigin}/fixture/redirect-same`});
+            return response.end();
+        }
         if (url.pathname === '/fixture/redirect-cross') {
             response.writeHead(302, {location: `${assetOrigin}/fixture/invoice`});
             return response.end();
         }
         if (url.pathname === '/fixture/redirect-blocked') {
             response.writeHead(302, {location: `http://blocked.renderer.test:${port}/fixture/invoice`});
+            return response.end();
+        }
+        if (url.pathname === '/fixture/redirect-get-only') {
+            if (request.method === 'HEAD') return html(invoiceBody(assetOrigin));
+            response.writeHead(302, {location: `http://blocked.renderer.test:${port}/fixture/popup-target`});
             return response.end();
         }
         if (url.pathname === '/fixture/slow') {
@@ -209,33 +231,50 @@ async function startFixture() {
             return html(invoiceBody(assetOrigin, 'Documento con attesa'));
         }
         if (url.pathname === '/fixture/state-set') {
-            return html(`<!doctype html><script>
+            return html(`<!doctype html><html><body><script>
                 localStorage.setItem('renderer-state', 'leaked-local-storage');
                 sessionStorage.setItem('renderer-state', 'leaked-session-storage');
                 document.cookie = 'renderer_state=leaked-cookie; path=/';
                 document.body.textContent = 'state stored';
-                </script>`);
+                </script></body></html>`);
         }
         if (url.pathname === '/fixture/state-check') {
-            return html(`<!doctype html><script>
+            return html(`<!doctype html><html><body><script>
                 const params = new URLSearchParams({
                     local: localStorage.getItem('renderer-state') || '',
                     session: sessionStorage.getItem('renderer-state') || '',
                     cookie: document.cookie,
                 });
-                fetch('/fixture/state-report?' + params.toString());
+                const report = new Image();
+                report.src = '/fixture/state-report?' + params.toString();
                 document.body.textContent = 'state checked';
-                </script>`);
+                </script></body></html>`);
         }
         if (url.pathname === '/fixture/state-report') {
             state.stateReports.push(Object.fromEntries(url.searchParams));
             return html('reported');
         }
         if (url.pathname === '/fixture/register-sw') {
-            return html(`<!doctype html><script>
+            return html(`<!doctype html><html><body><script>
                 navigator.serviceWorker.register('/service-worker.js').catch(() => {});
                 document.body.textContent = 'service worker requested';
-                </script>`);
+                </script></body></html>`);
+        }
+        if (url.pathname === '/fixture/popup') {
+            return html(`<!doctype html><html><body><script>
+                window.open('http://blocked.renderer.test:${port}/fixture/popup-target', '_blank');
+                document.body.textContent = 'popup requested';
+                </script></body></html>`);
+        }
+        if (url.pathname === '/fixture/popup-target') {
+            state.popupTargets++;
+            return html('popup target');
+        }
+        if (url.pathname === '/fixture/websocket') {
+            return html(`<!doctype html><html><body><script>
+                new WebSocket('ws://api.renderer.test:${port}/socket');
+                document.body.textContent = 'websocket requested';
+                </script></body></html>`);
         }
         if (url.pathname === '/service-worker.js') {
             state.serviceWorkerRequests++;
@@ -265,6 +304,10 @@ async function startFixture() {
         }
         response.writeHead(404, {'content-type': 'text/html'});
         response.end('<h1>Pagina non trovata</h1>');
+    });
+    server.on('upgrade', (request, socket) => {
+        state.websocketAttempts++;
+        socket.destroy();
     });
 
     await new Promise((resolve, reject) => {
@@ -303,7 +346,12 @@ async function expectPdf(origin, pathname, fixturePort, options = {}) {
         url: `http://api.renderer.test:${fixturePort}${pathname}`,
         headers: options.headers || {'x-render-auth': 'fixture-secret-marker'},
         device: {width: 1920, height: 1080, scale: 1},
-        render: {waitTime: 200, timeout: 30000, waitUntil: 'networkidle2'},
+        render: {
+            waitTime: 200,
+            timeout: 30000,
+            waitUntil: 'networkidle2',
+            ...options.render,
+        },
         pdf: {
             scale: 1,
             displayHeaderFooter: false,
@@ -332,7 +380,7 @@ async function main() {
     const name = `assozeta-renderer-contract-${process.pid}-${Date.now()}`;
     let passed = false;
     const dockerRun = [
-        'run', '--detach', '--rm', '--name', name,
+        'run', '--detach', '--name', name,
         '--publish', `127.0.0.1:${rendererPort}:3000`,
         '--add-host', 'api.renderer.test:host-gateway',
         '--add-host', 'assets.renderer.test:host-gateway',
@@ -366,24 +414,37 @@ async function main() {
             const pdf = await expectPdf(rendererOrigin, pathname, fixture.state.port);
             assert.ok(pdf.length > 1000, `${title} PDF is unexpectedly small`);
         }
-        assert.equal(headerAt('assets.renderer.test', '/pixel.png')?.auth, '');
+        for (const pathname of ('/asset.css /asset.svg /pixel.png'.split(' '))) {
+            assert.ok(
+                fixture.state.headers.filter(entry => entry.pathname === pathname).length >= 4,
+                `${pathname} was not requested by every representative document`,
+            );
+            assert.equal(headerAt('assets.renderer.test', pathname)?.auth || '', '');
+        }
+        assert.equal(fixture.state.headers.filter(entry => entry.method === 'HEAD').length, 0);
+        assert.equal(
+            fixture.state.headers.filter(entry => entry.method === 'GET' && entry.pathname === '/fixture/invoice').length,
+            1,
+        );
 
         resetHeaders();
-        await expectPdf(rendererOrigin, '/fixture/redirect-same', fixture.state.port);
+        await expectPdf(rendererOrigin, '/fixture/redirect-chain', fixture.state.port);
+        assert.equal(headerAt('api.renderer.test', '/fixture/redirect-chain')?.auth, 'fixture-secret-marker');
         assert.equal(headerAt('api.renderer.test', '/fixture/redirect-same')?.auth, 'fixture-secret-marker');
         assert.equal(headerAt('api.renderer.test', '/fixture/invoice')?.auth, 'fixture-secret-marker');
 
         resetHeaders();
         await expectPdf(rendererOrigin, '/fixture/redirect-cross', fixture.state.port);
         assert.equal(headerAt('api.renderer.test', '/fixture/redirect-cross')?.auth, 'fixture-secret-marker');
-        assert.equal(headerAt('assets.renderer.test', '/fixture/invoice')?.auth, '');
+        assert.equal(headerAt('assets.renderer.test', '/fixture/invoice')?.auth || '', '');
 
         resetHeaders();
         await expectPdf(rendererOrigin, '/fixture/external-assets', fixture.state.port);
-        assert.equal(headerAt('assets.renderer.test', '/asset.css')?.auth, '');
-        assert.equal(headerAt('assets.renderer.test', '/asset.js')?.auth, '');
-        assert.equal(headerAt('assets.renderer.test', '/asset.svg')?.auth, '');
-        assert.equal(headerAt('assets.renderer.test', '/frame')?.auth, '');
+        assert.equal(headerAt('assets.renderer.test', '/asset.css')?.auth || '', '');
+        assert.equal(headerAt('assets.renderer.test', '/asset.js')?.auth || '', '');
+        assert.equal(headerAt('assets.renderer.test', '/asset.svg')?.auth || '', '');
+        assert.ok(headerAt('assets.renderer.test', '/frame'));
+        assert.equal(headerAt('assets.renderer.test', '/frame')?.auth || '', '');
 
         resetHeaders();
         let response = await render(rendererOrigin, {
@@ -394,6 +455,15 @@ async function main() {
         assert.notEqual(response.status, 200);
         assert.equal(headerAt('blocked.renderer.test', '/fixture/invoice'), undefined);
 
+        resetHeaders();
+        response = await render(rendererOrigin, {
+            type: 'pdf',
+            url: `http://api.renderer.test:${fixture.state.port}/fixture/redirect-get-only`,
+            headers: {'x-render-auth': 'fixture-secret-marker'},
+        });
+        assert.notEqual(response.status, 200);
+        assert.equal(headerAt('blocked.renderer.test', '/fixture/popup-target'), undefined);
+
         response = await render(rendererOrigin, {
             type: 'pdf',
             url: `http://blocked.renderer.test:${fixture.state.port}/fixture/invoice`,
@@ -402,7 +472,9 @@ async function main() {
 
         resetHeaders();
         await expectPdf(rendererOrigin, '/fixture/state-set', fixture.state.port);
-        await expectPdf(rendererOrigin, '/fixture/state-check', fixture.state.port);
+        await expectPdf(rendererOrigin, '/fixture/state-check', fixture.state.port, {
+            render: {waitTime: 1000},
+        });
         assert.deepEqual(fixture.state.stateReports, [{local: '', session: '', cookie: ''}]);
 
         resetHeaders();
@@ -410,6 +482,10 @@ async function main() {
             pdf: {format: 'A4'},
         });
         assert.equal(fixture.state.serviceWorkerRequests, 0);
+        await expectPdf(rendererOrigin, '/fixture/popup', fixture.state.port);
+        assert.equal(fixture.state.popupTargets, 0);
+        await expectPdf(rendererOrigin, '/fixture/websocket', fixture.state.port);
+        assert.equal(fixture.state.websocketAttempts, 0);
 
         resetHeaders();
         const concurrent = await Promise.all(Array.from({length: 4}, () => expectPdf(
@@ -421,10 +497,14 @@ async function main() {
         assert.ok(fixture.state.maxConcurrent >= 1);
         assert.ok(fixture.state.maxConcurrent <= 2);
 
-        const exhaustion = await Promise.all(Array.from({length: 3}, () => render(rendererOrigin, {
+        const exhaustionPromises = Array.from({length: 3}, () => render(rendererOrigin, {
             type: 'pdf',
             url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=15000`,
-        })));
+        }));
+        await new Promise(resolve => setTimeout(resolve, 200));
+        response = await fetch(`${rendererOrigin}/healthz`, {signal: AbortSignal.timeout(3000)});
+        assert.equal(response.status, 200);
+        const exhaustion = await Promise.all(exhaustionPromises);
         assert.deepEqual(exhaustion.map(item => item.status).sort(), [200, 200, 503]);
 
         response = await render(rendererOrigin, {
@@ -434,6 +514,18 @@ async function main() {
         });
         assert.equal(response.status, 504);
         await waitForHealth(rendererOrigin);
+
+        await assert.rejects(fetch(`${rendererOrigin}/render`, {
+            method: 'POST',
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify({
+                type: 'pdf',
+                url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=5000`,
+            }),
+            signal: AbortSignal.timeout(200),
+        }));
+        await waitForHealth(rendererOrigin);
+        await expectPdf(rendererOrigin, '/fixture/invoice', fixture.state.port);
 
         response = await render(rendererOrigin, {
             type: 'pdf',
@@ -506,12 +598,45 @@ async function main() {
         await waitForHealth(rendererOrigin);
         await expectPdf(rendererOrigin, '/fixture/invoice', fixture.state.port);
 
+        const timeoutPort = await freePort();
+        const timeoutOrigin = `http://127.0.0.1:${timeoutPort}`;
+        const timeoutName = `assozeta-renderer-deadline-${process.pid}-${Date.now()}`;
+        containers.push(timeoutName);
+        docker(
+            'run', '--detach', '--name', timeoutName,
+            '--publish', `127.0.0.1:${timeoutPort}:3000`,
+            '--add-host', 'api.renderer.test:host-gateway',
+            '--read-only',
+            '--tmpfs', '/tmp:rw,size=512m,mode=1777',
+            '--cap-drop', 'ALL',
+            '--security-opt', 'no-new-privileges:true',
+            '--env', 'RENDER_ALLOWED_HOSTS=api.renderer.test',
+            '--env', 'RENDER_POOL_SIZE=1',
+            '--env', 'RENDER_REQUEST_TIMEOUT_MS=1500',
+            image,
+        );
+        await waitForHealth(timeoutOrigin);
+        const deadlineStarted = Date.now();
+        response = await render(timeoutOrigin, {
+            type: 'pdf',
+            url: `http://api.renderer.test:${fixture.state.port}/fixture/slow?delay=5000`,
+            render: {timeout: 120000},
+        });
+        const deadlineElapsed = Date.now() - deadlineStarted;
+        assert.equal(response.status, 504);
+        assert.ok(deadlineElapsed < 60000, `total deadline took ${deadlineElapsed} ms`);
+        docker('stop', '--time', '10', timeoutName);
+
         console.log('Renderer API, security, isolation, pool and recovery contracts passed.');
         passed = true;
     } finally {
         if (!passed) {
             try {
-                console.error(`--- renderer logs: ${name} ---\n${docker('logs', name)}`);
+                console.error(`--- fixture requests: ${JSON.stringify(fixture.state.headers)}`);
+                console.error(
+                    `--- renderer state: ${docker('inspect', name, '--format', '{{json .State}}')}`,
+                );
+                console.error(`--- renderer logs: ${name} ---\n${dockerCombinedOutput('logs', name)}`);
             } catch (_) {
                 // Keep the original failure if logs are unavailable.
             }

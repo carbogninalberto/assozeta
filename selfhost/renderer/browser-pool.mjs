@@ -22,7 +22,7 @@ async function readFirst(paths) {
 }
 
 export async function readContainerMemory() {
-    const usedText = await readFirst([
+    const currentText = await readFirst([
         '/sys/fs/cgroup/memory.current',
         '/sys/fs/cgroup/memory/memory.usage_in_bytes',
     ]);
@@ -30,10 +30,26 @@ export async function readContainerMemory() {
         '/sys/fs/cgroup/memory.max',
         '/sys/fs/cgroup/memory/memory.limit_in_bytes',
     ]);
-    const used = Number.parseInt(usedText, 10);
+    const statText = await readFirst([
+        '/sys/fs/cgroup/memory.stat',
+        '/sys/fs/cgroup/memory/memory.stat',
+    ]);
+    const stat = new Map(
+        statText.split('\n')
+            .map(line => line.trim().split(/\s+/))
+            .filter(parts => parts.length === 2)
+            .map(([key, value]) => [key, Number.parseInt(value, 10)]),
+    );
+    const current = Number.parseInt(currentText, 10);
+    const anonymous = stat.get('anon');
+    const kernel = stat.get('kernel');
+    const used = Number.isFinite(anonymous)
+        ? anonymous + (Number.isFinite(kernel) ? kernel : 0)
+        : current;
     const limit = Number.parseInt(limitText, 10);
     return {
         usedBytes: Number.isFinite(used) && used > 0 ? used : null,
+        currentBytes: Number.isFinite(current) && current > 0 ? current : null,
         limitBytes: Number.isFinite(limit) && limit > 0 ? limit : null,
     };
 }
@@ -73,7 +89,7 @@ export class BrowserPool extends EventEmitter {
         this.launching = 0;
         this.leases = 0;
         this.shuttingDown = false;
-        this.lastMemory = {usedBytes: null, limitBytes: memoryLimitBytes};
+        this.lastMemory = {usedBytes: null, currentBytes: null, limitBytes: memoryLimitBytes};
         this.metrics = {
             launched: 0,
             renders: 0,
@@ -162,10 +178,24 @@ export class BrowserPool extends EventEmitter {
 
     async refreshMemory() {
         this.lastMemory = await readContainerMemory();
-        if (!this.lastMemory.limitBytes) {
+        if (this.memoryLimitBytes) {
             this.lastMemory.limitBytes = this.memoryLimitBytes;
         }
         return this.lastMemory;
+    }
+
+    async probeBrowser(callback) {
+        let leased;
+        let resource = [...this.resources].find(item => item.connected && !item.destroying);
+        if (!resource) {
+            leased = await this.acquire({timeoutMs: 1500});
+            resource = leased;
+        }
+        try {
+            return await callback(resource.browser);
+        } finally {
+            if (leased) this.release(leased, {countRender: false});
+        }
     }
 
     getStats() {
@@ -289,7 +319,7 @@ export class BrowserPool extends EventEmitter {
         this._removeIdle(resource);
         this.resources.delete(resource);
         this.metrics.destroyed++;
-        if (resource.connected && resource.browser?.isConnected()) {
+        if (resource.connected) {
             await withTimeout(
                 resource.browser.close(),
                 5000,

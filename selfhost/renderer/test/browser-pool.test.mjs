@@ -121,6 +121,28 @@ test('replaces a browser after disconnection', async () => {
     await pool.drain();
 });
 
+test('health probes use a leased browser without taking another pool slot', async () => {
+    const launcher = fakeLauncher();
+    const pool = new BrowserPool({
+        launchBrowser: launcher.launch,
+        size: 1,
+        warmSize: 1,
+    });
+    await pool.warmUp();
+    const leased = await pool.acquire();
+
+    let probed;
+    await pool.probeBrowser(async browser => {
+        probed = browser;
+    });
+
+    assert.equal(probed, leased.browser);
+    assert.equal(pool.getStats().leased, 1);
+    assert.equal(pool.getStats().launching, 0);
+    pool.release(leased);
+    await pool.drain();
+});
+
 test('recycles a browser after its request budget is spent', async () => {
     const launcher = fakeLauncher();
     const pool = new BrowserPool({

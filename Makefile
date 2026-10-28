@@ -112,10 +112,12 @@ selfhost-smoke:
 	@./selfhost/tests/smoke.sh
 
 selfhost-renderer-test:
+	@npm --prefix selfhost/renderer test
 	@docker build -t assozeta-renderer:test ./selfhost/renderer
 	@node selfhost/tests/renderer-contract.mjs assozeta-renderer:test
 
 selfhost-production-smoke:
+	@npm --prefix selfhost/renderer test
 	@docker build --target production --build-arg VERSION=test -t assozeta-backend:test ./BE
 	@docker build --target production -t assozeta-web:test ./UI
 	@docker build -t assozeta-renderer:test ./selfhost/renderer

@@ -2,12 +2,14 @@
 
 This service is a PDF-only adaptation of the browser-pool approach used by
 `carbogninalberto/fast-html2pdfapi`. It deliberately keeps only the HTTP
-contract, Playwright Chromium, and request isolation required by Assozeta.
+contract, Puppeteer with pinned Chrome Headless Shell, and request isolation
+required by Assozeta.
 Screenshots, images, video/FFmpeg, HTML capture, API documentation, and their
 dependencies are not included.
 
 ## Runtime design
 
+- `puppeteer-core` 25.16.0 controls Chrome Headless Shell 156.0.8078.47.
 - `POST /render` accepts Assozeta's existing JSON payload and returns PDF bytes.
 - `GET /healthz` opens and closes a page, matching Compose and diagnostics.
 - Browser processes are bounded by `RENDER_POOL_SIZE` and requests wait for a
@@ -30,6 +32,7 @@ dependencies are not included.
 | `RENDER_ALLOWED_HOSTS` | `api` | Comma-separated exact hostname allowlist |
 | `RENDER_POOL_SIZE` | `2` | Maximum concurrent browser processes |
 | `RENDER_POOL_ACQUIRE_TIMEOUT_MS` | `30000` | Maximum wait for a browser slot |
+| `RENDER_REQUEST_TIMEOUT_MS` | `55000` | Total per-request budget, below the backend's 60-second limit |
 | `RENDER_BROWSER_MAX_AGE_MS` | `600000` | Browser lifetime before recycling |
 | `RENDER_BROWSER_MAX_REQUESTS` | `100` | Renders before browser recycling |
 | `RENDER_MEMORY_LIMIT_MB` | container cgroup limit | Optional memory-pressure override |
@@ -38,9 +41,11 @@ dependencies are not included.
 `RENDER_BROWSER_MAX_MEMORY_MB`-style checks based on
 `process.memoryUsage().heapUsed` are intentionally absent: that value excludes
 Chromium processes. This renderer reads `memory.current`/`memory.max` (or their
-cgroup v1 equivalents), which covers the service container and its browsers.
-Recycling remains based on age and request count because a shared cgroup value
-cannot safely identify one browser's contribution.
+cgroup v1 equivalents), uses process-backed `anon + kernel` from `memory.stat`
+for pressure decisions, and exposes raw current usage separately. It covers the
+service container and its browsers rather than only the Node.js heap. Recycling
+remains based on age and request count because a shared cgroup value cannot
+safely identify one browser's contribution.
 
 ## Verification
 
@@ -56,8 +61,10 @@ DOCKER_CONTEXT=desktop-linux \
 
 The contract test uses synthetic invoice, receipt, subscription, and multipage
 documents with images, a signature, multiple fonts, host restrictions,
-redirects, external assets, state isolation, service-worker blocking,
-concurrency, exhaustion, timeouts, HTTP failures, and browser-crash recovery.
+inline scripts, styles, redirects, external assets, state isolation,
+service-worker, popup and WebSocket blocking, saturated health probes,
+client disconnects, concurrency, exhaustion, total deadlines, HTTP failures,
+and browser-crash recovery.
 The benchmark uses the same authenticated Assozeta-style request, reports
 startup, sequential percentiles, concurrent throughput, container cgroup
 memory, and image size, and can save generated PDFs when

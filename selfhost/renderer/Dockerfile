@@ -12,20 +12,33 @@ FROM node:22-bookworm-slim
 ENV NODE_ENV=production \
     PORT=3000 \
     RENDER_ALLOWED_HOSTS=api \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    PUPPETEER_CACHE_DIR=/opt/puppeteer \
     TMPDIR=/tmp
 
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 
-# Keep the browser and its fonts pinned. The dependency installation includes
-# the Playwright font set needed by Italian and international documents.
+# Keep Chrome Headless Shell and the document font set pinned.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    node node_modules/playwright-core/cli.js install --with-deps --only-shell chromium \
-    && rm -rf /ms-playwright/ffmpeg-* /root/.npm \
-    && chmod -R a+rX /ms-playwright
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        fonts-freefont-ttf \
+        fonts-ipafont-gothic \
+        fonts-liberation \
+        fonts-noto-color-emoji \
+        fonts-tlwg-loma-otf \
+        fonts-unifont \
+        fonts-wqy-zenhei \
+        unzip \
+    && node node_modules/@puppeteer/browsers/lib/main-cli.js install \
+        chrome-headless-shell@156.0.8078.47 \
+        --path "$PUPPETEER_CACHE_DIR" \
+        --install-deps \
+    && rm -rf /var/lib/apt/lists/* /root/.npm \
+    && chmod -R a+rX "$PUPPETEER_CACHE_DIR"
 
 COPY fontconfig.conf /etc/fonts/conf.d/60-assozeta-fonts.conf
 RUN fc-cache -f \
