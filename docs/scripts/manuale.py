@@ -25,8 +25,12 @@ import time
 import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[2]
+_shards_spec = importlib.util.spec_from_file_location('manuale_capture_shards', Path(__file__).with_name('manuale_capture_shards.py'))
+capture_shards = importlib.util.module_from_spec(_shards_spec)
+_shards_spec.loader.exec_module(capture_shards)
 
 
 def runtime_check(root=None):
@@ -788,7 +792,7 @@ def prepare(args):
     if (application / 'docs/scripts/manuale-project.mjs').is_file():
         tooling.append('docs/scripts/manuale-project.mjs')
     for relative in ('docs/scripts/manuale-ci.py', 'docs/scripts/manuale-policy.py',
-                     'BE/application/manuale/render_reuse.py'):
+                     'BE/application/manuale/render_reuse.py', 'docs/scripts/manuale_capture_shards.py'):
         if (application / relative).is_file():
             tooling.append(relative)
     state['tooling_hashes'] = {relative: sha(application / relative) for relative in sorted(set(tooling))}
@@ -956,6 +960,32 @@ def capture(state):
                     shutil.copy2(run / master, target)
     state.update({'status': 'capturing', 'capture_id': secrets.token_hex(8)})
     write_json(run / 'run.json', state)
+    concurrency = capture_shards.resolve_concurrency(state.get('capture_concurrency'))
+    plan = capture_shards.partition(recipe_registry(Path(state['application']))['recipes'],
+                                    state['selected_recipes'], concurrency) if concurrency > 1 else []
+    if len(plan) > 1:
+        # Independent private stacks per extra shard; validated deterministic merge.
+        capture_shards.capture_sharded(capture_runner(), state, plan)
+    else:
+        (run / capture_shards.MANIFEST).unlink(missing_ok=True)
+        capture_batch(state)
+    if baseline.exists():
+        execute(management(state, 'compare_manuale_captures', '--run', '/manual-run',
+            '--output', '/manual-run/variance.json'), run, 'Measure repeated screenshot variance and enforce identical-input stability')
+    state['status'] = 'captured'
+    write_json(run / 'run.json', state)
+    remember_run(state)
+
+
+def capture_runner():
+    """Runtime helpers for capture shards, resolved at call time."""
+    names = ('compose', 'management', 'execute', 'free_port', 'write_json', 'recipe_registry', 'recipe_seed_options')
+    return SimpleNamespace(**{name: globals()[name] for name in names})
+
+
+def capture_batch(state):
+    """The sequential capture: one shared service stack, reseeded before every workflow."""
+    run = Path(state['run'])
     environment = {**os.environ, 'ASSOZETA_MANUAL_RUN': str(run), 'ASSOZETA_MANUAL_APPLICATION': state['application']}
     capture_error = None
     batch = {'format': 1, 'status': 'running', 'capture_id': state['capture_id'], 'scenarios': []}
@@ -1001,12 +1031,6 @@ def capture(state):
             batch['status'] = 'failed' if capture_error or state['fixture_reset'] != 'passed' else 'passed'
             write_json(run / 'capture-execution.json', batch)
             write_json(run / 'run.json', state)
-    if baseline.exists():
-        execute(management(state, 'compare_manuale_captures', '--run', '/manual-run',
-            '--output', '/manual-run/variance.json'), run, 'Measure repeated screenshot variance and enforce identical-input stability')
-    state['status'] = 'captured'
-    write_json(run / 'run.json', state)
-    remember_run(state)
 
 
 def generate(state):
@@ -1170,7 +1194,16 @@ def cleanup(state):
         raise RuntimeError('Refusing cleanup of an unowned project')
     if Path(state['override']).resolve().parent != run or Path(state['application']).resolve().parent != run:
         raise RuntimeError('Run paths are not owned by this cleanup')
+    shard_error = None
+    try:
+        # Extra capture shard stacks left behind by an interrupted capture.
+        capture_shards.teardown_recorded(capture_runner(), state)
+    except Exception as error:
+        shard_error = error
     execute(compose(state, '--profile', 'tools', 'down', '--volumes', '--remove-orphans'), run, 'Remove only this run’s services and data volumes')
+    if shard_error is not None:
+        write_json(run / 'run.json', state)
+        raise RuntimeError('Capture shard cleanup failed: ' + str(shard_error)) from shard_error
     remaining = subprocess.check_output(['docker', 'ps', '-aq', '--filter', 'label=com.docker.compose.project=' + state['project']], text=True).strip()
     if remaining:
         raise RuntimeError('Run-owned containers remain after cleanup')
@@ -1311,6 +1344,11 @@ def argument_parser():
     parser.add_argument('--manual-changed-since', help='Incremental verification using manual changes since this Git ref')
     parser.add_argument('--workflow', action='append', metavar='ID',
                         help='Capture a named workflow; repeat for several workflows')
+    parser.add_argument('--workflows', metavar='ID,ID',
+                        help='Comma-separated workflows to capture (same as repeated --workflow); '
+                             'MANUALE_CAPTURE_WORKFLOWS applies to new capture/prepare runs when no workflow option is given')
+    parser.add_argument('--capture-concurrency', metavar='N|auto',
+                        help='Independent capture shards (default MANUALE_CAPTURE_CONCURRENCY, else 1 = sequential)')
     parser.add_argument('--no-cache', action='store_true', help='Use a cold build/capture without automatic evidence or frontend reuse')
     parser.add_argument('--reuse-frontend', help='Reuse a rendered run’s compiled bundle after verifying identical UI inputs')
     parser.add_argument('--reuse-evidence', metavar='BASELINE_RUN',
@@ -1328,6 +1366,16 @@ def argument_parser():
 def main():
     parser = argument_parser()
     args = parser.parse_args()
+    try:
+        explicit = [*(args.workflow or []), *([args.workflows] if args.workflows else [])]
+        if explicit:
+            args.workflow = capture_shards.selected_workflows(explicit)
+        elif args.command in ('capture', 'prepare') and not args.run:
+            args.workflow = capture_shards.selected_workflows((), os.environ) or None
+        if args.capture_concurrency is not None:
+            capture_shards.resolve_concurrency(args.capture_concurrency)
+    except ValueError as error:
+        parser.error(str(error))
     if args.command == 'verify-release' and (args.allow_dirty or args.edit_content or args.install_dev):
         parser.error('verify-release requires committed inputs without editorial generation or development installation')
     if args.no_cache and (args.reuse_evidence or args.reuse_frontend):
@@ -1360,6 +1408,8 @@ def main():
             parser.error('--run is required for this command')
         if runtime_report:
             write_json(Path(state['run']) / 'runtime-preflight.json', runtime_report)
+        if args.capture_concurrency is not None:
+            state['capture_concurrency'] = args.capture_concurrency
         if args.command == 'verify-release' and args.run:
             # Packaging revalidates every required acceptance artifact. A
             # completed run can cross this boundary without another generation.
