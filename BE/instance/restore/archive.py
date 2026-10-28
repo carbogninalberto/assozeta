@@ -217,31 +217,38 @@ class Archive:
 
         deleted_field = Associate._meta.get_field('deleted')
         tax_field = Associate._meta.get_field('tax_code')
-        active_tax_codes = {
-            tax_field.to_python(row['tax_code']).upper(): str(row['associate_id'])
-            for row in associates if str(row.get('associate_id')) in member_ids
-            and not deleted_field.to_python(row.get('deleted', False))
-            and row.get('tax_code') is not None
-        }
+        active_tax_codes = {}
+        for row in associates:
+            association = row.get('sport_association_id')
+            if (association and str(association) == self.association_id
+                    and not deleted_field.to_python(row.get('deleted', False))
+                    and row.get('tax_code') is not None):
+                tax_code = tax_field.to_python(row['tax_code']).upper()
+                if tax_code in active_tax_codes:
+                    raise RestoreError(f'Codice fiscale duplicato tra le anagrafiche attive: {row["associate_id"]}.')
+                active_tax_codes[tax_code] = str(row['associate_id'])
         self.reassigned_tutor_ids = set()
         self.ignored_tutor_ids = set()
         self.tutor_overrides = {}
         self.tutor_reassignments = []
-        # Local members retain their tax codes. If foreign tutors share a code,
-        # UUID order picks the keeper consistently, independent of ZIP row order.
-        for row in sorted(associates, key=lambda row: str(row.get('associate_id'))):
+        # Local members retain their tax codes. Legacy anagrafiche without an
+        # association are imported into it, then foreign tutors; if either
+        # shares a code, UUID order picks the keeper independent of ZIP order.
+        for row in sorted(associates, key=lambda row: (bool(row.get('sport_association_id')),
+                                                       str(row.get('associate_id')))):
             identity = str(row.get('associate_id'))
             association = row.get('sport_association_id')
-            if not association or str(association) == self.association_id:
+            if association and str(association) == self.association_id:
                 continue
-            if identity not in referenced_ids:
-                self.ignored_tutor_ids.add(identity)
-                continue
-            if identity not in tutor_ids:
-                continue  # Other referenced foreign records still fail validation.
-            UUID(str(association))
-            overrides = {'sport_association_id': self.association_id}
-            detail = {'associate_id': identity, 'source_association_id': str(association),
+            if association:
+                if identity not in referenced_ids:
+                    self.ignored_tutor_ids.add(identity)
+                    continue
+                if identity not in tutor_ids:
+                    continue  # Other referenced foreign records still fail validation.
+                UUID(str(association))
+            overrides = {'sport_association_id': self.association_id} if association else {}
+            detail = {'associate_id': identity, 'source_association_id': str(association) if association else None,
                       'name': ' '.join(str(row.get(field) or '') for field in ('first_name', 'last_name')).strip()}
             tax_code = tax_field.to_python(row.get('tax_code'))
             if tax_code is not None and not deleted_field.to_python(row.get('deleted', False)):
@@ -251,6 +258,14 @@ class Archive:
                     detail.update(original_tax_code=tax_code, conflicting_associate_id=conflict)
                 else:
                     active_tax_codes[tax_code.upper()] = identity
+            if not association:
+                # The importer assigns these rows to the association anyway;
+                # only a cleared tax code needs an override and a report entry.
+                if overrides:
+                    row.update(overrides)
+                    self.tutor_overrides[identity] = overrides
+                    self.tutor_reassignments.append(detail)
+                continue
             row.update(overrides)
             self.reassigned_tutor_ids.add(identity)
             self.tutor_overrides[identity] = overrides
