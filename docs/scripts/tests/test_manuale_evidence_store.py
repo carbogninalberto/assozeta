@@ -224,6 +224,8 @@ class FingerprintTests(StoreFixture):
         def dependencies(root, workflow_id):
             calls.append((Path(root), workflow_id))
             return ['BE/members/views.py']
+        # The precise analysis applies to trees that carry an impact map.
+        write(self.code, 'docs/manuale/impact-map.json', {'format': 1})
         with patch.object(store, '_impact_module', return_value=types.SimpleNamespace(workflow_dependencies=dependencies)):
             precise = self.fingerprint()
             self.assertEqual(calls[-1], (self.code.resolve(), 'unit-members'))

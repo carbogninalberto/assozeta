@@ -164,21 +164,59 @@ def capture_input_hashes(application):
             for relative in sorted(set(filter(None, names)))}
 
 
+EVIDENCE_STORE_MODULE = 'docs/scripts/manuale_evidence_store.py'
+SELECTION_NAME = 'evidence-store-selection.json'
+
+
+def evidence_store_gate(state):
+    """The snapshot's evidence-store gate, bound to the snapshot's reuse verifier."""
+    if EVIDENCE_STORE_MODULE not in state['tooling_hashes']:
+        raise RuntimeError('Evidence-store reuse requires the snapshotted evidence-store verifier')
+    path = Path(state['application']) / EVIDENCE_STORE_MODULE
+    spec = importlib.util.spec_from_file_location('run_owned_manual_evidence_store', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    # Same tool-hash-checked verifier as the retained-evidence plan gate.
+    module.reuse = retained_evidence_helper(state)
+    return module
+
+
+def admit_store_selection(state, selection, exclude):
+    """Admit evidence-store-selection.json entries as explicit per-workflow provenance."""
+    try:
+        result = evidence_store_gate(state).admit_selection(
+            state, selection, exclude=exclude, repository=os.environ.get('GITHUB_REPOSITORY') or None)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        # An unusable selection is a cold miss, never a partial admission.
+        state['cache']['decisions'].append({'kind': 'evidence-store', 'result': 'unavailable', 'reason': str(exc)})
+        return {}
+    state['cache']['decisions'].append({
+        'kind': 'evidence-store', 'result': 'checked', 'retained': len(result['admitted']),
+        'admitted': sorted(result['admitted']), 'rejected': result['rejected']})
+    return result['admitted']
+
+
 def reuse_inputs(state, args):
     """Reuse by default, with explicit cold runs and recorded rejection reasons."""
     cold = getattr(args, 'no_cache', False)
     state.setdefault('selection', {})
     explicit = getattr(args, 'reuse_evidence', None)
+    store_selection = getattr(args, 'reuse_store', None)
     candidates = ([{'run': explicit, 'evidence': True,
                     'frontend': (Path(explicit) / 'frontend-build.json').is_file()}] if explicit else
                   [] if cold else cached_runs(state['manual_repository']))
-    state['cache'] = {'mode': 'disabled' if cold else 'explicit' if explicit else 'automatic', 'decisions': []}
+    state['cache'] = {'mode': 'disabled' if cold and not store_selection else 'explicit' if explicit or store_selection
+                      else 'automatic', 'decisions': []}
     helper = None
     chosen = None
     target_hashes = None
     force_selected = bool(args.changed_since or args.manual_changed_since or getattr(args, 'workflow', None))
-    maximum_retained = len(recipe_registry(Path(state['application']))['recipes']) - (
+    # Explicitly selected workflows always stay fresh, whatever the store holds.
+    admitted = (admit_store_selection(state, store_selection, set(state['selected_recipes']) if force_selected else set())
+                if store_selection else {})
+    maximum_retained = len(recipe_registry(Path(state['application']))['recipes']) - len(admitted) - (
         len(state['selected_recipes']) if force_selected else 0)
+    store_ids = set(admitted)
     for candidate in candidates:
         if not candidate.get('evidence'):
             continue
@@ -221,9 +259,11 @@ def reuse_inputs(state, args):
                                        root=Path(state['application']), decisions=input_decisions,
                                        base_root=previous['application'], report=impact)
             affected = sorted(set(affected) | set(registry_affected))
-            fresh = sorted(set(affected) | set(state['selected_recipes'] if force_selected else []))
-            probe = helper.build_reuse_plan({**state, 'selected_recipes': fresh},
-                                           baseline, stage=False)
+            fresh = sorted((set(affected) | set(state['selected_recipes'] if force_selected else [])) - store_ids)
+            eligible = ([recipe['id'] for recipe in current_registry['recipes'] if recipe['id'] not in store_ids]
+                        if store_ids else None)
+            probe = helper.build_reuse_plan({**state, 'selected_recipes': fresh}, baseline, stage=False,
+                                           eligible_recipes=eligible)
         except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
             if explicit and not getattr(args, 'baseline_optional', False):
                 raise
@@ -241,21 +281,31 @@ def reuse_inputs(state, args):
         if explicit or len(probe['reused_recipes']) == maximum_retained:
             break
     complete = getattr(args, 'command', '') in ('run', 'build', 'verify-release')
-    if complete or (chosen and not force_selected):
-        retained = set(chosen[1]['reused_recipes'] if chosen else [])
+    if complete or ((chosen or admitted) and not force_selected):
+        retained = set(chosen[1]['reused_recipes'] if chosen else []) | store_ids
         state['selected_recipes'] = [recipe['id'] for recipe in recipe_registry(Path(state['application']))['recipes']
                                      if recipe['id'] not in retained]
-    if chosen:
-        baseline, probe = chosen
+    elif admitted:
+        state['selected_recipes'] = [identifier for identifier in state['selected_recipes'] if identifier not in store_ids]
+    if chosen or admitted:
+        baseline, probe = chosen if chosen else (None, {'reused_recipes': [], 'rejected': []})
         for decision in state['cache']['decisions']:
-            decision['selected'] = decision.get('run') == baseline
+            if decision.get('kind') != 'evidence-store':
+                decision['selected'] = decision.get('run') == baseline
+        helper = helper or retained_evidence_helper(state)
         # Stage only after the read-only compatibility probe; a staging integrity
         # failure must stop this run, never silently fall through to another cache.
-        plan = helper.build_reuse_plan(state, baseline, stage=True, eligible_recipes=probe['reused_recipes'])
+        plan = helper.build_reuse_plan(state, baseline, stage=True, eligible_recipes=probe['reused_recipes'],
+                                       admitted=admitted)
         file = Path(state['run']) / 'evidence-reuse.json'
         state['reuse_evidence'] = baseline
         state['evidence_reuse'] = {'path': file.name, 'sha256': sha(file), 'reused_recipes': plan['reused_recipes']}
         state['selection'].update(retained_recipes=plan['reused_recipes'], reuse_rejections=probe.get('rejected', []))
+        if admitted:
+            # Explicit per-workflow provenance: these keep their original
+            # producer, commit and capture id, and are never presented as fresh.
+            state['evidence_store'] = {'selection': SELECTION_NAME, 'reused_workflows': sorted(store_ids)}
+            state['selection']['store_retained_recipes'] = sorted(store_ids)
         if not force_selected:
             state['selection']['mode'] = 'full-compatible-reuse'
         validate_retained_evidence(state)
@@ -862,6 +912,8 @@ def prepare(args):
         tooling.append('docs/scripts/manuale-coverage.py')
     if (application / 'BE/application/manuale/reuse.py').is_file():
         tooling.append('BE/application/manuale/reuse.py')
+    if (application / EVIDENCE_STORE_MODULE).is_file():
+        tooling.append(EVIDENCE_STORE_MODULE)
     for relative in (IMPACT_MODULE, IMPACT_MAP):
         if (application / relative).is_file() and relative not in tooling:
             tooling.append(relative)
@@ -1411,6 +1463,9 @@ def argument_parser():
     parser.add_argument('--reuse-frontend', help='Reuse a rendered run’s compiled bundle after verifying identical UI inputs')
     parser.add_argument('--reuse-evidence', metavar='BASELINE_RUN',
                         help='Retain individually compatible unselected workflows from a previously verified run')
+    parser.add_argument('--reuse-store', metavar='SELECTION_DIR',
+                        help='Retain workflows materialized from the evidence store (directory with '
+                             'evidence-store-selection.json); every hash and fingerprint is re-verified')
     parser.add_argument('--edit-content', action='store_true', help='Generate bounded Codex drafts before existing capture/verification')
     parser.add_argument('--editor-profile', help='Explicit installed Codex profile for editorial generation')
     parser.add_argument('--editor-model', help='Explicit model override; otherwise use the CLI default')
@@ -1438,6 +1493,8 @@ def main():
         parser.error('verify-release requires committed inputs without editorial generation or development installation')
     if args.no_cache and (args.reuse_evidence or args.reuse_frontend):
         parser.error('--no-cache cannot be combined with explicit reuse')
+    if args.reuse_store and not (Path(args.reuse_store) / 'evidence-store-selection.json').is_file():
+        parser.error('--reuse-store needs a directory containing evidence-store-selection.json')
     if args.run and args.workflow:
         parser.error('--workflow selects a new capture; a retained --run keeps its recorded selection')
     if args.workflow and (args.changed_since or args.manual_changed_since):

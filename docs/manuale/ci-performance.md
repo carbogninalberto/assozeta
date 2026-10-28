@@ -168,3 +168,168 @@ start Mintlify.
 The local unit suite (`python3 -m unittest discover -s docs/scripts/tests -p
 'test_manuale*.py'`, 207 tests before this change) took 126.5 s on a developer
 laptop on 2026-10-28.
+
+## Redesign
+
+### Architecture
+
+```mermaid
+flowchart TD
+  change[PR / push / release] --> plan[plan job: manuale-ci.py plan<br/>manuale_impact.py impact report]
+  plan -->|unaffected| offline[Mode A offline job<br/>Python + Node contracts, Bot/MCP SimpleTestCase suites,<br/>manifest-only store lookup. No Docker]
+  plan -->|content| content[Mode A content job<br/>admit baseline, compile, offline reader render check, index.<br/>No Docker]
+  content -->|needs a capture| verify
+  plan -->|behavioral / full| verify[manuale-verify.yml verify job]
+  subgraph steps [verify job steps]
+    storeidx[store-fetch index artifact<br/>authenticate producers via GitHub API] --> storeplan[store-plan with impact report]
+    storeplan -->|reusable entries| blobs[store-fetch blobs of the same producer run<br/>digest-checked]
+    blobs --> materialize[store-materialize<br/>full re-verification]
+    materialize --> prepare[prepare --reuse-store + trusted whole-run baseline]
+    storeplan -->|nothing reusable| prepare
+    prepare --> capture[capture remaining workflows<br/>MANUALE_CAPTURE_CONCURRENCY shards]
+    capture --> compile[compile] --> render[reader_render offline check] --> runtime[reader, MCP, assistant, access control]
+    runtime --> package[bundle for exact revision + release] --> bind[store-bind: release-binding.json]
+    bind --> candidate[store-publish candidate<br/>trusted refs only]
+  end
+  verify --> appliance[appliance: compatibility or full rehearsal] --> gate[gate]
+  gate -->|authorized, trusted ref| publish[manuale-evidence-publish.yml<br/>compact previous trusted store, merge candidate,<br/>upload index + blobs artifacts]
+  release[manuale-release.yml Mode C] --> verify
+  release --> authorize[authorize job] --> publish
+```
+
+### Modes
+
+- **A, fast incremental** (`offline` and `content` jobs): provably unaffected
+  changes and manual text-only changes. No Docker, Postgres, Redis, MinIO or
+  application images. Text-only changes recompile and re-index from admitted
+  evidence and run the offline in-app reader render check (`--phase render`,
+  `BE/application/manuale/reader_render.py`). If any workflow would need a
+  capture, `content` escalates to `verify`.
+- **B, incremental behavioral** (`verify` with `comprehensive: false`): only
+  the workflows the impact report marks affected, plus every workflow neither
+  the store nor the trusted baseline can cover, are captured, in bounded
+  parallel shards. Reused evidence is merged with explicit per-workflow
+  provenance. Reader, MCP, assistant, access-control and package checks run on
+  the complete result.
+- **C, comprehensive release** (`manuale-release.yml`): no impact narrowing,
+  contracts, full historical appliance rehearsal and the explicit
+  `authorize` job. A Mode A or B result never authorizes publication; the gate
+  rejects any non-comprehensive run.
+
+`unknown`, `security` and `shared-contract` files fail closed to full
+verification. Schedules and `force_full` also run full verification.
+
+### Evidence identity and release identity
+
+- **Evidence identity** is the per-workflow fingerprint
+  (`manuale_evidence_store.workflow_fingerprint`): the impact module's
+  `workflow_dependencies`, the literal import closure of the capture tooling,
+  shared capture tooling (including `manuale_capture_shards.py`), fixtures and
+  fixture version, browser environment, reference date, page mapping and the
+  evidence schema version. An entry is reusable across commits while the
+  fingerprint is identical.
+- **Trust** comes only from the GitHub API: the producer run must be a
+  successful push, release, schedule or dispatch of an approved workflow on the
+  default branch or a release tag in this repository. PR artifacts are never a
+  trusted baseline, and PR runs never publish the store. Download digests must
+  match the artifact digest the API reports.
+- **Admission** (`admit_selection`, used by `manuale.py --reuse-store`)
+  re-verifies selection, manifest, evidence record, report and screenshot
+  hashes, recomputes the fingerprint from the target checkout, and runs the same
+  report and editorial gates as a whole-run baseline. It produces ordinary
+  `evidence-reuse.json` entries marked `source: evidence-store` that keep the
+  original application revision, capture id and producer. The retained-plan
+  gate (also run by the corpus index and export) re-checks the embedded store
+  manifest chain. ManualIndex, bundle and release checks are unchanged.
+- **Release identity** is application commit + manual revision + version.
+  `store-bind` writes `release-binding.json` for every workflow (fresh,
+  store-reused, baseline-reused). The binding is rebuilt for every release and
+  is rejected for any other identity.
+
+### Expected behavior per scenario
+
+Impact CLI results (`manuale-ci.py plan --base HEAD --changed-file PATH`,
+working-tree edits in a scratch worktree of this branch). "Mode" is the CI
+decision; "workflows" is the affected count out of 60. Wall times are not
+measured yet (see "After").
+
+| Change | Category | Mode | Workflows | Jobs started |
+| --- | --- | --- | ---: | --- |
+| New `BE_GO/cmd/probe.go` (unrelated tree) | unrelated | unaffected | 0 | plan, offline (no Bot/MCP suites) |
+| One paragraph of `manuale/docs/comunicazioni.mdx` | docs-text | content | 0 | plan, offline (Bot + MCP suites), content |
+| `UI/src/routes/profile/sections/TwoFactor.svelte` (recipe UI) | behavior | behavioral | 4 | plan, offline, verify (4 fresh captures), appliance (compatibility) |
+| `selfhost/tests/browser/manuale/scenario.mjs` (shared capture tool) | capture-tooling | behavioral | 60 | plan, offline, verify (all captures), appliance (compatibility) |
+| New function in `BE/core/authentication.py` (auth) | security | full | 60 | plan, offline, verify forced full, full appliance rehearsal |
+| New function in `BE/application/agent/core.py` (Bot) | bot | unaffected | 0 | plan, offline with the Bot suites |
+| New function in `BE/application/mcp_server/server.py` (MCP) | mcp | unaffected | 0 | plan, offline with the MCP suites |
+| New function in `BE/application/mcp_server/security.py` (MCP auth) | security | full | 60 | as for auth |
+| New function in `BE/communications/views.py` | behavior | behavioral | 3 | verify with the 3 communication workflows |
+
+`BE/communications/views.py` is already covered: the
+`communication-message-compose`, `communication-welcome-state` and
+`communication-workflow-manage` recipes declare it, and a changed function used
+only by the staff board selects all 60 workflows through the dashboard recipes.
+No extra mapping was needed. The impact CLI took 4 to 5 s per call on a
+developer laptop (local measurement, not GitHub Actions).
+
+### Limitations and trade-offs
+
+- The store fingerprint uses the precise impact closure. Production files that
+  the older prefix-based reuse contract lists but the impact analysis proves
+  unreachable are not part of the fingerprint, so a store entry can be reused
+  when such a file changed. The whole-run baseline gate keeps its byte-for-byte
+  prefix comparison. The tooling import closure and every file a capture
+  recorded in `source_hashes` must still match exactly.
+- Store reuse adds to an admitted trusted whole-run baseline; it does not
+  replace it. When no baseline is admitted, `manuale-policy.verification_decision`
+  still chooses full verification (infrastructure changes are detected against
+  the baseline), and `prepare` drops the store reuse. Relaxing this would need
+  a policy decision; it was left conservative.
+- Wording-only MDX edits change no fingerprint (the fingerprint uses the page
+  mapping, not prose), and the reviewed-wording gate still applies at
+  admission. An entry without reviewed section bindings is captured fresh.
+- Store trust is established at restore time with the GitHub API. The offline
+  gates afterwards re-check integrity and structural producer rules only.
+- The blobs artifact is close to the size of all screenshots. It is downloaded
+  only when at least one workflow is reusable, and by the post-gate publisher.
+  Publishing is skipped when every workflow reused trusted evidence, so a store
+  with no fresh captures for 90 days expires and the next run is cold.
+- MCP-only changes run the offline MCP suites, not the database-backed
+  `test_mcp_stdio.py`. `mcp_server/security.py` is classified `security` and
+  runs full verification.
+- `MANUALE_BUILDX_CACHE=gha` is opt-in and was not exercised on GitHub Actions.
+- Bounded capture shards were not measured on real Docker (a local run ran
+  out of memory in the frontend build). The default is `auto` (2 on a
+  4 vCPU / 16 GB hosted runner) and can be set with
+  `vars.MANUALE_CAPTURE_CONCURRENCY`.
+- `actionlint` passed on the workflows. Embedded shell was not checked because
+  `shellcheck` was not installed.
+
+### Optimizations not implemented
+
+- Skipping the runtime phase (Compose start, migrations, `embedded.mjs`) for
+  Mode B: kept. Reader, access control and MCP must be checked on the complete
+  corpus that the change produces.
+- Skipping or caching the appliance image build in Mode B/C: kept. Package
+  startup and the release checks are mandatory, and reusing images across
+  revisions would break the exact-revision binding.
+- Larger runners or more than 4 shards: not added. No new paid
+  infrastructure, and the shard cap protects 16 GB hosted runners.
+- Remote caching services or a database for evidence: not added. Artifacts
+  and the GitHub API are the only trust and storage layers.
+- Splitting `embedded.mjs` per page for partial reruns: not done. The real
+  browser reader check stays whole-corpus.
+
+## After
+
+To be measured on GitHub Actions. Do not fill these in from estimates.
+
+| Scenario | Wall time | verify job | Fresh / reused workflows | Store index / blobs downloaded | Run |
+| --- | --- | --- | --- | --- | --- |
+| Unrelated change (Mode A) | to be measured on GitHub Actions | n/a | n/a | to be measured on GitHub Actions | |
+| Manual text only (Mode A content) | to be measured on GitHub Actions | n/a | to be measured on GitHub Actions | to be measured on GitHub Actions | |
+| Bot-only / MCP-only (Mode A) | to be measured on GitHub Actions | n/a | n/a | n/a | |
+| One affected workflow (Mode B) | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | |
+| Shared capture tool (Mode B, all workflows, sharded) | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | |
+| Full regeneration / release (Mode C) | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | |
+| First run after merge (cold store) | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | |

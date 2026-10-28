@@ -355,6 +355,62 @@ def store_lookup(store, manual_revision, identifiers, *, repository, root=ROOT):
     return {'source': 'evidence-store', 'hits': hits, 'misses': misses}
 
 
+def restore_store(args, cache=None):
+    """Restore trusted evidence-store manifests, plan per-workflow reuse, materialize hits.
+
+    Order: index artifact (small) -> authenticate producers -> plan with the
+    impact report -> blobs artifact only when something is reusable ->
+    materialize with full re-verification. Every failure is a cold miss.
+    """
+    cache = cache or module('manuale-cache')
+    output = Path(args.output).resolve()
+    store, selection = output / 'store', output / 'selection'
+    report = {'format': 1, 'status': 'cold', 'reused_workflows': [], 'capture_workflows': []}
+    repository = args.repository
+    impact = load_impact(getattr(args, 'impact', None))
+    try:
+        with Stage('evidence-store-index') as stage:
+            index = cache.fetch_store(repository, store, kind='index')
+            report['index'] = {key: index.get(key) for key in ('status', 'producer_run', 'artifact_digest', 'size_in_bytes')}
+            stage.detail.update(status=index['status'], bytes=index.get('size_in_bytes'))
+        if index['status'] != 'available':
+            raise LookupError('no trusted evidence store')
+        with Stage('evidence-store-plan') as stage:
+            trusted = cache.store_producers(store, repository)
+            write(output / 'trusted-producers.json', trusted)
+            plan = cache.plan_store(store, ROOT, trusted_producers=trusted['trusted'], impact=impact,
+                                    reference_date=args.reference_date, repository=repository)
+            write(output / 'store-plan.json', plan)
+            stage.detail.update(plan['counts'])
+        report.update(capture_workflows=plan['capture_workflows'], plan_counts=plan['counts'])
+        if not plan['reused_workflows']:
+            raise LookupError('no reusable workflow evidence at the current fingerprints')
+        with Stage('evidence-store-blobs') as stage:
+            blobs = cache.fetch_store(repository, store, kind='blobs', producer_run=index['producer_run'])
+            report['blobs'] = {key: blobs.get(key) for key in ('status', 'producer_run', 'artifact_digest', 'size_in_bytes')}
+            stage.detail.update(status=blobs['status'], bytes=blobs.get('size_in_bytes'))
+        if blobs['status'] != 'available':
+            raise LookupError('screenshot blobs of the trusted store are unavailable')
+        with Stage('evidence-store-materialize') as stage:
+            result = cache.materialize_store(store, plan, ROOT, selection, trusted_producers=trusted['trusted'],
+                                             reference_date=args.reference_date, repository=repository)
+            stage.detail.update(materialized=len(result['materialized']), rejected=len(result['rejected']))
+        report.update(status='materialized', selection=str(selection),
+                      reused_workflows=sorted(item['workflow_id'] for item in result['materialized']),
+                      capture_workflows=result['capture_workflows'],
+                      rejected=[{'workflow_id': item['workflow_id'], 'reason': sanitize(item['reason'])[:200]}
+                                for item in result['rejected']])
+    except (LookupError, OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
+        report['reason'] = sanitize(str(exc))[:300]
+        if report['status'] != 'materialized':
+            # Never leave a partial selection behind for the verifier.
+            (selection / 'evidence-store-selection.json').unlink(missing_ok=True)
+    write(output / 'store-restore.json', report)
+    outputs(store_reused=len(report['reused_workflows']), store_selection=report['status'] == 'materialized')
+    print(json.dumps({key: report[key] for key in ('status', 'reused_workflows') if key in report}), flush=True)
+    return report
+
+
 def baseline_metadata(repository, policy, *, root=ROOT, api=None):
     """Find an admissible trusted baseline from metadata only; nothing is downloaded."""
     api = api or policy.gh_json
@@ -442,6 +498,14 @@ def cache_report(run=None, admission=None, previous=None):
     if run and (run / 'run.json').is_file():
         state = json.loads((run / 'run.json').read_text())
         for decision in state.get('cache', {}).get('decisions', []):
+            if decision.get('kind') == 'evidence-store':
+                if decision.get('retained'):
+                    report['hits'].append({'name': 'evidence store', 'detail': f"{decision['retained']} workflow(s) reused"})
+                for item in decision.get('rejected', []):
+                    report['misses'].append({'name': 'evidence store ' + str(item.get('workflow_id')),
+                                             'detail': sanitize(item.get('reason', 'rejected'))[:200]})
+                if decision.get('result') == 'unavailable':
+                    report['misses'].append({'name': 'evidence store', 'detail': sanitize(decision.get('reason', ''))[:200]})
             if decision.get('kind') == 'frontend':
                 target = report['hits'] if decision.get('result') == 'reused' else report['misses']
                 target.append({'name': 'frontend build', 'detail': sanitize(decision.get('reason', decision.get('result')))})
@@ -578,6 +642,12 @@ def prepare(args, runner, policy):
         workflows |= set(impact.get('affected_workflows', []))
     force_full = bool(args.force_full or (impact and impact.get('full_verification_required') and not impact.get('fallback')))
     parameters = ['run', '--manual-repo', args.manual_repo, '--output', args.output, '--release', args.release]
+    selection = getattr(args, 'evidence_selection', None)
+    if (not force_full and selection
+            and (Path(selection) / 'evidence-store-selection.json').is_file()):
+        # Verified per-workflow store evidence; admitted (or rejected) again by
+        # the verifier's own gate, never trusted from this directory alone.
+        parameters += ['--reuse-store', selection]
     if force_full:
         parameters += ['--no-cache']
     elif args.baseline and (Path(args.baseline) / 'run.json').is_file():
@@ -600,6 +670,7 @@ def prepare(args, runner, policy):
         state['selected_recipes'] = plan['fresh_workflows']
         state.pop('evidence_reuse', None)
         state.pop('reuse_evidence', None)
+        state.pop('evidence_store', None)
         (Path(state['run']) / 'evidence-reuse.json').unlink(missing_ok=True)
     if impact:
         plan['impact'] = {'mode': impact.get('mode'), 'fallback': bool(impact.get('fallback')),
@@ -681,14 +752,19 @@ def phase(args, runner):
               'reused_workflows': len(plan['reused_workflows']),
               'fresh_render_pages': len(render['fresh_pages']), 'reused_render_pages': len(render['reused_pages']),
               'avoided_browser_workflows': len(plan['reused_workflows']),
-              'avoided_mintlify_pages': len(render['reused_pages']), 'baseline_sealed': sealed, 'timings': timings})
+              'avoided_render_pages': len(render['reused_pages']),
+              # Deprecated alias (Mintlify is no longer used); kept for existing readers.
+              'avoided_mintlify_pages': len(render['reused_pages']),
+              'baseline_sealed': sealed, 'timings': timings})
         outputs(sealed=sealed)
-        print(f"Avoided {len(plan['reused_workflows'])} workflow recaptures and {len(render['reused_pages'])} Mintlify page renders.", flush=True)
+        print(f"Avoided {len(plan['reused_workflows'])} workflow recaptures and {len(render['reused_pages'])} "
+              'reader page render checks.', flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=('pin', 'baseline', 'prepare', 'phase', 'plan', 'offline', 'lookup', 'report', 'gate'))
+    parser.add_argument('command', choices=('pin', 'baseline', 'prepare', 'phase', 'plan', 'offline', 'lookup', 'report',
+                                            'gate', 'store'))
     parser.add_argument('--manual-repo')
     parser.add_argument('--manual-revision')
     parser.add_argument('--repository', default=os.environ.get('GITHUB_REPOSITORY', 'carbogninalberto/assozeta'))
@@ -714,6 +790,8 @@ def main():
     parser.add_argument('--comprehensive', default='true', help='gate: true for release (Mode C) verification')
     parser.add_argument('--revision', help='gate: exact application revision')
     parser.add_argument('--results', help='gate: appliance results.json')
+    parser.add_argument('--evidence-selection', help='prepare: store-materialized selection directory (from store)')
+    parser.add_argument('--reference-date', default='2026-09-30', help='store: capture reference date')
     args = parser.parse_args()
     if args.command == 'plan':
         if not args.output:
@@ -732,6 +810,11 @@ def main():
         if not args.revision:
             parser.error('--revision is required')
         gate(args)
+        return
+    if args.command == 'store':
+        if not args.output:
+            parser.error('--output is required')
+        restore_store(args)
         return
     policy = module('manuale-policy')
     if args.command == 'lookup':

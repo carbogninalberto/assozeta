@@ -178,12 +178,27 @@ jobs:
           python3 docs/scripts/manuale-ci.py baseline
           --manual-repo "$RUNNER_TEMP/manuale"
           --output "$RUNNER_TEMP/manuale-baseline"
+      - name: Restore trusted per-workflow evidence (manifests first, screenshots only when reusable)
+        id: store
+        if: ${{ !inputs.force_full }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMPREHENSIVE: ${{ inputs.comprehensive }}
+        run: |
+          options=()
+          # Affected workflows are always captured fresh; release runs reuse
+          # only fingerprint-identical evidence and still run every check.
+          if [[ "$COMPREHENSIVE" != true && -f "$RUNNER_TEMP/manuale-impact/impact.json" ]]; then
+            options+=(--impact "$RUNNER_TEMP/manuale-impact/impact.json")
+          fi
+          python3 docs/scripts/manuale-ci.py store --output "$RUNNER_TEMP/manuale-store" "${options[@]}"
       - name: Explain fresh, reused and unaffected work
         id: plan
         env:
           FORCE_FULL: ${{ inputs.force_full }}
           SELECTED_WORKFLOWS: ${{ inputs.workflows }}
           COMPREHENSIVE: ${{ inputs.comprehensive }}
+          STORE_SELECTION: ${{ steps.store.outputs.store_selection }}
         run: |
           options=()
           if [[ "$FORCE_FULL" == true ]]; then options+=(--force-full); fi
@@ -191,6 +206,11 @@ jobs:
           # Release verification never narrows its scope from a change analysis.
           if [[ "$COMPREHENSIVE" != true && -f "$RUNNER_TEMP/manuale-impact/impact.json" ]]; then
             options+=(--impact "$RUNNER_TEMP/manuale-impact/impact.json")
+          fi
+          # Store evidence is admitted again by the verifier's own gate; only the
+          # remaining workflows are captured (with MANUALE_CAPTURE_CONCURRENCY shards).
+          if [[ "$STORE_SELECTION" == true ]]; then
+            options+=(--evidence-selection "$RUNNER_TEMP/manuale-store/selection")
           fi
           python3 docs/scripts/manuale-ci.py prepare \
             --manual-repo "$RUNNER_TEMP/manuale" --baseline "$RUNNER_TEMP/manuale-baseline" \
@@ -213,6 +233,37 @@ jobs:
         run: >-
           python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run"
           --phase package --package-output "$RUNNER_TEMP/manuale-package"
+      - name: Bind every workflow's evidence to this exact release identity
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage evidence-release-binding --
+          python3 docs/scripts/manuale-cache.py store-bind --run "$RUNNER_TEMP/manuale-run"
+          --output "$RUNNER_TEMP/manuale-run/release-binding.json"
+      - name: Stage this run's fresh evidence as a store candidate
+        # Trusted refs only; PR runs never produce a trusted baseline. The
+        # candidate becomes trusted only after every gate and the whole run passed.
+        if: >-
+          ${{ !startsWith(github.event_name, 'pull_request') &&
+              (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
+               startsWith(github.ref, 'refs/tags/')) }}
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage evidence-store-candidate --
+          python3 docs/scripts/manuale-cache.py store-publish --run "$RUNNER_TEMP/manuale-run"
+          --store "$RUNNER_TEMP/manuale-store-candidate"
+      - name: Retain the store candidate for the post-gate publisher
+        if: >-
+          ${{ !startsWith(github.event_name, 'pull_request') &&
+              (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
+               startsWith(github.ref, 'refs/tags/')) }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-evidence-store-candidate
+          path: |
+            ${{ runner.temp }}/manuale-store-candidate/index.json
+            ${{ runner.temp }}/manuale-store-candidate/workflows/
+            ${{ runner.temp }}/manuale-store-candidate/blobs/
+          if-no-files-found: ignore
+          overwrite: true
+          retention-days: 3
       - name: Remove only this run's fixture services
         if: always()
         run: |
@@ -261,6 +312,10 @@ jobs:
             ${{ runner.temp }}/manuale-run/render-reuse.json
             ${{ runner.temp }}/manuale-run/evaluation.json
             ${{ runner.temp }}/manuale-run/embedded-manual.json
+            ${{ runner.temp }}/manuale-run/release-binding.json
+            ${{ runner.temp }}/manuale-run/evidence-reuse.json
+            ${{ runner.temp }}/manuale-store/store-restore.json
+            ${{ runner.temp }}/manuale-store/store-plan.json
             ${{ runner.temp }}/manuale-run/export/
             ${{ runner.temp }}/manuale-run/diagnostics-public/
             ${{ runner.temp }}/manuale-package/publication-plan.json
@@ -277,6 +332,8 @@ jobs:
           python3 docs/scripts/manuale_timing.py summary --title 'Manual verification' \
             --impact "$RUNNER_TEMP/manuale-impact/impact.json" --cache "$RUNNER_TEMP/manuale-cache.json" \
             --artifact "verified baseline=$RUNNER_TEMP/manuale-baseline.tar.gz" \
+            --artifact "evidence store (restored)=$RUNNER_TEMP/manuale-store/store" \
+            --artifact "evidence store candidate=$RUNNER_TEMP/manuale-store-candidate" \
             --artifact "runtime package=$RUNNER_TEMP/manuale-package/runtime" \
             --artifact "verification export=$RUNNER_TEMP/manuale-run/export"
 

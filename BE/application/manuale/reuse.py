@@ -404,43 +404,63 @@ def _entry(state, old, identifier, old_registry, new_registry, old_recipes, new_
                                  allow_empty=current.get('publication_sections') == []))
     bind_editorial_updates(state, editorial, report)
     check_editorial(state, editorial)
-    return {'origin': origin, 'origin_manifest': {'path': f'evidence-origin/{identifier}.manifest.json',
-                'sha256': file_hash(old['run'], origin_manifest)},
-            'report_path': report_path, 'report_sha256': binding['report_sha256'],
-            'recipe_contract_sha256': digest(canonical({'recipe': current, 'shared_dependencies': new_registry['shared_dependencies']})),
-            'dependency_hashes': dependencies, 'production_paths': sorted(production), 'tooling_paths': sorted(tooling),
-            'sections': editorial}, origin_manifest
+    result = {'origin': origin, 'origin_manifest': {'path': f'evidence-origin/{identifier}.manifest.json',
+                  'sha256': file_hash(old['run'], origin_manifest)},
+              'report_path': report_path, 'report_sha256': binding['report_sha256'],
+              'recipe_contract_sha256': digest(canonical({'recipe': current, 'shared_dependencies': new_registry['shared_dependencies']})),
+              'dependency_hashes': dependencies, 'production_paths': sorted(production), 'tooling_paths': sorted(tooling),
+              'sections': editorial}
+    if binding.get('reuse') and prior_entry.get('source') == 'evidence-store':
+        # Store-backed evidence stays store-backed (and keeps its original
+        # producer) when a later baseline retains it again.
+        result.update(source='evidence-store', evidence_store=json.loads(json.dumps(prior_entry['evidence_store'])))
+    return result, origin_manifest
 
 
-def build_reuse_plan(state, baseline_run, *, stage=True, eligible_recipes=None):
-    """Create explicit per-recipe decisions; selected recipes always remain fresh."""
-    old_run = Path(baseline_run).resolve()
-    if old_run == Path(state['run']).resolve():
-        raise ReuseError('baseline-must-be-a-different-owned-run')
-    old = load(old_run, 'run.json')
-    old['run'] = str(old_run)
-    # Successful local capture phases remain usable, but failed verification
-    # must never become a baseline, including a failed post-evaluation rehearsal.
-    if old.get('status') not in ('generated', 'evaluated', 'indexed', 'rendered'):
-        raise ReuseError('baseline-run-not-verified')
-    for filename in ('render.json', 'evaluation.json', 'embedded-manual.json', 'release-verification.json'):
-        if (old_run / filename).is_file() and load(old_run, filename).get('status') == 'failed':
-            raise ReuseError('baseline-verification-failed: ' + filename)
-    manifest = load(old_run, 'manifest.json')
-    if (manifest.get('metadata', {}).get('application_revision') != old['application_input']['revision']
-            or manifest['metadata'].get('release') != old['release']):
-        raise ReuseError('baseline-manifest-target-mismatch')
-    old_registry, old_recipes = registry(old['application'])
+def build_reuse_plan(state, baseline_run, *, stage=True, eligible_recipes=None, admitted=None):
+    """Create explicit per-recipe decisions; selected recipes always remain fresh.
+
+    ``admitted`` holds per-workflow entries already admitted from the evidence
+    store (``manuale_evidence_store.admit_selection``); they are merged into the
+    same plan, staged from their materialized directory and validated by the
+    same plan gate. ``baseline_run`` may be None when only store entries exist.
+    """
+    admitted = admitted or {}
     current_registry, recipes = registry(state['application'])
     fresh = list(state.get('selected_recipes', []))
     if len(set(fresh)) != len(fresh) or set(fresh) - set(recipes):
         raise ReuseError('invalid-fresh-recipe-selection')
+    if set(admitted) & set(fresh) or set(admitted) - set(recipes):
+        raise ReuseError('store-admitted-recipe-selection-invalid')
+    old_run = old = manifest = old_registry = old_recipes = None
+    if baseline_run is not None:
+        old_run = Path(baseline_run).resolve()
+        if old_run == Path(state['run']).resolve():
+            raise ReuseError('baseline-must-be-a-different-owned-run')
+        old = load(old_run, 'run.json')
+        old['run'] = str(old_run)
+        # Successful local capture phases remain usable, but failed verification
+        # must never become a baseline, including a failed post-evaluation rehearsal.
+        if old.get('status') not in ('generated', 'evaluated', 'indexed', 'rendered'):
+            raise ReuseError('baseline-run-not-verified')
+        for filename in ('render.json', 'evaluation.json', 'embedded-manual.json', 'release-verification.json'):
+            if (old_run / filename).is_file() and load(old_run, filename).get('status') == 'failed':
+                raise ReuseError('baseline-verification-failed: ' + filename)
+        manifest = load(old_run, 'manifest.json')
+        if (manifest.get('metadata', {}).get('application_revision') != old['application_input']['revision']
+                or manifest['metadata'].get('release') != old['release']):
+            raise ReuseError('baseline-manifest-target-mismatch')
+        old_registry, old_recipes = registry(old['application'])
     plan = {'format': 1, 'status': 'validated', 'target': target(state), 'fresh_recipes': fresh,
             'reused_recipes': [], 'rejected': [], 'recipes': {}}
     staged = []
     prior_plan = {}
     for identifier in recipes:
-        if identifier in fresh or (eligible_recipes is not None and identifier not in eligible_recipes):
+        if identifier in admitted:
+            plan['recipes'][identifier] = admitted[identifier]['entry']
+            plan['reused_recipes'].append(identifier)
+            continue
+        if old is None or identifier in fresh or (eligible_recipes is not None and identifier not in eligible_recipes):
             continue
         try:
             entry, origin_manifest = _entry(state, old, identifier, old_registry, current_registry, old_recipes, recipes, manifest, prior_plan)
@@ -450,6 +470,16 @@ def build_reuse_plan(state, baseline_run, *, stage=True, eligible_recipes=None):
         except (OSError, ValueError, KeyError, TypeError) as exc:
             plan['rejected'].append({'id': identifier, 'reasons': [str(exc)]})
     if stage:
+        for identifier, item in admitted.items():
+            source_root = Path(item['root']).resolve()
+            files = [(owned(source_root, source).read_bytes(), destination) for source, destination in item['files']]
+            files.append((item['origin_manifest_bytes'], plan['recipes'][identifier]['origin_manifest']['path']))
+            for contents, destination in files:
+                output = owned(state['run'], destination)
+                if output.exists() and output.read_bytes() != contents:
+                    raise ReuseError('staged-evidence-path-collision: ' + destination)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_bytes(contents)
         for identifier, origin_manifest in staged:
             entry = plan['recipes'][identifier]
             report = load(old_run, entry['report_path'])
@@ -519,6 +549,11 @@ def validate_reuse_plan(state, plan=None):
         if retained['path'] != f'evidence-origin/{identifier}.manifest.json' or file_hash(state['run'], retained['path']) != retained['sha256']:
             raise ReuseError('origin-manifest-bytes-changed')
         original = load(state['run'], retained['path'])
+        if entry.get('source') == 'evidence-store' or 'evidence_store' in entry or 'evidence_store' in original:
+            # Reused store evidence: the embedded store manifest must still bind
+            # this exact report and origin (the producer was authenticated at
+            # admission; nothing here can turn it into a fresh capture).
+            _verify_store_origin(original, entry, identifier)
         binding = next((item for item in original.get('scenarios', []) if item.get('id') == identifier), {})
         if (binding.get('status') != 'passed' or binding.get('report_sha256') != entry['report_sha256'] or binding.get('application_revision') != entry['origin']['application_revision']
                 or binding.get('source_hashes') != report.get('source_hashes')):
@@ -539,6 +574,30 @@ def validate_reuse_plan(state, plan=None):
         check_report(state, recipe, report, entry['origin'])
         check_editorial(state, entry['sections'])
     return plan
+
+
+def _verify_store_origin(original, entry, identifier):
+    block, pointer = original.get('evidence_store'), entry.get('evidence_store')
+    if (entry.get('source') != 'evidence-store' or not isinstance(block, dict) or not isinstance(pointer, dict)
+            or original.get('purpose') != 'evidence-store-origin'):
+        raise ReuseError('store-origin-binding-invalid')
+    manifest = block.get('manifest')
+    encoded = (json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + '\n').encode()
+    files = manifest.get('files', {}) if isinstance(manifest, dict) else {}
+    origin = manifest.get('origin', {}) if isinstance(manifest, dict) else {}
+    producer = manifest.get('producer', {}) if isinstance(manifest, dict) else {}
+    if (digest(encoded) != block.get('manifest_sha256') or block['manifest_sha256'] != pointer.get('manifest_sha256')
+            or manifest.get('workflow_id') != identifier or manifest.get('fingerprint') != pointer.get('fingerprint')
+            or files.get('report.json') != entry.get('report_sha256')
+            or files.get('evidence.json') != block.get('evidence_sha256')
+            or block.get('evidence_sha256') != pointer.get('evidence_sha256')
+            or producer != pointer.get('producer') or str(producer.get('event', '')).startswith('pull_request')
+            or producer.get('head_sha') != origin.get('application_revision')
+            or origin.get('application_revision') != entry['origin']['application_revision']
+            or origin.get('capture_id') != entry['origin']['capture_id']
+            or origin.get('manual_revision') != entry['origin'].get('manual_revision')
+            or entry['origin'].get('run_id') != 'github-actions-run-' + str(producer.get('run_id'))):
+        raise ReuseError('store-origin-binding-invalid')
 
 
 def validate_reused_report(state, report, *, report_path=None, plan=None):

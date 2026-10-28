@@ -61,3 +61,10 @@ jobs:
             echo '::error::Release manual verification is incomplete; publication is blocked.'
             exit 1
           fi
+
+  evidence-store:
+    # Only after the comprehensive release gate authorized this exact release.
+    name: Publish trusted per-workflow evidence
+    needs: authorize
+    if: ${{ needs.authorize.result == 'success' && !startsWith(github.event_name, 'pull_request') }}
+    uses: ./.github/workflows/manuale-evidence-publish.yml

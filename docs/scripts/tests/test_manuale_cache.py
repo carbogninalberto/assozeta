@@ -57,10 +57,9 @@ class VerifiedPortableCacheTests(unittest.TestCase):
                            'UI/dist/\n.env*\nbrowser-input.json\nexecution.log\npreview.log\n')
             fixtures.write(code, 'UI/.npmrc', 'legacy-peer-deps=true\n')
             fixtures.write(code, 'selfhost/compose.dev.yml', 'services: {}\n')
-            for name in ('compile.mjs', 'verify.mjs'):
-                fixtures.write(code, 'selfhost/tests/browser/manuale/' + name, '// Offline renderer identity fixture\n')
+            fixtures.write(code, 'selfhost/tests/browser/manuale/compile.mjs', '// Offline renderer identity fixture\n')
             fixtures.command(code, 'add', '.gitignore', 'UI/.npmrc', 'selfhost/compose.dev.yml',
-                             'selfhost/tests/browser/manuale/compile.mjs', 'selfhost/tests/browser/manuale/verify.mjs')
+                             'selfhost/tests/browser/manuale/compile.mjs')
             fixtures.command(code, 'commit', '-qm', 'Cache fixture public build configuration')
         self.application_revision = fixtures.command(f.old_code, 'rev-parse', 'HEAD')
         f.state['application_input']['revision'] = fixtures.command(f.code, 'rev-parse', 'HEAD')

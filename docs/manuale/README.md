@@ -166,6 +166,41 @@ oppure usare `--changed-since REF` per la selezione delle dipendenze. `--run`
 riprende invece la selezione già registrata. `--keep-services` conserva l'ambiente
 per l'ispezione. Il comando completo `run` mantiene la verifica dal principio.
 
+### Cattura selettiva e in parallelo
+
+`capture` accetta anche `--workflows ID,ID` (equivalente a più `--workflow ID`)
+e `--capture-concurrency N|auto`. Senza opzioni sui workflow, un nuovo
+`capture`/`prepare` legge `MANUALE_CAPTURE_WORKFLOWS` (elenco separato da
+virgole); `run` e `verify-release` lo ignorano, perché devono coprire tutti i
+workflow (in CI la selezione residua arriva dalla decisione registrata nel run:
+sono catturati soltanto i workflow non coperti da prove riusate).
+
+```sh
+python3 docs/scripts/manuale.py capture --manual-repo PERCORSO_MANUALE_REVISIONATO \
+  --workflows members-search,members-create --capture-concurrency auto
+MANUALE_CAPTURE_WORKFLOWS=members-search MANUALE_CAPTURE_CONCURRENCY=2 \
+  python3 docs/scripts/manuale.py capture --manual-repo PERCORSO_MANUALE_REVISIONATO
+```
+
+La concorrenza vale da 1 a 4 oppure `auto`; il valore predefinito è 1 (cattura
+sequenziale storica). `auto` dimensiona i gruppi (shard) su CPU e memoria
+dell'host: circa due vCPU e 4 GiB per gruppo, quindi 2 su un runner GitHub da
+4 vCPU e 16 GiB. In CI il valore arriva da `vars.MANUALE_CAPTURE_CONCURRENCY`
+(predefinito `auto`). Ogni gruppo oltre il primo ha un proprio progetto Docker
+Compose (database, Redis, MinIO, renderer, API, UI e worker), porte, directory
+`/manual-run` e processo browser privati; ogni workflow viene comunque
+riseminato prima dell'esecuzione. I risultati entrano nel run solo dopo la
+validazione di rapporti, schermate e artefatti; duplicati, mancanze o conflitti
+fanno fallire la cattura e i servizi dei gruppi vengono sempre rimossi.
+`MANUALE_CAPTURE_SHARD_CPUS` e `MANUALE_CAPTURE_SHARD_MEMORY` limitano le
+risorse di ciascun gruppo aggiuntivo.
+
+`--reuse-store DIRECTORY` ammette prove materializzate dall'archivio per
+workflow (vedere [Archivio delle prove per workflow](#archivio-delle-prove-per-workflow)):
+`DIRECTORY` deve contenere `evidence-store-selection.json`. Ogni hash, l'impronta
+del workflow e i controlli di rapporto e prosa revisionata vengono ripetuti; le
+prove respinte vengono catturate di nuovo.
+
 Le definizioni in `*-authored-workflows.mjs` e `legacy-workflows.mjs` sono la fonte
 per identità, dipendenze, fixture e checkpoint. Il browser risolve nome del
 checkpoint, numero PNG e fonti dall'inventario generato. Non modificare a mano
@@ -202,6 +237,46 @@ locali. `manuale-cache.py import --archive CACHE.tar.gz --output NUOVO_RUN
 --manual-repo MANUALE` ricostruisce uno snapshot indipendente e lo registra per la
 ricerca automatica. L'archivio è una cache di prove, non un pacchetto installabile;
 l'importazione non rende compatibili input diversi e non esegue codice della baseline.
+
+### Archivio delle prove per workflow
+
+Oltre alla baseline dell'intero run, la CI conserva un archivio indirizzato per
+contenuto (`docs/scripts/manuale_evidence_store.py`): per ogni workflow, un
+manifest con impronta (`fingerprint`), produttore, origine e hash di rapporto,
+record delle prove e schermate; le schermate sono deduplicate in
+`blobs/sha256/`. L'impronta copre tutte le dipendenze del workflow calcolate
+dall'analisi d'impatto (`manuale_impact.py`), la chiusura degli import degli
+strumenti di cattura, gli strumenti condivisi (compresi `manuale_capture_shards.py`),
+fixture e relativa versione, ambiente del browser, mappatura delle pagine e
+versione dello schema. Le prove sono quindi riutilizzabili fra commit diversi
+quando nessuno di questi input cambia; mantengono sempre commit, ID di cattura e
+produttore originali e sono marcate come riusate nel corpus.
+
+Sono pubblicati due artifact soltanto da esecuzioni fidate (push sul ramo
+predefinito o tag di release, dopo tutti i controlli): `manuale-evidence-store-index`
+(indice, manifest, record e rapporti; piccolo) e `manuale-evidence-store-blobs`
+(schermate). Le PR non pubblicano mai un archivio fidato. Il verificatore
+scarica prima l'indice, autentica i produttori tramite le API GitHub, pianifica
+il riuso insieme al rapporto d'impatto e scarica le schermate solo se qualche
+workflow è riutilizzabile; il digest di ogni download deve coincidere con quello
+dell'artifact. Comandi principali:
+
+```sh
+python3 docs/scripts/manuale-ci.py store --impact impact.json --output OUT   # indice, piano, schermate, selezione
+python3 docs/scripts/manuale-cache.py store-publish --run RUN --store CANDIDATO
+python3 docs/scripts/manuale-cache.py store-bind --run RUN --output release-binding.json
+python3 docs/scripts/manuale-cache.py store-compact --store ARCHIVIO --trusted-producers trusted.json
+python3 docs/scripts/manuale-cache.py store-merge --candidate CANDIDATO --store ARCHIVIO
+```
+
+`store-bind` lega ogni workflow (nuovo, riusato dall'archivio o dalla baseline)
+all'identità di release: commit applicativo, revisione del manuale e versione.
+L'identità delle prove (impronta) può essere condivisa fra commit compatibili;
+il legame di release viene ricostruito ogni volta e non vale per un'altra
+identità. Archivio mancante, scaduto, corrotto o non fidato significa cattura
+nuova, mai un risultato verificato. Il riuso dall'archivio si aggiunge alla
+baseline fidata ammessa: senza una baseline la decisione resta una verifica
+completa.
 
 ## Esecuzione locale
 
@@ -436,7 +511,7 @@ MANUAL_URL=https://manuale.bakney.com/docs/introduzione
 MANUAL_INDEX_PATH=/percorso/index.json
 MANUAL_APPLICATION_REVISION=COMMIT_IMPLEMENTAZIONE_VERIFICATA
 MANUAL_SOURCE_ROOT=/percorso/repository
-MANUAL_CORPUS_BASE_URL=https://raw.githubusercontent.com/Bakney/manuale/main/assozeta-index
+MANUAL_CORPUS_BASE_URL=https://ORIGINE-PUBBLICATA/assozeta-index
 ```
 
 `MANUAL_SOURCE_ROOT` è facoltativo per distribuzioni senza il repository completo; nell'ambiente di verifica controlla anche gli hash del codice e degli strumenti usati per produrre le evidenze. Le immagini backend di produzione leggono la revisione dal file `CODE_REVISION`, scritto durante la build; il workflow delle immagini passa il commit Git effettivo. Il corpus deve dichiarare lo stesso `RUNNING_VERSION`: usare `--release VERSIONE` durante la generazione. La ricerca di produzione rifiuta revisioni incompatibili, input non committati e corpus soltanto locali. In sviluppo è disponibile l'installazione esplicita descritta sopra, con verifica continua degli hash.

@@ -182,7 +182,12 @@ jobs:
         if: ${{ needs.plan.outputs.mode == 'unaffected' }}
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 docs/scripts/manuale-ci.py lookup --output "$RUNNER_TEMP/manuale-cache.json"
+          MANUALE_EVIDENCE_STORE: ${{ runner.temp }}/manuale-store
+        run: |
+          # Index artifact only (manifests); screenshot blobs are never downloaded here.
+          python3 docs/scripts/manuale-cache.py store-fetch --kind index --store "$MANUALE_EVIDENCE_STORE" \
+            --output "$RUNNER_TEMP/store-index.json"
+          python3 docs/scripts/manuale-ci.py lookup --output "$RUNNER_TEMP/manuale-cache.json"
       - name: Summarize offline stages and evidence decisions
         if: always()
         run: >-
@@ -258,6 +263,9 @@ jobs:
       - name: Compile complete content and verify source evidence
         if: ${{ steps.prepare.outputs.escalate != 'true' }}
         run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase compile
+      - name: Check changed pages through the in-app reader render projection (offline)
+        if: ${{ steps.prepare.outputs.escalate != 'true' }}
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase render
       - name: Build and validate the shared reader, Bot and MCP corpus
         if: ${{ steps.prepare.outputs.escalate != 'true' }}
         run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase index
@@ -278,6 +286,8 @@ jobs:
             ${{ runner.temp }}/baseline-admission.json
             ${{ runner.temp }}/manuale-run/ci-plan.json
             ${{ runner.temp }}/manuale-run/compile.json
+            ${{ runner.temp }}/manuale-run/render.json
+            ${{ runner.temp }}/manuale-run/render-reuse.json
             ${{ runner.temp }}/manuale-run/coverage.json
             ${{ runner.temp }}/manuale-run/timings.json
             ${{ runner.temp }}/manuale-timing.jsonl
@@ -302,6 +312,16 @@ jobs:
       workflows: ${{ needs.plan.outputs.workflows }}
       appliance: ${{ needs.plan.outputs.appliance == 'true' || needs.content.outputs.escalate == 'true' }}
       impact: true
+
+  evidence-store:
+    # Publish per-workflow evidence only after the offline contracts and the
+    # verifier gate passed; the called workflow also refuses PRs and untrusted refs.
+    name: Publish trusted per-workflow evidence
+    needs: [offline, verify]
+    if: >-
+      ${{ !cancelled() && needs.offline.result == 'success' && needs.verify.result == 'success' &&
+          needs.verify.outputs.authorized == 'true' && github.event_name != 'pull_request' }}
+    uses: ./.github/workflows/manuale-evidence-publish.yml
 
   editorial:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.edit_content }}

@@ -58,7 +58,10 @@ CAPTURE_ENVIRONMENT = {'capture_format': 'full-hd-v1', 'viewport': {'width': 192
                        'theme': 'light'}
 # Shared capture automation, fixtures and browser/runtime configuration. A
 # change to any of these invalidates every workflow fingerprint.
-SHARED_CAPTURE_TOOLING = tuple(dict.fromkeys((*reuse.CORE_TOOLING, *reuse.CONFIG_INPUTS)))
+# The shard planner/merger decides which isolated stack captures a workflow and
+# how shard results are merged, so it is shared capture tooling as well.
+SHARED_CAPTURE_TOOLING = tuple(dict.fromkeys((*reuse.CORE_TOOLING, *reuse.CONFIG_INPUTS,
+                                              'docs/scripts/manuale_capture_shards.py')))
 SHARED_CAPTURE_PREFIXES = ('selfhost/tests/browser/manuale/fixtures/',)
 REGISTRY_SHARED_KEYS = ('format', 'shared_dependencies', 'non_capture_dependencies')
 
@@ -257,7 +260,9 @@ def workflow_dependencies(root, workflow_id):
     """Delegate to the impact module when it provides the shared interface."""
     module = _impact_module()
     function = getattr(module, 'workflow_dependencies', None) if module else None
-    if function is None:
+    # A tree without an impact map (e.g. an older snapshot) uses the broader
+    # registry-contract superset, never a narrower guess.
+    if function is None or not (Path(root) / 'docs/manuale/impact-map.json').is_file():
         return _fallback_workflow_dependencies(Path(root), workflow_id)
     # Failures in the precise analysis must not degrade to a narrower fallback.
     dependencies = function(Path(root), workflow_id)
@@ -309,7 +314,14 @@ def fingerprint_inputs(root, workflow_id, *, manual_revision, schema_version, re
     if type(schema_version) is not int or schema_version < 1:
         raise IncompatibleEvidence('Invalid evidence schema version')
     value, recipe = _recipe(root, workflow_id)
-    dependencies = workflow_dependencies(root, workflow_id)
+    dependencies = set(workflow_dependencies(root, workflow_id))
+    # The literal import closure of the workflow's capture tooling, exactly as
+    # the retained-evidence gate binds it (e.g. shared content modules).
+    try:
+        dependencies |= reuse.closure(root, recipe)
+    except ValueError as exc:
+        raise IncompatibleEvidence('Workflow tooling closure unavailable: ' + str(exc)) from exc
+    dependencies = sorted(dependencies - {'docs/manuale/recipes.json'})
     for relative in dependencies:
         _safe_relative(relative, 'dependency')
     try:
@@ -554,12 +566,16 @@ def _report_captures(report):
 
 
 def publish(store, *, workflow_id, fingerprint, schema_version, producer, origin, report_bytes,
-            screenshots, scenario=None, sections=(), editorial_bindings=None, inputs=None, created_at=None):
+            screenshots, scenario=None, sections=(), editorial_bindings=None, inputs=None, created_at=None,
+            editorial=None, origin_release=None):
     """Atomically publish one workflow evidence entry and record it in the index.
 
     ``screenshots`` maps run-relative capture paths (``captures/…``,
     ``masters/…``) to bytes or files; every one is checked against the report.
-    The entry never contains release identity.
+    The entry never contains release identity. ``editorial`` (the reviewed
+    section bindings the existing reuse gate checks) and ``origin_release`` (the
+    producer run's release label, recorded as origin only) let a consumer admit
+    the entry through the same per-recipe gate as a whole-run baseline.
     """
     store = Path(store)
     _check_workflow_id(workflow_id)
@@ -598,7 +614,7 @@ def publish(store, *, workflow_id, fingerprint, schema_version, producer, origin
                 'captures': captures, 'scenario': scenario, 'sections': list(sections),
                 'editorial_bindings': editorial_bindings or {},
                 'inputs_sha256': digest(canonical(inputs)) if inputs is not None else None,
-                'inputs': inputs}
+                'inputs': inputs, 'editorial': editorial, 'origin_release': origin_release}
     evidence_bytes = _json_bytes(evidence)
     files['evidence.json'] = digest(evidence_bytes)
     files['report.json'] = digest(report_bytes)
@@ -757,6 +773,10 @@ def materialize(entry, run):
     planned[manifest_copy] = (entry.path / 'manifest.json').read_bytes()
     if digest(planned[manifest_copy]) != entry.manifest_sha256:
         raise CorruptEvidence('Evidence manifest changed after verification')
+    evidence_copy = 'evidence-store/' + entry.workflow_id + '.evidence.json'
+    planned[evidence_copy] = (entry.path / 'evidence.json').read_bytes()
+    if digest(planned[evidence_copy]) != entry.manifest['files']['evidence.json']:
+        raise CorruptEvidence('Evidence record changed after verification')
     for relative, contents in planned.items():
         target = reuse.owned(run, _safe_relative(relative, 'run'))
         if target.exists() and target.read_bytes() != contents:
@@ -767,7 +787,300 @@ def materialize(entry, run):
     for frame in report['screenshots']:
         manual_index.verify_capture_frame(run, frame)
     return {**entry.provenance(), 'report_path': entry.evidence['report']['path'],
-            'report_sha256': entry.evidence['report']['sha256'], 'manifest_path': manifest_copy}
+            'report_sha256': entry.evidence['report']['sha256'], 'manifest_path': manifest_copy,
+            'evidence_path': evidence_copy, 'evidence_sha256': entry.manifest['files']['evidence.json']}
+
+
+# --------------------------------------------------------------------------
+# Store maintenance: carry verified entries forward, merge a run's candidate
+# --------------------------------------------------------------------------
+
+def _copy_entry(target_store, entry):
+    """Copy one fully verified entry (bytes unchanged) and index its manifest."""
+    if not isinstance(entry, Entry) or entry.verified != 'full':
+        raise IncompatibleEvidence('Only fully verified evidence can be copied')
+    target_store = Path(target_store)
+    for name, path in entry.blobs.items():
+        if _write_blob(target_store, path.read_bytes()) != SCREENSHOT.fullmatch(name)[1]:
+            raise CorruptEvidence('Screenshot blob changed while copying: ' + name)
+    target = _entry_dir(target_store, entry.workflow_id, entry.fingerprint)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(dir=target.parent, prefix='.staging-'))
+    try:
+        for name in ('manifest.json', 'evidence.json', 'report.json'):
+            (staging / name).write_bytes((entry.path / name).read_bytes())
+        if digest((staging / 'manifest.json').read_bytes()) != entry.manifest_sha256:
+            raise CorruptEvidence('Evidence manifest changed while copying')
+        with _Lock(target_store):
+            if target.exists():
+                shutil.rmtree(target)
+            staging.rename(target)
+            index = read_index(target_store)
+            index['entries'][entry.workflow_id + '/' + entry.fingerprint] = {
+                'manifest_sha256': entry.manifest_sha256, 'producer_run_id': entry.manifest['producer']['run_id'],
+                'origin_application_revision': entry.manifest['origin']['application_revision']}
+            index['entries'] = dict(sorted(index['entries'].items()))
+            _atomic_write(target_store / 'index.json', _json_bytes(index))
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging, ignore_errors=True)
+    return _verify(target_store, entry.workflow_id, entry.fingerprint, schema_version=entry.manifest['schema_version'],
+                   trust=None)
+
+
+def merge_candidate(candidate, store, *, run_id):
+    """Merge this run's freshly published entries into the store.
+
+    Integrity is verified in full; the producer must be exactly this run (its
+    trust is established later, by the GitHub API, once the run succeeded).
+    """
+    merged, rejected = [], []
+    if candidate is None or not Path(candidate).is_dir():
+        return {'merged': merged, 'rejected': rejected}
+    for key in sorted(read_index(candidate)['entries']):
+        workflow_id, _, fingerprint = key.partition('/')
+        try:
+            entry = _verify(candidate, workflow_id, fingerprint, schema_version=SCHEMA_VERSION, trust=None)
+            if entry.manifest['producer']['run_id'] != str(run_id):
+                raise UntrustedProducer('candidate entry was produced by another run')
+            reason = producer_rejection({**entry.manifest['producer']})
+            if reason:
+                raise UntrustedProducer(reason)
+            _copy_entry(store, entry)
+            merged.append(key)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            rejected.append({'entry': key, 'reason': type(exc).__name__ + ': ' + str(exc)})
+    return {'merged': merged, 'rejected': rejected}
+
+
+def compact(store, application, *, trusted_producers, reference_date, repository=None, default_branch='main'):
+    """Keep only fully verified trusted entries at the current fingerprints.
+
+    Entries for other fingerprints, failing verification or from untrusted
+    producers are dropped, and unreferenced blobs are removed, so the store
+    stays bounded to one entry per workflow.
+    """
+    store = Path(store)
+    kept, dropped = [], []
+    if not store.is_dir():
+        return {'kept': kept, 'dropped': dropped}
+    _value, recipes = _registry(application)
+    current = {}
+    for identifier in recipes:
+        try:
+            current[identifier] = workflow_fingerprint(
+                application, identifier, manual_revision=workflow_manual_revision(application, identifier),
+                schema_version=SCHEMA_VERSION, reference_date=reference_date)
+        except ValueError:
+            continue
+    with _Lock(store):
+        index = read_index(store)
+        referenced = set()
+        for key in sorted(index['entries']):
+            workflow_id, _, fingerprint = key.partition('/')
+            try:
+                if current.get(workflow_id) != fingerprint:
+                    raise IncompatibleEvidence('not the current fingerprint of this workflow')
+                entry = verify(store, workflow_id, fingerprint, trusted_producers=trusted_producers,
+                               repository=repository, reference_date=reference_date, default_branch=default_branch)
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                dropped.append({'entry': key, 'reason': type(exc).__name__ + ': ' + str(exc)})
+                del index['entries'][key]
+                continue
+            referenced.update(SCREENSHOT.fullmatch(name)[1] for name in entry.blobs)
+            kept.append(key)
+        _atomic_write(store / 'index.json', _json_bytes(index))
+        live = {tuple(key.split('/', 1)) for key in index['entries']}
+        workflows = store / 'workflows'
+        if workflows.is_dir():
+            for directory in sorted(workflows.glob('*/*')):
+                if directory.is_dir() and (directory.parent.name, directory.name) not in live:
+                    shutil.rmtree(directory)
+            for directory in sorted(workflows.iterdir()):
+                if directory.is_dir() and not any(directory.iterdir()):
+                    directory.rmdir()
+        blobs = store / 'blobs' / 'sha256'
+        if blobs.is_dir():
+            for blob in blobs.iterdir():
+                if blob.name not in referenced:
+                    blob.unlink()
+    return {'kept': kept, 'dropped': dropped}
+
+
+# --------------------------------------------------------------------------
+# Consumer gate: admit a store-materialized selection into a target run
+# --------------------------------------------------------------------------
+
+SELECTION_FILE = 'evidence-store-selection.json'
+SELECTION_PURPOSE = 'reused-workflow-evidence-not-fresh-capture'
+ORIGIN_MANIFEST_PURPOSE = 'evidence-store-origin'
+
+
+def store_origin_manifest(manifest, evidence, origin_release):
+    """Single-workflow origin manifest in the shape the per-recipe reuse gate reads.
+
+    It embeds the verified store manifest and evidence record, so later gates
+    (retained-plan validation, the corpus index, export) can re-check the hash
+    chain store manifest -> evidence/report without the store itself.
+    """
+    identifier = manifest['workflow_id']
+    pages = {}
+    for item in evidence.get('sections') or []:
+        if not isinstance(item, dict) or not isinstance(item.get('page'), str):
+            raise CorruptEvidence('Evidence section record is invalid: ' + identifier)
+        section = {key: value for key, value in item.items() if key != 'page'}
+        pages.setdefault(item['page'], []).append(section)
+    return {'format': FORMAT, 'purpose': ORIGIN_MANIFEST_PURPOSE,
+            'metadata': {'application_revision': manifest['origin']['application_revision'],
+                         'release': origin_release, 'manual_revision': manifest['origin']['manual_revision']},
+            'scenarios': [evidence['scenario']],
+            'pages': [{'path': path, 'sections': sections} for path, sections in sorted(pages.items())],
+            'evidence_store': {'manifest': manifest, 'manifest_sha256': digest(_json_bytes(manifest)),
+                               'evidence_sha256': manifest['files']['evidence.json']}}
+
+
+def _admit_one(state, selection_dir, item, recipes, registry_value, *, repository, default_branch):
+    identifier = _check_workflow_id(item.get('workflow_id'))
+    if identifier not in recipes:
+        raise IncompatibleEvidence('workflow is not in the current registry')
+    recipe = recipes[identifier]
+    manifest_path = 'evidence-store/' + identifier + '.manifest.json'
+    evidence_path = 'evidence-store/' + identifier + '.evidence.json'
+    report_path = identifier + '.json'
+    if item.get('manifest_path') != manifest_path or item.get('evidence_path') != evidence_path \
+            or item.get('report_path') != report_path:
+        raise CorruptEvidence('selection paths differ from the store layout')
+    manifest_bytes, manifest = _read_json_bytes(reuse.owned(selection_dir, manifest_path), manifest_path)
+    if digest(manifest_bytes) != item.get('manifest_sha256') or _json_bytes(manifest) != manifest_bytes:
+        raise CorruptEvidence('materialized manifest differs from its recorded sha256')
+    if not isinstance(manifest, dict) or set(manifest) != MANIFEST_KEYS or manifest['purpose'] != PURPOSE \
+            or manifest['format'] != FORMAT or manifest['schema_version'] != SCHEMA_VERSION:
+        raise IncompatibleEvidence('materialized manifest is not a current evidence manifest')
+    if manifest['workflow_id'] != identifier or manifest['fingerprint'] != item.get('fingerprint'):
+        raise CorruptEvidence('materialized manifest identity differs from the selection')
+    origin = _validate_origin(manifest['origin'])
+    if item.get('origin') != origin or item.get('producer') != manifest['producer']:
+        raise CorruptEvidence('selection provenance differs from the materialized manifest')
+    # Structural trust is re-checked here; the authenticated GitHub run lookup
+    # happened when the store was planned and materialized.
+    reason = producer_rejection(manifest['producer'], repository=repository, default_branch=default_branch)
+    if reason:
+        raise UntrustedProducer(reason)
+    if manifest['producer']['head_sha'] != origin['application_revision']:
+        raise UntrustedProducer('evidence origin commit differs from its producer commit')
+    if origin['reference_date'] != state['reference_date']:
+        raise IncompatibleEvidence('evidence reference date differs from the target run')
+    evidence_bytes, evidence = _read_json_bytes(reuse.owned(selection_dir, evidence_path), evidence_path)
+    report_bytes, report = _read_json_bytes(reuse.owned(selection_dir, report_path), report_path)
+    if digest(evidence_bytes) != manifest['files'].get('evidence.json') \
+            or digest(report_bytes) != manifest['files'].get('report.json') \
+            or item.get('report_sha256') != manifest['files'].get('report.json'):
+        raise CorruptEvidence('materialized evidence or report bytes differ from the manifest')
+    if evidence.get('report') != {'path': report_path, 'sha256': manifest['files']['report.json']}:
+        raise CorruptEvidence('evidence record is not bound to its report')
+    claimed = _report_captures(report)
+    if evidence.get('captures') != claimed:
+        raise CorruptEvidence('evidence screenshot inventory differs from the report')
+    for relative, sha in claimed.items():
+        path = reuse.owned(selection_dir, relative)
+        if path.is_symlink() or not path.is_file() or _file_sha256(path, maximum=MAX_BLOB_BYTES) != sha:
+            raise CorruptEvidence('materialized screenshot differs from the manifest: ' + relative)
+    # Evidence identity: the fingerprint is recomputed from the target checkout.
+    current_inputs = fingerprint_inputs(state['application'], identifier,
+                                        manual_revision=workflow_manual_revision(state['application'], identifier),
+                                        schema_version=SCHEMA_VERSION, reference_date=state['reference_date'])
+    fingerprint = digest(canonical(current_inputs))
+    if fingerprint != manifest['fingerprint'] or evidence.get('inputs_sha256') != fingerprint \
+            or evidence.get('inputs') != current_inputs:
+        raise IncompatibleEvidence('workflow fingerprint differs from the target checkout')
+    # Every byte the existing per-recipe gate binds must be covered by the
+    # fingerprint; anything outside it is unknown and fails closed.
+    known, production, tooling = reuse.dependency_contract(state['application'], registry_value, recipe)
+    hashes = report.get('source_hashes') or {}
+    reuse.verify_snapshot(state['application'], state['application_input'], known | set(hashes))
+    covered = {**current_inputs['dependencies'], **current_inputs['shared_tooling']}
+    dependencies = {}
+    for relative in sorted(production | tooling | set(hashes)):
+        current = reuse.file_hash(state['application'], relative)
+        if covered.get(relative) != current:
+            raise IncompatibleEvidence('dependency is not covered by the workflow fingerprint: ' + relative)
+        dependencies[relative] = current
+    scenario = evidence.get('scenario')
+    if (not isinstance(scenario, dict) or scenario.get('id') != identifier or scenario.get('status') != 'passed'
+            or scenario.get('report_path') != report_path
+            or scenario.get('report_sha256') != manifest['files']['report.json']
+            or scenario.get('application_revision') != origin['application_revision']
+            or scenario.get('source_hashes') != hashes or 'reuse' in scenario):
+        raise CorruptEvidence('evidence scenario binding is not an original passed capture')
+    editorial = evidence.get('editorial')
+    origin_release = evidence.get('origin_release')
+    if not isinstance(editorial, list) or not isinstance(origin_release, str) or not origin_release:
+        raise IncompatibleEvidence('evidence has no reviewed section binding; capture fresh')
+    reuse_origin = {'run_id': 'github-actions-run-' + manifest['producer']['run_id'],
+                    'application_revision': origin['application_revision'], 'release': origin_release,
+                    'capture_id': origin['capture_id'], 'manual_revision': origin['manual_revision']}
+    # Same report and editorial gates as a whole-run baseline (captures are
+    # read from the materialized selection directory).
+    reuse.check_report({**state, 'run': str(selection_dir)}, recipe, report, reuse_origin)
+    editorial = json.loads(json.dumps(editorial))
+    materialization = {'format': 1, 'capture_id': origin['capture_id'], 'scenario_id': identifier,
+                       'report_sha256': manifest['files']['report.json']}
+    for section in editorial:
+        if not isinstance(section, dict) or section.get('materialization') != materialization:
+            raise CorruptEvidence('reviewed section is not bound to this capture')
+    reuse.bind_editorial_updates(state, editorial, report)
+    reuse.check_editorial(state, editorial)
+    origin_manifest = store_origin_manifest(manifest, evidence, origin_release)
+    origin_manifest_bytes = _json_bytes(origin_manifest)
+    entry = {'origin': reuse_origin,
+             'origin_manifest': {'path': f'evidence-origin/{identifier}.manifest.json',
+                                 'sha256': digest(origin_manifest_bytes)},
+             'report_path': report_path, 'report_sha256': manifest['files']['report.json'],
+             'recipe_contract_sha256': digest(canonical({'recipe': recipe,
+                                                         'shared_dependencies': registry_value['shared_dependencies']})),
+             'dependency_hashes': dependencies, 'production_paths': sorted(production),
+             'tooling_paths': sorted(tooling), 'sections': editorial,
+             'source': 'evidence-store',
+             'evidence_store': {'workflow_id': identifier, 'fingerprint': manifest['fingerprint'],
+                                'manifest_sha256': digest(manifest_bytes),
+                                'evidence_sha256': manifest['files']['evidence.json'],
+                                'schema_version': manifest['schema_version'],
+                                'producer': dict(manifest['producer'])}}
+    files = [(report_path, report_path)] + [(relative, relative) for relative in sorted(claimed)]
+    return {'entry': entry, 'root': str(selection_dir), 'files': files,
+            'origin_manifest_bytes': origin_manifest_bytes}
+
+
+def admit_selection(state, selection_dir, *, exclude=(), repository=None, default_branch='main'):
+    """Admit a store-materialized selection as explicit per-workflow provenance.
+
+    Every hash is re-verified (selection -> manifest -> evidence/report ->
+    screenshots), the fingerprint is recomputed from the target checkout and
+    the same report/editorial gates as a whole-run baseline apply. Anything
+    rejected is captured fresh; nothing here weakens the corpus gates, which
+    re-validate the resulting retained-evidence plan independently.
+    """
+    selection_dir = Path(selection_dir).resolve()
+    _bytes, selection = _read_json_bytes(selection_dir / SELECTION_FILE, SELECTION_FILE)
+    if (not isinstance(selection, dict) or selection.get('format') != FORMAT
+            or selection.get('purpose') != SELECTION_PURPOSE or selection.get('schema_version') != SCHEMA_VERSION
+            or not isinstance(selection.get('materialized'), list)):
+        raise IncompatibleEvidence('Not a current evidence-store selection')
+    registry_value, recipes = _registry(state['application'])
+    admitted, rejected = {}, []
+    for item in selection['materialized']:
+        identifier = item.get('workflow_id') if isinstance(item, dict) else None
+        if identifier in exclude:
+            rejected.append({'workflow_id': identifier, 'reason': 'selected for fresh capture'})
+            continue
+        if identifier in admitted:
+            raise CorruptEvidence('Duplicate workflow in the evidence-store selection')
+        try:
+            admitted[identifier] = _admit_one(state, selection_dir, item, recipes, registry_value,
+                                              repository=repository, default_branch=default_branch)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            rejected.append({'workflow_id': identifier, 'reason': type(exc).__name__ + ': ' + str(exc)})
+    return {'admitted': admitted, 'rejected': rejected}
 
 
 # --------------------------------------------------------------------------
@@ -784,7 +1097,7 @@ def release_identity(*, application_revision, manual_revision, release):
     return {'application_revision': application_revision, 'manual_revision': manual_revision, 'release': release}
 
 
-def release_binding(evidence, *, application_revision, manual_revision, release):
+def release_binding(evidence, *, application_revision, manual_revision, release, sources=None):
     """Bind fresh and reused evidence to one release identity, explicitly.
 
     ``evidence`` is a list of provenance records (``Entry.provenance()`` for
@@ -807,6 +1120,8 @@ def release_binding(evidence, *, application_revision, manual_revision, release)
         raise IncompatibleEvidence('Duplicate workflow evidence in a release binding')
     body = {'format': FORMAT, 'purpose': BINDING_PURPOSE, 'release_identity': identity,
             'release_identity_sha256': digest(canonical(identity)), 'evidence': records}
+    if sources is not None:
+        body['sources'] = sources
     return {**body, 'binding_sha256': digest(canonical(body))}
 
 

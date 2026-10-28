@@ -191,9 +191,16 @@ class PrepareTests(unittest.TestCase):
             policy.verification_decision.return_value = arguments.pop('decision', {
                 'mode': 'reuse', 'historical_rehearsal': False, 'fresh_workflows': [], 'reused_workflows': IDS,
                 'reasons': ['reuse'], 'cache_decisions': []})
-            args = SimpleNamespace(manual_repo='m', output=str(run), release='r', force_full=False,
+            selection = None
+            if arguments.pop('selection', False):
+                selection = directory / 'selection'
+                selection.mkdir()
+                (selection / 'evidence-store-selection.json').write_text('{}')
+            args = SimpleNamespace(manual_repo='m', output=str(run), release='r',
+                                   force_full=arguments.pop('force_full', False),
                                    baseline=str(directory / 'baseline'), impact=str(directory / 'impact.json'),
-                                   workflow=arguments.pop('workflow', None), content_only=arguments.pop('content_only', False))
+                                   workflow=arguments.pop('workflow', None), content_only=arguments.pop('content_only', False),
+                                   evidence_selection=str(selection) if selection else None)
             github_output = directory / 'github-output'
             cache = Mock(validate_application_sources=Mock(return_value=[]))
             with patch.object(ci, 'module', return_value=cache), patch.dict(os.environ, {
@@ -210,6 +217,17 @@ class PrepareTests(unittest.TestCase):
         self.assertIn('--no-cache', parameters)  # no baseline directory in this fixture
         self.assertEqual(parameters[0], 'run')
         self.assertEqual(plan['impact']['selected_workflows'], sorted([IDS[1], IDS[2], IDS[3]]))
+
+    def test_store_selection_is_handed_to_the_verifier_gate_unless_forced_full(self):
+        parameters, _, _, _ = self.prepare(report('behavioral', affected_workflows=[IDS[0]]), selection=True)
+        self.assertIn('--reuse-store', parameters)
+        self.assertTrue(parameters[parameters.index('--reuse-store') + 1].endswith('selection'))
+        parameters, _, _, _ = self.prepare(report('full'), selection=True)
+        self.assertNotIn('--reuse-store', parameters)
+        parameters, _, _, _ = self.prepare(report('unaffected'), selection=True, force_full=True)
+        self.assertNotIn('--reuse-store', parameters)
+        parameters, _, _, _ = self.prepare(report('unaffected'))
+        self.assertNotIn('--reuse-store', parameters)
 
     def test_analyzed_full_disables_reuse_but_fallback_does_not(self):
         _, keywords, _, _ = self.prepare(report('full'))
@@ -287,8 +305,9 @@ class FastModeWorkflowTests(unittest.TestCase):
         for name in ('plan', 'offline', 'content'):
             job = self.main['jobs'][name]
             text = json.dumps(job)
+            # The render phase is the offline in-app reader projection: no services.
             for forbidden in ('prepare-storage', 'docker', 'compose', '--phase capture --', '--phase runtime',
-                              '--phase render', '--phase package', 'manual-release-smoke'):
+                              '--phase package', 'manual-release-smoke', 'mint dev', 'mintlify'):
                 self.assertNotIn(forbidden, text, (name, forbidden))
             for step in job['steps']:
                 if 'playwright install' in step.get('run', ''):
@@ -309,11 +328,119 @@ class FastModeWorkflowTests(unittest.TestCase):
         self.assertIn('force_full', dispatch)
         self.assertIn('inputs.force_full', jobs['plan']['steps'][-3]['env']['FORCE_FULL'])
 
+    def test_text_only_content_path_keeps_the_offline_render_check(self):
+        steps = [step.get('run', '') for step in self.main['jobs']['content']['steps']]
+        order = [next(index for index, text in enumerate(steps) if '--phase ' + phase in text)
+                 for phase in ('compile', 'render', 'index')]
+        self.assertEqual(order, sorted(order))
+
+    def test_only_trusted_post_gate_runs_publish_the_evidence_store(self):
+        publish = self.main['jobs']['evidence-store']
+        self.assertEqual(set(publish['needs']), {'offline', 'verify'})
+        self.assertIn("needs.verify.outputs.authorized == 'true'", publish['if'])
+        self.assertIn("github.event_name != 'pull_request'", publish['if'])
+        self.assertEqual(publish['uses'], './.github/workflows/manuale-evidence-publish.yml')
+        called = yaml.safe_load((ROOT / '.github/workflows/manuale-evidence-publish.yml').read_text())
+        job = called['jobs']['publish']
+        self.assertIn("!startsWith(github.event_name, 'pull_request')", job['if'])
+        self.assertIn('refs/tags/', job['if'])
+        uploads = {step['with']['name'] for step in job['steps'] if step.get('uses', '').startswith('actions/upload-artifact')}
+        self.assertEqual(uploads, {'manuale-evidence-store-index', 'manuale-evidence-store-blobs'})
+        release = yaml.safe_load((ROOT / '.github/workflows/manuale-release.yml').read_text())['jobs']['evidence-store']
+        self.assertEqual(release['needs'], 'authorize')
+        verify = yaml.safe_load((ROOT / '.github/workflows/manuale-verify.yml').read_text())['jobs']['verify']['steps']
+        for step in verify:
+            if 'store-publish' in step.get('run', '') or step.get('with', {}).get('name') == 'manuale-evidence-store-candidate':
+                self.assertIn("!startsWith(github.event_name, 'pull_request')", step['if'])
+        names = [step.get('name', '') for step in verify]
+        self.assertLess(names.index('Restore trusted per-workflow evidence (manifests first, screenshots only when reusable)'),
+                        names.index('Explain fresh, reused and unaffected work'))
+        restore = verify[names.index('Restore trusted per-workflow evidence (manifests first, screenshots only when reusable)')]
+        self.assertEqual(restore['if'], '${{ !inputs.force_full }}')
+
     def test_offline_job_uploads_no_evidence_bundle(self):
         for step in self.main['jobs']['offline']['steps']:
             if step.get('uses', '').startswith('actions/upload-artifact'):
                 self.assertNotIn('baseline', step['with']['path'])
                 self.assertNotIn('export', step['with']['path'])
+
+
+class StoreRestoreTests(unittest.TestCase):
+    def restore(self, cache, impact=None):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            if impact is not None:
+                (directory / 'impact.json').write_text(json.dumps(impact))
+            args = SimpleNamespace(output=str(directory / 'out'), repository='example/assozeta',
+                                   impact=str(directory / 'impact.json') if impact is not None else None,
+                                   reference_date='2026-09-30')
+            github_output = directory / 'github-output'
+            with patch.dict(os.environ, {'GITHUB_OUTPUT': str(github_output), 'MANUALE_TIMING_FILE': ''}):
+                report = ci.restore_store(args, cache)
+            values = dict(line.split('=', 1) for line in github_output.read_text().splitlines())
+            return report, values
+
+    def cache(self, *, index='available', reuse=('w1',), blobs='available'):
+        cache = Mock()
+        cache.fetch_store.side_effect = lambda repository, store, kind, producer_run=None: (
+            {'status': index, 'producer_run': '11'} if kind == 'index' else {'status': blobs, 'producer_run': producer_run})
+        cache.store_producers.return_value = {'trusted': {'11': {}}, 'rejected': {}}
+        cache.plan_store.return_value = {'reused_workflows': list(reuse), 'capture_workflows': ['w2'],
+                                         'counts': {'reuse': len(reuse), 'capture': 1}}
+        cache.materialize_store.return_value = {'materialized': [{'workflow_id': item} for item in reuse],
+                                                'rejected': [], 'capture_workflows': ['w2']}
+        return cache
+
+    def test_manifests_first_blobs_only_for_reuse_then_materialize(self):
+        cache = self.cache()
+        report, values = self.restore(cache, impact=report_value())
+        self.assertEqual(report['status'], 'materialized')
+        self.assertEqual(values['store_selection'], 'true')
+        self.assertEqual([call.kwargs['kind'] for call in cache.fetch_store.call_args_list], ['index', 'blobs'])
+        self.assertEqual(cache.fetch_store.call_args_list[1].kwargs['producer_run'], '11')
+        self.assertEqual(cache.plan_store.call_args.kwargs['impact']['format'], 1)
+
+    def test_nothing_reusable_never_downloads_screenshots(self):
+        cache = self.cache(reuse=())
+        report, values = self.restore(cache)
+        self.assertEqual(report['status'], 'cold')
+        self.assertEqual(values['store_selection'], 'false')
+        self.assertEqual([call.kwargs['kind'] for call in cache.fetch_store.call_args_list], ['index'])
+        cache.materialize_store.assert_not_called()
+
+    def test_missing_or_failing_store_is_a_cold_miss(self):
+        for cache in (self.cache(index='missing'), self.cache(blobs='missing')):
+            report, values = self.restore(cache)
+            self.assertEqual(report['status'], 'cold')
+            self.assertEqual(values['store_reused'], '0')
+        failing = self.cache()
+        failing.store_producers.side_effect = subprocess.CalledProcessError(1, 'gh')
+        self.assertEqual(self.restore(failing)[0]['status'], 'cold')
+
+
+def report_value():
+    return report('behavioral', affected_workflows=[IDS[0]])
+
+
+class BaselinePhaseTests(unittest.TestCase):
+    def test_results_keep_the_deprecated_mintlify_key_as_an_alias(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run = Path(directory)
+            (run / 'run.json').write_text(json.dumps({'run': str(run)}))
+            (run / 'ci-plan.json').write_text(json.dumps({
+                'mode': 'reuse', 'fresh_workflows': [], 'reused_workflows': IDS[:2], 'application_revision': 'a' * 40,
+                'manual_revision': 'b' * 40, 'release': 'r'}))
+            (run / 'render-reuse.json').write_text(json.dumps({'fresh_pages': [], 'reused_pages': ['p1', 'p2', 'p3']}))
+            runner = Mock()
+            runner.timed.return_value.__enter__ = Mock(return_value=None)
+            runner.timed.return_value.__exit__ = Mock(return_value=False)
+            args = SimpleNamespace(run=str(run), phase='baseline', force_seal=False, output=str(run / 'b.tar.gz'))
+            with patch.dict(os.environ, {'GITHUB_OUTPUT': '', 'MANUALE_TIMING_FILE': ''}):
+                ci.phase(args, runner)
+            results = json.loads((run / 'ci-results.json').read_text())
+        self.assertEqual(results['avoided_render_pages'], 3)
+        self.assertEqual(results['avoided_mintlify_pages'], results['avoided_render_pages'])
+        self.assertFalse(results['baseline_sealed'])
 
 
 if __name__ == '__main__':

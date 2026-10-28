@@ -1124,10 +1124,20 @@ def _publish_validated_store(run, state, validated, store_path, *, producer=None
                         editorial[key] = bindings[key]
         origin = {'application_revision': revision, 'capture_id': report['capture_id'],
                   'reference_date': state['reference_date'], 'manual_revision': validated['manual_revision']}
+        # The reviewed section bindings in exactly the shape the per-recipe reuse
+        # gate derives from a whole-run baseline; None means "not admissible
+        # from the store" (the consumer then captures this workflow fresh).
+        try:
+            reviewed = store.reuse.origin_sections({'manual': str(manual)}, manifest, identifier,
+                                             scenario['report_sha256'], report,
+                                             allow_empty=recipe.get('publication_sections') == [])
+        except (OSError, ValueError, KeyError, TypeError):
+            reviewed = None
         entry = store.publish(store_path, workflow_id=identifier, fingerprint=fingerprint,
                               schema_version=schema_version, producer=producer, origin=origin,
                               report_bytes=report_bytes, screenshots=screenshots, scenario=scenario,
-                              sections=sections, editorial_bindings=editorial, inputs=inputs)
+                              sections=sections, editorial_bindings=editorial, inputs=inputs,
+                              editorial=reviewed, origin_release=state['release'])
         published.append({'workflow_id': identifier, 'fingerprint': fingerprint,
                           'manifest_sha256': entry.manifest_sha256})
     return {'store': str(Path(store_path)), 'published': published, 'skipped': skipped,
@@ -1269,10 +1279,187 @@ def store_producers(store_path, repository, *, api=None):
     return {'format': 1, 'repository': repository, 'trusted': trusted, 'rejected': rejected}
 
 
+STORE_ARTIFACTS = {'index': 'manuale-evidence-store-index', 'blobs': 'manuale-evidence-store-blobs'}
+STORE_INDEX_MEMBER = re.compile(r'(?:index\.json|workflows/[a-z0-9][a-z0-9-]{0,127}/[a-f0-9]{64}/'
+                                r'(?:manifest|evidence|report)\.json)\Z')
+STORE_BLOB_MEMBER = re.compile(r'sha256/([a-f0-9]{64})\Z')
+MAX_STORE_JSON_BYTES = 32 * 1024 ** 2
+MAX_STORE_BLOB_BYTES = 64 * 1024 ** 2
+MAX_STORE_ARTIFACT_BYTES = 4 * 1024 ** 3
+
+
+def _gh_json(endpoint):
+    return json.loads(subprocess.check_output(['gh', 'api', endpoint]))
+
+
+def _gh_download(repository, artifact_id, destination):
+    with Path(destination).open('wb') as stream:
+        subprocess.run(['gh', 'api', f'repos/{repository}/actions/artifacts/{artifact_id}/zip'],
+                       check=True, stdout=stream)
+
+
+def _extract_store_artifact(archive_path, store_path, kind):
+    """Extract an allowlisted store artifact; no links, traversal or oversize members."""
+    import zipfile
+    store_path = Path(store_path)
+    pattern = STORE_INDEX_MEMBER if kind == 'index' else STORE_BLOB_MEMBER
+    limit = MAX_STORE_JSON_BYTES if kind == 'index' else MAX_STORE_BLOB_BYTES
+    written, total, seen = 0, 0, set()
+    with zipfile.ZipFile(archive_path) as archive:
+        for info in archive.infolist():
+            if info.is_dir():
+                continue
+            name = info.filename
+            match = pattern.fullmatch(name)
+            mode = (info.external_attr >> 16) & 0o170000
+            if not match or name in seen or mode not in (0, 0o100000):
+                raise ValueError('Unexpected evidence-store artifact member: ' + repr(name))
+            if info.file_size > limit:
+                raise ValueError('Evidence-store artifact member is too large: ' + name)
+            total += info.file_size
+            if total > MAX_STORE_ARTIFACT_BYTES:
+                raise ValueError('Evidence-store artifact is too large')
+            seen.add(name)
+            target = store_path / name if kind == 'index' else store_path / 'blobs' / name
+            if target.exists() or target.is_symlink():
+                raise ValueError('Evidence-store artifact member collides with an existing file: ' + name)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with archive.open(info) as source:
+                contents = source.read(limit + 1)
+            if len(contents) > limit:
+                raise ValueError('Evidence-store artifact member is too large: ' + name)
+            if kind == 'blobs' and _digest_bytes(contents) != match[1]:
+                raise ValueError('Evidence-store blob differs from its name: ' + name)
+            target.write_bytes(contents)
+            written += 1
+    if kind == 'index' and 'index.json' not in seen:
+        raise ValueError('Evidence-store index artifact has no index.json')
+    return written
+
+
+def fetch_store(repository, store_path, *, kind='index', producer_run=None, api=_gh_json, download=_gh_download):
+    """Restore the newest store artifact of an authenticated trusted producer run.
+
+    Trust is the GitHub API run record (successful push/release/schedule/
+    dispatch of an approved workflow on the default branch or a release tag,
+    same repository); the downloaded zip must match the artifact digest the API
+    reports. Pull request artifacts are never a trusted baseline. Every entry
+    is still verified individually (store-producers/store-plan) before reuse.
+    """
+    store = _evidence_store()
+    name = STORE_ARTIFACTS[kind]
+    report = {'format': 1, 'artifact': name, 'status': 'missing', 'candidates': []}
+    store_path = Path(store_path)
+    default_branch = api(f'repos/{repository}').get('default_branch', 'main')
+    artifacts = api(f'repos/{repository}/actions/artifacts?name={name}&per_page=30').get('artifacts', [])
+    for artifact in artifacts:
+        run_id = str((artifact.get('workflow_run') or {}).get('id') or '')
+        decision = {'artifact_id': artifact.get('id'), 'producer_run': run_id}
+        report['candidates'].append(decision)
+        if producer_run is not None and run_id != str(producer_run):
+            decision.update(result='skipped', reason='not the selected producer run')
+            continue
+        if artifact.get('expired') or artifact.get('name') != name:
+            decision.update(result='rejected', reason='expired or misnamed artifact')
+            continue
+        if not re.fullmatch(r'sha256:[a-f0-9]{64}', str(artifact.get('digest', ''))):
+            decision.update(result='rejected', reason='GitHub artifact digest is missing')
+            continue
+        try:
+            record = store.producer_from_github_run(api(f'repos/{repository}/actions/runs/{run_id}'))
+        except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
+            decision.update(result='rejected', reason='producer lookup failed (' + type(exc).__name__ + ')')
+            continue
+        reason = store.producer_rejection(record, repository=repository, default_branch=default_branch)
+        if reason or record['run_id'] != run_id:
+            decision.update(result='rejected', reason=reason or 'producer run id mismatch')
+            continue
+        store_path.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='manuale-store-', dir=store_path.parent) as work:
+            downloaded = Path(work) / 'artifact.zip'
+            staging = Path(work) / 'store'
+            try:
+                download(repository, artifact['id'], downloaded)
+                if 'sha256:' + _digest_file(downloaded, maximum=MAX_STORE_ARTIFACT_BYTES)[0] != artifact['digest']:
+                    raise ValueError('Downloaded store differs from the authenticated GitHub artifact digest')
+                count = _extract_store_artifact(downloaded, staging, kind)
+            except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+                decision.update(result='rejected', reason=type(exc).__name__ + ': ' + str(exc))
+                continue
+            for source in sorted(path for path in staging.rglob('*') if path.is_file()):
+                target = store_path / source.relative_to(staging)
+                if target.exists() or target.is_symlink():
+                    if kind == 'blobs' and target.read_bytes() == source.read_bytes():
+                        continue
+                    raise ValueError('Restored store collides with existing bytes: ' + str(source.relative_to(staging)))
+                target.parent.mkdir(parents=True, exist_ok=True)
+                source.replace(target)
+        decision.update(result='accepted', reason='successful trusted producer and matching artifact digest')
+        report.update(status='available', producer_run=run_id, artifact_id=artifact['id'],
+                      artifact_digest=artifact['digest'], size_in_bytes=artifact.get('size_in_bytes'), files=count)
+        return report
+    return report
+
+
+def merge_store(candidate, store_path, *, run_id):
+    return _evidence_store().merge_candidate(candidate, store_path, run_id=run_id)
+
+
+def compact_store(store_path, application, *, trusted_producers, reference_date, repository=None):
+    return _evidence_store().compact(store_path, application, trusted_producers=trusted_producers,
+                                     reference_date=reference_date, repository=repository)
+
+
+def bind_run(run, *, manual_revision=None, release=None):
+    """Release binding of every workflow of a verified run: fresh, store-reused and baseline-reused.
+
+    Evidence identity (fingerprint, original producer and commit) is reported
+    per workflow; release identity is this run's exact commit, manual revision
+    and version, and the binding is never reused for another identity.
+    """
+    store = _evidence_store()
+    run = Path(run).resolve()
+    state = _read_json(owned(run, 'run.json'), 'run.json')
+    application = Path(state['application']).resolve()
+    revision = state['application_input']['revision']
+    plan = {}
+    if state.get('evidence_reuse'):
+        plan = reuse_module().validate_reuse_plan(state)
+    evidence = []
+    for recipe in store._registry(application)[1]:
+        fingerprint = store.workflow_fingerprint(application, recipe, manual_revision=store.workflow_manual_revision(
+            application, recipe), schema_version=store.SCHEMA_VERSION, reference_date=state['reference_date'])
+        entry = (plan.get('recipes') or {}).get(recipe)
+        if entry is None:
+            if recipe not in state['selected_recipes']:
+                raise ValueError('Workflow has neither fresh nor retained evidence: ' + recipe)
+            evidence.append({'workflow_id': recipe, 'fresh': True, 'fingerprint': fingerprint,
+                             'origin': {'application_revision': revision}})
+        elif entry.get('source') == 'evidence-store':
+            pointer = entry['evidence_store']
+            evidence.append({'workflow_id': recipe, 'fingerprint': pointer['fingerprint'],
+                             'manifest_sha256': pointer['manifest_sha256'], 'producer': pointer['producer'],
+                             'origin': entry['origin']})
+        else:
+            evidence.append({'workflow_id': recipe, 'fingerprint': fingerprint, 'origin': entry['origin']})
+    recipes = plan.get('recipes') or {}
+    sources = {'fresh': sorted(state['selected_recipes']),
+               'evidence_store': sorted(key for key, value in recipes.items() if value.get('source') == 'evidence-store'),
+               'baseline': sorted(key for key, value in recipes.items() if value.get('source') != 'evidence-store')}
+    return store.release_binding(evidence, application_revision=revision,
+                                 manual_revision=manual_revision or state['manual_input']['revision'],
+                                 release=release or state['release'], sources=sources)
+
+
+def reuse_module():
+    return _trusted_reuse()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('export', 'import', 'store-publish', 'store-producers',
-                                            'store-plan', 'store-materialize', 'store-bind'))
+                                            'store-plan', 'store-materialize', 'store-bind', 'store-fetch',
+                                            'store-merge', 'store-compact'))
     parser.add_argument('--run', type=Path)
     parser.add_argument('--archive', type=Path)
     parser.add_argument('--output', type=Path)
@@ -1292,6 +1479,10 @@ def main():
     parser.add_argument('--fresh', action='append', default=[], help='store-bind: freshly captured workflow id')
     parser.add_argument('--application-revision')
     parser.add_argument('--release')
+    parser.add_argument('--kind', choices=('index', 'blobs'), default='index', help='store-fetch: which artifact')
+    parser.add_argument('--producer-run', help='store-fetch: only this producer run (blobs of the restored index)')
+    parser.add_argument('--candidate', type=Path, help='store-merge: this run\'s candidate store')
+    parser.add_argument('--run-id', default=os.environ.get('GITHUB_RUN_ID'), help='store-merge: producing run id')
     args = parser.parse_args()
     if args.command == 'export':
         if not args.run or not args.archive:
@@ -1333,6 +1524,34 @@ def main():
                                    trusted_producers=_trusted_file(args.trusted_producers),
                                    manual_revision=args.manual_revision, reference_date=args.reference_date,
                                    repository=args.repository)
+    elif args.command == 'store-fetch':
+        if not args.store or not args.repository:
+            parser.error('--store and --repository are required')
+        try:
+            result = fetch_store(args.repository, args.store, kind=args.kind, producer_run=args.producer_run)
+        except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
+            # Restoring is an optimization: any failure is a cold miss.
+            result = {'format': 1, 'artifact': STORE_ARTIFACTS[args.kind], 'status': 'unavailable',
+                      'reason': type(exc).__name__}
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            _write_json(args.output, result)
+    elif args.command == 'store-merge':
+        if not args.store or not args.run_id:
+            parser.error('--store and --run-id are required')
+        result = merge_store(args.candidate, args.store, run_id=args.run_id)
+    elif args.command == 'store-compact':
+        if not args.store:
+            parser.error('--store is required')
+        result = compact_store(args.store, args.application, trusted_producers=_trusted_file(args.trusted_producers),
+                               reference_date=args.reference_date, repository=args.repository)
+    elif args.command == 'store-bind' and args.run:
+        if not args.output:
+            parser.error('--output is required')
+        result = bind_run(args.run, release=args.release,
+                          manual_revision=None if args.manual_revision == 'auto' else args.manual_revision)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        _write_json(args.output, result)
     else:
         if not args.output or not args.application_revision or not args.release or not args.manual_revision \
                 or args.manual_revision == 'auto':
