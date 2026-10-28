@@ -214,8 +214,10 @@ def reuse_inputs(state, args):
                     selected_changes.remove('docs/manuale/recipes.json')
                     input_decisions.append({'path': 'docs/manuale/recipes.json', 'scope': 'application',
                         'reason': 'generated-registry; compare individual recipe contracts', 'recipes': registry_affected})
-            affected = affected_recipes(current_registry, selected_changes, shared_manual,
-                                        root=Path(state['application']), decisions=input_decisions)
+            impact = {}
+            affected = select_affected(current_registry, selected_changes, shared_manual,
+                                       root=Path(state['application']), decisions=input_decisions,
+                                       base_root=previous['application'], report=impact)
             affected = sorted(set(affected) | set(registry_affected))
             fresh = sorted(set(affected) | set(state['selected_recipes'] if force_selected else []))
             probe = helper.build_reuse_plan({**state, 'selected_recipes': fresh},
@@ -231,6 +233,9 @@ def reuse_inputs(state, args):
                                            'retained': len(probe['reused_recipes']), 'rejected': probe.get('rejected', []),
                                            'changed_inputs': changed, 'affected_recipes': affected})
         state['cache']['decisions'][-1].update(input_decisions=input_decisions, changed_manual=manual_changed)
+        if impact.get('format'):
+            state['cache']['decisions'][-1]['impact'] = {key: impact[key] for key in (
+                'mode', 'full_verification_required', 'affected_workflows', 'checks', 'reasons')}
         if explicit or len(probe['reused_recipes']) == maximum_retained:
             break
     complete = getattr(args, 'command', '') in ('run', 'build', 'verify-release')
@@ -396,6 +401,76 @@ def affected_recipes(registry, changed, manual_changed=(), *, root=ROOT, decisio
         else:
             record(relative, 'manual', 'registered-content' if matches else 'authoring-metadata-only', matches)
     return [identifier for identifier in all_ids if identifier in selected]
+
+
+IMPACT_MODULE = 'docs/scripts/manuale_impact.py'
+IMPACT_MAP = 'docs/manuale/impact-map.json'
+
+
+def impact_analyzer(application):
+    """The snapshot's own impact analyzer, or None for snapshots that predate it."""
+    application = Path(application).resolve()
+    path = application / IMPACT_MODULE
+    if not path.is_file() or not (application / IMPACT_MAP).is_file():
+        return None
+    name = 'run_owned_manual_impact_' + hashlib.sha256(str(path).encode()).hexdigest()[:16]
+    module = sys.modules.get(name)
+    if module is None or getattr(module, '__file__', None) != str(path):
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return module
+
+
+def select_affected(registry, changed, manual_changed=(), *, root=ROOT, decisions=None, base=None,
+                    base_root=None, report=None):
+    """Registered-recipe decisions refined by the change-impact graph.
+
+    The legacy per-path decisions are still recorded for compatibility. When
+    the snapshot provides docs/scripts/manuale_impact.py, its report decides the
+    recaptured workflows: full verification selects every workflow and
+    workflows unknown to the report are selected too (fail closed). `base` is
+    a git revision, `base_root` a retained baseline snapshot directory.
+    """
+    legacy = affected_recipes(registry, changed, manual_changed, root=root, decisions=decisions)
+    analyzer = impact_analyzer(root)
+    if analyzer is None:
+        return legacy
+    paths = [*changed, *(('manuale/' + relative) for relative in manual_changed)]
+    try:
+        head = analyzer.WorkTree(root)
+        try:
+            previous = (analyzer.WorkTree(base_root) if base_root else
+                        analyzer.GitTree(root, base) if base else None)
+        except (OSError, subprocess.CalledProcessError):
+            previous = None
+        impact = analyzer.analyze_trees(head, previous, paths)
+    except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
+        if report is not None:
+            report.update(error='impact analysis unavailable: ' + str(exc))
+        return legacy
+    if report is not None:
+        report.update(impact)
+    identifiers = [recipe['id'] for recipe in registry['recipes']]
+    known = set(impact['affected_workflows']) | set(impact['reused_workflows'])
+    if impact['full_verification_required']:
+        return identifiers
+    return [identifier for identifier in identifiers
+            if identifier in impact['affected_workflows'] or identifier not in known]
+
+
+def record_impact(state, impact):
+    """Bind the impact report to the run directory and summarize it in the selection."""
+    if not impact:
+        return
+    file = Path(state['run']) / 'impact.json'
+    write_json(file, impact)
+    state['selection']['impact'] = {
+        'path': file.name, 'sha256': sha(file), 'mode': impact.get('mode'),
+        'full_verification_required': impact.get('full_verification_required'),
+        'affected_workflows': impact.get('affected_workflows', []), 'checks': impact.get('checks', {}),
+        **({'error': impact['error']} if 'error' in impact else {})}
 
 
 def changed_snapshot_paths(repo, snapshot_input, since):
@@ -753,11 +828,15 @@ def prepare(args):
     if args.manual_changed_since:
         manual_changed = changed_snapshot_paths(manual, state['manual_input'], args.manual_changed_since)
     decisions = []
-    state['selected_recipes'] = affected_recipes(registry, changed, manual_changed, root=application,
-                                                decisions=decisions) if args.changed_since or args.manual_changed_since else [recipe['id'] for recipe in registry['recipes']]
+    impact = {}
+    state['selected_recipes'] = select_affected(registry, changed, manual_changed, root=application,
+                                                decisions=decisions, base=args.changed_since, report=impact
+                                                ) if args.changed_since or args.manual_changed_since else [recipe['id'] for recipe in registry['recipes']]
     state['selection'] = {'mode': 'incremental' if args.changed_since or args.manual_changed_since else 'full',
-                          'algorithm': 'registered-recipe-imports-v1', 'decisions': decisions,
+                          'algorithm': 'impact-graph-v1' if impact.get('format') else 'registered-recipe-imports-v1',
+                          'decisions': decisions,
                           'changed_sources': sorted(set(changed)), 'changed_manual': sorted(set(manual_changed))}
+    record_impact(state, impact)
     if getattr(args, 'workflow', None):
         known = {recipe['id'] for recipe in registry['recipes']}
         unknown = set(args.workflow) - known
@@ -781,6 +860,9 @@ def prepare(args):
         tooling.append('docs/scripts/manuale-coverage.py')
     if (application / 'BE/application/manuale/reuse.py').is_file():
         tooling.append('BE/application/manuale/reuse.py')
+    for relative in (IMPACT_MODULE, IMPACT_MAP):
+        if (application / relative).is_file() and relative not in tooling:
+            tooling.append(relative)
     if (application / 'docs/scripts/manuale-repeatability.py').is_file():
         tooling.append('docs/scripts/manuale-repeatability.py')
     if registry_generator.is_file():
