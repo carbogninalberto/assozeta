@@ -16,6 +16,13 @@ Self-hosted deployments are coordinated from `selfhost/compose.yml` and `selfhos
 - `web`: reverse proxy/static frontend (Caddy in production compose)
 - `ui` (dev compose): Vite dev server
 
+The PDF renderer uses a bounded Playwright Chromium pool. Each render owns a
+fresh browser context, while browser processes are recycled by age and request
+count. Its container is non-root, read-only except for a private `/tmp`
+filesystem, has all Linux capabilities dropped, and keeps the existing private
+Compose network and `no-new-privileges` policy. Browser memory is observed from
+the container cgroup rather than from the Node.js heap.
+
 ## Request handling
 
 - API calls go through Django URLs composition in `BE/core/urls.py`.
