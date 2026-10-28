@@ -2819,25 +2819,71 @@
         "target": "audit_log_models",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/audit_summary.go",
+        "BE_GO/internal/dto/audit_summary.go",
+        "BE_GO/internal/repository/audit_summary.go",
+        "BE_GO/internal/service/audit_summary.go",
+        "BE_GO/internal/handler/audit_summary.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "auditlog_logentry, application_auditlogindex, django_content_type"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "request": "No body.",
+        "errors": "401; 403 unmapped endpoint for restricted collaborators, administrator without impersonation, scoped athlete session; 404 {\"error\": \"Sport association not found\"}.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Not in the registry (FULL collaborators bypass it).",
+        "resource_scope": "Audit entries indexed to the scope user's association.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
+        "execution_owner": "django",
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/audit-logs/models",
+          "/api/v2/audit-logs/models",
+          "/api/audit-logs/models"
+        ],
+        "response": "200 {\"data\": [{name, label}]} sorted by label."
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/audit_log_summary_http.json",
+        "TESTS/fixtures/generate_audit_log_summary_http.py",
+        "TESTS/contracts/test_audit_log_summary_http.py",
+        "TESTS/adapters/django/audit_log_summary_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/audit_summary_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/audit-log-summary.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 24/24; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/audit-log-summary-http-red-r1/results.json",
+          "receipt_sha256": "8d8ee71f3319c8d6fa9f9a6aa1bebabab031d9576cb818b6d521bdad01865847"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 24/24 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/audit-log-summary-http-versioned-r1/results.json",
+          "receipt_sha256": "b4e7e76f8f3fd5b426ca68508c3e79489c5dbf58e91ff17fc83b76d58a88cc40"
+        },
+        {
+          "revision": "committing change without .title() for unlabelled models",
+          "result": "Mutation control: fails Go on the models owner case.",
+          "artifact": "quality-reports/go-migration/audit-log-summary-http-mutation-r1/results.json",
+          "receipt_sha256": "4d80f7c93ea32121ac6449804595558fa033f2893bb461ce616746d75f96a9b5"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:audit-logs/stats -> audit_log_stats",
@@ -2854,25 +2900,71 @@
         "target": "audit_log_stats",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/audit_summary.go",
+        "BE_GO/internal/dto/audit_summary.go",
+        "BE_GO/internal/repository/audit_summary.go",
+        "BE_GO/internal/service/audit_summary.go",
+        "BE_GO/internal/handler/audit_summary.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "auditlog_logentry, application_auditlogindex, django_content_type"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "request": "No body.",
+        "errors": "401; 403 unmapped endpoint for restricted collaborators, administrator without impersonation, scoped athlete session; 404 {\"error\": \"Sport association not found\"}.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Not in the registry (FULL collaborators bypass it).",
+        "resource_scope": "Audit entries indexed to the scope user's association.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
+        "execution_owner": "django",
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/audit-logs/stats",
+          "/api/v2/audit-logs/stats",
+          "/api/audit-logs/stats"
+        ],
+        "response": "200 {\"data\": {\"total\", \"by_action\": {create, update, delete}}}."
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/audit_log_summary_http.json",
+        "TESTS/fixtures/generate_audit_log_summary_http.py",
+        "TESTS/contracts/test_audit_log_summary_http.py",
+        "TESTS/adapters/django/audit_log_summary_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/audit_summary_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/audit-log-summary.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 24/24; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/audit-log-summary-http-red-r1/results.json",
+          "receipt_sha256": "8d8ee71f3319c8d6fa9f9a6aa1bebabab031d9576cb818b6d521bdad01865847"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 24/24 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/audit-log-summary-http-versioned-r1/results.json",
+          "receipt_sha256": "b4e7e76f8f3fd5b426ca68508c3e79489c5dbf58e91ff17fc83b76d58a88cc40"
+        },
+        {
+          "revision": "committing change without .title() for unlabelled models",
+          "result": "Mutation control: fails Go on the models owner case.",
+          "artifact": "quality-reports/go-migration/audit-log-summary-http-mutation-r1/results.json",
+          "receipt_sha256": "4d80f7c93ea32121ac6449804595558fa033f2893bb461ce616746d75f96a9b5"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet -> balance_sheet",
