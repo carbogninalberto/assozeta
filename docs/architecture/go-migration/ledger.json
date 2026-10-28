@@ -6363,10 +6363,16 @@
           "result": "GREEN: 12/12 on four transports.",
           "artifact": "quality-reports/go-migration/course-tags-list-http-versioned-r1/results.json",
           "receipt_sha256": "bb6ea7f0015d55631675518a5b93ce40f70885101a6187711a4cf7a1599ec266"
+        },
+        {
+          "revision": "committing change with descending tag order",
+          "result": "Mutation control: fails Go on the owner case.",
+          "artifact": "quality-reports/go-migration/course-tags-list-http-mutation-r1/results.json",
+          "receipt_sha256": "7eecc8ce6e89947ed179d3589e0b146da1cb681700afcbd62837a30abe25fa64"
         }
       ],
       "notes": [
-        "Implementing: read parity on four transports; mutation control not yet run."
+        "Implementing: read parity proven on four transports."
       ]
     },
     {
