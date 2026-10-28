@@ -89,3 +89,93 @@ func (h *BalanceAccountWritesHandler) Update(c echo.Context) error {
 			return h.writes.Update(ctx, identity, uid, body, form, group, audit)
 		})
 }
+
+type BalanceTransferWriteService interface {
+	Add(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) (map[string]any, error)
+	Update(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any, audit domain.LoginAuditContext) (map[string]any, error)
+	Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error
+}
+
+type BalanceTransferWritesHandler struct {
+	writes     BalanceTransferWriteService
+	actors     *service.ActorAuthentication
+	identities *service.IdentityResolver
+	audit      LoginAuditReader
+	operations *paymentcategorylifecycle.Lifecycle
+}
+
+func NewBalanceTransferWritesHandler(writes BalanceTransferWriteService, actors *service.ActorAuthentication, identities *service.IdentityResolver,
+	audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *BalanceTransferWritesHandler {
+	return &BalanceTransferWritesHandler{writes: writes, actors: actors, identities: identities, audit: audit, operations: operations}
+}
+
+func (h *BalanceTransferWritesHandler) serve(c echo.Context, method, operation, name string,
+	run func(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) (any, error)) error {
+	identity, err := messageMutationsIdentity(c, h.actors, h.identities, method, operation)
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, name, "")
+	}
+	if request.Method != method {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	body, err := readMessageMutationsBody(c)
+	if err != nil {
+		return restError(c, err)
+	}
+	audit, err := h.audit(request)
+	if err != nil {
+		return restError(c, err)
+	}
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	result, err := run(ctx, *identity, body, audit)
+	var invalid *service.BalanceAccountValidationError
+	switch {
+	case errors.As(err, &invalid):
+		return c.JSON(400, paymentCategoryValidationMessages(request, invalid.Fields))
+	case errors.Is(err, service.ErrBalanceInfoUnavailable):
+		return c.JSON(403, map[string]string{"msg": "Info not available."})
+	case errors.Is(err, service.ErrBalanceTransferMissing):
+		return c.JSON(404, map[string]string{"exception": "CustomAccountsTransfer matching query does not exist."})
+	case err != nil:
+		return messageReadsError(c, err)
+	}
+	return c.JSON(200, result)
+}
+
+func (h *BalanceTransferWritesHandler) Add(c echo.Context) error {
+	return h.serve(c, http.MethodPost, "balance_sheet_accounts_transfer_add", "Balance Sheet Accounts Transfer Add",
+		func(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) (any, error) {
+			return h.writes.Add(ctx, identity, body, audit)
+		})
+}
+
+func (h *BalanceTransferWritesHandler) Update(c echo.Context) error {
+	uid := c.Param("uid")
+	return h.serve(c, http.MethodPatch, "balance_sheet_accounts_transfer_update", "Balance Sheet Accounts Transfer Update",
+		func(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) (any, error) {
+			return h.writes.Update(ctx, identity, uid, body, audit)
+		})
+}
+
+func (h *BalanceTransferWritesHandler) Delete(c echo.Context) error {
+	uid := c.Param("uid")
+	return h.serve(c, http.MethodDelete, "balance_sheet_accounts_transfer_delete", "Balance Sheet Accounts Transfer Delete",
+		func(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) (any, error) {
+			if err := h.writes.Delete(ctx, identity, uid, audit); err != nil {
+				return nil, err
+			}
+			return map[string]string{"msg": "bank accounts deleted"}, nil
+		})
+}

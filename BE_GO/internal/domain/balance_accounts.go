@@ -86,3 +86,29 @@ type BalanceAccountWriteTransaction interface {
 type BalanceAccountWriteStore interface {
 	BeginBalanceAccountWrite(context.Context) (BalanceAccountWriteTransaction, error)
 }
+
+type BalanceTransferRow struct {
+	ID            string    `db:"custom_account_transfer_id"`
+	From          *string   `db:"custom_account_from_id"`
+	To            *string   `db:"custom_account_to_id"`
+	Amount        string    `db:"amount"`
+	Date          time.Time `db:"date"`
+	AssociationID *string   `db:"sport_association_id"`
+}
+
+type BalanceTransferWriteTransaction interface {
+	OwnerAssociation(ctx context.Context, owner string) (string, error)
+	// AccountsOf reports which of ids are accounts of the association.
+	AccountsOf(ctx context.Context, association string, ids []string) (map[string]bool, error)
+	TransferIDTaken(ctx context.Context, id string, exclude *string) (bool, error)
+	TransferForUpdate(ctx context.Context, id, association string) (*BalanceTransferRow, error)
+	InsertTransfer(ctx context.Context, row BalanceTransferRow, audit LoginAuditContext, at time.Time) error
+	SaveTransfer(ctx context.Context, row BalanceTransferRow, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
+	DeleteTransfer(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
+	Commit() error
+	Rollback() error
+}
+
+type BalanceTransferWriteStore interface {
+	BeginBalanceTransferWrite(context.Context) (BalanceTransferWriteTransaction, error)
+}

@@ -3057,28 +3057,70 @@
         "target": "balance_sheet_accounts_transfer_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/balance_account_write.go",
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_account_writes.go",
+        "BE_GO/internal/handler/balance_account_writes.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_customaccountstransfer",
+        "application_customaccounts"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet/accounts-transfer/<uid>/delete",
+          "/api/v2/balance-sheet/accounts-transfer/<uid>/delete",
+          "/api/balance-sheet/accounts-transfer/<uid>/delete"
+        ],
+        "request": "Path uid.",
+        "response": "200 {\"msg\": \"bank accounts deleted\"}.",
+        "errors": "400 DRF field errors; 401; 403 generic (athletes) / registry / scoped session; 404 CustomAccountsTransfer matching query does not exist. (update/delete).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; registry bookeeping.management.accountstransfers.delete.",
+        "resource_scope": "The owner's association and its accounts.",
+        "side_effects": "Deletes the transfer; one delete entry indexed through changes_json.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_balance_sheet_ownership.py"
+        "TESTS/fixtures/balance_transfer_writes_http.json",
+        "TESTS/fixtures/generate_balance_transfer_writes_http.py",
+        "TESTS/contracts/test_balance_transfer_writes_http.py",
+        "TESTS/adapters/django/balance_transfer_writes_http.py"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 30/30; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-red-r1/results.json",
+          "receipt_sha256": "f25f13b3b27d8a3db6e869e6143b492a5f24dd93f6c5d9958afdab655ae19695"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 30/30 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "a50741f79986446a042b04f6b92cf74d74e1d01bec0a94bfca6cedfe6c0e3129"
+        },
+        {
+          "revision": "committing change without the association account check",
+          "result": "Mutation control: fails Go on the invalid-fields case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "b131ff0bcf2f29df2c2a3c20e172d683b45d488691d40fba205e19c09a37750f"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md)."
       ]
     },
     {
@@ -3096,28 +3138,70 @@
         "target": "balance_sheet_accounts_transfer_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/balance_account_write.go",
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_account_writes.go",
+        "BE_GO/internal/handler/balance_account_writes.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_customaccountstransfer",
+        "application_customaccounts"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet/accounts-transfer/<uid>/update",
+          "/api/v2/balance-sheet/accounts-transfer/<uid>/update",
+          "/api/balance-sheet/accounts-transfer/<uid>/update"
+        ],
+        "request": "JSON/form: CustomAccountTransferSerializer fields.",
+        "response": "200 serialized transfer.",
+        "errors": "400 DRF field errors; 401; 403 generic (athletes) / registry / scoped session; 404 CustomAccountsTransfer matching query does not exist. (update/delete).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; registry bookeeping.management.accountstransfers.update.",
+        "resource_scope": "The owner's association and its accounts.",
+        "side_effects": "Saves the partial data; one update entry with the changed fields.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_balance_sheet_ownership.py"
+        "TESTS/fixtures/balance_transfer_writes_http.json",
+        "TESTS/fixtures/generate_balance_transfer_writes_http.py",
+        "TESTS/contracts/test_balance_transfer_writes_http.py",
+        "TESTS/adapters/django/balance_transfer_writes_http.py"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 30/30; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-red-r1/results.json",
+          "receipt_sha256": "f25f13b3b27d8a3db6e869e6143b492a5f24dd93f6c5d9958afdab655ae19695"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 30/30 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "a50741f79986446a042b04f6b92cf74d74e1d01bec0a94bfca6cedfe6c0e3129"
+        },
+        {
+          "revision": "committing change without the association account check",
+          "result": "Mutation control: fails Go on the invalid-fields case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "b131ff0bcf2f29df2c2a3c20e172d683b45d488691d40fba205e19c09a37750f"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md)."
       ]
     },
     {
@@ -3135,28 +3219,70 @@
         "target": "balance_sheet_accounts_transfer_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/balance_account_write.go",
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_account_writes.go",
+        "BE_GO/internal/handler/balance_account_writes.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_customaccountstransfer",
+        "application_customaccounts"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet/accounts-transfer/add",
+          "/api/v2/balance-sheet/accounts-transfer/add",
+          "/api/balance-sheet/accounts-transfer/add"
+        ],
+        "request": "JSON/form: CustomAccountTransferSerializer fields.",
+        "response": "200 serialized transfer.",
+        "errors": "400 DRF field errors; 401; 403 generic (athletes) / registry / scoped session; 404 CustomAccountsTransfer matching query does not exist. (update/delete).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; registry bookeeping.management.accountstransfers.create.",
+        "resource_scope": "The owner's association and its accounts.",
+        "side_effects": "Creates the transfer (one create entry).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_balance_sheet_ownership.py"
+        "TESTS/fixtures/balance_transfer_writes_http.json",
+        "TESTS/fixtures/generate_balance_transfer_writes_http.py",
+        "TESTS/contracts/test_balance_transfer_writes_http.py",
+        "TESTS/adapters/django/balance_transfer_writes_http.py"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 30/30; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-red-r1/results.json",
+          "receipt_sha256": "f25f13b3b27d8a3db6e869e6143b492a5f24dd93f6c5d9958afdab655ae19695"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 30/30 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "a50741f79986446a042b04f6b92cf74d74e1d01bec0a94bfca6cedfe6c0e3129"
+        },
+        {
+          "revision": "committing change without the association account check",
+          "result": "Mutation control: fails Go on the invalid-fields case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "b131ff0bcf2f29df2c2a3c20e172d683b45d488691d40fba205e19c09a37750f"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md)."
       ]
     },
     {

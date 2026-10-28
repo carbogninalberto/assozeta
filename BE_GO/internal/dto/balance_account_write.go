@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
@@ -101,6 +103,89 @@ func ParseBalanceAccountWrite(body any, partial, form bool) (BalanceAccountWrite
 			default:
 				errors["account_type"] = []string{"choice:" + raw}
 			}
+		}
+	}
+	if len(errors) > 0 {
+		return write, errors
+	}
+	return write, nil
+}
+
+// BalanceTransferWrite is CustomAccountTransferSerializer's field data.
+type BalanceTransferWrite struct {
+	ID                     *string
+	FromPresent, ToPresent bool
+	From, To               *string
+	FromRaw, ToRaw         string
+	Amount                 *string
+	DatePresent            bool
+	Date                   *time.Time
+}
+
+// BalanceTransferUnique is the custom_account_transfer_id UniqueValidator code.
+const BalanceTransferUnique = "unique-custom-account-transfer"
+
+// ParseBalanceTransferWrite ports the transfer serializer's field validation;
+// the related querysets (the association's accounts) and uniqueness are
+// checked by the service.
+func ParseBalanceTransferWrite(body any, partial bool) (BalanceTransferWrite, map[string]any) {
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		return BalanceTransferWrite{}, map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(body)}}
+	}
+	var write BalanceTransferWrite
+	errors := map[string]any{}
+	if value, present := object.Lookup("custom_account_transfer_id"); present {
+		if value == nil {
+			errors["custom_account_transfer_id"] = []string{PaymentCategoryValidationNull}
+		} else if id, ok := supplierUUID(value); ok {
+			write.ID = &id
+		} else {
+			errors["custom_account_transfer_id"] = []string{PaymentCategoryValidationUUID}
+		}
+	}
+	for _, field := range []struct {
+		name    string
+		present *bool
+		target  **string
+		raw     *string
+	}{{"custom_account_from", &write.FromPresent, &write.From, &write.FromRaw}, {"custom_account_to", &write.ToPresent, &write.To, &write.ToRaw}} {
+		value, present := object.Lookup(field.name)
+		if !present {
+			continue
+		}
+		*field.present = true
+		if value == nil {
+			continue
+		}
+		id, code := supplierRelated(value)
+		if code != "" {
+			errors[field.name] = []string{code}
+			continue
+		}
+		*field.target, *field.raw = &id, PythonStr(value)
+	}
+	if value, present := object.Lookup("amount"); !present {
+		if !partial {
+			errors["amount"] = []string{PaymentCategoryValidationRequired}
+		}
+	} else if value == nil {
+		errors["amount"] = []string{PaymentCategoryValidationNull}
+	} else if amount, code := DRFDecimal(value, 10, 2); code != "" {
+		errors["amount"] = []string{code}
+	} else {
+		write.Amount = &amount
+	}
+	if value, present := object.Lookup("date"); present {
+		write.DatePresent = true
+		if value == nil {
+			errors["date"] = []string{PaymentCategoryValidationNull}
+		} else if text, ok := value.(string); !ok {
+			errors["date"] = []string{PaymentCategoryValidationDateTime}
+		} else if parsed, err := parsePaymentCategoryDate(text); err != nil {
+			errors["date"] = []string{PaymentCategoryValidationDateTime}
+		} else {
+			write.Date = &parsed
 		}
 	}
 	if len(errors) > 0 {

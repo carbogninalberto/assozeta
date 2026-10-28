@@ -155,3 +155,93 @@ func (t *balanceAccountWriteTransaction) SerializedAccount(ctx context.Context, 
 	err := t.tx.GetContext(ctx, &row, balanceAccountsQuery(false, true), association, group, id)
 	return row, err
 }
+
+func (r *BalanceAccounts) BeginBalanceTransferWrite(ctx context.Context) (domain.BalanceTransferWriteTransaction, error) {
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return nil, err
+	}
+	return &balanceAccountWriteTransaction{paymentCategoryTransaction: &paymentCategoryTransaction{ownedTransaction: tx}}, nil
+}
+
+func (t *balanceAccountWriteTransaction) AccountsOf(ctx context.Context, association string, ids []string) (map[string]bool, error) {
+	found := []string{}
+	if err := t.tx.SelectContext(ctx, &found, `SELECT custom_account_id FROM application_customaccounts
+ WHERE custom_account_id=ANY($1::uuid[]) AND sport_association_id=$2`, ids, association); err != nil {
+		return nil, err
+	}
+	owned := map[string]bool{}
+	for _, id := range found {
+		owned[id] = true
+	}
+	return owned, nil
+}
+
+func (t *balanceAccountWriteTransaction) TransferIDTaken(ctx context.Context, id string, exclude *string) (bool, error) {
+	var taken bool
+	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_customaccountstransfer
+ WHERE custom_account_transfer_id=$1 AND ($2::uuid IS NULL OR custom_account_transfer_id<>$2::uuid))`, id, exclude)
+	return taken, err
+}
+
+func (t *balanceAccountWriteTransaction) TransferForUpdate(ctx context.Context, id, association string) (*domain.BalanceTransferRow, error) {
+	var row domain.BalanceTransferRow
+	err := t.tx.GetContext(ctx, &row, `SELECT custom_account_transfer_id, custom_account_from_id, custom_account_to_id, amount::text AS amount,
+ date, sport_association_id FROM application_customaccountstransfer WHERE custom_account_transfer_id=$1 AND sport_association_id=$2 FOR UPDATE`,
+		id, association)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+func balanceTransferAudit(id string, action int, changes map[string][2]string, association *string, path string, audit domain.LoginAuditContext,
+	at time.Time) modelAuditEntry {
+	entry := modelAuditEntry{Model: "customaccountstransfer", Key: id, Representation: "CustomAccountsTransfer object (" + id + ")",
+		Action: action, Changes: changes, Context: audit, At: at}
+	if association != nil {
+		entry.AssociationID, entry.ResolutionPath = association, &path
+	}
+	return entry
+}
+
+func (t *balanceAccountWriteTransaction) InsertTransfer(ctx context.Context, row domain.BalanceTransferRow, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_customaccountstransfer
+ (custom_account_transfer_id,custom_account_from_id,custom_account_to_id,amount,date,sport_association_id) VALUES ($1,$2,$3,$4::numeric,$5,$6)`,
+		row.ID, row.From, row.To, row.Amount, row.Date, row.AssociationID); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "application_customaccountstransfer", "custom_account_transfer_id", row.ID)
+	if err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, balanceTransferAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))
+}
+
+func (t *balanceAccountWriteTransaction) SaveTransfer(ctx context.Context, row domain.BalanceTransferRow, changes map[string][2]string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_customaccountstransfer SET custom_account_from_id=$2, custom_account_to_id=$3,
+ amount=$4::numeric, date=$5, sport_association_id=$6 WHERE custom_account_transfer_id=$1`, row.ID, row.From, row.To, row.Amount, row.Date,
+		row.AssociationID); err != nil {
+		return err
+	}
+	if len(changes) == 0 {
+		return nil
+	}
+	return appendModelAudit(ctx, t.tx, balanceTransferAudit(row.ID, 1, changes, row.AssociationID, "direct", audit, at))
+}
+
+func (t *balanceAccountWriteTransaction) DeleteTransfer(ctx context.Context, id string, audit domain.LoginAuditContext, at time.Time) error {
+	changes, _, err := deleteModelWithAudit(ctx, t.tx, "application_customaccountstransfer", "custom_account_transfer_id", id)
+	if err != nil {
+		return err
+	}
+	var association *string
+	if value := changes["sport_association"][0]; value != "" && value != "None" {
+		association = &value
+	}
+	return appendModelAudit(ctx, t.tx, balanceTransferAudit(id, 2, changes, association, "changes_json.sport_association", audit, at))
+}

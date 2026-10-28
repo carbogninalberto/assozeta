@@ -65,3 +65,24 @@ empty manager) and the changed fields, indexed directly. A new
 refuses it with a 500 (not ported). Account delete (a cascading hard delete of
 its payments) is not ported yet.
 `TESTS/fixtures/balance_account_writes_http.json` authors 29 cases.
+
+## Transfer add, update and delete
+
+`POST balance-sheet/accounts-transfer/add`, `PATCH .../<uid>/update` and
+`DELETE .../<uid>/delete` keep the same access rules and port
+`CustomAccountTransferSerializer`: a writable `custom_account_transfer_id`
+(UniqueValidator), `custom_account_from`/`custom_account_to` (nullable relations
+whose queryset is the association's accounts, so another association's or an
+unknown account is `Invalid pk "…" - object does not exist.`, a malformed one
+the model field's `“…” is not a valid UUID.`), `amount` (DecimalField(10, 2))
+and `date` (DateTimeField in UTC, default now). Add and update save with the
+owner's association and return the serialized transfer; update and delete get
+the association's transfer (otherwise, including a malformed id,
+`404 {"exception": "CustomAccountsTransfer matching query does not exist."}`).
+auditlog records the create and the changed fields (indexed directly) and the
+delete (indexed through `changes_json`). The serializer's `validate()` also
+rechecks the instance's stored accounts on a partial update that omits them;
+Go does not repeat that recheck yet, so it differs only for a transfer whose
+stored account belongs to another association (data these views never
+write). `TESTS/fixtures/balance_transfer_writes_http.json` authors 30
+cases; the Django reference passed them on the first run.
