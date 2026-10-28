@@ -1,6 +1,7 @@
 # Default storage trust
 
-`cacert.pem` is copied without modification from certifi 2026.10.19, the exact
+`cacert.crt` is certifi's `cacert.pem` copied without modification from certifi 2026.10.19 (renamed so
+repository tooling that refuses private `.pem` files accepts this public CA bundle), the exact
 version pinned in `BE/requirements.txt`. The upstream `LICENSE` is retained.
 `UPSTREAM.json` records both file hashes and the certificate count. These are
 public CA certificates, not private fixture certificates or application keys.

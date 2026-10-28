@@ -16,16 +16,16 @@ def main():
     distribution = importlib.metadata.distribution('certifi')
     assert distribution.version == manifest['version'], 'Python/Go trust versions differ'
     assert f"certifi=={manifest['version']}" in (ROOT / 'BE/requirements.txt').read_text().splitlines()
-    assert {path.name for path in SOURCE.iterdir()} == {'cacert.pem', 'LICENSE', 'UPSTREAM.json', 'README.md'}
-    assert set(manifest['files_sha256']) == {'cacert.pem', 'LICENSE'}
-    upstream = {'cacert.pem': Path(certifi.where()), 'LICENSE': next(
+    assert {path.name for path in SOURCE.iterdir()} == {'cacert.crt', 'LICENSE', 'UPSTREAM.json', 'README.md'}
+    assert set(manifest['files_sha256']) == {'cacert.crt', 'LICENSE'}
+    upstream = {'cacert.crt': Path(certifi.where()), 'LICENSE': next(
         distribution.locate_file(path) for path in distribution.files
         if str(path).endswith('licenses/LICENSE'))}
     for name, expected in manifest['files_sha256'].items():
         data = (SOURCE / name).read_bytes()
         assert hashlib.sha256(data).hexdigest() == expected, f'Embedded trust artifact drift: {name}'
         assert data == upstream[name].read_bytes(), f'Python/Go trust artifact differs: {name}'
-    assert (SOURCE / 'cacert.pem').read_bytes().count(b'-----BEGIN CERTIFICATE-----') == manifest['pem_certificate_count']
+    assert (SOURCE / 'cacert.crt').read_bytes().count(b'-----BEGIN CERTIFICATE-----') == manifest['pem_certificate_count']
     print(f"Default storage trust: certifi {distribution.version}, exact bundle and license verified")
 
 

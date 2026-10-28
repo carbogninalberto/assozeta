@@ -707,7 +707,7 @@ class HistoricalReadAdapterControls(unittest.TestCase):
         embedded = adapter.go_embedded_inputs()
         relative = {str(path.relative_to(adapter.ROOT)) for path in embedded}
         self.assertIn('BE_GO/migrations/000001_durable_jobs.up.sql', relative)
-        self.assertIn('BE_GO/pkg/storage/s3trust/certifi/cacert.pem', relative)
+        self.assertIn('BE_GO/pkg/storage/s3trust/certifi/cacert.crt', relative)
         self.assertLessEqual(relative, set(adapter.source_hashes()))
 
     def test_versioned_is_opt_in_and_workloads_follow_native_then_caddy(self):

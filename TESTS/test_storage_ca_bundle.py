@@ -28,11 +28,11 @@ class StorageCABundleGuardTests(unittest.TestCase):
         guard.main()
 
     def test_modified_bundle_cannot_self_attest_with_a_new_hash(self):
-        bundle = self.source / 'cacert.pem'
+        bundle = self.source / 'cacert.crt'
         bundle.write_bytes(bundle.read_bytes() + b'\n# unreviewed bundle alteration\n')
         path = self.source / 'UPSTREAM.json'
         manifest = json.loads(path.read_text())
-        manifest['files_sha256']['cacert.pem'] = hashlib.sha256(bundle.read_bytes()).hexdigest()
+        manifest['files_sha256']['cacert.crt'] = hashlib.sha256(bundle.read_bytes()).hexdigest()
         path.write_text(json.dumps(manifest))
         with self.assertRaisesRegex(AssertionError, 'Python/Go trust artifact differs'):
             guard.main()

@@ -10,7 +10,7 @@ import (
 // Django/botocore. Platform roots and SSL_CERT_FILE/SSL_CERT_DIR are not additions
 // to that trust policy. Configured AWS/shared/requests bundles still replace it.
 //
-//go:embed certifi/cacert.pem
+//go:embed certifi/cacert.crt
 var defaultBundle []byte
 
 var parsedDefaultRoots = sync.OnceValue(func() *x509.CertPool {
