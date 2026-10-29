@@ -264,6 +264,11 @@ func run() (runErr error) {
 	e.Any("/course/tags/:tag_id/assign/:course_id", courseTagWritesHandler.Assign, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/tags/:tag_id/unassign/:course_id", courseTagWritesHandler.Unassign, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/list", courseLocationListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseLocationWritesHandler := handler.NewCourseLocationWritesHandler(service.NewCourseLocationWrites(repository.NewCourseLocationWrites(db), time.Now,
+		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/course/locations/add", courseLocationWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/locations/:pk/update", courseLocationWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/locations/:pk/delete", courseLocationWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/stats", auditSummaryHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/models", auditSummaryHandler.Models, middleware.DjangoSessionAudit(sessionAuthentication))

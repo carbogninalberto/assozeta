@@ -68,17 +68,28 @@ func (s *CourseLocationLists) List(ctx context.Context, identity domain.Resolved
 	}
 	items := make([]map[string]any, 0, len(rows))
 	for _, row := range rows {
-		documents := []courseLocationDocument{}
-		if err := json.Unmarshal([]byte(row.Documents), &documents); err != nil {
+		item, err := courseLocationItem(domain.CourseLocation{ID: row.ID, Title: row.Title, Description: row.Description, Address: row.Address,
+			AssociationID: row.AssociationID}, row.Documents)
+		if err != nil {
 			return nil, err
 		}
-		rendered := make([]map[string]any, 0, len(documents))
-		for _, document := range documents {
-			rendered = append(rendered, map[string]any{"document_id": document.ID, "creation_date": dto.DRFUTCDateTime(document.CreationDate),
-				"filepath": document.Filepath, "filename": document.Filename, "file_size_bytes": document.FileSizeBytes, "token": document.Token})
-		}
-		items = append(items, map[string]any{"course_location_id": row.ID, "documents": rendered, "title": row.Title,
-			"description": row.Description, "address": row.Address, "sport_association": row.AssociationID})
+		items = append(items, item)
 	}
 	return map[string]any{"data": items}, nil
+}
+
+// courseLocationItem is CourseLocationSerializer(location).data; documents is
+// the nested documents JSON.
+func courseLocationItem(row domain.CourseLocation, documents string) (map[string]any, error) {
+	decoded := []courseLocationDocument{}
+	if err := json.Unmarshal([]byte(documents), &decoded); err != nil {
+		return nil, err
+	}
+	rendered := make([]map[string]any, 0, len(decoded))
+	for _, document := range decoded {
+		rendered = append(rendered, map[string]any{"document_id": document.ID, "creation_date": dto.DRFUTCDateTime(document.CreationDate),
+			"filepath": document.Filepath, "filename": document.Filename, "file_size_bytes": document.FileSizeBytes, "token": document.Token})
+	}
+	return map[string]any{"course_location_id": row.ID, "documents": rendered, "title": row.Title,
+		"description": row.Description, "address": row.Address, "sport_association": row.AssociationID}, nil
 }

@@ -383,6 +383,18 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 			return "“" + value + "” is not a valid UUID."
 		}
 		return "“" + value + "” non è un UUID valido."
+	case strings.HasPrefix(code, "not-a-list:"):
+		kind := strings.TrimPrefix(code, "not-a-list:")
+		if english {
+			return `Expected a list of items but got type "` + kind + `".`
+		}
+		return `Attesa una lista di oggetti ma l'oggetto ricevuto è di tipo "` + kind + `".`
+	case strings.HasPrefix(code, "not-a-dict:"):
+		kind := strings.TrimPrefix(code, "not-a-dict:")
+		if english {
+			return `Expected a dictionary of items but got type "` + kind + `".`
+		}
+		return `Era atteso un dizionario di oggetti ma il dato ricevuto è di tipo "` + kind + `".`
 	case code == dto.CarnetAddMetaDict:
 		return "This field must be a dictionary."
 	case code == "immutable-category-id":

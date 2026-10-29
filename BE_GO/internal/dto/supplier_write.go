@@ -227,6 +227,39 @@ func supplierRelated(value any) (id string, code string) {
 	return "", "related-incorrect-type:" + pythonTypeName(value)
 }
 
+// modelTextValue validates one present value of a ModelSerializer text field
+// (the model CharField/TextField options); nil text is None.
+func modelTextValue(field SupplierField, value any, form bool) (*string, []string) {
+	if form && value == "" && field.Null && !field.Blank {
+		// get_value: an empty HTML input of a nullable, non-blank field is None.
+		value = nil
+	}
+	if value == nil {
+		if !field.Null {
+			return nil, []string{PaymentCategoryValidationNull}
+		}
+		return nil, nil
+	}
+	maximum := field.Max
+	if maximum == 0 {
+		maximum = int(^uint(0) >> 1)
+	}
+	text, codes := parsePaymentCategoryString(value, maximum)
+	if len(codes) == 1 && codes[0] == PaymentCategoryValidationBlank && field.Blank {
+		empty := ""
+		return &empty, nil
+	}
+	// run_validators collects every validator error; EmailValidator runs
+	// after the length and character validators on any string value.
+	if field.Email && !(len(codes) == 1 && codes[0] == PaymentCategoryValidationString) && !SupplierEmail(text) {
+		codes = append(codes, SupplierValidationEmail)
+	}
+	if len(codes) > 0 {
+		return nil, codes
+	}
+	return &text, nil
+}
+
 // ParseSupplierWrite ports SupplierSerializer(data=..., partial=...) field
 // validation; related existence, tenant scope and uniqueness are checked by
 // the service.
@@ -256,40 +289,12 @@ func ParseSupplierWrite(body any, partial, form bool) (SupplierWrite, *SupplierV
 			}
 			continue
 		}
-		if form && value == "" && field.Null && !field.Blank {
-			// get_value: an empty HTML input of a nullable, non-blank field is None.
-			value = nil
-		}
-		if value == nil {
-			if !field.Null {
-				invalid.Add(field.Name, PaymentCategoryValidationNull)
-			} else {
-				write.Text[field.Name] = nil
-			}
-			continue
-		}
-		maximum := field.Max
-		if maximum == 0 {
-			maximum = int(^uint(0) >> 1)
-		}
-		text, codes := parsePaymentCategoryString(value, maximum)
-		if len(codes) == 1 && codes[0] == PaymentCategoryValidationBlank {
-			if field.Blank {
-				empty := ""
-				write.Text[field.Name] = &empty
-				continue
-			}
-		}
-		// run_validators collects every validator error; EmailValidator runs
-		// after the length and character validators on any string value.
-		if field.Email && !(len(codes) == 1 && codes[0] == PaymentCategoryValidationString) && !SupplierEmail(text) {
-			codes = append(codes, SupplierValidationEmail)
-		}
+		text, codes := modelTextValue(field, value, form)
 		if len(codes) > 0 {
 			invalid.Add(field.Name, codes...)
 			continue
 		}
-		write.Text[field.Name] = &text
+		write.Text[field.Name] = text
 	}
 	related := func(name string, present *bool, target **string) {
 		value, found := object.Lookup(name)

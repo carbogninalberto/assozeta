@@ -6842,25 +6842,70 @@
         "target": "CourseLocationViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_location_writes.go",
+        "BE_GO/internal/dto/course_location_write.go",
+        "BE_GO/internal/repository/course_location_writes.go",
+        "BE_GO/internal/service/course_location_writes.go",
+        "BE_GO/internal/handler/course_location_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_courselocation",
+        "application_courselocation_documents"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/locations/<pk>/delete",
+          "/api/v2/course/locations/<pk>/delete",
+          "/api/course/locations/<pk>/delete"
+        ],
+        "request": "JSON or form CourseLocationSerializer fields (course_location_id, title, description, address, sport_association, documents_data).",
+        "response": "204 without a body.",
+        "errors": "401; 403; 404 No CourseLocation matches / Not found (malformed pk); 500 no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.delete.",
+        "resource_scope": "The owner's association locations; sport_association is tenant-scoped (a foreign one is DRF's generic 403).",
+        "side_effects": "Deletes the document links and the location (delete entry); documents stay.",
+        "transaction": "Not atomic: a documents_data failure after the save keeps the saved location.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_location_writes_http.json",
+        "TESTS/fixtures/generate_course_location_writes_http.py",
+        "TESTS/contracts/test_course_location_writes_http.py",
+        "TESTS/adapters/django/course_location_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-locations.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 47/47; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-red-r2/results.json",
+          "receipt_sha256": "fe23c3ca183be43a7d2f71485001cbf2f76d635e138c941725c4d5f20d4c843d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 47/47 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "145541e3213cb6e74d409b8b969fbbfec014250b3202d5561a53c82dc878807d"
+        },
+        {
+          "revision": "committing change rolling back the save on a documents_data failure",
+          "result": "Mutation control: fails Go on the first add whose document lacks its keys.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "c3c668cbc78064b51c1d17e924dfff7a5817999f350f634baa85884e5f8d519d"
+        }
+      ],
+      "notes": [
+        "Implementing: DRF field validation, tenant-scoped association, viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads to storage are not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/locations/<str:pk>/update -> CourseLocationViewSet.as_view({'patch': 'update'})",
@@ -6877,25 +6922,71 @@
         "target": "CourseLocationViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_location_writes.go",
+        "BE_GO/internal/dto/course_location_write.go",
+        "BE_GO/internal/repository/course_location_writes.go",
+        "BE_GO/internal/service/course_location_writes.go",
+        "BE_GO/internal/handler/course_location_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_courselocation",
+        "application_courselocation_documents"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/locations/<pk>/update",
+          "/api/v2/course/locations/<pk>/update",
+          "/api/course/locations/<pk>/update"
+        ],
+        "request": "JSON or form CourseLocationSerializer fields (course_location_id, title, description, address, sport_association, documents_data).",
+        "response": "200 the serialized location; DELETE deletes it (204).",
+        "errors": "400 field errors and {'exception': 'document key not present'}; 401; 403; 404 No CourseLocation matches / Not found (malformed pk); 500 no association, bad base64.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's association locations; sport_association is tenant-scoped (a foreign one is DRF's generic 403).",
+        "side_effects": "Saves every field, audits the changed ones (update entry).",
+        "transaction": "Not atomic: a documents_data failure after the save keeps the saved location.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_location_writes_http.json",
+        "TESTS/fixtures/generate_course_location_writes_http.py",
+        "TESTS/contracts/test_course_location_writes_http.py",
+        "TESTS/adapters/django/course_location_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-locations.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 47/47; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-red-r2/results.json",
+          "receipt_sha256": "fe23c3ca183be43a7d2f71485001cbf2f76d635e138c941725c4d5f20d4c843d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 47/47 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "145541e3213cb6e74d409b8b969fbbfec014250b3202d5561a53c82dc878807d"
+        },
+        {
+          "revision": "committing change rolling back the save on a documents_data failure",
+          "result": "Mutation control: fails Go on the first add whose document lacks its keys.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "c3c668cbc78064b51c1d17e924dfff7a5817999f350f634baa85884e5f8d519d"
+        }
+      ],
+      "notes": [
+        "Implementing: DRF field validation, tenant-scoped association, viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads to storage are not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/locations/add -> CourseLocationViewSet.as_view({'post': 'add'})",
@@ -6912,25 +7003,71 @@
         "target": "CourseLocationViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_location_writes.go",
+        "BE_GO/internal/dto/course_location_write.go",
+        "BE_GO/internal/repository/course_location_writes.go",
+        "BE_GO/internal/service/course_location_writes.go",
+        "BE_GO/internal/handler/course_location_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_courselocation",
+        "application_courselocation_documents"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/locations/add",
+          "/api/v2/course/locations/add",
+          "/api/course/locations/add"
+        ],
+        "request": "JSON or form CourseLocationSerializer fields (course_location_id, title, description, address, sport_association, documents_data).",
+        "response": "201 the serialized location with nested documents.",
+        "errors": "400 field errors and {'exception': 'document key not present'}; 401; 403 registry / scoped session / foreign association; 500 no association (athletes), DELETE without pk, bad base64.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.create.",
+        "resource_scope": "The owner's association locations; sport_association is tenant-scoped (a foreign one is DRF's generic 403).",
+        "side_effects": "Creates the location (create entry); document uploads are not ported (refused before any write).",
+        "transaction": "Not atomic: a documents_data failure after the save keeps the saved location.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_location_writes_http.json",
+        "TESTS/fixtures/generate_course_location_writes_http.py",
+        "TESTS/contracts/test_course_location_writes_http.py",
+        "TESTS/adapters/django/course_location_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-locations.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 47/47; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-red-r2/results.json",
+          "receipt_sha256": "fe23c3ca183be43a7d2f71485001cbf2f76d635e138c941725c4d5f20d4c843d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 47/47 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "145541e3213cb6e74d409b8b969fbbfec014250b3202d5561a53c82dc878807d"
+        },
+        {
+          "revision": "committing change rolling back the save on a documents_data failure",
+          "result": "Mutation control: fails Go on the first add whose document lacks its keys.",
+          "artifact": "quality-reports/go-migration/course-location-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "c3c668cbc78064b51c1d17e924dfff7a5817999f350f634baa85884e5f8d519d"
+        }
+      ],
+      "notes": [
+        "Implementing: DRF field validation, tenant-scoped association, viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads to storage are not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/locations/list -> CourseLocationViewSet.as_view({'get': 'list'})",
