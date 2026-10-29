@@ -1021,8 +1021,10 @@ def _admit_one(state, selection_dir, item, recipes, registry_value, *, repositor
     if fingerprint != manifest['fingerprint'] or evidence.get('inputs_sha256') != fingerprint \
             or evidence.get('inputs') != current_inputs:
         raise IncompatibleEvidence('workflow fingerprint differs from the target checkout')
-    # Every byte the existing per-recipe gate binds must be covered by the
-    # fingerprint; anything outside it is unknown and fails closed.
+    # The tooling closure and every recorded source must be covered by the
+    # fingerprint; anything outside it is unknown and fails closed. Prefix-listed
+    # production files outside the fingerprint are the ones the precise impact
+    # closure proves unreachable: they are bound at their current bytes only.
     known, production, tooling = reuse.dependency_contract(state['application'], registry_value, recipe)
     hashes = report.get('source_hashes') or {}
     reuse.verify_snapshot(state['application'], state['application_input'], known | set(hashes))
@@ -1030,7 +1032,8 @@ def _admit_one(state, selection_dir, item, recipes, registry_value, *, repositor
     dependencies = {}
     for relative in sorted(production | tooling | set(hashes)):
         current = reuse.file_hash(state['application'], relative)
-        if covered.get(relative) != current:
+        required = relative in tooling or relative in hashes or relative in covered
+        if required and covered.get(relative) != current:
             raise IncompatibleEvidence('dependency is not covered by the workflow fingerprint: ' + relative)
         dependencies[relative] = current
     scenario = evidence.get('scenario')
