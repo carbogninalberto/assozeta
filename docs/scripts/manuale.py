@@ -196,6 +196,37 @@ def admit_store_selection(state, selection, exclude):
     return result['admitted']
 
 
+# Must match manuale-ci.py pin (MANUAL_COMMIT_ENVIRONMENT and its message).
+VENDORED_MANUAL_COMMIT = ('author Assozeta manual <manual@assozeta.invalid> 946684800 +0000\n'
+                          'committer Assozeta manual <manual@assozeta.invalid> 946684800 +0000\n\n'
+                          'Vendored manual content\n')
+
+
+def vendored_manual_changes(previous, old_manual, manual_repository, new_manual, root=ROOT):
+    """Manual paths changed since a baseline whose manual commit this checkout cannot reach.
+
+    `manuale-ci.py pin` commits the vendored manuale/ folder alone with fixed
+    metadata, so each materialized commit has no history. The baseline's
+    revision is a pure function of its producer's manuale/ tree: that tree is
+    trusted only when it rebuilds exactly the recorded revision. None when it
+    does not or a revision is missing, which keeps the unknown-revision fallback.
+    """
+    try:
+        producer = previous['application_input']['revision']
+        old_tree = git(root, 'rev-parse', '--verify', producer + ':manuale')
+        if git(root, 'cat-file', '-t', old_tree) != 'tree':
+            return None
+        rebuilt = subprocess.run(['git', '-C', str(root), 'hash-object', '-t', 'commit', '--stdin'],
+                                 input=f'tree {old_tree}\n' + VENDORED_MANUAL_COMMIT, text=True,
+                                 capture_output=True, check=True).stdout.strip()
+        if rebuilt != old_manual:
+            return None
+        new_tree = git(manual_repository, 'rev-parse', '--verify', new_manual + '^{tree}')
+        return git(root, 'diff', '--name-only', '--no-renames', old_tree, new_tree).splitlines()
+    except (subprocess.CalledProcessError, KeyError, TypeError):
+        return None
+
+
 def reuse_inputs(state, args):
     """Reuse by default, with explicit cold runs and recorded rejection reasons."""
     cold = getattr(args, 'no_cache', False)
@@ -233,9 +264,12 @@ def reuse_inputs(state, args):
             new_manual = state.get('manual_input', {}).get('revision')
             if old_manual and new_manual and old_manual != new_manual:
                 try:
-                    manual_changed = git(state['manual_repository'], 'diff', '--name-only', old_manual, new_manual).splitlines()
+                    manual_changed = git(state['manual_repository'], 'diff', '--name-only', '--no-renames',
+                                         old_manual, new_manual).splitlines()
                 except subprocess.CalledProcessError:
-                    manual_changed = ['unknown-authoring-revision']
+                    manual_changed = vendored_manual_changes(previous, old_manual, state['manual_repository'], new_manual)
+                    if manual_changed is None:
+                        manual_changed = ['unknown-authoring-revision']
             # Per-section editorial bindings decide whether MDX changes need a
             # capture. This preserves the reviewed wording-only reuse path.
             shared_manual = [path for path in manual_changed if not path.endswith('.mdx')
