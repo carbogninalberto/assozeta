@@ -178,6 +178,30 @@ class StoreGateTests(GateFixture):
         self.assertEqual(self.state['selected_recipes'], ['unit-members'])
         self.assertNotIn('evidence_reuse', self.state)
 
+    def test_production_files_outside_the_precise_closure_do_not_block_admission(self):
+        # The precise impact closure omits prefix-listed production files it
+        # proves unreachable; the fingerprint never covers them.
+        value, recipe = self.evidence._recipe(self.f.code, 'unit-members')
+        _known, production, tooling = reuse.dependency_contract(self.f.code, value, recipe)
+        sources = json.loads((self.f.old_run / 'unit-members.json').read_text()).get('source_hashes', {})
+        unreachable = sorted(production - tooling - set(sources))
+        self.assertTrue(unreachable)
+        original = self.evidence.workflow_dependencies
+        narrowed = lambda root, workflow_id: [item for item in original(root, workflow_id) if item not in unreachable]
+        with patch.object(self.evidence, 'workflow_dependencies', side_effect=narrowed):
+            result = self.admit(self.materialize())
+            self.assertEqual(sorted(result['admitted']), ['unit-members'], result['rejected'])
+            entry = result['admitted']['unit-members']['entry']
+            self.assertTrue(set(unreachable) <= set(entry['dependency_hashes']))
+            self.state['selected_recipes'] = []
+            plan = reuse.build_reuse_plan(self.state, None, stage=True, admitted=result['admitted'])
+        self.assertEqual(plan['reused_recipes'], ['unit-members'])
+        run = Path(self.state['run'])
+        self.state['evidence_reuse'] = {'path': 'evidence-reuse.json',
+                                        'sha256': reuse.file_hash(run, 'evidence-reuse.json'),
+                                        'reused_recipes': ['unit-members']}
+        reuse.validate_reuse_plan(self.state)
+
     def test_changed_dependency_or_explicit_selection_keeps_the_workflow_fresh(self):
         selection = self.materialize()
         self.assertIn('selected for fresh capture',
