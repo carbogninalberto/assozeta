@@ -254,8 +254,8 @@ Impact CLI results (`manuale-ci.py plan --base HEAD --changed-file PATH`,
 working-tree edits in a scratch worktree of this branch, re-run after the
 narrowing and classification fixes). "Mode" is the CI decision; "workflows" is
 the affected count out of 60. "New function" appends an unreferenced function;
-"body of" inserts a statement into an existing symbol. Wall times are not
-measured yet (see "After").
+"body of" inserts a statement into an existing symbol. Measured wall times
+are in "After".
 
 | Change | Category | Mode | Workflows | Jobs started |
 | --- | --- | --- | ---: | --- |
@@ -335,18 +335,22 @@ developer laptop (local measurement, not GitHub Actions).
   publisher as a separate job after `manual-release` succeeded, which no
   publication job depends on. An empty merged store uploads nothing instead of
   failing.
-- No trusted whole-run baseline or evidence store exists yet for this
-  verifier. Every `manuale-verified-baseline` from main was sealed by the
-  Mintlify-era render gate. Its retained render-reuse plan could not match the
-  reader renderer's inputs, so the import rejected the whole baseline
-  (`RenderReuseError: renderer-inputs-changed-after-plan`). The import now
-  checks such a plan for integrity only, and its pages render fresh. A branch
-  that carries this change also changes `docs/scripts/manuale*` relative to
-  every main baseline, so `verification_decision` still runs full
-  verification until a push to main with this verifier seals a new baseline
-  and populates the store. Content-mode and behavioral narrowing therefore
-  start working after that first trusted run, not on branches based on this
-  change.
+- The first trusted baseline and evidence store for this verifier were sealed
+  by main run 40800297328 (80 m 36 s), after the import learned to check
+  Mintlify-era render-reuse plans for integrity only. Two defects then kept
+  reuse from working and are fixed: a pull request's history-free vendored
+  manual commit could not be diffed against the baseline's, so any manual
+  change recaptured every workflow (PR #42); and the store gate required
+  fingerprint coverage for production files the precise closure proves
+  unreachable, so no store entry was ever admitted (PR #44). Every change to
+  `docs/scripts/manuale*` still needs a new trusted main run before
+  narrowing works again.
+- Editorial bindings are per recipe module. Re-pinning a reviewed source in a
+  shared recipe module (needed after editing a pinned UI or BE file) changes
+  the module hash for every workflow in it, so those workflows are rejected
+  with `editorial-recipe-binding-changed` and captured fresh, by both the
+  whole-run baseline and the store. In the measured UI change this added 6
+  workflows to the 4 the impact plan selected.
 - The store fingerprint uses the precise impact closure. Production files that
   the older prefix-based reuse contract lists but the impact analysis proves
   unreachable are not part of the fingerprint, so a store entry can be reused
@@ -400,14 +404,34 @@ developer laptop (local measurement, not GitHub Actions).
 
 ## After
 
-To be measured on GitHub Actions. Do not fill these in from estimates.
+Measured on GitHub Actions (`ubuntu-24.04`), wall time from `run_started_at`
+to `updated_at`, with the same method as "Baseline". Scenario runs are
+throwaway draft pull requests. Unaffected runs need no baseline; the content
+and behavioral runs reused the trusted main seal of their base (runs
+40818930740 and 40840661015). "Before" is the fully cached range (25.6 to 28.1 min) and the full
+range (69.7 to 85.4 min) measured above.
 
-| Scenario | Wall time | verify job | Fresh / reused workflows | Store index / blobs downloaded | Run |
+| Scenario | Mode | Wall time | verify job | Fresh / reused workflows | Run |
 | --- | --- | --- | --- | --- | --- |
-| Unrelated change (Mode A) | to be measured on GitHub Actions | n/a | n/a | to be measured on GitHub Actions | |
-| Manual text only (Mode A content) | to be measured on GitHub Actions | n/a | to be measured on GitHub Actions | to be measured on GitHub Actions | |
-| Bot-only / MCP-only (Mode A) | to be measured on GitHub Actions | n/a | n/a | n/a | |
-| One affected workflow (Mode B) | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | |
-| Shared capture tool (Mode B, all workflows, sharded) | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | |
-| Full regeneration / release (Mode C) | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | |
-| First run after merge (cold store) | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | to be measured on GitHub Actions | |
+| Unrelated change (`BE_GO/`) | A, unaffected | 2 m 21 s | not started | none captured | 40771965650 |
+| MCP-only change | A, unaffected + MCP suites | 3 m 29 s | not started | none captured | 40771985039 |
+| Bot-only change | A, unaffected + Bot suites | 4 m 07 s | not started | none captured | 40771981402 |
+| One MDX paragraph | A, content | 5 m 18 s | not started (content job 5 m 02 s) | 0 / 60, 1 page recompiled | 40827010923 |
+| One documented UI workflow (with the reviewed-source re-pin) | B, behavioral | 41 m 41 s | 34 m 08 s | 10 / 50 (plan: 4) | 40850276909 |
+| Same UI change before PR #44 | B, behavioral | 45 m 27 s | 38 m 00 s | 10 / 50, store unusable | 40827015598 |
+| Manual tooling change (PR #42) | full | 69 m 40 s | 49 m 55 s + 19 m 09 s rehearsal | 60 / 0 | 40812303020 |
+| First trusted main run after the redesign (cold store) | full + seal + publish | 80 m 36 s | 63 m 00 s | 60 / 0 | 40800297328 |
+| Later main seals after tooling changes | full + seal + publish | 84 m 12 s, 75 m 39 s | 61 m 10 s, 57 m 15 s | 60 / 0 | 40818930740, 40840661015 |
+
+Store costs in the behavioral run: index 1.9 s, plan 2 m 14 s, blobs 5.8 s,
+materialize 2 m 09 s.
+
+Against the fully cached baseline, unrelated, Bot-only and MCP-only changes
+are 84 to 92% faster, and a text-only manual change is 79 to 81% faster (92
+to 94% against a full run). The 95% target is not reached: the fastest
+measured path, the unrelated change, is 91 to 92% faster than a cached run
+and 97% faster than a full one. A one-workflow UI change is now 40 to 51% faster
+than a full run but 48 to 63% slower than the old fully cached run, because
+it captures fresh evidence (10 workflows, see the editorial-binding
+limitation) and runs the package checks. Not measured: a shared capture tool
+change (sharded Mode B) and a Mode C release run of `manuale-release.yml`.
