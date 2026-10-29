@@ -274,6 +274,9 @@ func run() (runErr error) {
 	e.Any("/course/:uid/enable", courseStateWritesHandler.Enable, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/:uid/disable", courseStateWritesHandler.Disable, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/:uid/pin", courseStateWritesHandler.Pin, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseOverviewHandler := handler.NewCourseOverviewHandler(service.NewCourseOverviews(repository.NewCourseOverviews(db)),
+		service.NewActorAuthentication(accounts, tokens), identities)
+	e.Any("/course/:uid/overview", courseOverviewHandler.Overview, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/stats", auditSummaryHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/models", auditSummaryHandler.Models, middleware.DjangoSessionAudit(sessionAuthentication))

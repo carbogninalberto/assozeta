@@ -6648,25 +6648,70 @@
         "target": "course_overview",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_overview.go",
+        "BE_GO/internal/repository/course_overview.go",
+        "BE_GO/internal/service/course_overview.go",
+        "BE_GO/internal/handler/course_overview.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_course",
+        "application_course_tags",
+        "application_course_locations"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/overview",
+          "/api/v2/course/<uid>/overview",
+          "/api/course/<uid>/overview"
+        ],
+        "request": "Path uid; X-Group-Id.",
+        "response": "200 {'data': {'course': CourseSerializer}}.",
+        "errors": "400 malformed uid; 401; 403 Course not found / registry / scoped session; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.read (GET), association.courses.update (POST).",
+        "resource_scope": "request.user's association's live, group-aware courses.",
+        "side_effects": "None (read).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_overview_http.json",
+        "TESTS/fixtures/generate_course_overview_http.py",
+        "TESTS/contracts/test_course_overview_http.py",
+        "TESTS/adapters/django/course_overview_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-overview.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 22/22; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-overview-http-red-r2/results.json",
+          "receipt_sha256": "0df776ab876c400fa28826d4e971588f9f68f8b20b1c06306be1d98a334ecb26"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 22/22 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged.",
+          "artifact": "quality-reports/go-migration/course-overview-http-versioned-r1/results.json",
+          "receipt_sha256": "f7a5e7225a84df56f83b58f72225adf52d7bcb8a4d3293d661a0ce8a43010d85"
+        },
+        {
+          "revision": "committing change without the deleted filter",
+          "result": "Mutation control: fails Go on deleted-course.",
+          "artifact": "quality-reports/go-migration/course-overview-http-mutation-r1/results.json",
+          "receipt_sha256": "872674b227e6d3b60ea6459f47134cf4de6c886180014afb97876113d3d6012e"
+        }
+      ],
+      "notes": [
+        "Implementing: uuid validation, owner/group/deleted scoping, CourseSerializer rendering (athletes null) on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/overview/<str:uid_subscription>/add -> course_overview_add",
