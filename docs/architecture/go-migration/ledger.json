@@ -6492,25 +6492,68 @@
         "target": "course_disable",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_state_writes.go",
+        "BE_GO/internal/repository/course_state_writes.go",
+        "BE_GO/internal/service/course_state_writes.go",
+        "BE_GO/internal/handler/course_state_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_course"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/disable",
+          "/api/v2/course/<uid>/disable",
+          "/api/course/<uid>/disable"
+        ],
+        "request": "Path uid; X-Group-Id.",
+        "response": "200 {'data': {'msg': ...}}.",
+        "errors": "400 malformed uid; 401; 403 registry / scoped session / User not allowed / unchanged status; 404 Course not found; 500 no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's live, group-aware courses.",
+        "side_effects": "Sets status_flag DRAFT (update entry).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_state_writes_http.json",
+        "TESTS/fixtures/generate_course_state_writes_http.py",
+        "TESTS/contracts/test_course_state_writes_http.py",
+        "TESTS/adapters/django/course_state_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-state.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 35/35; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-red-r1/results.json",
+          "receipt_sha256": "7b8a7f84f8b7f177dddd6dcf7edd22a0280b84ce85b4089cb5bfda1468e88bb3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 35/35 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "ddbbba9a40313100476519c480e1ab768e1dab0f5c1b4c6ea7026658a8477552"
+        },
+        {
+          "revision": "committing change without the group filter",
+          "result": "Mutation control: fails Go on enable-group-header-hides.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "857336463617486abdd9a076b8498611945581d6ff0c47992cec3213b1a4de74"
+        }
+      ],
+      "notes": [
+        "Implementing: uuid validation, association lookup, group-aware live course, association check, state refusal and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/enable -> course_enable",
@@ -6527,25 +6570,68 @@
         "target": "course_enable",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_state_writes.go",
+        "BE_GO/internal/repository/course_state_writes.go",
+        "BE_GO/internal/service/course_state_writes.go",
+        "BE_GO/internal/handler/course_state_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_course"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/enable",
+          "/api/v2/course/<uid>/enable",
+          "/api/course/<uid>/enable"
+        ],
+        "request": "Path uid; X-Group-Id.",
+        "response": "200 {'data': {'msg': ...}}.",
+        "errors": "400 malformed uid; 401; 403 registry / scoped session / User not allowed / unchanged status; 404 Course not found; 500 no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's live, group-aware courses.",
+        "side_effects": "Sets status_flag ACTIVE (update entry).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_state_writes_http.json",
+        "TESTS/fixtures/generate_course_state_writes_http.py",
+        "TESTS/contracts/test_course_state_writes_http.py",
+        "TESTS/adapters/django/course_state_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-state.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 35/35; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-red-r1/results.json",
+          "receipt_sha256": "7b8a7f84f8b7f177dddd6dcf7edd22a0280b84ce85b4089cb5bfda1468e88bb3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 35/35 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "ddbbba9a40313100476519c480e1ab768e1dab0f5c1b4c6ea7026658a8477552"
+        },
+        {
+          "revision": "committing change without the group filter",
+          "result": "Mutation control: fails Go on enable-group-header-hides.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "857336463617486abdd9a076b8498611945581d6ff0c47992cec3213b1a4de74"
+        }
+      ],
+      "notes": [
+        "Implementing: uuid validation, association lookup, group-aware live course, association check, state refusal and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/overview -> course_overview",
@@ -6702,25 +6788,68 @@
         "target": "course_pin",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_state_writes.go",
+        "BE_GO/internal/repository/course_state_writes.go",
+        "BE_GO/internal/service/course_state_writes.go",
+        "BE_GO/internal/handler/course_state_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_course"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/pin",
+          "/api/v2/course/<uid>/pin",
+          "/api/course/<uid>/pin"
+        ],
+        "request": "Path uid; X-Group-Id.",
+        "response": "200 {'data': {'msg': ...}}.",
+        "errors": "400 malformed uid; 401; 403 registry / scoped session / User not allowed / unchanged status; 404 Course not found; 500 no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's live, group-aware courses.",
+        "side_effects": "Toggles pinned (update entry).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_state_writes_http.json",
+        "TESTS/fixtures/generate_course_state_writes_http.py",
+        "TESTS/contracts/test_course_state_writes_http.py",
+        "TESTS/adapters/django/course_state_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-state.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 35/35; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-red-r1/results.json",
+          "receipt_sha256": "7b8a7f84f8b7f177dddd6dcf7edd22a0280b84ce85b4089cb5bfda1468e88bb3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 35/35 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "ddbbba9a40313100476519c480e1ab768e1dab0f5c1b4c6ea7026658a8477552"
+        },
+        {
+          "revision": "committing change without the group filter",
+          "result": "Mutation control: fails Go on enable-group-header-hides.",
+          "artifact": "quality-reports/go-migration/course-state-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "857336463617486abdd9a076b8498611945581d6ff0c47992cec3213b1a4de74"
+        }
+      ],
+      "notes": [
+        "Implementing: uuid validation, association lookup, group-aware live course, association check, state refusal and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/update -> course_update",

@@ -1,0 +1,606 @@
+{
+ "matrix_version": 1,
+ "scope": "Course enable, disable and pin authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "courses": {
+  "draft": {
+   "id": "a1000000-0000-4000-8000-000000990001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Bozza",
+   "status": 1,
+   "pinned": false,
+   "deleted": false,
+   "group": null
+  },
+  "internal": {
+   "id": "a1000000-0000-4000-8000-000000990002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Interno",
+   "status": 3,
+   "pinned": true,
+   "deleted": false,
+   "group": null
+  },
+  "active": {
+   "id": "a1000000-0000-4000-8000-000000990003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Attivo",
+   "status": 2,
+   "pinned": false,
+   "deleted": false,
+   "group": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000990004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Gruppo",
+   "status": 1,
+   "pinned": false,
+   "deleted": false,
+   "group": "own_group"
+  },
+  "gone": {
+   "id": "a1000000-0000-4000-8000-000000990005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Eliminato",
+   "status": 1,
+   "pinned": false,
+   "deleted": true,
+   "group": null
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000990006",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Estero",
+   "status": 1,
+   "pinned": false,
+   "deleted": false,
+   "group": null
+  }
+ },
+ "cases": [
+  {
+   "name": "course-state-writes-enable-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/enable",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/enable",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/enable",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/enable",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/enable",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/enable",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Enable",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/abc/enable",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-athlete-malformed",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/abc/enable",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/enable",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000999998/enable",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990005/enable",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-group-header-hides",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990004/enable",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "msg": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-foreign-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990006/enable",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-already-active",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990003/enable",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User cannot change the status of the subscription."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-enable-draft",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/enable",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "course enabled."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "label": "draft",
+    "field": "status_flag",
+    "from": 1,
+    "to": 2
+   }
+  },
+  {
+   "name": "course-state-writes-enable-internal",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990002/enable",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "course enabled."
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "label": "internal",
+    "field": "status_flag",
+    "from": 3,
+    "to": 2
+   }
+  },
+  {
+   "name": "course-state-writes-enable-grouped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990004/enable",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "course enabled."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "label": "grouped",
+    "field": "status_flag",
+    "from": 1,
+    "to": 2
+   }
+  },
+  {
+   "name": "course-state-writes-disable-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990003/disable",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-disable-wrong-method",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/a1000000-0000-4000-8000-000000990003/disable",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-disable-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course/a1000000-0000-4000-8000-000000990003/disable",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Disable",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-disable-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/abc/disable",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-disable-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000999998/disable",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-disable-foreign-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990006/disable",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-disable-active",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990003/disable",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "course disabled."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "label": "active",
+    "field": "status_flag",
+    "from": 2,
+    "to": 1
+   }
+  },
+  {
+   "name": "course-state-writes-disable-already-draft",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990003/disable",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User cannot change the status of the subscription."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-pin-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/pin",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-pin-wrong-method",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/pin",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"DELETE\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-pin-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/pin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Pin",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-pin-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/abc/pin",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-pin-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990005/pin",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-pin-foreign-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990006/pin",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-pin-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/pin",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-state-writes-pin-draft",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/pin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "corso messo in evidenza."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "label": "draft",
+    "field": "pinned",
+    "from": false,
+    "to": true
+   }
+  },
+  {
+   "name": "course-state-writes-pin-again-unpins",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990001/pin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "corso tolto dall'evidenza."
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "label": "draft",
+    "field": "pinned",
+    "from": true,
+    "to": false
+   }
+  },
+  {
+   "name": "course-state-writes-pin-internal-unpins",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000990002/pin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "corso tolto dall'evidenza."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "label": "internal",
+    "field": "pinned",
+    "from": true,
+    "to": false
+   }
+  }
+ ]
+}
