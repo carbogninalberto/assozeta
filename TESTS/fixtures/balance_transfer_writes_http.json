@@ -1,0 +1,787 @@
+{
+ "matrix_version": 1,
+ "scope": "Balance-sheet account transfer add, update and delete authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "accounts": {
+  "bank": {
+   "id": "a1000000-0000-4000-8000-000000910001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Banca è",
+   "initial": "100.00",
+   "type": 2,
+   "code": "IT60X",
+   "editable": true,
+   "enabled": true
+  },
+  "cash": {
+   "id": "a1000000-0000-4000-8000-000000910002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Cassa",
+   "initial": "0.00",
+   "type": 1,
+   "code": "C",
+   "editable": false,
+   "enabled": true
+  },
+  "other": {
+   "id": "a1000000-0000-4000-8000-000000910003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Altro",
+   "initial": "20.00",
+   "type": 3,
+   "code": "C",
+   "editable": true,
+   "enabled": false
+  },
+  "ghost": {
+   "id": "a1000000-0000-4000-8000-000000910004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Vuoto",
+   "initial": "7.00",
+   "type": 2,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000910005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Gruppo",
+   "initial": "0.00",
+   "type": 2,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000910006",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estero",
+   "initial": "1.00",
+   "type": 2,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  }
+ },
+ "transfers": {
+  "t1": {
+   "id": "a1000000-0000-4000-8000-000000910007",
+   "from": "bank",
+   "to": "other",
+   "amount": "30.00",
+   "date": "2026-09-01T10:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "t2": {
+   "id": "a1000000-0000-4000-8000-000000910008",
+   "from": "cash",
+   "to": "bank",
+   "amount": "10.50",
+   "date": "2026-09-02T10:00:00.500000Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "t3": {
+   "id": "a1000000-0000-4000-8000-000000910009",
+   "from": null,
+   "to": "other",
+   "amount": "5.00",
+   "date": "2026-09-03T10:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "tf": {
+   "id": "a1000000-0000-4000-8000-000000910010",
+   "from": "abroad",
+   "to": null,
+   "amount": "1.00",
+   "date": "2026-09-04T10:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "payments": {
+  "income": {
+   "id": "a1000000-0000-4000-8000-000000910011",
+   "account": "bank",
+   "amount": "50.00",
+   "paid": true,
+   "expense": false,
+   "deleted": false,
+   "group": null
+  },
+  "expense": {
+   "id": "a1000000-0000-4000-8000-000000910012",
+   "account": "bank",
+   "amount": "20.25",
+   "paid": true,
+   "expense": true,
+   "deleted": false,
+   "group": null
+  },
+  "unpaid": {
+   "id": "a1000000-0000-4000-8000-000000910013",
+   "account": "bank",
+   "amount": "999.00",
+   "paid": false,
+   "expense": false,
+   "deleted": false,
+   "group": null
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000910014",
+   "account": "ghost",
+   "amount": "7.00",
+   "paid": true,
+   "expense": false,
+   "deleted": true,
+   "group": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000910015",
+   "account": "grouped",
+   "amount": "12.00",
+   "paid": true,
+   "expense": false,
+   "deleted": false,
+   "group": "own_group"
+  }
+ },
+ "cases": [
+  {
+   "name": "balance-transfer-writes-add-athlete-forbidden",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-add-missing-amount",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "amount": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "balance-transfer-writes-add-invalid-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "custom_account_from": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000910006\" - object does not exist."
+    ],
+    "amount": [
+     "A valid number is required."
+    ],
+    "date": [
+     "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "custom_account_from": "a1000000-0000-4000-8000-000000910006",
+    "amount": "abc",
+    "date": "nope"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-add-unknown-and-malformed-accounts",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "custom_account_from": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000949999\" - object does not exist."
+    ],
+    "custom_account_to": [
+     "“abc” is not a valid UUID."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "custom_account_from": "a1000000-0000-4000-8000-000000949999",
+    "custom_account_to": "abc",
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-add-existing-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "custom_account_transfer_id": [
+     "custom accounts transfer with this custom account transfer id already exists."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-add-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "balance-transfer-writes-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.accountstransfers.create"
+   },
+   "effect": null,
+   "body": {
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "balance-transfer-writes-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "balance-transfer-writes-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-transfer-writes-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Balance Sheet Accounts Transfer Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-transfer-writes-add-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_transfer_id": "$new",
+    "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+    "custom_account_to": "a1000000-0000-4000-8000-000000910002",
+    "amount": "12.50",
+    "date": "2026-10-01T09:00:00.250000Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "transfer": {
+     "custom_account_transfer_id": "$new",
+     "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+     "custom_account_to": "a1000000-0000-4000-8000-000000910002",
+     "amount": "12.50",
+     "date": "2026-10-01T09:00:00.250000Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+    "custom_account_to": "a1000000-0000-4000-8000-000000910002",
+    "amount": "12.5",
+    "date": "2026-10-01T09:00:00.250Z"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-add-full-collaborator-default-date",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_transfer_id": "$new",
+    "custom_account_from": null,
+    "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+    "amount": "3.00",
+    "date": "$now",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "full_collaborator",
+    "transfer": {
+     "custom_account_transfer_id": "$new",
+     "custom_account_from": null,
+     "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+     "amount": "3.00",
+     "date": "$now",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+    "amount": 3
+   }
+  },
+  {
+   "name": "balance-transfer-writes-add-form-naive-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_transfer_id": "$new",
+    "custom_account_from": "a1000000-0000-4000-8000-000000910002",
+    "custom_account_to": null,
+    "amount": "0.50",
+    "date": "2026-09-05T10:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "transfer": {
+     "custom_account_transfer_id": "$new",
+     "custom_account_from": "a1000000-0000-4000-8000-000000910002",
+     "custom_account_to": null,
+     "amount": "0.50",
+     "date": "2026-09-05T10:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "raw_body": "custom_account_from=a1000000-0000-4000-8000-000000910002&amount=0.5&date=2026-09-05T10:00:00",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "balance-transfer-writes-update-malformed-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/abc/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "CustomAccountsTransfer matching query does not exist."
+   },
+   "effect": null,
+   "body": {
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-foreign-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910010/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "CustomAccountsTransfer matching query does not exist."
+   },
+   "effect": null,
+   "body": {
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-athlete-forbidden",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-foreign-account",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "custom_account_to": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000910006\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "custom_account_to": "a1000000-0000-4000-8000-000000910006"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.accountstransfers.update"
+   },
+   "effect": null,
+   "body": {
+    "amount": "1"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Balance Sheet Accounts Transfer Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-transfer-writes-update-amount",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+    "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+    "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+    "amount": "31.00",
+    "date": "2026-09-01T10:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "t1",
+    "changes": {
+     "amount": [
+      "30.00",
+      "31.00"
+     ]
+    },
+    "transfer": {
+     "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+     "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+     "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+     "amount": "31.00",
+     "date": "2026-09-01T10:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "amount": "31"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-same-value-no-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+    "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+    "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+    "amount": "31.00",
+    "date": "2026-09-01T10:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "t1",
+    "changes": {},
+    "transfer": {
+     "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+     "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+     "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+     "amount": "31.00",
+     "date": "2026-09-01T10:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "amount": "31.00"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-clear-and-move",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910009/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910009",
+    "custom_account_from": "a1000000-0000-4000-8000-000000910004",
+    "custom_account_to": null,
+    "amount": "5.00",
+    "date": "2026-09-30T12:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "label": "t3",
+    "changes": {
+     "custom_account_from": [
+      "None",
+      "a1000000-0000-4000-8000-000000910004"
+     ],
+     "custom_account_to": [
+      "a1000000-0000-4000-8000-000000910003",
+      "None"
+     ],
+     "date": [
+      "2026-09-03 10:00:00",
+      "2026-09-30 12:00:00"
+     ]
+    },
+    "transfer": {
+     "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910009",
+     "custom_account_from": "a1000000-0000-4000-8000-000000910004",
+     "custom_account_to": null,
+     "amount": "5.00",
+     "date": "2026-09-30T12:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "custom_account_to": null,
+    "custom_account_from": "a1000000-0000-4000-8000-000000910004",
+    "date": "2026-09-30T14:00:00+02:00"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-delete-malformed-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts-transfer/abc/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "CustomAccountsTransfer matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-transfer-writes-delete-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910010/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "CustomAccountsTransfer matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-transfer-writes-delete-athlete-forbidden",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910008/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-transfer-writes-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910008/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.accountstransfers.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-transfer-writes-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910008/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Balance Sheet Accounts Transfer Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-transfer-writes-delete-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910008/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "bank accounts deleted"
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "label": "t2"
+   }
+  }
+ ]
+}

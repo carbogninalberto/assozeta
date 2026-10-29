@@ -1,0 +1,382 @@
+[
+  {
+    "name": "non-collaborator-not-gated-here",
+    "path": "/unmapped",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": false,
+    "detail": ""
+  },
+  {
+    "name": "full-role-skips-registry",
+    "path": "/unmapped",
+    "method": "GET",
+    "permissions": null,
+    "role": 1,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "custom-unknown-default-deny",
+    "path": "/api/new/private/export",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'new/private/export'. Contact administrator to grant access."
+  },
+  {
+    "name": "accounting-not-an-implicit-grant",
+    "path": "/payment/list",
+    "method": "GET",
+    "permissions": null,
+    "role": 2,
+    "collaborator": true,
+    "detail": "Missing permission: bookeeping.payments.read"
+  },
+  {
+    "name": "payment-read",
+    "path": "/payment/list",
+    "method": "GET",
+    "permissions": [
+      "bookeeping.payments.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "payment-read-cannot-delete",
+    "path": "/payment/record/delete",
+    "method": "DELETE",
+    "permissions": [
+      "bookeeping.payments.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Missing permission: bookeeping.payments.delete"
+  },
+  {
+    "name": "grant-spelling-preserved",
+    "path": "/payment/list",
+    "method": "GET",
+    "permissions": [
+      "bookkeeping.payments.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Missing permission: bookeeping.payments.read"
+  },
+  {
+    "name": "null-grants-deny",
+    "path": "/course/list",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Missing permission: association.courses.read"
+  },
+  {
+    "name": "empty-grants-deny",
+    "path": "/course/list",
+    "method": "GET",
+    "permissions": [],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Missing permission: association.courses.read"
+  },
+  {
+    "name": "grant-does-not-imply-other-resource",
+    "path": "/payment/list",
+    "method": "GET",
+    "permissions": [
+      "association.courses.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Missing permission: bookeeping.payments.read"
+  },
+  {
+    "name": "prefix-trailing-and-double-slashes",
+    "path": "//api/payment//list//",
+    "method": "GET",
+    "permissions": [
+      "bookeeping.payments.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "extra-segment-not-wildcard",
+    "path": "/payment/a/b/update",
+    "method": "GET",
+    "permissions": [
+      "bookeeping.payments.update"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'payment/a/b/update'. Contact administrator to grant access."
+  },
+  {
+    "name": "nested-resource",
+    "path": "/course/a/attendees/b/update",
+    "method": "PATCH",
+    "permissions": [
+      "association.courses.attendance.update"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "card-read",
+    "path": "/subscription/a/card",
+    "method": "GET",
+    "permissions": [
+      "association.members.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "card-generation-needs-write",
+    "path": "/subscription/a/card",
+    "method": "POST",
+    "permissions": [
+      "association.members.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Missing permission: association.members.update"
+  },
+  {
+    "name": "card-generation-write",
+    "path": "/subscription/a/card",
+    "method": "POST",
+    "permissions": [
+      "association.members.update"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "balance-read",
+    "path": "/balance-sheet",
+    "method": "GET",
+    "permissions": [
+      "bookeeping.management.balancesheet.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "balance-write-denied",
+    "path": "/balance-sheet",
+    "method": "POST",
+    "permissions": [
+      "bookeeping.management.balancesheet.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Missing permission: bookeeping.management.balancesheet.update"
+  },
+  {
+    "name": "calendar-read",
+    "path": "/calendar/events",
+    "method": "GET",
+    "permissions": [
+      "association.calendar.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "calendar-post-not-mapped",
+    "path": "/calendar/events",
+    "method": "POST",
+    "permissions": [
+      "association.calendar.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'calendar/events'. Contact administrator to grant access."
+  },
+  {
+    "name": "calendar-actions-checked-in-service",
+    "path": "/calendar/events/update",
+    "method": "DELETE",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "profile-bootstraps-ui",
+    "path": "/profile/info",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "refresh-registry-exemption",
+    "path": "/oauth2/refresh-token",
+    "method": "POST",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "oauth-not-a-prefix-exemption",
+    "path": "/oauth2/new-private-route",
+    "method": "POST",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'oauth2/new-private-route'. Contact administrator to grant access."
+  },
+  {
+    "name": "manual-reader",
+    "path": "/api/manuale/sections",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "manual-asset-reader",
+    "path": "/manuale/assets/r1/picture.png",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "manual-write-denied",
+    "path": "/manuale/sections",
+    "method": "POST",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'manuale/sections'. Contact administrator to grant access."
+  },
+  {
+    "name": "manual-head-not-exempt",
+    "path": "/manuale/sections",
+    "method": "HEAD",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'manuale/sections'. Contact administrator to grant access."
+  },
+  {
+    "name": "manual-evidence-private",
+    "path": "/manuale/evidence",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'manuale/evidence'. Contact administrator to grant access."
+  },
+  {
+    "name": "staff-board-read",
+    "path": "/communications/staff-board/list",
+    "method": "GET",
+    "permissions": [
+      "association.communication.messages.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "staff-board-write-denied",
+    "path": "/communications/staff-board/add",
+    "method": "POST",
+    "permissions": [
+      "association.communication.messages.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Missing permission: association.communication.messages.create"
+  },
+  {
+    "name": "private-export-unmapped",
+    "path": "/association/export/all",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'association/export/all'. Contact administrator to grant access."
+  },
+  {
+    "name": "path-case-sensitive",
+    "path": "/Payment/list",
+    "method": "GET",
+    "permissions": [
+      "bookeeping.payments.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'Payment/list'. Contact administrator to grant access."
+  },
+  {
+    "name": "method-case-sensitive",
+    "path": "/balance-sheet",
+    "method": "get",
+    "permissions": [
+      "bookeeping.management.balancesheet.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'balance-sheet'. Contact administrator to grant access."
+  },
+  {
+    "name": "wildcard-is-one-segment",
+    "path": "/stripe/pay/a/b",
+    "method": "POST",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'stripe/pay/a/b'. Contact administrator to grant access."
+  },
+  {
+    "name": "callback-separate-authorization",
+    "path": "/stripe/pay/a",
+    "method": "POST",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": ""
+  },
+  {
+    "name": "version-prefix-must-be-stripped-by-router",
+    "path": "/api/v2/payment/list",
+    "method": "GET",
+    "permissions": [
+      "bookeeping.payments.read"
+    ],
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint 'v2/payment/list'. Contact administrator to grant access."
+  },
+  {
+    "name": "empty-path-denied",
+    "path": "/",
+    "method": "GET",
+    "permissions": null,
+    "role": 3,
+    "collaborator": true,
+    "detail": "Access denied: No permission mapping for endpoint ''. Contact administrator to grant access."
+  }
+]

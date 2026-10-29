@@ -1,0 +1,592 @@
+{
+  "schema_version": 1,
+  "scope": "Offline immutable historical saved-message fixture; synthetic identities, observed legacy schema. Actual import, HTTP mutation and restore acceptance are parent-owned.",
+  "base_fixture": {
+    "path": "TESTS/fixtures/bakney-v1.json",
+    "bytes": 15420,
+    "sha256": "0d0f5d58946de1306d93476261a6dc6fe09cb56c3b5e23b4d3dcd2c4e75f6713",
+    "model_count": 67,
+    "section_entry_count": 68
+  },
+  "historical_source": {
+    "repository": "carbogninalberto/django-bakney-sport",
+    "revision": "0058de5909734bdd0f00867abbdb723649de4238",
+    "files_sha256": {
+      "communications/models.py": "138897672e8aa1185c238859dd1f6e2b39d4f6d44921a4f0a7168efecc346b65",
+      "communications/serializers.py": "9e35179af12182558578b880489bbc77827b2cf3fbc877af596d3b2756ecec7f",
+      "communications/views.py": "961b41ee8077f8bfabc0fa3d787ecef62223469d219fb3cc96a5c913c64bccbe",
+      "application/services/export_service.py": "79d5a8c5df1160c101f7113ad8418bbd393ae250615335381f6d4b02e85032f2",
+      "application/services/import_service.py": "5d91f2b366f80a5d807483fee4476236b00ae7db20fe87b7d49dad2eda4c07b2",
+      "application/models/user_models.py": "43c96210095dc1444d1dfffb71b18e3676190badcbe9711223a8cf1173fe3a1c"
+    }
+  },
+  "overlay_algorithm": "sha256 of UTF-8 canonical JSON (sort_keys=true, ensure_ascii=false, separators comma/colon) over archive_overlay only",
+  "overlay_sha256": "03ac87a1f4209f024dfd92d77e549e8aef6dfc86c4324aca5c7800c9756a1df4",
+  "derived_archive_sha256": "e0a2e7ab8b277944980cf284fbc31fb166fba2bd02d902053be6c8dd7f2505ea",
+  "archive_overlay": {
+    "operations": [
+      {
+        "op": "append",
+        "section": "data/52_messages.json",
+        "records": [
+          {
+            "message_id": "b2600000-0000-4000-8000-000000000101",
+            "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+            "type": "EMAIL",
+            "message": "Avviso <storico> & \"salvato\" — attività",
+            "subject": "  Stagione <2026> & \"quote\"  ",
+            "created_at": "2026-08-01T09:00:00+00:00"
+          },
+          {
+            "message_id": "b2600000-0000-4000-8000-000000000102",
+            "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+            "type": "INSIDE_APP",
+            "message": "Bacheca storica <ore 18> & palestra",
+            "subject": null,
+            "created_at": null
+          },
+          {
+            "message_id": "b2600000-0000-4000-8000-000000000103",
+            "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+            "type": "SMS",
+            "message": "",
+            "subject": "",
+            "created_at": "2026-08-03T09:00:00+00:00"
+          },
+          {
+            "message_id": "b2600000-0000-4000-8000-000000000104",
+            "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+            "type": "EMAIL",
+            "message": "Avviso da eliminare con due consegne",
+            "subject": null,
+            "created_at": "2026-08-04T09:00:00+00:00"
+          }
+        ]
+      },
+      {
+        "op": "append",
+        "section": "data/53_message_transactions.json",
+        "records": [
+          {
+            "message_transaction_id": "b2600000-0000-4000-8000-000000000201",
+            "message_id": "b2600000-0000-4000-8000-000000000101",
+            "recipient": "retained@example.test",
+            "sent_on": "2026-08-01T09:01:00+00:00",
+            "delivered_on": "2026-08-01T09:02:00+00:00",
+            "opened_on": "2026-08-01T10:00:00+00:00",
+            "clicked_on": "2026-08-01T10:01:00+00:00",
+            "bounced_on": null,
+            "bounced_reason": null,
+            "bounced_type": null,
+            "bounced_status": null
+          },
+          {
+            "message_transaction_id": "b2600000-0000-4000-8000-000000000202",
+            "message_id": "b2600000-0000-4000-8000-000000000102",
+            "recipient": "7616fd26-589f-5551-b17f-0478e305434d",
+            "sent_on": "2026-08-02T09:01:00+00:00",
+            "delivered_on": null,
+            "opened_on": null,
+            "clicked_on": null,
+            "bounced_on": null,
+            "bounced_reason": "",
+            "bounced_type": "",
+            "bounced_status": ""
+          },
+          {
+            "message_transaction_id": "b2600000-0000-4000-8000-000000000203",
+            "message_id": "b2600000-0000-4000-8000-000000000103",
+            "recipient": "+390000000000",
+            "sent_on": "2026-08-03T09:01:00+00:00",
+            "delivered_on": null,
+            "opened_on": null,
+            "clicked_on": null,
+            "bounced_on": null,
+            "bounced_reason": null,
+            "bounced_type": "",
+            "bounced_status": null
+          },
+          {
+            "message_transaction_id": "b2600000-0000-4000-8000-000000000204",
+            "message_id": "b2600000-0000-4000-8000-000000000104",
+            "recipient": "delete-delivered@example.test",
+            "sent_on": "2026-08-04T09:01:00+00:00",
+            "delivered_on": "2026-08-04T09:02:00+00:00",
+            "opened_on": null,
+            "clicked_on": null,
+            "bounced_on": null,
+            "bounced_reason": "",
+            "bounced_type": null,
+            "bounced_status": ""
+          },
+          {
+            "message_transaction_id": "b2600000-0000-4000-8000-000000000205",
+            "message_id": "b2600000-0000-4000-8000-000000000104",
+            "recipient": "delete-bounced@example.test",
+            "sent_on": "2026-08-04T09:03:00+00:00",
+            "delivered_on": null,
+            "opened_on": null,
+            "clicked_on": null,
+            "bounced_on": "2026-08-04T09:04:00+00:00",
+            "bounced_reason": "Synthetic mailbox unavailable",
+            "bounced_type": "Permanent",
+            "bounced_status": "5.1.1"
+          }
+        ]
+      }
+    ]
+  },
+  "expected_counts": {
+    "BillingPlan": 1,
+    "SportAssociation": 1,
+    "User": 1,
+    "Group": 0,
+    "UsersOnboarding": 0,
+    "CollaborationInvites": 0,
+    "Family": 0,
+    "Associate": 1,
+    "AssociateTutorRelation": 0,
+    "VatManagement": 0,
+    "PaymentCategory": 0,
+    "CustomAccounts": 0,
+    "Tags": 0,
+    "CourseTags": 0,
+    "Folder": 0,
+    "SupplierAndCustomers": 0,
+    "ProductsAndServices": 0,
+    "SportAssociationHeadquarter": 0,
+    "SportAssociationMaterial": 0,
+    "SportAssociationModuleTemplates": 0,
+    "SportAssociationMembershipCardConfiguration": 0,
+    "CommunicationConfiguration": 0,
+    "NotificationTemplates": 0,
+    "Instructor": 0,
+    "InstructorHours": 0,
+    "Subscription": 1,
+    "SubscriptionMembership": 0,
+    "SubscriptionToken": 0,
+    "SubscriptionFile": 0,
+    "MedicalCertificate": 0,
+    "MedicalAppointments": 0,
+    "CourseLocation": 0,
+    "Course": 0,
+    "CourseSubscription": 0,
+    "CourseSubscriptionInstallment": 0,
+    "Carnet": 0,
+    "CarnetSubscription": 0,
+    "CampsAndRetreats": 0,
+    "CampsAndRetreatsPeriod": 0,
+    "CampsAndRetreatsPeriodsService": 0,
+    "CampsAndRetreatsSubscription": 0,
+    "CampsAndRetreatsSubscriptionPeriod": 0,
+    "Signature": 0,
+    "Payment": 1,
+    "Invoice": 0,
+    "InvoiceRows": 0,
+    "InvoiceSuppliers": 0,
+    "CustomerInvoice": 0,
+    "SportAssociationInvoices": 0,
+    "BalanceSheet": 0,
+    "AttendanceRegistry": 0,
+    "AttendanceDay": 0,
+    "Message": 4,
+    "MessageTransaction": 5,
+    "AutomationWorkflow": 0,
+    "Reminder": 0,
+    "EmailLog": 0,
+    "GlobalCalendarEvents": 0,
+    "Reminders": 0,
+    "Module": 0,
+    "ModuleResponses": 0,
+    "SoldProducts": 0,
+    "SubscriptionTransfer": 0,
+    "CumulativeSubscriptionGymLinks": 0,
+    "PreviewAndCustomFeatures": 1,
+    "SportAssociationDocumentsArchive": 1,
+    "Document": 1
+  },
+  "ids": {
+    "owner": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+    "association": "7616fd26-589f-5551-b17f-0478e305434d",
+    "person": "af8f8de9-fb66-5159-b063-0c5e8621ba23",
+    "payment": "54f20853-07d2-532b-9f9a-4d7d1b411c2b",
+    "subscription": "c493a68f-2401-5339-b079-3f62db825c39",
+    "document": "238c77cc-288f-5a21-bc36-763577732652",
+    "retained_email": "b2600000-0000-4000-8000-000000000101",
+    "retained_post": "b2600000-0000-4000-8000-000000000102",
+    "retained_sms": "b2600000-0000-4000-8000-000000000103",
+    "delete_email": "b2600000-0000-4000-8000-000000000104",
+    "retained_delivery": "b2600000-0000-4000-8000-000000000201",
+    "post_delivery": "b2600000-0000-4000-8000-000000000202",
+    "sms_delivery": "b2600000-0000-4000-8000-000000000203",
+    "delete_delivered": "b2600000-0000-4000-8000-000000000204",
+    "delete_bounced": "b2600000-0000-4000-8000-000000000205",
+    "foreign_owner": "b2600000-0000-4000-8000-000000000301",
+    "foreign_association": "b2600000-0000-4000-8000-000000000302",
+    "foreign_message": "b2600000-0000-4000-8000-000000000303",
+    "foreign_delivery": "b2600000-0000-4000-8000-000000000304"
+  },
+  "retired_policy": {
+    "explicit_skip_records": {
+      "BillingPlan": 1,
+      "PreviewAndCustomFeatures": 1
+    }
+  },
+  "foreign_sentinel": {
+    "User": [
+      {
+        "user_id": "b2600000-0000-4000-8000-000000000301",
+        "username": "historical-foreign@example.test",
+        "email": "historical-foreign@example.test",
+        "password": "!",
+        "role": 1,
+        "first_name": "Synthetic",
+        "last_name": "Foreign",
+        "is_active": true,
+        "deleted": false
+      }
+    ],
+    "SportAssociation": [
+      {
+        "sport_association_id": "b2600000-0000-4000-8000-000000000302",
+        "user_id": "b2600000-0000-4000-8000-000000000301",
+        "denomination": "Synthetic foreign historical club",
+        "tax_code": "00000000002",
+        "subscription_fee": "0.00",
+        "membership_fee": null
+      }
+    ],
+    "Message": [
+      {
+        "message_id": "b2600000-0000-4000-8000-000000000303",
+        "sport_association_id": "b2600000-0000-4000-8000-000000000302",
+        "type": "EMAIL",
+        "message": "Foreign historical sentinel <retain> & observe",
+        "subject": "Foreign sentinel",
+        "created_at": "2026-08-05T09:00:00+00:00"
+      }
+    ],
+    "MessageTransaction": [
+      {
+        "message_transaction_id": "b2600000-0000-4000-8000-000000000304",
+        "message_id": "b2600000-0000-4000-8000-000000000303",
+        "recipient": "foreign@example.test",
+        "sent_on": "2026-08-05T09:01:00+00:00",
+        "delivered_on": "2026-08-05T09:02:00+00:00",
+        "opened_on": null,
+        "clicked_on": null,
+        "bounced_on": null,
+        "bounced_reason": null,
+        "bounced_type": null,
+        "bounced_status": null
+      }
+    ]
+  },
+  "mutation": {
+    "delete_message_id": "b2600000-0000-4000-8000-000000000104",
+    "delete_delivery_ids": [
+      "b2600000-0000-4000-8000-000000000204",
+      "b2600000-0000-4000-8000-000000000205"
+    ]
+  },
+  "expected": {
+    "imported": {
+      "counts": {
+        "Message": 4,
+        "MessageTransaction": 5
+      },
+      "combined_counts": {
+        "Message": 5,
+        "MessageTransaction": 6
+      },
+      "messages": [
+        {
+          "message_id": "b2600000-0000-4000-8000-000000000101",
+          "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+          "type": "EMAIL",
+          "message": "Avviso <storico> & \"salvato\" — attività",
+          "subject": "  Stagione <2026> & \"quote\"  ",
+          "created_at": "2026-08-01T09:00:00+00:00"
+        },
+        {
+          "message_id": "b2600000-0000-4000-8000-000000000102",
+          "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+          "type": "INSIDE_APP",
+          "message": "Bacheca storica <ore 18> & palestra",
+          "subject": null,
+          "created_at": null
+        },
+        {
+          "message_id": "b2600000-0000-4000-8000-000000000103",
+          "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+          "type": "SMS",
+          "message": "",
+          "subject": "",
+          "created_at": "2026-08-03T09:00:00+00:00"
+        },
+        {
+          "message_id": "b2600000-0000-4000-8000-000000000104",
+          "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+          "type": "EMAIL",
+          "message": "Avviso da eliminare con due consegne",
+          "subject": null,
+          "created_at": "2026-08-04T09:00:00+00:00"
+        }
+      ],
+      "deliveries": [
+        {
+          "message_transaction_id": "b2600000-0000-4000-8000-000000000201",
+          "message_id": "b2600000-0000-4000-8000-000000000101",
+          "recipient": "retained@example.test",
+          "sent_on": "2026-08-01T09:01:00+00:00",
+          "delivered_on": "2026-08-01T09:02:00+00:00",
+          "opened_on": "2026-08-01T10:00:00+00:00",
+          "clicked_on": "2026-08-01T10:01:00+00:00",
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "b2600000-0000-4000-8000-000000000202",
+          "message_id": "b2600000-0000-4000-8000-000000000102",
+          "recipient": "7616fd26-589f-5551-b17f-0478e305434d",
+          "sent_on": "2026-08-02T09:01:00+00:00",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": "",
+          "bounced_type": "",
+          "bounced_status": ""
+        },
+        {
+          "message_transaction_id": "b2600000-0000-4000-8000-000000000203",
+          "message_id": "b2600000-0000-4000-8000-000000000103",
+          "recipient": "+390000000000",
+          "sent_on": "2026-08-03T09:01:00+00:00",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": "",
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "b2600000-0000-4000-8000-000000000204",
+          "message_id": "b2600000-0000-4000-8000-000000000104",
+          "recipient": "delete-delivered@example.test",
+          "sent_on": "2026-08-04T09:01:00+00:00",
+          "delivered_on": "2026-08-04T09:02:00+00:00",
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": "",
+          "bounced_type": null,
+          "bounced_status": ""
+        },
+        {
+          "message_transaction_id": "b2600000-0000-4000-8000-000000000205",
+          "message_id": "b2600000-0000-4000-8000-000000000104",
+          "recipient": "delete-bounced@example.test",
+          "sent_on": "2026-08-04T09:03:00+00:00",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": "2026-08-04T09:04:00+00:00",
+          "bounced_reason": "Synthetic mailbox unavailable",
+          "bounced_type": "Permanent",
+          "bounced_status": "5.1.1"
+        }
+      ],
+      "foreign_sentinel": {
+        "User": [
+          {
+            "user_id": "b2600000-0000-4000-8000-000000000301",
+            "username": "historical-foreign@example.test",
+            "email": "historical-foreign@example.test",
+            "password": "!",
+            "role": 1,
+            "first_name": "Synthetic",
+            "last_name": "Foreign",
+            "is_active": true,
+            "deleted": false
+          }
+        ],
+        "SportAssociation": [
+          {
+            "sport_association_id": "b2600000-0000-4000-8000-000000000302",
+            "user_id": "b2600000-0000-4000-8000-000000000301",
+            "denomination": "Synthetic foreign historical club",
+            "tax_code": "00000000002",
+            "subscription_fee": "0.00",
+            "membership_fee": null
+          }
+        ],
+        "Message": [
+          {
+            "message_id": "b2600000-0000-4000-8000-000000000303",
+            "sport_association_id": "b2600000-0000-4000-8000-000000000302",
+            "type": "EMAIL",
+            "message": "Foreign historical sentinel <retain> & observe",
+            "subject": "Foreign sentinel",
+            "created_at": "2026-08-05T09:00:00+00:00"
+          }
+        ],
+        "MessageTransaction": [
+          {
+            "message_transaction_id": "b2600000-0000-4000-8000-000000000304",
+            "message_id": "b2600000-0000-4000-8000-000000000303",
+            "recipient": "foreign@example.test",
+            "sent_on": "2026-08-05T09:01:00+00:00",
+            "delivered_on": "2026-08-05T09:02:00+00:00",
+            "opened_on": null,
+            "clicked_on": null,
+            "bounced_on": null,
+            "bounced_reason": null,
+            "bounced_type": null,
+            "bounced_status": null
+          }
+        ]
+      },
+      "timestamp_policy": {
+        "Message.created_at": "import_window",
+        "MessageTransaction.sent_on": "import_window",
+        "foreign_sentinel": "parent_setup_baseline"
+      }
+    },
+    "after_delete": {
+      "counts": {
+        "Message": 3,
+        "MessageTransaction": 3
+      },
+      "combined_counts": {
+        "Message": 4,
+        "MessageTransaction": 4
+      },
+      "messages": [
+        {
+          "message_id": "b2600000-0000-4000-8000-000000000101",
+          "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+          "type": "EMAIL",
+          "message": "Avviso <storico> & \"salvato\" — attività",
+          "subject": "  Stagione <2026> & \"quote\"  ",
+          "created_at": "2026-08-01T09:00:00+00:00"
+        },
+        {
+          "message_id": "b2600000-0000-4000-8000-000000000102",
+          "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+          "type": "INSIDE_APP",
+          "message": "Bacheca storica <ore 18> & palestra",
+          "subject": null,
+          "created_at": null
+        },
+        {
+          "message_id": "b2600000-0000-4000-8000-000000000103",
+          "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+          "type": "SMS",
+          "message": "",
+          "subject": "",
+          "created_at": "2026-08-03T09:00:00+00:00"
+        }
+      ],
+      "deliveries": [
+        {
+          "message_transaction_id": "b2600000-0000-4000-8000-000000000201",
+          "message_id": "b2600000-0000-4000-8000-000000000101",
+          "recipient": "retained@example.test",
+          "sent_on": "2026-08-01T09:01:00+00:00",
+          "delivered_on": "2026-08-01T09:02:00+00:00",
+          "opened_on": "2026-08-01T10:00:00+00:00",
+          "clicked_on": "2026-08-01T10:01:00+00:00",
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "b2600000-0000-4000-8000-000000000202",
+          "message_id": "b2600000-0000-4000-8000-000000000102",
+          "recipient": "7616fd26-589f-5551-b17f-0478e305434d",
+          "sent_on": "2026-08-02T09:01:00+00:00",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": "",
+          "bounced_type": "",
+          "bounced_status": ""
+        },
+        {
+          "message_transaction_id": "b2600000-0000-4000-8000-000000000203",
+          "message_id": "b2600000-0000-4000-8000-000000000103",
+          "recipient": "+390000000000",
+          "sent_on": "2026-08-03T09:01:00+00:00",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": "",
+          "bounced_status": null
+        }
+      ],
+      "foreign_sentinel": {
+        "User": [
+          {
+            "user_id": "b2600000-0000-4000-8000-000000000301",
+            "username": "historical-foreign@example.test",
+            "email": "historical-foreign@example.test",
+            "password": "!",
+            "role": 1,
+            "first_name": "Synthetic",
+            "last_name": "Foreign",
+            "is_active": true,
+            "deleted": false
+          }
+        ],
+        "SportAssociation": [
+          {
+            "sport_association_id": "b2600000-0000-4000-8000-000000000302",
+            "user_id": "b2600000-0000-4000-8000-000000000301",
+            "denomination": "Synthetic foreign historical club",
+            "tax_code": "00000000002",
+            "subscription_fee": "0.00",
+            "membership_fee": null
+          }
+        ],
+        "Message": [
+          {
+            "message_id": "b2600000-0000-4000-8000-000000000303",
+            "sport_association_id": "b2600000-0000-4000-8000-000000000302",
+            "type": "EMAIL",
+            "message": "Foreign historical sentinel <retain> & observe",
+            "subject": "Foreign sentinel",
+            "created_at": "2026-08-05T09:00:00+00:00"
+          }
+        ],
+        "MessageTransaction": [
+          {
+            "message_transaction_id": "b2600000-0000-4000-8000-000000000304",
+            "message_id": "b2600000-0000-4000-8000-000000000303",
+            "recipient": "foreign@example.test",
+            "sent_on": "2026-08-05T09:01:00+00:00",
+            "delivered_on": "2026-08-05T09:02:00+00:00",
+            "opened_on": null,
+            "clicked_on": null,
+            "bounced_on": null,
+            "bounced_reason": null,
+            "bounced_type": null,
+            "bounced_status": null
+          }
+        ]
+      },
+      "timestamp_policy": {
+        "Message.created_at": "unchanged_from_import",
+        "MessageTransaction.sent_on": "unchanged_from_import",
+        "foreign_sentinel": "parent_setup_baseline"
+      }
+    }
+  }
+}

@@ -1,0 +1,324 @@
+{
+ "matrix_version": 1,
+ "scope": "Attendance day delete authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "courses": {
+  "own": {
+   "id": "a1000000-0000-4000-8000-000000860001",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000860002",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "registries": {
+  "own": {
+   "id": "a1000000-0000-4000-8000-000000860003",
+   "course": "own"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000860004",
+   "course": "foreign"
+  }
+ },
+ "days": {
+  "d1": {
+   "id": "a1000000-0000-4000-8000-000000860005",
+   "registry": "own",
+   "title": "Lezione è",
+   "date": "2026-11-02T17:30:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "x",
+     "z": 1.5
+    }
+   ],
+   "expected_absences": null,
+   "auto_marked": false,
+   "associated_event": "a1000000-0000-4000-8000-000000860006"
+  },
+  "d2": {
+   "id": "a1000000-0000-4000-8000-000000860007",
+   "registry": "own",
+   "title": null,
+   "date": "2026-11-03T17:30:00.250000Z",
+   "attendees": null,
+   "expected_absences": [],
+   "auto_marked": true,
+   "associated_event": null
+  },
+  "df": {
+   "id": "a1000000-0000-4000-8000-000000860008",
+   "registry": "foreign",
+   "title": "Estero",
+   "date": "2026-11-04T10:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "auto_marked": false,
+   "associated_event": null
+  }
+ },
+ "cases": [
+  {
+   "name": "attendance-day-delete-malformed-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/attendance-day/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860008/delete",
+   "headers": {},
+   "status": 404,
+   "response": [
+    "error: attendance day not found."
+   ],
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-missing-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000720009/delete",
+   "headers": {},
+   "status": 404,
+   "response": [
+    "error: attendance day not found."
+   ],
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860005/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.attendance.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-athlete-not-found",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860005/delete",
+   "headers": {},
+   "status": 404,
+   "response": [
+    "error: attendance day not found."
+   ],
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860005/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860005/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860005/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860005/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Attendance Day Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-owner-deletes",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860005/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "attendance day deleted"
+    }
+   },
+   "effect": {
+    "day": "a1000000-0000-4000-8000-000000860005",
+    "changes": {
+     "attendance_day_id": [
+      "a1000000-0000-4000-8000-000000860005",
+      "None"
+     ],
+     "attendance_registry": [
+      "a1000000-0000-4000-8000-000000860003",
+      "None"
+     ],
+     "title": [
+      "Lezione è",
+      "None"
+     ],
+     "date": [
+      "2026-11-02 17:30:00",
+      "None"
+     ],
+     "attendees": [
+      "[{\"course_subscription_id\": \"x\", \"z\": 1.5}]",
+      "None"
+     ],
+     "expected_absences": [
+      "null",
+      "None"
+     ],
+     "auto_marked": [
+      "False",
+      "None"
+     ],
+     "associated_event": [
+      "a1000000-0000-4000-8000-000000860006",
+      "None"
+     ]
+    },
+    "index": "own_association"
+   }
+  },
+  {
+   "name": "attendance-day-delete-repeat-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860005/delete",
+   "headers": {},
+   "status": 404,
+   "response": [
+    "error: attendance day not found."
+   ],
+   "effect": null
+  },
+  {
+   "name": "attendance-day-delete-full-collaborator-deletes",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000860007/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "attendance day deleted"
+    }
+   },
+   "effect": {
+    "day": "a1000000-0000-4000-8000-000000860007",
+    "changes": {
+     "attendance_day_id": [
+      "a1000000-0000-4000-8000-000000860007",
+      "None"
+     ],
+     "attendance_registry": [
+      "a1000000-0000-4000-8000-000000860003",
+      "None"
+     ],
+     "date": [
+      "2026-11-03 17:30:00.250000",
+      "None"
+     ],
+     "attendees": [
+      "null",
+      "None"
+     ],
+     "expected_absences": [
+      "[]",
+      "None"
+     ],
+     "auto_marked": [
+      "True",
+      "None"
+     ]
+    },
+    "index": null
+   }
+  }
+ ]
+}

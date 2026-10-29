@@ -1,0 +1,855 @@
+{
+ "matrix_version": 1,
+ "scope": "Course overview authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "tags": {
+  "t1": {
+   "id": "a1000000-0000-4000-8000-000000995001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Agonistico è"
+  },
+  "t2": {
+   "id": "a1000000-0000-4000-8000-000000995002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Base"
+  }
+ },
+ "locations": {
+  "l1": {
+   "id": "a1000000-0000-4000-8000-000000995003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Piscina",
+   "address": "Via 1"
+  },
+  "l2": {
+   "id": "a1000000-0000-4000-8000-000000995004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": null,
+   "address": null
+  }
+ },
+ "courses": {
+  "full": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 3,
+   "type": 2,
+   "created": "2026-09-01T08:00:00.123456Z",
+   "title": "Nuoto è",
+   "description": "Lungo\ntesto",
+   "multi_payments": true,
+   "fee": "12.5",
+   "events": {
+    "days": [
+     1,
+     "lun"
+    ],
+    "note": null
+   },
+   "one_fee_payment": true,
+   "one_fee": "3",
+   "google_calendar_id": "cal-1",
+   "color": "#abcdef",
+   "multiple_quotes": [
+    {
+     "amount": 5,
+     "label": "Prima"
+    }
+   ],
+   "start": "2026-09-10T07:30:00Z",
+   "end": "2027-06-30T18:00:00.500000Z",
+   "pinned": true,
+   "season": true,
+   "frequency": null,
+   "from_subscription": true,
+   "day": 28,
+   "renewal": true,
+   "deleted": false,
+   "group": null,
+   "tags": [
+    "t1",
+    "t2"
+   ],
+   "locations": [
+    "l1",
+    "l2"
+   ],
+   "id": "a1000000-0000-4000-8000-000000995005"
+  },
+  "bare": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 2,
+   "type": 1,
+   "created": "2026-09-01T08:00:00Z",
+   "title": null,
+   "description": null,
+   "multi_payments": false,
+   "fee": null,
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0",
+   "google_calendar_id": null,
+   "color": null,
+   "multiple_quotes": null,
+   "start": null,
+   "end": null,
+   "pinned": false,
+   "season": false,
+   "frequency": 1,
+   "from_subscription": false,
+   "day": 1,
+   "renewal": false,
+   "deleted": false,
+   "group": null,
+   "tags": [],
+   "locations": [],
+   "id": "a1000000-0000-4000-8000-000000995006"
+  },
+  "grouped": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 2,
+   "type": 1,
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Gruppo",
+   "description": "Testo",
+   "multi_payments": false,
+   "fee": "10",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0",
+   "google_calendar_id": null,
+   "color": "#123456",
+   "multiple_quotes": null,
+   "start": null,
+   "end": null,
+   "pinned": false,
+   "season": false,
+   "frequency": 1,
+   "from_subscription": false,
+   "day": 1,
+   "renewal": false,
+   "deleted": false,
+   "group": "own_group",
+   "tags": [
+    "t2"
+   ],
+   "locations": [],
+   "id": "a1000000-0000-4000-8000-000000995007"
+  },
+  "gone": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 2,
+   "type": 1,
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Eliminato",
+   "description": "Testo",
+   "multi_payments": false,
+   "fee": "10",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0",
+   "google_calendar_id": null,
+   "color": "#123456",
+   "multiple_quotes": null,
+   "start": null,
+   "end": null,
+   "pinned": false,
+   "season": false,
+   "frequency": 1,
+   "from_subscription": false,
+   "day": 1,
+   "renewal": false,
+   "deleted": true,
+   "group": null,
+   "tags": [],
+   "locations": [],
+   "id": "a1000000-0000-4000-8000-000000995008"
+  },
+  "abroad": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "status": 2,
+   "type": 1,
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Estero",
+   "description": "Testo",
+   "multi_payments": false,
+   "fee": "10",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0",
+   "google_calendar_id": null,
+   "color": "#123456",
+   "multiple_quotes": null,
+   "start": null,
+   "end": null,
+   "pinned": false,
+   "season": false,
+   "frequency": 1,
+   "from_subscription": false,
+   "day": 1,
+   "renewal": false,
+   "deleted": false,
+   "group": null,
+   "tags": [],
+   "locations": [],
+   "id": "a1000000-0000-4000-8000-000000995009"
+  }
+ },
+ "cases": [
+  {
+   "name": "course-overview-owner-full",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "course": {
+      "course_id": "a1000000-0000-4000-8000-000000995005",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000995003",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000995004",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 3,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     }
+    }
+   }
+  },
+  {
+   "name": "course-overview-owner-bare",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995006/overview",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "course": {
+      "course_id": "a1000000-0000-4000-8000-000000995006",
+      "athletes": null,
+      "tags": [],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-09-01T08:00:00Z",
+      "title": null,
+      "description": null,
+      "multi_payments": false,
+      "fee": null,
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": null,
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     }
+    }
+   }
+  },
+  {
+   "name": "course-overview-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "course": {
+      "course_id": "a1000000-0000-4000-8000-000000995005",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000995003",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000995004",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 3,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     }
+    }
+   }
+  },
+  {
+   "name": "course-overview-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "course": {
+      "course_id": "a1000000-0000-4000-8000-000000995005",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995001",
+        "tag_name": "Agonistico è"
+       },
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000995003",
+        "title": "Piscina",
+        "address": "Via 1"
+       },
+       {
+        "course_location_id": "a1000000-0000-4000-8000-000000995004",
+        "title": null,
+        "address": null
+       }
+      ],
+      "status_flag": 3,
+      "course_type": 2,
+      "creation_date": "2026-09-01T08:00:00.123456Z",
+      "title": "Nuoto è",
+      "description": "Lungo\ntesto",
+      "multi_payments": true,
+      "fee": "12.50",
+      "events": {
+       "days": [
+        1,
+        "lun"
+       ],
+       "note": null
+      },
+      "one_fee_payment": true,
+      "one_fee": "3.00",
+      "google_calendar_id": "cal-1",
+      "google_background_color": "#abcdef",
+      "multiple_quotes": [
+       {
+        "amount": 5,
+        "label": "Prima"
+       }
+      ],
+      "start_date": "2026-09-10T07:30:00Z",
+      "end_date": "2027-06-30T18:00:00.500000Z",
+      "pinned": true,
+      "billed_duration_is_sport_season": true,
+      "billed_frequency": null,
+      "billed_from_subscription_date": true,
+      "billed_from_day_of_month": 28,
+      "auto_renewal": true,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": null
+     }
+    }
+   }
+  },
+  {
+   "name": "course-overview-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995009/overview",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "course": {
+      "course_id": "a1000000-0000-4000-8000-000000995009",
+      "athletes": null,
+      "tags": [],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-09-01T08:00:00Z",
+      "title": "Estero",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "group": null
+     }
+    }
+   }
+  },
+  {
+   "name": "course-overview-grouped-own-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995007/overview",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "course": {
+      "course_id": "a1000000-0000-4000-8000-000000995007",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-09-01T08:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    }
+   }
+  },
+  {
+   "name": "course-overview-grouped-without-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995007/overview",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "course": {
+      "course_id": "a1000000-0000-4000-8000-000000995007",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-09-01T08:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    }
+   }
+  },
+  {
+   "name": "course-overview-group-header-hides",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995007/overview",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Course not found"
+   }
+  },
+  {
+   "name": "course-overview-malformed-group-header-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995007/overview",
+   "headers": {
+    "X-Group-Id": "abc"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "course": {
+      "course_id": "a1000000-0000-4000-8000-000000995007",
+      "athletes": null,
+      "tags": [
+       {
+        "tag_id": "a1000000-0000-4000-8000-000000995002",
+        "tag_name": "Base"
+       }
+      ],
+      "locations": [],
+      "status_flag": 2,
+      "course_type": 1,
+      "creation_date": "2026-09-01T08:00:00Z",
+      "title": "Gruppo",
+      "description": "Testo",
+      "multi_payments": false,
+      "fee": "10.00",
+      "events": null,
+      "one_fee_payment": false,
+      "one_fee": "0.00",
+      "google_calendar_id": null,
+      "google_background_color": "#123456",
+      "multiple_quotes": null,
+      "start_date": null,
+      "end_date": null,
+      "pinned": false,
+      "billed_duration_is_sport_season": false,
+      "billed_frequency": 1,
+      "billed_from_subscription_date": false,
+      "billed_from_day_of_month": 1,
+      "auto_renewal": false,
+      "deleted": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    }
+   }
+  },
+  {
+   "name": "course-overview-foreign-course",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995009/overview",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Course not found"
+   }
+  },
+  {
+   "name": "course-overview-deleted-course",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995008/overview",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Course not found"
+   }
+  },
+  {
+   "name": "course-overview-unknown-course",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000999997/overview",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Course not found"
+   }
+  },
+  {
+   "name": "course-overview-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/abc/overview",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ]
+  },
+  {
+   "name": "course-overview-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Course not found"
+   }
+  },
+  {
+   "name": "course-overview-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Course not found"
+   }
+  },
+  {
+   "name": "course-overview-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.read"
+   }
+  },
+  {
+   "name": "course-overview-restricted-post-missing-update",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.update"
+   }
+  },
+  {
+   "name": "course-overview-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   }
+  },
+  {
+   "name": "course-overview-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "course-overview-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "course-overview-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "course-overview-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course/a1000000-0000-4000-8000-000000995005/overview",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Overview",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

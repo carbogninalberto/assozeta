@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "BE/**"
+      - "BE_GO/**"
+      - "TESTS/**"
+      - ".github/workflows/go-quality.yml"
       - "UI/**"
       - "selfhost/**"
       - ".github/workflows/publish-images.yml"
@@ -24,6 +27,9 @@ permissions:
   contents: read
 
 jobs:
+  go-quality:
+    uses: ./.github/workflows/go-quality.yml
+
   manual-release:
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/manuale-release.yml
@@ -91,12 +97,13 @@ jobs:
     if: >-
       ${{ !cancelled() &&
           needs.validate.result == 'success' &&
+          needs.go-quality.result == 'success' &&
           needs.production-smoke.result == 'success' &&
           (needs.manual-release.result == 'success' ||
            (github.event_name == 'push' && needs.manual-release.result == 'skipped')) &&
           (needs.selfhost-quality.result == 'success' ||
            (github.event_name == 'push' && needs.selfhost-quality.result == 'skipped')) }}
-    needs: [validate, production-smoke, selfhost-quality, manual-release]
+    needs: [validate, production-smoke, selfhost-quality, manual-release, go-quality]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -111,6 +118,11 @@ jobs:
             context: ./BE
             file: ./BE/Dockerfile
             target: production
+          - name: backend-go
+            image: assozeta-backend-go
+            context: ./BE_GO
+            file: ./BE_GO/Dockerfile
+            target: ""
           - name: web
             image: assozeta-web
             context: ./UI
@@ -134,11 +146,11 @@ jobs:
           persist-credentials: false
 
       - name: Download the verified release manual
-        if: matrix.name == 'backend' && github.event_name != 'push'
+        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && github.event_name != 'push'
         uses: actions/download-artifact@v4
         with:
           name: manuale-release-runtime
-          path: BE/release-manual
+          path: ${{ matrix.context }}/release-manual
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -203,7 +215,7 @@ jobs:
           set -euo pipefail
           RELEASE_TAG="${RELEASE_TAG#v}"
 
-          images=(assozeta-backend assozeta-web assozeta-renderer assozeta-updater)
+          images=(assozeta-backend assozeta-backend-go assozeta-web assozeta-renderer assozeta-updater)
           failures=()
 
           for image in "${images[@]}"; do
@@ -227,16 +239,17 @@ jobs:
             printf '\nAnonymous pull verification failed for:\n' >&2
             printf '  - %s\n' "${failures[@]}" >&2
             printf '\nGHCR container packages are private by default, but the self-host installer\n' >&2
-            printf 'pulls images without credentials. Set all four packages to Public\n' >&2
+            printf 'pulls images without credentials. Set all five packages to Public\n' >&2
             printf '(Package settings > Change visibility > Public), then rerun this workflow:\n' >&2
             printf '  - ghcr.io/%s/assozeta-backend\n' "${IMAGE_OWNER}" >&2
+            printf '  - ghcr.io/%s/assozeta-backend-go\n' "${IMAGE_OWNER}" >&2
             printf '  - ghcr.io/%s/assozeta-web\n' "${IMAGE_OWNER}" >&2
             printf '  - ghcr.io/%s/assozeta-renderer\n' "${IMAGE_OWNER}" >&2
             printf '  - ghcr.io/%s/assozeta-updater\n' "${IMAGE_OWNER}" >&2
             exit 1
           fi
 
-          echo "All four release images are anonymously pullable."
+          echo "All five release images are anonymously pullable."
 
   release-bundle:
     name: Attach self-host bundle

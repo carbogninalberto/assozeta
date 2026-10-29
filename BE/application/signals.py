@@ -4,6 +4,7 @@ from django.dispatch import receiver, Signal
 from django.db.models import Q
 
 from .models import CourseSubscription, CourseSubscriptionInstallment, Payment
+from .audit_context import audit_index_errors_are_fatal
 from .tasks import check_workflows_trigger
 import logging
 
@@ -60,7 +61,8 @@ def resolve_sport_association_for_log_entry(log_entry):
                 # For DELETE actions, new_value is 'None', so we try old_value first
                 sa_data = changes['sport_association']
                 sa_ids_to_try = []
-                if isinstance(sa_data, list):
+                # auditlog emits tuples in memory; JSON reloads yield lists.
+                if isinstance(sa_data, (list, tuple)):
                     # Try old value first (index 0), then new value (index 1)
                     if len(sa_data) > 0:
                         sa_ids_to_try.append(sa_data[0])
@@ -381,6 +383,8 @@ def create_audit_log_index(sender, instance, created, **kwargs):
             )
         except Exception as e:
             logger.error(f"Failed to create AuditLogIndex for LogEntry {instance.pk}: {e}")
+            if audit_index_errors_are_fatal():
+                raise
     else:
         logger.debug(
             f"Could not resolve sport_association for LogEntry {instance.pk} "

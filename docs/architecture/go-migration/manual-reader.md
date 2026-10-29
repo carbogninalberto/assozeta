@@ -1,0 +1,299 @@
+# Embedded manual reader
+
+The installed-bundle library validates public applicability and reads independent,
+hash-verified asset bytes. Its 36 explicit Django/Go comparisons cover source
+freshness, feature selection, private sections, duplicate paths and asset denial.
+The installation checker remains stricter about PNG headers than runtime reads.
+
+The retrieval library consumes the existing sealed semantic model. It preserves
+Italian token and action normalization, operation/protocol filtering, candidate
+BM25 statistics, full-corpus vector alignment, score thresholds, rounded-score
+ordering and the ordinary reader's ten-result limit. It never trains or rewrites
+the model. Public projection preserves the existing embedded links and asset URLs
+and copies nested results so concurrent requests cannot modify cached content.
+Application messages retain their existing Italian wording.
+
+`TESTS/adapters/django/manual_retrieval.py` checks 33 explicit cases and seven token
+vectors against the actual Django `ManualIndex` and `_public` implementation,
+then compares the Go result. Expected IDs and scores are specified in the fixture;
+the Django oracle additionally supplies the complete projection for comparison.
+Five Go groups check nested copies, concurrent requests, model immutability and
+cancellation. The oracle uses the pinned offline NumPy version and forbids network
+access and model training. It creates and removes only private fixture files.
+
+The source loader follows the reader's separate preview, development, installed
+bundle and runtime-cache precedence. It preserves `MANUAL_ASSET_ROOT`, verifies
+source freshness before filtering public sections, and limits preview assets to
+the preview path. Remote refresh holds the shared `.sync.lock`, validates the
+corpus and deduplicated images before atomic promotion, and retains the previous
+corpus after failure. Downloads have byte limits, timeouts and redirect validation;
+inactive content-addressed assets retain the existing retirement grace period.
+
+`TESTS/adapters/django/manual_reader_http.py --go-source` observes 69 real Django
+HTTP cases on private PostgreSQL and an ASGI server, including identity, methods,
+headers, restore admission and bounded SQL. It separately runs 32 Go library
+source comparisons with independent fixture directories. The local HTTP publisher
+checks download requests, installed-bundle precedence, failure retention and
+verified asset promotion. Go tests also exercise concurrent refresh, cancellation,
+atomic publication and pruning. These fixtures use current models rather than
+historical migrations.
+
+`TESTS/adapters/django/manual_refresh_lock.py` starts actual Django and Go
+synchronizers in separate processes against one private cache and an HTTP
+publisher that holds its first response. Three cases verify Django blocking Go
+until cancellation, Django handing the lease to Go, and Go handing it to Django.
+The competing runtime cannot download or promote while the lease is held;
+after release both runtimes read the same corpus and reuse the verified asset.
+All processes and private files are removed. A negative control that gives Go a
+different lock filename fails these checks, then the unchanged shared-lock code
+passes. This tests native-process interoperability.
+
+The normal Compose services share a writable `/app/manuale` volume while retaining
+read-only root filesystems. The Go image initializes the cache directory as UID/GID
+10001 so either image may create the volume first. The immutable release bundle
+remains separate. `TESTS/adapters/go/manual_cache_image.py` runs both initialization
+orders against actual Go and Django images, checking restricted-file reuse, atomic
+replacement, asset deletion and writes denied outside the cache. The previous Go
+image fails the Go-first case; the corrected image passes both orders and removes
+all owned containers and volumes. The self-host release workflow runs this check.
+These filesystem probes complement the native refresh tests; they do not prove
+HTTP refresh inside an installed image or a verified required release package.
+
+The Go composition root now registers `/manuale/sections` and
+`/manuale/assets/*`. Handlers resolve the existing actor/effective/scope identity;
+the service enforces query admission and public-only source selection. A dedicated
+repository reads only the live `self_hosted` flag, with no provider secrets or
+maintainer privileges. Preview selection precedes the instance lookup. Preview
+queries preserve Unicode case folding, whitespace splitting, title-hit ranking,
+stable ties and the ten-result limit. Responses copy nested source data.
+
+The same 69 contracts pass against the actual Go server with PostgreSQL and Redis,
+and against both APIs through the shipped Caddy configuration using `--versioned`
+with `--backend django` or `--backend go`. The portable suite compares full JSON,
+selected headers, exact publisher requests, verified asset bytes and unchanged
+business/audit/cache records. Ordinary reads stay at two SQL statements for owners
+and three for collaborators at 16 and 128 sections; live feature context is one
+statement. Go may use fewer identity statements than Django during impersonation.
+No required case is skipped. These are native API processes behind real Caddy,
+not newly built installed Go images.
+
+Differential normalization is limited to header method/token ordering and each
+fixture's verified corpus identity, which includes its ephemeral publisher port.
+Every returned identity is first checked against an actual fixture source. Gzip
+responses are decompressed before comparison; Go preserves Django's size threshold,
+streaming-asset behavior, `Vary`, quality-token handling and randomized gzip header.
+Existing Italian messages, missing-source responses and denial precedence remain
+unchanged. The initial missing-route 404 and missing encoding-header failures are
+retained under `quality-reports/go-migration/manual-source-integration/`.
+
+`TESTS/adapters/django/profile_browser.py --manual-reader` additionally verifies
+the unchanged built frontend with real password login, public chapter navigation,
+deep-link reload, search and no-evidence results, authenticated PNGs and zoom,
+mobile navigation without horizontal overflow, anonymous denial and private-image
+denial. Both native backends pass with the same authored synthetic corpus and a
+640x360 PNG pattern. The test hashes the exact image Blob consumed by the reader
+and checks decoded dimensions. Chromium's debugger returned empty streamed image
+bodies in the first test attempt; inspecting the consumed Blob preserves the exact
+byte assertion. Desktop and mobile screenshots were inspected. The same workflow
+fails with a real manual-sections 404 against pre-route Go revision `f2993b0`.
+
+This browser check extends the existing profile workflow and its source-map and
+compiled-artifact checks. A private Caddy selects the named backend for canonical
+`/api` calls; root WebSockets and the documented logo/manifest/export-denial routes
+still use Django. This complements the separate actual `/api/v1` and `/api/v2`
+HTTP contracts; it does not prove installed alias switching, assistant behavior,
+Go WebSockets, a production manual corpus or packaged HTTP refresh. The existing
+fresh-login/profile-edit/audit checks also pass with the manual enabled. CI runs
+the combined workflow and retains its reports and screenshots.
+
+The whole untagged Go race suite and vet pass. MCP, assistant behavior, packaged
+HTTP refresh and a verified required-release package with its full browser checks
+remain open. Historical manual artifacts retain their original revision and
+verification scope.
+
+The manual-tool function oracle is separate from reader HTTP and browser tests.
+`manual_reader_http.py --tools` runs 67 authored cases through the actual Django
+functions, live PostgreSQL context resolution and real source loaders. It covers
+all four tools: search, section reads, technical evidence and gap diagnostics.
+No context resolver, loader or permission decision is replaced. Portable contracts
+check result shapes, complete public projection keys, independently derived search
+scores, exact owner evidence/provenance, denial messages, database/file retention
+and SQL bounds. Public search uses one query at 2, 16 and 128 public sections;
+ordinary owner context uses three, and owner diagnostics currently use six because
+the context is resolved twice.
+
+Unlike ordinary HTTP reading, trusted owner tool calls can retrieve maintainer
+sections. That authority requires the active, undeleted primary owner of the
+self-hosted instance and the same association; administrator status alone is
+insufficient. Public technical-evidence calls load the corpus before denying
+access, while public gap calls deny before loading it. Invalid queries precede
+source access. Runtime gap diagnostics may report an incompatible version, while
+an incompatible installed bundle fails its strict loader. Development tools ignore
+preview knowledge, and owner diagnostics report reappeared deleted sources even
+when ordinary retrieval rejects them. These differences are explicit contracts.
+The oracle treats `user_id` and association as trusted call context; MCP/agent
+argument filtering and their transports still need their own tests.
+
+Adding `--go-source` compares all 67 complete results with `pkg/manual.ExecuteTool`
+using the same sealed files and fixture-supplied trusted context. The Go library
+implements all four knowledge operations, preserves the original external citation
+URL alongside the embedded reader URL, and does not accept authority or source
+configuration from tool arguments. Diagnostic loading can inspect incompatible
+runtime versions and reappeared development sources, while installed bundles
+retain strict version validation. Ordinary HTTP selection remains public-only.
+The four extra cases establish that stopword-only queries bypass limit conversion
+and model access, empty models bypass limit conversion, and a normal query with
+no matches still rejects an invalid limit. The missing-model case failed before
+the Go evaluation-order correction. Cancellation, integer conversion, nested
+result isolation and 32 concurrent owner/public calls have separate Go tests.
+CI runs the complete differential and portable result comparison. The adapter
+records the exact Go source hashes and checks that Go leaves fixture files intact.
+This library evidence does not establish transport or service authority.
+
+The separate `--tools --backend go` adapter composes the Go service, repository
+and loader against the same private PostgreSQL rows as Django. All 67 complete
+results match, with one SQL statement for each valid call and no SQL for invalid
+search queries. This includes increasing the public corpus from 2 to 16 and 128
+sections. The statement selects only instance, primary-association and active
+effective-user facts from the existing schema, including `bakney_user`; it loads
+no credentials. The service grants maintainer access only to that live primary
+owner in the matching association. Actor and tenant-owner identities cannot
+replace the effective user, and extra tool arguments cannot supply identity,
+features or source configuration. An explicitly supplied zero identity gives
+public knowledge access.
+
+A long-lived service with a stale in-memory identity observes account disabling,
+soft deletion, self-hosted-mode changes and primary-association changes. Each
+mutation is restored and the complete fixture database/file snapshot is compared.
+Thirty-two concurrent owner/public calls use a four-connection pool and one query
+each. A real PostgreSQL table-lock wait is canceled; subsequent reads recover.
+Unit tests also require cancellation between context resolution and source loading
+to stop further work, and propagate database failures instead of presenting them
+as verified evidence. CI requires the service differential and portable report.
+The service accepts already admitted identity/association values; JWT/WebSocket
+admission, impersonation revocation, MCP/agent dispatch, restore coordination and
+provider behavior remain separate unverified boundaries. No production transport
+is switched to this service by these component tests.
+
+The `--mcp` oracle exercises the actual Django `run_mcp_server` management command
+over independent subprocess stdin/stdout pipes. Forty authored requests
+cover the four manual tools, exact schemas, public-only authority, malformed
+arguments, unknown methods/tools and corrupted source ordering. It retains all
+fifteen tool declarations, but does not execute the eleven business tools.
+The transport validates JSON Schema before invoking functions: additional
+identity/scope arguments, nulls, boolean/fractional limits and out-of-range limits
+are rejected as MCP tool errors; an integral JSON float remains accepted. These
+are distinct from direct function-call coercion. Three multi-error requests
+prove that missing required and unexpected top-level properties take precedence
+over property-value errors; independent review caught an incorrect Go test
+expectation before accepting that implementation. Nested object/array type errors
+also preserve input key order and Python-style text. Valid knowledge calls issue one
+instance-context SELECT; schema/protocol errors and invalid search queries issue
+none. Total SELECT counts are recorded independently, so extra reads from other
+tables also fail the budget. Database and fixture-file snapshots remain unchanged.
+Django's exact `SELECT set_config('TimeZone', 'UTC', false)` connection setup is
+counted separately (at most once per request); it remains in the total SQL count.
+
+Three real processes verify current and older protocol negotiation, unsupported
+version fallback and clean exit on EOF, rejecting premature exits and trailing
+stdout. The suite also checks two pipelined calls,
+the exact error notification after malformed JSON, subsequent ping recovery, and
+request cancellation after observing a real child SQL lock wait. Cancellation
+here proves the MCP response and subsequent ping, not termination of underlying
+Django ORM work or restore coordination. The polling fixture clears PostgreSQL's
+transaction-local statistics snapshot before observing the wait. No timeout or
+failure is waived.
+
+The recorded environment uses Python 3.13.16, MCP 1.30.0, jsonschema 4.26.0 and
+pydantic 2.14.1. A read-only, network-disabled probe of the retained Django image
+`dd4e5b854f00` confirms the same four versions. Critical MCP source hashes are
+retained with the report; this is evidence for that dependency set, not every
+version permitted by Django's dependency range. CI requires the portable stdio
+contracts. The Go component below does not provide a production command, business
+tool execution or assistant dispatch.
+
+The `--mcp --backend go` adapter now composes the Go stdio handler, four authored
+manual schemas, live PostgreSQL authority service and actual source loader in a
+race-instrumented subprocess. All forty request results pass the same portable
+expectations as Django, including invalid arguments, extra identity fields,
+corrupt-source ordering and exact error precedence. Raw argument validation keeps
+nested object insertion order. The fixture exposes exactly four manual tools;
+it does not advertise eleven unimplemented business tools. Database and fixture
+files remain unchanged, and valid knowledge calls retain one context SELECT.
+The exact pgx comment-only `-- ping` health probe is counted separately and
+bounded to one per request; it is not a business write.
+
+The Go process verifies pipelined replies, malformed-line recovery and clean EOF.
+After acknowledging cancellation of an observed blocked SQL request, the fixture
+keeps the table lock held and clears PostgreSQL statistics snapshots until the
+child's lock wait disappears. Only then does it release the lock and require a
+successful recovery call with one context read. The original test released the
+lock too soon and counted both the canceled and recovery SELECTs; its failing
+receipt is retained. This is evidence for this direct PostgreSQL read, not every
+driver, transaction, provider or restore workflow.
+
+Transport unit/race tests cover bounded workers and pending requests, overload
+responses, cancellation under saturation, immutable declarations and interrupted
+I/O. Numeric-ID and protocol-version cases are checked against the installed
+MCP/Pydantic parsers, including negative zero and the 4300-digit integer bound.
+The default transport frame limit is 8 MiB, with explicit `Server busy` tool
+errors when its bounded queue fills; these are deliberate resource policies.
+Blocking output must support write deadlines or `CloseWithError` to be interrupted;
+the backpressure unit test uses an `io.Pipe`. Native EOF evidence closes input
+after replies are drained. These checks do not prove arbitrary writer shutdown
+or a packaged production MCP process. Strict JSON decoding does not yet reproduce
+Python extensions such as NaN/Infinity or lone-surrogate strings. Full protocol,
+eleven business tools, the production command and assistant dispatch remain open.
+
+The separate full Django manual capture at `d3165cf` completed with 47 of 60
+workflows passing. Twelve workflows failed with HTTP, Docker or browser
+timeouts, missing UI elements or unsettled UI state;
+the dashboard-list final baseline comparison also observed asynchronously
+populated document fields after member-detail navigation. Its denial assertions
+passed. The scenario now waits for and reads the real baseline PDF before taking
+the initial snapshot; the full final equality assertion is retained. Focused
+validation passed against an isolated working-tree snapshot of `f08f716` plus
+this scenario correction: one workflow, with real PDF generation and download,
+and successful cleanup of its services, volumes and network. This focused run
+does not establish a complete capture or release package. The other failures
+still require investigation; no failures are waived.
+
+The subsequent fresh full capture from committed `1832b9c` completed with 55 of
+60 workflows passing, with successful owned-resource cleanup. The five failures
+were dashboard-list layout restoration, dashboard personalization, fiscal-year
+settings, instructor compensation and instructor maintenance. Three were HTTP
+timeouts and two were UI visibility failures; dashboard-list failure was a
+restoration POST timeout, not a repeat of the PDF baseline mismatch. During the
+run the renderer cgroup reported four OOM kills and Docker reported it running
+and healthy, with no container restart. These observations do not establish a
+causal relationship with the individual failures. The failed batch was retained;
+generation, package verification and release export were not counted as passing.
+All owned services, volumes and networks were removed. The failed batch never
+reached generation, verification, indexing, evaluation or release-package export.
+
+
+## Accessible screenshot source scope
+
+Main `fdf6c77` limits runtime asset source checks to accessible sections that
+refer to the requested image. Go now applies the same audience, feature and
+image selection before checking source freshness. An unrelated or inaccessible
+section cannot invalidate an otherwise accessible screenshot. Shared dependency
+checks, digest validation and strict whole-bundle validation remain enforced.
+
+`TESTS/adapters/django/manual_asset_scope.py` executes 15 authored cases and
+three mutation sequences with 11 stage checks against actual Django and Go
+reader implementations. Parent execution passes all 26 comparisons, including
+malformed image structure and source changes between reads. The old Go reader
+fails three authored cases. The existing 36-case reader oracle and full Go race
+suite/vet also pass. Inputs and before/after source hashes remain in
+`quality-reports/go-migration/parallel-delivery-20261025/manual-asset-scope-parent-results.json`.
+This proof concerns reader behavior, not a complete released manual package.
+
+The separate frozen manual producer at application `288ad72` / companion
+`378421a` finished with 57 of 60 captures passing. Attendance readiness,
+instructor baseline comparison and print download failed; package verification
+did not run. There is no valid manifest for reusing those captures, and current
+shared tooling changes invalidate their reuse. Preserve the failed receipts.
+The captured UI artifact remains independently reusable only through the normal
+frontend source/environment compatibility gate. No companion or release was
+published.

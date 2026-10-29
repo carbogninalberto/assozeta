@@ -1,3 +1,13 @@
 
 # Preserve binary manual fixture bytes.
 *.pdf binary
+
+# Exact upstream artifacts are verified by the storage provenance guards.
+BE_GO/third_party/aws-config/** -text
+BE_GO/pkg/storage/s3trust/certifi/** -text
+# Parser inputs, unchanged upstream history and unified-diff context retain
+# intentional whitespace. Go source keeps the normal whitespace checks.
+BE_GO/third_party/aws-config/testdata/** -whitespace
+BE_GO/third_party/aws-config/internal/ini/testdata/** -whitespace
+BE_GO/third_party/aws-config/CHANGELOG.md -whitespace
+BE_GO/third_party/aws-config/owned-http-trust.patch -whitespace

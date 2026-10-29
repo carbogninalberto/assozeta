@@ -526,6 +526,61 @@ class ReuseFixtureTests(unittest.TestCase):
         self.assertEqual(plan['fresh_recipes'], ['unit-members'])
         self.assertIn('dependency-bytes-changed', self.state['selection']['recapture_reasons'][0]['reasons'][0])
 
+    def audit_dependency_fixture(self, identifier):
+        """Use the real registry's audit closure with the complete offline report fixture."""
+        registry = json.loads((ROOT / 'docs/manuale/recipes.json').read_text())
+        actual = next(item for item in registry['recipes'] if item['id'] == identifier)
+        paths = ('BE/application/audit_context.py', 'BE/application/signals.py',
+                 'BE/application/views/profile_views.py', 'BE/application/views/two_fa_views.py')
+        dependencies = [path for path in paths if any(path.startswith(prefix)
+                        for prefix in registry['shared_dependencies'] + actual['dependencies'])]
+        for root, state in ((self.old_code, self.old), (self.code, self.state)):
+            value = json.loads((root / 'docs/manuale/recipes.json').read_text())
+            value['recipes'][0]['dependencies'].extend(dependencies)
+            write(root, 'docs/manuale/recipes.json', value)
+            for relative in paths:
+                write(root, relative, (ROOT / relative).read_text())
+            for relative in (*paths, 'docs/manuale/recipes.json'):
+                state['application_input']['uncommitted_files'][relative] = reuse.file_hash(root, relative)
+        write(self.old_run, 'run.json', self.old)
+
+    def test_full_reuse_rejects_helper_only_change_without_view_change(self):
+        self.audit_dependency_fixture('account-two-factor')
+        baseline = reuse.reuse_compatible_captures(self.state, self.old_run, stage=False)
+        self.assertEqual(baseline['reused_recipes'], ['unit-members'])
+        relative = 'BE/application/audit_context.py'
+        self.assertEqual(baseline['recipes']['unit-members']['dependency_hashes'][relative],
+                         reuse.file_hash(self.old_code, relative))
+        write(self.code, relative, (self.code / relative).read_text().replace(
+            '_strict_audit_indexes.set(True)', '_strict_audit_indexes.set(False)'))
+        self.state['application_input']['uncommitted_files'][relative] = reuse.file_hash(self.code, relative)
+        changed = reuse.reuse_compatible_captures(self.state, self.old_run, stage=False)
+        self.assertEqual(changed['fresh_recipes'], ['unit-members'])
+        self.assertIn(relative, self.state['selection']['recapture_reasons'][0]['reasons'][0])
+
+    def test_full_reuse_rejects_index_signal_only_change_without_view_change(self):
+        self.audit_dependency_fixture('organization-settings')
+        baseline = reuse.reuse_compatible_captures(self.state, self.old_run, stage=False)
+        self.assertEqual(baseline['reused_recipes'], ['unit-members'])
+        relative = 'BE/application/signals.py'
+        self.assertEqual(baseline['recipes']['unit-members']['dependency_hashes'][relative],
+                         reuse.file_hash(self.old_code, relative))
+        write(self.code, relative, (self.code / relative).read_text().replace(
+            'if audit_index_errors_are_fatal():', 'if False:'))
+        self.state['application_input']['uncommitted_files'][relative] = reuse.file_hash(self.code, relative)
+        changed = reuse.reuse_compatible_captures(self.state, self.old_run, stage=False)
+        self.assertEqual(changed['fresh_recipes'], ['unit-members'])
+        self.assertIn(relative, self.state['selection']['recapture_reasons'][0]['reasons'][0])
+
+    def test_helper_only_change_retains_unrelated_recipe_and_explicit_hashes(self):
+        self.audit_dependency_fixture('tags-create-assign')
+        relative = 'BE/application/audit_context.py'
+        write(self.code, relative, (self.code / relative).read_text() + '\n# Changed helper\n')
+        self.state['application_input']['uncommitted_files'][relative] = reuse.file_hash(self.code, relative)
+        plan = reuse.reuse_compatible_captures(self.state, self.old_run, stage=False)
+        self.assertEqual(plan['reused_recipes'], ['unit-members'])
+        self.assertNotIn(relative, plan['recipes']['unit-members']['dependency_hashes'])
+
     def test_target_plan_report_and_frame_tampering_fail_closed(self):
         plan = reuse.build_reuse_plan(self.state, self.old_run)
         wrong = copy.deepcopy(plan)

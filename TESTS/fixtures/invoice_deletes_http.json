@@ -1,0 +1,717 @@
+{
+ "matrix_version": 1,
+ "scope": "Supplier and customer invoice delete authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "supplier": {
+  "id": "a1000000-0000-4000-8000-000000820001",
+  "association": "a1000000-0000-4000-8000-000000701001",
+  "name": "Fornitore"
+ },
+ "seed": {
+  "own_supplier_invoice": {
+   "invoice_supplier_id": "a1000000-0000-4000-8000-000000820002",
+   "invoice_identifier": "F-1 è",
+   "amount": "20.50",
+   "payment_date": "2026-10-01T08:30:00.123456Z",
+   "expire_date": "2026-11-01T00:00:00Z",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "payment": null,
+   "paid": true,
+   "notes": "nota",
+   "document_pdf": null,
+   "supplier": "a1000000-0000-4000-8000-000000820001"
+  },
+  "foreign_supplier_invoice": {
+   "invoice_supplier_id": "a1000000-0000-4000-8000-000000820003",
+   "invoice_identifier": "F-1 è",
+   "amount": "20.50",
+   "payment_date": "2026-10-01T08:30:00.123456Z",
+   "expire_date": "2026-11-01T00:00:00Z",
+   "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "payment": null,
+   "paid": true,
+   "notes": null,
+   "document_pdf": null,
+   "supplier": null
+  },
+  "own_customer_invoice": {
+   "customer_invoice_id": "a1000000-0000-4000-8000-000000820004",
+   "prefix": "FPR",
+   "number": 7,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_country": "IT",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_country": "IT",
+   "transferor_contact_phone": "",
+   "transferor_fax": null,
+   "e_invoice": true,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-10-02",
+   "lines": [
+    {
+     "z": "riga à",
+     "a": 1.5,
+     "n": null
+    }
+   ],
+   "payment_total_amount": "122.00",
+   "payment_expiry_date": "2026-12-31",
+   "pdf": null,
+   "json": {
+    "b": [
+     true
+    ],
+    "a": "x"
+   },
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "payment": null,
+   "creation_date": "2026-10-02T09:00:00Z",
+   "paid": false,
+   "transmitted": false,
+   "assignor_vat_number": "as0",
+   "assignor_tax_code": "as1",
+   "assignor_denomination": "as2",
+   "assignor_address": "as3",
+   "assignor_postal_code": "as4",
+   "assignor_city": "as5",
+   "assignor_province": "RM",
+   "assignor_contact_email": "as7",
+   "assignor_contact_phone": "as8",
+   "transferor_vat_number": "tr9",
+   "transferor_tax_code": "tr10",
+   "transferor_denomination": "tr11",
+   "transferor_address": "tr12",
+   "transferor_postal_code": "tr13",
+   "transferor_city": "tr14",
+   "transferor_province": "MI",
+   "transferor_contact_email": "tr16",
+   "causal": "ca17",
+   "payment_condition": "pa18",
+   "payment_modality": "pa19",
+   "xml": "xm20"
+  },
+  "foreign_customer_invoice": {
+   "customer_invoice_id": "a1000000-0000-4000-8000-000000820005",
+   "prefix": "FPR",
+   "number": 7,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_country": "IT",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_country": "IT",
+   "transferor_contact_phone": "",
+   "transferor_fax": null,
+   "e_invoice": true,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-10-02",
+   "lines": [
+    {
+     "z": "riga à",
+     "a": 1.5,
+     "n": null
+    }
+   ],
+   "payment_total_amount": "122.00",
+   "payment_expiry_date": "2026-12-31",
+   "pdf": null,
+   "json": {
+    "b": [
+     true
+    ],
+    "a": "x"
+   },
+   "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "payment": null,
+   "creation_date": "2026-10-02T09:00:00Z",
+   "paid": false,
+   "transmitted": false,
+   "assignor_vat_number": "as0",
+   "assignor_tax_code": "as1",
+   "assignor_denomination": "as2",
+   "assignor_address": "as3",
+   "assignor_postal_code": "as4",
+   "assignor_city": "as5",
+   "assignor_province": "RM",
+   "assignor_contact_email": "as7",
+   "assignor_contact_phone": "as8",
+   "transferor_vat_number": "tr9",
+   "transferor_tax_code": "tr10",
+   "transferor_denomination": "tr11",
+   "transferor_address": "tr12",
+   "transferor_postal_code": "tr13",
+   "transferor_city": "tr14",
+   "transferor_province": "MI",
+   "transferor_contact_email": "tr16",
+   "causal": "ca17",
+   "payment_condition": "pa18",
+   "payment_modality": "pa19",
+   "xml": "xm20"
+  }
+ },
+ "cases": [
+  {
+   "name": "invoice-deletes-supplier-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/not-a-uuid/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-foreign-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820003/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-missing-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000720009/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820002/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.documents.supplierinvoices.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820002/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820002/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820002/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820002/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820002/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Invoice Suppliers Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-supplier-owner-deletes",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820002/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice deleted"
+   },
+   "effect": {
+    "model": "invoicesuppliers",
+    "id": "a1000000-0000-4000-8000-000000820002",
+    "changes": {
+     "invoice_supplier_id": [
+      "a1000000-0000-4000-8000-000000820002",
+      "None"
+     ],
+     "invoice_identifier": [
+      "F-1 è",
+      "None"
+     ],
+     "amount": [
+      "20.50",
+      "None"
+     ],
+     "payment_date": [
+      "2026-10-01 08:30:00.123456",
+      "None"
+     ],
+     "expire_date": [
+      "2026-11-01 00:00:00",
+      "None"
+     ],
+     "sport_association": [
+      "a1000000-0000-4000-8000-000000701001",
+      "None"
+     ],
+     "payment": [
+      "None",
+      "None"
+     ],
+     "paid": [
+      "True",
+      "None"
+     ],
+     "notes": [
+      "nota",
+      "None"
+     ],
+     "document_pdf": [
+      "None",
+      "None"
+     ],
+     "supplier": [
+      "a1000000-0000-4000-8000-000000820001",
+      "None"
+     ]
+    }
+   }
+  },
+  {
+   "name": "invoice-deletes-supplier-repeat-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000820002/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-customers/not-a-uuid/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-foreign-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820005/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-missing-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000720009/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820004/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.documents.clientinvoices.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820004/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820004/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820004/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820004/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820004/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Invoice Customers Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "invoice-deletes-customer-owner-deletes",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820004/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice deleted"
+   },
+   "effect": {
+    "model": "customerinvoice",
+    "id": "a1000000-0000-4000-8000-000000820004",
+    "changes": {
+     "customer_invoice_id": [
+      "a1000000-0000-4000-8000-000000820004",
+      "None"
+     ],
+     "prefix": [
+      "FPR",
+      "None"
+     ],
+     "number": [
+      "7",
+      "None"
+     ],
+     "fiscal_year": [
+      "2026",
+      "None"
+     ],
+     "assignor_prefix_vat_number": [
+      "IT",
+      "None"
+     ],
+     "assignor_fiscal_regime": [
+      "RF01",
+      "None"
+     ],
+     "assignor_country": [
+      "IT",
+      "None"
+     ],
+     "transferor_prefix_vat_number": [
+      "IT",
+      "None"
+     ],
+     "transferor_fiscal_regime": [
+      "RF01",
+      "None"
+     ],
+     "transferor_country": [
+      "IT",
+      "None"
+     ],
+     "transferor_contact_phone": [
+      "",
+      "None"
+     ],
+     "e_invoice": [
+      "True",
+      "None"
+     ],
+     "country_transmitter_prefix": [
+      "IT",
+      "None"
+     ],
+     "transmitting_format": [
+      "FPR12",
+      "None"
+     ],
+     "document_type": [
+      "TD01",
+      "None"
+     ],
+     "currency": [
+      "EUR",
+      "None"
+     ],
+     "transmitting_date": [
+      "2026-10-02",
+      "None"
+     ],
+     "lines": [
+      "[{\"a\": 1.5, \"n\": null, \"z\": \"riga \\u00e0\"}]",
+      "None"
+     ],
+     "payment_total_amount": [
+      "122.00",
+      "None"
+     ],
+     "payment_expiry_date": [
+      "2026-12-31",
+      "None"
+     ],
+     "pdf": [
+      "None",
+      "None"
+     ],
+     "json": [
+      "{\"a\": \"x\", \"b\": [true]}",
+      "None"
+     ],
+     "sport_association": [
+      "a1000000-0000-4000-8000-000000701001",
+      "None"
+     ],
+     "payment": [
+      "None",
+      "None"
+     ],
+     "creation_date": [
+      "2026-10-02 09:00:00",
+      "None"
+     ],
+     "paid": [
+      "False",
+      "None"
+     ],
+     "transmitted": [
+      "False",
+      "None"
+     ],
+     "assignor_vat_number": [
+      "as0",
+      "None"
+     ],
+     "assignor_tax_code": [
+      "as1",
+      "None"
+     ],
+     "assignor_denomination": [
+      "as2",
+      "None"
+     ],
+     "assignor_address": [
+      "as3",
+      "None"
+     ],
+     "assignor_postal_code": [
+      "as4",
+      "None"
+     ],
+     "assignor_city": [
+      "as5",
+      "None"
+     ],
+     "assignor_province": [
+      "RM",
+      "None"
+     ],
+     "assignor_contact_email": [
+      "as7",
+      "None"
+     ],
+     "assignor_contact_phone": [
+      "as8",
+      "None"
+     ],
+     "transferor_vat_number": [
+      "tr9",
+      "None"
+     ],
+     "transferor_tax_code": [
+      "tr10",
+      "None"
+     ],
+     "transferor_denomination": [
+      "tr11",
+      "None"
+     ],
+     "transferor_address": [
+      "tr12",
+      "None"
+     ],
+     "transferor_postal_code": [
+      "tr13",
+      "None"
+     ],
+     "transferor_city": [
+      "tr14",
+      "None"
+     ],
+     "transferor_province": [
+      "MI",
+      "None"
+     ],
+     "transferor_contact_email": [
+      "tr16",
+      "None"
+     ],
+     "causal": [
+      "ca17",
+      "None"
+     ],
+     "payment_condition": [
+      "pa18",
+      "None"
+     ],
+     "payment_modality": [
+      "pa19",
+      "None"
+     ],
+     "xml": [
+      "xm20",
+      "None"
+     ]
+    }
+   }
+  },
+  {
+   "name": "invoice-deletes-customer-repeat-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000820004/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  }
+ ]
+}

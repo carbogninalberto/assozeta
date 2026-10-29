@@ -49,6 +49,8 @@ def archive(files):
 def manifest(content, files):
     return {'schema_version': 1, 'version': '1.0.2', 'bundle_sha256': digest(content),
             'files': {name: digest(value) for name, value in files.items()},
+            'extensions': {'go_backend': {'schema_version': 1,
+                'image': 'ghcr.io/carbogninalberto/assozeta-backend-go@sha256:' + 'b' * 64}},
             'images': {name: f'ghcr.io/carbogninalberto/assozeta-{name}@sha256:{"a" * 64}'
                        for name in ('backend', 'web', 'renderer', 'updater')}}
 
@@ -152,6 +154,11 @@ class JournalTests(unittest.TestCase):
 
 class DistributionTests(unittest.TestCase):
     def setUp(self):
+        # Recovery's Docker boundary is verified independently in the lifecycle
+        # contracts. Distribution tests must never inspect local installations.
+        stop_go = patch('recovery.stop_go_api_for_restore')
+        self.stop_go = stop_go.start()
+        self.addCleanup(stop_go.stop)
         self.directory = TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
@@ -191,8 +198,10 @@ class DistributionTests(unittest.TestCase):
         unrelated.write_bytes(b'not the pre-update backup')
         with self.assertRaisesRegex(ReleaseError, 'unchanged backup'):
             restore_files(self.root, unrelated)
+        self.stop_go.assert_not_called()
         self.assertEqual(read_env(self.env)['ASSOZETA_VERSION'], '1.0.2')
         restore_files(self.root, self.backup)
+        self.stop_go.assert_called_once_with(self.root.resolve(), str(self.env.resolve()))
         self.assertEqual(read_env(self.env)['ASSOZETA_VERSION'], '1.0.1')
         self.assertTrue((self.root / '.updater/pending-distribution').exists())
         self.assertFalse((self.root / 'bin/assozeta').exists())
@@ -225,6 +234,24 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(journal.records()[0]['status'], 'failed')
         self.assertFalse((self.root / '.updater/pending-distribution').exists())
 
+    def test_historical_four_image_recovery_does_not_discover_go_containers(self):
+        self.prepare()
+        pending = self.root / '.updater/pending-distribution/transaction.json'
+        record = json.loads(pending.read_text())
+        record.pop('target_go_backend_ref')
+        pending.write_text(json.dumps(record))
+        self.env.write_text(''.join(line + '\n' for line in self.env.read_text().splitlines()
+                                   if not line.startswith('ASSOZETA_BACKEND_GO_REF=')))
+        target = self.root / '.updater/target-manifest.json'
+        metadata = json.loads(target.read_text())
+        metadata.pop('extensions')
+        target.write_text(json.dumps(metadata))
+        migration_started(self.root)
+        restore_files(self.root, self.backup)
+        self.stop_go.assert_not_called()
+        self.assertEqual(read_env(self.env)['ASSOZETA_VERSION'], '1.0.1')
+        self.assertNotIn('ASSOZETA_BACKEND_GO_REF', read_env(self.env))
+
     def test_recovery_checks_backup_version_even_when_digest_matches(self):
         self.prepare()
         pending = self.root / '.updater/pending-distribution/transaction.json'
@@ -246,14 +273,24 @@ class DistributionTests(unittest.TestCase):
 
     def test_verified_distribution_preserves_env_and_can_restore_before_migrations(self):
         run = self.prepare()
-        self.assertEqual(run.call_count, 5)
+        self.assertEqual(run.call_count, 7)
+        self.assertEqual(run.call_args_list[4].args[0],
+                         ['docker', 'pull', self.metadata['extensions']['go_backend']['image']])
+        self.assertEqual(run.call_args_list[5].args[0][0], 'sh')
+        self.assertEqual(run.call_args_list[5].args[0][-2:],
+                         [self.metadata['images']['backend'], '1.0.2'])
+        self.assertEqual(run.call_args_list[6].args[0][-3:],
+                         [self.metadata['extensions']['go_backend']['image'], '1.0.2', 'go'])
         self.assertEqual((self.root / 'compose.yml').read_bytes(), b'new-compose')
         self.assertEqual(read_env(self.env)['CUSTOM'], 'value')
         self.assertEqual(read_env(self.env)['DBPASSWORD'], 'keep-private')
         self.assertEqual(read_env(self.env)['ASSOZETA_VERSION'], '1.0.2')
+        self.assertEqual(read_env(self.env)['ASSOZETA_BACKEND_GO_REF'],
+                         self.metadata['extensions']['go_backend']['image'])
         rollback(self.root)
         self.assertEqual((self.root / 'compose.yml').read_bytes(), b'old-compose')
         self.assertEqual(read_env(self.env)['ASSOZETA_VERSION'], '1.0.1')
+        self.assertNotIn('ASSOZETA_BACKEND_GO_REF', read_env(self.env))
         self.assertFalse((self.root / 'bin/assozeta').exists())
 
     def test_invalid_candidate_manual_cannot_modify_installation(self):

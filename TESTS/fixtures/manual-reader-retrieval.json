@@ -1,0 +1,6730 @@
+{
+  "format": 1,
+  "scope": "Offline sealed-model retrieval and public projection only; no source selection/auth/HTTP",
+  "index": {
+    "format": 1,
+    "embedding": "italian-tfidf-lsa-v5",
+    "metadata": {
+      "application_revision": "fixture-r1",
+      "release": "fixture-v1",
+      "manual_revision": "manual-r1"
+    },
+    "dependencies": {},
+    "chunks": [
+      {
+        "id": "z-overview",
+        "page": "docs/demo.mdx",
+        "section": "z-overview",
+        "title": "Codice fiscale",
+        "text": "Generare il codice fiscale oppure correggere il codice fiscale.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Correggi il codice fiscale",
+            "text": "Generare il codice fiscale oppure correggere il codice fiscale.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#z-overview",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "a-step",
+        "page": "docs/demo.mdx",
+        "section": "a-step",
+        "title": "Codice fiscale",
+        "text": "Generare il codice fiscale oppure correggere il codice fiscale.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Genera il codice fiscale",
+            "text": "Generare il codice fiscale oppure correggere il codice fiscale.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#a-step",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "private",
+        "page": "docs/demo.mdx",
+        "section": "private",
+        "title": "Generare il codice fiscale",
+        "text": "Generare codice fiscale codice fiscale.",
+        "status": "verified",
+        "audience": "maintainer",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Genera codice fiscale",
+            "text": "Generare codice fiscale codice fiscale.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#private",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "create",
+        "page": "docs/demo.mdx",
+        "section": "create",
+        "title": "Creare un tag",
+        "text": "Crea tag per soci. Assegna un tag ai soci selezionati.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Crea un tag",
+            "text": "Crea tag per soci. Assegna un tag ai soci selezionati.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#create",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "delete",
+        "page": "docs/demo.mdx",
+        "section": "delete",
+        "title": "Eliminare un tag",
+        "text": "Elimina un tag dai soci selezionati.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Elimina tag",
+            "text": "Elimina un tag dai soci selezionati.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#delete",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "invoice",
+        "page": "docs/demo.mdx",
+        "section": "invoice",
+        "title": "Creare una fattura passiva",
+        "text": "Creare fattura passiva locale. Fattura elettronica non verificata.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Crea fattura",
+            "text": "Creare fattura passiva locale. Fattura elettronica non verificata.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#invoice",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "oauth-body",
+        "page": "docs/demo.mdx",
+        "section": "oauth-body",
+        "title": "Calendario Google",
+        "text": "Esporta calendario Google. Autorizzazione OAuth esterna non verificata.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Esporta calendario",
+            "text": "Esporta calendario Google. Autorizzazione OAuth esterna non verificata.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#oauth-body",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "oauth-title",
+        "page": "docs/demo.mdx",
+        "section": "oauth-title",
+        "title": "Autorizzazione OAuth",
+        "text": "Autorizzazione OAuth Google Calendar.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Autorizza Google Calendar",
+            "text": "Autorizzazione OAuth Google Calendar.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#oauth-title",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "host",
+        "page": "docs/demo.mdx",
+        "section": "host",
+        "title": "Pubblicare bilancio",
+        "text": "Bilancio annuale pubblicato associazione.",
+        "status": "verified",
+        "audience": "public",
+        "features": [
+          "self_hosted"
+        ],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Pubblica bilancio",
+            "text": "Bilancio annuale pubblicato associazione.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#host",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "draft",
+        "page": "docs/demo.mdx",
+        "section": "draft",
+        "title": "Generare codice fiscale",
+        "text": "Generare codice fiscale.",
+        "status": "pending",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "Genera codice fiscale",
+            "text": "Generare codice fiscale.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#draft",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "accent",
+        "page": "docs/demo.mdx",
+        "section": "accent",
+        "title": "Caffè società città",
+        "text": "Caffè società città cafè.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "",
+            "text": "Caffè società città cafè.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#accent",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      },
+      {
+        "id": "unicode/è #?",
+        "page": "docs/demo.mdx",
+        "section": "unicode/è #?",
+        "title": "Profilo personale",
+        "text": "Profilo personale email telefono.",
+        "status": "verified",
+        "audience": "public",
+        "features": [],
+        "evidence": [],
+        "runtime_dependencies": {},
+        "reader": [
+          {
+            "title": "",
+            "text": "Profilo personale email telefono.",
+            "content": [
+              {
+                "kind": "markdown",
+                "markdown": "**Reviewed**"
+              }
+            ]
+          }
+        ],
+        "url": "https://manual.invalid/old#unicode/è #?",
+        "screenshots": [
+          {
+            "path": "images/è spazio?#.png",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "caption": "Esempio",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "page_title": "Guida",
+        "language": "it",
+        "intent": "task",
+        "secret": "DO-NOT-PROJECT",
+        "capture_provenance": [
+          "PRIVATE"
+        ]
+      }
+    ],
+    "semantics": {
+      "vocabulary": [
+        "annuale",
+        "associazione",
+        "autorizzazione",
+        "bilancio",
+        "caffè",
+        "cafè",
+        "calendar",
+        "calendario",
+        "città",
+        "codice",
+        "correggere",
+        "dai",
+        "elettronica",
+        "email",
+        "esterna",
+        "fattura",
+        "fiscale",
+        "google",
+        "locale",
+        "non",
+        "oauth",
+        "operazione_assign",
+        "operazione_create",
+        "operazione_delete",
+        "operazione_export",
+        "operazione_generate",
+        "oppure",
+        "passiva",
+        "personale",
+        "profilo",
+        "pubblicato",
+        "selezionati",
+        "soci",
+        "società",
+        "tag",
+        "telefono",
+        "verificata"
+      ],
+      "idf": [
+        2.871802176902,
+        2.871802176902,
+        2.466337068793,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        1.955511445027,
+        2.466337068793,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        1.955511445027,
+        2.466337068793,
+        2.871802176902,
+        2.466337068793,
+        2.466337068793,
+        2.871802176902,
+        2.466337068793,
+        2.871802176902,
+        2.871802176902,
+        1.955511445027,
+        2.466337068793,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        2.871802176902,
+        2.466337068793,
+        2.466337068793,
+        2.871802176902,
+        2.466337068793,
+        2.871802176902,
+        2.466337068793
+      ],
+      "basis": [
+        [
+          0.0,
+          -0.0,
+          0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          0.0,
+          -0.0,
+          0.598157792059,
+          0.219955418221,
+          0.0,
+          0.0,
+          -0.0,
+          -0.0,
+          0.0,
+          0.598157792059,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.433190188703,
+          0.219955418221,
+          0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.077058462474,
+          0.0,
+          0.0,
+          0.0,
+          0.047375471141,
+          0.042351380505,
+          0.0,
+          0.0,
+          -0.0,
+          0.260136759482,
+          0.047156227892,
+          -0.0,
+          0.042351380505,
+          0.074740852884,
+          0.0,
+          0.077058462474,
+          0.047156227892,
+          0.076870173825,
+          0.077058462474,
+          0.219381508442,
+          0.228905704105,
+          0.260136759482,
+          0.042351380505,
+          0.0,
+          -0.0,
+          0.047156227892,
+          -0.0,
+          -0.0,
+          0.0,
+          0.411815858647,
+          0.522027115379,
+          0.0,
+          0.522027115379,
+          -0.0,
+          0.076870173825
+        ],
+        [
+          -0.0,
+          -0.0,
+          0.436970748681,
+          -0.0,
+          0.0,
+          0.0,
+          0.291036516811,
+          0.217772097869,
+          0.0,
+          0.0,
+          -0.0,
+          -0.064442346688,
+          0.072265329347,
+          0.0,
+          0.217772097869,
+          0.114537837117,
+          0.0,
+          0.436970748681,
+          0.072265329347,
+          0.249087511609,
+          0.436970748681,
+          -0.045489415946,
+          0.022995465461,
+          -0.064442346688,
+          0.217772097869,
+          0.0,
+          -0.0,
+          0.072265329347,
+          0.0,
+          0.0,
+          -0.0,
+          -0.094410674733,
+          -0.117263310468,
+          0.0,
+          -0.117263310468,
+          0.0,
+          0.249087511609
+        ],
+        [
+          0.420504083129,
+          0.420504083129,
+          0.079734909444,
+          0.420504083129,
+          -0.166202933585,
+          -0.166202933585,
+          0.092843305732,
+          0.0,
+          -0.166202933585,
+          0.0,
+          -0.0,
+          0.033397473228,
+          -0.139264958597,
+          0.0,
+          0.0,
+          -0.220729737041,
+          0.0,
+          0.079734909444,
+          -0.139264958597,
+          -0.119602364165,
+          0.079734909444,
+          -0.0,
+          -0.119602364165,
+          0.033397473228,
+          0.0,
+          -0.0,
+          -0.0,
+          -0.139264958597,
+          0.0,
+          0.0,
+          0.420504083129,
+          0.028682137958,
+          0.028682137958,
+          -0.166202933585,
+          0.028682137958,
+          0.0,
+          -0.119602364165
+        ],
+        [
+          0.184497390404,
+          0.184497390404,
+          -0.000604328921,
+          0.184497390404,
+          0.464712918007,
+          0.464712918007,
+          -0.000703680422,
+          -0.0,
+          0.464712918007,
+          0.0,
+          0.0,
+          -0.000253127007,
+          0.001055520633,
+          -0.0,
+          -0.0,
+          0.001672960622,
+          0.0,
+          -0.000604328921,
+          0.001055520633,
+          0.000906493381,
+          -0.000604328921,
+          0.0,
+          0.000906493381,
+          -0.000253127007,
+          -0.0,
+          -0.0,
+          -0.0,
+          0.001055520633,
+          -0.0,
+          -0.0,
+          0.184497390404,
+          -0.000217388414,
+          -0.000217388414,
+          0.464712918007,
+          -0.000217388414,
+          -0.0,
+          0.000906493381
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.5,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.5,
+          0.5,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.5,
+          0.0
+        ]
+      ],
+      "vectors": [
+        [
+          1.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          1.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.981609641423,
+          -0.190899219132,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.971150088787,
+          -0.225637338977,
+          0.077168349907,
+          -0.000584876385,
+          0.0
+        ],
+        [
+          0.0,
+          0.395065813345,
+          0.567826128265,
+          -0.722126398709,
+          0.005473159374,
+          0.0
+        ],
+        [
+          0.0,
+          0.203034188008,
+          0.97917164915,
+          0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.167440013005,
+          0.964735334048,
+          0.203094086206,
+          -0.001539296034,
+          0.0
+        ],
+        [
+          -0.0,
+          0.0,
+          -0.0,
+          0.915735512405,
+          0.401781621432,
+          0.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          0.0,
+          0.0,
+          -0.336756916857,
+          0.94159162005,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "identity": "204c830d61dc787432c8ce4146761b2db80c7bd24d82c541bd5cf0757c056890"
+  },
+  "cases": [
+    {
+      "name": "blank",
+      "query": "",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "z-overview",
+        "a-step",
+        "create",
+        "delete",
+        "invoice",
+        "oauth-body",
+        "oauth-title",
+        "accent",
+        "unicode/è #?"
+      ],
+      "expected_scores": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "unknown",
+      "query": "teletrasporto satellitare",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": []
+    },
+    {
+      "name": "stopwords",
+      "query": "come posso fare manuale",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": []
+    },
+    {
+      "name": "create",
+      "query": "Come creare un tag?",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "create"
+      ],
+      "expected_scores": [
+        0.976467
+      ]
+    },
+    {
+      "name": "delete",
+      "query": "Come posso rimuovere un tag?",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "delete"
+      ],
+      "expected_scores": [
+        0.906888
+      ]
+    },
+    {
+      "name": "wrong-object",
+      "query": "Come creare una fattura elettronica?",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": []
+    },
+    {
+      "name": "local-invoice",
+      "query": "Come creare una fattura passiva?",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "invoice"
+      ],
+      "expected_scores": [
+        0.963171
+      ]
+    },
+    {
+      "name": "oauth",
+      "query": "Manuale autorizzazione OAuth Google Calendar",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "oauth-title"
+      ],
+      "expected_scores": [
+        0.653152
+      ]
+    },
+    {
+      "name": "body-oauth",
+      "query": "Esportare calendario OAuth",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": []
+    },
+    {
+      "name": "step",
+      "query": "Come generare codice fiscale?",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "a-step",
+        "z-overview"
+      ],
+      "expected_scores": [
+        0.817578,
+        0.617578
+      ]
+    },
+    {
+      "name": "accent",
+      "query": "caffè città",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "accent"
+      ],
+      "expected_scores": [
+        0.918538
+      ]
+    },
+    {
+      "name": "no-accent-fold",
+      "query": "caffe citta",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": []
+    },
+    {
+      "name": "repeat",
+      "query": "tag tag tag",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "create",
+        "delete"
+      ],
+      "expected_scores": [
+        0.832129,
+        0.824306
+      ]
+    },
+    {
+      "name": "multi-operation",
+      "query": "creare eliminare tag",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": []
+    },
+    {
+      "name": "private-excluded",
+      "query": "generare codice fiscale",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "a-step",
+        "z-overview"
+      ],
+      "expected_scores": [
+        0.817578,
+        0.617578
+      ]
+    },
+    {
+      "name": "features-off",
+      "query": "bilancio",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": []
+    },
+    {
+      "name": "features-on",
+      "query": "bilancio",
+      "features": [
+        "self_hosted"
+      ],
+      "asset_urls": true,
+      "expected_ids": [
+        "host"
+      ],
+      "expected_scores": [
+        0.86698
+      ]
+    },
+    {
+      "name": "unicode-projection",
+      "query": "profilo personale",
+      "features": [],
+      "asset_urls": false,
+      "expected_ids": [
+        "unicode/è #?"
+      ],
+      "expected_scores": [
+        0.921008
+      ]
+    },
+    {
+      "name": "operation-only",
+      "query": "creare",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": []
+    },
+    {
+      "name": "word-boundary",
+      "query": "xcreare tag",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "create",
+        "delete"
+      ],
+      "expected_scores": [
+        0.416065,
+        0.412153
+      ]
+    },
+    {
+      "name": "projection-reader-default",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "unicode/è #?",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "29d46c48ada781eba8a7f4b1ac1cf8a58c8c80bf7fe963cb042e716fd35154fa"
+      },
+      "query": "",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "unicode/è #?"
+      ],
+      "expected_scores": [
+        null
+      ],
+      "expected_error": false
+    },
+    {
+      "name": "projection-reader-null",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "unicode/è #?",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": null,
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "8be76fcc17d532432f1da9374b63a94348e05c37be3892b143025c3a7d950b8d"
+      },
+      "query": "",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "unicode/è #?"
+      ],
+      "expected_scores": [
+        null
+      ],
+      "expected_error": false
+    },
+    {
+      "name": "projection-required-missing",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "unicode/è #?",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "118c13896c41bb323869dab4e38638965ba963880722faf69d5c794a4727b8dd"
+      },
+      "query": "",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": [],
+      "expected_error": true
+    },
+    {
+      "name": "projection-string-features",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "unicode/è #?",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": "xy",
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "973d591f4f93e18c31dbabcded38f0a03ae531d3779b273939abfb93b36f0005"
+      },
+      "query": "",
+      "features": [
+        "x",
+        "y"
+      ],
+      "asset_urls": true,
+      "expected_ids": [
+        "unicode/è #?"
+      ],
+      "expected_scores": [
+        null
+      ],
+      "expected_error": false
+    },
+    {
+      "name": "model-invalid-basis",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "unicode/è #?",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              1
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "e67b3f3698378175557e931307929939c2f0af113deddff118beaccb176d7a81"
+      },
+      "query": "profilo",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": [],
+      "expected_error": true
+    },
+    {
+      "name": "model-missing-vector",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "unicode/è #?",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": []
+        },
+        "identity": "891e4e30f3db371c010b1154e00d9eee872f02d6eb3b23fee8d340dc32ac4a53"
+      },
+      "query": "profilo",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": [],
+      "expected_error": true
+    },
+    {
+      "name": "model-empty-vocabulary",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "unicode/è #?",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "67a5e58925c028c8a3256965e5a136ebf783d812ced2d81c62989f2af0e4ee80"
+      },
+      "query": "profilo",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": [],
+      "expected_error": false
+    },
+    {
+      "name": "ties-top-ten",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "tie-13",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-12",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-11",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-10",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-09",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-08",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-07",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-06",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-05",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-04",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-03",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-02",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-01",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-00",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "a860b2249ea5cf1e733ce4dd2a31148adb2844013898b49a6cb4d325da8d1e71"
+      },
+      "query": "profilo personale",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "tie-00",
+        "tie-01",
+        "tie-02",
+        "tie-03",
+        "tie-04",
+        "tie-05",
+        "tie-06",
+        "tie-07",
+        "tie-08",
+        "tie-09"
+      ],
+      "expected_scores": [
+        0.519771,
+        0.519771,
+        0.519771,
+        0.519771,
+        0.519771,
+        0.519771,
+        0.519771,
+        0.519771,
+        0.519771,
+        0.519771
+      ],
+      "expected_error": false
+    },
+    {
+      "name": "blank-no-limit",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "tie-13",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-12",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-11",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-10",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-09",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-08",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-07",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-06",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-05",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-04",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-03",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-02",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-01",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          },
+          {
+            "id": "tie-00",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [
+              {
+                "title": "",
+                "text": "Profilo personale email telefono.",
+                "content": [
+                  {
+                    "kind": "markdown",
+                    "markdown": "**Reviewed**"
+                  }
+                ]
+              }
+            ],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "a860b2249ea5cf1e733ce4dd2a31148adb2844013898b49a6cb4d325da8d1e71"
+      },
+      "query": "",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "tie-13",
+        "tie-12",
+        "tie-11",
+        "tie-10",
+        "tie-09",
+        "tie-08",
+        "tie-07",
+        "tie-06",
+        "tie-05",
+        "tie-04",
+        "tie-03",
+        "tie-02",
+        "tie-01",
+        "tie-00"
+      ],
+      "expected_scores": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "expected_error": false
+    },
+    {
+      "name": "below-threshold",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "below-threshold",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "tag",
+            "text": "tag",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "tag"
+          ],
+          "idf": [
+            1.0
+          ],
+          "basis": [
+            [
+              1.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.6275200057529865
+            ]
+          ]
+        },
+        "identity": "614bef8e06895a7e58558cfb2a9d4b5f9561468e2899b1f3a98f83d305d23eb9"
+      },
+      "query": "tag alpha beta",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [],
+      "expected_scores": [],
+      "expected_error": false
+    },
+    {
+      "name": "at-threshold",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "at-threshold",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "tag",
+            "text": "tag",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "tag"
+          ],
+          "idf": [
+            1.0
+          ],
+          "basis": [
+            [
+              1.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.6275213390863198
+            ]
+          ]
+        },
+        "identity": "a34f919b8bc47228eb03b04713cd31a9d3422a7f76d41b6da576c694420a47ca"
+      },
+      "query": "tag alpha beta",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "at-threshold"
+      ],
+      "expected_scores": [
+        0.18
+      ],
+      "expected_error": false
+    },
+    {
+      "name": "above-threshold",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "above-threshold",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "tag",
+            "text": "tag",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "reader": [],
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "tag"
+          ],
+          "idf": [
+            1.0
+          ],
+          "basis": [
+            [
+              1.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.6275226724196532
+            ]
+          ]
+        },
+        "identity": "cdf01ab28ad4fbb8cdadcd9aa3d56d94680a359c795677a2c8c9b6fc0343d578"
+      },
+      "query": "tag alpha beta",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "above-threshold"
+      ],
+      "expected_scores": [
+        0.18
+      ],
+      "expected_error": false
+    },
+    {
+      "name": "search-unused-reader-title",
+      "index": {
+        "format": 1,
+        "embedding": "italian-tfidf-lsa-v5",
+        "metadata": {
+          "application_revision": "fixture-r1",
+          "release": "fixture-v1",
+          "manual_revision": "manual-r1"
+        },
+        "dependencies": {},
+        "chunks": [
+          {
+            "id": "unicode/è #?",
+            "page": "docs/demo.mdx",
+            "section": "unicode/è #?",
+            "title": "Profilo personale",
+            "text": "Profilo personale email telefono.",
+            "status": "verified",
+            "audience": "public",
+            "features": [],
+            "evidence": [],
+            "runtime_dependencies": {},
+            "url": "https://manual.invalid/old#unicode/è #?",
+            "screenshots": [
+              {
+                "path": "images/è spazio?#.png",
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "caption": "Esempio",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "scenario_ids": [
+              "fixture"
+            ],
+            "page_title": "Guida",
+            "language": "it",
+            "intent": "task",
+            "secret": "DO-NOT-PROJECT",
+            "capture_provenance": [
+              "PRIVATE"
+            ],
+            "reader": [
+              {
+                "title": null,
+                "text": "preserved"
+              }
+            ]
+          }
+        ],
+        "semantics": {
+          "vocabulary": [
+            "annuale",
+            "associazione",
+            "autorizzazione",
+            "bilancio",
+            "caffè",
+            "cafè",
+            "calendar",
+            "calendario",
+            "città",
+            "codice",
+            "correggere",
+            "dai",
+            "elettronica",
+            "email",
+            "esterna",
+            "fattura",
+            "fiscale",
+            "google",
+            "locale",
+            "non",
+            "oauth",
+            "operazione_assign",
+            "operazione_create",
+            "operazione_delete",
+            "operazione_export",
+            "operazione_generate",
+            "oppure",
+            "passiva",
+            "personale",
+            "profilo",
+            "pubblicato",
+            "selezionati",
+            "soci",
+            "società",
+            "tag",
+            "telefono",
+            "verificata"
+          ],
+          "idf": [
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            1.955511445027,
+            2.466337068793,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.871802176902,
+            2.466337068793,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793,
+            2.871802176902,
+            2.466337068793
+          ],
+          "basis": [
+            [
+              0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              -0.0,
+              0.598157792059,
+              0.219955418221,
+              0.0,
+              0.0,
+              -0.0,
+              -0.0,
+              0.0,
+              0.598157792059,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.0,
+              0.0,
+              -0.0,
+              0.433190188703,
+              0.219955418221,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.077058462474,
+              0.0,
+              0.0,
+              0.0,
+              0.047375471141,
+              0.042351380505,
+              0.0,
+              0.0,
+              -0.0,
+              0.260136759482,
+              0.047156227892,
+              -0.0,
+              0.042351380505,
+              0.074740852884,
+              0.0,
+              0.077058462474,
+              0.047156227892,
+              0.076870173825,
+              0.077058462474,
+              0.219381508442,
+              0.228905704105,
+              0.260136759482,
+              0.042351380505,
+              0.0,
+              -0.0,
+              0.047156227892,
+              -0.0,
+              -0.0,
+              0.0,
+              0.411815858647,
+              0.522027115379,
+              0.0,
+              0.522027115379,
+              -0.0,
+              0.076870173825
+            ],
+            [
+              -0.0,
+              -0.0,
+              0.436970748681,
+              -0.0,
+              0.0,
+              0.0,
+              0.291036516811,
+              0.217772097869,
+              0.0,
+              0.0,
+              -0.0,
+              -0.064442346688,
+              0.072265329347,
+              0.0,
+              0.217772097869,
+              0.114537837117,
+              0.0,
+              0.436970748681,
+              0.072265329347,
+              0.249087511609,
+              0.436970748681,
+              -0.045489415946,
+              0.022995465461,
+              -0.064442346688,
+              0.217772097869,
+              0.0,
+              -0.0,
+              0.072265329347,
+              0.0,
+              0.0,
+              -0.0,
+              -0.094410674733,
+              -0.117263310468,
+              0.0,
+              -0.117263310468,
+              0.0,
+              0.249087511609
+            ],
+            [
+              0.420504083129,
+              0.420504083129,
+              0.079734909444,
+              0.420504083129,
+              -0.166202933585,
+              -0.166202933585,
+              0.092843305732,
+              0.0,
+              -0.166202933585,
+              0.0,
+              -0.0,
+              0.033397473228,
+              -0.139264958597,
+              0.0,
+              0.0,
+              -0.220729737041,
+              0.0,
+              0.079734909444,
+              -0.139264958597,
+              -0.119602364165,
+              0.079734909444,
+              -0.0,
+              -0.119602364165,
+              0.033397473228,
+              0.0,
+              -0.0,
+              -0.0,
+              -0.139264958597,
+              0.0,
+              0.0,
+              0.420504083129,
+              0.028682137958,
+              0.028682137958,
+              -0.166202933585,
+              0.028682137958,
+              0.0,
+              -0.119602364165
+            ],
+            [
+              0.184497390404,
+              0.184497390404,
+              -0.000604328921,
+              0.184497390404,
+              0.464712918007,
+              0.464712918007,
+              -0.000703680422,
+              -0.0,
+              0.464712918007,
+              0.0,
+              0.0,
+              -0.000253127007,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.001672960622,
+              0.0,
+              -0.000604328921,
+              0.001055520633,
+              0.000906493381,
+              -0.000604328921,
+              0.0,
+              0.000906493381,
+              -0.000253127007,
+              -0.0,
+              -0.0,
+              -0.0,
+              0.001055520633,
+              -0.0,
+              -0.0,
+              0.184497390404,
+              -0.000217388414,
+              -0.000217388414,
+              0.464712918007,
+              -0.000217388414,
+              -0.0,
+              0.000906493381
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.5,
+              0.0
+            ]
+          ],
+          "vectors": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "identity": "54dfa953393999dc68d0519926f5c07f649207af44e075e00d89f5cd48437750"
+      },
+      "query": "profilo personale",
+      "features": [],
+      "asset_urls": true,
+      "expected_ids": [
+        "unicode/è #?"
+      ],
+      "expected_scores": [
+        0.706888
+      ],
+      "expected_error": false
+    }
+  ],
+  "tokens": [
+    {
+      "text": "Come CREARE assegnare un tag ai soci?",
+      "expected": [
+        "operazione_create",
+        "operazione_assign",
+        "tag",
+        "soci"
+      ],
+      "operations": [
+        "assign",
+        "create"
+      ]
+    },
+    {
+      "text": "caffè caffe città città_12",
+      "expected": [
+        "caffè",
+        "caffe",
+        "città",
+        "città",
+        "12"
+      ],
+      "operations": []
+    },
+    {
+      "text": "à è ò ÿ ÷ ×",
+      "expected": [],
+      "operations": []
+    },
+    {
+      "text": "abcİdef १२३ Ⅷ",
+      "expected": [
+        "abci",
+        "def"
+      ],
+      "operations": []
+    },
+    {
+      "text": "xcreare creare_utente creare-é",
+      "expected": [
+        "xcreare",
+        "operazione_create",
+        "utente",
+        "operazione_create"
+      ],
+      "operations": [
+        "create"
+      ]
+    },
+    {
+      "text": "ripristinata genera scarichi ricerca",
+      "expected": [
+        "operazione_restore",
+        "operazione_generate",
+        "operazione_download",
+        "operazione_search"
+      ],
+      "operations": [
+        "download",
+        "generate",
+        "restore",
+        "search"
+      ]
+    },
+    {
+      "text": "fattura elettronica OAuth SDI",
+      "expected": [
+        "fattura",
+        "elettronica",
+        "oauth",
+        "sdi"
+      ],
+      "operations": []
+    }
+  ]
+}

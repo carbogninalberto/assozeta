@@ -1,0 +1,369 @@
+{
+ "matrix_version": 1,
+ "scope": "Balance-sheet archived authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "sheets": {
+  "draft": {
+   "id": "a1000000-0000-4000-8000-000000920001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 1,
+   "year": 2026,
+   "archived": false,
+   "created": "2026-03-01T09:00:00.123456Z",
+   "data": {
+    "b": [
+     1,
+     2.5
+    ],
+    "a": {
+     "è": null
+    }
+   }
+  },
+  "approved": {
+   "id": "a1000000-0000-4000-8000-000000920002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 2,
+   "year": 2025,
+   "archived": false,
+   "created": "2026-01-15T09:00:00Z",
+   "data": null
+  },
+  "archived": {
+   "id": "a1000000-0000-4000-8000-000000920003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 2,
+   "year": 2024,
+   "archived": true,
+   "created": "2026-02-01T09:00:00Z",
+   "data": {}
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000920004",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "status": 1,
+   "year": 2026,
+   "archived": false,
+   "created": "2026-02-02T09:00:00Z",
+   "data": []
+  }
+ },
+ "profile_keys": [
+  "abbreviated",
+  "additional_fields",
+  "additional_sections",
+  "address",
+  "address_cap",
+  "address_city",
+  "affiliate_code",
+  "checkout_info",
+  "configuration",
+  "custom_subscription_form_data",
+  "demand",
+  "denomination",
+  "document_header",
+  "enable_quotes_management",
+  "enabled_for",
+  "enroll_number",
+  "extra_text_invoices",
+  "federation",
+  "groups",
+  "iban",
+  "imported_from_associami",
+  "invoice_footer",
+  "invoice_template",
+  "logo",
+  "membership_fee",
+  "membership_fee_plans",
+  "multiple_membership_fee",
+  "multiple_subscription_fee",
+  "president_first_name",
+  "president_last_name",
+  "president_signature",
+  "regulation",
+  "reviewed",
+  "show_demand_to_athletes",
+  "show_demand_to_both",
+  "show_demand_to_members",
+  "show_regulation_to_athletes",
+  "show_regulation_to_both",
+  "show_regulation_to_members",
+  "sport",
+  "sport_association_id",
+  "stamp",
+  "stripe_available_methods",
+  "subscription_fee",
+  "subscription_fee_plans",
+  "subscription_template",
+  "tax_code",
+  "vat_number",
+  "website",
+  "whatsapp"
+ ],
+ "cases": [
+  {
+   "name": "balance-archived-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "balance_sheets": [
+     {
+      "data": {
+       "b": [
+        1,
+        2.5
+       ],
+       "a": {
+        "è": null
+       }
+      },
+      "creation_date": "2026-03-01T09:00:00.123456Z",
+      "year": 2026,
+      "draft": true
+     },
+     {
+      "data": null,
+      "creation_date": "2026-01-15T09:00:00Z",
+      "year": 2025,
+      "draft": false
+     }
+    ],
+    "sport_association": {
+     "$profile": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "balance-archived-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "balance_sheets": [
+     {
+      "data": {
+       "b": [
+        1,
+        2.5
+       ],
+       "a": {
+        "è": null
+       }
+      },
+      "creation_date": "2026-03-01T09:00:00.123456Z",
+      "year": 2026,
+      "draft": true
+     },
+     {
+      "data": null,
+      "creation_date": "2026-01-15T09:00:00Z",
+      "year": 2025,
+      "draft": false
+     }
+    ],
+    "sport_association": {
+     "$profile": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "balance-archived-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "balance_sheets": [
+     {
+      "data": {
+       "b": [
+        1,
+        2.5
+       ],
+       "a": {
+        "è": null
+       }
+      },
+      "creation_date": "2026-03-01T09:00:00.123456Z",
+      "year": 2026,
+      "draft": true
+     },
+     {
+      "data": null,
+      "creation_date": "2026-01-15T09:00:00Z",
+      "year": 2025,
+      "draft": false
+     }
+    ],
+    "sport_association": {
+     "$profile": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "balance-archived-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "balance_sheets": [
+     {
+      "data": [],
+      "creation_date": "2026-02-02T09:00:00Z",
+      "year": 2026,
+      "draft": true
+     }
+    ],
+    "sport_association": {
+     "$profile": "a1000000-0000-4000-8000-000000701002"
+    }
+   }
+  },
+  {
+   "name": "balance-archived-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "balance-archived-athlete-forbidden",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   }
+  },
+  {
+   "name": "balance-archived-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   }
+  },
+  {
+   "name": "balance-archived-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.balancesheet.read"
+   }
+  },
+  {
+   "name": "balance-archived-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "balance-archived-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "balance-archived-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "balance-archived-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/balance-sheet/archived",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Balance Sheet Archived",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

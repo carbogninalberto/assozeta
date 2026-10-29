@@ -28,7 +28,7 @@ const reviewed = {
   // Reviewed: documented carnet workflows are unchanged.
   "BE/application/views/carnet_views.py": "709e3ae74f5ceeeb682899b7c95e371d573a94ebc5c4bce19fa3a485d017c0c6",
   "BE/application/views/attendee_views.py": "fb716a7de4aa8dc5a8db52ca6f6ec05494be54bc00d8358a49ff3e425d7625e3",
-  "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
+  "BE/application/views/payment_views.py": "23bc385b80772d57f9eb32739860ed287fbe7106c0168a9e584221ca13beeb71",
   "BE/application/utils/subscriptions_utils.py": "ab922f87b8b1dd491bba41dd86eaabdefd1127c08bdaeb7be4f990657effd22a",
   "BE/application/utils/attendance_utils.py": "f86f4c8294a50d56c5fe5b26582810acec9fcd0cd5fbd192a4ff511d72bb0a22",
   "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",

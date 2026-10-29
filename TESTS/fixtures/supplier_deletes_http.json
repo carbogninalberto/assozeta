@@ -1,0 +1,774 @@
+{
+ "matrix_version": 1,
+ "scope": "Supplier delete and bulk delete authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "suppliers": {
+  "acqua": {
+   "id": "a1000000-0000-4000-8000-000000900001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Acqua Srl",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": "acqua@example.test",
+   "phone_number": null,
+   "city": "Roma",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": "Fornitura 100%"
+  },
+  "beta": {
+   "id": "a1000000-0000-4000-8000-000000900002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Beta è Figli",
+   "address": "Via Rossi 1",
+   "tax_code": null,
+   "vat_number": null,
+   "type": "customer",
+   "email": null,
+   "phone_number": null,
+   "city": "Milano",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "cavalli": {
+   "id": "a1000000-0000-4000-8000-000000900003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Cavalli",
+   "address": null,
+   "tax_code": "CVLTAX",
+   "vat_number": "IT0001",
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": null,
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "delta": {
+   "id": "a1000000-0000-4000-8000-000000900004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Delta_Sport",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": "+39 011",
+   "city": "Torino",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "emme": {
+   "id": "a1000000-0000-4000-8000-000000900005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Emme",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Bari",
+   "cap": "70100",
+   "state": "BA",
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "effe": {
+   "id": "a1000000-0000-4000-8000-000000900006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Effe Rossi",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Napoli",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "gi": {
+   "id": "a1000000-0000-4000-8000-000000900007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Gi",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Gela",
+   "cap": null,
+   "state": null,
+   "country": null,
+   "nationality": null,
+   "note": null
+  },
+  "acca": {
+   "id": "a1000000-0000-4000-8000-000000900008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Acca",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "pa",
+   "email": null,
+   "phone_number": null,
+   "city": "Genova",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "ii": {
+   "id": "a1000000-0000-4000-8000-000000900009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Ii Ènte",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Pisa",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "elle": {
+   "id": "a1000000-0000-4000-8000-000000900010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Elle",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Lecce",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "emmeemme": {
+   "id": "a1000000-0000-4000-8000-000000900011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Emmeemme",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Como",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000900012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": "own_group",
+   "name": "Gruppo Uno",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Asti",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "gone": {
+   "id": "a1000000-0000-4000-8000-000000900013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": true,
+   "group": null,
+   "name": "Rossi Cancellato",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Roma",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "estero": {
+   "id": "a1000000-0000-4000-8000-000000900014",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "deleted": false,
+   "group": null,
+   "name": "Rossi Estero",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Roma",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  }
+ },
+ "payments": {
+  "supplied": {
+   "id": "a1000000-0000-4000-8000-000000910101",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "supplier": "acqua",
+   "amount": "12.00"
+  }
+ },
+ "cases": [
+  {
+   "name": "supplier-deletes-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000919999/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-foreign",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900014/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-soft-deleted",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900013/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-group-header-hides",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900012/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.suppliers.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Supplier Delete",
+    "description": "API endpoint to delete a supplier",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-owner-deletes-referenced",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "supplier deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [
+     "acqua"
+    ],
+    "nulled_payments": [
+     "supplied"
+    ]
+   }
+  },
+  {
+   "name": "supplier-deletes-owner-deletes-in-group",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900012/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "supplier deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [
+     "grouped"
+    ],
+    "nulled_payments": []
+   }
+  },
+  {
+   "name": "supplier-deletes-full-collaborator-deletes",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900002/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "supplier deleted."
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "deleted": [
+     "beta"
+    ],
+    "nulled_payments": []
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-athlete-forbidden",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "effect": null,
+   "body": {
+    "supplier_ids": [
+     "a1000000-0000-4000-8000-000000900003"
+    ]
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-missing-ids",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "No supplier IDs provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "supplier-deletes-bulk-empty-ids",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "No supplier IDs provided."
+   },
+   "effect": null,
+   "body": {
+    "supplier_ids": []
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-invalid-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Invalid UUID format."
+   },
+   "effect": null,
+   "body": {
+    "supplier_ids": [
+     "a1000000-0000-4000-8000-000000900003",
+     "abc"
+    ]
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-text-ids",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Invalid UUID format."
+   },
+   "effect": null,
+   "body": {
+    "supplier_ids": "abc"
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-number-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Invalid UUID format."
+   },
+   "effect": null,
+   "body": {
+    "supplier_ids": [
+     5
+    ]
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-list-body-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "supplier-deletes-bulk-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.suppliers.delete"
+   },
+   "effect": null,
+   "body": {
+    "supplier_ids": [
+     "a1000000-0000-4000-8000-000000900003"
+    ]
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "supplier-deletes-bulk-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Supplier Bulk Delete",
+    "description": "API endpoint to delete multiple suppliers at once",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-deletes-bulk-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "2 suppliers deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [
+     "cavalli",
+     "delta"
+    ],
+    "nulled_payments": []
+   },
+   "body": {
+    "supplier_ids": [
+     "a1000000-0000-4000-8000-000000900003",
+     "a1000000-0000-4000-8000-000000900004",
+     "a1000000-0000-4000-8000-000000900014",
+     "a1000000-0000-4000-8000-000000900013",
+     "a1000000-0000-4000-8000-000000919999",
+     "a1000000-0000-4000-8000-000000900004"
+    ]
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-nothing-matches",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "0 suppliers deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [],
+    "nulled_payments": []
+   },
+   "body": {
+    "supplier_ids": [
+     "a1000000-0000-4000-8000-000000919999"
+    ]
+   }
+  },
+  {
+   "name": "supplier-deletes-bulk-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/supplier/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "1 suppliers deleted."
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "deleted": [
+     "emme"
+    ],
+    "nulled_payments": []
+   },
+   "body": {
+    "supplier_ids": [
+     "a1000000-0000-4000-8000-000000900005"
+    ]
+   }
+  }
+ ]
+}

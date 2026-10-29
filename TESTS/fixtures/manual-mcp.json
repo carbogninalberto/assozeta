@@ -1,0 +1,493 @@
+{
+  "schema_version": 1,
+  "scope": "Authored stdio MCP manual-tool and protocol contracts; business tool execution and assistant dispatch remain separate.",
+  "protocol": "2025-11-25",
+  "tool_names": [
+    "get_schema",
+    "query_data",
+    "count_data",
+    "get_field_values",
+    "export_data",
+    "aggregate_data",
+    "get_attendance_matrix",
+    "export_multi_sheet",
+    "sanitize_text",
+    "save_report",
+    "list_reports",
+    "search_manual",
+    "get_manual_section",
+    "get_manual_evidence",
+    "get_manual_gaps"
+  ],
+  "manual_schemas": {
+    "search_manual": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false
+    },
+    "get_manual_section": {
+      "type": "object",
+      "properties": {
+        "section_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "section_id"
+      ],
+      "additionalProperties": false
+    },
+    "get_manual_evidence": {
+      "type": "object",
+      "properties": {
+        "section_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "section_id"
+      ],
+      "additionalProperties": false
+    },
+    "get_manual_gaps": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "string",
+          "maxLength": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "cases": {
+    "search": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture"
+        }
+      },
+      "function_case": "public-search"
+    },
+    "empty-query": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": ""
+        }
+      },
+      "function_case": "query-empty"
+    },
+    "whitespace-query": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "\u001c "
+        }
+      },
+      "function_case": "query-whitespace"
+    },
+    "no-match": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "zzzzzzzzz"
+        }
+      },
+      "function_case": "no-match"
+    },
+    "section": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_section",
+        "arguments": {
+          "section_id": "guide#public00"
+        }
+      },
+      "function_case": "section-public"
+    },
+    "private-section": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_section",
+        "arguments": {
+          "section_id": "guide#private"
+        }
+      },
+      "function_case": "section-private-public"
+    },
+    "missing-section": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_section",
+        "arguments": {
+          "section_id": "absent"
+        }
+      },
+      "function_case": "section-missing"
+    },
+    "evidence-denied": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_evidence",
+        "arguments": {
+          "section_id": "guide#public00"
+        }
+      },
+      "function_case": "evidence-denied-None"
+    },
+    "gaps-denied": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_gaps",
+        "arguments": {}
+      },
+      "function_case": "gaps-denied-None"
+    },
+    "gaps-invalid-path-still-denied": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_gaps",
+        "arguments": {
+          "page": "../secret"
+        }
+      },
+      "function_case": "gaps-denied-None"
+    },
+    "missing-query": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {}
+      },
+      "validation_error": "Input validation error: 'query' is a required property"
+    },
+    "null-query": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": null
+        }
+      },
+      "validation_error": "Input validation error: None is not of type 'string'"
+    },
+    "numeric-query": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": 2
+        }
+      },
+      "validation_error": "Input validation error: 2 is not of type 'string'"
+    },
+    "zero-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": 0
+        }
+      },
+      "validation_error": "Input validation error: 0 is less than the minimum of 1"
+    },
+    "large-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": 11
+        }
+      },
+      "validation_error": "Input validation error: 11 is greater than the maximum of 10"
+    },
+    "boolean-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": true
+        }
+      },
+      "validation_error": "Input validation error: True is not of type 'integer'"
+    },
+    "fractional-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": 2.8
+        }
+      },
+      "validation_error": "Input validation error: 2.8 is not of type 'integer'"
+    },
+    "string-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": "2"
+        }
+      },
+      "validation_error": "Input validation error: '2' is not of type 'integer'"
+    },
+    "null-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": null
+        }
+      },
+      "validation_error": "Input validation error: None is not of type 'integer'"
+    },
+    "forged-user": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "user_id": "$owner"
+        }
+      },
+      "validation_error": "Input validation error: Additional properties are not allowed ('user_id' was unexpected)"
+    },
+    "forged-owner": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_evidence",
+        "arguments": {
+          "section_id": "guide#private",
+          "maintainer": true
+        }
+      },
+      "validation_error": "Input validation error: Additional properties are not allowed ('maintainer' was unexpected)"
+    },
+    "forged-association": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_gaps",
+        "arguments": {
+          "sport_association_id": "$association"
+        }
+      },
+      "validation_error": "Input validation error: Additional properties are not allowed ('sport_association_id' was unexpected)"
+    },
+    "missing-section-id": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_section",
+        "arguments": {}
+      },
+      "validation_error": "Input validation error: 'section_id' is a required property"
+    },
+    "null-section-id": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_section",
+        "arguments": {
+          "section_id": null
+        }
+      },
+      "validation_error": "Input validation error: None is not of type 'string'"
+    },
+    "null-page": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_gaps",
+        "arguments": {
+          "page": null
+        }
+      },
+      "validation_error": "Input validation error: None is not of type 'string'"
+    },
+    "query-too-long": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "$long_query"
+        }
+      },
+      "validation_error": "Input validation error: 'ààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààà' is too long"
+    },
+    "page-too-long": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_gaps",
+        "arguments": {
+          "page": "$long_page"
+        }
+      },
+      "validation_error": "Input validation error: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' is too long"
+    },
+    "integral-float-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": 2.0
+        }
+      },
+      "function_case": "limit-numeric-string"
+    },
+    "unknown-tool": {
+      "method": "tools/call",
+      "params": {
+        "name": "does_not_exist",
+        "arguments": {}
+      },
+      "body": {
+        "error": "Unknown tool: does_not_exist"
+      }
+    },
+    "ping": {
+      "method": "ping",
+      "params": {},
+      "result": {}
+    },
+    "unknown-method": {
+      "method": "does/not/exist",
+      "params": {},
+      "error": {
+        "code": -32602,
+        "message": "Invalid request parameters",
+        "data": ""
+      }
+    },
+    "missing-tool-name": {
+      "method": "tools/call",
+      "params": {
+        "arguments": {}
+      },
+      "error": {
+        "code": -32602,
+        "message": "Invalid request parameters",
+        "data": ""
+      }
+    },
+    "array-arguments": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": []
+      },
+      "error": {
+        "code": -32602,
+        "message": "Invalid request parameters",
+        "data": ""
+      }
+    },
+    "corrupt-evidence-before-denial": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_evidence",
+        "arguments": {
+          "section_id": "guide#private"
+        }
+      },
+      "function_case": "evidence-corrupt-before-denial",
+      "corrupt": true
+    },
+    "corrupt-gaps-denial": {
+      "method": "tools/call",
+      "params": {
+        "name": "get_manual_gaps",
+        "arguments": {}
+      },
+      "function_case": "gaps-denied-None",
+      "corrupt": true
+    },
+    "missing-query-with-invalid-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "limit": 0
+        }
+      },
+      "validation_error": "Input validation error: 'query' is a required property"
+    },
+    "invalid-limit-with-forged-user": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": 0,
+          "user_id": "forged"
+        }
+      },
+      "validation_error": "Input validation error: Additional properties are not allowed ('user_id' was unexpected)"
+    },
+    "null-query-with-extra": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": null,
+          "x": 1
+        }
+      },
+      "validation_error": "Input validation error: Additional properties are not allowed ('x' was unexpected)"
+    },
+    "object-query-order": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": {
+            "z": 1,
+            "a": 2
+          }
+        }
+      },
+      "validation_error": "Input validation error: {'z': 1, 'a': 2} is not of type 'string'"
+    },
+    "nested-query-order": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": [
+            {
+              "z": 1,
+              "a": [
+                null,
+                true
+              ]
+            },
+            "l'apice"
+          ]
+        }
+      },
+      "validation_error": "Input validation error: [{'z': 1, 'a': [None, True]}, \"l'apice\"] is not of type 'string'"
+    }
+  }
+}

@@ -9,12 +9,46 @@ images, creates its local configuration, and starts them.
 - Linux server with Docker Engine and Docker Compose v2.20.0 or newer
 - A public DNS record pointing to the server for automatic HTTPS
 - Ports 80 and 443 reachable from the internet
-- `openssl`, `curl`, and `tar`
+- `openssl`, `curl`, `tar`, and `flock` (from util-linux)
 - At least 4 GB RAM; 8 GB is recommended when rendering PDFs
 
-The default stack contains PostgreSQL, Redis, MinIO, the Django API, Celery
+The default stack contains PostgreSQL, Redis, MinIO, the Django and Go APIs, Celery
 worker and scheduler, the Svelte/Caddy web image, and a private Chromium PDF
 renderer. Only Caddy publishes production ports.
+
+The in-progress Go migration defines fixed proxy routes `/api/v1` (Django) and
+`/api/v2` (Go); `/api` and existing root protocols still use Django. Compose
+delivers `api-go` alongside Django, sharing the existing environment and data.
+Django remains the worker/scheduler owner. Backend selection and complete Go
+application support remain unfinished, and the installable-release gate rejects
+this incomplete migration. See the [delivery status](../docs/architecture/go-migration/delivery-transition.md)
+and [routing status](../docs/architecture/go-migration/versioned-routing.md)
+before migration testing.
+The Go image includes `/app/worker` and `/app/migrate`. The CLI runs the tools
+service `migrate-go` after Django migrations under the existing exclusive
+operations lock. Missing lock support fails before schema migration; migration
+failure keeps maintenance active and services stopped. Historical distributions
+without the service remain recoverable. Compose does not start a Go worker or
+scheduler. These commands are not a backend-switch procedure; see
+[migration lifecycle and recovery](../docs/architecture/go-migration/operational-migrations.md).
+
+The Go API prepares S3 logo responses in a private, disk-backed anonymous Docker
+volume at `/var/cache/assozeta-logo`. Compose supplies `GO_LOGO_SPOOL_DIR`; no
+operator setting or additional service is required. The image directory belongs
+to UID 10001 with mode 0700. Its root filesystem remains read-only and other
+temporary work retains the 64 MiB `/tmp` tmpfs. Historical logo reads have no
+upload-size cap, so this preparation space uses available Docker-host disk rather
+than the upload limit or the smaller tmpfs. Four responses can hold prepared
+files concurrently; disk capacity remains an operational resource requirement.
+
+Each S3 spool is unlinked before payload bytes are written and stays open only
+for its response. Closing or terminating the process releases its storage, with
+no private payload filename left for the next process. These transient files are
+not included in PostgreSQL/MinIO backups and do not need restoration. The
+`migrate-go` tool does not mount this space. Normal `compose down` can leave an
+empty anonymous volume object; this does not contain retained logo payloads.
+The existing destructive `uninstall --volumes` option removes attached volumes
+along with application data, so it must not be used merely to clean spool space.
 
 ## Install
 
@@ -136,12 +170,12 @@ stale lock, verify that no lifecycle command is running before removing
 `selfhost/.lifecycle.lock/` manually.
 
 During backup, migration, restore, and upgrade, Caddy stays up and serves a
-standalone maintenance page with HTTP 503 while the API, worker, and scheduler
+standalone maintenance page with HTTP 503 while both APIs, worker, and scheduler
 are stopped. The lifecycle command creates
 `selfhost/.operations/maintenance.flag` before stopping them and removes it
 after the application services and public readiness checks pass. If startup or readiness fails,
 the flag remains in place; resolve the failure and start the application before
-removing it. Caddy keeps `/healthz`, `/api/readyz`, and the independent update
+removing it. Caddy keeps `/healthz`, `/api/readyz`, the versioned API readiness paths, and the independent update
 status endpoint available for checks. An explicit `stop` shuts down Caddy too.
 
 The Self Instance restart keeps Caddy up while backend services restart, then
@@ -168,7 +202,7 @@ must be encrypted or stored with restrictive permissions. A backup on the same
 server does not protect against disk or host loss; copy it to independent
 storage.
 
-Backup stops the API, worker, and scheduler services while PostgreSQL and MinIO
+Backup stops both APIs, worker, and scheduler services while PostgreSQL and MinIO
 are snapshotted, then restarts them only if any were running beforehand. Caddy
 serves the maintenance page during this interval. Expect brief write downtime
 for the duration of the dump and object mirror.
@@ -306,6 +340,7 @@ filesystem notifications do not trigger Vite HMR.
 `.github/workflows/publish-images.yml` publishes:
 
 - `ghcr.io/<repository-owner>/assozeta-backend`
+- `ghcr.io/<repository-owner>/assozeta-backend-go`
 - `ghcr.io/<repository-owner>/assozeta-web`
 - `ghcr.io/<repository-owner>/assozeta-renderer`
 - `ghcr.io/<repository-owner>/assozeta-updater`
@@ -314,7 +349,14 @@ Pull requests run checks selected by changed paths and never publish images.
 See [PR checks](../docs/ci.md) for the selection matrix and required check.
 Main publishes `edge` and commit tags.
 GitHub releases publish semantic-version and `latest` tags and attach this
-self-host distribution as a release archive.
+self-host distribution as a release archive after all required gates pass.
+The Go compatibility inventory gate currently prevents installable releases.
+Managed manifests retain the four original core images and carry the immutable
+Go reference in `extensions.go_backend`, so older controllers can reach the new
+updater. It validates and pulls all five images before changing the installation.
+`ASSOZETA_BACKEND_GO_REF` records the managed digest; absent or blank
+`ASSOZETA_BACKEND_GO_IMAGE` uses the official repository. An explicit custom Go
+image disables managed automatic updates.
 
 ## Security
 

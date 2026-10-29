@@ -35,6 +35,7 @@ COMPOSE_PROJECT_NAME=conflicting-project DEV_UI_PORT=59999 DBPASSWORD=conflictin
 python3 -m compileall -q "$ROOT/BE"
 python3 -m compileall -q "$ROOT/selfhost/updater"
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_updater.py
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p "test_go_*.py"
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_restart.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_maintenance_lifecycle.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_upgrade_preflight.py
@@ -63,7 +64,10 @@ import json, sys
 config = json.load(sys.stdin)
 for service in ("web", "api"):
     assert all("docker.sock" not in mount["target"] for mount in config["services"][service]["volumes"])
-for service in ("api", "worker", "beat", "migrate"):
+relay = config["services"]["realtime-relay"]
+assert relay["command"] == ["python", "manage.py", "relay_go_realtime"] and relay["restart"] == "unless-stopped"
+assert all("docker.sock" not in mount["target"] for mount in relay["volumes"])
+for service in ("api", "worker", "beat", "realtime-relay", "migrate"):
     backend = config["services"][service]
     assert backend["environment"]["MANUAL_INDEX_PATH"] == "/app/manuale/index.json"
     assert any(mount["source"] == "manuale_data" and mount["target"] == "/app/manuale"

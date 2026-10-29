@@ -1,0 +1,125 @@
+{
+  "release_tag": "v1.0.17",
+  "commit": "14a23c36d2f03ee453f903c07b503460717a79f1",
+  "scope": "Exact top-level source excerpts from the released updater. Imports are supplied by the test harness; catalog and download I/O are synthetic. No target distribution preparation or complete update is represented.",
+  "files": {
+    "release_catalog.py": {
+      "source": "BE/instance/release_catalog.py",
+      "source_sha256": "35930565fb15372f714ef921e83b62572cf4866d355c4b4622860f224eb5ff30",
+      "frozen_sha256": "fd9a8b8e5bd9feafd5666958268062d9bcfffd77b3b0d594569c1f7991a0181c",
+      "excerpts": [
+        {
+          "name": "REPOSITORY",
+          "first_line": 8,
+          "last_line": 8,
+          "sha256": "81c9f23e4e173b7e43131c22161b0d8579d1f2cda7e3e31e86640b8fc6939123"
+        },
+        {
+          "name": "API",
+          "first_line": 9,
+          "last_line": 9,
+          "sha256": "1f168ea07df09be39697b5e83ef0fbe02014e5a0cd1f0bef13bc8cf078d97d19"
+        },
+        {
+          "name": "RELEASES_URL",
+          "first_line": 10,
+          "last_line": 10,
+          "sha256": "1675628c31a3bbbfd79dc4ecb4b54f36df86c57a6984c9ed4731df54ecccebfb"
+        },
+        {
+          "name": "STABLE_VERSION",
+          "first_line": 11,
+          "last_line": 11,
+          "sha256": "6cad6cdb34a67c5bf4648ac32630da94a33e218993f4c86230620e01f1ed51da"
+        },
+        {
+          "name": "IMAGE_NAMES",
+          "first_line": 12,
+          "last_line": 12,
+          "sha256": "d9ba3b0eccfd4caace64949d9fbd8f3a8480290dfe6dbc5694ba426e99e26025"
+        },
+        {
+          "name": "ReleaseError",
+          "first_line": 15,
+          "last_line": 16,
+          "sha256": "e47961f7a253d7bf1d06f0175180c8d176463273c9e490bf4cf4cbb51c0e411e"
+        },
+        {
+          "name": "version_tuple",
+          "first_line": 19,
+          "last_line": 21,
+          "sha256": "2260eae8032344cfffdf9e16a56fe2ba9222a0b1171ab3098f3358adef16064c"
+        },
+        {
+          "name": "image_version",
+          "first_line": 24,
+          "last_line": 28,
+          "sha256": "d08c0920f607b7a5f4312a129e89af407897ca7c4fba4d98260944eb0233d69a"
+        }
+      ]
+    },
+    "distribution.py": {
+      "source": "selfhost/updater/distribution.py",
+      "source_sha256": "274313bd43e24bddc4535284baf263477dd0e5ee6620bf39ba23e2c31ed5e8c2",
+      "frozen_sha256": "1052f4dbc06a1b7a5f375057135fbeb6f456a5edbca58906302823113b3efdec",
+      "excerpts": [
+        {
+          "name": "MAX_BUNDLE",
+          "first_line": 19,
+          "last_line": 19,
+          "sha256": "eea1f4455b8f109d894abf099bda17f588bd9f9f57d64fb1af208903dc18d530"
+        },
+        {
+          "name": "managed_path",
+          "first_line": 22,
+          "last_line": 28,
+          "sha256": "4886f8ef233a729e59b46696664cb2cbe525021f9e0aa10ba1f9c5fa7b7be38f"
+        },
+        {
+          "name": "digest",
+          "first_line": 31,
+          "last_line": 32,
+          "sha256": "50b76bfffc27cbd7a792c95d031f6fd8e49777b6241b96ed8c4c4773edc356cb"
+        },
+        {
+          "name": "unpack",
+          "first_line": 51,
+          "last_line": 71,
+          "sha256": "c5c4e85c7be1fea62bc6047448ae8248ee3e03cc7df33c44f3b5cd6d15190566"
+        },
+        {
+          "name": "validate_manifest",
+          "first_line": 74,
+          "last_line": 91,
+          "sha256": "058ba415e546f813fecbb70b439e17e9d4377baf0bbf50f042de0230fceaa9ea"
+        }
+      ]
+    },
+    "common.py": {
+      "source": "selfhost/updater/common.py",
+      "source_sha256": "bc2dc3cc583965dc18d7926763ffb8bc31071f523c3de0eb9523bc135599e0d4",
+      "frozen_sha256": "bd54ad2de1e15b08337652f405cb5e883eda286d11e476380641d53e803e36e4",
+      "excerpts": [
+        {
+          "name": "atomic_write",
+          "first_line": 36,
+          "last_line": 54,
+          "sha256": "bd54ad2de1e15b08337652f405cb5e883eda286d11e476380641d53e803e36e4"
+        }
+      ]
+    },
+    "bootstrap.py": {
+      "source": "selfhost/updater/bootstrap.py",
+      "source_sha256": "344d7789f0cbc0b7e961a45e6501bad97e132f022eda0ac2b419bbf73fffe4fb",
+      "frozen_sha256": "aaf928fe5108539cd3f688b4f148a6e4493245ba4e04c94d433cf0812b3fac69",
+      "excerpts": [
+        {
+          "name": "bootstrap",
+          "first_line": 13,
+          "last_line": 33,
+          "sha256": "aaf928fe5108539cd3f688b4f148a6e4493245ba4e04c94d433cf0812b3fac69"
+        }
+      ]
+    }
+  }
+}

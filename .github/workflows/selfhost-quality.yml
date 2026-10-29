@@ -148,6 +148,8 @@ jobs:
             UI/package-lock.json
             selfhost/tests/browser/package-lock.json
       - uses: ./.github/actions/prepare-storage
+      - name: Verify SSO diagnostic redaction
+        run: node --test selfhost/tests/browser/sso-initial-diagnostics.test.mjs selfhost/tests/browser/sso-fixture-navigation.test.mjs
       - name: Prepare isolated SSO fixtures
         run: |
           ./selfhost/bin/assozeta dev-config
@@ -184,7 +186,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [legacy, recovery]
+        scenario: [legacy, legacy-controller, recovery]
     env:
       # `runner` is unavailable in a job-level `env` expression. Keep the
       # browser cache inside the checked-out workspace instead.
@@ -214,6 +216,21 @@ jobs:
           labels: org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha,scope=quality-backend
           cache-to: type=gha,mode=max,scope=quality-backend
+      - name: Build Go backend test image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./BE_GO
+          load: true
+          tags: assozeta-backend-go:goal-test
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=quality-backend-go
+          cache-to: type=gha,mode=max,scope=quality-backend-go
+      - name: Verify shared manual-cache permissions in both initialization orders
+        run: >-
+          python3 TESTS/adapters/go/manual_cache_image.py
+          --go-image assozeta-backend-go:goal-test
+          --django-image assozeta-backend:goal-test
+          --output quality-reports/manual-cache-image.json
       - name: Build web test image
         uses: docker/build-push-action@v6
         with:

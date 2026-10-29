@@ -1,4 +1,8 @@
-"""Standard-library HTTP client; no backend or ORM imports."""
+"""Standard-library contract client; redirects are returned, never followed.
+
+Callers observe the original status/body/headers and credentials stay on the
+requested backend. Contracts requiring a redirect must assert that response.
+"""
 import json
 import time
 import urllib.error
@@ -6,13 +10,19 @@ import urllib.request
 import uuid
 
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 class Client:
     def __init__(self, base_url, token=None, timeout=15):
         self.base_url = base_url.rstrip('/')
         self.token = token
         self.timeout = timeout
+        self._opener = urllib.request.build_opener(NoRedirect())
 
-    def request(self, method, path, data=None, headers=None, raw=False):
+    def request(self, method, path, data=None, headers=None, raw=False, include_headers=False):
         headers = dict(headers or {})
         if self.token:
             headers['Authorization'] = f'Bearer {self.token}'
@@ -21,18 +31,21 @@ class Client:
             headers['Content-Type'] = 'application/json'
         request = urllib.request.Request(self.base_url + path, data=data, headers=headers, method=method)
         try:
-            response = urllib.request.urlopen(request, timeout=self.timeout)
+            response = self._opener.open(request, timeout=self.timeout)
         except urllib.error.HTTPError as error:
             response = error
         with response:
+            response_headers = response.headers
             content = response.read()
             if raw:
-                return response.status, content
+                result = (response.status, content)
+                return (*result, response_headers) if include_headers else result
             try:
                 content = json.loads(content)
             except (ValueError, UnicodeDecodeError):
                 content = content.decode(errors='replace')[:1000]
-            return response.status, content
+            result = (response.status, content)
+            return (*result, response_headers) if include_headers else result
 
     def login(self, account):
         status, response = self.request('POST', '/oauth2/login', account)

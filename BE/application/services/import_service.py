@@ -16,6 +16,9 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
+from auditlog.context import disable_auditlog
+from auditlog.receivers import log_create
+from auditlog.registry import auditlog
 from django.contrib.auth.hashers import make_password
 from django.core.files import File
 from django.core.files.storage import default_storage
@@ -1133,7 +1136,10 @@ class AssociationImportService:
                 obj = self._create_model_instance(model_class, record.copy())
                 was_existing = bool(obj and not obj._state.adding)
                 if obj and not self.options.dry_run and obj._state.adding:
-                    obj.save()
+                    if model_class in (Message, MessageTransaction):
+                        self._save_imported_message(obj, record)
+                    else:
+                        obj.save()
                     # Debug logging for User and Signature imports
                     if model_name == 'User':
                         logger.info(f"Saved User: {obj.pk} - {obj.email}")
@@ -1152,6 +1158,35 @@ class AssociationImportService:
                 self.errors.append(f"Failed to import {model_name}: {e}")
                 raise
         return count
+
+    @staticmethod
+    def _save_imported_message(obj: models.Model, record: Dict[str, Any]):
+        """Insert explicit message history without auto_now_add rewriting it.
+
+        These two concrete models have no save override or other field pre-save
+        work. Raw saves still emit pre_save/post_save, with raw=True. Invoke
+        auditlog's create receiver once afterward, independently of its raw-save
+        policy, so the source value and usual LogEntry/index hooks are preserved.
+        Keep this boundary explicit if either model gains more save hooks.
+        """
+        field_name = 'created_at' if type(obj) is Message else 'sent_on'
+        if field_name not in record:
+            obj.save()
+            return
+
+        # The generic parser returns None for malformed datetime strings.
+        # Do not turn an explicit invalid timestamp into a supported null.
+        if record[field_name] is not None and getattr(obj, field_name) is None:
+            raise ValueError('Invalid imported message timestamp')
+
+        # Context-local suppression also prevents duplicate create events when
+        # AUDITLOG_DISABLE_ON_RAW_SAVE=False. The enclosing audit context is
+        # restored before log_create (including an existing disable/veto/actor).
+        with disable_auditlog():
+            obj.save_base(raw=True, force_insert=True)
+        if type(obj) is Message and auditlog.contains(Message):
+            log_create(sender=Message, instance=obj, created=True,
+                       raw=False, using=obj._state.db)
 
     def _import_folders(self, records: List[Dict[str, Any]]) -> int:
         """Import folders parent-first and let MPTT generate its tree fields."""

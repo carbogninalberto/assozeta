@@ -1,0 +1,521 @@
+{
+  "schema_version": 1,
+  "scope": "Installed-bundle library only; expected values authored before runtime; actual asset core receives a supplied genuine bundle/context. No HTTP/auth/search/remote/development/preview proof.",
+  "cases": [
+    {
+      "name": "public-stored-order",
+      "mutation": "",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "self-hosted-feature",
+      "mutation": "",
+      "features": [
+        "self_hosted"
+      ],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a",
+          "host"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "unknown-feature",
+      "mutation": "",
+      "features": [
+        "other"
+      ],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "source-root-disabled",
+      "mutation": "source-z-changed",
+      "features": [],
+      "source": false,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "changed-source-hides-one",
+      "mutation": "source-z-changed",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "missing-source-hides-one",
+      "mutation": "source-z-missing",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "runtime-dependency-hides-one",
+      "mutation": "runtime-changed",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "shared-auth-hides-all",
+      "mutation": "shared-changed",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "tooling-does-not-hide",
+      "mutation": "tooling-changed",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "private-source-stale",
+      "mutation": "private-source-changed",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "source-escape",
+      "mutation": "source-escape",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    },
+    {
+      "name": "conflicting-binding",
+      "mutation": "conflicting-binding",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    },
+    {
+      "name": "missing-bundle",
+      "mutation": "missing-bundle",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    },
+    {
+      "name": "wrong-revision",
+      "mutation": "wrong-revision",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    },
+    {
+      "name": "wrong-release",
+      "mutation": "wrong-release",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    },
+    {
+      "name": "bad-receipt",
+      "mutation": "bad-receipt",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    },
+    {
+      "name": "bad-seal",
+      "mutation": "bad-seal",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    },
+    {
+      "name": "empty-chunks",
+      "mutation": "empty-chunks",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    },
+    {
+      "name": "unknown-asset",
+      "mutation": "",
+      "features": [],
+      "source": true,
+      "asset_path": "images/unknown.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "private-asset",
+      "mutation": "",
+      "features": [],
+      "source": true,
+      "asset_path": "images/private.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "draft-asset",
+      "mutation": "",
+      "features": [],
+      "source": true,
+      "asset_path": "images/draft.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "hidden-feature-asset",
+      "mutation": "",
+      "features": [],
+      "source": true,
+      "asset_path": "images/host.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "visible-feature-asset",
+      "mutation": "",
+      "features": [
+        "self_hosted"
+      ],
+      "source": true,
+      "asset_path": "images/host.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a",
+          "host"
+        ],
+        "asset": "host"
+      }
+    },
+    {
+      "name": "tampered-asset",
+      "mutation": "tampered-asset",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "missing-asset",
+      "mutation": "missing-asset",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "directory-asset",
+      "mutation": "directory-asset",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "traversal-asset",
+      "mutation": "traversal-asset",
+      "features": [],
+      "source": true,
+      "asset_path": "../outside.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "absolute-asset",
+      "mutation": "absolute-asset",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "outside-symlink",
+      "mutation": "outside-symlink",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "inside-text-symlink",
+      "mutation": "inside-text-symlink",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "first-duplicate-mismatch",
+      "mutation": "first-duplicate-mismatch",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "not_found"
+      }
+    },
+    {
+      "name": "matching-non-png-runtime",
+      "mutation": "non-png",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "non_png"
+      }
+    },
+    {
+      "name": "uppercase-runtime-suffix",
+      "mutation": "uppercase",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.PNG",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "inside-png-symlink",
+      "mutation": "inside-png-symlink",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "duplicate-first-record",
+      "mutation": "duplicate-valid-first",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": false,
+        "ids": [
+          "public-z",
+          "public-a"
+        ],
+        "asset": "base"
+      }
+    },
+    {
+      "name": "index-missing-field",
+      "mutation": "missing-evidence",
+      "features": [],
+      "source": true,
+      "asset_path": "images/z.png",
+      "expected": {
+        "unavailable": true,
+        "ids": [],
+        "asset": "unavailable"
+      }
+    }
+  ]
+}

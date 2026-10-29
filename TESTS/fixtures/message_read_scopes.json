@@ -1,0 +1,1127 @@
+{
+  "matrix_version": 1,
+  "scope": "Bounded message-read impersonation and nested ownership differential slice; no full-family parity claim.",
+  "ids": {
+    "owner": "a1000000-0000-4000-8000-000000700001",
+    "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+    "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+    "athlete": "a1000000-0000-4000-8000-000000700004",
+    "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+    "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+    "own_association": "a1000000-0000-4000-8000-000000701001",
+    "foreign_association": "a1000000-0000-4000-8000-000000701002",
+    "deleted_association": "a1000000-0000-4000-8000-000000701003",
+    "newest_email": "a1000000-0000-4000-8000-000000702001",
+    "null_date_post": "a1000000-0000-4000-8000-000000702002",
+    "older_email": "a1000000-0000-4000-8000-000000702003",
+    "foreign_email": "a1000000-0000-4000-8000-000000702004",
+    "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+    "empty_email": "a1000000-0000-4000-8000-000000702006",
+    "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+    "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+    "admin": "a1000000-0000-4000-8000-000000710001",
+    "admin_association": "a1000000-0000-4000-8000-000000711001",
+    "admin_message": "a1000000-0000-4000-8000-000000712001",
+    "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+    "own_group": "a1000000-0000-4000-8000-000000714001",
+    "foreign_group": "a1000000-0000-4000-8000-000000714002",
+    "own_delivery": "a1000000-0000-4000-8000-000000703001",
+    "foreign_delivery": "a1000000-0000-4000-8000-000000703004"
+  },
+  "read_effects": {
+    "managed_models": 128,
+    "audit_rows_created": 0,
+    "session_writes": 0,
+    "cache_exclusions": []
+  },
+  "cases": [
+    {
+      "name": "message-scopes-admin-owner-list",
+      "actor": "admin",
+      "effective": "owner",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:admin_owner"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Administrator selects eligible owner; original administrator association must not contribute messages."
+    },
+    {
+      "name": "message-scopes-admin-owner-detail",
+      "actor": "admin",
+      "effective": "owner",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:admin_owner"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703001",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "first@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": "2026-10-23T12:00:01.123456Z",
+          "opened_on": "2026-10-23T12:01:00.000001Z",
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703002",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "second@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703003",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "bounced@example.test",
+          "sent_on": "2026-10-23T11:00:00Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": "2026-10-23T11:00:02Z",
+          "bounced_reason": "Mailbox full",
+          "bounced_type": "permanent",
+          "bounced_status": "5.2.2"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Delivery scope follows selected owner, not original administrator."
+    },
+    {
+      "name": "message-scopes-admin-owner-original-detail",
+      "actor": "admin",
+      "effective": "owner",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000712001/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:admin_owner"
+      },
+      "status": 404,
+      "response": {
+        "msg": "message not found."
+      },
+      "check": "denied.message-ownership",
+      "reason": "Original administrator message is outside effective owner."
+    },
+    {
+      "name": "message-scopes-admin-owner-foreign-detail",
+      "actor": "admin",
+      "effective": "owner",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702004/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:admin_owner"
+      },
+      "status": 404,
+      "response": {
+        "msg": "message not found."
+      },
+      "check": "denied.message-ownership",
+      "reason": "Third association message is outside effective owner."
+    },
+    {
+      "name": "message-scopes-admin-foreign-list",
+      "actor": "admin",
+      "effective": "foreign_owner",
+      "scope": "foreign_owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700007",
+        "X-Impersonation-Id": "$session:admin_foreign"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702004",
+          "sport_association": "a1000000-0000-4000-8000-000000701002",
+          "type": "EMAIL",
+          "message": "Foreign private body",
+          "subject": "foreign",
+          "created_at": "2026-10-23T06:00:00Z"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Eligible foreign owner becomes the sole scope."
+    },
+    {
+      "name": "message-scopes-admin-foreign-detail",
+      "actor": "admin",
+      "effective": "foreign_owner",
+      "scope": "foreign_owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700007",
+        "X-Impersonation-Id": "$session:admin_foreign"
+      },
+      "status": 404,
+      "response": {
+        "msg": "message not found."
+      },
+      "check": "denied.message-ownership",
+      "reason": "Previous selected owner cannot retain access after selecting foreign owner."
+    },
+    {
+      "name": "message-scopes-admin-foreign-own-detail",
+      "actor": "admin",
+      "effective": "foreign_owner",
+      "scope": "foreign_owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702004/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700007",
+        "X-Impersonation-Id": "$session:admin_foreign"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703004",
+          "message": "a1000000-0000-4000-8000-000000702004",
+          "recipient": "first@example.test",
+          "sent_on": "2026-10-23T10:30:00Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Positive foreign ownership control; same recipient as own delivery cannot confer access."
+    },
+    {
+      "name": "message-scopes-admin-full-list",
+      "actor": "admin",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:admin_full"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Eligible FULL collaborator resolves connected owner; initiating role is not the message scope."
+    },
+    {
+      "name": "message-scopes-admin-full-detail",
+      "actor": "admin",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:admin_full"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703001",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "first@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": "2026-10-23T12:00:01.123456Z",
+          "opened_on": "2026-10-23T12:01:00.000001Z",
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703002",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "second@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703003",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "bounced@example.test",
+          "sent_on": "2026-10-23T11:00:00Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": "2026-10-23T11:00:02Z",
+          "bounced_reason": "Mailbox full",
+          "bounced_type": "permanent",
+          "bounced_status": "5.2.2"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "FULL collaborator delivery access is constrained by connected owner."
+    },
+    {
+      "name": "message-scopes-owner-full-list",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Eligible FULL collaborator resolves connected owner; initiating role is not the message scope."
+    },
+    {
+      "name": "message-scopes-owner-full-detail",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703001",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "first@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": "2026-10-23T12:00:01.123456Z",
+          "opened_on": "2026-10-23T12:01:00.000001Z",
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703002",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "second@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703003",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "bounced@example.test",
+          "sent_on": "2026-10-23T11:00:00Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": "2026-10-23T11:00:02Z",
+          "bounced_reason": "Mailbox full",
+          "bounced_type": "permanent",
+          "bounced_status": "5.2.2"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "FULL collaborator delivery access is constrained by connected owner."
+    },
+    {
+      "name": "message-scopes-admin-restricted-list",
+      "actor": "admin",
+      "effective": "restricted_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700003",
+        "X-Impersonation-Id": "$session:admin_restricted"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Access denied: No permission mapping for endpoint 'communications/messages/list'. Contact administrator to grant access."
+      },
+      "check": "denied.collaborator-mapping",
+      "reason": "Eligible restricted collaborator is denied even with staff-board read grant: this endpoint has no permission mapping."
+    },
+    {
+      "name": "message-scopes-admin-restricted-detail",
+      "actor": "admin",
+      "effective": "restricted_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700003",
+        "X-Impersonation-Id": "$session:admin_restricted"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Access denied: No permission mapping for endpoint 'communications/messages/a1000000-0000-4000-8000-000000702001/detail'. Contact administrator to grant access."
+      },
+      "check": "denied.collaborator-mapping",
+      "reason": "Eligible restricted collaborator is denied even with staff-board read grant: this endpoint has no permission mapping."
+    },
+    {
+      "name": "message-scopes-owner-restricted-list",
+      "actor": "owner",
+      "effective": "restricted_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700003",
+        "X-Impersonation-Id": "$session:owner_restricted"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Access denied: No permission mapping for endpoint 'communications/messages/list'. Contact administrator to grant access."
+      },
+      "check": "denied.collaborator-mapping",
+      "reason": "Eligible restricted collaborator is denied even with staff-board read grant: this endpoint has no permission mapping."
+    },
+    {
+      "name": "message-scopes-admin-athlete-list",
+      "actor": "admin",
+      "effective": "athlete",
+      "scope": "athlete",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700004",
+        "X-Impersonation-Id": "$session:admin_athlete"
+      },
+      "status": 403,
+      "response": {
+        "detail": "You do not have permission to perform this action."
+      },
+      "check": "denied.association-role",
+      "reason": "Eligible athlete target cannot use initiating owner/admin authority; owner-bound operation check precedes association permission."
+    },
+    {
+      "name": "message-scopes-admin-athlete-detail",
+      "actor": "admin",
+      "effective": "athlete",
+      "scope": "athlete",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700004",
+        "X-Impersonation-Id": "$session:admin_athlete"
+      },
+      "status": 403,
+      "response": {
+        "detail": "You do not have permission to perform this action."
+      },
+      "check": "denied.association-role",
+      "reason": "Eligible athlete target cannot use initiating owner/admin authority; owner-bound operation check precedes association permission."
+    },
+    {
+      "name": "message-scopes-owner-athlete-list",
+      "actor": "owner",
+      "effective": "athlete",
+      "scope": "athlete",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700004",
+        "X-Impersonation-Id": "$session:owner_athlete"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Operazione non disponibile nel contesto dell’associazione."
+      },
+      "check": "denied.association-operation",
+      "reason": "Eligible athlete target cannot use initiating owner/admin authority; owner-bound operation check precedes association permission."
+    },
+    {
+      "name": "message-scopes-admin-no-session",
+      "actor": "admin",
+      "effective": "admin",
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {},
+      "status": 403,
+      "response": {
+        "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+      },
+      "check": "denied.select-target",
+      "reason": "Original administrator needs a selected eligible target."
+    },
+    {
+      "name": "message-scopes-expired-list",
+      "actor": "admin",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:expired"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Session was serialized then expired with absolute expiry before any read."
+    },
+    {
+      "name": "message-scopes-revoked-detail",
+      "actor": "admin",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:revoked"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Session was serialized then explicitly removed before any read."
+    },
+    {
+      "name": "message-scopes-ineligible-list",
+      "actor": "admin",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000710001",
+        "X-Impersonation-Id": "$session:ineligible"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Utente non disponibile per l’impersonificazione.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Administrator target is excluded by supported eligibility despite a bound cache record."
+    },
+    {
+      "name": "message-scopes-forged-user-only",
+      "actor": "admin",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Sessione di impersonificazione non valida. Torna al tuo account.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "User-Id alone cannot select a target without a session."
+    },
+    {
+      "name": "message-scopes-mismatched-user",
+      "actor": "admin",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700007",
+        "X-Impersonation-Id": "$session:admin_owner"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Valid session cannot be rebound to a different User-Id."
+    },
+    {
+      "name": "message-scopes-mismatched-actor",
+      "actor": "owner",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:admin_owner"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Administrator session cannot be used with owner credentials."
+    },
+    {
+      "name": "message-scopes-malformed-session",
+      "actor": "admin",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "broken"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Sessione di impersonificazione non valida. Torna al tuo account.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Malformed session identifier is denied before cache lookup."
+    },
+    {
+      "name": "message-scopes-forged-session",
+      "actor": "admin",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:forged"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Well-formed UUID without an issued record cannot authorize reads."
+    },
+    {
+      "name": "message-scopes-association-mismatch",
+      "actor": "owner",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:association_mismatch"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Session association must match initiating owner association."
+    },
+    {
+      "name": "message-scopes-owner-target-owner-ineligible",
+      "actor": "owner",
+      "effective": null,
+      "scope": null,
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700007",
+        "X-Impersonation-Id": "$session:owner_owner"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Utente non disponibile per l’impersonificazione.",
+        "impersonation_invalid": "True"
+      },
+      "check": "denied.invalid-session",
+      "reason": "Owner cannot impersonate another owner; eligibility permits only members and connected collaborators."
+    },
+    {
+      "name": "message-scopes-owner-full-header-foreign-group",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full",
+        "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Group header is ignored by reference; no group filter may be invented."
+    },
+    {
+      "name": "message-scopes-owner-full-query-own-group",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list?group_id=a1000000-0000-4000-8000-000000714001",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Recognized own group query passes boundary validation, without filtering messages."
+    },
+    {
+      "name": "message-scopes-owner-full-query-foreign-group",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list?group_id=a1000000-0000-4000-8000-000000714002",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Risorsa non disponibile per questo utente e associazione."
+      },
+      "check": "denied.association-reference",
+      "reason": "Owner-bound recognized foreign query reference denies; administrator sessions have no initiating association boundary and retain effective owner data scope."
+    },
+    {
+      "name": "message-scopes-admin-owner-query-foreign-group",
+      "actor": "admin",
+      "effective": "owner",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list?group_id=a1000000-0000-4000-8000-000000714002",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:admin_owner"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Owner-bound recognized foreign query reference denies; administrator sessions have no initiating association boundary and retain effective owner data scope."
+    },
+    {
+      "name": "message-scopes-owner-full-query-foreign-association",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list?sport_association_id=a1000000-0000-4000-8000-000000701002",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Risorsa non disponibile per questo utente e associazione."
+      },
+      "check": "denied.association-reference",
+      "reason": "Owner-bound recognized foreign query reference denies; administrator sessions have no initiating association boundary and retain effective owner data scope."
+    },
+    {
+      "name": "message-scopes-admin-owner-query-foreign-association",
+      "actor": "admin",
+      "effective": "owner",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list?sport_association_id=a1000000-0000-4000-8000-000000701002",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "$session:admin_owner"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Owner-bound recognized foreign query reference denies; administrator sessions have no initiating association boundary and retain effective owner data scope."
+    },
+    {
+      "name": "message-scopes-nested-foreign-message-own-delivery",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702004/detail?message_transaction_id=a1000000-0000-4000-8000-000000703001",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full"
+      },
+      "status": 404,
+      "response": {
+        "msg": "message not found."
+      },
+      "check": "denied.message-ownership",
+      "reason": "Own delivery query cannot authorize its unrelated foreign parent message."
+    },
+    {
+      "name": "message-scopes-nested-own-message-foreign-delivery",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail?message_transaction_id=a1000000-0000-4000-8000-000000703004",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703001",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "first@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": "2026-10-23T12:00:01.123456Z",
+          "opened_on": "2026-10-23T12:01:00.000001Z",
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703002",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "second@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703003",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "bounced@example.test",
+          "sent_on": "2026-10-23T11:00:00Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": "2026-10-23T11:00:02Z",
+          "bounced_reason": "Mailbox full",
+          "bounced_type": "permanent",
+          "bounced_status": "5.2.2"
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Unrecognized delivery query is ignored; only deliveries under owned parent return, despite recipient equality."
+    },
+    {
+      "name": "message-scopes-nested-foreign-delivery-as-message",
+      "actor": "owner",
+      "effective": "full_collaborator",
+      "scope": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000703004/detail",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700002",
+        "X-Impersonation-Id": "$session:owner_full"
+      },
+      "status": 404,
+      "response": {
+        "msg": "message not found."
+      },
+      "check": "denied.message-ownership",
+      "reason": "Foreign delivery identifier is not a message identifier; nested ownership cannot be inferred from recipient."
+    },
+    {
+      "name": "message-scopes-direct-foreign-detail",
+      "actor": "foreign_owner",
+      "effective": "foreign_owner",
+      "scope": "foreign_owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702004/detail",
+      "headers": {},
+      "status": 200,
+      "response": [
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703004",
+          "message": "a1000000-0000-4000-8000-000000702004",
+          "recipient": "first@example.test",
+          "sent_on": "2026-10-23T10:30:00Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        }
+      ],
+      "check": "allowed.target-owner",
+      "reason": "Direct positive control verifies foreign nested delivery exists, with cross-owner recipient equality."
+    }
+  ]
+}

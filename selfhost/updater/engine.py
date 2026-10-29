@@ -9,6 +9,7 @@ import traceback
 from uuid import UUID
 
 from common import compose_command, compose_environment, read_env, write_json, update_eligibility_reason
+from distribution import go_backend_reference
 from journal import now
 from release_catalog import fetch_release, image_version, version_tuple, ReleaseError
 
@@ -151,22 +152,39 @@ class Engine:
             raise RuntimeError('Configured target does not match requested release')
         command = compose_command(self.root, self.env_file)
         environment = compose_environment(self.root, self.env_file)
-        configured = {}
-        if allow_configured_images:
-            configured = json.loads(subprocess.check_output(command + ['config', '--format', 'json'], env=environment, text=True))['services']
-        for service, image in (('api', 'BACKEND'), ('worker', 'BACKEND'), ('beat', 'BACKEND'), ('web', 'WEB'), ('renderer', 'RENDERER')):
+        configured = json.loads(subprocess.check_output(command + ['config', '--format', 'json'], env=environment, text=True))['services']
+        manifest_path = self.root / '.updater/target-manifest.json'
+        if not allow_configured_images and manifest_path.is_file():
+            manifest = json.loads(manifest_path.read_text())
+            if not isinstance(manifest, dict) or version_tuple(manifest.get('version')) != version_tuple(target):
+                raise RuntimeError('Installed manifest does not match requested release')
+            expected_go = go_backend_reference(manifest)
+            if expected_go and (values.get('ASSOZETA_BACKEND_GO_REF') != expected_go or 'api-go' not in configured):
+                raise RuntimeError('Verified Go delivery is missing or changed')
+        services = [('api', 'BACKEND'), ('worker', 'BACKEND'), ('beat', 'BACKEND'), ('web', 'WEB'), ('renderer', 'RENDERER')]
+        # Releases before the realtime outbox have no relay; recovery to them must verify.
+        if 'realtime-relay' in configured:
+            services.append(('realtime-relay', 'BACKEND'))
+        if 'api-go' in configured:
+            services.append(('api-go', 'BACKEND_GO'))
+        elif values.get('ASSOZETA_BACKEND_GO_REF') and not allow_configured_images:
+            raise RuntimeError('Verified Go image has no configured service')
+        for service, image in services:
             container = subprocess.check_output(command + ['ps', '-q', service], env=environment, text=True).strip()
             if not container:
                 raise RuntimeError(f'Missing service: {service}')
             details = json.loads(subprocess.check_output(['docker', 'inspect', container], text=True))[0]
             if not details['State']['Running'] or details['State'].get('Health', {}).get('Status', 'healthy') != 'healthy':
                 raise RuntimeError(f'Unhealthy service: {service}')
+            if service == 'api-go' and details['State'].get('Health', {}).get('Status') != 'healthy':
+                raise RuntimeError('Go service has no passing readiness check')
             expected = configured[service]['image'] if allow_configured_images else values.get(f'ASSOZETA_{image}_REF')
             if not expected or details['Config']['Image'] != expected:
                 raise RuntimeError(f'Running image differs from verified release: {service}')
-        running = subprocess.check_output(command + ['exec', '-T', 'api', 'cat', '/app/VERSION'], env=environment, text=True).strip()
-        if version_tuple(running) != version_tuple(target):
-            raise RuntimeError('Running backend reports a different release')
+        for service in ('api', 'api-go') if 'api-go' in configured else ('api',):
+            running = subprocess.check_output(command + ['exec', '-T', service, 'cat', '/app/VERSION'], env=environment, text=True).strip()
+            if version_tuple(running) != version_tuple(target):
+                raise RuntimeError(f'Running backend reports a different release: {service}')
 
 
 if __name__ == '__main__':

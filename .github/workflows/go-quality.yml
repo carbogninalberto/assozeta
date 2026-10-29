@@ -1,0 +1,916 @@
+name: Go compatibility quality
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  message-reads:
+    name: Message read HTTP and query compatibility
+    uses: ./.github/workflows/go-message-reads.yml
+
+  message-mutations:
+    name: Packaged saved-message mutation compatibility
+    uses: ./.github/workflows/go-message-mutations.yml
+
+  historical-read:
+    name: Historical import and read compatibility
+    uses: ./.github/workflows/go-historical-read.yml
+
+  golang:
+    name: Go foundation and inventory
+    runs-on: ubuntu-24.04
+    # The expanded real-Django/Go suite plus setup/image checks exceeds 15 min.
+    # Individual adapters retain their own bounded subprocess deadlines.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reject installable releases with incomplete compatibility evidence
+        if: github.event_name == 'release'
+        run: python3 -m TESTS.inventory.release_gate
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Check inventory and Go code
+        run: |
+          python3 -m unittest discover -s TESTS/inventory -v
+          python3 -m unittest TESTS.contracts.test_instance_bootstrap_validator -v
+          python3 -m unittest TESTS.test_go_query_observation -v
+          python3 -m TESTS.inventory.catalog --check
+          test -z "$(gofmt -l BE_GO)"
+          go -C BE_GO vet ./...
+          go -C BE_GO test -race ./...
+          go -C BE_GO test -race -tags=redisdeadlineintegration ./internal/redisclient -count=1 -timeout=90s
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+      - name: Verify environment, credentials and provider protocols
+        run: |
+          python TESTS/adapters/django/production_runtime.py
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python TESTS/adapters/django/environment.py
+          python TESTS/adapters/django/credentials.py
+          python TESTS/adapters/django/permissions.py
+          python TESTS/adapters/django/apple_tokens.py
+          python TESTS/adapters/django/google_tokens.py
+      - name: Install disposable integration dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - name: Verify Django impersonation cache interoperability
+        run: python TESTS/adapters/django/impersonation_cache.py
+      - name: Verify login admission and shared rate counters
+        run: python TESTS/adapters/django/login_rate.py
+      - name: Verify CORS HTTP and URL comparison policy
+        run: python TESTS/adapters/django/cors.py
+      - name: Verify current Django security headers
+        run: python TESTS/adapters/django/security_headers.py
+      - name: Verify public instance bootstrap and manual package contracts
+        run: |
+          python -m pip install -r docs/manuale/requirements-offline.txt
+          python TESTS/adapters/django/manual_availability.py
+          python TESTS/adapters/django/manual_bundle.py
+          python TESTS/adapters/django/manual_reader_library.py
+          mkdir -p quality-reports/go-migration/manual-asset-scope
+          python TESTS/adapters/django/manual_asset_scope.py > quality-reports/go-migration/manual-asset-scope/results.json
+          python TESTS/adapters/django/manual_retrieval.py
+          python TESTS/adapters/django/manual_reader_http.py --tools --go-source
+          TESTS_MANUAL_TOOL_REPORT=quality-reports/go-migration/manual-tools-go-library/results.json \
+          python -m unittest TESTS.contracts.test_manual_tools
+          TESTS_MANUAL_TOOL_LIBRARY_REPORT=quality-reports/go-migration/manual-tools-go-library/results.json \
+          python -m unittest TESTS.contracts.test_manual_tools_go
+          python TESTS/adapters/django/manual_reader_http.py --tools --backend go
+          TESTS_MANUAL_TOOL_SERVICE_REPORT=quality-reports/go-migration/manual-tools-go-service/results.json \
+          python -m unittest TESTS.contracts.test_manual_tools_service
+          python TESTS/adapters/django/manual_reader_http.py --mcp
+          TESTS_MANUAL_MCP_REPORT=quality-reports/go-migration/manual-mcp-django/results.json \
+          python -m unittest TESTS.test_mcp_client TESTS.contracts.test_manual_mcp
+          python TESTS/adapters/django/manual_reader_http.py --mcp --backend go
+          TESTS_MANUAL_MCP_GO_REPORT=quality-reports/go-migration/manual-mcp-go/results.json \
+          python -m unittest TESTS.contracts.test_manual_mcp_go
+          python TESTS/adapters/django/manual_reader_http.py --go-source
+          python TESTS/adapters/django/manual_refresh_lock.py
+          python TESTS/adapters/django/manual_reader_http.py --backend go
+          python TESTS/adapters/django/manual_reader_http.py --versioned
+          python TESTS/adapters/django/manual_reader_http.py --backend go --versioned
+          TESTS_MANUAL_READER_HTTP_REPORT=quality-reports/go-migration/manual-reader-http/results.json \
+          TESTS_MANUAL_READER_GO_REPORT=quality-reports/go-migration/manual-reader-http-go/results.json \
+          TESTS_MANUAL_READER_V1_REPORT=quality-reports/go-migration/manual-reader-http-versioned/results.json \
+          TESTS_MANUAL_READER_V2_REPORT=quality-reports/go-migration/manual-reader-http-go-versioned/results.json \
+          python -m unittest TESTS.contracts.test_manual_reader_http
+          python TESTS/adapters/django/instance_bootstrap.py --backend django
+          python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned
+      - name: Verify public logo storage contracts through both API versions
+        run: |
+          python - <<'PY'
+          import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
+          subprocess.run(['docker', 'pull', IMAGE], check=True)
+          PY
+          python -m unittest TESTS.contracts.test_instance_logo -v
+          python TESTS/adapters/django/instance_logo.py --backend both --versioned --output quality-reports/go-migration/instance-logo
+          python TESTS/adapters/django/instance_logo.py --backend go --disk-injection --output quality-reports/go-migration/instance-logo-disk
+      - name: Verify effective scheduler authority and Go timing
+        run: python TESTS/adapters/go/schedule_due.py
+      - name: Verify atomic periodic publication on the Django schedule schema
+        run: python TESTS/adapters/go/occurrence.py
+      - name: Verify bounded schedule discovery and publication pages
+        run: python TESTS/adapters/go/schedule_page.py
+      - name: Verify native bounded scheduler and interruption recovery
+        run: python TESTS/adapters/go/scheduler_process.py
+      - name: Verify transaction cleanup retains lifecycle admission
+        run: python TESTS/adapters/go/transaction_lifetime.py
+      - name: Verify queue mutations retain a server transaction fence
+        run: python TESTS/adapters/go/server_fence.py
+      - name: Verify transaction pooling and CLI database drains
+        run: python TESTS/adapters/go/restore_drain_pooler.py
+      - name: Verify Django restore drains cooperating Go transactions
+        run: python TESTS/adapters/django/restore_server_barrier.py
+      - name: Verify legacy medical storage keys
+        run: python TESTS/adapters/django/document_keys.py
+      - name: Verify existing storage environment and backend options
+        run: |
+          python TESTS/adapters/django/storage_configuration.py
+          python TESTS/adapters/django/storage_credentials.py
+          python TESTS/adapters/django/storage_roles.py
+          python TESTS/adapters/django/storage_web_identity.py
+      - name: Verify S3 deletion against disposable MinIO
+        run: python TESTS/adapters/django/s3_objects.py
+      - name: Verify transactional durable jobs and lease recovery
+        run: python TESTS/adapters/go/jobs.py
+      - name: Verify native worker and explicit migration processes
+        run: python TESTS/adapters/go/worker_process.py
+      - name: Verify native age worker against current Django models
+        run: python TESTS/adapters/go/age_worker_process.py
+      - name: Verify native token cleanup against current Django models
+        run: python TESTS/adapters/go/token_worker_process.py
+      - name: Check native JPEG comments with sanitizers
+        run: python TESTS/adapters/go/login_jpeg_comment_sanitizer.py
+      - name: Check native PNG decoder with sanitizers
+        run: python TESTS/adapters/go/login_png_sanitizer.py
+      - name: Check native WebP decoder with sanitizers
+        run: python TESTS/adapters/go/login_webp_sanitizer.py
+      - name: Rehearse health and dependency failure recovery
+        run: python3 TESTS/adapters/go/health.py
+      - name: Build isolated Go image and verify non-root execution
+        run: |
+          docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-go-foundation:test BE_GO
+          test "$(docker run --rm --network none --entrypoint id assozeta-go-foundation:test -u)" = "10001"
+          python TESTS/adapters/go/manual_image.py --image assozeta-go-foundation:test --expected-version v0.0.0 --expected-revision "${{ github.sha }}" --expected-required false
+          python TESTS/adapters/go/login_jpeg_image.py --image assozeta-go-foundation:test
+          python TESTS/adapters/go/login_http_image.py --image assozeta-go-foundation:test
+          docker pull postgres:16-alpine
+          python TESTS/adapters/go/worker_image.py --image assozeta-go-foundation:test
+          python TESTS/adapters/go/scheduler_image.py --image assozeta-go-foundation:test
+          python TESTS/adapters/go/age_worker_image.py --image assozeta-go-foundation:test
+          python TESTS/adapters/go/token_worker_image.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-foundation-evidence
+          path: |
+            quality-reports/go-migration/go-health/
+            quality-reports/go-migration/credentials.json
+            quality-reports/go-migration/permissions.json
+            quality-reports/go-migration/impersonation-cache/
+            quality-reports/go-migration/login-rate/
+            quality-reports/go-migration/cors/
+            quality-reports/go-migration/security-headers/
+            quality-reports/go-migration/instance-bootstrap/
+            quality-reports/go-migration/instance-bootstrap-go/
+            quality-reports/go-migration/instance-logo/results.json
+            quality-reports/go-migration/instance-logo-disk/results.json
+            quality-reports/go-migration/manual-availability/
+            quality-reports/go-migration/manual-bundle/
+            quality-reports/go-migration/manual-reader/
+            quality-reports/go-migration/manual-asset-scope/results.json
+            quality-reports/go-migration/manual-retrieval/
+            quality-reports/go-migration/manual-tools/
+            quality-reports/go-migration/manual-tools-go-library/
+            quality-reports/go-migration/manual-tools-go-service/
+            quality-reports/go-migration/manual-mcp-django/
+            quality-reports/go-migration/manual-mcp-go/
+            quality-reports/go-migration/manual-reader-http/
+            quality-reports/go-migration/manual-reader-http-go/
+            quality-reports/go-migration/manual-reader-http-versioned/
+            quality-reports/go-migration/manual-reader-http-go-versioned/
+            quality-reports/go-migration/manual-refresh-lock/
+            quality-reports/go-migration/manual-image/
+            quality-reports/go-migration/environment/
+            quality-reports/go-migration/runtime.json
+            quality-reports/go-migration/jobs/
+            quality-reports/go-migration/job-executor/
+            quality-reports/go-migration/worker-process/
+            quality-reports/go-migration/worker-image/
+            quality-reports/go-migration/age-worker-process/
+            quality-reports/go-migration/token-worker-process/
+            quality-reports/go-migration/token-worker-image/
+            quality-reports/go-migration/age-worker-image/
+            quality-reports/go-migration/scheduler-process/
+            quality-reports/go-migration/scheduler-image/
+            quality-reports/go-migration/scheduler-authority/
+            quality-reports/go-migration/schedule-due/
+            quality-reports/go-migration/occurrence/
+            quality-reports/go-migration/schedule-page/
+            quality-reports/go-migration/transaction-lifetime/
+            quality-reports/go-migration/server-fence/
+            quality-reports/go-migration/restore-drain-pooler/
+            quality-reports/go-migration/restore-server-barrier/
+            quality-reports/go-migration/document-keys/
+            quality-reports/go-migration/s3-objects/
+            quality-reports/go-migration/storage-configuration/
+            quality-reports/go-migration/storage-credentials/
+            quality-reports/go-migration/storage-roles/
+            quality-reports/go-migration/storage-web-identity/
+
+  storage-tls:
+    name: Storage trust and packaged manifest, logo and HTTPS
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+            docs/manuale/requirements-offline.txt
+      - name: Install storage fixture dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python TESTS/adapters/django/production_runtime.py
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
+      - name: Verify the pinned AWS adaptation and credential transport
+        run: |
+          python TESTS/check_aws_config_patch.py
+          python TESTS/check_storage_ca_bundle.py
+          python -m unittest TESTS.test_storage_ca_bundle -v
+          go -C BE_GO test -race github.com/aws/aws-sdk-go-v2/config/...
+          go -C BE_GO test -race ./pkg/storage/s3trust ./pkg/storage/s3credentials ./pkg/storage/instancelogo
+          python -m unittest TESTS.contracts.test_storage_tls -v
+      - name: Verify authored trust contracts against Django and Go
+        env:
+          TESTS_STORAGE_TLS_REPORT: quality-reports/go-migration/storage-tls/component
+        run: python TESTS/adapters/django/storage_tls.py
+      - name: Verify native and packaged HTTPS storage endpoints
+        run: |
+          docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-storage-tls:ci BE_GO
+          docker pull postgres:16-alpine
+          docker pull redis:7-alpine
+          python TESTS/adapters/go/storage_tls.py \
+            --image "$(docker image inspect --format '{{.Id}}' assozeta-storage-tls:ci)" \
+            --expected-revision "${{ github.sha }}" \
+            --output quality-reports/go-migration/storage-tls/endpoint
+      - name: Verify authored manifest contracts on the packaged server and both API versions
+        run: |
+          docker pull redis:7-alpine
+          python - <<'PY_CADDY'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PY_CADDY
+          python TESTS/adapters/go/instance_manifest_image.py --image assozeta-storage-tls:ci --expected-revision "${{ github.sha }}"
+      - name: Verify packaged logo spool capacity and crash cleanup
+        run: |
+          python -m unittest TESTS.test_instance_logo_spool -v
+          python TESTS/adapters/go/instance_logo_spool.py --image assozeta-storage-tls:ci --expected-revision "${{ github.sha }}"
+      - name: Verify kernel unlink denial before logo payload download
+        run: |
+          python TESTS/adapters/go/instance_logo_unlink.py \
+            --image "$(docker image inspect --format '{{.Id}}' assozeta-storage-tls:ci)" \
+            --output quality-reports/go-migration/instance-logo-unlink
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-storage-tls-evidence
+          path: |
+            quality-reports/go-migration/storage-tls/component/results.json
+            quality-reports/go-migration/storage-tls/endpoint/results.json
+            quality-reports/go-migration/instance-manifest-image/results.json
+            quality-reports/go-migration/instance-logo-spool/results.json
+            quality-reports/go-migration/instance-logo-unlink/results.json
+
+  accounts:
+    name: Shared accounts, identities and scoped resources
+    runs-on: ubuntu-24.04
+    # The complete account suite alone takes 10–16 minutes on hosted runners.
+    # Keep its unchanged sequential fixture semantics in an independent job.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+      - name: Install pinned account dependencies
+        run: |
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python TESTS/adapters/django/production_runtime.py
+      - name: Install disposable integration dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - name: Verify shared accounts, identities and scoped resources
+        run: python TESTS/adapters/django/accounts.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-account-evidence
+          path: |
+            quality-reports/go-migration/accounts/
+            quality-reports/go-migration/credential-concurrency/
+            quality-reports/go-migration/restore-admission/
+            quality-reports/go-migration/email-balance-reset/
+            quality-reports/go-migration/subscription-token-cleanup/
+            quality-reports/go-migration/associate-age-update/
+            quality-reports/go-migration/audit-retention/
+            quality-reports/go-migration/task-bodies/
+            quality-reports/go-migration/subscription-dates/
+            quality-reports/go-migration/payment-description/
+            quality-reports/go-migration/payment-save-inputs/
+            quality-reports/go-migration/subscription-auto-archive/
+            quality-reports/go-migration/medical-orphan-cleanup/
+            quality-reports/go-migration/cors/public-results.json
+            quality-reports/go-migration/security-headers/public-results.json
+            quality-reports/go-migration/runtime.json
+
+  impersonation-management:
+    name: Impersonation and collaborator HTTP, shared sessions and packaged recovery
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      LC_ALL: C
+      LANG: C
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PYVERSION'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PYVERSION
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+            docs/manuale/requirements-offline.txt
+      - name: Install disposable impersonation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
+          python TESTS/adapters/django/production_runtime.py
+          docker pull postgres:16-alpine
+          docker pull redis:7-alpine
+          python - <<'PYIMAGE'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PYIMAGE
+      - name: Verify JSON and retained-state oracle controls
+        run: python -m unittest TESTS.test_impersonation_contract TESTS.test_impersonation_active_expiry -v
+      - name: Verify real Redis command faults and exact ACL restoration
+        run: python TESTS/adapters/redis_faults.py --output quality-reports/go-migration/impersonation-redis-fault-controls
+      - name: Verify native and versioned impersonation contracts, races and live PostgreSQL checks
+        env:
+          TESTS_IMPERSONATION_MANAGEMENT_CONCURRENCY: '1'
+          TESTS_IMPERSONATION_MANAGEMENT_GO: '1'
+          TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY: '1'
+          TESTS_IMPERSONATION_MANAGEMENT_VERSIONED: '1'
+        run: python TESTS/adapters/django/accounts.py --only impersonation-management
+      - name: Verify corrected Django collaborator deletion and observed PostgreSQL locks
+        run: |
+          python -m unittest TESTS.test_collaborator_delete_email_links -v
+          python TESTS/adapters/django/accounts.py --only collaborator-delete
+      - name: Verify collaborator listing, scopes and live PostgreSQL bounds
+        env:
+          TESTS_COLLABORATOR_LIST_GO: '1'
+          TESTS_COLLABORATOR_LIST_VERSIONED: '1'
+          TESTS_COLLABORATOR_LIST_REPOSITORY: '1'
+        run: python TESTS/adapters/django/accounts.py --only collaborator-list
+      - name: Verify read-route locales against Django, Go and both versioned paths
+        env:
+          TESTS_READ_ROUTE_LOCALES_GO: '1'
+          TESTS_READ_ROUTE_LOCALES_VERSIONED: '1'
+        run: |
+          python -m unittest TESTS.contracts.test_read_route_locales -v
+          python TESTS/adapters/django/accounts.py --only read-route-locales
+      - name: Verify guarded container Redis faults and exact ACL restoration
+        run: python TESTS/adapters/redis_faults.py --container-controls --output quality-reports/go-migration/impersonation-container-redis-fault-controls
+      - name: Build a source-bound immutable impersonation image
+        id: impersonation-image
+        run: |
+          python - <<'PYBUILD'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          from TESTS.adapters.go.impersonation_management_image import go_source_hashes
+          root = Path.cwd()
+          output = root / 'quality-reports/go-migration/impersonation-management-image/build'
+          output.mkdir(parents=True, exist_ok=True)
+          receipt = output / 'results.json'
+          image_file = output / 'image-id'
+          report = {'success': False, 'source_stable': False,
+                    'source_revision': os.environ['GITHUB_SHA'],
+                    'source_sha256': go_source_hashes(root), 'image_id': None}
+          receipt.write_text(json.dumps(report, indent=2) + '\n')
+          build_completed = False
+          try:
+              image_file.unlink(missing_ok=True)
+              subprocess.run(['docker', 'build', '--iidfile', str(image_file),
+                              '--build-arg', 'CODE_REVISION=' + report['source_revision'],
+                              '--build-arg', 'VERSION=v0.0.0-impersonation-management', 'BE_GO'],
+                             check=True, timeout=600)
+              report['image_id'] = image_file.read_text().strip()
+              assert re.fullmatch(r'sha256:[0-9a-f]{64}', report['image_id'])
+              build_completed = True
+          finally:
+              report['source_stable'] = report['source_sha256'] == go_source_hashes(root)
+              report['success'] = bool(build_completed and report['source_stable'])
+              receipt.write_text(json.dumps(report, indent=2) + '\n')
+          assert report['success'], 'Image build source changed'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              stream.write('image=' + report['image_id'] + '\n')
+          PYBUILD
+      - name: Verify packaged impersonation HTTP, shared sessions and failure recovery
+        run: |
+          python TESTS/adapters/go/impersonation_management_image.py \
+            --image '${{ steps.impersonation-image.outputs.image }}' \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-management-image/build/results.json \
+            --go-source "$GITHUB_WORKSPACE" \
+            --output quality-reports/go-migration/impersonation-management-image/acceptance
+      - name: Verify packaged collaborator listing with the same immutable image
+        run: |
+          python -m unittest TESTS.adapters.go.collaborator_list_image -v
+          python TESTS/adapters/go/collaborator_list_image.py \
+            --image '${{ steps.impersonation-image.outputs.image }}' \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-management-image/build/results.json \
+            --output quality-reports/go-migration/collaborator-list-image
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: django-collaborator-delete-evidence
+          path: |
+            quality-reports/go-migration/collaborator-delete/results.json
+            quality-reports/go-migration/collaborator-delete/http-results.json
+            quality-reports/go-migration/collaborator-delete/deletion-graph.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-collaborator-list-evidence
+          path: |
+            quality-reports/go-migration/collaborator-list/results.json
+            quality-reports/go-migration/collaborator-list/http-results.json
+            quality-reports/go-migration/read-route-locales/results.json
+            quality-reports/go-migration/read-route-locales/http-results.json
+            quality-reports/go-migration/collaborator-list-image/results.json
+            quality-reports/go-migration/collaborator-list-image/http-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-impersonation-evidence
+          # Fixtures and service logs may contain synthetic credentials/session data.
+          path: |
+            quality-reports/go-migration/impersonation-management/results.json
+            quality-reports/go-migration/impersonation-concurrency/results.json
+            quality-reports/go-migration/impersonation-redis-fault-controls/results.json
+            quality-reports/go-migration/impersonation-container-redis-fault-controls/results.json
+            quality-reports/go-migration/impersonation-management-image/build/results.json
+            quality-reports/go-migration/impersonation-management-image/acceptance/results.json
+
+  payment-categories:
+    name: Payment HTTP, concurrency and packaged image
+    runs-on: ubuntu-24.04
+    # Keep this growing real-service family independent of the foundation job.
+    timeout-minutes: 30
+    env:
+      LC_ALL: C
+      LANG: C
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PYVERSION'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PYVERSION
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+      - name: Install disposable category dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
+          python TESTS/adapters/django/production_runtime.py
+          docker pull postgres:16-alpine
+          docker pull redis:7-alpine
+          python - <<'PYIMAGE'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PYIMAGE
+      - name: Verify native and versioned category contracts and live races
+        env:
+          TESTS_PAYMENT_CATEGORIES_GO: '1'
+          TESTS_PAYMENT_CATEGORIES_VERSIONED: '1'
+          TESTS_PAYMENT_CATEGORIES_LIFECYCLE: '1'
+        run: python TESTS/adapters/django/accounts.py --only payment-categories
+      - name: Verify admitted category mutation process shutdown and recovery
+        run: |
+          python -m unittest TESTS.test_payment_category_shutdown_oracle -v
+          python TESTS/adapters/django/accounts.py --only payment-category-shutdown
+      - name: Verify native and versioned payment-info contracts and live PostgreSQL checks
+        env:
+          TESTS_PAYMENT_INFO_GO: '1'
+          TESTS_PAYMENT_INFO_VERSIONED: '1'
+        run: |
+          python -m unittest TESTS.contracts.test_payment_info_json -v
+          python TESTS/adapters/django/payment_info_stats_check.py
+          python TESTS/adapters/django/accounts.py --only payment-info
+      - name: Verify transactions, bounded reads and cancellation
+        run: python TESTS/adapters/go/payment_category_repository.py
+      - name: Verify the packaged non-root category server
+        run: |
+          docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-go-category:test BE_GO
+          python TESTS/adapters/go/payment_category_image.py --image assozeta-go-category:test --expected-revision "${{ github.sha }}"
+      - name: Verify packaged payment-info HTTP on native and versioned routes
+        run: python TESTS/adapters/go/payment_info_image.py --image assozeta-go-category:test --expected-revision "${{ github.sha }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-payment-category-evidence
+          # Payment-info fixtures contain JWTs; allow only named result reports.
+          path: |
+            quality-reports/go-migration/payment-category-repository/
+            quality-reports/go-migration/payment-categories/results.json
+            quality-reports/go-migration/payment-categories/services.log
+            quality-reports/go-migration/payment-categories/lifecycle-*.json
+            quality-reports/go-migration/payment-categories/transaction-failures-*.json
+            quality-reports/go-migration/payment-category-shutdown/results.json
+            quality-reports/go-migration/payment-category-shutdown/http-results.json
+            quality-reports/go-migration/payment-info/results.json
+            quality-reports/go-migration/payment-info/http-results.json
+            quality-reports/go-migration/payment-info-image/results.json
+            quality-reports/go-migration/payment-info-image/http-results.json
+            quality-reports/go-migration/payment-info-stats/results.json
+            quality-reports/go-migration/payment-category-image/
+
+  profile-browser:
+    name: Unchanged frontend profile, manual, categories and impersonation on Django and Go
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/quality-browsers
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+      - name: Install private database, native codec and browser dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python TESTS/adapters/django/production_runtime.py
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
+      - uses: docker/setup-buildx-action@v3
+      # Build once from this checkout. The adapter hashes these same bytes before
+      # and after BOTH API runs; neither backend receives a patched frontend.
+      - name: Build one unchanged frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./UI
+          load: true
+          tags: assozeta-profile-web:ci
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=profile-browser-web
+          cache-to: type=gha,mode=max,scope=profile-browser-web
+      - name: Prepare immutable UI provenance and private proxy
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PY
+          python TESTS/adapters/django/profile_browser.py \
+            --manual-reader \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/profile-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/profile-browser-ui/provenance.json
+      - name: Verify profile and manual reader with each selected backend
+        # Current-model fixture and private canonical /api selection only.
+        # Root WebSockets/manifest/logo/export denial retain real Django service.
+        run: |
+          python TESTS/adapters/django/profile_browser.py \
+            --manual-reader \
+            --ui-dir quality-reports/go-migration/profile-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/profile-browser-ui/provenance.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
+            --output quality-reports/go-migration/profile-browser
+      - name: Verify unchanged category and payment-selection workflows
+        run: |
+          python TESTS/adapters/django/payment_category_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/payment-category-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/payment-category-browser-ui/provenance.json
+          python TESTS/adapters/django/payment_category_browser.py \
+            --ui-dir quality-reports/go-migration/payment-category-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/payment-category-browser-ui/provenance.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs
+      - name: Verify unchanged checkout summaries and disabled-payment rejection
+        run: |
+          python TESTS/adapters/django/payment_info_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/payment-info-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/payment-info-browser-ui/provenance.json
+          python TESTS/adapters/django/payment_info_browser.py \
+            --ui-dir quality-reports/go-migration/payment-info-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/payment-info-browser-ui/provenance.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs
+      - name: Verify unchanged browser manifest and logo consumers on the packaged server
+        run: |
+          python -m unittest TESTS.adapters.django.test_instance_pwa_browser -v
+          python - <<'PY'
+          import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
+          for image in ('postgres:16-alpine', 'redis:7-alpine', IMAGE):
+              subprocess.run(['docker', 'pull', image], check=True)
+          PY
+          python - <<'PY'
+          import hashlib, json, os, re, subprocess, tempfile, uuid
+          from pathlib import Path
+          from TESTS.adapters.go.impersonation_management_image import go_source_hashes
+          root = Path.cwd()
+          output = root / 'quality-reports/go-migration/impersonation-browser-build'
+          output.mkdir(parents=True, exist_ok=True)
+          revision = os.environ['GITHUB_SHA']
+          assert re.fullmatch('[0-9a-f]{40}', revision)
+          receipt = {'success': False, 'source_stable': False, 'source_revision': revision,
+                     'source_sha256': go_source_hashes(root)}
+          path = output / 'results.json'
+          path.write_text(json.dumps(receipt, indent=2) + '\n')
+          try:
+              subprocess.run(['docker', 'build', '--build-arg', 'CODE_REVISION=' + revision,
+                              '--iidfile', str(output / 'image-id'), '-t', 'assozeta-go-pwa:test', 'BE_GO'], check=True)
+              receipt['image_id'] = (output / 'image-id').read_text().strip()
+              assert re.fullmatch('sha256:[0-9a-f]{64}', receipt['image_id'])
+              assert receipt['source_sha256'], 'Build source manifest must not be empty'
+              container = 'az-ci-image-digest-' + uuid.uuid4().hex
+              try:
+                  subprocess.run(['docker', 'create', '--pull', 'never', '--name', container, receipt['image_id']], check=True, capture_output=True)
+                  with tempfile.TemporaryDirectory() as directory:
+                      binary = Path(directory) / 'server'
+                      subprocess.run(['docker', 'cp', container + ':/app/server', str(binary)], check=True)
+                      receipt['server_sha256'] = hashlib.sha256(binary.read_bytes()).hexdigest()
+              finally:
+                  subprocess.run(['docker', 'rm', container], check=True, capture_output=True)
+              receipt['source_stable'] = go_source_hashes(root) == receipt['source_sha256']
+              assert receipt['source_stable']
+              receipt['success'] = True
+          finally:
+              path.write_text(json.dumps(receipt, indent=2) + '\n')
+          PY
+          python TESTS/adapters/django/instance_pwa_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/instance-pwa-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/instance-pwa-browser-ui/provenance.json
+          python TESTS/adapters/django/instance_pwa_browser.py \
+            --ui-dir quality-reports/go-migration/instance-pwa-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/instance-pwa-browser-ui/provenance.json \
+            --image assozeta-go-pwa:test --expected-revision "${{ github.sha }}" --with-go \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
+            --output quality-reports/go-migration/instance-pwa-browser
+      - name: Verify packaged read-route language contracts and licenses
+        run: |
+          python -m unittest TESTS.adapters.go.test_read_route_locales_image TESTS.contracts.test_read_route_locales -v
+          LC_ALL=C LANG=C python TESTS/adapters/go/read_route_locales_image.py \
+            --image "$(cat quality-reports/go-migration/impersonation-browser-build/image-id)" \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-browser-build/results.json \
+            --output quality-reports/go-migration/read-route-locales-image
+      - name: Verify permission editor rendering and real DOM updates
+        run: |
+          npm ci --prefix UI
+          node UI/scripts/test-permissions-component.mjs
+      - name: Verify packaged category SIGTERM, expired drain and recovery
+        run: |
+          python -m unittest TESTS.adapters.go.test_payment_category_shutdown_image TESTS.test_payment_category_shutdown_oracle -v
+          python TESTS/adapters/go/payment_category_shutdown_image.py \
+            --image "$(cat quality-reports/go-migration/impersonation-browser-build/image-id)" \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-browser-build/results.json \
+            --output quality-reports/go-migration/payment-category-shutdown-image
+      - name: Verify collaborator list, pagination and denied access on both backends
+        run: |
+          python -m unittest TESTS.adapters.django.collaborator_list_browser TESTS.test_collaborator_browser_checkpoints -v
+          node --check TESTS/browser/collaborator-list.mjs
+          python TESTS/adapters/django/collaborator_list_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/collaborator-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/collaborator-browser-ui/provenance.json
+          python TESTS/adapters/django/collaborator_list_browser.py \
+            --image "$(cat quality-reports/go-migration/impersonation-browser-build/image-id)" \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-browser-build/results.json \
+            --ui-dir quality-reports/go-migration/collaborator-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/collaborator-browser-ui/provenance.json \
+            --output quality-reports/go-migration/collaborator-browser
+      - name: Verify unchanged impersonation controls and durable outcomes
+        # Reuse the same immutable Go and UI builds. Explicit Django dependencies
+        # remain visible; this does not claim installed backend activation.
+        run: |
+          python -m unittest TESTS.adapters.django.impersonation_browser -v
+          node --check TESTS/browser/impersonation.mjs
+          python TESTS/adapters/django/impersonation_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/impersonation-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/impersonation-browser-ui/provenance.json
+          python TESTS/adapters/django/impersonation_browser.py \
+            --image "$(cat quality-reports/go-migration/impersonation-browser-build/image-id)" \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-browser-build/results.json \
+            --versions v1 v2 \
+            --ui-dir quality-reports/go-migration/impersonation-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/impersonation-browser-ui/provenance.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
+            --output quality-reports/go-migration/impersonation-browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-profile-browser-evidence
+          path: |
+            quality-reports/go-migration/profile-browser/
+            quality-reports/go-migration/profile-browser-ui/provenance.json
+            quality-reports/go-migration/payment-category-browser/
+            quality-reports/go-migration/payment-category-browser-ui/provenance.json
+            quality-reports/go-migration/payment-info-browser/results.json
+            quality-reports/go-migration/payment-info-browser/v*/browser.json
+            quality-reports/go-migration/payment-info-browser/v*/validation.json
+            quality-reports/go-migration/payment-info-browser/v*/*.png
+            quality-reports/go-migration/payment-info-browser-ui/provenance.json
+            quality-reports/go-migration/instance-pwa-browser/results.json
+            quality-reports/go-migration/instance-pwa-browser/*/browser.json
+            quality-reports/go-migration/instance-pwa-browser/*/validation.json
+            quality-reports/go-migration/instance-pwa-browser/*/*.png
+            quality-reports/go-migration/instance-pwa-browser-ui/provenance.json
+            quality-reports/go-migration/impersonation-browser/results.json
+            quality-reports/go-migration/impersonation-browser/v*/results.json
+            quality-reports/go-migration/impersonation-browser/v*/*.png
+            quality-reports/go-migration/impersonation-browser-ui/provenance.json
+            quality-reports/go-migration/impersonation-browser-build/results.json
+            quality-reports/go-migration/read-route-locales-image/results.json
+            quality-reports/go-migration/read-route-locales-image/http-results.json
+            quality-reports/go-migration/collaborator-browser/results.json
+            quality-reports/go-migration/collaborator-browser/v*/browser.json
+            quality-reports/go-migration/collaborator-browser/v*/validation.json
+            quality-reports/go-migration/collaborator-browser-ui/provenance.json
+            quality-reports/go-migration/payment-category-shutdown-image/results.json
+            quality-reports/go-migration/payment-category-shutdown-image/http-results.json

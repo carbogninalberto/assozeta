@@ -1,0 +1,747 @@
+{
+ "matrix_version": 1,
+ "scope": "Payment archive authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "category": "a1000000-0000-4000-8000-000000940001",
+ "carnet": {
+  "id": "a1000000-0000-4000-8000-000000940016",
+  "title": "Carnet dieci"
+ },
+ "payments": {
+  "open": {
+   "id": "a1000000-0000-4000-8000-000000940002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 0,
+   "description": "Quota",
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "stored": {
+   "id": "a1000000-0000-4000-8000-000000940003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": true,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 0,
+   "description": "Quota",
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "uncategorized": {
+   "id": "a1000000-0000-4000-8000-000000940004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": false,
+   "deleted": false,
+   "group": null,
+   "subject": 0,
+   "description": "Quota",
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000940005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": "own_group",
+   "subject": 0,
+   "description": "Quota",
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "removed": {
+   "id": "a1000000-0000-4000-8000-000000940006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": true,
+   "group": null,
+   "subject": 0,
+   "description": "Quota",
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000940007",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 0,
+   "description": "Quota",
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "other_blank": {
+   "id": "a1000000-0000-4000-8000-000000940008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": false,
+   "deleted": false,
+   "group": null,
+   "subject": 0,
+   "description": null,
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "subscription_blank": {
+   "id": "a1000000-0000-4000-8000-000000940009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 1,
+   "description": null,
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "course_carnet_meta": {
+   "id": "a1000000-0000-4000-8000-000000940010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 2,
+   "description": null,
+   "meta": {
+    "description": "Dal meta"
+   },
+   "course": null,
+   "carnet": "k1"
+  },
+  "course_carnet_title": {
+   "id": "a1000000-0000-4000-8000-000000940011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 2,
+   "description": null,
+   "meta": null,
+   "course": null,
+   "carnet": "k1"
+  },
+  "course_label": {
+   "id": "a1000000-0000-4000-8000-000000940012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 2,
+   "description": null,
+   "meta": null,
+   "course": {
+    "label": "Etichetta"
+   },
+   "carnet": null
+  },
+  "course_blank": {
+   "id": "a1000000-0000-4000-8000-000000940013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 2,
+   "description": null,
+   "meta": null,
+   "course": null,
+   "carnet": null
+  },
+  "quota_override": {
+   "id": "a1000000-0000-4000-8000-000000940014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 2,
+   "description": "QUOTA corso",
+   "meta": {
+    "description": "Rata uno"
+   },
+   "course": null,
+   "carnet": null
+  },
+  "transfer_blank": {
+   "id": "a1000000-0000-4000-8000-000000940015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 3,
+   "description": null,
+   "meta": null,
+   "course": null,
+   "carnet": null
+  }
+ },
+ "cases": [
+  {
+   "name": "payment-archive-owner-archives",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "open",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-owner-unarchives",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940003/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment unarchived."
+   },
+   "effect": {
+    "payment": "stored",
+    "archived": false,
+    "changes": {
+     "archived": [
+      "True",
+      "False"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-repeat-unarchives",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment unarchived."
+   },
+   "effect": {
+    "payment": "open",
+    "archived": false,
+    "changes": {
+     "archived": [
+      "True",
+      "False"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-fills-default-category",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940004/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "uncategorized",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "payment_category": [
+      "None",
+      "$default_category"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-full-collaborator-archives",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940005/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "grouped",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ]
+    },
+    "actor": "full_collaborator",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940005/archive",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Payment unarchived."
+   },
+   "effect": {
+    "payment": "grouped",
+    "archived": false,
+    "changes": {
+     "archived": [
+      "True",
+      "False"
+     ]
+    },
+    "actor": "admin",
+    "impersonation": "admin_owner"
+   }
+  },
+  {
+   "name": "payment-archive-other-blank-fills-category-and-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940008/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "other_blank",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "payment_category": [
+      "None",
+      "$default_category"
+     ],
+     "description": [
+      "None",
+      "$default_category_name"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-subscription-blank-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940009/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "subscription_blank",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "description": [
+      "None",
+      "Iscrizione"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-course-carnet-meta-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940010/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "course_carnet_meta",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "description": [
+      "None",
+      "Dal meta"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-course-carnet-title-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940011/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "course_carnet_title",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "description": [
+      "None",
+      "Carnet dieci"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-course-label-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940012/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "course_label",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "description": [
+      "None",
+      "Etichetta, "
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-course-blank-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940013/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "course_blank",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "description": [
+      "None",
+      "Quota Corso"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-quota-meta-override",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940014/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "quota_override",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "description": [
+      "QUOTA corso",
+      "Rata uno"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-transfer-blank-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940015/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-archive-other-group-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940005/archive",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-archive-deleted-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940006/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-archive-foreign-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940007/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-archive-missing-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000720009/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-archive-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/abc/archive",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "payment-archive-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-archive-athlete-not-allowed",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-archive-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-archive-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.archive.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-archive-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-archive-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-archive-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-archive-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment/a1000000-0000-4000-8000-000000940002/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Archive",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  }
+ ]
+}

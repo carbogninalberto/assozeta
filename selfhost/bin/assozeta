@@ -12,6 +12,8 @@ PROD_LOCK_DIR="$SELFHOST_DIR/.lifecycle.lock"
 READINESS_ATTEMPTS=${ASSOZETA_READINESS_ATTEMPTS:-60}
 READINESS_DELAY=${ASSOZETA_READINESS_DELAY:-2}
 MAINTENANCE_FLAG="$SELFHOST_DIR/.operations/maintenance.flag"
+# Never trust an inherited environment assertion about a process-owned lease.
+prod_operations_lock_held=false
 
 log() {
     printf '[assozeta] %s\n' "$*"
@@ -197,6 +199,7 @@ release_prod_lock() {
         rm -rf "$PROD_LOCK_DIR" || true
     fi
     prod_lock_held=false
+    prod_operations_lock_held=false
     exec 8>&-
 }
 
@@ -618,6 +621,7 @@ write_configuration() {
 COMPOSE_PROJECT_NAME=$project_name
 ASSOZETA_VERSION=$version
 ASSOZETA_BACKEND_IMAGE=ghcr.io/carbogninalberto/assozeta-backend
+ASSOZETA_BACKEND_GO_IMAGE=ghcr.io/carbogninalberto/assozeta-backend-go
 ASSOZETA_WEB_IMAGE=ghcr.io/carbogninalberto/assozeta-web
 ASSOZETA_RENDERER_IMAGE=ghcr.io/carbogninalberto/assozeta-renderer
 POSTGRES_IMAGE=postgres:16-alpine
@@ -850,13 +854,82 @@ wait_url_ready() {
     return 1
 }
 
+prod_optional_go_api() {
+    # The target CLI also operates on historical source distributions during
+    # backup and recovery. Never pass a service absent from their Compose file.
+    configured_services=$(prod_compose config --services) || return $?
+    if printf '%s\n' "$configured_services" | awk '$0 == "api-go" { found = 1 } END { exit !found }'; then
+        printf 'api-go\n'
+    fi
+}
+
+prod_optional_realtime_relay() {
+    # Releases before the Go realtime outbox have no relay service; recovery and
+    # backup of those distributions must not name it.
+    configured_services=$(prod_compose config --services) || return $?
+    if printf '%s\n' "$configured_services" | awk '$0 == "realtime-relay" { found = 1 } END { exit !found }'; then
+        printf 'realtime-relay\n'
+    fi
+}
+
+prod_optional_go_migrator() {
+    # Older distributions may contain api-go but no packaged migration command.
+    # Detect the tools service instead of invoking a binary absent from the source.
+    configured_tools=$(prod_compose --profile tools config --services) || return $?
+    if printf '%s\n' "$configured_tools" | awk '$0 == "migrate-go" { found = 1 } END { exit !found }'; then
+        printf 'migrate-go\n'
+    fi
+}
+
+require_prod_migration_lease() {
+    go_migration_service=$(prod_optional_go_migrator) || return $?
+    if [ -n "$go_migration_service" ] && [ "$prod_operations_lock_held" != true ]; then
+        printf '[assozeta] error: Go migration requires the lifecycle caller exclusive operations lease; flock must be available\n' >&2
+        return 1
+    fi
+}
+
+drain_prod_go_transactions() {
+    # Historical distributions without the Go operational command retain their
+    # existing lifecycle. Current Go writes acquire the shared transaction form
+    # of this lock before sending effects. A closed client socket alone cannot
+    # prove that PostgreSQL has finished an interrupted COMMIT.
+    require_prod_migration_lease || return $?
+    [ -n "$go_migration_service" ] || return 0
+    go_drain_database_user=$(env_value DBUSER "$PROD_ENV")
+    go_drain_database_name=$(env_value DBNAME "$PROD_ENV")
+    log "waiting for admitted Go database transactions"
+    if prod_compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
+        -U "$go_drain_database_user" -d "$go_drain_database_name" \
+        -c "BEGIN; SET LOCAL statement_timeout = '5s'; SELECT pg_advisory_xact_lock(1095981639,1381192786); COMMIT;" >/dev/null; then
+        return 0
+    else
+        go_drain_status=$?
+        printf '[assozeta] error: database transaction drain failed; snapshot or migration was not started\n' >&2
+        return "$go_drain_status"
+    fi
+}
+
+migrate_prod_schemas() {
+    drain_prod_go_transactions || return $?
+    prod_compose --profile tools run --rm --no-deps migrate || return $?
+    if [ -n "$go_migration_service" ]; then
+        prod_compose --profile tools run --rm --no-deps "$go_migration_service" || return $?
+    fi
+}
+
 wait_public_readiness() {
     [ -f "$PROD_ENV" ] || die "run configure first"
     app_url=$(env_value APP_URL "$PROD_ENV")
     [ -n "$app_url" ] || die "missing APP_URL in $PROD_ENV"
+    go_api_service=$(prod_optional_go_api) || return $?
 
     wait_url_ready "web" "$app_url/healthz" || return 1
     wait_url_ready "API" "$app_url/api/readyz" || return 1
+    if [ -n "$go_api_service" ]; then
+        wait_url_ready "Django API" "$app_url/api/v1/readyz" || return 1
+        wait_url_ready "Go API" "$app_url/api/v2/readyz" || return 1
+    fi
 }
 
 require_public_readiness() {
@@ -864,9 +937,10 @@ require_public_readiness() {
 }
 
 require_background_services_running() {
-    running=$(prod_compose ps --status running --services worker beat 2>/dev/null) || return 1
+    relay_service=$(prod_optional_realtime_relay) || return 1
+    running=$(prod_compose ps --status running --services worker beat $relay_service 2>/dev/null) || return 1
 
-    for service in worker beat; do
+    for service in worker beat $relay_service; do
         if printf '%s\n' "$running" | awk -v service="$service" '$0 == service { found=1 } END { exit !found }'; then
             continue
         fi
@@ -885,11 +959,18 @@ stop_prod_data_services() {
         chmod 644 "$MAINTENANCE_FLAG"
     fi
     # Keep Caddy serving the maintenance page while the data services stop.
-    prod_compose stop api worker beat
+    go_api_service=$(prod_optional_go_api) || return $?
+    relay_service=$(prod_optional_realtime_relay) || return $?
+    set -- api worker beat
+    [ -z "$relay_service" ] || set -- "$@" "$relay_service"
+    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
+    prod_compose stop "$@"
 }
 
 start_prod_app_services() {
     force_recreate=${1:-false}
+    report_health_stage=${2:-false}
+    go_api_service=$(prod_optional_go_api) || return $?
 
     # Populate the persistent manual before serving requests. A temporarily
     # unavailable publisher must not prevent the application from starting.
@@ -899,16 +980,19 @@ start_prod_app_services() {
         fi
     fi
 
+    set -- api web
+    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
+    relay_service=$(prod_optional_realtime_relay) || return $?
     if [ "$force_recreate" = true ]; then
-        prod_compose up -d --force-recreate worker beat || return $?
-        prod_compose up -d --wait --force-recreate api web || return $?
+        prod_compose up -d --force-recreate worker beat $relay_service || return $?
+        prod_compose up -d --wait --force-recreate "$@" || return $?
     else
-        prod_compose up -d worker beat || return $?
-        prod_compose up -d --wait api web || return $?
+        prod_compose up -d worker beat $relay_service || return $?
+        prod_compose up -d --wait "$@" || return $?
     fi
 
     require_background_services_running || return $?
-    if [ "${2:-false}" = true ]; then
+    if [ "$report_health_stage" = true ]; then
         printf '%s\n' '@@ASSOZETA_STAGE health_check'
     fi
     # Container health alone does not prove that public routing reaches the API.
@@ -920,6 +1004,7 @@ start_prod_app_services() {
 initialise_prod() {
     force_recreate=${1:-false}
 
+    require_prod_migration_lease || return $?
     stop_prod_data_services || return $?
     if [ "$force_recreate" = true ]; then
         prod_compose up -d --wait --force-recreate postgres redis minio renderer || return $?
@@ -927,11 +1012,12 @@ initialise_prod() {
         prod_compose up -d --wait postgres redis minio renderer || return $?
     fi
     prod_compose --profile tools run --rm minio-init || return $?
-    prod_compose --profile tools run --rm --no-deps migrate || return $?
+    migrate_prod_schemas || return $?
 }
 
 migrate_prod() {
     validate_prod
+    require_prod_migration_lease || return $?
     app_was_running=false
     if prod_app_services_running; then
         app_was_running=true
@@ -968,7 +1054,16 @@ check_prod_manual() {
         manual_repository=$(env_value ASSOZETA_BACKEND_IMAGE "$PROD_ENV")
         manual_image="${manual_repository:-ghcr.io/carbogninalberto/assozeta-backend}:$manual_version"
     fi
-    sh "$SELFHOST_DIR/bin/check-manual-image" "$manual_image" "$manual_version"
+    sh "$SELFHOST_DIR/bin/check-manual-image" "$manual_image" "$manual_version" || return $?
+    manual_go_service=$(prod_optional_go_api) || return $?
+    if [ -n "$manual_go_service" ]; then
+        manual_go_image=$(env_value ASSOZETA_BACKEND_GO_REF "$PROD_ENV")
+        if [ -z "$manual_go_image" ]; then
+            manual_go_repository=$(env_value ASSOZETA_BACKEND_GO_IMAGE "$PROD_ENV")
+            manual_go_image="${manual_go_repository:-ghcr.io/carbogninalberto/assozeta-backend-go}:$manual_version"
+        fi
+        sh "$SELFHOST_DIR/bin/check-manual-image" "$manual_go_image" "$manual_version" go || return $?
+    fi
 }
 
 install_prod() {
@@ -1021,7 +1116,12 @@ status_prod() {
 }
 
 prod_app_services_running() {
-    running=$(prod_compose ps --status running --services web api worker beat 2>/dev/null) || return 2
+    go_api_service=$(prod_optional_go_api) || return 2
+    relay_service=$(prod_optional_realtime_relay) || return 2
+    set -- web api worker beat
+    [ -z "$relay_service" ] || set -- "$@" "$relay_service"
+    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
+    running=$(prod_compose ps --status running --services "$@" 2>/dev/null) || return 2
     [ -n "$running" ]
 }
 
@@ -1268,6 +1368,7 @@ backup_prod() {
     preflight
     [ -f "$PROD_ENV" ] || die "run configure first"
     ensure_configuration_values "$PROD_ENV"
+    require_prod_migration_lease || return $?
     require_command tar
 
     umask 077
@@ -1308,6 +1409,8 @@ backup_prod() {
     log "stopping application services for consistent backup"
     backup_app_stopped=true
     stop_prod_data_services
+
+    drain_prod_go_transactions || return $?
 
     log "backing up PostgreSQL"
     prod_compose exec -T postgres pg_dump -U "$database_user" -d "$database_name" -Fc > "$working/postgres.dump"
@@ -1358,6 +1461,7 @@ restore_prod() {
 
     preflight
     [ -f "$PROD_ENV" ] || die "run configure first"
+    require_prod_migration_lease || return $?
     ensure_configuration_values "$PROD_ENV"
     require_command tar
     umask 077
@@ -1482,7 +1586,7 @@ restore_prod() {
         -e REDISCLI_AUTH="$(env_value REDIS_PASSWORD "$PROD_ENV")" \
         redis redis-cli FLUSHALL >/dev/null
 
-    prod_compose --profile tools run --rm --no-deps migrate
+    migrate_prod_schemas
     start_prod_app_services "${recover_upgrade_active:-false}"
     require_public_readiness
     cleanup_status=0
@@ -1496,6 +1600,10 @@ supports_self_update() {
     [ "$(env_value ASSOZETA_BACKEND_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-backend ] || return 1
     [ "$(env_value ASSOZETA_WEB_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-web ] || return 1
     [ "$(env_value ASSOZETA_RENDERER_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-renderer ] || return 1
+    case "$(env_value ASSOZETA_BACKEND_GO_IMAGE "$PROD_ENV")" in
+        ''|ghcr.io/carbogninalberto/assozeta-backend-go) ;;
+        *) return 1 ;;
+    esac
     env_value ASSOZETA_VERSION "$PROD_ENV" | grep -Eq '^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
 }
 
@@ -1522,7 +1630,14 @@ run_updater_tool() {
 }
 
 require_no_surviving_lifecycle_helpers() {
-    [ -f "$PROD_ENV" ] && [ -d "$SELFHOST_DIR/.updater" ] || return 0
+    [ -f "$PROD_ENV" ] || return 0
+    if [ ! -d "$SELFHOST_DIR/.updater" ]; then
+        # An unmanaged install can also leave a migration running after its CLI
+        # dies. Preserve historical admission when no Go migrator was delivered.
+        surviving_go_capability=$(prod_optional_go_migrator) \
+            || die "cannot inspect Go migration capability before lifecycle admission"
+        [ -n "$surviving_go_capability" ] || return 0
+    fi
     lifecycle_project=$(env_value COMPOSE_PROJECT_NAME "$PROD_ENV")
     lifecycle_project=${lifecycle_project:-assozeta}
     surviving_helpers=$(docker ps -q --filter "label=org.assozeta.lifecycle.installation=$SELFHOST_DIR") \
@@ -1561,9 +1676,9 @@ upgrade_prod() {
         managed_update=true
     else
         if [ "${ASSOZETA_RUNNER_ACTIVE:-false}" = 1 ] || [ -n "${ASSOZETA_OPERATION_ID:-}" ] || [ -n "${ASSOZETA_VERIFIED_UPDATER_REF:-}" ]; then
-            die "managed update unavailable: ASSOZETA_BACKEND_IMAGE, ASSOZETA_WEB_IMAGE and ASSOZETA_RENDERER_IMAGE must use official repositories and ASSOZETA_VERSION must be a stable release"
+            die "managed update unavailable: ASSOZETA_BACKEND_IMAGE, ASSOZETA_WEB_IMAGE, ASSOZETA_RENDERER_IMAGE and any configured ASSOZETA_BACKEND_GO_IMAGE must use official repositories and ASSOZETA_VERSION must be a stable release"
         fi
-        for pinned_key in ASSOZETA_BACKEND_REF ASSOZETA_WEB_REF ASSOZETA_RENDERER_REF; do
+        for pinned_key in ASSOZETA_BACKEND_REF ASSOZETA_WEB_REF ASSOZETA_RENDERER_REF ASSOZETA_BACKEND_GO_REF; do
             [ -z "$(env_value "$pinned_key" "$PROD_ENV")" ] || die "cannot perform legacy upgrade: $pinned_key pins an image independently of ASSOZETA_VERSION; verify the installation configuration first"
         done
     fi
@@ -1678,6 +1793,10 @@ run_locked_prod_command() {
     locked_command=$1
     shift
 
+    # Reject unsupported manual-source arguments before Docker admission reads.
+    if [ "$locked_command" = sync-manual ]; then
+        [ "$#" -eq 0 ] || die "sync-manual does not accept arguments"
+    fi
     acquire_prod_lock "$locked_command"
     require_no_surviving_lifecycle_helpers
     # Shared with application ZIP restores and running background jobs.
@@ -1690,14 +1809,14 @@ run_locked_prod_command() {
             [ -n "$(find "$SELFHOST_DIR/.operations/lifecycle.lock" -prune -type f -perm -0666 -print)" ] \
                 || die "shared lifecycle lock must be readable and writable by host and application users"
         }
-        flock -x 8
+        flock -x 8 || die "failed to acquire exclusive operations lease"
+        prod_operations_lock_held=true
     fi
     case "$locked_command" in
         configure) configure "$@" ;;
         install) preflight; install_prod "$@" ;;
         pull) validate_prod; prod_compose pull ;;
         sync-manual)
-            [ "$#" -eq 0 ] || die "sync-manual does not accept arguments"
             validate_prod
             prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus
             ;;

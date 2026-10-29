@@ -1,0 +1,347 @@
+name: Message read HTTP and query compatibility
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  message-reads:
+    name: Message reads on Django and Go
+    runs-on: ubuntu-24.04
+    # Includes locked UI/browser installs, Chromium, a sourcemapped Vite build,
+    # native codec/Go builds, and independent full-548-migration runtimes.
+    # Keep the original 60m for existing gates/cold caches, plus 30m for mutation
+    # acceptance (1500s + 180s cleanup < 30m), 3m upload and 2m offline controls.
+    timeout-minutes: 95
+    env:
+      LC_ALL: C
+      LANG: C
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            UI/package-lock.json
+            selfhost/tests/browser/package-lock.json
+
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+
+      - name: Install message integration dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python TESTS/adapters/django/production_runtime.py
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(
+              r'^FROM (caddy:\S+) AS production$',
+              Path('UI/Dockerfile').read_text(encoding='utf-8'),
+              re.MULTILINE,
+          ).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PY
+
+      - name: Install locked UI and pinned browser dependencies
+        run: |
+          npm ci --prefix UI
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+
+      - name: Populate offline native build dependencies
+        working-directory: BE_GO
+        env:
+          GOFLAGS: '-p=1'
+          GOWORK: 'off'
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+        run: go mod download all
+
+      - name: Verify portable fixture and strict query observation controls
+        run: |
+          python -m unittest -v \
+            TESTS.test_message_reads_runtime \
+            TESTS.test_message_reads_manifest \
+            TESTS.test_message_reads_repository \
+            TESTS.test_go_query_observation \
+            TESTS.contracts.test_message_reads.MessageReadsManifestControls
+
+      - name: Verify browser build, transport and authorization rejection controls offline
+        id: message-controls
+        # Separate interpreters keep existing import-side-effect/mock controls
+        # from sharing cached module objects across these independent suites.
+        run: |
+          python -m unittest -v TESTS.test_message_browser_build
+          python -m unittest -v TESTS.test_message_reads_browser
+          python -m unittest -v TESTS.test_message_reads_browser_runtime
+          python -m unittest -v TESTS.test_message_mutations_browser
+          python -m unittest -v TESTS.test_message_mutations_browser_runtime
+          python -m unittest -v TESTS.test_message_mutations_browser_denials
+          python -m unittest -v TESTS.test_message_mutations_browser_acceptance
+          node --test TESTS/browser/message-mutations.test.mjs
+          python -m unittest -v TESTS.test_message_read_scopes
+          python -m unittest -v TESTS.test_message_session_lifecycle
+          python -m unittest -v TESTS.test_http_client
+
+      - name: Compare native and versioned messages, query budgets and concurrent reads
+        run: |
+          python TESTS/adapters/django/message_reads_runtime.py \
+            --versioned \
+            --output quality-reports/go-migration/message-reads-http
+
+      - name: Verify real repository plans, hydration and blocked cancellation
+        run: |
+          python -m TESTS.adapters.go.message_reads_repository \
+            --output quality-reports/go-migration/message-reads-repository
+
+      - name: Build unchanged UI and native message-browser inputs offline
+        id: message-browser-build
+        if: ${{ !cancelled() && steps.message-controls.outcome == 'success' }}
+        run: |
+          python -m TESTS.adapters.django.message_browser_build \
+            --output quality-reports/go-migration/message-browser-build
+
+      - name: Verify unchanged saved-message browser workflow on v1 and v2
+        if: ${{ !cancelled() && steps.message-browser-build.outcome == 'success' }}
+        env:
+          GOFLAGS: '-p=1'
+          GOWORK: 'off'
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          python -m TESTS.adapters.django.message_reads_browser_runtime \
+            --ui-dir quality-reports/go-migration/message-browser-build/artifact \
+            --build-observation quality-reports/go-migration/message-browser-build/build-observation.json \
+            --go-binary quality-reports/go-migration/message-browser-build/server \
+            --image-codec quality-reports/go-migration/message-browser-build/image-codec \
+            --go-build-record quality-reports/go-migration/message-browser-build/go-build-record.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test \
+            --output quality-reports/go-migration/message-reads-browser
+
+      - name: Verify actual saved-message mutations and HTTP denials on v1 and v2
+        id: message-mutations-browser
+        # Run sequentially with the same unchanged built inputs. An independent
+        # read failure must not skip this gate; its own failure fails the job.
+        if: ${{ !cancelled() && steps.message-controls.outcome == 'success' && steps.message-browser-build.outcome == 'success' }}
+        # Leave 120s beyond the CLI's 1500s deadline + 180s protected cleanup.
+        timeout-minutes: 30
+        env:
+          GOFLAGS: '-p=1'
+          GOWORK: 'off'
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          python -m TESTS.adapters.django.message_mutations_browser_acceptance \
+            --ui-dir "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/artifact" \
+            --build-observation "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/build-observation.json" \
+            --playwright-module "$GITHUB_WORKSPACE/selfhost/tests/browser/node_modules/@playwright/test" \
+            --go-binary "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/server" \
+            --image-codec "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/image-codec" \
+            --go-build-record "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/go-build-record.json" \
+            --output "$GITHUB_WORKSPACE/quality-reports/go-migration/message-mutations-browser" \
+            --timeout 360 --deadline 1500 --cleanup-grace 180
+
+      - name: Verify authorization and warm-session invalidation on native and versioned backends
+        # An independent browser/build failure must not hide scopes results.
+        if: ${{ !cancelled() && steps.message-controls.outcome == 'success' }}
+        env:
+          GOFLAGS: '-p=1'
+          GOWORK: 'off'
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          python -m TESTS.adapters.django.message_read_scopes_runtime \
+            --versioned \
+            --output quality-reports/go-migration/message-read-scopes
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-reads-http
+          path: quality-reports/go-migration/message-reads-http/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-reads-repository
+          path: quality-reports/go-migration/message-reads-repository/results.json
+          if-no-files-found: ignore
+
+      # Publish only the runtimes' redacted results, never copied build sources,
+      # dependency maps, sourcemaps, build/service logs or tokenized fixtures.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-reads-browser
+          path: quality-reports/go-migration/message-reads-browser/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        timeout-minutes: 3
+        with:
+          name: go-message-mutations-browser
+          path: quality-reports/go-migration/message-mutations-browser/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-read-scopes
+          path: quality-reports/go-migration/message-read-scopes/results.json
+          if-no-files-found: ignore
+
+  message-image:
+    name: Packaged message scopes and warm sessions
+    runs-on: ubuntu-24.04
+    # Build + full packaged acceptance has its own cold-cache budget. All native,
+    # browser and query gates above remain required independent jobs.
+    timeout-minutes: 90
+    env:
+      LC_ALL: C
+      LANG: C
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Default checkout preserves the tested PR merge SHA when applicable.
+          persist-credentials: false
+
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+
+      - name: Install packaged oracle dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python - <<'PY'
+          from TESTS.adapters.django.production_runtime import require_production_python
+          require_production_python()
+          PY
+
+      - name: Verify image build and packaged runner rejection controls offline
+        run: |
+          python -m unittest -v TESTS.adapters.go.test_message_image_build
+          python -m unittest -v TESTS.adapters.go.test_message_image_execution
+          python -m unittest -v TESTS.adapters.go.test_message_read_scopes_image
+
+      - name: Pull packaged acceptance fixture images
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          caddy = re.search(r'^FROM (caddy:\S+) AS production$',
+                            Path('UI/Dockerfile').read_text(), re.MULTILINE).group(1)
+          for image in ('postgres:16-alpine', 'redis:7-alpine', caddy):
+              subprocess.run(['docker', 'pull', image], check=True, timeout=300)
+          PY
+
+      - name: Build clean exact checkout Go image
+        run: |
+          python -m TESTS.adapters.go.message_image_build \
+            --expected-revision "$(git --no-replace-objects rev-parse HEAD)" \
+            --output quality-reports/go-migration/message-image-build
+
+      - name: Verify actual packaged message scopes and warm-session invalidation
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          from TESTS.adapters.go.message_read_scopes_image import verify_build_receipt
+          from TESTS.adapters.go.message_image_execution import run_packaged
+          directory = Path('quality-reports/go-migration/message-image-build')
+          revision = subprocess.check_output(['git', '--no-replace-objects', 'rev-parse', 'HEAD'], text=True, timeout=30).strip()
+          build = json.loads((directory / 'results.json').read_bytes())
+          if build.get('source_revision') != revision or build.get('cleanup_verified') is not True:
+              raise SystemExit('Packaged build provenance failed')
+          verify_build_receipt(build, directory / 'source', build['image_id'], revision)
+          raise SystemExit(run_packaged([
+              '--image', build['image_id'], '--expected-revision', revision,
+              '--build-receipt', str(directory / 'results.json'),
+              '--go-source', str(directory / 'source'),
+              '--postgres', 'postgres:16-alpine', '--redis', 'redis:7-alpine',
+              '--output', 'quality-reports/go-migration/message-read-scopes-image',
+          ], deadline=1500, cleanup_grace=180))
+          PY
+
+      # Only redacted receipts leave this job. Frozen source, private build logs,
+      # copied binaries and tokenized fixtures are never artifact upload inputs.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-image-build
+          path: quality-reports/go-migration/message-image-build/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-read-scopes-image
+          path: quality-reports/go-migration/message-read-scopes-image/results.json
+          if-no-files-found: ignore

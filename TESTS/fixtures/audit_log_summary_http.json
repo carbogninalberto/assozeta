@@ -1,0 +1,454 @@
+{
+ "matrix_version": 1,
+ "scope": "Audit-log stats and models authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "entries": [
+  [
+   "application.payment",
+   0,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "application.payment",
+   1,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "application.carnet",
+   2,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "application.associatetutorrelation",
+   1,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "application.user",
+   0,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "application.course",
+   0,
+   "a1000000-0000-4000-8000-000000701002"
+  ]
+ ],
+ "cases": [
+  {
+   "name": "audit-summary-stats-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total": 5,
+     "by_action": {
+      "create": 2,
+      "update": 2,
+      "delete": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "audit-summary-stats-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total": 5,
+     "by_action": {
+      "create": 2,
+      "update": 2,
+      "delete": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "audit-summary-stats-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "total": 5,
+     "by_action": {
+      "create": 2,
+      "update": 2,
+      "delete": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "audit-summary-stats-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total": 1,
+     "by_action": {
+      "create": 1,
+      "update": 0,
+      "delete": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "audit-summary-stats-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Sport association not found"
+   }
+  },
+  {
+   "name": "audit-summary-stats-athlete-without-association",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Sport association not found"
+   }
+  },
+  {
+   "name": "audit-summary-stats-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   }
+  },
+  {
+   "name": "audit-summary-stats-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'audit-logs/stats'. Contact administrator to grant access."
+   }
+  },
+  {
+   "name": "audit-summary-stats-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "audit-summary-stats-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "audit-summary-stats-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "audit-summary-stats-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/audit-logs/stats",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Audit Log Stats",
+    "description": "API endpoint to get audit log statistics for the current sport association.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  },
+  {
+   "name": "audit-summary-models-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "name": "associatetutorrelation",
+      "label": "Associatetutorrelation"
+     },
+     {
+      "name": "carnet",
+      "label": "Carnet"
+     },
+     {
+      "name": "payment",
+      "label": "Pagamento"
+     },
+     {
+      "name": "user",
+      "label": "Utente"
+     }
+    ]
+   }
+  },
+  {
+   "name": "audit-summary-models-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "name": "associatetutorrelation",
+      "label": "Associatetutorrelation"
+     },
+     {
+      "name": "carnet",
+      "label": "Carnet"
+     },
+     {
+      "name": "payment",
+      "label": "Pagamento"
+     },
+     {
+      "name": "user",
+      "label": "Utente"
+     }
+    ]
+   }
+  },
+  {
+   "name": "audit-summary-models-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "name": "associatetutorrelation",
+      "label": "Associatetutorrelation"
+     },
+     {
+      "name": "carnet",
+      "label": "Carnet"
+     },
+     {
+      "name": "payment",
+      "label": "Pagamento"
+     },
+     {
+      "name": "user",
+      "label": "Utente"
+     }
+    ]
+   }
+  },
+  {
+   "name": "audit-summary-models-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "name": "course",
+      "label": "Corso"
+     }
+    ]
+   }
+  },
+  {
+   "name": "audit-summary-models-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Sport association not found"
+   }
+  },
+  {
+   "name": "audit-summary-models-athlete-without-association",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Sport association not found"
+   }
+  },
+  {
+   "name": "audit-summary-models-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   }
+  },
+  {
+   "name": "audit-summary-models-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'audit-logs/models'. Contact administrator to grant access."
+   }
+  },
+  {
+   "name": "audit-summary-models-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "audit-summary-models-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "audit-summary-models-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "audit-summary-models-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/audit-logs/models",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Audit Log Models",
+    "description": "API endpoint to list available model types for filtering.\nReturns models that have audit logs for the current sport association.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

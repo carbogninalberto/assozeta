@@ -1,13 +1,18 @@
 """Real disposable application upgrade using test-only release/registry transport.
 
-Prerequisites: assozeta-{backend,web,updater}:goal-test and assozeta-renderer:test.
+Prerequisites: assozeta-{backend,backend-go,web,updater}:goal-test and assozeta-renderer:test.
 Pass --legacy to install the immutable v1.0.2 source first, bootstrap the feature,
-then exercise a subsequent owner-authorized update. No production install is used.
+then exercise a subsequent owner-authorized update. --legacy-controller freezes
+v1.0.17 controller/lifecycle code with the current application fixture and verifies
+first Go delivery failure/recovery before a successful owner update. No production
+installation is used.
 """
 import argparse
+import hashlib
 import io
 import json
 import os
+import select
 from pathlib import Path
 import shutil
 import socket
@@ -29,13 +34,142 @@ from distribution import digest, snapshot_managed
 from quality_support import docker_host, write_evidence, assert_project_removed, remove_disposable_project
 
 
+MANIFEST_SESSION = 'manifestlifecyclefixturesession01'
+MANIFEST_CACHE_SEED = '''
+from django.core.cache import cache
+from django.contrib.sessions.backends.cache import SessionStore
+cache.set('fixture:manifest:lifecycle', {'retained': 'manifest-cache'}, timeout=None)
+session = SessionStore(session_key='manifestlifecyclefixturesession01')
+cache.set(session.cache_key, {'manifest_fixture': 'retained-session'}, timeout=None)
+'''
+MANIFEST_STATE = '''
+import hashlib, json
+from django.core.cache import cache
+from django.contrib.sessions.backends.cache import SessionStore
+from django_redis import get_redis_connection
+from application.models import User, SportAssociation
+from instance.models import InstanceConfiguration, DataRestore
+from auditlog.models import LogEntry
+from application.models.audit_models import AuditLogIndex
+def fingerprint(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, default=str).encode()).hexdigest()
+models = [InstanceConfiguration, User, SportAssociation, DataRestore, LogEntry, AuditLogIndex]
+database = {model._meta.label: fingerprint(list(model._base_manager.order_by('pk').values())) for model in models}
+raw = get_redis_connection('default')
+keys = set(raw.scan_iter(match='*django.contrib.sessions.cache*'))
+keys.add(cache.make_key('fixture:manifest:lifecycle').encode())
+cached = {}
+for key in keys:
+    value = raw.get(key)
+    if value is not None:
+        cached[fingerprint(key.hex())] = hashlib.sha256(value).hexdigest()
+sentinels = [cache.get('fixture:manifest:lifecycle'), cache.get(SessionStore(session_key='manifestlifecyclefixturesession01').cache_key)]
+print('MANIFEST_STATE=' + json.dumps({'database': database, 'cache': cached, 'sentinels': sentinels}, sort_keys=True))
+'''
+
+
+def prepare_manifest_checkpoint(snapshot, seed_cache, *, source_database=None, restored=False):
+    state = snapshot()
+    if source_database is not None:
+        assert state['database'] == source_database, 'Lifecycle changed selected manifest/database/audit state'
+    if source_database is None or restored:
+        if restored:
+            # Restore deliberately flushes Redis, so retained sessions are wrong.
+            assert state['sentinels'] == [None, None], 'Restore retained stale manifest fixture cache/session'
+        seed_cache()
+    prepared = snapshot()
+    assert prepared['database'] == state['database'], 'Cache preparation changed selected database state'
+    assert prepared['sentinels'] == [{'retained': 'manifest-cache'}, {'manifest_fixture': 'retained-session'}], 'Missing manifest cache/session fixture'
+    return prepared['database']
+
+
+def assert_installed_manifest(origin, host, icon_src, snapshot, *,
+                              prefixes=('/api', '/api/v1', '/api/v2'), opener=urlopen):
+    """Exercise real HTTP and selected state callbacks; return observed receipts only.
+
+    This compares persistent state, not SQL statement counts or transient writes.
+    Upstream ownership is established separately by the existing delivery probes.
+    """
+    manifest = {
+        'name': 'Preserved Club', 'short_name': 'PC',
+        'description': 'Gestionale per associazioni sportive',
+        'icons': [{'src': icon_src, 'sizes': size, 'type': 'image/png'} for size in ('192x192', '512x512')],
+        'start_url': '/', 'display': 'standalone', 'background_color': '#ffffff', 'theme_color': '#351DC2',
+    }
+    metadata = {
+        'name': 'Instance Manifest', 'description': 'GET /instance/manifest.json\nDynamic PWA manifest.',
+        'renders': ['application/json'],
+        'parses': ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'],
+    }
+    receipts = []
+    for prefix in prefixes:
+        for method in ('GET', 'HEAD', 'OPTIONS'):
+            path = prefix + '/instance/manifest.json'
+            before = snapshot()
+            request = Request(origin + path, method=method, headers={
+                'Host': host, 'Accept': 'application/json', 'Accept-Language': 'en',
+                'Accept-Encoding': 'identity', 'Cookie': 'sessionid=' + MANIFEST_SESSION,
+                'Authorization': 'Bearer invalid-manifest-fixture-token',
+            })
+            with opener(request, timeout=15) as response:
+                body = response.read()
+                assert response.status == 200, (path, method, response.status)
+                for name, expected in {
+                    'Allow': 'GET, HEAD, OPTIONS', 'Content-Type': 'application/json',
+                    'Content-Language': 'en', 'WWW-Authenticate': None, 'Retry-After': None,
+                    'Set-Cookie': None, 'Content-Encoding': None,
+                }.items():
+                    assert response.headers.get(name) == expected, (path, method, name)
+                vary = sorted({token.strip().lower() for line in response.headers.get_all('Vary', [])
+                               for token in line.split(',') if token.strip()})
+                assert vary == ['accept-encoding', 'accept-language', 'cookie', 'origin'], (path, method, vary)
+                if method == 'HEAD':
+                    assert body == b'', (path, 'HEAD returned a body')
+                else:
+                    expected = manifest if method == 'GET' else metadata
+                    assert json.loads(body) == expected, (path, method, 'manifest contract mismatch')
+                headers = {name: response.headers.get(name) for name in (
+                    'Allow', 'Content-Type', 'Content-Language', 'WWW-Authenticate', 'Retry-After',
+                    'Set-Cookie', 'Content-Encoding')}
+            assert snapshot() == before, (path, method, 'manifest changed selected state/cache/audit')
+            receipts.append({'path': path, 'method': method, 'status': response.status,
+                'body_sha256': hashlib.sha256(body).hexdigest(), 'headers': headers, 'vary_tokens': vary,
+                'selected_state_unchanged': True})
+    return receipts
+
+
+def assert_manifest_maintenance(origin, host, *, opener=urlopen):
+    receipts = []
+    for prefix in ('/api', '/api/v1', '/api/v2'):
+        for method in ('GET', 'HEAD', 'OPTIONS'):
+            path = prefix + '/instance/manifest.json'
+            request = Request(origin + path, method=method, headers={'Host': host})
+            try:
+                with opener(request, timeout=15):
+                    raise AssertionError((path, method, 'manifest bypassed maintenance'))
+            except HTTPError as response:
+                with response:
+                    assert response.code == 503, (path, method, response.code)
+                    assert response.headers['Cache-Control'] == 'no-store', (path, method)
+                    assert response.headers['Retry-After'] == '60', (path, method)
+                    body = response.read()
+                    if method == 'GET':
+                        assert b'Torniamo tra poco' in body, path
+                    else:
+                        assert body == b'', (path, method)
+                    receipts.append({'path': path, 'method': method, 'status': response.code,
+                                     'cache_control': response.headers['Cache-Control'],
+                                     'retry_after': response.headers['Retry-After']})
+    return receipts
+
+
 def free_port():
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0))
         return sock.getsockname()[1]
 
 
-def run(legacy=False, browser=False, operations_only=False):
+def run(legacy=False, browser=False, operations_only=False, legacy_controller=False):
     host = docker_host()
     directory = Path(tempfile.mkdtemp(prefix='assozeta-application-update-')).resolve()
     installation = directory / 'selfhost'
@@ -49,7 +183,16 @@ def run(legacy=False, browser=False, operations_only=False):
                    'ASSOZETA_SELFHOST_DIR': str(installation), 'ASSOZETA_ENV_FILE': str(env_file),
                    'ASSOZETA_UPDATER_API_VOLUME': f'{project}_updater_api', 'ASSOZETA_UPDATER_STATUS_VOLUME': f'{project}_updater_status'}
     success = False
+    historical_controller = None
     competing_backup = None
+    go_blocker = None
+    go_waiter = None
+    go_intent_snapshot = None
+    go_occurrence_snapshot = None
+    go_migration_interruption = False
+    manifest_checkpoints = []
+    realtime_probes = []
+    manifest_maintenance = []
 
     def command(args, **kwargs):
         with log.open('a') as output:
@@ -89,7 +232,7 @@ ENTRYPOINT ["python3", "/test-transport/entrypoint.py"]
                     for number in (1, 2, 3, 4)}
         updater = updaters[1]
         images = {f'ghcr.io/carbogninalberto/assozeta-updater:2.0.{number}': updaters[number] for number in (1, 2, 3, 4)}
-        backend = {}
+        backend, backend_go = {}, {}
         for number in (1, 2, 3, 4):
             backend[number] = build(f'''FROM assozeta-backend:goal-test
 USER root
@@ -99,6 +242,12 @@ ENV PYTHONPATH=/test-transport:/app ASSOZETA_TEST_FIXTURES=/fixtures
 USER assozeta
 ''', f'{project}-backend:2.0.{number}')
             images[f'fixture-backend-{number}'] = backend[number]
+            backend_go[number] = build(f'''FROM assozeta-backend-go:goal-test
+USER root
+RUN printf '2.0.{number}\\n' > /app/VERSION
+USER 10001:10001
+''', f'{project}-backend-go:2.0.{number}')
+            images[f'fixture-backend-go-{number}'] = backend_go[number]
         web = capture(['docker', 'image', 'inspect', '--format', '{{.Id}}', 'assozeta-web:goal-test'])
         renderer = capture(['docker', 'image', 'inspect', '--format', '{{.Id}}', 'assozeta-renderer:test'])
         images.update({'fixture-web': web, 'fixture-renderer': renderer})
@@ -133,7 +282,7 @@ sys.exit(42)
         command([cli, 'configure', '--domain', f'http://{host}:{port}', '--email', 'owner@example.invalid', '--version', '2.0.1'], env=environment)
         update_env(env_file, {'COMPOSE_PROJECT_NAME': project, 'HTTPS_PORT': str(free_port()),
             'ASSOZETA_BACKEND_REF': backend[1], 'ASSOZETA_WEB_REF': web, 'ASSOZETA_RENDERER_REF': renderer,
-            'ASSOZETA_UPDATER_REF': updater, 'CUSTOM_SETTING': 'preserved-through-upgrade'})
+            'ASSOZETA_UPDATER_REF': updater, 'ASSOZETA_BACKEND_GO_REF': backend_go[1], 'CUSTOM_SETTING': 'preserved-through-upgrade'})
 
         # Publish two local release archives, one healthy and one failing migration.
         managed = snapshot_managed(installation)
@@ -159,6 +308,7 @@ sys.exit(42)
             (destination / bundle_name).write_bytes(bundle)
             metadata = {'schema_version': 1, 'version': f'2.0.{number}', 'bundle_sha256': digest(bundle),
                 'images': {'backend': backend[number], 'web': web, 'renderer': renderer, 'updater': updaters[number]},
+                'extensions': {'go_backend': {'schema_version': 1, 'image': backend_go[number]}},
                 'files': {name: digest(content) for name, content in files.items()}}
             (destination / 'assozeta-update.json').write_text(json.dumps(metadata))
             catalog.append({'id': number, 'tag_name': tag, 'name': tag, 'published_at': '2026-09-01T00:00:00Z',
@@ -166,8 +316,84 @@ sys.exit(42)
                 'assets': [{'name': name, 'state': 'uploaded', 'size': (destination / name).stat().st_size}
                            for name in (bundle_name, 'assozeta-update.json')]})
         (fixtures / 'releases.json').write_text(json.dumps(catalog))
+        if legacy_controller:
+            # Actual released controller/lifecycle source, with only fixture
+            # transport and runtime dependencies supplied by the test image.
+            revision = '14a23c36d2f03ee453f903c07b503460717a79f1'  # v1.0.17
+            source = directory / 'historical'
+            source.mkdir()
+            content = subprocess.check_output(['git', 'archive', revision,
+                'selfhost', 'BE/instance/release_catalog.py'], cwd=ROOT)
+            with tarfile.open(fileobj=io.BytesIO(content)) as release:
+                release.extractall(source, filter='data')
+            historical_controller = {'release': 'v1.0.17', 'commit': revision,
+                'controller_files': {str(path.relative_to(source)): digest(path.read_bytes())
+                    for path in sorted((source / 'selfhost/updater').glob('*.py'))}}
+            historical_controller['controller_files']['BE/instance/release_catalog.py'] = digest(
+                (source / 'BE/instance/release_catalog.py').read_bytes())
+            updater = build(f'''FROM assozeta-updater:goal-test
+RUN rm /runner/*.py
+COPY historical/selfhost/updater/*.py /runner/
+COPY historical/BE/instance/release_catalog.py /runner/
+COPY transport /test-transport
+RUN mv /usr/local/bin/docker /usr/local/bin/docker-real && cp /test-transport/docker /usr/local/bin/docker && chmod +x /usr/local/bin/docker
+ENV PYTHONPATH=/test-transport:/runner ASSOZETA_TEST_FIXTURES={fixtures} RUNNER_VERSION=1.0.17 ASSOZETA_READINESS_ATTEMPTS=5 ASSOZETA_READINESS_DELAY=1
+ENTRYPOINT ["python3", "/test-transport/entrypoint.py"]
+''', f'{project}-updater:released-1.0.17')
+            source_backend = build('''FROM assozeta-backend:goal-test
+USER root
+COPY transport /test-transport
+RUN printf '1.0.17\\n' > /app/VERSION
+ENV PYTHONPATH=/test-transport:/app ASSOZETA_TEST_FIXTURES=/fixtures
+USER assozeta
+''', f'{project}-backend:source-1.0.17')
+            images.update({'fixture-old-controller': updater, 'fixture-old-backend': source_backend,
+                'ghcr.io/carbogninalberto/assozeta-updater:1.0.17': updater})
+            (fixtures / 'images.json').write_text(json.dumps(images))
+            for name in managed:
+                (installation / name).unlink(missing_ok=True)
+            shutil.copytree(source / 'selfhost', installation, dirs_exist_ok=True)
+            composition = (installation / 'compose.yml').read_text().replace(
+                '    - django_static:/app/staticfiles\n',
+                f'    - django_static:/app/staticfiles\n    - {fixtures}:/fixtures:rw\n', 1)
+            composition = composition.replace('      - updater_api:/run/assozeta-updater:ro\n',
+                f'      - updater_api:/run/assozeta-updater:ro\n      - {fixtures}:/fixtures:ro\n')
+            (installation / 'compose.yml').write_text(composition)
+            env_file.unlink()
+            command([cli, 'configure', '--domain', f'http://{host}:{port}', '--email',
+                     'owner@example.invalid', '--version', '1.0.17'], env=environment)
+            update_env(env_file, {'COMPOSE_PROJECT_NAME': project, 'HTTPS_PORT': str(free_port()),
+                'ASSOZETA_BACKEND_REF': source_backend, 'ASSOZETA_WEB_REF': web,
+                'ASSOZETA_RENDERER_REF': renderer, 'ASSOZETA_UPDATER_REF': updater,
+                'CUSTOM_SETTING': 'preserved-through-upgrade'})
+            assert 'ASSOZETA_BACKEND_GO_REF' not in read_env(env_file)
+            assert 'api-go:' not in composition
+            old_files = snapshot_managed(installation)
+            destination = fixtures / 'v1.0.17'
+            destination.mkdir()
+            bundle_path = destination / 'assozeta-selfhost-v1.0.17.tar.gz'
+            with tarfile.open(bundle_path, 'w:gz') as release:
+                for name in old_files:
+                    release.add(installation / name, arcname='selfhost/' + name)
+            source_metadata = {'schema_version': 1, 'version': '1.0.17',
+                'bundle_sha256': digest(bundle_path.read_bytes()), 'files': old_files,
+                'images': {'backend': source_backend, 'web': web, 'renderer': renderer, 'updater': updater}}
+            (destination / 'assozeta-update.json').write_text(json.dumps(source_metadata))
+            catalog.append({'id': 117, 'tag_name': 'v1.0.17', 'name': 'Frozen controller source',
+                'published_at': '2026-09-01T00:00:00Z', 'body': 'Historical four-image protocol',
+                'draft': False, 'prerelease': False, 'assets': []})
+            (fixtures / 'releases.json').write_text(json.dumps(catalog))
+            print('Installing frozen v1.0.17 controller and lifecycle files; application schema uses the current fixture backend.', flush=True)
+
         helper = ['docker', 'run', '--rm', '-v', f'{installation}:{installation}',
                   '-v', '/var/run/docker.sock:/var/run/docker.sock', updater]
+        if legacy_controller:
+            expected = {Path(name).name: sha for name, sha in historical_controller['controller_files'].items()}
+            observed = json.loads(capture(helper + ['-c',
+                "import hashlib,json,pathlib; print(json.dumps({p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('/runner').glob('*.py')}))"]))
+            assert observed == expected, 'Running historical controller source differs from pinned release'
+            historical_controller['image'] = updater
+            historical_controller['application_fixture'] = 'current backend with source version 1.0.17; not a historical application migration proof'
         legacy_files = None
         if legacy:
             # Registry availability is external to the old release. Preload the
@@ -328,6 +554,8 @@ with default_storage.open(instance.logo_path, 'rb') as logo:
                 assert response.headers['Cache-Control'] == 'no-store'
                 assert response.headers['Retry-After'] == '60'
                 assert b'Torniamo tra poco' in response.read()
+            manifest_maintenance.append(assert_manifest_maintenance(
+                f'http://127.0.0.1:{port}', f'{host}:{port}'))
 
         def api(path, body=None):
             request = Request(f'http://127.0.0.1:{port}/api/instance/{path}',
@@ -400,8 +628,61 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                 time.sleep(1)
             raise AssertionError('Replacement runner did not become ready')
 
+        def assert_data_services_stopped():
+            # Labels also find an orphan target api-go after restoring an older
+            # source Compose file that does not know this service.
+            for service in ('api', 'api-go', 'worker', 'beat'):
+                running = capture(['docker', 'ps', '-q',
+                    '--filter', f'label=com.docker.compose.project={project}',
+                    '--filter', f'label=com.docker.compose.service={service}'])
+                assert not running, 'Data service still running: ' + service
+
+        def assert_dual_apis(version):
+            for prefix in ('/api', '/api/v1', '/api/v2'):
+                for probe in ('healthz', 'readyz'):
+                    request = Request(f'http://127.0.0.1:{port}{prefix}/{probe}',
+                                      headers={'Host': f'{host}:{port}'})
+                    with urlopen(request, timeout=15) as response:
+                        value = json.load(response)
+                    assert value['status'] == ('ok' if probe == 'healthz' else 'ready'), (prefix, probe)
+                    if probe == 'healthz':
+                        assert value['version'].removeprefix('v') == version, (prefix, value)
+            container = capture(compose('ps', '-q', 'api-go'), env=environment)
+            details = json.loads(capture(['docker', 'inspect', container]))[0]
+            assert details['Config']['Image'] == backend_go[int(version.rsplit('.', 1)[1])]
+            assert details['Config']['User'] == '10001:10001'
+            assert details['HostConfig']['ReadonlyRootfs']
+            # Delivery retains existing authoritative Celery ownership.
+            for service in ('worker', 'beat'):
+                assert len(capture(compose('ps', '-q', service), env=environment).splitlines()) == 1
+            settings = read_env(env_file)
+            sql = ['exec', '-T', 'postgres', 'psql', '-U', settings['DBUSER'], '-d', settings['DBNAME'], '-At', '-c']
+            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '4|f'
+            # The managed relay forwards Go outbox events through Django Channels.
+            assert len(capture(compose('ps', '-q', 'realtime-relay'), env=environment).splitlines()) == 1
+            event = capture(compose(*sql, "INSERT INTO public.assozeta_go_realtime_events(envelope_version,kind,target_id) "
+                                    f"VALUES (1,'staff_board_changed','{uuid4()}') RETURNING id"), env=environment).splitlines()[0]
+            assert event.isdigit()
+            for _ in range(60):
+                if capture(compose(*sql, f'SELECT delivered_at IS NOT NULL FROM public.assozeta_go_realtime_events WHERE id={event}'), env=environment) == 't':
+                    break
+                time.sleep(0.5)
+            else:
+                raise AssertionError('Realtime relay did not deliver the outbox probe')
+            realtime_probes.append({'version': version, 'delivered': True})
+            assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'), env=environment) == 'django|1'
+            if go_intent_snapshot is not None:
+                actual = capture(compose(*sql, "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)
+                assert actual == go_intent_snapshot, 'Recovery changed or lost durable Go intent'
+                actual = capture(compose(*sql, "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222'"), env=environment)
+                assert actual == go_occurrence_snapshot, 'Recovery changed or lost retained occurrence receipt'
+
         assert api('access')['is_owner']
         assert api('admin/updates')['available']
+        if not legacy_controller:
+            assert_dual_apis('2.0.1')
+        else:
+            assert runner_status()['runner_version'] == '1.0.17'
         if legacy:
             releases = api('admin/releases')
             assert releases['latest']['tag'] == 'v2.0.2' and releases['latest']['artifacts_ready']
@@ -436,7 +717,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         def browser_check(phase):
             if not browser:
                 return
-            output = Path(os.environ.get('ASSOZETA_QUALITY_REPORT_DIR', str(directory / 'reports'))) / ('legacy-browser' if legacy else 'browser') / phase
+            output = Path(os.environ.get('ASSOZETA_QUALITY_REPORT_DIR', str(directory / 'reports'))) / ('legacy-browser' if legacy else 'old-controller-browser' if legacy_controller else 'browser') / phase
             output.mkdir(parents=True, exist_ok=True)
             command(['npm', 'test', '--prefix', str(ROOT / 'selfhost/tests/browser')], env={**os.environ,
                 'ASSOZETA_BROWSER_INPUT': str(browser_input), 'ASSOZETA_BROWSER_PHASE': phase,
@@ -455,6 +736,61 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         original_env = read_env(env_file)
         database = ['exec', '-T', 'postgres', 'psql', '-U', original_env['DBUSER'], '-d', original_env['DBNAME'], '-At', '-c']
         command(compose(*database, "CREATE TABLE upgrade_sentinel (value text); INSERT INTO upgrade_sentinel VALUES ('preserved');"), env=environment)
+
+        def manifest_state():
+            observed = capture(compose('exec', '-T', 'api', 'python', 'manage.py', 'shell', '-c', MANIFEST_STATE), env=environment)
+            return json.loads(next(line.removeprefix('MANIFEST_STATE=') for line in observed.splitlines()
+                                   if line.startswith('MANIFEST_STATE=')))
+
+        manifest_database = None
+
+        def manifest_checkpoint(phase, version, *, old_source=False, restored=False):
+            nonlocal manifest_database
+            observed_version = api('admin')['running_version'].removeprefix('v')
+            assert observed_version == version, (phase, observed_version, version)
+            manifest_database = prepare_manifest_checkpoint(manifest_state,
+                lambda: command(compose('exec', '-T', 'api', 'python', 'manage.py', 'shell', '-c', MANIFEST_CACHE_SEED), env=environment),
+                source_database=manifest_database, restored=restored)
+            # Upload/admin presentation adds ?v=; the public manifest contract
+            # deliberately preserves the stored, unversioned canonical URL.
+            requests = assert_installed_manifest(f'http://127.0.0.1:{port}', f'{host}:{port}',
+                '/api/instance/logo.png', manifest_state,
+                prefixes=('/api',) if old_source else ('/api', '/api/v1', '/api/v2'))
+            manifest_checkpoints.append({'phase': phase, 'running_version': observed_version,
+                'restored': restored, 'requests': requests,
+                'selected_database_matches_source': True,
+                'upstream_evidence': 'existing health version/image probes; no per-manifest upstream observer'})
+
+        manifest_checkpoint('before-installed-upgrade', '1.0.17' if legacy_controller else '2.0.1', old_source=legacy_controller)
+        if legacy_controller:
+            (fixtures / 'releases.json').write_text(json.dumps(catalog))
+            print('Testing failed first Go delivery through frozen owner-request controller and rollback to four-image source.', flush=True)
+            failed_transition = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4',
+                                                    'request_id': str(uuid4())})['operation']
+            failed_transition = await_operation(failed_transition['id'])
+            assert failed_transition['status'] == 'recovery_required' and failed_transition['failed_stage'] == 'health_check', failed_transition
+            target_go = capture(compose('ps', '-q', 'api-go'), env=environment)
+            assert target_go, 'First Go delivery never started its target API'
+            target_go_state = json.loads(capture(['docker', 'inspect', target_go]))[0]
+            assert target_go_state['Config']['Image'] == backend_go[4]
+            assert target_go_state['State']['Running'] and target_go_state['State']['Health']['Status'] == 'healthy'
+            assert_maintenance_web()
+            pending = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
+            assert pending['source_version'] == '1.0.17'
+            command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)',
+                              cli, 'recover-upgrade', pending['backup']['path'], '--yes'])
+            assert read_env(env_file) == original_env
+            assert api('admin')['running_version'].removeprefix('v') == '1.0.17'
+            assert not capture(['docker', 'ps', '-aq', '--filter',
+                f'label=com.docker.compose.project={project}', '--filter', 'label=com.docker.compose.service=api-go'])
+            assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
+            assert capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment) == 't'
+            assert_logo()
+            manifest_checkpoint('first-go-delivery-recovered', '1.0.17', old_source=True, restored=True)
+            await_runner_version('1.0.17')
+            if browser:
+                (fixtures / 'releases.json').write_text(json.dumps([release for release in catalog if release['id'] in (1, 2, 117)]))
+
         print('Starting owner-authorized update to fixture 2.0.2.', flush=True)
         existing_archives = set((installation / 'backups').glob('*.tar.gz'))
         (fixtures / 'hold-backup').touch()
@@ -469,7 +805,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         while not (fixtures / 'backup-blocked').exists() and time.monotonic() < deadline:
             time.sleep(0.2)
         assert (fixtures / 'backup-blocked').exists(), 'Update did not reach its database backup'
-        assert not capture(compose('ps', '--status', 'running', '--services', 'api'), env=environment)
+        assert_data_services_stopped()
         assert_maintenance_web()
         assert_independent_access()
         assert independent_status()['active']['id'] == operation['id']
@@ -493,6 +829,14 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         retried = api('admin/updates', payload)['operation']
         assert retried['id'] == operation['id'] and retried['status'] == 'succeeded'
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
+        manifest_checkpoint('owner-upgrade-and-competing-backup-completed', '2.0.2')
+        command(compose(*database, "INSERT INTO public.assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at) VALUES ('11111111-1111-4111-8111-111111111111','00000000-0000-0000-0000-000000000000','fixture.lifecycle',1,'update-smoke','{\"checkpoint\":\"source\",\"integer\":9007199254740993}',3,clock_timestamp())"), env=environment)
+        go_intent_query = "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"
+        go_intent_snapshot = capture(compose(*database, go_intent_query), env=environment)
+        # Storage sentinel, without enabling a scheduler or changing the owner.
+        command(compose(*database, "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64))"), env=environment)
+        go_occurrence_snapshot = capture(compose(*database, "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222'"), env=environment)
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
@@ -515,21 +859,25 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         browser_check('completed')
         (fixtures / 'releases.json').write_text(json.dumps(catalog))
         prior_failures = {}
-        for failure, stage in (('fail-backup', 'backup'), ('fail-download', 'downloading')):
-            print(f'Testing controlled {stage} failure.', flush=True)
+        for failure, stage in (('fail-backup', 'backup'), ('fail-download', 'downloading'), ('fail-go-download', 'downloading')):
+            print(f'Testing controlled {failure} at {stage}.', flush=True)
             (fixtures / failure).touch()
             failed = api('admin/updates', {'release_id': 3, 'tag': 'v2.0.3', 'request_id': str(uuid4())})['operation']
             failed = await_operation(failed['id'])
             assert failed['status'] == 'failed' and failed['failed_stage'] == stage, failed
+            assert not (fixtures / failure).exists(), 'The intended failure injector was not reached: ' + failure
             prior_failures[failed['id']] = stage
             assert read_env(env_file) == upgraded_env
             assert not (installation / '.updater/pending-distribution').exists()
             assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+            assert_dual_apis('2.0.2')
             assert_logo()
+            manifest_checkpoint(f'{failure}-source-preserved', '2.0.2')
         print('Starting controlled migration failure to fixture 2.0.3.', flush=True)
         operation = api('admin/updates', {'release_id': 3, 'tag': 'v2.0.3', 'request_id': str(uuid4())})['operation']
         result = await_operation(operation['id'])
         assert result['status'] == 'recovery_required', result
+        assert_data_services_stopped()
         assert result['recovery']
         assert (installation / '.updater/pending-distribution/transaction.json').exists()
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'changed-by-failed-migration'
@@ -565,7 +913,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         with log.open('a') as output:
             failed_restore = subprocess.run(recover + [recovery_archive], stdout=output, stderr=output)
         assert failed_restore.returncode != 0
-        assert not capture(compose('ps', '--status', 'running', '--services', 'api', 'worker', 'beat'), env=environment)
+        assert_data_services_stopped()
         assert not runner_status()['can_update']
         assert_maintenance_web()
         assert independent_status()['is_owner']
@@ -574,8 +922,10 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert resume.exists()
         command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)', str(resume), recovery_archive, '--yes'])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
+        manifest_checkpoint('partial-migration-and-failed-restore-recovered', '2.0.2', restored=True)
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
         assert capture(compose(*database, "SELECT count(*) FROM information_schema.columns WHERE table_name = 'upgrade_sentinel' AND column_name = 'failed_release'"), env=environment) == '0'
         assert read_env(env_file) == upgraded_env
@@ -590,11 +940,14 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         unhealthy = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4', 'request_id': str(uuid4())})['operation']
         unhealthy = await_operation(unhealthy['id'])
         assert unhealthy['status'] == 'recovery_required' and unhealthy['failed_stage'] == 'health_check', unhealthy
+        assert_maintenance_web()
         transaction = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
         command(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert read_env(env_file) == upgraded_env
         assert_logo()
+        manifest_checkpoint('public-health-failure-recovered', '2.0.2', restored=True)
 
         print('Testing abrupt runner interruption with a surviving partial migration.', flush=True)
         (fixtures / 'migration-blocked').write_text('')
@@ -620,9 +973,84 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert not capture(running_migrations)
         command(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert runner_status()['can_update']
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted['id'])['status'] == 'recovered'
         assert_logo()
+        manifest_checkpoint('interrupted-migration-recovered', '2.0.2', restored=True)
+
+        print('Testing abrupt runner interruption while the packaged Go migration waits in PostgreSQL.', flush=True)
+        (fixtures / 'go-launch-ready').unlink(missing_ok=True)
+        (fixtures / 'hold-go-launch').touch()
+        interrupted_go = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4', 'request_id': str(uuid4())})['operation']
+        wait_marker('go-launch-ready')
+        # Backup is complete. This synthetic mutation must survive the rejected
+        # overlapping recovery, then disappear when the source backup is restored.
+        command(compose(*database, "UPDATE public.assozeta_go_jobs SET payload='{\"checkpoint\":\"after-snapshot\"}' WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)
+        changed_intent = capture(compose(*database, go_intent_query), env=environment)
+        assert changed_intent != go_intent_snapshot
+        with log.open('a') as output:
+            go_blocker = subprocess.Popen(compose('exec', '-T', 'postgres', 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1',
+                '-U', original_env['DBUSER'], '-d', original_env['DBNAME']), env=environment,
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=output, text=True)
+        go_blocker.stdin.write("BEGIN; LOCK TABLE public.assozeta_go_schema_migrations IN ACCESS EXCLUSIVE MODE; SELECT 'go-schema-locked';\n")
+        go_blocker.stdin.flush()
+        assert select.select([go_blocker.stdout], [], [], 10)[0], 'Fixture PostgreSQL lock not acquired'
+        assert go_blocker.stdout.readline().strip() == 'go-schema-locked'
+        (fixtures / 'hold-go-launch').unlink()
+        running_go = ['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={project}',
+                      '--filter', 'label=com.docker.compose.service=migrate-go', '--filter', 'label=com.docker.compose.oneoff=True']
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            go_container = capture(running_go)
+            waiting = capture(compose(*database, "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query ILIKE '%assozeta_go_schema_migrations%')"), env=environment)
+            if go_container and waiting == 't':
+                break
+            time.sleep(0.1)
+        else:
+            raise AssertionError('Packaged Go migration never blocked on actual PostgreSQL history')
+        details = json.loads(capture(['docker', 'inspect', go_container]))[0]
+        assert details['Config']['Image'] == backend_go[4] and details['Config']['Entrypoint'] == ['/app/migrate']
+        assert details['Config']['User'] == '10001:10001' and details['HostConfig']['ReadonlyRootfs']
+        go_waiter = subprocess.Popen(['docker', 'wait', go_container], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        runner_container = capture(['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={project}-updater'])
+        command(['docker', 'kill', '--signal', 'KILL', runner_container])
+        transaction = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
+        assert capture(running_go) == go_container, 'Go one-off did not survive updater termination'
+        with log.open('a') as output:
+            rejected = subprocess.run(recover + [transaction['backup']['path']], stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT, text=True, timeout=10)
+            output.write(rejected.stdout)
+        assert rejected.returncode != 0, 'Recovery overlapped an active Go migration'
+        assert 'a lifecycle helper is still running after an interruption' in rejected.stdout
+        assert capture(running_go) == go_container, 'Go migration exited before overlap refusal was proved'
+        assert read_env(env_file)['ASSOZETA_VERSION'] == '2.0.4'
+        assert capture(compose(*database, go_intent_query), env=environment) == changed_intent
+        go_blocker.stdin.write('ROLLBACK;\n\\q\n')
+        go_blocker.stdin.flush()
+        assert go_blocker.wait(timeout=10) == 0
+        go_blocker = None
+        exited, diagnostic = go_waiter.communicate(timeout=20)
+        assert go_waiter.returncode == 0 and exited.strip() == '0', 'Packaged migration did not finish successfully after lock release'
+        go_waiter = None
+        # Process exit notification can precede Docker's running-list update.
+        # Require the same absence the recovery guard checks before restarting.
+        deadline = time.monotonic() + 10
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 or not capture(running_go, timeout=remaining):
+                break
+            time.sleep(min(0.1, remaining))
+        assert not capture(running_go, timeout=5), 'Go migration is still listed as running after successful exit'
+        command(['docker', 'start', runner_container])
+        await_runner_version('2.0.2')
+        assert assert_interrupted_gate(interrupted_go)['failed_stage'] == 'migrating'
+        command(recover + [transaction['backup']['path']])
+        assert_dual_apis('2.0.2')
+        assert next(item for item in runner_status()['history'] if item['id'] == interrupted_go['id'])['status'] == 'recovered'
+        assert_logo()
+        manifest_checkpoint('interrupted-packaged-go-migration-recovered', '2.0.2', restored=True)
+        go_migration_interruption = True
 
         print('Testing abrupt runner interruption before the recovery snapshot exists.', flush=True)
         (fixtures / 'backup-blocked').unlink(missing_ok=True)
@@ -643,13 +1071,45 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert runner_status()['can_update']
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted['id'])['status'] == 'recovered'
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert read_env(env_file) == upgraded_env
         assert_logo()
+        manifest_checkpoint('interrupted-backup-reconciled', '2.0.2')
         success = True
         print('PASS: automatic provisioning, owner API update, competing CLI backup serialization, verified 2.0.2, runner replacement, preserved data/branding/secrets, backup/download/partial-migration/health failures, rejected mismatched backup, safely failed data restore, resumed recovery, abrupt runner interruption during migration and backup, overlap prevention, idempotent retries, and verified source reconciliation.', flush=True)
     finally:
+        if not success:
+            # Collect before container removal; synthetic credentials and stack
+            # output stay in the private fixture directory, never CI evidence.
+            try:
+                diagnostics = directory / 'failure-services.log'
+                with os.fdopen(os.open(diagnostics, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'w') as output:
+                    for compose_project in (project, project + '-updater'):
+                        listed = subprocess.run(['docker', 'ps', '-aq', '--filter',
+                            f'label=com.docker.compose.project={compose_project}'],
+                            stdout=subprocess.PIPE, stderr=output, text=True, timeout=30)
+                        for container in listed.stdout.split():
+                            subprocess.run(['docker', 'inspect', '--format',
+                                '{{.Name}} {{json .State}}', container], stdout=output, stderr=output, timeout=30)
+                            subprocess.run(['docker', 'logs', '--tail', '300', container],
+                                stdout=output, stderr=output, timeout=30)
+            except (OSError, subprocess.SubprocessError):
+                print('Private service diagnostics incomplete; continuing fixture cleanup.', flush=True)
         (fixtures / 'hold-backup').unlink(missing_ok=True)
         (fixtures / 'hold-migration').unlink(missing_ok=True)
+        (fixtures / 'hold-go-launch').unlink(missing_ok=True)
+        if go_blocker is not None:
+            try:
+                go_blocker.communicate('ROLLBACK;\n\\q\n', timeout=10)
+            except (OSError, subprocess.SubprocessError):
+                go_blocker.kill()
+                go_blocker.wait(timeout=10)
+        if go_waiter is not None:
+            try:
+                go_waiter.communicate(timeout=40)
+            except subprocess.TimeoutExpired:
+                go_waiter.kill()
+                go_waiter.wait(timeout=10)
         if competing_backup is not None:
             try:
                 competing_backup.wait(timeout=180)
@@ -667,7 +1127,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             subprocess.run(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         remove_disposable_project(project)
         if success:
-            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'update-recovery', {'images': {'backend': backend, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser})
+            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'old-controller-transition' if legacy_controller else 'update-recovery', {'images': {'backend': backend, 'backend_go': backend_go, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser, 'dual_api_delivery': True, 'go_operational_migrations': True, 'go_migration_interruption': go_migration_interruption, 'execution_owner': 'django-celery', 'historical_controller': historical_controller, 'manifest_checkpoints': manifest_checkpoints, 'manifest_maintenance': manifest_maintenance, 'realtime_relay_probes': realtime_probes})
             shutil.rmtree(directory)
         else:
             print(f'Failure artifacts retained privately at {directory}', flush=True)
@@ -675,8 +1135,12 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--legacy', action='store_true', help='Verify v1.0.2 bootstrap and subsequent owner update')
+    versions = parser.add_mutually_exclusive_group()
+    versions.add_argument('--legacy', action='store_true', help='Verify v1.0.2 bootstrap and subsequent owner update')
+    versions.add_argument('--legacy-controller', action='store_true', help='Use frozen v1.0.17 controller/lifecycle source with current application fixture; test first Go delivery failure, old-source recovery and owner update')
     parser.add_argument('--browser', action='store_true', help='Run CI browser checks against the disposable instance')
     parser.add_argument('--operations-only', action='store_true', help='Verify real owner settings/diagnostics in a disposable app, then clean up without running upgrades')
     arguments = parser.parse_args()
-    run(legacy=arguments.legacy, browser=arguments.browser or arguments.operations_only, operations_only=arguments.operations_only)
+    if arguments.legacy_controller and arguments.operations_only:
+        parser.error('--legacy-controller requires its update/recovery sequence; cannot combine with --operations-only')
+    run(legacy=arguments.legacy, browser=arguments.browser or arguments.operations_only, operations_only=arguments.operations_only, legacy_controller=arguments.legacy_controller)

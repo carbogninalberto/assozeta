@@ -1,0 +1,512 @@
+{
+ "matrix_version": 1,
+ "scope": "Workflow list/details authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "seed": {
+  "own_older": {
+   "id": "a1000000-0000-4000-8000-000000750001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Benvenuto",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "new_subscription",
+     "data": {}
+    },
+    {
+     "id": "message",
+     "value": "email",
+     "data": {
+      "subject": "Benvenuto à",
+      "content": "Ciao"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00Z",
+   "updated_at": "2026-10-21T10:00:00.250000Z"
+  },
+  "own_newer": {
+   "id": "a1000000-0000-4000-8000-000000750002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Promemoria",
+   "description": "Invio mensile",
+   "tree": [],
+   "enabled": true,
+   "created_at": "2026-10-22T09:00:00Z",
+   "updated_at": "2026-10-22T09:00:00Z"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000750003",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estero",
+   "description": "",
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "new_subscription",
+     "data": {}
+    },
+    {
+     "id": "message",
+     "value": "email",
+     "data": {
+      "subject": "Benvenuto à",
+      "content": "Ciao"
+     }
+    }
+   ],
+   "enabled": true,
+   "created_at": "2026-10-23T09:00:00Z",
+   "updated_at": "2026-10-23T09:00:00Z"
+  }
+ },
+ "cases": [
+  {
+   "name": "workflows-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "automation_workflow_id": "a1000000-0000-4000-8000-000000750002",
+     "name": "Promemoria",
+     "description": "Invio mensile",
+     "automation_tree": [],
+     "enabled": true,
+     "created_at": "2026-10-22T09:00:00Z",
+     "updated_at": "2026-10-22T09:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    {
+     "automation_workflow_id": "a1000000-0000-4000-8000-000000750001",
+     "name": "Benvenuto",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {}
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Benvenuto à",
+        "content": "Ciao"
+       }
+      }
+     ],
+     "enabled": false,
+     "created_at": "2026-10-20T09:00:00Z",
+     "updated_at": "2026-10-21T10:00:00.250000Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   ]
+  },
+  {
+   "name": "workflows-list-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "automation_workflow_id": "a1000000-0000-4000-8000-000000750002",
+     "name": "Promemoria",
+     "description": "Invio mensile",
+     "automation_tree": [],
+     "enabled": true,
+     "created_at": "2026-10-22T09:00:00Z",
+     "updated_at": "2026-10-22T09:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    {
+     "automation_workflow_id": "a1000000-0000-4000-8000-000000750001",
+     "name": "Benvenuto",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {}
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Benvenuto à",
+        "content": "Ciao"
+       }
+      }
+     ],
+     "enabled": false,
+     "created_at": "2026-10-20T09:00:00Z",
+     "updated_at": "2026-10-21T10:00:00.250000Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   ]
+  },
+  {
+   "name": "workflows-list-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/workflows/list'. Contact administrator to grant access."
+   }
+  },
+  {
+   "name": "workflows-list-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   }
+  },
+  {
+   "name": "workflows-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "workflows-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "automation_workflow_id": "a1000000-0000-4000-8000-000000750003",
+     "name": "Estero",
+     "description": "",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {}
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Benvenuto à",
+        "content": "Ciao"
+       }
+      }
+     ],
+     "enabled": true,
+     "created_at": "2026-10-23T09:00:00Z",
+     "updated_at": "2026-10-23T09:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701002"
+    }
+   ]
+  },
+  {
+   "name": "workflows-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "workflows-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": [
+    {
+     "automation_workflow_id": "a1000000-0000-4000-8000-000000750002",
+     "name": "Promemoria",
+     "description": "Invio mensile",
+     "automation_tree": [],
+     "enabled": true,
+     "created_at": "2026-10-22T09:00:00Z",
+     "updated_at": "2026-10-22T09:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    {
+     "automation_workflow_id": "a1000000-0000-4000-8000-000000750001",
+     "name": "Benvenuto",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {}
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Benvenuto à",
+        "content": "Ciao"
+       }
+      }
+     ],
+     "enabled": false,
+     "created_at": "2026-10-20T09:00:00Z",
+     "updated_at": "2026-10-21T10:00:00.250000Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   ]
+  },
+  {
+   "name": "workflows-list-deleted-association",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "workflows-list-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "workflows-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "workflows-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/workflows/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Communication Workflows List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  },
+  {
+   "name": "workflows-details-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000750001/details",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "automation_workflow_id": "a1000000-0000-4000-8000-000000750001",
+    "name": "Benvenuto",
+    "description": null,
+    "automation_tree": [
+     {
+      "id": "trigger",
+      "value": "new_subscription",
+      "data": {}
+     },
+     {
+      "id": "message",
+      "value": "email",
+      "data": {
+       "subject": "Benvenuto à",
+       "content": "Ciao"
+      }
+     }
+    ],
+    "enabled": false,
+    "created_at": "2026-10-20T09:00:00Z",
+    "updated_at": "2026-10-21T10:00:00.250000Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "workflows-details-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000750002/details",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "automation_workflow_id": "a1000000-0000-4000-8000-000000750002",
+    "name": "Promemoria",
+    "description": "Invio mensile",
+    "automation_tree": [],
+    "enabled": true,
+    "created_at": "2026-10-22T09:00:00Z",
+    "updated_at": "2026-10-22T09:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "workflows-details-foreign-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000750003/details",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "workflow not found."
+   }
+  },
+  {
+   "name": "workflows-details-missing-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000759999/details",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "workflow not found."
+   }
+  },
+  {
+   "name": "workflows-details-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/workflows/not-a-uuid/details",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ]
+  },
+  {
+   "name": "workflows-details-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000750001/details",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/workflows/a1000000-0000-4000-8000-000000750001/details'. Contact administrator to grant access."
+   }
+  },
+  {
+   "name": "workflows-details-foreign-owner-own-row",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000750003/details",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "automation_workflow_id": "a1000000-0000-4000-8000-000000750003",
+    "name": "Estero",
+    "description": "",
+    "automation_tree": [
+     {
+      "id": "trigger",
+      "value": "new_subscription",
+      "data": {}
+     },
+     {
+      "id": "message",
+      "value": "email",
+      "data": {
+       "subject": "Benvenuto à",
+       "content": "Ciao"
+      }
+     }
+    ],
+    "enabled": true,
+    "created_at": "2026-10-23T09:00:00Z",
+    "updated_at": "2026-10-23T09:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "workflows-details-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000750001/details",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Communication Workflows Details",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

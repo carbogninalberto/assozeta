@@ -1,0 +1,405 @@
+{
+  "schema_version": 1,
+  "scope": "Fixed historical collaborator/invitation overlay and public manifest reads; no Go import or installed acceptance claim.",
+  "base_fixture": {
+    "path": "TESTS/fixtures/bakney-v1.json",
+    "bytes": 15420,
+    "sha256": "0d0f5d58946de1306d93476261a6dc6fe09cb56c3b5e23b4d3dcd2c4e75f6713",
+    "model_count": 67,
+    "section_entry_count": 68
+  },
+  "historical_source": {
+    "repository": "carbogninalberto/django-bakney-sport",
+    "revision": "0058de5909734bdd0f00867abbdb723649de4238",
+    "retrieved_via": "GitHub read-only contents/tree API",
+    "files_sha256": {
+      "application/models/user_models.py": "43c96210095dc1444d1dfffb71b18e3676190badcbe9711223a8cf1173fe3a1c",
+      "application/serializers/collaborators_serializers.py": "a79281391ff5d528e8e61fb693c47ac9f3711d181a1765a178f659495c3ec09f",
+      "application/views/collaborator_views.py": "d3c179f8408cb6eae45a9795d2d9a14c88696870b51e7e0582c650276622c5bb",
+      "application/services/export_service.py": "79d5a8c5df1160c101f7113ad8418bbd393ae250615335381f6d4b02e85032f2",
+      "application/services/import_service.py": "5d91f2b366f80a5d807483fee4476236b00ae7db20fe87b7d49dad2eda4c07b2",
+      "instance/views.py": "f013fb282baa21d9dbefe0532a25a63ebeadd42d5d9fba64a645362169119779",
+      "instance/models.py": "f6ec902a7a1d66b4ea228fa1275209898b895707d05be351efe9ed7caab0fc7c"
+    },
+    "evidence": {
+      "user_fields": "User.connected_user, deleted, role, is_active, phone, collaborator_role and nullable collaborator_permissions JSONField exist.",
+      "invite_fields": "CollaborationInvites has user, email, creation_date, accepted, nullable expiration_date/token, collaborator_role and nullable JSON permissions.",
+      "serializer": "CollaboratorSerializer exposes nine user fields; CollaborationInviteSerializer exposes seven invitation fields.",
+      "archive_selection": "The historical exporter includes the owner, users connected to that owner (including soft-deleted users), association athletes, and users referenced by exported signatures. The source also notes certificate-related referenced users near credential export. It does not establish arbitrary unrelated foreign-owner export.",
+      "instance_manifest": "The historical manifest reads configured name, abbreviation, description, logo suffix, start URL, display mode, background color and theme color."
+    },
+    "limits": [
+      "The overlay is synthetic data authored from the pinned model/export/serializer definitions; it is not copied from production or customer data.",
+      "An arbitrary unrelated foreign owner or foreign-owner collaborator is not supported by this archive selection. Referenced users can be exported in other archive shapes, but this base has zero Signature rows, so there is no signature-referenced-user fixture coverage. This fixture checks only an unknown detail ID; persisted foreign-owner scope remains covered by the separate current-schema oracle.",
+      "The current exporter and current Django/Go models are not evidence for these historical fields.",
+      "No actual historical import, runtime, all-model preservation, cache, or Go acceptance is claimed by the fixture itself."
+    ]
+  },
+  "overlay_algorithm": "sha256 of UTF-8 canonical JSON (sort_keys=true, ensure_ascii=false, separators comma/colon) over archive_overlay only",
+  "overlay_sha256": "2bd99dcf584bfdc851bb2523861b7db5dac3acd082fb22efb73586659232ac68",
+  "derived_archive_sha256": "c7f889d6975782da7b34a27194068202de69e47af4539f3e005f8730cff16c66",
+  "archive_overlay": {
+    "operations": [
+      {
+        "op": "append",
+        "section": "data/02_users.json",
+        "records": [
+          {
+            "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fac",
+            "username": "legacy-active-collaborator",
+            "email": "legacy-active-collaborator@example.test",
+            "role": 3,
+            "first_name": "Legacy",
+            "last_name": "Active Collaborator",
+            "phone": null,
+            "is_active": true,
+            "connected_user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+            "collaborator_role": 1,
+            "collaborator_permissions": null,
+            "deleted": false
+          },
+          {
+            "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fad",
+            "username": "legacy-inactive-collaborator",
+            "email": "legacy-inactive-collaborator@example.test",
+            "role": 3,
+            "first_name": "Legacy",
+            "last_name": "Inactive Collaborator",
+            "phone": "+39 055 000 0001",
+            "is_active": false,
+            "connected_user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+            "collaborator_role": 3,
+            "collaborator_permissions": {
+              "calendar": true,
+              "access_level": 1,
+              "rate": 1.25,
+              "large_integer": 9007199254740993,
+              "optional": null,
+              "nested": [
+                false,
+                2,
+                2.0
+              ]
+            },
+            "deleted": false
+          },
+          {
+            "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fae",
+            "username": "legacy-deleted-collaborator",
+            "email": "legacy-deleted-collaborator@example.test",
+            "role": 3,
+            "first_name": "Legacy",
+            "last_name": "Deleted Collaborator",
+            "phone": "",
+            "is_active": true,
+            "connected_user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+            "collaborator_role": 3,
+            "collaborator_permissions": [
+              "association.calendar.read"
+            ],
+            "deleted": true,
+            "delete_on": "2026-08-01"
+          }
+        ]
+      },
+      {
+        "op": "append",
+        "section": "data/05_collaboration_invites.json",
+        "records": [
+          {
+            "collaboration_invite_id": "f4b360ff-0fa7-58a2-bf1b-f2016dbac001",
+            "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+            "email": "legacy-accepted@example.test",
+            "creation_date": "2026-01-02T03:04:05Z",
+            "accepted": true,
+            "expiration_date": null,
+            "token": "synthetic-accepted-invite-token",
+            "collaborator_role": 1,
+            "collaborator_permissions": null
+          },
+          {
+            "collaboration_invite_id": "f4b360ff-0fa7-58a2-bf1b-f2016dbac002",
+            "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+            "email": "legacy-pending@example.test",
+            "creation_date": "2026-09-02T03:04:05Z",
+            "accepted": false,
+            "expiration_date": "2099-12-31T23:59:59Z",
+            "token": "synthetic-pending-invite-token",
+            "collaborator_role": 3,
+            "collaborator_permissions": {
+              "other.users.collaborators.read": true,
+              "nested": [
+                1,
+                false,
+                1.5,
+                null
+              ]
+            }
+          },
+          {
+            "collaboration_invite_id": "f4b360ff-0fa7-58a2-bf1b-f2016dbac003",
+            "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+            "email": "legacy-expired@example.test",
+            "creation_date": "2019-12-31T23:59:59.000006Z",
+            "accepted": false,
+            "expiration_date": "2020-01-02T03:04:05.000006Z",
+            "token": null,
+            "collaborator_role": 2,
+            "collaborator_permissions": []
+          }
+        ]
+      }
+    ],
+    "authored_fields": {
+      "User": [
+        "user_id",
+        "username",
+        "email",
+        "role",
+        "first_name",
+        "last_name",
+        "phone",
+        "is_active",
+        "connected_user_id",
+        "collaborator_role",
+        "collaborator_permissions",
+        "deleted",
+        "delete_on"
+      ],
+      "CollaborationInvites": [
+        "collaboration_invite_id",
+        "user_id",
+        "email",
+        "creation_date",
+        "accepted",
+        "expiration_date",
+        "token",
+        "collaborator_role",
+        "collaborator_permissions"
+      ]
+    },
+    "omitted_field_policy": {
+      "User.password": "Omitted for all added collaborators so only the base owner's explicit contract credentials are published; the historical importer assigns an unusable password to added users.",
+      "other_model_defaults": "Omitted fields are model/import defaults and are outside this read-route fixture. Every authored key is checked against the pinned field set; no unknown or ignored key is accepted."
+    }
+  },
+  "expected_counts": {
+    "User": 4,
+    "CollaborationInvites": 3
+  },
+  "ids": {
+    "owner": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+    "association": "7616fd26-589f-5551-b17f-0478e305434d",
+    "person": "af8f8de9-fb66-5159-b063-0c5e8621ba23",
+    "payment": "54f20853-07d2-532b-9f9a-4d7d1b411c2b",
+    "subscription": "c493a68f-2401-5339-b079-3f62db825c39",
+    "document": "238c77cc-288f-5a21-bc36-763577732652",
+    "active_collaborator": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fac",
+    "inactive_collaborator": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fad",
+    "deleted_collaborator": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fae",
+    "unknown_user": "f4b360ff-0fa7-58a2-bf1b-f2016dba1faf",
+    "accepted_invite": "f4b360ff-0fa7-58a2-bf1b-f2016dbac001",
+    "pending_invite": "f4b360ff-0fa7-58a2-bf1b-f2016dbac002",
+    "expired_invite": "f4b360ff-0fa7-58a2-bf1b-f2016dbac003"
+  },
+  "retired_policy": {
+    "explicit_skip_records": {
+      "BillingPlan": 1,
+      "PreviewAndCustomFeatures": 1
+    },
+    "rule": "Only these historical software-plan entitlement sections are retired. Every other model remains in the frozen section order and cannot be silently skipped."
+  },
+  "setup": {
+    "requires_unconfigured_instance": true,
+    "import": {
+      "upload_path": "/association/import/start",
+      "archive_filename": "historical-read-routes.zip",
+      "status_path_template": "/association/import/status?task_id={task_id}",
+      "setup_token_source": "Existing disposable runtime fixture; the archive itself intentionally has no setup token.",
+      "expected_success": true,
+      "skipped_records": {
+        "BillingPlan": 1,
+        "PreviewAndCustomFeatures": 1
+      }
+    },
+    "configure_path": "/instance/configure",
+    "configure": {
+      "domain": "localhost",
+      "oem": {
+        "name": "Historical contract club",
+        "abbreviation": "HCC",
+        "primaryColor": "#1A2B3C"
+      },
+      "initialization": {
+        "type": "import",
+        "importTaskId": "$import_task_id"
+      }
+    }
+  },
+  "http": {
+    "manifest": {
+      "path": "/instance/manifest.json",
+      "status": 200,
+      "body": {
+        "name": "Historical contract club",
+        "short_name": "HCC",
+        "description": "Gestionale per associazioni sportive",
+        "icons": [
+          {
+            "src": "/oem/assozeta/brand/logo.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+          },
+          {
+            "src": "/oem/assozeta/brand/logo.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml"
+          }
+        ],
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#1A2B3C"
+      }
+    },
+    "collaborators": {
+      "list_path": "/collaborators/list",
+      "detail_path_template": "/collaborators/list?user_id={user_id}",
+      "list_status": 200,
+      "detail_status": 200,
+      "expected_absent_ids": [
+        "f4b360ff-0fa7-58a2-bf1b-f2016dba1fae",
+        "f4b360ff-0fa7-58a2-bf1b-f2016dba1faf"
+      ],
+      "list_records": [
+        {
+          "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fac",
+          "first_name": "Legacy",
+          "last_name": "Active Collaborator",
+          "email": "legacy-active-collaborator@example.test",
+          "phone": null,
+          "role": 3,
+          "connected_user": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+          "collaborator_role": 1,
+          "collaborator_permissions": null,
+          "is_invite": false
+        },
+        {
+          "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fad",
+          "first_name": "Legacy",
+          "last_name": "Inactive Collaborator",
+          "email": "legacy-inactive-collaborator@example.test",
+          "phone": "+39 055 000 0001",
+          "role": 3,
+          "connected_user": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+          "collaborator_role": 3,
+          "collaborator_permissions": {
+            "calendar": true,
+            "access_level": 1,
+            "rate": 1.25,
+            "large_integer": 9007199254740993,
+            "optional": null,
+            "nested": [
+              false,
+              2,
+              2.0
+            ]
+          },
+          "is_invite": false
+        },
+        {
+          "collaboration_invite_id": "f4b360ff-0fa7-58a2-bf1b-f2016dbac001",
+          "email": "legacy-accepted@example.test",
+          "expiration_date": null,
+          "accepted": true,
+          "token": "synthetic-accepted-invite-token",
+          "collaborator_role": 1,
+          "collaborator_permissions": null,
+          "is_invite": true
+        },
+        {
+          "collaboration_invite_id": "f4b360ff-0fa7-58a2-bf1b-f2016dbac002",
+          "email": "legacy-pending@example.test",
+          "expiration_date": "2099-12-31T23:59:59Z",
+          "accepted": false,
+          "token": "synthetic-pending-invite-token",
+          "collaborator_role": 3,
+          "collaborator_permissions": {
+            "other.users.collaborators.read": true,
+            "nested": [
+              1,
+              false,
+              1.5,
+              null
+            ]
+          },
+          "is_invite": true
+        },
+        {
+          "collaboration_invite_id": "f4b360ff-0fa7-58a2-bf1b-f2016dbac003",
+          "email": "legacy-expired@example.test",
+          "expiration_date": "2020-01-02T03:04:05.000006Z",
+          "accepted": false,
+          "token": null,
+          "collaborator_role": 2,
+          "collaborator_permissions": [],
+          "is_invite": true
+        }
+      ],
+      "details": {
+        "active_collaborator": {
+          "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fac",
+          "first_name": "Legacy",
+          "last_name": "Active Collaborator",
+          "email": "legacy-active-collaborator@example.test",
+          "phone": null,
+          "role": 3,
+          "connected_user": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+          "collaborator_role": 1,
+          "collaborator_permissions": null
+        },
+        "inactive_collaborator": {
+          "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fad",
+          "first_name": "Legacy",
+          "last_name": "Inactive Collaborator",
+          "email": "legacy-inactive-collaborator@example.test",
+          "phone": "+39 055 000 0001",
+          "role": 3,
+          "connected_user": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+          "collaborator_role": 3,
+          "collaborator_permissions": {
+            "calendar": true,
+            "access_level": 1,
+            "rate": 1.25,
+            "large_integer": 9007199254740993,
+            "optional": null,
+            "nested": [
+              false,
+              2,
+              2.0
+            ]
+          }
+        },
+        "empty": {
+          "user_id": null,
+          "first_name": "",
+          "last_name": "",
+          "email": "",
+          "phone": "",
+          "role": null,
+          "connected_user": null,
+          "collaborator_role": null,
+          "collaborator_permissions": null
+        }
+      },
+      "deleted_detail": "empty",
+      "unknown_detail": "empty",
+      "anonymous": {
+        "status": 401,
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        }
+      }
+    }
+  }
+}

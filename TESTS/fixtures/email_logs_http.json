@@ -1,0 +1,299 @@
+{
+ "matrix_version": 1,
+ "scope": "Email-logs list authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "rows": {
+  "own_recent": {
+   "id": "a1000000-0000-4000-8000-000000740001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "offset": 7200,
+   "recipient": "socio@example.test",
+   "subject": "Avviso",
+   "result": "sent"
+  },
+  "own_today_edge": {
+   "id": "a1000000-0000-4000-8000-000000740002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "offset": 75600,
+   "recipient": null,
+   "subject": "Senza destinatario",
+   "result": "bounced"
+  },
+  "own_yesterday": {
+   "id": "a1000000-0000-4000-8000-000000740003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "offset": 97200,
+   "recipient": "socio@example.test",
+   "subject": "Ieri à",
+   "result": "sent"
+  },
+  "own_window_edge": {
+   "id": "a1000000-0000-4000-8000-000000740004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "offset": 7765200,
+   "recipient": "socio@example.test",
+   "subject": "Avviso",
+   "result": "sent"
+  },
+  "own_expired": {
+   "id": "a1000000-0000-4000-8000-000000740005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "offset": 7786800,
+   "recipient": "socio@example.test",
+   "subject": "Avviso",
+   "result": "sent"
+  },
+  "foreign_recent": {
+   "id": "a1000000-0000-4000-8000-000000740006",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "offset": 3600,
+   "recipient": "socio@example.test",
+   "subject": "Avviso",
+   "result": "sent"
+  },
+  "deleted_association_recent": {
+   "id": "a1000000-0000-4000-8000-000000740007",
+   "association": "a1000000-0000-4000-8000-000000701003",
+   "offset": 10800,
+   "recipient": "socio@example.test",
+   "subject": "Avviso",
+   "result": "sent"
+  },
+  "admin_recent": {
+   "id": "a1000000-0000-4000-8000-000000740008",
+   "association": "a1000000-0000-4000-8000-000000711001",
+   "offset": 14400,
+   "recipient": "socio@example.test",
+   "subject": "Avviso",
+   "result": "sent"
+  },
+  "null_association": {
+   "id": "a1000000-0000-4000-8000-000000740009",
+   "association": null,
+   "offset": 3600,
+   "recipient": "socio@example.test",
+   "subject": "Avviso",
+   "result": "sent"
+  }
+ },
+ "window_margin_seconds": 10800,
+ "cases": [
+  {
+   "name": "email-logs-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "today_count": 2,
+    "total_count": 4,
+    "results": [
+     "$row:own_recent",
+     "$row:own_today_edge",
+     "$row:own_yesterday",
+     "$row:own_window_edge"
+    ]
+   }
+  },
+  {
+   "name": "email-logs-foreign-owner-isolated",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "today_count": 1,
+    "total_count": 1,
+    "results": [
+     "$row:foreign_recent"
+    ]
+   }
+  },
+  {
+   "name": "email-logs-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "email-logs-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "email-logs-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "today_count": 2,
+    "total_count": 4,
+    "results": [
+     "$row:own_recent",
+     "$row:own_today_edge",
+     "$row:own_yesterday",
+     "$row:own_window_edge"
+    ]
+   }
+  },
+  {
+   "name": "email-logs-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "today_count": 2,
+    "total_count": 4,
+    "results": [
+     "$row:own_recent",
+     "$row:own_today_edge",
+     "$row:own_yesterday",
+     "$row:own_window_edge"
+    ]
+   }
+  },
+  {
+   "name": "email-logs-restricted-collaborator-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/email-logs/list'. Contact administrator to grant access."
+   }
+  },
+  {
+   "name": "email-logs-athlete-not-association",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   }
+  },
+  {
+   "name": "email-logs-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "email-logs-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "email-logs-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "email-logs-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/email-logs/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Communication Email Logs List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  },
+  {
+   "name": "email-logs-forged-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/email-logs/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:forged",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+    "impersonation_invalid": "True"
+   }
+  }
+ ]
+}
