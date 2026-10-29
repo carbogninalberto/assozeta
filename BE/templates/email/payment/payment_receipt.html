@@ -1,0 +1,13 @@
+{% extends "email/_base.html" %}
+{% block title %}Ricevuta di pagamento {{ settings.WHITELABEL_NAME }}{% endblock %}
+{% block preheader %}Ricevuta di pagamento n. {{ receipt_number }}{% endblock %}
+{% block aria_label %}Ricevuta di pagamento{% endblock %}
+{% block content %}
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px">Ciao <b>{{ recipient_name }}</b>,</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000">Ecco la tua ricevuta di {{ amount }}€ n. {{ receipt_number }} del {{ payment_date }}.</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px">{{ description|safe }}</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px"><a href="{{ download_url }}" class="email-button" style="font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-size: 16px; font-weight: 600">Scarica la ricevuta</a></p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 16px">Se non riesci a scaricare la ricevuta, copia e incolla il seguente link nel tuo browser:</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px; word-break: break-all">{{ download_url }}</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0">Cordiali saluti,<br>{{ association_name }}</p>
+{% endblock %}
