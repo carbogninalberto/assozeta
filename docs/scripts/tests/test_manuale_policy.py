@@ -12,6 +12,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 import zipfile
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -150,7 +152,7 @@ class ManualPolicyTests(unittest.TestCase):
         repo = 'example/application'
         run = {'id': 12, 'status': 'completed', 'conclusion': 'success',
                'repository': {'full_name': repo}, 'head_repository': {'full_name': repo},
-               'path': '.github/workflows/manuale.yml', 'event': 'pull_request'}
+               'path': '.github/workflows/manuale.yml', 'event': 'push', 'head_branch': 'main'}
         artifact = {'expired': False, 'workflow_run': {'id': 12}, 'digest': 'sha256:' + 'a' * 64}
         return repo, run, artifact
 
@@ -159,13 +161,40 @@ class ManualPolicyTests(unittest.TestCase):
         self.assertIsNone(policy.producer_rejection(run, artifact, repo, accepted_source=True))
         for change in ({'status': 'in_progress'}, {'conclusion': 'failure'}, {'conclusion': 'cancelled'},
                        {'head_repository': {'full_name': 'fork/application'}},
-                       {'path': '.github/workflows/arbitrary.yml'}, {'event': 'pull_request_target'}):
+                       {'path': '.github/workflows/arbitrary.yml'}, {'event': 'pull_request_target'},
+                       {'event': 'pull_request'}, {'event': 'workflow_run'}, {'head_branch': 'feature/x'},
+                       {'event': 'workflow_dispatch', 'head_branch': 'feature/x'}, {'head_branch': None}):
             self.assertIsNotNone(policy.producer_rejection({**run, **change}, artifact, repo, accepted_source=True))
         self.assertIsNotNone(policy.producer_rejection(run, artifact, repo, accepted_source=False))
         for change in ({'expired': True}, {'workflow_run': {'id': 13}}, {'digest': ''}):
             self.assertIsNotNone(policy.producer_rejection(run, {**artifact, **change}, repo, accepted_source=True))
 
-    def test_source_admission_requires_real_default_branch_ancestry_or_merged_pr(self):
+    def test_pull_request_runs_are_never_a_trusted_baseline(self):
+        repo, run, artifact = self.trusted_producer()
+        for event in ('pull_request', 'pull_request_target'):
+            reason = policy.producer_rejection({**run, 'event': event}, artifact, repo, accepted_source=True)
+            self.assertEqual(reason, 'pull request artifacts are never a trusted baseline')
+        for change in ({'event': 'schedule'}, {'event': 'workflow_dispatch'},
+                       {'event': 'release', 'head_branch': 'v1.4.0'}, {'event': 'push', 'head_branch': 'v1.4.0'}):
+            self.assertIsNone(policy.producer_rejection({**run, **change}, artifact, repo, accepted_source=True), change)
+        self.assertIsNotNone(policy.producer_rejection({**run, 'event': 'release', 'head_branch': 'nightly'},
+                                                       artifact, repo, accepted_source=True))
+        self.assertIsNotNone(policy.producer_rejection({**run, 'head_branch': 'develop'}, artifact, repo,
+                                                       accepted_source=True))
+        self.assertIsNone(policy.producer_rejection({**run, 'head_branch': 'develop'}, artifact, repo,
+                                                    accepted_source=True, default_branch='develop'))
+
+    def test_pull_request_verification_never_uploads_an_admissible_baseline(self):
+        shared = yaml.safe_load((ROOT / '.github/workflows/manuale-verify.yml').read_text())
+        steps = shared['jobs']['verify']['steps']
+        uploads = [step for step in steps if step.get('with', {}).get('name') == 'manuale-verified-baseline']
+        self.assertEqual(len(uploads), 1)
+        condition = uploads[0]['if']
+        self.assertIn("!startsWith(github.event_name, 'pull_request')", condition)
+        self.assertIn('github.event.repository.default_branch', condition)
+        self.assertIn("startsWith(github.ref, 'refs/tags/')", condition)
+
+    def test_source_admission_requires_real_default_branch_ancestry_never_a_merged_pr(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             def git(*args):
@@ -178,17 +207,20 @@ class ManualPolicyTests(unittest.TestCase):
             git('update-ref', 'refs/remotes/origin/main', accepted)
             git('commit', '--allow-empty', '-qm', 'Unmerged fixture')
             unmerged = git('rev-parse', 'HEAD')
-            run = {'event': 'pull_request', 'head_sha': unmerged}
+            run = {'event': 'push', 'head_sha': unmerged}
             args = {'root': root, 'api': lambda endpoint: []}
             self.assertFalse(policy.accepted_source(run, 'example/application', 'origin/main', **args))
             self.assertTrue(policy.accepted_source({**run, 'head_sha': accepted}, 'example/application', 'origin/main', **args))
+            # A merged pull request record never confers trust on the PR run, and a PR run
+            # whose commit is already on the default branch is still not a trusted producer.
             pr = {'merged_at': 'fixture', 'merge_commit_sha': accepted,
                   'head': {'sha': unmerged, 'repo': {'full_name': 'example/application'}},
                   'base': {'repo': {'full_name': 'example/application'}}}
             args['api'] = lambda endpoint: [pr]
-            self.assertTrue(policy.accepted_source(run, 'example/application', 'origin/main', **args))
-            pr['merged_at'] = None
-            self.assertFalse(policy.accepted_source(run, 'example/application', 'origin/main', **args))
+            pull = {'event': 'pull_request', 'head_sha': unmerged}
+            self.assertFalse(policy.accepted_source(pull, 'example/application', 'origin/main', **args))
+            self.assertFalse(policy.accepted_source({**pull, 'head_sha': accepted}, 'example/application',
+                                                    'origin/main', **args))
 
     def test_authenticated_artifact_digest_and_exact_archive_layout(self):
         with tempfile.TemporaryDirectory() as temporary:

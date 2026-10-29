@@ -1,0 +1,114 @@
+name: Publish trusted manual evidence store
+
+# Called only after every gate of a trusted run passed. Merges this run's
+# freshly captured per-workflow evidence (the candidate uploaded by the
+# verifier) into the previous trusted store, keeps one verified entry per
+# workflow at the current fingerprints, and uploads two artifacts: a small
+# index (manifests, evidence records, reports) and the screenshot blobs.
+# Consumers trust an entry only after the GitHub API reports its producer run
+# as a successful push/release/schedule/dispatch on the default branch or a
+# release tag; PR runs never reach this workflow's upload steps.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish:
+    name: Publish per-workflow evidence after every gate
+    if: >-
+      ${{ !startsWith(github.event_name, 'pull_request') &&
+          (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
+           startsWith(github.ref, 'refs/tags/')) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: docs/manuale/requirements-offline.txt
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - name: Install store verifier dependencies
+        run: python3 -m pip install -r docs/manuale/requirements-offline.txt
+      - name: Download this run's store candidate
+        id: candidate
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-evidence-store-candidate
+          path: ${{ runner.temp }}/manuale-store-candidate
+      - name: Merge fresh evidence into the previous trusted store
+        id: merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STORE: ${{ runner.temp }}/manuale-store
+          CANDIDATE: ${{ runner.temp }}/manuale-store-candidate
+        run: |
+          if [[ ! -f "$CANDIDATE/index.json" ]]; then
+            echo 'Every workflow reused trusted evidence; the previous store stays current.'
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 docs/scripts/manuale-cache.py store-fetch --kind index --store "$STORE" \
+            --output "$RUNNER_TEMP/store-index.json"
+          producer=$(python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); print(r.get("producer_run") or "")' \
+            "$RUNNER_TEMP/store-index.json")
+          if [[ -n "$producer" ]]; then
+            python3 docs/scripts/manuale-cache.py store-fetch --kind blobs --store "$STORE" \
+              --producer-run "$producer" --output "$RUNNER_TEMP/store-blobs.json"
+          fi
+          # Carry forward only fully verified, authenticated entries at the
+          # current fingerprints; then add this run's candidate entries.
+          python3 docs/scripts/manuale-cache.py store-producers --store "$STORE" \
+            --output "$RUNNER_TEMP/store-trusted.json"
+          python3 docs/scripts/manuale_timing.py stage evidence-store-compact -- \
+            python3 docs/scripts/manuale-cache.py store-compact --store "$STORE" \
+            --trusted-producers "$RUNNER_TEMP/store-trusted.json"
+          python3 docs/scripts/manuale_timing.py stage evidence-store-merge -- \
+            python3 docs/scripts/manuale-cache.py store-merge --candidate "$CANDIDATE" --store "$STORE" \
+            --run-id "$GITHUB_RUN_ID"
+          # An empty store (nothing verified to carry forward) is not an error:
+          # nothing is uploaded and the next run starts cold.
+          entries=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1])).get("entries") or {}))' \
+            "$STORE/index.json" 2>/dev/null || echo 0)
+          if [[ "$entries" -gt 0 ]]; then
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'The merged store holds no verified entries; nothing is published.'
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+          fi
+          if [[ "$entries" -gt 0 && -n "$(find "$STORE/blobs" -type f -print -quit 2>/dev/null)" ]]; then
+            echo 'blobs=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'blobs=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Upload the trusted store index
+        if: ${{ steps.merge.outputs.publish == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-evidence-store-index
+          path: |
+            ${{ runner.temp }}/manuale-store/index.json
+            ${{ runner.temp }}/manuale-store/workflows/
+          if-no-files-found: warn
+          retention-days: 90
+      - name: Upload the trusted store screenshots
+        if: ${{ steps.merge.outputs.publish == 'true' && steps.merge.outputs.blobs == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-evidence-store-blobs
+          path: ${{ runner.temp }}/manuale-store/blobs/
+          if-no-files-found: warn
+          retention-days: 90
+      - name: Summarize store publication
+        if: always()
+        run: >-
+          python3 docs/scripts/manuale_timing.py summary --title 'Manual evidence store'
+          --artifact "evidence store=$RUNNER_TEMP/manuale-store"

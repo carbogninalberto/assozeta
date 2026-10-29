@@ -1,8 +1,10 @@
 # Manuale d’uso: lavoro necessario e criteri di consegna
 
-La fonte dei capitoli è il repository locale `../manuale` (`Bakney/manuale`).
-La bozza completa conserva `mint.json`, frontmatter, capitoli, sezioni e componenti
-MDX. La fonte serve per struttura e stile; le affermazioni devono essere verificate
+La fonte dei capitoli è la cartella `manuale/` di questo repository (importata
+dal vecchio repository `Bakney/manuale`, che non è più una fonte accettata).
+La bozza completa conserva `mint.json` (solo come file di navigazione: Mintlify
+non è richiesto), frontmatter, capitoli, sezioni e componenti MDX. La fonte
+serve per struttura e stile; le affermazioni devono essere verificate
 nel codice Assozeta e negli scenari reali.
 
 ## Preparazione della release
@@ -22,12 +24,14 @@ sostituito da istruzioni appartenenti a un'altra versione.
 
 Criteri di consegna della PR:
 
-1. Integrare `main` e la stesura mantenuta in `Bakney/manuale`, conservando i
+1. Integrare `main` e la stesura mantenuta in `manuale/`, conservando i
    controlli di accesso, l'importazione dei backup e le lacune esplicite.
 2. Verificare il manuale sulla revisione applicativa finale committata; riusare
    catture precedenti soltanto dopo i controlli di compatibilità del runner.
-3. Verificare rendering, testo, immagini autenticate, navigazione, ricerca,
-   lettore incorporato e assistente/MCP reali senza provider AI.
+3. Verificare il rendering con il controllo offline del lettore integrato
+   (`reader_render`, nessun server Mintlify), testo, immagini autenticate,
+   navigazione, ricerca, lettore incorporato e assistente/MCP reali senza
+   provider AI.
 4. Preparare il bundle dalle prove valutate. La stesura di input è committata;
    MDX e PNG generati restano artefatti con provenienza
    `generated-from-committed` e stato `release-bundled`. Non occorre creare un
@@ -63,7 +67,8 @@ The verified installation replaced the reader-only draft preview.
   complete 43-page/507-section inventory.
 - **73 explicit gaps** remain excluded from verified instructions: 61 require
   external-service evidence and 12 describe unsupported procedures.
-- Actual Mintlify rendering passed 434 anchors and 968 displayed image references;
+- Actual Mintlify rendering (the render gate at that time, since replaced by the
+  offline in-app reader check) passed 434 anchors and 968 displayed image references;
   1,402 section/image layouts and 42 page screenshots are retained for review.
 - The embedded application reader passed all **434 sections and 982 image
   references**, exact prose/block checks, enlargement dialogs, deep links,

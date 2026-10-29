@@ -65,13 +65,263 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
+  plan:
+    name: Plan manual verification from the change impact
     if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.edit_content) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+      verify: ${{ steps.plan.outputs.verify }}
+      force_full: ${{ steps.plan.outputs.force_full }}
+      content: ${{ steps.plan.outputs.content }}
+      workflows: ${{ steps.plan.outputs.workflows }}
+      bot: ${{ steps.plan.outputs.bot }}
+      mcp: ${{ steps.plan.outputs.mcp }}
+      browser_helpers: ${{ steps.plan.outputs.browser_helpers }}
+      appliance: ${{ steps.plan.outputs.appliance }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - name: Classify changed files into fresh, reused and unaffected work
+        id: plan
+        env:
+          # Schedules and explicit dispatches keep the full verification path.
+          FORCE_FULL: ${{ github.event_name == 'schedule' || inputs.force_full || false }}
+          BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+        run: |
+          options=()
+          if [[ "$FORCE_FULL" == true ]]; then options+=(--force-full); fi
+          # No base (dispatch, new branch): the planner fails closed.
+          python3 docs/scripts/manuale-ci.py plan --base "$BASE_REVISION" --head HEAD \
+            --output "$RUNNER_TEMP/manuale-impact/impact.json" "${options[@]}"
+      - name: Retain the impact plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-impact
+          path: ${{ runner.temp }}/manuale-impact/impact.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Summarize the plan
+        if: always()
+        run: >-
+          python3 docs/scripts/manuale_timing.py summary --title 'Manual CI plan'
+          --impact "$RUNNER_TEMP/manuale-impact/impact.json"
+
+  offline:
+    # Mode A: no Docker Compose, Postgres, Redis, MinIO or application images.
+    name: Offline manual, Bot and MCP contracts
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: |
+            docs/manuale/requirements-offline.txt
+            BE/requirements.txt
+            BE/requirements-test.txt
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@v4
+        with:
+          name: manuale-impact
+          path: ${{ runner.temp }}/manuale-impact
+      - name: Install offline verifier dependencies
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-dependencies --
+          bash -c 'python3 -m pip install -r docs/manuale/requirements-offline.txt
+          && npm --prefix selfhost/tests/browser ci'
+      - name: Restore Playwright browsers
+        if: ${{ needs.plan.outputs.browser_helpers == 'true' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('selfhost/tests/browser/package-lock.json') }}
+      - name: Install Chromium for changed browser helpers
+        if: ${{ needs.plan.outputs.browser_helpers == 'true' }}
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-chromium --
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+      - name: Validate local source mappings and deterministic recipe behavior
+        run: python3 docs/scripts/manuale-ci.py offline --suite python
+      - name: Verify browser capture helpers and dropdown behavior
+        env:
+          WITH_BROWSER: ${{ needs.plan.outputs.browser_helpers }}
+        run: |
+          options=()
+          if [[ "$WITH_BROWSER" == true ]]; then options+=(--with-browser); fi
+          python3 docs/scripts/manuale-ci.py offline --suite node "${options[@]}"
+      - name: Install backend test dependencies for Bot and MCP contracts
+        if: ${{ needs.plan.outputs.bot == 'true' || needs.plan.outputs.mcp == 'true' }}
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-backend --
+          python3 -m pip install -r BE/requirements.txt -r BE/requirements-test.txt
+      - name: Check manual, Bot and MCP tool contracts offline
+        if: ${{ needs.plan.outputs.bot == 'true' || needs.plan.outputs.mcp == 'true' }}
+        run: python3 docs/scripts/manuale-ci.py offline --suite bot-mcp
+      - name: Look up reusable evidence from manifests only
+        if: ${{ needs.plan.outputs.mode == 'unaffected' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MANUALE_EVIDENCE_STORE: ${{ runner.temp }}/manuale-store
+        run: |
+          # Index artifact only (manifests); screenshot blobs are never downloaded here.
+          python3 docs/scripts/manuale-cache.py store-fetch --kind index --store "$MANUALE_EVIDENCE_STORE" \
+            --output "$RUNNER_TEMP/store-index.json"
+          python3 docs/scripts/manuale-ci.py lookup --output "$RUNNER_TEMP/manuale-cache.json"
+      - name: Summarize offline stages and evidence decisions
+        if: always()
+        run: >-
+          python3 docs/scripts/manuale_timing.py summary --title 'Manual offline checks'
+          --impact "$RUNNER_TEMP/manuale-impact/impact.json" --cache "$RUNNER_TEMP/manuale-cache.json"
+      - name: Retain offline decisions and timings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-offline
+          path: |
+            ${{ runner.temp }}/manuale-timing.jsonl
+            ${{ runner.temp }}/manuale-cache.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  content:
+    # Mode A for manual text: recompile and re-index from admitted evidence,
+    # without services. Anything needing a capture escalates to `verify`.
+    name: Recompile changed manual content from verified evidence
+    needs: plan
+    if: ${{ needs.plan.outputs.content == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      escalate: ${{ steps.prepare.outputs.escalate }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: docs/manuale/requirements-offline.txt
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@v4
+        with:
+          name: manuale-impact
+          path: ${{ runner.temp }}/manuale-impact
+      - name: Install offline verifier dependencies
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-dependencies --
+          bash -c 'python3 -m pip install -r docs/manuale/requirements-offline.txt
+          && npm --prefix selfhost/tests/browser ci'
+      - name: Pin immutable manual authoring input
+        run: >-
+          python3 docs/scripts/manuale-ci.py pin --manual-repo "$RUNNER_TEMP/manuale"
+          --manual-revision '' --output "$RUNNER_TEMP/manual-source.json"
+      - name: Admit a successful trusted baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py baseline --manual-repo "$RUNNER_TEMP/manuale"
+          --output "$RUNNER_TEMP/manuale-baseline"
+      - name: Select content-only work or escalate
+        id: prepare
+        run: >-
+          python3 docs/scripts/manuale-ci.py prepare --content-only
+          --manual-repo "$RUNNER_TEMP/manuale" --baseline "$RUNNER_TEMP/manuale-baseline"
+          --impact "$RUNNER_TEMP/manuale-impact/impact.json"
+          --release "manual-content-$GITHUB_SHA" --output "$RUNNER_TEMP/manuale-run"
+      - name: Revalidate retained workflow evidence
+        if: ${{ steps.prepare.outputs.escalate != 'true' }}
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase capture
+      - name: Compile complete content and verify source evidence
+        if: ${{ steps.prepare.outputs.escalate != 'true' }}
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase compile
+      - name: Check changed pages through the in-app reader render projection (offline)
+        if: ${{ steps.prepare.outputs.escalate != 'true' }}
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase render
+      - name: Build and validate the shared reader, Bot and MCP corpus
+        if: ${{ steps.prepare.outputs.escalate != 'true' }}
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase index
+      - name: Summarize content stages and evidence decisions
+        if: always()
+        run: |
+          python3 docs/scripts/manuale-ci.py report --run "$RUNNER_TEMP/manuale-run" \
+            --admission "$RUNNER_TEMP/baseline-admission.json" --output "$RUNNER_TEMP/manuale-cache.json" || true
+          python3 docs/scripts/manuale_timing.py summary --title 'Manual content checks' \
+            --impact "$RUNNER_TEMP/manuale-impact/impact.json" --cache "$RUNNER_TEMP/manuale-cache.json" \
+            --artifact "admitted baseline=$RUNNER_TEMP/manuale-baseline"
+      - name: Retain content decisions and timings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-content
+          path: |
+            ${{ runner.temp }}/baseline-admission.json
+            ${{ runner.temp }}/manuale-run/ci-plan.json
+            ${{ runner.temp }}/manuale-run/compile.json
+            ${{ runner.temp }}/manuale-run/render.json
+            ${{ runner.temp }}/manuale-run/render-reuse.json
+            ${{ runner.temp }}/manuale-run/coverage.json
+            ${{ runner.temp }}/manuale-run/timings.json
+            ${{ runner.temp }}/manuale-timing.jsonl
+            ${{ runner.temp }}/manuale-cache.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  verify:
+    # Modes B and full: only when the plan or a content escalation needs
+    # captures. Never comprehensive: publication runs manuale-release.yml.
+    needs: [plan, content]
+    if: >-
+      ${{ !cancelled() && needs.plan.result == 'success' && needs.content.result != 'failure' &&
+          (needs.plan.outputs.verify == 'true' || needs.content.outputs.escalate == 'true') }}
     uses: ./.github/workflows/manuale-verify.yml
     with:
       release: ${{ format('manual-verification-{0}', github.sha) }}
       manual_revision: ${{ inputs.manual_ref || '' }}
-      force_full: ${{ github.event_name == 'schedule' || inputs.force_full || false }}
+      force_full: ${{ github.event_name == 'schedule' || inputs.force_full || needs.plan.outputs.force_full == 'true' }}
+      comprehensive: false
+      run_contracts: false
+      workflows: ${{ needs.plan.outputs.workflows }}
+      appliance: ${{ needs.plan.outputs.appliance == 'true' || needs.content.outputs.escalate == 'true' }}
+      impact: true
+
+  evidence-store:
+    # Publish per-workflow evidence only after the offline contracts and the
+    # verifier gate passed; the called workflow also refuses PRs and untrusted refs.
+    name: Publish trusted per-workflow evidence
+    needs: [offline, verify]
+    if: >-
+      ${{ !cancelled() && needs.offline.result == 'success' && needs.verify.result == 'success' &&
+          needs.verify.outputs.authorized == 'true' && github.event_name != 'pull_request' }}
+    uses: ./.github/workflows/manuale-evidence-publish.yml
 
   editorial:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.edit_content }}

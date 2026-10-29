@@ -74,6 +74,39 @@ def read_json(root, relative):
     return json.loads(owned(root, relative).read_text())
 
 
+# The manual is vendored in this repository; the former external
+# ``Bakney/manuale`` repository and its Mintlify deployment are not a source.
+VENDORED_MANUAL_SOURCE = {'repository': 'carbogninalberto/assozeta', 'path': 'manuale'}
+SOURCE_PIN = 'docs/manuale/source.json'
+
+
+def publication_source(application, application_revision, manual, manual_revision):
+    """Resolve the committed location that serves the published manual bytes.
+
+    The pin is read from the exact application commit, never from a working
+    tree. The prepared manual commit must have the identical Git tree as the
+    vendored folder in that application commit, so the public raw files at the
+    application revision are the bytes that were verified. Anything else,
+    including the retired ``Bakney/manuale`` source, is rejected.
+    """
+    pin = git(application, 'show', application_revision + ':' + SOURCE_PIN)
+    try:
+        source = json.loads(pin)
+    except ValueError as exc:
+        raise EvidenceError('Invalid committed manual source pin') from exc
+    if source != VENDORED_MANUAL_SOURCE:
+        raise EvidenceError('Publication requires the vendored manual source '
+                            + VENDORED_MANUAL_SOURCE['repository'] + ':' + VENDORED_MANUAL_SOURCE['path'] + '/')
+    vendored = git(application, 'rev-parse', '--verify', application_revision + ':' + source['path']).decode().strip()
+    prepared = git(manual, 'rev-parse', '--verify', manual_revision + '^{tree}').decode().strip()
+    if not re.fullmatch(r'[0-9a-f]{40,64}', vendored) or vendored != prepared:
+        raise EvidenceError('Prepared manual commit is not the vendored manuale/ folder of the application revision')
+    repository = source['repository']
+    return {'repository': repository, 'path': source['path'], 'revision': application_revision, 'tree': vendored,
+            'raw_base': 'https://raw.githubusercontent.com/' + repository + '/' + application_revision + '/' + source['path'],
+            'deployments': 'https://api.github.com/repos/' + repository + '/deployments'}
+
+
 def prepare_release(run_path, application_path, manual_path, output_path, *, release, _bundled=False):
     """Atomically stage a prepared package; never modify input runs or commits."""
     run, application, manual, output = (Path(path).resolve() for path in
@@ -434,9 +467,12 @@ def verify_release_availability(prepared_path, application_path, manual_path, ou
                                 evidence_base, deployment_environment=None):
     """Read deployed resources and stage local promotion output only.
 
-    Mintlify's repo README describes automatic deployment, but supplies no
-    commit attestation. A matching latest successful GitHub Deployment for the
-    configured environment is required in addition to all content checks.
+    The website is optional: the in-app reader and the release bundle built
+    from the vendored ``manuale/`` folder are the publication source of truth.
+    When a site is published, its bytes are checked against the vendored
+    folder at the exact application revision, and a matching latest successful
+    GitHub Deployment of that revision for the configured environment is
+    required in addition to all content checks.
     Without that authoritative record, retain prepared status and report the
     missing proof. This command never pushes or deploys anything.
     """
@@ -445,6 +481,7 @@ def verify_release_availability(prepared_path, application_path, manual_path, ou
             for root in (prepared, application_path, manual_path)):
         raise EvidenceError('Use a new availability output outside input repositories/package')
     candidate, plan = validate_prepared_package(prepared, application_path, manual_path, release=release)
+    source = publication_source(application_path, plan['application_revision'], manual_path, plan['manual_revision'])
     https_url(evidence_base)
     if urlsplit(evidence_base).query:
         raise EvidenceError('Public evidence base cannot contain a query')
@@ -452,6 +489,7 @@ def verify_release_availability(prepared_path, application_path, manual_path, ou
         'evidence_kind': plan.get('evidence_kind', 'retained-evaluated-run'),
         'candidate_corpus_identity': candidate.value['identity'], 'application_revision': plan['application_revision'],
         'manual_revision': plan['manual_revision'], 'release': release, 'resources': [], 'missing_proof': [],
+        'manual_source': {key: source[key] for key in ('repository', 'path', 'revision', 'tree')},
         'content_availability': 'not_verified', 'deployment_revision': 'unattested',
         'external_actions': [], 'limits': 'HTTP visible-prose/anchor and byte checks; not browser rendering, visual QA or absence of extra unverified prose.'}
 
@@ -486,10 +524,10 @@ def verify_release_availability(prepared_path, application_path, manual_path, ou
         return max(records, key=key)
 
     try:
-        # The inspected source is Bakney/manuale, not a mutable branch label.
-        source = 'https://raw.githubusercontent.com/Bakney/manuale/' + plan['manual_revision']
+        # The inspected source is the vendored folder at the exact application
+        # commit, not a mutable branch label.
         for relative, expected in sorted(plan['manual_file_hashes'].items()):
-            check(source + '/' + quote(relative), expected)
+            check(source['raw_base'] + '/' + quote(relative), expected)
         origin = plan['canonical_manual_url'].rstrip('/')
         for page in sorted({chunk['page'] for chunk in candidate.value['chunks']}):
             chunks = [chunk for chunk in candidate.value['chunks'] if chunk['page'] == page]
@@ -502,27 +540,29 @@ def verify_release_availability(prepared_path, application_path, manual_path, ou
             check(evidence_base.rstrip('/') + '/' + quote(relative), expected)
         report['content_availability'] = 'verified'
         if not deployment_environment:
-            report['missing_proof'].append('Configure the actual deployment environment and expose its successful deployment-to-commit record; Mintlify auto-deploy prose is insufficient.')
+            report['missing_proof'].append('Configure the actual deployment environment and expose its successful deployment-to-commit record; site auto-deploy prose is insufficient.')
         else:
-            api = 'https://api.github.com/repos/Bakney/manuale/deployments'
-            deployments = github_records(api)
+            deployments = github_records(source['deployments'])
             matching = [item for item in deployments if item.get('environment') == deployment_environment]
             if not matching:
-                report['missing_proof'].append('No authoritative GitHub Deployment is available for the configured Mintlify environment; provide the actual deployed-commit proof integration.')
+                report['missing_proof'].append('No authoritative GitHub Deployment is available for the configured environment; provide the actual deployed-commit proof integration.')
             else:
                 latest = most_recent(matching)
                 identifier = latest['id']
                 if type(identifier) is not int or identifier <= 0:
                     raise EvidenceError('Invalid authoritative deployment identity')
-                statuses = github_records('https://api.github.com/repos/Bakney/manuale/deployments/' + str(identifier) + '/statuses')
+                statuses = github_records(source['deployments'] + '/' + str(identifier) + '/statuses')
                 current_status = most_recent(statuses) if statuses else {}
-                if (latest.get('sha') != plan['manual_revision'] or not statuses
+                # Deployments of the vendored manual are deployments of the
+                # application commit that contains the verified folder.
+                if (latest.get('sha') != source['revision'] or not statuses
                         or current_status.get('state') != 'success'
                         or current_status.get('environment_url', '').rstrip('/') != origin):
-                    report['missing_proof'].append('The latest configured-environment deployment is not a successful deployment of the exact final manual commit at the canonical site.')
+                    report['missing_proof'].append('The latest configured-environment deployment is not a successful deployment of the exact application commit containing the vendored manual at the canonical site.')
                 else:
                     report['deployment'] = {'id': identifier, 'environment': deployment_environment,
-                        'manual_revision': latest['sha'], 'site': origin, 'status_id': current_status.get('id')}
+                        'application_revision': latest['sha'], 'manual_revision': plan['manual_revision'],
+                        'site': origin, 'status_id': current_status.get('id')}
                     report['deployment_revision'] = 'verified'
         report['status'] = 'publication-blocked' if report['missing_proof'] else 'availability-verified'
     except (OSError, ValueError, KeyError, TypeError) as exc:

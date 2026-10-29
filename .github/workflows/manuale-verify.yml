@@ -1,5 +1,8 @@
 name: Verify and package compatible manual
 
+# Modes B (incremental behavioral) and C (comprehensive release) share this
+# verifier. `comprehensive` defaults to true: a caller must opt out explicitly,
+# and only a comprehensive run that passes the final gate is authorized.
 on:
   workflow_call:
     inputs:
@@ -13,12 +16,85 @@ on:
       force_full:
         type: boolean
         default: false
+      comprehensive:
+        description: Release verification (Mode C); always rehearses the full historical appliance
+        type: boolean
+        default: true
+      run_contracts:
+        description: Run verifier contract suites here (the caller may run them in parallel itself)
+        type: boolean
+        default: true
+      workflows:
+        description: Comma-separated workflow ids the impact analysis selected (added to baseline selection)
+        type: string
+        default: ''
+      appliance:
+        description: Run the packaged appliance checks when not comprehensive
+        type: boolean
+        default: true
+      impact:
+        description: Read the manuale-impact artifact of this run (never used for comprehensive runs)
+        type: boolean
+        default: false
+    outputs:
+      mode:
+        value: ${{ jobs.verify.outputs.mode }}
+      appliance_scope:
+        value: ${{ jobs.verify.outputs.appliance_scope }}
+      authorized:
+        description: true only when every mandatory job and check of this run succeeded
+        value: ${{ jobs.gate.outputs.authorized }}
 
 permissions:
   contents: read
   actions: read
 
 jobs:
+  contracts:
+    name: Verifier, browser-helper, Bot and MCP contracts
+    if: ${{ inputs.run_contracts || inputs.comprehensive }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: |
+            docs/manuale/requirements-offline.txt
+            BE/requirements.txt
+            BE/requirements-test.txt
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - name: Restore Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('selfhost/tests/browser/package-lock.json') }}
+      - name: Install contract dependencies
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-dependencies --
+          bash -c 'python3 -m pip install -r docs/manuale/requirements-offline.txt -r BE/requirements.txt -r BE/requirements-test.txt
+          && npm --prefix selfhost/tests/browser ci
+          && npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium'
+      - name: Validate local source mappings and deterministic recipe behavior
+        run: python3 docs/scripts/manuale-ci.py offline --suite python
+      - name: Verify browser capture helpers and dropdown behavior
+        run: python3 docs/scripts/manuale-ci.py offline --suite node --with-browser
+      - name: Check manual, Bot and MCP tool contracts offline
+        run: python3 docs/scripts/manuale-ci.py offline --suite bot-mcp
+      - name: Summarize contract timings
+        if: always()
+        run: python3 docs/scripts/manuale_timing.py summary --title 'Manual contracts'
+
   verify:
     name: Select, verify and package manual content
     runs-on: ubuntu-24.04
@@ -27,8 +103,20 @@ jobs:
       mode: ${{ steps.plan.outputs.mode }}
       historical_rehearsal: ${{ steps.plan.outputs.historical_rehearsal }}
       manual_revision: ${{ steps.pin.outputs.manual_revision }}
+      comprehensive: ${{ inputs.comprehensive }}
+      appliance_scope: ${{ (inputs.comprehensive || steps.plan.outputs.historical_rehearsal == 'true') && 'full' || 'compatibility' }}
+      appliance_required: ${{ inputs.comprehensive || inputs.appliance || steps.plan.outputs.historical_rehearsal == 'true' }}
+      release_binding: ${{ steps.binding.outputs.release_binding }}
+      release_binding_release: ${{ steps.binding.outputs.release_binding_release }}
+      release_binding_revision: ${{ steps.binding.outputs.release_binding_revision }}
     env:
       RELEASE_VERSION: ${{ inputs.release }}
+      # Capture shards (1..4 or auto). Sequential by default: on 4 vCPU hosted
+      # runners two concurrent stacks made unrelated workflows time out and were
+      # not faster. Opt in with vars.MANUALE_CAPTURE_CONCURRENCY on larger runners.
+      MANUALE_CAPTURE_CONCURRENCY: ${{ vars.MANUALE_CAPTURE_CONCURRENCY || '1' }}
+      # Opt-in BuildKit layer cache for run-owned images (set the variable to gha).
+      MANUALE_BUILDX_CACHE: ${{ vars.MANUALE_BUILDX_CACHE || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,6 +132,24 @@ jobs:
           python-version: '3.13'
           cache: pip
           cache-dependency-path: docs/manuale/requirements-offline.txt
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
+      - name: Download the impact plan
+        if: ${{ inputs.impact && !inputs.comprehensive }}
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-impact
+          path: ${{ runner.temp }}/manuale-impact
+      - name: Expose the GitHub cache service to BuildKit
+        if: ${{ vars.MANUALE_BUILDX_CACHE == 'gha' }}
+        uses: crazy-max/ghaction-github-runtime@v3
+      - name: Set up a BuildKit builder for run-owned images
+        id: buildx
+        if: ${{ vars.MANUALE_BUILDX_CACHE == 'gha' }}
+        uses: docker/setup-buildx-action@v3
+        with:
+          # Keep the default builder for every other docker build in this job.
+          use: false
       - name: Pin immutable manual authoring input
         id: pin
         env:
@@ -54,16 +160,21 @@ jobs:
           --manual-revision "$MANUAL_REVISION"
           --output "$RUNNER_TEMP/manual-source.json"
       - uses: ./.github/actions/prepare-storage
+      - name: Restore Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('selfhost/tests/browser/package-lock.json') }}
       - name: Install verifier dependencies
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-dependencies --
+          bash -c 'python3 -m pip install -r docs/manuale/requirements-offline.txt
+          && npm --prefix selfhost/tests/browser ci
+          && npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium'
+      - name: Check verifier runtime and browser helper contracts
         run: |
-          python3 -m pip install -r docs/manuale/requirements-offline.txt
-          npm --prefix selfhost/tests/browser ci
-          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
-      - name: Check verifier and runtime contracts
-        run: |
-          python3 docs/scripts/manuale.py doctor
-          python3 -m unittest discover -s docs/scripts/tests -p 'test_manuale*.py'
-          node --test selfhost/tests/browser/manuale/*.test.mjs
+          python3 docs/scripts/manuale_timing.py stage doctor -- python3 docs/scripts/manuale.py doctor
+          python3 docs/scripts/manuale-ci.py offline --suite node --with-browser
       - name: Admit a successful trusted baseline
         if: ${{ !inputs.force_full }}
         env:
@@ -72,16 +183,49 @@ jobs:
           python3 docs/scripts/manuale-ci.py baseline
           --manual-repo "$RUNNER_TEMP/manuale"
           --output "$RUNNER_TEMP/manuale-baseline"
+      - name: Restore trusted per-workflow evidence (manifests first, screenshots only when reusable)
+        id: store
+        if: ${{ !inputs.force_full }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMPREHENSIVE: ${{ inputs.comprehensive }}
+        run: |
+          options=()
+          # Affected workflows are always captured fresh; release runs reuse
+          # only fingerprint-identical evidence and still run every check.
+          if [[ "$COMPREHENSIVE" != true && -f "$RUNNER_TEMP/manuale-impact/impact.json" ]]; then
+            options+=(--impact "$RUNNER_TEMP/manuale-impact/impact.json")
+          fi
+          python3 docs/scripts/manuale-ci.py store --output "$RUNNER_TEMP/manuale-store" "${options[@]}"
       - name: Explain fresh, reused and unaffected work
         id: plan
         env:
           FORCE_FULL: ${{ inputs.force_full }}
+          SELECTED_WORKFLOWS: ${{ inputs.workflows }}
+          COMPREHENSIVE: ${{ inputs.comprehensive }}
+          STORE_SELECTION: ${{ steps.store.outputs.store_selection }}
         run: |
           options=()
           if [[ "$FORCE_FULL" == true ]]; then options+=(--force-full); fi
+          if [[ -n "$SELECTED_WORKFLOWS" ]]; then options+=(--workflow "$SELECTED_WORKFLOWS"); fi
+          # Release verification never narrows its scope from a change analysis.
+          if [[ "$COMPREHENSIVE" != true && -f "$RUNNER_TEMP/manuale-impact/impact.json" ]]; then
+            options+=(--impact "$RUNNER_TEMP/manuale-impact/impact.json")
+          fi
+          # Store evidence is admitted again by the verifier's own gate; only the
+          # remaining workflows are captured (with MANUALE_CAPTURE_CONCURRENCY shards).
+          if [[ "$STORE_SELECTION" == true ]]; then
+            options+=(--evidence-selection "$RUNNER_TEMP/manuale-store/selection")
+          fi
           python3 docs/scripts/manuale-ci.py prepare \
             --manual-repo "$RUNNER_TEMP/manuale" --baseline "$RUNNER_TEMP/manuale-baseline" \
             --release "$RELEASE_VERSION" --output "$RUNNER_TEMP/manuale-run" "${options[@]}"
+      - name: Select the caching builder for run-owned Compose images
+        # Set only after storage preparation; later steps build only via Compose.
+        if: ${{ vars.MANUALE_BUILDX_CACHE == 'gha' }}
+        env:
+          BUILDER: ${{ steps.buildx.outputs.name }}
+        run: echo "BUILDX_BUILDER=$BUILDER" >> "$GITHUB_ENV"
       - name: Capture only workflows requiring fresh evidence
         run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase capture
       - name: Compile complete content and verify source evidence
@@ -94,6 +238,55 @@ jobs:
         run: >-
           python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run"
           --phase package --package-output "$RUNNER_TEMP/manuale-package"
+      - name: Bind every workflow's evidence to this exact release identity
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage evidence-release-binding --
+          python3 docs/scripts/manuale-cache.py store-bind --run "$RUNNER_TEMP/manuale-run"
+          --output "$RUNNER_TEMP/manuale-run/release-binding.json"
+      - name: Verify the release binding against this exact release identity
+        # Fails unless release-binding.json exists, is intact, names this commit,
+        # the pinned manual revision and this version, and equals the binding
+        # recomputed from the run's evidence. The gate requires it for Mode C.
+        id: binding
+        env:
+          MANUAL_REVISION: ${{ steps.pin.outputs.manual_revision }}
+          APPLICATION_REVISION: ${{ github.sha }}
+        run: |
+          python3 docs/scripts/manuale-cache.py store-verify-binding --run "$RUNNER_TEMP/manuale-run" \
+            --binding "$RUNNER_TEMP/manuale-run/release-binding.json" \
+            --application-revision "$APPLICATION_REVISION" --manual-revision "$MANUAL_REVISION" \
+            --release "$RELEASE_VERSION" --output "$RUNNER_TEMP/manuale-run/release-binding-verification.json"
+          {
+            echo 'release_binding=verified'
+            echo "release_binding_release=$RELEASE_VERSION"
+            echo "release_binding_revision=$APPLICATION_REVISION"
+          } >> "$GITHUB_OUTPUT"
+      - name: Stage this run's fresh evidence as a store candidate
+        # Trusted refs only; PR runs never produce a trusted baseline. The
+        # candidate becomes trusted only after every gate and the whole run passed.
+        if: >-
+          ${{ !startsWith(github.event_name, 'pull_request') &&
+              (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
+               startsWith(github.ref, 'refs/tags/')) }}
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage evidence-store-candidate --
+          python3 docs/scripts/manuale-cache.py store-publish --run "$RUNNER_TEMP/manuale-run"
+          --store "$RUNNER_TEMP/manuale-store-candidate"
+      - name: Retain the store candidate for the post-gate publisher
+        if: >-
+          ${{ !startsWith(github.event_name, 'pull_request') &&
+              (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
+               startsWith(github.ref, 'refs/tags/')) }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-evidence-store-candidate
+          path: |
+            ${{ runner.temp }}/manuale-store-candidate/index.json
+            ${{ runner.temp }}/manuale-store-candidate/workflows/
+            ${{ runner.temp }}/manuale-store-candidate/blobs/
+          if-no-files-found: ignore
+          overwrite: true
+          retention-days: 3
       - name: Remove only this run's fixture services
         if: always()
         run: |
@@ -101,10 +294,20 @@ jobs:
             python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase cleanup
           fi
       - name: Seal verified reusable baseline
+        id: seal
         run: >-
           python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run"
           --phase baseline --output "$RUNNER_TEMP/manuale-baseline.tar.gz"
       - name: Retain candidate baseline for successful-run admission
+        # Skipped when every workflow and page reused admitted evidence, and on
+        # every pull request run: only trusted-ref producers (default branch or
+        # release tag; push, release, dispatch or schedule) may be admitted, so
+        # a PR run never uploads an artifact under the admitted baseline name.
+        if: >-
+          ${{ steps.seal.outputs.sealed == 'true' &&
+              !startsWith(github.event_name, 'pull_request') &&
+              (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
+               startsWith(github.ref, 'refs/tags/')) }}
         uses: actions/upload-artifact@v4
         with:
           name: manuale-verified-baseline
@@ -139,16 +342,36 @@ jobs:
             ${{ runner.temp }}/manuale-run/render-reuse.json
             ${{ runner.temp }}/manuale-run/evaluation.json
             ${{ runner.temp }}/manuale-run/embedded-manual.json
+            ${{ runner.temp }}/manuale-run/release-binding.json
+            ${{ runner.temp }}/manuale-run/release-binding-verification.json
+            ${{ runner.temp }}/manuale-run/evidence-reuse.json
+            ${{ runner.temp }}/manuale-store/store-restore.json
+            ${{ runner.temp }}/manuale-store/store-plan.json
             ${{ runner.temp }}/manuale-run/export/
             ${{ runner.temp }}/manuale-run/diagnostics-public/
             ${{ runner.temp }}/manuale-package/publication-plan.json
+            ${{ runner.temp }}/manuale-timing.jsonl
+            ${{ runner.temp }}/manuale-cache.json
           if-no-files-found: warn
           overwrite: true
           retention-days: 30
+      - name: Summarize stages, cache decisions and artifact sizes
+        if: always()
+        run: |
+          python3 docs/scripts/manuale-ci.py report --run "$RUNNER_TEMP/manuale-run" \
+            --admission "$RUNNER_TEMP/baseline-admission.json" --output "$RUNNER_TEMP/manuale-cache.json" || true
+          python3 docs/scripts/manuale_timing.py summary --title 'Manual verification' \
+            --impact "$RUNNER_TEMP/manuale-impact/impact.json" --cache "$RUNNER_TEMP/manuale-cache.json" \
+            --artifact "verified baseline=$RUNNER_TEMP/manuale-baseline.tar.gz" \
+            --artifact "evidence store (restored)=$RUNNER_TEMP/manuale-store/store" \
+            --artifact "evidence store candidate=$RUNNER_TEMP/manuale-store-candidate" \
+            --artifact "runtime package=$RUNNER_TEMP/manuale-package/runtime" \
+            --artifact "verification export=$RUNNER_TEMP/manuale-run/export"
 
   appliance:
-    name: ${{ needs.verify.outputs.historical_rehearsal == 'true' && 'Historical appliance rehearsal' || 'Package startup, reader and access checks' }}
+    name: ${{ needs.verify.outputs.appliance_scope == 'full' && 'Historical appliance rehearsal' || 'Package startup, reader and access checks' }}
     needs: verify
+    if: ${{ needs.verify.outputs.appliance_required == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -163,23 +386,34 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+          cache: pip
+          cache-dependency-path: docs/manuale/requirements-offline.txt
+      - name: Record stage timings for this job
+        run: echo "MANUALE_TIMING_FILE=$RUNNER_TEMP/manuale-timing.jsonl" >> "$GITHUB_ENV"
       - uses: ./.github/actions/prepare-storage
         with:
-          legacy: ${{ needs.verify.outputs.historical_rehearsal }}
+          legacy: ${{ needs.verify.outputs.appliance_scope == 'full' }}
       - uses: actions/download-artifact@v4
         with:
           name: manuale-release-runtime
           path: ${{ runner.temp }}/manuale-runtime
+      - name: Restore Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('selfhost/tests/browser/package-lock.json') }}
       - name: Install package verification dependencies
-        run: |
-          python3 -m pip install -r docs/manuale/requirements-offline.txt
-          npm --prefix selfhost/tests/browser ci
-          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+        run: >-
+          python3 docs/scripts/manuale_timing.py stage install-dependencies --
+          bash -c 'python3 -m pip install -r docs/manuale/requirements-offline.txt
+          && npm --prefix selfhost/tests/browser ci
+          && npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium'
       - name: Verify the exact packaged release on an isolated appliance
         env:
           RELEASE_VERSION: ${{ inputs.release }}
-          CHECK_SCOPE: ${{ needs.verify.outputs.historical_rehearsal == 'true' && 'full' || 'compatibility' }}
+          CHECK_SCOPE: ${{ needs.verify.outputs.appliance_scope == 'full' && 'full' || 'compatibility' }}
         run: >-
+          python3 docs/scripts/manuale_timing.py stage "appliance-$CHECK_SCOPE" --
           python3 selfhost/tests/manual-release-smoke.py "$RUNNER_TEMP/manuale-runtime"
           "$RELEASE_VERSION" --scope "$CHECK_SCOPE" --previous-release 1.0.17
       - name: Retain appliance results and phase timings
@@ -193,3 +427,40 @@ jobs:
           if-no-files-found: warn
           overwrite: true
           retention-days: 30
+      - name: Summarize appliance timings
+        if: always()
+        run: python3 docs/scripts/manuale_timing.py summary --title 'Manual appliance'
+
+  gate:
+    name: Manual verification gate
+    # Runs after failures and cancellations too, so that a missing, skipped or
+    # failed mandatory job can never leave this reusable workflow "successful".
+    needs: [contracts, verify, appliance]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      authorized: ${{ steps.gate.outputs.authorized }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download appliance results
+        if: ${{ needs.appliance.result != 'skipped' }}
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-release-evidence
+          path: ${{ runner.temp }}/manuale-release-evidence
+      - name: Require every mandatory verification for this exact release
+        id: gate
+        env:
+          MANUALE_NEEDS_JSON: ${{ toJSON(needs) }}
+          COMPREHENSIVE: ${{ inputs.comprehensive }}
+          RELEASE_VERSION: ${{ inputs.release }}
+          APPLICATION_REVISION: ${{ github.sha }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py gate --comprehensive "$COMPREHENSIVE"
+          --release "$RELEASE_VERSION" --revision "$APPLICATION_REVISION"
+          --results "$RUNNER_TEMP/manuale-release-evidence/results.json"
+          --output "$RUNNER_TEMP/manuale-gate.json"

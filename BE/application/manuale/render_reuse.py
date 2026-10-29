@@ -6,9 +6,10 @@ trusted CI job; that producer-authenticity check belongs to the caller. This
 module only accepts a completed evaluated run and independently rechecks every
 retained artifact it consumes.
 
-The planning API runs after target generation/compilation and before browser
-rendering. It stages exact original page records, original reports, origin
-metadata, and the layout PNGs referenced by those records. Validation is
+The planning API runs after target generation/compilation and before the
+in-app reader render check (``reader_render.py``). It stages exact original
+page records, original reports, origin metadata, and any layout PNGs
+referenced by those records (reader records have none). Validation is
 independent of the original worktrees and fails closed on later mutation.
 """
 import copy
@@ -18,6 +19,7 @@ import tempfile
 from pathlib import Path
 
 from .index import canonical, digest, png_dimensions
+from .reader_render import READER_RENDERER, READER_RENDERER_FORMAT
 from .reuse import HASH, ReuseError, file_hash, load, owned
 
 
@@ -26,10 +28,13 @@ RENDER_INPUTS = 'render-inputs.json'
 PLAN_PATH = 'render-reuse.json'
 APPLICATION_INPUTS = (
     'selfhost/tests/browser/manuale/compile.mjs',
-    'selfhost/tests/browser/manuale/verify.mjs',
     'selfhost/tests/browser/package-lock.json',
-    'selfhost/tests/browser/playwright.manual.config.mjs',
 )
+# The render gate is the in-app reader projection (reader_render.py over
+# index.sections/reader_blocks); no Mintlify CLI or preview server is involved.
+# Bind the renderer code that actually executes (this trusted package), not a
+# possibly different copy in the inspected worktree.
+RENDERER_CODE = ('index.py', 'reader_render.py')
 OPTIONAL_APPLICATION_INPUTS = (
     'selfhost/tests/browser/package.json',
 )
@@ -59,7 +64,11 @@ def renderer_inputs(state):
     a partial fingerprint.
     """
     application, manual = Path(state['application']).resolve(), Path(state['manual']).resolve()
-    inputs = {}
+    # Records from another renderer (for example retained Mintlify-era render
+    # evidence) never match, so their pages are verified fresh.
+    inputs = {'renderer': READER_RENDERER + '/' + str(READER_RENDERER_FORMAT)}
+    for name in RENDERER_CODE:
+        inputs['renderer/' + name] = digest(Path(__file__).with_name(name).read_bytes())
     for relative in APPLICATION_INPUTS:
         inputs['application/' + relative] = _hash_input(application, 'application', relative)
     for relative in OPTIONAL_APPLICATION_INPUTS:
@@ -97,7 +106,7 @@ def renderer_inputs(state):
                   and not {'.git', 'node_modules'} & set(path.relative_to(manual).parts))
     for relative in sorted(assets):
         inputs['manual/' + relative] = _hash_input(manual, 'manual', relative)
-    # Mintlify's shared sidebar can use another page's frontmatter title/icon.
+    # Shared reader navigation uses every page's frontmatter title/description.
     # Bind that metadata globally without making ordinary body edits invalidate
     # every page. A top-level heading also covers pages without frontmatter.
     navigation_metadata = {}
@@ -396,6 +405,12 @@ def _inspect_page_record(page_record, facts, run):
     layouts = page_record.get('layouts')
     if not isinstance(layouts, list):
         raise RenderReuseError('missing-layout-evidence: ' + facts['page'])
+    if page_record.get('renderer') == READER_RENDERER:
+        # The in-app reader projection has no layout screenshots; anything
+        # else under this label is not a record this renderer produced.
+        if layouts:
+            raise RenderReuseError('unexpected-reader-layouts: ' + facts['page'])
+        return {}
     by_section = {section['id']: section for section in facts['section_records']}
     heading_seen, image_seen, paths = set(), set(), set()
     hashes = {}
@@ -717,6 +732,81 @@ def _validate_origin_entry(state, page, entry, facts):
         raise RenderReuseError('staged-layout-evidence-invalid: ' + page) from exc
     if layout_hashes != entry['dependencies'].get('layout_sha256'):
         raise RenderReuseError('staged-layout-hashes-changed: ' + page)
+
+
+RENDERER_IDENTITY_KEYS = ('renderer',)
+
+
+def _renderer_identity(key):
+    return key in RENDERER_IDENTITY_KEYS or key.startswith('renderer/')
+
+
+def validate_retained_render_reuse(state):
+    """Integrity of a retained (imported) run's render-reuse plan, whichever renderer produced it.
+
+    ``validate_render_reuse`` compares the plan with the renderer inputs this
+    code would record now; a run sealed by an earlier renderer (for example the
+    Mintlify-era render gate) can never match, although its captures are intact.
+    This check proves the plan's own consistency instead: the plan, the stored
+    render-inputs.json and the target hash agree; every application/manual
+    input it records still hashes to the run's own worktree files; its page
+    selection covers the manifest; and every staged origin file matches its
+    recorded sha256. The result is marked ``renderer_compatible``. Consumers
+    never reuse an incompatible plan's pages: ``plan_render_reuse`` compares
+    each page with the current renderer inputs and renders mismatches fresh.
+    """
+    try:
+        plan = validate_render_reuse(state)
+        return {**plan, 'renderer_compatible': True}
+    except RenderReuseError as exc:
+        if str(exc) != 'renderer-inputs-changed-after-plan':
+            raise
+    plan = _load_plan(state)
+    pointer = state.get('render_reuse')
+    if pointer is not None and (
+            pointer.get('fresh_pages') != plan.get('fresh_pages')
+            or pointer.get('reused_pages') != plan.get('reused_pages')):
+        raise RenderReuseError('render-reuse-pointer-selection-mismatch')
+    run = Path(state['run']).resolve()
+    manifest = load(run, 'manifest.json')
+    target = _target_contract(state, manifest)
+    if plan.get('format') != FORMAT or plan.get('status') != 'validated':
+        raise RenderReuseError('invalid-render-reuse-plan')
+    stored = load(run, RENDER_INPUTS)
+    if (not isinstance(stored, dict) or plan.get('render_inputs') != stored
+            or plan.get('target', {}).get('renderer_inputs_sha256') != digest(canonical(stored))):
+        raise RenderReuseError('retained-renderer-inputs-inconsistent')
+    if any(plan.get('target', {}).get(key) != value for key, value in target.items()):
+        raise RenderReuseError('stale-render-reuse-target')
+    roots = {'application': Path(state['application']).resolve(), 'manual': Path(state['manual']).resolve()}
+    current = renderer_inputs(state)
+    for key, value in stored.items():
+        if _renderer_identity(key):
+            continue
+        root_name, _, relative = key.partition('/')
+        if root_name in roots and relative:
+            if _hash_input(roots[root_name], root_name, relative) != value:
+                raise RenderReuseError('retained-renderer-input-changed: ' + key)
+        elif current.get(key) != value:
+            raise RenderReuseError('retained-renderer-input-changed: ' + key)
+    manifest_pages = _renderable_pages(manifest, state['manual'])
+    fresh_pages, reused_pages = plan.get('fresh_pages'), plan.get('reused_pages')
+    if (not isinstance(fresh_pages, list) or not isinstance(reused_pages, list)
+            or len(fresh_pages) != len(set(fresh_pages)) or len(reused_pages) != len(set(reused_pages))
+            or set(fresh_pages) & set(reused_pages)
+            or set(fresh_pages) | set(reused_pages) != set(manifest_pages)
+            or set(reused_pages) != set(plan.get('pages', {}))):
+        raise RenderReuseError('render-reuse-selection-mismatch')
+    for page in reused_pages:
+        entry = plan['pages'][page]
+        if not isinstance(entry, dict) or entry.get('page') != page:
+            raise RenderReuseError('invalid-reused-page-entry: ' + page)
+        for key in ('original_report', 'origin_record'):
+            record = entry.get(key)
+            if (not isinstance(record, dict) or not isinstance(record.get('path'), str)
+                    or file_hash(run, record['path']) != record.get('sha256')):
+                raise RenderReuseError('retained-render-origin-changed: ' + page)
+    return {**plan, 'renderer_compatible': False}
 
 
 def validate_render_reuse(state):
