@@ -9,6 +9,12 @@ on:
       force_full:
         type: boolean
         default: false
+      evidence_store:
+        description: >-
+          Publish the per-workflow evidence store after authorization. Callers that publish
+          images pass false and run manuale-evidence-publish.yml outside their publication chain.
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       release:
@@ -19,6 +25,10 @@ on:
         description: Run all content verification and historical appliance checks
         type: boolean
         default: false
+      evidence_store:
+        description: Publish the per-workflow evidence store after authorization
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -29,8 +39,46 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Mode C: comprehensive release verification. No change-impact plan, no
+  # incremental result and no skipped mandatory job can authorize publication.
   bundle:
     uses: ./.github/workflows/manuale-verify.yml
     with:
       release: ${{ inputs.release || format('manual-rehearsal-{0}', github.sha) }}
       force_full: ${{ inputs.force_full || false }}
+      comprehensive: true
+      run_contracts: true
+      appliance: true
+
+  authorize:
+    name: Authorize the verified release manual
+    # Jobs skipped inside a called workflow still report success to callers;
+    # this always-running job turns anything short of an explicit, complete
+    # authorization (failed, cancelled, skipped, missing) into a failure.
+    needs: bundle
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require the comprehensive gate's explicit authorization
+        env:
+          BUNDLE_RESULT: ${{ needs.bundle.result }}
+          AUTHORIZED: ${{ needs.bundle.outputs.authorized }}
+          APPLIANCE_SCOPE: ${{ needs.bundle.outputs.appliance_scope }}
+        run: |
+          echo "bundle=$BUNDLE_RESULT authorized=${AUTHORIZED:-missing} appliance=${APPLIANCE_SCOPE:-missing}"
+          if [[ "$BUNDLE_RESULT" != success || "$AUTHORIZED" != true || "$APPLIANCE_SCOPE" != full ]]; then
+            echo '::error::Release manual verification is incomplete; publication is blocked.'
+            exit 1
+          fi
+
+  evidence-store:
+    # Only after the comprehensive release gate authorized this exact release.
+    # Image publication calls this workflow with evidence_store: false and runs
+    # the store publisher itself, outside the image dependency chain.
+    name: Publish trusted per-workflow evidence
+    needs: authorize
+    if: >-
+      ${{ needs.authorize.result == 'success' && inputs.evidence_store &&
+          !startsWith(github.event_name, 'pull_request') }}
+    uses: ./.github/workflows/manuale-evidence-publish.yml

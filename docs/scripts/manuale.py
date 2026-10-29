@@ -16,17 +16,19 @@ import os
 import re
 import secrets
 import shutil
-import signal
 import socket
 import subprocess
 import sys
 import tempfile
 import time
-import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[2]
+_shards_spec = importlib.util.spec_from_file_location('manuale_capture_shards', Path(__file__).with_name('manuale_capture_shards.py'))
+capture_shards = importlib.util.module_from_spec(_shards_spec)
+_shards_spec.loader.exec_module(capture_shards)
 
 
 def runtime_check(root=None):
@@ -162,21 +164,90 @@ def capture_input_hashes(application):
             for relative in sorted(set(filter(None, names)))}
 
 
+EVIDENCE_STORE_MODULE = 'docs/scripts/manuale_evidence_store.py'
+SELECTION_NAME = 'evidence-store-selection.json'
+
+
+def evidence_store_gate(state):
+    """The snapshot's evidence-store gate, bound to the snapshot's reuse verifier."""
+    if EVIDENCE_STORE_MODULE not in state['tooling_hashes']:
+        raise RuntimeError('Evidence-store reuse requires the snapshotted evidence-store verifier')
+    path = Path(state['application']) / EVIDENCE_STORE_MODULE
+    spec = importlib.util.spec_from_file_location('run_owned_manual_evidence_store', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    # Same tool-hash-checked verifier as the retained-evidence plan gate.
+    module.reuse = retained_evidence_helper(state)
+    return module
+
+
+def admit_store_selection(state, selection, exclude):
+    """Admit evidence-store-selection.json entries as explicit per-workflow provenance."""
+    try:
+        result = evidence_store_gate(state).admit_selection(
+            state, selection, exclude=exclude, repository=os.environ.get('GITHUB_REPOSITORY') or None)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        # An unusable selection is a cold miss, never a partial admission.
+        state['cache']['decisions'].append({'kind': 'evidence-store', 'result': 'unavailable', 'reason': str(exc)})
+        return {}
+    state['cache']['decisions'].append({
+        'kind': 'evidence-store', 'result': 'checked', 'retained': len(result['admitted']),
+        'admitted': sorted(result['admitted']), 'rejected': result['rejected']})
+    return result['admitted']
+
+
+# Must match manuale-ci.py pin (MANUAL_COMMIT_ENVIRONMENT and its message).
+VENDORED_MANUAL_COMMIT = ('author Assozeta manual <manual@assozeta.invalid> 946684800 +0000\n'
+                          'committer Assozeta manual <manual@assozeta.invalid> 946684800 +0000\n\n'
+                          'Vendored manual content\n')
+
+
+def vendored_manual_changes(previous, old_manual, manual_repository, new_manual, root=ROOT):
+    """Manual paths changed since a baseline whose manual commit this checkout cannot reach.
+
+    `manuale-ci.py pin` commits the vendored manuale/ folder alone with fixed
+    metadata, so each materialized commit has no history. The baseline's
+    revision is a pure function of its producer's manuale/ tree: that tree is
+    trusted only when it rebuilds exactly the recorded revision. None when it
+    does not or a revision is missing, which keeps the unknown-revision fallback.
+    """
+    try:
+        producer = previous['application_input']['revision']
+        old_tree = git(root, 'rev-parse', '--verify', producer + ':manuale')
+        if git(root, 'cat-file', '-t', old_tree) != 'tree':
+            return None
+        rebuilt = subprocess.run(['git', '-C', str(root), 'hash-object', '-t', 'commit', '--stdin'],
+                                 input=f'tree {old_tree}\n' + VENDORED_MANUAL_COMMIT, text=True,
+                                 capture_output=True, check=True).stdout.strip()
+        if rebuilt != old_manual:
+            return None
+        new_tree = git(manual_repository, 'rev-parse', '--verify', new_manual + '^{tree}')
+        return git(root, 'diff', '--name-only', '--no-renames', old_tree, new_tree).splitlines()
+    except (subprocess.CalledProcessError, KeyError, TypeError):
+        return None
+
+
 def reuse_inputs(state, args):
     """Reuse by default, with explicit cold runs and recorded rejection reasons."""
     cold = getattr(args, 'no_cache', False)
     state.setdefault('selection', {})
     explicit = getattr(args, 'reuse_evidence', None)
+    store_selection = getattr(args, 'reuse_store', None)
     candidates = ([{'run': explicit, 'evidence': True,
                     'frontend': (Path(explicit) / 'frontend-build.json').is_file()}] if explicit else
                   [] if cold else cached_runs(state['manual_repository']))
-    state['cache'] = {'mode': 'disabled' if cold else 'explicit' if explicit else 'automatic', 'decisions': []}
+    state['cache'] = {'mode': 'disabled' if cold and not store_selection else 'explicit' if explicit or store_selection
+                      else 'automatic', 'decisions': []}
     helper = None
     chosen = None
     target_hashes = None
     force_selected = bool(args.changed_since or args.manual_changed_since or getattr(args, 'workflow', None))
-    maximum_retained = len(recipe_registry(Path(state['application']))['recipes']) - (
+    # Explicitly selected workflows always stay fresh, whatever the store holds.
+    admitted = (admit_store_selection(state, store_selection, set(state['selected_recipes']) if force_selected else set())
+                if store_selection else {})
+    maximum_retained = len(recipe_registry(Path(state['application']))['recipes']) - len(admitted) - (
         len(state['selected_recipes']) if force_selected else 0)
+    store_ids = set(admitted)
     for candidate in candidates:
         if not candidate.get('evidence'):
             continue
@@ -193,9 +264,12 @@ def reuse_inputs(state, args):
             new_manual = state.get('manual_input', {}).get('revision')
             if old_manual and new_manual and old_manual != new_manual:
                 try:
-                    manual_changed = git(state['manual_repository'], 'diff', '--name-only', old_manual, new_manual).splitlines()
+                    manual_changed = git(state['manual_repository'], 'diff', '--name-only', '--no-renames',
+                                         old_manual, new_manual).splitlines()
                 except subprocess.CalledProcessError:
-                    manual_changed = ['unknown-authoring-revision']
+                    manual_changed = vendored_manual_changes(previous, old_manual, state['manual_repository'], new_manual)
+                    if manual_changed is None:
+                        manual_changed = ['unknown-authoring-revision']
             # Per-section editorial bindings decide whether MDX changes need a
             # capture. This preserves the reviewed wording-only reuse path.
             shared_manual = [path for path in manual_changed if not path.endswith('.mdx')
@@ -214,12 +288,16 @@ def reuse_inputs(state, args):
                     selected_changes.remove('docs/manuale/recipes.json')
                     input_decisions.append({'path': 'docs/manuale/recipes.json', 'scope': 'application',
                         'reason': 'generated-registry; compare individual recipe contracts', 'recipes': registry_affected})
-            affected = affected_recipes(current_registry, selected_changes, shared_manual,
-                                        root=Path(state['application']), decisions=input_decisions)
+            impact = {}
+            affected = select_affected(current_registry, selected_changes, shared_manual,
+                                       root=Path(state['application']), decisions=input_decisions,
+                                       base_root=previous['application'], report=impact)
             affected = sorted(set(affected) | set(registry_affected))
-            fresh = sorted(set(affected) | set(state['selected_recipes'] if force_selected else []))
-            probe = helper.build_reuse_plan({**state, 'selected_recipes': fresh},
-                                           baseline, stage=False)
+            fresh = sorted((set(affected) | set(state['selected_recipes'] if force_selected else [])) - store_ids)
+            eligible = ([recipe['id'] for recipe in current_registry['recipes'] if recipe['id'] not in store_ids]
+                        if store_ids else None)
+            probe = helper.build_reuse_plan({**state, 'selected_recipes': fresh}, baseline, stage=False,
+                                           eligible_recipes=eligible)
         except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
             if explicit and not getattr(args, 'baseline_optional', False):
                 raise
@@ -231,24 +309,37 @@ def reuse_inputs(state, args):
                                            'retained': len(probe['reused_recipes']), 'rejected': probe.get('rejected', []),
                                            'changed_inputs': changed, 'affected_recipes': affected})
         state['cache']['decisions'][-1].update(input_decisions=input_decisions, changed_manual=manual_changed)
+        if impact.get('format'):
+            state['cache']['decisions'][-1]['impact'] = {key: impact[key] for key in (
+                'mode', 'full_verification_required', 'affected_workflows', 'checks', 'reasons')}
         if explicit or len(probe['reused_recipes']) == maximum_retained:
             break
     complete = getattr(args, 'command', '') in ('run', 'build', 'verify-release')
-    if complete or (chosen and not force_selected):
-        retained = set(chosen[1]['reused_recipes'] if chosen else [])
+    if complete or ((chosen or admitted) and not force_selected):
+        retained = set(chosen[1]['reused_recipes'] if chosen else []) | store_ids
         state['selected_recipes'] = [recipe['id'] for recipe in recipe_registry(Path(state['application']))['recipes']
                                      if recipe['id'] not in retained]
-    if chosen:
-        baseline, probe = chosen
+    elif admitted:
+        state['selected_recipes'] = [identifier for identifier in state['selected_recipes'] if identifier not in store_ids]
+    if chosen or admitted:
+        baseline, probe = chosen if chosen else (None, {'reused_recipes': [], 'rejected': []})
         for decision in state['cache']['decisions']:
-            decision['selected'] = decision.get('run') == baseline
+            if decision.get('kind') != 'evidence-store':
+                decision['selected'] = decision.get('run') == baseline
+        helper = helper or retained_evidence_helper(state)
         # Stage only after the read-only compatibility probe; a staging integrity
         # failure must stop this run, never silently fall through to another cache.
-        plan = helper.build_reuse_plan(state, baseline, stage=True, eligible_recipes=probe['reused_recipes'])
+        plan = helper.build_reuse_plan(state, baseline, stage=True, eligible_recipes=probe['reused_recipes'],
+                                       admitted=admitted)
         file = Path(state['run']) / 'evidence-reuse.json'
         state['reuse_evidence'] = baseline
         state['evidence_reuse'] = {'path': file.name, 'sha256': sha(file), 'reused_recipes': plan['reused_recipes']}
         state['selection'].update(retained_recipes=plan['reused_recipes'], reuse_rejections=probe.get('rejected', []))
+        if admitted:
+            # Explicit per-workflow provenance: these keep their original
+            # producer, commit and capture id, and are never presented as fresh.
+            state['evidence_store'] = {'selection': SELECTION_NAME, 'reused_workflows': sorted(store_ids)}
+            state['selection']['store_retained_recipes'] = sorted(store_ids)
         if not force_selected:
             state['selection']['mode'] = 'full-compatible-reuse'
         validate_retained_evidence(state)
@@ -396,6 +487,76 @@ def affected_recipes(registry, changed, manual_changed=(), *, root=ROOT, decisio
         else:
             record(relative, 'manual', 'registered-content' if matches else 'authoring-metadata-only', matches)
     return [identifier for identifier in all_ids if identifier in selected]
+
+
+IMPACT_MODULE = 'docs/scripts/manuale_impact.py'
+IMPACT_MAP = 'docs/manuale/impact-map.json'
+
+
+def impact_analyzer(application):
+    """The snapshot's own impact analyzer, or None for snapshots that predate it."""
+    application = Path(application).resolve()
+    path = application / IMPACT_MODULE
+    if not path.is_file() or not (application / IMPACT_MAP).is_file():
+        return None
+    name = 'run_owned_manual_impact_' + hashlib.sha256(str(path).encode()).hexdigest()[:16]
+    module = sys.modules.get(name)
+    if module is None or getattr(module, '__file__', None) != str(path):
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return module
+
+
+def select_affected(registry, changed, manual_changed=(), *, root=ROOT, decisions=None, base=None,
+                    base_root=None, report=None):
+    """Registered-recipe decisions refined by the change-impact graph.
+
+    The legacy per-path decisions are still recorded for compatibility. When
+    the snapshot provides docs/scripts/manuale_impact.py, its report decides the
+    recaptured workflows: full verification selects every workflow and
+    workflows unknown to the report are selected too (fail closed). `base` is
+    a git revision, `base_root` a retained baseline snapshot directory.
+    """
+    legacy = affected_recipes(registry, changed, manual_changed, root=root, decisions=decisions)
+    analyzer = impact_analyzer(root)
+    if analyzer is None:
+        return legacy
+    paths = [*changed, *(('manuale/' + relative) for relative in manual_changed)]
+    try:
+        head = analyzer.WorkTree(root)
+        try:
+            previous = (analyzer.WorkTree(base_root) if base_root else
+                        analyzer.GitTree(root, base) if base else None)
+        except (OSError, subprocess.CalledProcessError):
+            previous = None
+        impact = analyzer.analyze_trees(head, previous, paths)
+    except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
+        if report is not None:
+            report.update(error='impact analysis unavailable: ' + str(exc))
+        return legacy
+    if report is not None:
+        report.update(impact)
+    identifiers = [recipe['id'] for recipe in registry['recipes']]
+    known = set(impact['affected_workflows']) | set(impact['reused_workflows'])
+    if impact['full_verification_required']:
+        return identifiers
+    return [identifier for identifier in identifiers
+            if identifier in impact['affected_workflows'] or identifier not in known]
+
+
+def record_impact(state, impact):
+    """Bind the impact report to the run directory and summarize it in the selection."""
+    if not impact:
+        return
+    file = Path(state['run']) / 'impact.json'
+    write_json(file, impact)
+    state['selection']['impact'] = {
+        'path': file.name, 'sha256': sha(file), 'mode': impact.get('mode'),
+        'full_verification_required': impact.get('full_verification_required'),
+        'affected_workflows': impact.get('affected_workflows', []), 'checks': impact.get('checks', {}),
+        **({'error': impact['error']} if 'error' in impact else {})}
 
 
 def changed_snapshot_paths(repo, snapshot_input, since):
@@ -753,11 +914,15 @@ def prepare(args):
     if args.manual_changed_since:
         manual_changed = changed_snapshot_paths(manual, state['manual_input'], args.manual_changed_since)
     decisions = []
-    state['selected_recipes'] = affected_recipes(registry, changed, manual_changed, root=application,
-                                                decisions=decisions) if args.changed_since or args.manual_changed_since else [recipe['id'] for recipe in registry['recipes']]
+    impact = {}
+    state['selected_recipes'] = select_affected(registry, changed, manual_changed, root=application,
+                                                decisions=decisions, base=args.changed_since, report=impact
+                                                ) if args.changed_since or args.manual_changed_since else [recipe['id'] for recipe in registry['recipes']]
     state['selection'] = {'mode': 'incremental' if args.changed_since or args.manual_changed_since else 'full',
-                          'algorithm': 'registered-recipe-imports-v1', 'decisions': decisions,
+                          'algorithm': 'impact-graph-v1' if impact.get('format') else 'registered-recipe-imports-v1',
+                          'decisions': decisions,
                           'changed_sources': sorted(set(changed)), 'changed_manual': sorted(set(manual_changed))}
+    record_impact(state, impact)
     if getattr(args, 'workflow', None):
         known = {recipe['id'] for recipe in registry['recipes']}
         unknown = set(args.workflow) - known
@@ -781,6 +946,11 @@ def prepare(args):
         tooling.append('docs/scripts/manuale-coverage.py')
     if (application / 'BE/application/manuale/reuse.py').is_file():
         tooling.append('BE/application/manuale/reuse.py')
+    if (application / EVIDENCE_STORE_MODULE).is_file():
+        tooling.append(EVIDENCE_STORE_MODULE)
+    for relative in (IMPACT_MODULE, IMPACT_MAP):
+        if (application / relative).is_file() and relative not in tooling:
+            tooling.append(relative)
     if (application / 'docs/scripts/manuale-repeatability.py').is_file():
         tooling.append('docs/scripts/manuale-repeatability.py')
     if registry_generator.is_file():
@@ -788,7 +958,8 @@ def prepare(args):
     if (application / 'docs/scripts/manuale-project.mjs').is_file():
         tooling.append('docs/scripts/manuale-project.mjs')
     for relative in ('docs/scripts/manuale-ci.py', 'docs/scripts/manuale-policy.py',
-                     'BE/application/manuale/render_reuse.py'):
+                     'BE/application/manuale/render_reuse.py', 'BE/application/manuale/reader_render.py',
+                     'docs/scripts/manuale_capture_shards.py'):
         if (application / relative).is_file():
             tooling.append(relative)
     state['tooling_hashes'] = {relative: sha(application / relative) for relative in sorted(set(tooling))}
@@ -956,6 +1127,32 @@ def capture(state):
                     shutil.copy2(run / master, target)
     state.update({'status': 'capturing', 'capture_id': secrets.token_hex(8)})
     write_json(run / 'run.json', state)
+    concurrency = capture_shards.resolve_concurrency(state.get('capture_concurrency'))
+    plan = capture_shards.partition(recipe_registry(Path(state['application']))['recipes'],
+                                    state['selected_recipes'], concurrency) if concurrency > 1 else []
+    if len(plan) > 1:
+        # Independent private stacks per extra shard; validated deterministic merge.
+        capture_shards.capture_sharded(capture_runner(), state, plan)
+    else:
+        (run / capture_shards.MANIFEST).unlink(missing_ok=True)
+        capture_batch(state)
+    if baseline.exists():
+        execute(management(state, 'compare_manuale_captures', '--run', '/manual-run',
+            '--output', '/manual-run/variance.json'), run, 'Measure repeated screenshot variance and enforce identical-input stability')
+    state['status'] = 'captured'
+    write_json(run / 'run.json', state)
+    remember_run(state)
+
+
+def capture_runner():
+    """Runtime helpers for capture shards, resolved at call time."""
+    names = ('compose', 'management', 'execute', 'free_port', 'write_json', 'recipe_registry', 'recipe_seed_options')
+    return SimpleNamespace(**{name: globals()[name] for name in names})
+
+
+def capture_batch(state):
+    """The sequential capture: one shared service stack, reseeded before every workflow."""
+    run = Path(state['run'])
     environment = {**os.environ, 'ASSOZETA_MANUAL_RUN': str(run), 'ASSOZETA_MANUAL_APPLICATION': state['application']}
     capture_error = None
     batch = {'format': 1, 'status': 'running', 'capture_id': state['capture_id'], 'scenarios': []}
@@ -1001,12 +1198,6 @@ def capture(state):
             batch['status'] = 'failed' if capture_error or state['fixture_reset'] != 'passed' else 'passed'
             write_json(run / 'capture-execution.json', batch)
             write_json(run / 'run.json', state)
-    if baseline.exists():
-        execute(management(state, 'compare_manuale_captures', '--run', '/manual-run',
-            '--output', '/manual-run/variance.json'), run, 'Measure repeated screenshot variance and enforce identical-input stability')
-    state['status'] = 'captured'
-    write_json(run / 'run.json', state)
-    remember_run(state)
 
 
 def generate(state):
@@ -1088,11 +1279,19 @@ def index(state):
 
 
 def verify(state, after_render=None):
+    """Check generated pages through the in-app reader projection.
+
+    Mintlify is no longer required: the in-app reader and the release bundle
+    built from ``manuale/`` are the publication source of truth. This phase
+    needs no preview server or browser; the real-browser reader check runs
+    against the real backend in ``evaluate`` (embedded.mjs).
+    """
     validate_tooling(state)
     run = Path(state['run'])
     # Load the verifier from this trusted runner, never from a downloaded cache.
     sys.path.insert(0, str(ROOT / 'BE'))
     from application.manuale.render_reuse import plan_render_reuse, validate_render_reuse
+    from application.manuale.reader_render import READER_CHECKS, READER_RENDERER, render_pages
     plan = plan_render_reuse(state, state.get('reuse_evidence'))
     manifest = json.loads((run / 'manifest.json').read_text())
     for page in manifest['pages']:
@@ -1104,64 +1303,33 @@ def verify(state, after_render=None):
     write_json(run / 'manifest.json', manifest)
     validate_render_reuse(state)
     print(f"Render decision: {len(plan['fresh_pages'])} fresh pages, {len(plan['reused_pages'])} retained pages", flush=True)
-    if not plan['fresh_pages']:
-        write_json(run / 'render.json', {
-            'status': 'passed', 'mode': 'retained-only', 'cli': 'mint@4.2.955',
-            'fresh_pages': [], 'reused_pages': plan['reused_pages'],
-            'checks': ['original successful render evidence revalidated against exact current content'],
-            'pages': [plan['pages'][page]['render'] for page in plan['reused_pages']],
-        })
-        validate_render_reuse(state)
-        state['status'] = 'rendered'
-        write_json(run / 'run.json', state)
-        if after_render:
-            after_render()
-        return
-    preview = run / 'preview'
-    if preview.exists():
-        shutil.rmtree(preview)
-    shutil.copytree(state['manual'], preview, ignore=shutil.ignore_patterns('.git', '.claude', '.DS_Store', 'node_modules'))
-    if not state.get('manual_preview_url'):
-        state['manual_preview_url'] = 'http://127.0.0.1:' + str(free_port())
-        write_json(run / 'run.json', state)
-    port = state['manual_preview_url'].rsplit(':', 1)[1]
-    log = run / 'preview.log'
-    with log.open('ab') as stream:
-        log.chmod(0o600)
-        process = subprocess.Popen(['npx', '--yes', 'mint@4.2.955', 'dev', '--port', port],
-            cwd=preview, stdout=stream, stderr=stream, start_new_session=True)
-        try:
-            deadline = time.monotonic() + 180
-            while time.monotonic() < deadline:
-                if process.poll() is not None:
-                    raise RuntimeError('Mintlify preview stopped; inspect preview.log')
-                try:
-                    with urllib.request.urlopen(state['manual_preview_url'], timeout=2) as response:
-                        if response.status == 200:
-                            break
-                except OSError:
-                    pass
-                time.sleep(1)
-            else:
-                raise RuntimeError('Mintlify preview did not become ready within 180 seconds')
-            execute(['node', str(Path(state['application']) / 'selfhost/tests/browser/manuale/verify.mjs')], run,
-                    'Verify MDX, image loading, and citation anchors in the actual Mintlify renderer',
-                    env={**os.environ, 'ASSOZETA_MANUAL_RUN': str(run)}, cwd=state['application'])
-            validate_render_reuse(state)
-            state['status'] = 'rendered'
-            write_json(run / 'run.json', state)
-            if after_render:
-                after_render()
-        finally:
-            # This live handle belongs to this invocation, rather than a stale
-            # PID/state file. Terminate its group, including the CLI's children.
-            if process.poll() is None:
-                os.killpg(process.pid, signal.SIGINT)
-                try:
-                    process.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    os.killpg(process.pid, signal.SIGTERM)
-                    process.wait(timeout=10)
+    report = {'status': 'running', 'renderer': READER_RENDERER,
+              'mode': 'retained-only' if not plan['fresh_pages'] else ('partial' if plan['reused_pages'] else 'fresh'),
+              'fresh_pages': plan['fresh_pages'], 'reused_pages': plan['reused_pages'],
+              'pages': [plan['pages'][page]['render'] for page in plan['reused_pages']]}
+    try:
+        if plan['fresh_pages']:
+            print('Verify generated pages, citation anchors and displayed images through the in-app reader projection', flush=True)
+            report['pages'] += render_pages(state['manual'], manifest, plan['fresh_pages'])
+            report['checks'] = list(READER_CHECKS)
+        else:
+            report['checks'] = ['original successful render evidence revalidated against exact current content']
+        if not report['pages']:
+            raise ValueError('No verified pages to render')
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        report.update(status='failed', error=str(exc))
+        write_json(run / 'render.json', report)
+        raise RuntimeError('Manual render verification failed: ' + str(exc)) from exc
+    report['status'] = 'passed'
+    # Publish the anchor mappings only after every page and image passed.
+    write_json(run / 'manifest.json', manifest)
+    write_json(run / 'render.json', report)
+    validate_render_reuse(state)
+    print('Manual render verification: passed', flush=True)
+    state['status'] = 'rendered'
+    write_json(run / 'run.json', state)
+    if after_render:
+        after_render()
 
 
 def cleanup(state):
@@ -1170,7 +1338,16 @@ def cleanup(state):
         raise RuntimeError('Refusing cleanup of an unowned project')
     if Path(state['override']).resolve().parent != run or Path(state['application']).resolve().parent != run:
         raise RuntimeError('Run paths are not owned by this cleanup')
+    shard_error = None
+    try:
+        # Extra capture shard stacks left behind by an interrupted capture.
+        capture_shards.teardown_recorded(capture_runner(), state)
+    except Exception as error:
+        shard_error = error
     execute(compose(state, '--profile', 'tools', 'down', '--volumes', '--remove-orphans'), run, 'Remove only this run’s services and data volumes')
+    if shard_error is not None:
+        write_json(run / 'run.json', state)
+        raise RuntimeError('Capture shard cleanup failed: ' + str(shard_error)) from shard_error
     remaining = subprocess.check_output(['docker', 'ps', '-aq', '--filter', 'label=com.docker.compose.project=' + state['project']], text=True).strip()
     if remaining:
         raise RuntimeError('Run-owned containers remain after cleanup')
@@ -1311,10 +1488,18 @@ def argument_parser():
     parser.add_argument('--manual-changed-since', help='Incremental verification using manual changes since this Git ref')
     parser.add_argument('--workflow', action='append', metavar='ID',
                         help='Capture a named workflow; repeat for several workflows')
+    parser.add_argument('--workflows', metavar='ID,ID',
+                        help='Comma-separated workflows to capture (same as repeated --workflow); '
+                             'MANUALE_CAPTURE_WORKFLOWS applies to new capture/prepare runs when no workflow option is given')
+    parser.add_argument('--capture-concurrency', metavar='N|auto',
+                        help='Independent capture shards (default MANUALE_CAPTURE_CONCURRENCY, else 1 = sequential)')
     parser.add_argument('--no-cache', action='store_true', help='Use a cold build/capture without automatic evidence or frontend reuse')
     parser.add_argument('--reuse-frontend', help='Reuse a rendered run’s compiled bundle after verifying identical UI inputs')
     parser.add_argument('--reuse-evidence', metavar='BASELINE_RUN',
                         help='Retain individually compatible unselected workflows from a previously verified run')
+    parser.add_argument('--reuse-store', metavar='SELECTION_DIR',
+                        help='Retain workflows materialized from the evidence store (directory with '
+                             'evidence-store-selection.json); every hash and fingerprint is re-verified')
     parser.add_argument('--edit-content', action='store_true', help='Generate bounded Codex drafts before existing capture/verification')
     parser.add_argument('--editor-profile', help='Explicit installed Codex profile for editorial generation')
     parser.add_argument('--editor-model', help='Explicit model override; otherwise use the CLI default')
@@ -1328,10 +1513,22 @@ def argument_parser():
 def main():
     parser = argument_parser()
     args = parser.parse_args()
+    try:
+        explicit = [*(args.workflow or []), *([args.workflows] if args.workflows else [])]
+        if explicit:
+            args.workflow = capture_shards.selected_workflows(explicit)
+        elif args.command in ('capture', 'prepare') and not args.run:
+            args.workflow = capture_shards.selected_workflows((), os.environ) or None
+        if args.capture_concurrency is not None:
+            capture_shards.resolve_concurrency(args.capture_concurrency)
+    except ValueError as error:
+        parser.error(str(error))
     if args.command == 'verify-release' and (args.allow_dirty or args.edit_content or args.install_dev):
         parser.error('verify-release requires committed inputs without editorial generation or development installation')
     if args.no_cache and (args.reuse_evidence or args.reuse_frontend):
         parser.error('--no-cache cannot be combined with explicit reuse')
+    if args.reuse_store and not (Path(args.reuse_store) / 'evidence-store-selection.json').is_file():
+        parser.error('--reuse-store needs a directory containing evidence-store-selection.json')
     if args.run and args.workflow:
         parser.error('--workflow selects a new capture; a retained --run keeps its recorded selection')
     if args.workflow and (args.changed_since or args.manual_changed_since):
@@ -1360,6 +1557,8 @@ def main():
             parser.error('--run is required for this command')
         if runtime_report:
             write_json(Path(state['run']) / 'runtime-preflight.json', runtime_report)
+        if args.capture_concurrency is not None:
+            state['capture_concurrency'] = args.capture_concurrency
         if args.command == 'verify-release' and args.run:
             # Packaging revalidates every required acceptance artifact. A
             # completed run can cross this boundary without another generation.
@@ -1391,8 +1590,7 @@ def main():
                 for phase in (start, capture, generate, compile_content):
                     with timed(state['run'], phase.__name__):
                         phase(state)
-                # Keep verified citation pages available while exercising the
-                # real MCP/agent; stop only this invocation's preview afterward.
+                # Index, evaluate and export only after the render check passed.
                 def complete_verification():
                     for phase in (index, evaluate, export):
                         with timed(state['run'], phase.__name__):

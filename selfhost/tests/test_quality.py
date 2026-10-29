@@ -135,7 +135,7 @@ elif name == 'docker' and args[:2] == ['image', 'inspect']:
         sys.exit(1)
     print('b' * 40 if args[-1] == os.environ['QUALITY_TEST_STALE_IMAGE'] else 'a' * 40)
 '''
-            for name in ('docker', 'git', 'npm', 'python3', 'uname'):
+            for name in ('docker', 'git', 'node', 'npm', 'python3', 'uname'):
                 executable = temporary / name
                 executable.write_text(stub)
                 executable.chmod(0o755)

@@ -60,7 +60,10 @@ If an active tutor's tax code conflicts with an active member, the member keeps
 it and the tutor's tax-code field is cleared. The original value and both record
 identifiers remain in the downloadable backup report. Conflicts between imported
 tutors use UUID order so the result does not depend on archive ordering. Deleted
-tutors retain their tax codes. No people are merged. Recovery exports retain
+tutors retain their tax codes. Legacy anagrafiche without an association ID
+are imported into the local association; the same rule applies when their
+active tax code matches an active member or another imported anagrafica.
+No people are merged. Recovery exports retain
 links involving deleted tutors, so the same backup can be restored again.
 The uploaded ZIP is not modified.
 

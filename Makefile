@@ -6,7 +6,8 @@ ASSOZETA := ./selfhost/bin/assozeta
 	dev-migrate dev-makemigrations dev-test dev-rebuild dev-reset \
 	selfhost-configure selfhost-install selfhost-validate selfhost-start \
 	selfhost-stop selfhost-status selfhost-logs selfhost-backup selfhost-restore \
-	selfhost-upgrade selfhost-test selfhost-smoke selfhost-production-smoke selfhost-quality
+	selfhost-upgrade selfhost-test selfhost-smoke selfhost-renderer-test \
+	selfhost-production-smoke selfhost-quality
 
 help:
 	@printf '%s\n' \
@@ -27,6 +28,7 @@ help:
 		'make selfhost-status          Show production status' \
 		'make selfhost-test            Validate scripts, Compose, and updater regressions' \
 		'make selfhost-smoke           Start and smoke-test the development stack' \
+		'make selfhost-renderer-test   Test renderer API, security, isolation and recovery' \
 		'make selfhost-production-smoke Build and test the production stack' \
 		'make selfhost-quality SCENARIO=legacy Run release and browser checks in Docker'
 
@@ -109,11 +111,18 @@ selfhost-test:
 selfhost-smoke:
 	@./selfhost/tests/smoke.sh
 
+selfhost-renderer-test:
+	@npm --prefix selfhost/renderer test
+	@docker build -t assozeta-renderer:test ./selfhost/renderer
+	@node selfhost/tests/renderer-contract.mjs assozeta-renderer:test
+
 selfhost-production-smoke:
+	@npm --prefix selfhost/renderer test
 	@docker build --target production --build-arg VERSION=test -t assozeta-backend:test ./BE
 	@docker build --build-arg VERSION=test -t assozeta-backend-go:test ./BE_GO
 	@docker build --target production -t assozeta-web:test ./UI
 	@docker build -t assozeta-renderer:test ./selfhost/renderer
+	@node selfhost/tests/renderer-contract.mjs assozeta-renderer:test
 	@./selfhost/tests/production-smoke.sh
 
 selfhost-quality:

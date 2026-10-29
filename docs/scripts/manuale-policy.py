@@ -25,6 +25,10 @@ FULL_INPUTS = ('BE/application/manuale/', 'BE/application/mcp_server/',
                'docs/manuale/requirements-offline.txt', '.github/actions/prepare-storage/',
                '.github/workflows/manuale', '.github/workflows/publish-images.yml')
 SHA = re.compile(r'[a-f0-9]{40}\Z')
+# Only runs of trusted refs may produce a whole-run baseline. Pull request runs
+# (merged or not) never do: their artifacts are diagnostics, never admitted.
+TRUSTED_EVENTS = ('push', 'release', 'workflow_dispatch', 'schedule')
+RELEASE_TAG = re.compile(r'v?\d+\.\d+\.\d+(?:[-+.][0-9A-Za-z.-]+)?\Z')
 
 
 def pinned_source(path=ROOT / 'docs/manuale/source.json', override=None):
@@ -79,15 +83,30 @@ def verification_decision(state, *, force_full=False):
                                'reader and screenshots', 'authentication and authorization', 'MCP and assistant']}
 
 
-def producer_rejection(run, artifact, repository, *, accepted_source):
+def trusted_ref(run, default_branch):
+    """The producer ran on the default branch, or a release run on a release tag."""
+    branch = run.get('head_branch')
+    if not isinstance(branch, str) or not branch:
+        return False
+    if branch == default_branch and run.get('event') != 'release':
+        return True
+    return run.get('event') in ('release', 'workflow_dispatch', 'push') and bool(RELEASE_TAG.fullmatch(branch))
+
+
+def producer_rejection(run, artifact, repository, *, accepted_source, default_branch='main'):
     if run.get('status') != 'completed' or run.get('conclusion') != 'success':
         return 'producer workflow did not complete successfully'
     if run.get('repository', {}).get('full_name') != repository or run.get('head_repository', {}).get('full_name') != repository:
         return 'producer repository is untrusted'
     if run.get('path', '').split('@', 1)[0] not in WORKFLOWS:
         return 'producer workflow is not approved'
-    if run.get('event') not in ('push', 'pull_request', 'release', 'workflow_dispatch', 'schedule'):
+    event = run.get('event')
+    if isinstance(event, str) and event.startswith('pull_request'):
+        return 'pull request artifacts are never a trusted baseline'
+    if event not in TRUSTED_EVENTS:
         return 'producer event is not approved'
+    if not trusted_ref(run, default_branch):
+        return 'producer ref is not the default branch or a release tag'
     if not accepted_source:
         return 'producer source has not been accepted into the default branch'
     if artifact.get('expired') or artifact.get('workflow_run', {}).get('id') != run.get('id'):
@@ -102,24 +121,17 @@ def gh_json(endpoint):
 
 
 def accepted_source(run, repository, default_ref, *, root=ROOT, api=gh_json):
+    """The producer commit is part of accepted default-branch history.
+
+    Pull request runs never qualify, not even after their branch is merged:
+    their verification ran from PR-controlled workflow inputs. `api` is kept for
+    call compatibility; no PR record can confer trust.
+    """
     revision = run.get('head_sha', '')
-    if not SHA.fullmatch(revision):
+    if not SHA.fullmatch(revision) or str(run.get('event', '')).startswith('pull_request'):
         return False
-    def ancestor(commit):
-        return subprocess.run(['git', '-C', str(root), 'merge-base', '--is-ancestor', commit, default_ref],
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
-    if ancestor(revision):
-        return True
-    # Squash/rebase merges need the server's merged PR record, not a caller's
-    # claim that a branch or artifact is trusted. Unmerged PRs never qualify.
-    if run.get('event') == 'pull_request':
-        for pr in api(f'repos/{repository}/commits/{revision}/pulls'):
-            if (pr.get('merged_at') and pr.get('head', {}).get('sha') == revision
-                    and pr.get('head', {}).get('repo', {}).get('full_name') == repository
-                    and pr.get('base', {}).get('repo', {}).get('full_name') == repository
-                    and ancestor(pr.get('merge_commit_sha', ''))):
-                return True
-    return False
+    return subprocess.run(['git', '-C', str(root), 'merge-base', '--is-ancestor', revision, default_ref],
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
 
 
 def verify_archive_download(path, artifact, destination):
@@ -142,7 +154,8 @@ def fetch_baseline(repository, output, manual_repository, cache_module, *, root=
     """Admit only successful reviewed CI producers; then validate archive bytes.
 
     The GitHub API, rather than any self-authored cache field, is the provenance
-    authority. PR artifacts become eligible only after their source is merged.
+    authority. Only push, release, dispatch or schedule runs on the default
+    branch (or a release tag) are eligible; pull request artifacts never are.
     """
     report = {'format': 1, 'status': 'missing', 'candidates': []}
     output = Path(output)
@@ -161,7 +174,7 @@ def fetch_baseline(repository, output, manual_repository, cache_module, *, root=
             continue
         run = api(f'repos/{repository}/actions/runs/{identifier}')
         reason = producer_rejection(run, artifact, repository, accepted_source=accepted_source(
-            run, repository, default_ref, root=root, api=api))
+            run, repository, default_ref, root=root, api=api), default_branch=info['default_branch'])
         if reason:
             decision.update(result='rejected', reason=reason)
             continue
@@ -178,14 +191,7 @@ def fetch_baseline(repository, output, manual_repository, cache_module, *, root=
                 cache_module.import_cache(archive, candidate, manual_repository, register=False)
                 state = json.loads((candidate / 'run.json').read_text())
                 revision = state['application_input']['revision']
-                if run['event'] == 'pull_request':
-                    tree = subprocess.check_output(['git', '-C', str(candidate / 'application'),
-                        'rev-parse', revision + '^{tree}'], text=True).strip()
-                    accepted_trees = set(subprocess.check_output(['git', '-C', str(root),
-                        'log', default_ref, '--format=%T'], text=True).splitlines())
-                    if tree not in accepted_trees:
-                        raise ValueError('PR verification tree is not present in accepted default-branch history')
-                elif revision != run['head_sha']:
+                if revision != run['head_sha']:
                     raise ValueError('Cached source does not match the authenticated producer commit')
                 # Relocation is performed by the importer; never rewrite sealed
                 # reports or the application/manual revisions of the producer.

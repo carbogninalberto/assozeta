@@ -52,8 +52,6 @@ class PublicationFixtureTests(unittest.TestCase):
             repository.mkdir()
             command(repository, 'init')
         source_bytes = b'def verified_action(): return True\n'
-        write(self.application, 'BE/action.py', source_bytes)
-        self.revision = commit(self.application)
         write(self.manual, 'docs/action.mdx', b'## Azione\nBozza.\n')
         write(self.manual, 'mint.json', {'navigation': [{'group': 'Guide', 'pages': ['docs/action']}]})
         write(self.manual, 'SCREENSHOTS-NEEDED.md', b'Offline screenshot fixture.\n')
@@ -63,6 +61,11 @@ class PublicationFixtureTests(unittest.TestCase):
         write(self.manual, 'images/action/1.png', png())
         write(self.manual, '.manuale-evidence.json', {'evidence_kind': 'offline-unit-fixture'})
         self.manual_revision = commit(self.manual)
+        # The application commit vendors the exact final manual tree.
+        write(self.application, 'BE/action.py', source_bytes)
+        write(self.application, 'docs/manuale/source.json', {'repository': 'carbogninalberto/assozeta', 'path': 'manuale'})
+        shutil.copytree(self.manual, self.application / 'manuale', ignore=shutil.ignore_patterns('.git'))
+        self.revision = commit(self.application)
         shutil.copytree(self.manual, self.run / 'manual', ignore=shutil.ignore_patterns('.git'))
         source_hash = index.digest(source_bytes)
         source = {'path': 'BE/action.py', 'start': 1, 'end': 1, 'symbol': 'verified_action',
@@ -207,7 +210,7 @@ class PublicationFixtureTests(unittest.TestCase):
     def availability_fixtures(self):
         """Deterministic HTTPS response bytes; explicitly not real availability."""
         plan = self.prepare()
-        source = 'https://raw.githubusercontent.com/Bakney/manuale/' + self.manual_revision
+        source = 'https://raw.githubusercontent.com/carbogninalberto/assozeta/' + self.revision + '/manuale'
         evidence = 'https://evidence.invalid/fixture'
         responses = {source + '/' + relative: (self.output / 'manual' / relative).read_bytes()
             for relative in plan['manual_file_hashes']}
@@ -215,9 +218,9 @@ class PublicationFixtureTests(unittest.TestCase):
             for relative in plan['retained_evidence']})
         responses['https://manual.invalid/docs/action'] = b'<main><h2 id="azione">Azione</h2><p>Apri il modulo.</p><img alt="Modulo"></main>'
         responses['https://manual.invalid/images/action/1.png'] = png()
-        responses['https://api.github.com/repos/Bakney/manuale/deployments?per_page=100'] = index.canonical([
-            {'id': 9, 'environment': 'fixture-production', 'sha': self.manual_revision, 'created_at': '2026-01-01T00:00:00Z'}]).encode()
-        responses['https://api.github.com/repos/Bakney/manuale/deployments/9/statuses?per_page=100'] = index.canonical([
+        responses['https://api.github.com/repos/carbogninalberto/assozeta/deployments?per_page=100'] = index.canonical([
+            {'id': 9, 'environment': 'fixture-production', 'sha': self.revision, 'created_at': '2026-01-01T00:00:00Z'}]).encode()
+        responses['https://api.github.com/repos/carbogninalberto/assozeta/deployments/9/statuses?per_page=100'] = index.canonical([
             {'id': 10, 'created_at': '2026-01-01T00:00:00Z', 'state': 'success', 'environment_url': 'https://manual.invalid'}]).encode()
         return evidence, responses
 
@@ -259,24 +262,24 @@ class PublicationFixtureTests(unittest.TestCase):
         self.assertEqual(report['deployment_revision'], 'unattested')
         self.assertTrue(report['missing_proof'])
         self.assertFalse((self.root / 'availability/index.json').exists())
-        responses['https://api.github.com/repos/Bakney/manuale/deployments/9/statuses?per_page=100'] = index.canonical([
+        responses['https://api.github.com/repos/carbogninalberto/assozeta/deployments/9/statuses?per_page=100'] = index.canonical([
             {'id': 11, 'created_at': '2026-01-02T00:00:00Z', 'state': 'failure', 'environment_url': 'https://manual.invalid'},
             {'id': 10, 'created_at': '2026-01-01T00:00:00Z', 'state': 'success', 'environment_url': 'https://manual.invalid'}]).encode()
         report = self.verify_availability_fixture(evidence, responses, name='failed-deployment')
         self.assertEqual(report['status'], 'publication-blocked')
         self.assertFalse((self.root / 'failed-deployment/index.json').exists())
-        responses['https://api.github.com/repos/Bakney/manuale/deployments/9/statuses?per_page=100'] = index.canonical([
+        responses['https://api.github.com/repos/carbogninalberto/assozeta/deployments/9/statuses?per_page=100'] = index.canonical([
             {'id': 12, 'created_at': '2026-01-03T00:00:00Z', 'state': 'success', 'environment_url': 'https://manual.invalid'}]).encode()
-        deployments = json.loads(responses['https://api.github.com/repos/Bakney/manuale/deployments?per_page=100'])
+        deployments = json.loads(responses['https://api.github.com/repos/carbogninalberto/assozeta/deployments?per_page=100'])
         deployments[0]['sha'] = 'd' * 40
-        responses['https://api.github.com/repos/Bakney/manuale/deployments?per_page=100'] = index.canonical(deployments).encode()
+        responses['https://api.github.com/repos/carbogninalberto/assozeta/deployments?per_page=100'] = index.canonical(deployments).encode()
         report = self.verify_availability_fixture(evidence, responses, name='wrong-deployed-revision')
         self.assertEqual(report['status'], 'publication-blocked')
         self.assertFalse((self.root / 'wrong-deployed-revision/index.json').exists())
 
     def test_latest_status_is_selected_by_creation_time_instead_of_response_order(self):
         evidence, responses = self.availability_fixtures()
-        responses['https://api.github.com/repos/Bakney/manuale/deployments/9/statuses?per_page=100'] = index.canonical([
+        responses['https://api.github.com/repos/carbogninalberto/assozeta/deployments/9/statuses?per_page=100'] = index.canonical([
             {'id': 10, 'created_at': '2026-01-01T00:00:00Z', 'state': 'success', 'environment_url': 'https://manual.invalid'},
             {'id': 11, 'created_at': '2026-01-02T00:00:00Z', 'state': 'failure', 'environment_url': 'https://manual.invalid'}]).encode()
         report = self.verify_availability_fixture(evidence, responses)
@@ -285,7 +288,7 @@ class PublicationFixtureTests(unittest.TestCase):
 
     def test_later_page_failure_prevents_publication_despite_older_successes(self):
         evidence, responses = self.availability_fixtures()
-        endpoint = 'https://api.github.com/repos/Bakney/manuale/deployments/9/statuses?per_page=100'
+        endpoint = 'https://api.github.com/repos/carbogninalberto/assozeta/deployments/9/statuses?per_page=100'
         responses[endpoint] = index.canonical([{'id': identifier, 'created_at': '2026-01-01T00:00:00Z',
             'state': 'success', 'environment_url': 'https://manual.invalid'} for identifier in range(1, 101)]).encode()
         responses[endpoint + '&page=2'] = index.canonical([{'id': 101, 'created_at': '2026-01-02T00:00:00Z',
@@ -306,6 +309,66 @@ class PublicationFixtureTests(unittest.TestCase):
         report = self.verify_availability_fixture(evidence, responses, name='hidden-prose')
         self.assertEqual(report['status'], 'availability-failed')
         self.assertFalse((self.root / 'hidden-prose/index.json').exists())
+
+    def test_availability_reads_the_vendored_folder_at_the_application_revision(self):
+        evidence, responses = self.availability_fixtures()
+        requested = []
+        def response(url, **requirements):
+            requested.append(url)
+            return responses[url]
+        with patch.object(publication, 'read_https', side_effect=response):
+            report = publication.verify_release_availability(self.output, self.application, self.manual,
+                self.root / 'vendored', release='v-fixture', evidence_base=evidence,
+                deployment_environment='fixture-production')
+        self.assertEqual(report['status'], 'availability-verified')
+        self.assertEqual(report['manual_source']['repository'], 'carbogninalberto/assozeta')
+        self.assertEqual(report['manual_source']['path'], 'manuale')
+        self.assertEqual(report['manual_source']['revision'], self.revision)
+        self.assertEqual(report['deployment']['application_revision'], self.revision)
+        self.assertEqual(report['deployment']['manual_revision'], self.manual_revision)
+        self.assertFalse(any('Bakney/manuale' in url for url in requested))
+        self.assertIn('https://raw.githubusercontent.com/carbogninalberto/assozeta/' + self.revision
+                      + '/manuale/docs/action.mdx', requested)
+
+    def test_deployment_of_the_manual_only_commit_does_not_attest_the_application_revision(self):
+        evidence, responses = self.availability_fixtures()
+        endpoint = 'https://api.github.com/repos/carbogninalberto/assozeta/deployments?per_page=100'
+        responses[endpoint] = index.canonical([{'id': 9, 'environment': 'fixture-production',
+            'sha': self.manual_revision, 'created_at': '2026-01-01T00:00:00Z'}]).encode()
+        report = self.verify_availability_fixture(evidence, responses, name='manual-sha')
+        self.assertEqual(report['status'], 'publication-blocked')
+        self.assertFalse((self.root / 'manual-sha/index.json').exists())
+
+    def test_retired_external_or_mismatched_manual_source_is_rejected(self):
+        self.assertEqual(publication.publication_source(self.application, self.revision, self.manual,
+                                                        self.manual_revision)['path'], 'manuale')
+        legacy = publication.git(self.manual, 'rev-parse', self.authoring_revision).decode().strip()
+        with self.assertRaisesRegex(index.EvidenceError, 'not the vendored manuale/ folder'):
+            publication.publication_source(self.application, self.revision, self.manual, legacy)
+        for pin in ({'repository': 'Bakney/manuale', 'revision': 'a' * 40},
+                    {'repository': 'carbogninalberto/assozeta', 'path': 'docs'}):
+            with self.subTest(pin=pin):
+                write(self.application, 'docs/manuale/source.json', pin)
+                revision = commit(self.application)
+                with self.assertRaisesRegex(index.EvidenceError, 'vendored manual source'):
+                    publication.publication_source(self.application, revision, self.manual, self.manual_revision)
+        command(self.application, 'rm', '-q', 'docs/manuale/source.json')
+        revision = commit(self.application)
+        with self.assertRaisesRegex(index.EvidenceError, 'required Git repository/blob'):
+            publication.publication_source(self.application, revision, self.manual, self.manual_revision)
+
+    def test_non_vendored_pin_blocks_availability_before_reading_https(self):
+        self.prepare()
+        # validate_prepared_package re-derives the package from the committed
+        # checkout, so swap the pin check alone for this boundary test.
+        with patch.object(publication, 'read_https') as reader, \
+                patch.object(publication, 'publication_source',
+                             side_effect=index.EvidenceError('Publication requires the vendored manual source')):
+            with self.assertRaisesRegex(index.EvidenceError, 'vendored manual source'):
+                publication.verify_release_availability(self.output, self.application, self.manual,
+                    self.root / 'blocked', release='v-fixture', evidence_base='https://evidence.invalid/fixture')
+            reader.assert_not_called()
+        self.assertFalse((self.root / 'blocked').exists())
 
     def test_tampered_prepared_proof_is_rejected_before_reading_https(self):
         self.prepare()

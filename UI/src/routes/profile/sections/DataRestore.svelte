@@ -345,7 +345,7 @@
                         {selected.preview.skipped_records.PreviewAndCustomFeatures || 0} abilitazioni commerciali.
                         Le funzioni dell'associazione sono disponibili senza un abbonamento software.</InstanceAlert>
                 {/if}
-                {#if selected.preview.missing_relations || selected.preview.reassigned_tutors}
+                {#if selected.preview.missing_relations || selected.preview.reassigned_tutors || selected.preview.tutor_tax_code_conflicts}
                     <details class="report-section" open={review}>
                     <summary><span>Rapporto del backup</span><span class="report-count">
                         {#if selected.preview.missing_relations || selected.preview.tutor_tax_code_conflicts}
@@ -439,7 +439,7 @@
                     <div class="recovery-caption"><strong>{new Date(op.created_at).toLocaleString('it-IT')}</strong><span>{labels[op.stage] || op.stage}</span></div>
                     <div class="recovery-downloads">
                         <RestoreDownloadButton disabled={busy} loading={downloading === `${op.id}:backup`} on:click={() => download(op)} />
-                        {#if op.preview.missing_relations || op.preview.reassigned_tutors}
+                        {#if op.preview.missing_relations || op.preview.reassigned_tutors || op.preview.tutor_tax_code_conflicts}
                             <RestoreDownloadButton kind="missing-relations" disabled={busy} loading={downloading === `${op.id}:missing-relations`}
                                 on:click={() => download(op, 'missing-relations')} />
                         {/if}

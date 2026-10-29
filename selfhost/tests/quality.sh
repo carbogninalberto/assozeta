@@ -25,6 +25,8 @@ else
     docker build --label "org.opencontainers.image.revision=$revision" -t assozeta-renderer:test selfhost/renderer
     docker build --label "org.opencontainers.image.revision=$revision" -t assozeta-updater:goal-test -f selfhost/updater/Dockerfile .
 fi
+npm --prefix selfhost/renderer test
+node selfhost/tests/renderer-contract.mjs assozeta-renderer:test
 npm ci --prefix selfhost/tests/browser
 npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
 # The updater writes private host state as root. Inspect it in this disposable

@@ -1017,6 +1017,58 @@ class RestoreTests(TransactionTestCase):
             self.assertEqual(Associate.objects.get(pk=tutors[0]).tax_code, 'RSSMRA80A01H501U')
             self.assertIsNone(Associate.objects.get(pk=tutors[1]).tax_code)
 
+    def test_unassigned_tutor_tax_code_conflicts_are_cleared_and_reported(self):
+        from application.models.user_models import AssociateTutorRelation
+
+        member, deleted, *unassigned = [str(uuid.uuid4()) for _ in range(5)]
+        unassigned.sort()
+        content = self.archive({
+            'Associate': [
+                {'associate_id': member, 'sport_association_id': self.source_association,
+                 'tax_code': 'RSSMRA80A01H501U'},
+                {'associate_id': deleted, 'sport_association_id': self.source_association,
+                 'tax_code': 'VRDLGU80A01H501U', 'deleted': True},
+            ] + [
+                {'associate_id': identity, 'sport_association_id': None, 'first_name': f'Tutor {index}',
+                 'tax_code': ['rssmra80a01h501u', 'VRDLGU80A01H501U', 'VRDLGU80A01H501U'][index]}
+                for index, identity in reversed(list(enumerate(unassigned)))
+            ],
+            'AssociateTutorRelation': [{'id': index + 1, 'associate_id': member, 'tutor_id': identity}
+                                       for index, identity in enumerate(unassigned)],
+        })
+        op = self.upload(content)
+        self.assertEqual(op.preview['reassigned_tutors'], 0)
+        self.assertEqual(op.preview['tutor_tax_code_conflicts'], 2)
+        execute(self.start(op).pk)
+        op.refresh_from_db()
+        self.assertEqual(op.state, 'completed', op.error)
+        self.assertEqual(Associate.objects.get(pk=member).tax_code, 'RSSMRA80A01H501U')
+        self.assertEqual(Associate._base_manager.get(pk=deleted).tax_code, 'VRDLGU80A01H501U')
+        restored = {str(row.pk): row for row in Associate.objects.filter(pk__in=unassigned)}
+        self.assertEqual([restored[identity].tax_code for identity in unassigned],
+                         [None, 'VRDLGU80A01H501U', None])
+        self.assertTrue(all(row.sport_association_id == self.association.pk for row in restored.values()))
+        self.assertEqual(AssociateTutorRelation.objects.count(), 3)
+        details = json.loads(self.client.get(f'{self.endpoint}/{op.id}/missing-relations').content)['tutor_reassignments']
+        self.assertEqual([(row['associate_id'], row['source_association_id'], row['original_tax_code'],
+                           row['conflicting_associate_id']) for row in details],
+                         [(unassigned[0], None, 'rssmra80a01h501u', member),
+                          (unassigned[2], None, 'VRDLGU80A01H501U', unassigned[1])])
+        repeated = self.start(self.upload(content))
+        execute(repeated.pk)
+        repeated.refresh_from_db()
+        self.assertEqual(repeated.state, 'completed', repeated.error)
+
+    def test_duplicate_active_member_tax_codes_are_rejected_before_restore(self):
+        members = [str(uuid.uuid4()) for _ in range(2)]
+        response = self.client.post(self.endpoint, {'file': SimpleUploadedFile('duplicate.zip', self.archive({
+            'Associate': [{'associate_id': identity, 'sport_association_id': self.source_association,
+                           'tax_code': code} for identity, code in zip(members, ['RSSMRA80A01H501U', 'rssmra80a01h501u'])],
+        }))}, format='multipart')
+        self.assertEqual(response.status_code, 400, response.data)
+        self.assertIn('Codice fiscale duplicato', response.data['error'])
+        self.assertFalse(DataRestore.objects.exists())
+
     def test_foreign_records_without_a_tutor_link_to_an_imported_member_are_rejected(self):
         foreign_association, member, tutor = [str(uuid.uuid4()) for _ in range(3)]
         samples = [

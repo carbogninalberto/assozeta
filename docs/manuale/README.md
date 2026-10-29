@@ -10,7 +10,40 @@ pagina. I contenuti del manuale sono inclusi in questo repository nella cartella
 `manuale/` (`docs/manuale/source.json` indica la cartella): `manuale-ci.py pin`
 la materializza dal commit corrente come repository Git pulito con un commit
 deterministico, usato come revisione immutabile della stesura. Non servono
-credenziali di scrittura, un provider AI o un deploy Mintlify.
+credenziali di scrittura, un provider AI, Mintlify o un deploy del sito.
+
+### Migrazione: Mintlify non è più richiesto
+
+Il lettore integrato nell'applicazione e il pacchetto costruito da `manuale/`
+sono la fonte di verità della pubblicazione. Mintlify non è più un requisito:
+
+- `manuale.py verify` (fase `render` in CI) non scarica `mint` e non avvia
+  `mint dev` né un browser. Controlla ogni pagina generata con la stessa
+  proiezione usata dal lettore integrato (`index.sections` e `reader_blocks`,
+  in `BE/application/manuale/reader_render.py`): ogni sezione verificata deve
+  esistere una sola volta con il testo verificato esatto, ogni schermata
+  mostrata deve essere un PNG con l'hash registrato e comparire nei blocchi del
+  lettore. Qualsiasi differenza interrompe la verifica.
+- Le ancore delle citazioni sono le identità di sezione del lettore
+  (`/#/manuale?section=pagina#sezione`), le stesse usate da Bot e MCP, non più
+  gli ID calcolati da Mintlify.
+- Il controllo nel browser reale resta `embedded-manual.json`
+  (`embedded.mjs`), eseguito sul backend reale nella fase `runtime`: lettore,
+  blocchi, schermate, ricerca, deep link e navigazione mobile.
+- `render.json` indica `"renderer": "assozeta-reader"` e non contiene più la
+  galleria Full HD `renders/`. Le prove di rendering Mintlify conservate nelle
+  baseline precedenti non vengono riusate: le pagine sono ricontrollate (pochi
+  secondi, senza servizi).
+- `selfhost/tests/browser/manuale/verify.mjs` è stato rimosso. Comandi e
+  opzioni CLI restano invariati; `mint.json` resta solo come file di
+  navigazione letto dal compilatore e dal lettore.
+- Il sito esterno è facoltativo. `manuale-release.py --verify-availability`
+  accetta soltanto la fonte inclusa (`carbogninalberto/assozeta`, cartella
+  `manuale/`): il commit manuale preparato deve avere lo stesso albero Git della
+  cartella nella revisione applicativa, i file sono letti da
+  `raw.githubusercontent.com/carbogninalberto/assozeta/REVISIONE/manuale/` e il
+  deployment GitHub deve riferirsi a quella revisione applicativa. La vecchia
+  fonte `Bakney/manuale` viene rifiutata.
 
 Il nuovo comando `manuale-release.py --bundle` riproduce l'indice dalle prove
 valutate e produce `runtime/index.json`, schermate PNG e `runtime/bundle.json`.
@@ -84,7 +117,7 @@ inventa nuove prove né promuove sezioni non supportate per rendere verde una re
 Le lacune restano nell'indice e nei resoconti di copertura.
 
 
-Il manuale utente è incluso nella cartella `manuale/` di questo repository (importato da [Bakney/manuale](https://github.com/Bakney/manuale) al commit `1cfe01f`). La pubblicazione del sito resta collegata a Bakney/manuale finché il sito Mintlify non viene ricollegato a questa cartella. Assozeta contiene anche l'ambiente dimostrativo, gli scenari browser, le evidenze del codice e la ricerca usata dall'MCP e dall'assistente esistenti.
+Il manuale utente è incluso nella cartella `manuale/` di questo repository (importato da [Bakney/manuale](https://github.com/Bakney/manuale) al commit `1cfe01f`). Anche la verifica di un eventuale sito pubblicato usa questa cartella; `Bakney/manuale` non è più una fonte. Assozeta contiene anche l'ambiente dimostrativo, gli scenari browser, le evidenze del codice e la ricerca usata dall'MCP e dall'assistente esistenti.
 
 Se i repository di input hanno metadati Git in sola lettura, aggiungere `--standalone-checkouts`: il runner crea cloni locali indipendenti dentro la directory del run, conserva il commit e l'origine effettivi, applica solo le modifiche dichiarate e registra `checkout_kind: standalone-local-clone`. Senza questa opzione usa i worktree collegati. Non richiede rete o token GitHub.
 
@@ -133,6 +166,41 @@ oppure usare `--changed-since REF` per la selezione delle dipendenze. `--run`
 riprende invece la selezione già registrata. `--keep-services` conserva l'ambiente
 per l'ispezione. Il comando completo `run` mantiene la verifica dal principio.
 
+### Cattura selettiva e in parallelo
+
+`capture` accetta anche `--workflows ID,ID` (equivalente a più `--workflow ID`)
+e `--capture-concurrency N|auto`. Senza opzioni sui workflow, un nuovo
+`capture`/`prepare` legge `MANUALE_CAPTURE_WORKFLOWS` (elenco separato da
+virgole); `run` e `verify-release` lo ignorano, perché devono coprire tutti i
+workflow (in CI la selezione residua arriva dalla decisione registrata nel run:
+sono catturati soltanto i workflow non coperti da prove riusate).
+
+```sh
+python3 docs/scripts/manuale.py capture --manual-repo PERCORSO_MANUALE_REVISIONATO \
+  --workflows members-search,members-create --capture-concurrency auto
+MANUALE_CAPTURE_WORKFLOWS=members-search MANUALE_CAPTURE_CONCURRENCY=2 \
+  python3 docs/scripts/manuale.py capture --manual-repo PERCORSO_MANUALE_REVISIONATO
+```
+
+La concorrenza vale da 1 a 4 oppure `auto`; il valore predefinito è 1 (cattura
+sequenziale storica). `auto` dimensiona i gruppi (shard) su CPU e memoria
+dell'host: circa due vCPU e 4 GiB per gruppo, quindi 2 su un runner GitHub da
+4 vCPU e 16 GiB. In CI il valore arriva da `vars.MANUALE_CAPTURE_CONCURRENCY`
+(predefinito `auto`). Ogni gruppo oltre il primo ha un proprio progetto Docker
+Compose (database, Redis, MinIO, renderer, API, UI e worker), porte, directory
+`/manual-run` e processo browser privati; ogni workflow viene comunque
+riseminato prima dell'esecuzione. I risultati entrano nel run solo dopo la
+validazione di rapporti, schermate e artefatti; duplicati, mancanze o conflitti
+fanno fallire la cattura e i servizi dei gruppi vengono sempre rimossi.
+`MANUALE_CAPTURE_SHARD_CPUS` e `MANUALE_CAPTURE_SHARD_MEMORY` limitano le
+risorse di ciascun gruppo aggiuntivo.
+
+`--reuse-store DIRECTORY` ammette prove materializzate dall'archivio per
+workflow (vedere [Archivio delle prove per workflow](#archivio-delle-prove-per-workflow)):
+`DIRECTORY` deve contenere `evidence-store-selection.json`. Ogni hash, l'impronta
+del workflow e i controlli di rapporto e prosa revisionata vengono ripetuti; le
+prove respinte vengono catturate di nuovo.
+
 Le definizioni in `*-authored-workflows.mjs` e `legacy-workflows.mjs` sono la fonte
 per identità, dipendenze, fixture e checkpoint. Il browser risolve nome del
 checkpoint, numero PNG e fonti dall'inventario generato. Non modificare a mano
@@ -169,6 +237,46 @@ locali. `manuale-cache.py import --archive CACHE.tar.gz --output NUOVO_RUN
 --manual-repo MANUALE` ricostruisce uno snapshot indipendente e lo registra per la
 ricerca automatica. L'archivio è una cache di prove, non un pacchetto installabile;
 l'importazione non rende compatibili input diversi e non esegue codice della baseline.
+
+### Archivio delle prove per workflow
+
+Oltre alla baseline dell'intero run, la CI conserva un archivio indirizzato per
+contenuto (`docs/scripts/manuale_evidence_store.py`): per ogni workflow, un
+manifest con impronta (`fingerprint`), produttore, origine e hash di rapporto,
+record delle prove e schermate; le schermate sono deduplicate in
+`blobs/sha256/`. L'impronta copre tutte le dipendenze del workflow calcolate
+dall'analisi d'impatto (`manuale_impact.py`), la chiusura degli import degli
+strumenti di cattura, gli strumenti condivisi (compresi `manuale_capture_shards.py`),
+fixture e relativa versione, ambiente del browser, mappatura delle pagine e
+versione dello schema. Le prove sono quindi riutilizzabili fra commit diversi
+quando nessuno di questi input cambia; mantengono sempre commit, ID di cattura e
+produttore originali e sono marcate come riusate nel corpus.
+
+Sono pubblicati due artifact soltanto da esecuzioni fidate (push sul ramo
+predefinito o tag di release, dopo tutti i controlli): `manuale-evidence-store-index`
+(indice, manifest, record e rapporti; piccolo) e `manuale-evidence-store-blobs`
+(schermate). Le PR non pubblicano mai un archivio fidato. Il verificatore
+scarica prima l'indice, autentica i produttori tramite le API GitHub, pianifica
+il riuso insieme al rapporto d'impatto e scarica le schermate solo se qualche
+workflow è riutilizzabile; il digest di ogni download deve coincidere con quello
+dell'artifact. Comandi principali:
+
+```sh
+python3 docs/scripts/manuale-ci.py store --impact impact.json --output OUT   # indice, piano, schermate, selezione
+python3 docs/scripts/manuale-cache.py store-publish --run RUN --store CANDIDATO
+python3 docs/scripts/manuale-cache.py store-bind --run RUN --output release-binding.json
+python3 docs/scripts/manuale-cache.py store-compact --store ARCHIVIO --trusted-producers trusted.json
+python3 docs/scripts/manuale-cache.py store-merge --candidate CANDIDATO --store ARCHIVIO
+```
+
+`store-bind` lega ogni workflow (nuovo, riusato dall'archivio o dalla baseline)
+all'identità di release: commit applicativo, revisione del manuale e versione.
+L'identità delle prove (impronta) può essere condivisa fra commit compatibili;
+il legame di release viene ricostruito ogni volta e non vale per un'altra
+identità. Archivio mancante, scaduto, corrotto o non fidato significa cattura
+nuova, mai un risultato verificato. Il riuso dall'archivio si aggiunge alla
+baseline fidata ammessa: senza una baseline la decisione resta una verifica
+completa.
 
 ## Esecuzione locale
 
@@ -215,7 +323,7 @@ python3 -m unittest discover -s docs/scripts/tests -p 'test_manuale*.py'
 
 Per documentare intenzionalmente le modifiche locali non ancora committate, aggiungere `--allow-dirty`. I loro hash sono registrati come evidenza del working tree. `--application-ref` e `--manual-ref` selezionano le revisioni. `--keep-services` mantiene l'istanza disponibile per l'ispezione.
 
-Il runner stampa la directory del risultato. I comandi `start`, `capture`, `generate`, `verify`, `index`, `evaluate`, `export` e `cleanup` accettano `--run DIRECTORY` per eseguire una fase su quel risultato. `verify` usa il renderer Mintlify `mint@4.2.955` in una copia temporanea: l'eventuale migrazione da `mint.json` a `docs.json` resta in quella copia. `cleanup` rimuove esclusivamente i servizi e i volumi del progetto registrato, lasciando i worktree e i rapporti. Le credenziali browser sono private e vengono eliminate al termine della pulizia.
+Il runner stampa la directory del risultato. I comandi `start`, `capture`, `generate`, `verify`, `index`, `evaluate`, `export` e `cleanup` accettano `--run DIRECTORY` per eseguire una fase su quel risultato. `verify` controlla le pagine con la proiezione del lettore integrato, senza servizi, server di anteprima o browser (vedi «Migrazione: Mintlify non è più richiesto»). `cleanup` rimuove esclusivamente i servizi e i volumi del progetto registrato, lasciando i worktree e i rapporti. Le credenziali browser sono private e vengono eliminate al termine della pulizia.
 
 Per aggiornare le catture interessate da modifiche al comportamento, usare la
 selezione incrementale e poi costruire il manuale completo:
@@ -244,8 +352,8 @@ che contiene i worktree Git. Il controllo iniziale richiede le dipendenze di
 L’immagine API riceve l’indice completo per le prove MCP e del lettore; non
 richiede Git né collegamenti ai metadati Git del computer host.
 
-Le citazioni conservano l’identità stabile della sezione e usano l’ancora misurata
-nel renderer, comprese apostrofi tipografici e lettere accentate.
+Le citazioni conservano l’identità stabile della sezione e la usano come ancora,
+come il lettore integrato, Bot e MCP.
 
 Prima di avviare servizi, `authoring-preflight.json` segnala le sezioni authored prive di testo revisionato. Una procedura selezionata senza il relativo binding interrompe la preparazione: scegliere il checkout o la revisione del manuale che contiene la stesura. Le altre sezioni mancanti restano lacune esplicite.
 
@@ -361,7 +469,7 @@ CLI o chiavi persistenti: fornire la credenziale soltanto al passo fidato.
 - `manifest.json`: sezioni, evidenze e inventario completo della navigazione/backlog.
 - `coverage.json`: copertura dimostrata e pagine ancora da verificare.
 - `index.json`: corpus verificato, con identità stabile e indice per la ricerca.
-- `render.json`, `renders/index.html`: verifica del renderer e galleria Full HD per ogni sezione e immagine verificata, da ispezionare visivamente.
+- `render.json`: verifica di ogni pagina, sezione, ancora e schermata mostrata tramite la proiezione del lettore integrato (`renderer: assozeta-reader`); la verifica visiva nel browser è `embedded-manual.json` con `embedded-manual.png`.
 - `evaluation.json`: domande italiane, citazioni e astensione attraverso MCP stdio e assistente.
 - `export/`: MDX, immagini, patch binaria e rapporti da revisionare, senza credenziali o log privati.
 - `variance.json`: confronto misurato delle catture ripetute, quando disponibile.
@@ -403,7 +511,7 @@ MANUAL_URL=https://manuale.bakney.com/docs/introduzione
 MANUAL_INDEX_PATH=/percorso/index.json
 MANUAL_APPLICATION_REVISION=COMMIT_IMPLEMENTAZIONE_VERIFICATA
 MANUAL_SOURCE_ROOT=/percorso/repository
-MANUAL_CORPUS_BASE_URL=https://raw.githubusercontent.com/Bakney/manuale/main/assozeta-index
+MANUAL_CORPUS_BASE_URL=https://ORIGINE-PUBBLICATA/assozeta-index
 ```
 
 `MANUAL_SOURCE_ROOT` è facoltativo per distribuzioni senza il repository completo; nell'ambiente di verifica controlla anche gli hash del codice e degli strumenti usati per produrre le evidenze. Le immagini backend di produzione leggono la revisione dal file `CODE_REVISION`, scritto durante la build; il workflow delle immagini passa il commit Git effettivo. Il corpus deve dichiarare lo stesso `RUNNING_VERSION`: usare `--release VERSIONE` durante la generazione. La ricerca di produzione rifiuta revisioni incompatibili, input non committati e corpus soltanto locali. In sviluppo è disponibile l'installazione esplicita descritta sopra, con verifica continua degli hash.
@@ -652,12 +760,12 @@ pubbliche. L’output di promozione locale richiede anche il record del commit
 distribuito con successo nell’ambiente configurato, tramite le
 [API GitHub Deployment](https://docs.github.com/en/rest/deployments/deployments)
 e [Deployment Status](https://docs.github.com/en/rest/deployments/statuses).
-L'ispezione pubblica del 2 ottobre 2026 trova già un deployment Mintlify
-nell'ambiente GitHub `staging`, con stato riuscito per il commit manuale
-`0475c2c8b4d397982558c8453a4819587e7a9da9` e URL
-`https://manuale.bakney.com` ([deployment e stato](https://api.github.com/repos/Bakney/manuale/deployments/3829319394/statuses)). Usare `--deployment-environment staging` soltanto
-quando il deployment più recente attesta il commit finale che si vuole
-pubblicare: il successo del vecchio manuale non verifica la nuova stesura.
+Sorgenti e deployment sono quelli di `carbogninalberto/assozeta`: i file sono
+letti dalla cartella `manuale/` alla revisione applicativa esatta e il
+deployment più recente dell'ambiente indicato deve attestare quella revisione.
+I deployment storici di `Bakney/manuale` (Mintlify) non sono più accettati come
+prova. Senza un deployment del sito ricollegato a questa cartella il pacchetto
+resta `prepared`: il pacchetto `--bundle` per le immagini non ne dipende.
 In assenza della prova per quel commit il pacchetto resta `prepared`, con la
 prova mancante nel rapporto e senza indice pubblicabile.
 Questo controllo HTTP non sostituisce la verifica visiva e consente testo
@@ -696,8 +804,8 @@ Le sorgenti dichiarate in `non_capture_dependencies` sono prive di procedure
 catturate: i relativi riferimenti vengono comunque ricostruiti e validati. Una
 dipendenza esplicita di una ricetta prevale su questa esclusione. Aggiungere un
 nuovo percorso di produzione senza dichiararne i consumatori resta conservativo.
-I rendering controllano separatamente MDX, immagini, ancore, PNG di layout,
-configurazione e implementazione del renderer. Un cambiamento di prosa può
+I rendering controllano separatamente MDX, immagini, ancore, configurazione e
+implementazione della proiezione del lettore. Un cambiamento di prosa può
 richiedere un rendering senza ripetere una procedura già compatibile.
 
 La baseline persistente è l'artifact `manuale-verified-baseline` (90 giorni),

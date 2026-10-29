@@ -39,6 +39,20 @@ jobs:
     with:
       release: ${{ github.event.release.tag_name || github.sha }}
       force_full: ${{ inputs.force_full_manual || false }}
+      # Published below, after authorization but outside the image chain.
+      evidence_store: false
+
+  manual-evidence-store:
+    # Evidence-store publishing is an optimization for later runs: it starts
+    # only after the release manual was authorized, and no publication job
+    # depends on it, so it can never delay or block image publication.
+    name: Publish trusted per-workflow manual evidence
+    needs: manual-release
+    if: ${{ needs.manual-release.result == 'success' && !startsWith(github.event_name, 'pull_request') }}
+    uses: ./.github/workflows/manuale-evidence-publish.yml
+    permissions:
+      contents: read
+      actions: read
 
   selfhost-quality:
     # PRs run affected checks separately; pushes only need the smoke/static gates.
