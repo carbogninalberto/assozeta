@@ -423,21 +423,38 @@ range (69.7 to 85.4 min) measured above.
 | MCP-only change | A, unaffected + MCP suites | 3 m 29 s | not started | none captured | 40771985039 |
 | Bot-only change | A, unaffected + Bot suites | 4 m 07 s | not started | none captured | 40771981402 |
 | One MDX paragraph | A, content | 5 m 18 s | not started (content job 5 m 02 s) | 0 / 60, 1 page recompiled | 40827010923 |
-| One documented UI workflow (with the reviewed-source re-pin) | B, behavioral | 41 m 41 s | 34 m 08 s | 10 / 50 (plan: 4) | 40850276909 |
+| One documented UI workflow (with the reviewed-source re-pin), after PR #47 | B, behavioral | 41 m 06 s | 31 m 43 s | 4 / 56 (plan: 4) | 40900679744 |
+| Same UI change before PR #47 (module-wide editorial bindings) | B, behavioral | 41 m 41 s | 34 m 08 s | 10 / 50 (plan: 4) | 40850276909 |
 | Same UI change before PR #44 | B, behavioral | 45 m 27 s | 38 m 00 s | 10 / 50, store unusable | 40827015598 |
+| Shared capture tool change (`scenario.mjs` comment) | B, behavioral, all workflows | 77 m 35 s | 56 m 07 s + 20 m 58 s rehearsal | 60 / 0 | 40871175022 |
+| Release rehearsal, `manuale-release.yml` dispatch (Mode C, no store publication) | C, comprehensive; full because no trusted baseline matched the tooling after PR #43 | 82 m 09 s | 65 m 04 s + 16 m 37 s rehearsal | 60 / 0 | 40876809219 |
 | Manual tooling change (PR #42) | full | 69 m 40 s | 49 m 55 s + 19 m 09 s rehearsal | 60 / 0 | 40812303020 |
 | First trusted main run after the redesign (cold store) | full + seal + publish | 80 m 36 s | 63 m 00 s | 60 / 0 | 40800297328 |
-| Later main seals after tooling changes | full + seal + publish | 84 m 12 s, 75 m 39 s | 61 m 10 s, 57 m 15 s | 60 / 0 | 40818930740, 40840661015 |
+| Later main seals after tooling changes | full + seal + publish | 84 m 12 s, 75 m 39 s, 84 m 05 s | 61 m 10 s, 57 m 15 s, 59 m 52 s | 60 / 0 | 40818930740, 40840661015, 40886597272 |
 
-Store costs in the behavioral run: index 1.9 s, plan 2 m 14 s, blobs 5.8 s,
-materialize 2 m 09 s.
+Store costs in the behavioral run after PR #47: index 2.4 s, plan 2 m 07 s,
+blobs 5.0 s, materialize 2 m 02 s. Its fresh capture took 5 m 42 s (10 m 58 s
+before PR #47). The rest of the verify job is fixed per-run work: the current
+reader, access control, MCP and assistant check 9 m 46 s, store restore 4 m
+16 s, the two release-binding steps 4 m 31 s, explaining reuse 2 m 36 s, and
+the package startup checks job 8 m 52 s.
 
 Against the fully cached baseline, unrelated, Bot-only and MCP-only changes
 are 84 to 92% faster, and a text-only manual change is 79 to 81% faster (92
 to 94% against a full run). The 95% target is not reached: the fastest
 measured path, the unrelated change, is 91 to 92% faster than a cached run
-and 97% faster than a full one. A one-workflow UI change is now 40 to 51% faster
-than a full run but 48 to 63% slower than the old fully cached run, because
-it captures fresh evidence (10 workflows, see the editorial-binding
-limitation) and runs the package checks. Not measured: a shared capture tool
-change (sharded Mode B) and a Mode C release run of `manuale-release.yml`.
+and 97% faster than a full one.
+
+A one-workflow UI change now recaptures exactly the workflows its impact plan
+selects (4 of 60, 56 reused from the store). It is 41 to 52% faster than a
+full run but 46 to 61% slower than the old fully cached run, because it
+captures fresh evidence and then runs the fixed reader, access, MCP and
+package checks listed above; halving the capture moved the total by only
+35 s. Further Mode B gains need those per-run checks to be scoped to the
+affected workflows, which this redesign does not do.
+
+A change to the shared capture tool and the Mode C release rehearsal both
+captured all 60 workflows and took as long as the full runs before the
+redesign (77 m 35 s and 82 m 09 s): the shared tool is in every workflow's
+closure, and capture runs one workflow at a time in CI (concurrency 1), so
+sharding gives no speed-up there.
