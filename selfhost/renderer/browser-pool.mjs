@@ -266,7 +266,14 @@ export class BrowserPool extends EventEmitter {
                     'Renderer browser launch timed out',
                 );
             } catch (error) {
-                launch.then(lateBrowser => closeBrowser(lateBrowser), () => {});
+                this.closing++;
+                launch.then(
+                    lateBrowser => closeBrowser(lateBrowser),
+                    () => {},
+                ).finally(() => {
+                    this.closing--;
+                    this._signal();
+                });
                 throw error;
             }
             const resource = {

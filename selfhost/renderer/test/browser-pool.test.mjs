@@ -208,6 +208,34 @@ test('counts a browser that is still closing against the pool bound', async () =
     await pool.drain();
 });
 
+test('counts a browser that arrives after a launch timeout against the pool bound', async () => {
+    const keepAlive = setInterval(() => {}, 1000);
+    let resolveLaunch;
+    const lateBrowser = new FakeBrowser();
+    const pool = new BrowserPool({
+        launchBrowser: () => new Promise(resolve => {
+            resolveLaunch = resolve;
+        }),
+        size: 1,
+        launchTimeoutMs: 10,
+        acquireTimeoutMs: 100,
+    });
+
+    try {
+        await assert.rejects(pool.acquire(), /browser launch timed out/i);
+        assert.equal(pool.getStats().closing, 1);
+        assert.equal(pool.getStats().launching, 0);
+
+        resolveLaunch(lateBrowser);
+        await new Promise(resolve => setTimeout(resolve, 20));
+        assert.equal(pool.getStats().closing, 0);
+        assert.equal(lateBrowser.closeCalls, 1);
+    } finally {
+        clearInterval(keepAlive);
+        await pool.drain();
+    }
+});
+
 test('fails acquisition when all browsers remain leased', async () => {
     const launcher = fakeLauncher();
     const pool = new BrowserPool({

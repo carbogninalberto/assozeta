@@ -390,8 +390,20 @@ async function startFixture() {
                     }
                 };
                 const websocket = result(() => new WebSocket('ws://api.renderer.test:${port}/socket'));
+                const websocketStream = result(
+                    () => new WebSocketStream('ws://api.renderer.test:${port}/socket'),
+                );
                 const rtc = result(() => new RTCPeerConnection());
-                const report = new URLSearchParams({source: '${source}', websocket, rtc});
+                const webkitRtc = typeof webkitRTCPeerConnection === 'undefined'
+                    ? 'unavailable'
+                    : result(() => new webkitRTCPeerConnection());
+                const report = new URLSearchParams({
+                    source: '${source}',
+                    websocket,
+                    websocketStream,
+                    rtc,
+                    webkitRtc,
+                });
                 new Image().src = '/fixture/protocol-report?' + report.toString();
                 document.body.textContent = 'websocket requested';
                 </script></body></html>`);
@@ -535,7 +547,7 @@ async function startFixture() {
             response.writeHead(200, {'content-type': 'text/html; charset=utf-8'});
             return response.end('reported');
         }
-        if (url.pathname === '/service-worker.js') {
+        if (['/service-worker.js', '/service-worker-prototype.js'].includes(url.pathname)) {
             state.serviceWorkerRequests++;
             response.writeHead(200, {'content-type': 'text/javascript'});
             return response.end('self.addEventListener("fetch", () => {});');
@@ -832,10 +844,14 @@ async function main() {
         );
         const reportFor = source => fixture.state.protocolReports.find(report => report.source === source);
         assert.equal(reportFor('page').websocket, 'blocked');
+        assert.equal(reportFor('page').websocketStream, 'blocked');
         assert.equal(reportFor('page').rtc, 'blocked');
+        assert.ok(['blocked', 'unavailable'].includes(reportFor('page').webkitRtc));
         assert.equal(reportFor('worker').worker, 'blocked');
         assert.equal(reportFor('iframe').websocket, 'blocked');
+        assert.equal(reportFor('iframe').websocketStream, 'blocked');
         assert.equal(reportFor('iframe').rtc, 'blocked');
+        assert.ok(['blocked', 'unavailable'].includes(reportFor('iframe').webkitRtc));
         assert.equal(reportFor('blank-iframe').websocket, 'blocked');
 
         resetHeaders();

@@ -80,6 +80,9 @@ const browserPool = new BrowserPool({
         headless: true,
         timeout: 30000,
         protocolTimeout: requestTimeoutMs + 5000,
+        handleSIGHUP: false,
+        handleSIGINT: false,
+        handleSIGTERM: false,
         args: [
             '--block-new-web-contents',
             '--disable-background-networking',
@@ -318,12 +321,14 @@ async function renderPdf(payload, signal) {
     }
     let browserContext;
     let contextCreated = false;
+    let contextCreationStarted = false;
     let failed = false;
     try {
         if (!resource.browser.connected) {
             failed = true;
             throw new PoolUnavailableError('Renderer browser disconnected');
         }
+        contextCreationStarted = true;
         browserContext = await abortable(
             resource.browser.createBrowserContext(),
             signal,
@@ -356,7 +361,14 @@ async function renderPdf(payload, signal) {
             if (globalThis.ServiceWorkerContainer?.prototype) {
                 blockServiceWorkerRegistration(globalThis.ServiceWorkerContainer.prototype);
             }
-            for (const name of ['WebSocket', 'Worker', 'SharedWorker', 'RTCPeerConnection']) {
+            for (const name of [
+                'WebSocket',
+                'WebSocketStream',
+                'Worker',
+                'SharedWorker',
+                'RTCPeerConnection',
+                'webkitRTCPeerConnection',
+            ]) {
                 class Blocked {
                     constructor() {
                         throw new Error(`${name}s are disabled during PDF rendering`);
@@ -526,7 +538,7 @@ async function renderPdf(payload, signal) {
     } catch (error) {
         failed = (
             !(error instanceof RenderRequestError)
-            && (contextCreated || !resource.connected)
+            && (contextCreated || contextCreationStarted || !resource.connected)
         );
         if (error?.name === 'TimeoutError') error.statusCode = 504;
         throw error;
