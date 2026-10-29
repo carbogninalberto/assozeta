@@ -345,12 +345,18 @@ developer laptop (local measurement, not GitHub Actions).
   unreachable, so no store entry was ever admitted (PR #44). Every change to
   `docs/scripts/manuale*` still needs a new trusted main run before
   narrowing works again.
-- Editorial bindings are per recipe module. Re-pinning a reviewed source in a
-  shared recipe module (needed after editing a pinned UI or BE file) changes
-  the module hash for every workflow in it, so those workflows are rejected
-  with `editorial-recipe-binding-changed` and captured fresh, by both the
-  whole-run baseline and the store. In the measured UI change this added 6
-  workflows to the 4 the impact plan selected.
+- Editorial bindings are per section. Each reviewed section binds its recipe
+  module with the reviewed hashes of sources outside its own source contracts
+  elided (`BE/application/manuale/recipe_binding.py`, mirrored by
+  `docs/manuale/recipe-binding.mjs`; the registry lists each section's
+  contract paths as `reference_sections`). Re-pinning a reviewed source after
+  editing it therefore invalidates only the sections whose contracts read
+  that source. Any other module edit, a section without registered contracts,
+  or a module whose reviewed hashes are not all in one-entry-per-line maps
+  (`attendance-carnet-recipes.mjs`, `organization-additional-reference-recipes.mjs`,
+  `reference-recipes.mjs`) still binds the whole file. Before this change the
+  measured UI re-pin added 6 workflows to the 4 the impact plan selected
+  (`editorial-recipe-binding-changed`).
 - The store fingerprint uses the precise impact closure. Production files that
   the older prefix-based reuse contract lists but the impact analysis proves
   unreachable are not part of the fingerprint, so a store entry can be reused

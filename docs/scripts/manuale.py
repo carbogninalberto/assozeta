@@ -931,7 +931,7 @@ def prepare(args):
         state['selected_recipes'] = sorted(set(args.workflow))
         state['selection']['mode'] = 'explicit'
     tooling = ['docs/manuale/recipes.json', 'docs/manuale/page-map.json', 'docs/scripts/manuale.py',
-               'docs/scripts/manuale-scaffold.py', 'BE/application/manuale/index.py',
+               'docs/scripts/manuale-scaffold.py', 'BE/application/manuale/index.py', 'BE/application/manuale/recipe_binding.py',
                'docs/scripts/manuale-catalog.py', 'docs/scripts/manuale-generate.mjs',
                'BE/application/management/commands/seed_manuale.py', 'BE/application/management/commands/run_manuale_instance.py',
                'selfhost/compose.dev.yml', 'selfhost/tests/browser/package-lock.json']

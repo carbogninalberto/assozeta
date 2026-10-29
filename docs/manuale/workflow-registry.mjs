@@ -34,6 +34,9 @@ export function workflowRegistry() {
         non_capture_dependencies: referenceOnlyDependencies,
         reference_dependencies: [...new Set(references.flatMap(section => section.source_contracts.map(source => source.path)))].sort(),
         reference_modules: [...new Set(references.map(section => section.recipe_module))].sort(),
+        // Each reviewed section's source-contract paths, for its recipe binding.
+        reference_sections: Object.fromEntries(references.map(section => [section.path + '#' + section.id,
+            [...new Set(section.source_contracts.map(source => source.path))].sort()]).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)),
         recipes: Object.entries(authoredWorkflows).sort(([a], [b]) => a.localeCompare(b)).map(([id, spec]) => ({
             id, version: spec.capture_version || spec.version, script: spec.script,
             pages: [...new Set([...spec.pages, ...spec.sections.map(section => section.path)])],
