@@ -1,5 +1,5 @@
 import {initializeActorSession} from './actor-session.mjs';
-// Common real-backend fixture setup; scenario code supplies actions and assertions.
+// Common real-backend fixture setup; scenario code supplies actions and assertions (shared by every workflow).
 import {chromium, expect as browserExpect} from '@playwright/test';
 import manualConfig from '../playwright.manual.config.mjs';
 import fs from 'node:fs';
