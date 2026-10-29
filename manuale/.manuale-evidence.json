@@ -2203,11 +2203,11 @@
       "title": "Abilitare l'autenticazione a due fattori (2FA)",
       "content_sha256": "a567fc01f63694c9cbc54342dea8f653c5e894e0b68c1904ac91846fc2cbb6a0",
       "recipe_module": "docs/manuale/communication-auth-reference-recipes.mjs",
-      "recipe_sha256": "0aecca35d87cca5b6fe3ac0428c503c39890efd515ad95b5b66d734d5c75337f",
+      "recipe_sha256": "df69b0ffb9334de0990d943255b24b8d6503157e02fe8b6efc97af23b68db92f",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "e611da0dd655733461079af22fd806e5cce93c5145a6456f5adf0d41e4f34903",
-        "sha256": "0aecca35d87cca5b6fe3ac0428c503c39890efd515ad95b5b66d734d5c75337f",
+        "previous_sha256": "0aecca35d87cca5b6fe3ac0428c503c39890efd515ad95b5b66d734d5c75337f",
+        "sha256": "df69b0ffb9334de0990d943255b24b8d6503157e02fe8b6efc97af23b68db92f",
         "purpose": "editorial-review-only"
       }
     },
@@ -2215,11 +2215,11 @@
       "title": "App compatibili",
       "content_sha256": "0a6d7c98f1283ebd9a36ee2709afbf90ab8dc5852985bd2e39986c3efbf02227",
       "recipe_module": "docs/manuale/communication-auth-reference-recipes.mjs",
-      "recipe_sha256": "d0f11d19e0429e72a0c5277671eab84822ac8c838155ecfd5ac080a94b239ae6",
+      "recipe_sha256": "6545ec23dd2ee812803cf879f2cfa5922d8288629b27e9a9632d7ecd1c846d35",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "e611da0dd655733461079af22fd806e5cce93c5145a6456f5adf0d41e4f34903",
-        "sha256": "d0f11d19e0429e72a0c5277671eab84822ac8c838155ecfd5ac080a94b239ae6",
+        "previous_sha256": "d0f11d19e0429e72a0c5277671eab84822ac8c838155ecfd5ac080a94b239ae6",
+        "sha256": "6545ec23dd2ee812803cf879f2cfa5922d8288629b27e9a9632d7ecd1c846d35",
         "purpose": "editorial-review-only"
       }
     },
@@ -2227,11 +2227,11 @@
       "title": "Come attivare il 2FA",
       "content_sha256": "8a364debe40d67ff11c6564a0a82e6ab1b2a7bcdba4baf4ca2158d95c9aa14cb",
       "recipe_module": "docs/manuale/communication-auth-reference-recipes.mjs",
-      "recipe_sha256": "fa1ac7210e944beee29d40855c9842a57c366f7cc2fe9252c5f876d7317deee8",
+      "recipe_sha256": "35116aedb6a3e07890c721ae23e1b664802df30685e7df32fbe8a7237567be9b",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "e611da0dd655733461079af22fd806e5cce93c5145a6456f5adf0d41e4f34903",
-        "sha256": "fa1ac7210e944beee29d40855c9842a57c366f7cc2fe9252c5f876d7317deee8",
+        "previous_sha256": "fa1ac7210e944beee29d40855c9842a57c366f7cc2fe9252c5f876d7317deee8",
+        "sha256": "35116aedb6a3e07890c721ae23e1b664802df30685e7df32fbe8a7237567be9b",
         "purpose": "editorial-review-only"
       }
     },
@@ -2239,11 +2239,11 @@
       "title": "Come disattivare il 2FA",
       "content_sha256": "fbf24385738c6c170b5867c5936389639a25cbbed63e0f9d7272ddd68f326d3f",
       "recipe_module": "docs/manuale/communication-auth-reference-recipes.mjs",
-      "recipe_sha256": "fa1ac7210e944beee29d40855c9842a57c366f7cc2fe9252c5f876d7317deee8",
+      "recipe_sha256": "35116aedb6a3e07890c721ae23e1b664802df30685e7df32fbe8a7237567be9b",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "e611da0dd655733461079af22fd806e5cce93c5145a6456f5adf0d41e4f34903",
-        "sha256": "fa1ac7210e944beee29d40855c9842a57c366f7cc2fe9252c5f876d7317deee8",
+        "previous_sha256": "fa1ac7210e944beee29d40855c9842a57c366f7cc2fe9252c5f876d7317deee8",
+        "sha256": "35116aedb6a3e07890c721ae23e1b664802df30685e7df32fbe8a7237567be9b",
         "purpose": "editorial-review-only"
       }
     },
@@ -6079,11 +6079,11 @@
       "title": "Autenticazione a due fattori (2FA)",
       "content_sha256": "130463bfb17f3f04af010d97a328d145d7f8efa5ecc77119b7f8b220c5179194",
       "recipe_module": "docs/manuale/settings-additional-reference-recipes.mjs",
-      "recipe_sha256": "9eb59b38b336e3646eb509d3cb698231e4c282070e420b824249de1be5bfab53",
+      "recipe_sha256": "dc0c9463542bc46b181e41dafd75d50c5a3664ab5deab5738d79e3d98d158a9f",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "680f126322f0fb43a9de1b04d879dff0748ca1440e5f0b777cb7ccaa05f4c3bb",
-        "sha256": "9eb59b38b336e3646eb509d3cb698231e4c282070e420b824249de1be5bfab53",
+        "previous_sha256": "9eb59b38b336e3646eb509d3cb698231e4c282070e420b824249de1be5bfab53",
+        "sha256": "dc0c9463542bc46b181e41dafd75d50c5a3664ab5deab5738d79e3d98d158a9f",
         "purpose": "editorial-review-only"
       }
     }
