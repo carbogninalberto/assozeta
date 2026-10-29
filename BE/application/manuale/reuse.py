@@ -15,6 +15,7 @@ from pathlib import Path
 if __package__ in (None, ''):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from application.manuale.index import canonical, digest, sections, verify_capture_frame
+from application.manuale.recipe_binding import section_recipe_sha256, section_sources
 
 
 class ReuseError(ValueError):
@@ -265,6 +266,10 @@ def check_editorial(state, entries):
     sidecar = load(state['manual'], '.manuale-evidence.json')
     if sidecar.get('format') != 1 or sidecar.get('purpose') != 'reviewed-content' or sidecar.get('verified') is not False:
         raise ReuseError('invalid-editorial-sidecar')
+    try:
+        reference_sections = section_sources(state['application'])
+    except (OSError, ValueError) as exc:
+        raise ReuseError('invalid-reference-sections') from exc
     for item in entries:
         key = item['path'] + '#' + item['id']
         binding = sidecar.get('sections', {}).get(key, {})
@@ -279,7 +284,8 @@ def check_editorial(state, entries):
             raise ReuseError('editorial-structure-changed: ' + key)
         if (binding.get('title') != item['title'] or binding.get('recipe_module') != item['recipe_module']
                 or binding.get('recipe_sha256') != item['recipe_sha256']
-                or file_hash(state['application'], item['recipe_module']) != item['recipe_sha256']):
+                or section_recipe_sha256(owned(state['application'], item['recipe_module']).read_bytes(),
+                                         reference_sections.get(key)) != item['recipe_sha256']):
             raise ReuseError('editorial-recipe-binding-changed: ' + key)
         if binding.get('editorial_content_sha256', actual) != editorial:
             raise ReuseError('editorial-origin-changed: ' + key)

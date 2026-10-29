@@ -3,8 +3,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {capturedImageCaptions} from './rendered-content.mjs';
+import {sectionRecipeSha256} from './recipe-binding.mjs';
 
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
+// Each reviewed section's source paths; a tree without the registry binds
+// every section to its whole module.
+function referenceSections(codeRoot) {
+    const registry = path.join(codeRoot, 'docs/manuale/recipes.json');
+    if (!fs.existsSync(registry)) return null;
+    return JSON.parse(fs.readFileSync(owned(codeRoot, 'docs/manuale/recipes.json'), 'utf8')).reference_sections ?? null;
+}
 export const normalizeDraftImages = body => body.replace(/(\/images\/[^\s"')]+)\.placeholder\.svg/g, '$1.png');
 
 // Only these machine-added draft notices describe the capture being completed.
@@ -154,7 +162,8 @@ export function authoredSection(manualRoot, codeRoot, relative, id, title, {capt
     const binding = sidecar.sections[relative + '#' + id];
     if (!binding || binding.title !== title || !binding.recipe_module || !binding.recipe_sha256)
         throw new Error('Manual section has no reviewed content binding: ' + relative + '#' + id);
-    if (sha(fs.readFileSync(owned(codeRoot, binding.recipe_module))) !== binding.recipe_sha256)
+    const sources = referenceSections(codeRoot)?.[relative + '#' + id];
+    if (sectionRecipeSha256(fs.readFileSync(owned(codeRoot, binding.recipe_module)), sources) !== binding.recipe_sha256)
         throw new Error('Review bindings after recipe changes: ' + binding.recipe_module);
     const mdx = fs.readFileSync(owned(manualRoot, relative), 'utf8');
     const [start, end] = sectionRange(mdx, id, title);
