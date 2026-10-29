@@ -64,6 +64,7 @@ services:
       - dev_minio:/data
     networks:
       - dev
+      - renderer_egress
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://127.0.0.1:9000/minio/health/live"]
       interval: 3s
@@ -94,11 +95,24 @@ services:
       context: renderer
     environment:
       RENDER_ALLOWED_HOSTS: api,minio,cdn.jsdelivr.net
+      RENDER_POOL_SIZE: ${RENDER_POOL_SIZE:-2}
+      RENDER_POOL_ACQUIRE_TIMEOUT_MS: ${RENDER_POOL_ACQUIRE_TIMEOUT_MS:-30000}
+      RENDER_REQUEST_TIMEOUT_MS: ${RENDER_REQUEST_TIMEOUT_MS:-55000}
+      RENDER_BROWSER_MAX_AGE_MS: ${RENDER_BROWSER_MAX_AGE_MS:-600000}
+      RENDER_BROWSER_MAX_REQUESTS: ${RENDER_BROWSER_MAX_REQUESTS:-100}
+      RENDER_MEMORY_LIMIT_MB: ${RENDER_MEMORY_LIMIT_MB:-}
     init: true
     shm_size: 1gb
+    read_only: true
+    cap_drop:
+      - ALL
+    pids_limit: 512
+    tmpfs:
+      - /tmp:size=512m,mode=1777
     restart: unless-stopped
     networks:
-      - dev
+      - renderer_egress
+    stop_grace_period: 35s
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 5s
@@ -127,6 +141,9 @@ services:
 
   api:
     <<: *backend-dev
+    networks:
+      - dev
+      - renderer_egress
     # Use Uvicorn's process reloader: Gunicorn's reload thread does not stop
     # UvicornWorker's async server, leaving old Python code running after edits.
     command: ["uvicorn", "core.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]
@@ -197,6 +214,7 @@ services:
 
 networks:
   dev:
+  renderer_egress:
 
 volumes:
   dev_postgres:
