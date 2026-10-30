@@ -1246,6 +1246,15 @@ class AssociationImportService:
             if existing_user:
                 # Reuse by exact UUID only; do not merge by email/username and
                 # do not overwrite credentials, profile, security fields or M2M.
+                # Exception: an account without a usable password adopts the
+                # archived hash, like the owner, so users first imported from
+                # an archive without hashes can sign in after a later restore.
+                archived_password = data.get('password')
+                if (not is_restorable_password_hash(existing_user.password)
+                        and is_restorable_password_hash(archived_password)):
+                    existing_user.password = archived_password
+                    if not self.options.dry_run:
+                        existing_user.save(update_fields=['password'])
                 self.reused_user_pks.add(str(old_pk))
                 return existing_user
         else:
