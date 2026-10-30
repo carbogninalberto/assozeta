@@ -386,6 +386,7 @@ class AssociationImportIdentityTests(TestCase):
                 first_name='Archived',
                 two_fa=False,
                 is_staff=False,
+                password=make_password('Archived!123'),
             ),
         ]
 
@@ -399,6 +400,33 @@ class AssociationImportIdentityTests(TestCase):
         self.assertTrue(existing_shared.two_fa)
         self.assertTrue(existing_shared.is_staff)
         self.assertTrue(existing_shared.check_password('KeepMe!123'))
+
+    def test_reused_user_without_usable_password_adopts_archived_hash(self):
+        owner_id = uuid.uuid4()
+        association_id = uuid.uuid4()
+        with_hash_id, without_hash_id = uuid.uuid4(), uuid.uuid4()
+        for user_id in (with_hash_id, without_hash_id):
+            User.original_objects.create_user(
+                user_id=user_id, username=f'existing-{user_id}', email=f'{user_id}@example.com',
+                password=None, role=User.ATHLETE, first_name='Existing',
+            )
+        archived_hash = make_password('Archived!123')
+        association = self._association_record(association_id, owner_id)
+        users = [
+            self._user_record(owner_id, 'owner', 'owner@example.com', role=User.ASSOCIATION),
+            self._user_record(with_hash_id, 'archived', 'archived@example.com',
+                              first_name='Archived', password=archived_hash),
+            self._user_record(without_hash_id, 'archived-unusable', 'archived-unusable@example.com',
+                              password=make_password(None)),
+        ]
+
+        self._import_archive(association, users)
+
+        adopted = User.original_objects.get(pk=with_hash_id)
+        self.assertEqual(adopted.password, archived_hash)
+        self.assertTrue(adopted.check_password('Archived!123'))
+        self.assertEqual(adopted.first_name, 'Existing')
+        self.assertFalse(User.original_objects.get(pk=without_hash_id).has_usable_password())
 
     def test_import_fails_when_source_owner_already_owns_a_different_association(self):
         owner_id = uuid.uuid4()
