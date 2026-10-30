@@ -343,14 +343,25 @@ class HandoffTests(PairingFixture, TestCase):
         BakneyLogin.objects.update(expires_at=timezone.now() - timedelta(seconds=1))
         self.assertIn('handoff_expired', self.callback(query)['Location'])
 
-    def test_local_role_instructor_superuser_staff_and_activity_exclusions(self):
+    def test_local_role_superuser_staff_and_activity_exclusions(self):
         self.pair()
-        for change in ({'role': User.ASSOCIATION}, {'role': User.COLLABORATOR}, {'role': 9}, {'connected_user_id': self.owner.pk}, {'is_superuser': True}, {'is_staff': True}, {'is_active': False}, {'deleted': True}):
+        for change in ({'role': User.ASSOCIATION}, {'role': 9}, {'is_superuser': True}, {'is_staff': True}, {'is_active': False}, {'deleted': True}):
             User.original_objects.filter(pk=self.user.pk).update(**change)
             self.assertIn('error=', self.callback()['Location'], change)
-            User.original_objects.filter(pk=self.user.pk).update(role=User.ATHLETE, connected_user_id=None, is_superuser=False, is_staff=False, is_active=True, deleted=False)
+            User.original_objects.filter(pk=self.user.pk).update(role=User.ATHLETE, is_superuser=False, is_staff=False, is_active=True, deleted=False)
+
+    def test_inactive_members_instructors_and_collaborators_are_eligible(self):
+        self.pair()
+        for changes in ({'disabled': True}, {'draft': True}):
+            Associate._base_manager.filter(user=self.user).update(**changes)
+            self.assertNotIn('error=', self.callback()['Location'], changes)
+            Associate._base_manager.filter(user=self.user).update(disabled=False, draft=False)
+        Associate._base_manager.filter(user=self.user).update(deleted=True)
         Instructor.objects.create(user=self.owner, associated_user_id=self.user.pk)
-        self.assertIn('account_not_eligible', self.callback()['Location'])
+        self.assertNotIn('error=', self.callback()['Location'])
+        Instructor.objects.all().delete()
+        User.original_objects.filter(pk=self.user.pk).update(role=User.COLLABORATOR, connected_user_id=self.owner.pk)
+        self.assertNotIn('error=', self.callback()['Location'])
 
     def test_upstream_authentication_context_and_binding_are_required(self):
         self.pair()
@@ -395,12 +406,14 @@ class HandoffTests(PairingFixture, TestCase):
             self.assertIn('invalid_handoff', response['Location'])
         self.assertFalse(BakneyLogin.objects.exists())
 
-    def test_disabled_draft_membership_and_inactive_owner_are_rejected(self):
+    def test_unlinked_user_and_inactive_owner_are_rejected(self):
         self.pair()
-        for changes in ({'disabled': True}, {'draft': True}):
-            Associate._base_manager.filter(user=self.user).update(**changes)
-            self.assertIn('membership_required', self.callback()['Location'])
-            Associate._base_manager.filter(user=self.user).update(disabled=False, draft=False)
+        other = User.objects.create_user(username='sso-other-owner', role=User.ASSOCIATION)
+        Associate._base_manager.filter(user=self.user).update(deleted=True)
+        Instructor.objects.create(user=other, associated_user_id=self.user.pk)
+        User.original_objects.filter(pk=self.user.pk).update(role=User.COLLABORATOR, connected_user_id=other.pk)
+        self.assertIn('membership_required', self.callback()['Location'])
+        Associate._base_manager.filter(user=self.user).update(deleted=False)
         self.owner.is_active = False
         self.owner.save()
         self.assertIn('membership_required', self.callback()['Location'])
