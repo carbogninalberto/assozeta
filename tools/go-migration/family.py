@@ -6,7 +6,7 @@
   family.py scaffold FAMILY             generator, contract and adapter skeletons (never overwrites)
   family.py run FAMILY [--versioned] [--label L]
   family.py mutation FAMILY --file F --old TEXT --new TEXT [--label L]
-  family.py record FAMILY --spec SPEC.json
+  family.py record FAMILY --spec SPEC.json [--from-worktree PATH]
 
 Runs use the parent-only acceptance driver (TESTS.adapters.django.staff_board_http_acceptance)
 with the migration interpreter (GO_MIGRATION_PYTHON, default
@@ -289,6 +289,20 @@ def record(args):
     """
     family = args.family
     module = module_name(family)
+    if args.from_worktree:
+        import filecmp
+        import shutil
+        source = Path(args.from_worktree).resolve() / 'quality-reports/go-migration'
+        for directory in sorted(source.glob(f'{family}-http-*')):
+            if not directory.is_dir():
+                continue
+            target = REPORTS / directory.name
+            if target.exists():
+                if filecmp.dircmp(directory, target).diff_files:
+                    sys.exit('Differing report already present: ' + directory.name)
+                continue
+            shutil.copytree(directory, target)
+            print('copied', directory.name)
     spec = json.loads(Path(args.spec).read_text())
     red_path, red_sha, red = receipt(spec['red'], family)
     green_path, green_sha, green = receipt(spec['green'], family)
@@ -370,6 +384,7 @@ def main():
     command = commands.add_parser('record')
     command.add_argument('family')
     command.add_argument('--spec', required=True)
+    command.add_argument('--from-worktree', help="copy this family's reports from another worktree first")
     command.set_defaults(func=record)
     args = parser.parse_args()
     args.func(args)
