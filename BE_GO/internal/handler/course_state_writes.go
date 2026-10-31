@@ -43,23 +43,12 @@ func (h *CourseStateWritesHandler) serve(c echo.Context, operation, name string,
 	if request.Method != http.MethodPost {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
-	tracked, err := h.operations.Track(request.Context())
-	if err != nil {
-		return paymentCategoryError(c, err)
+	write, release, err := admitRESTWrite(c, h.operations, h.audit)
+	if write == nil {
+		return err
 	}
-	defer tracked.Release()
-	if _, err = readMessageMutationsBody(c); err != nil {
-		return restError(c, err)
-	}
-	audit, err := h.audit(request)
-	if err != nil {
-		return restError(c, err)
-	}
-	ctx, err := tracked.Admit()
-	if err != nil {
-		return paymentCategoryError(c, err)
-	}
-	msg, err := run(ctx, *identity, c.Param("uid"), request.Header.Get("X-Group-Id"), audit)
+	defer release()
+	msg, err := run(write.Context, *identity, c.Param("uid"), request.Header.Get("X-Group-Id"), write.Audit)
 	var invalid *service.PaymentInfoUUIDError
 	switch {
 	case errors.As(err, &invalid):

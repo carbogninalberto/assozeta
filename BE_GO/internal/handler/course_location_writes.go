@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"mime"
 	"net/http"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -84,29 +83,16 @@ func (h *CourseLocationWritesHandler) serve(c echo.Context, method, operation st
 	if request.Method != method && request.Method != http.MethodDelete {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
-	tracked, err := h.operations.Track(request.Context())
-	if err != nil {
-		return paymentCategoryError(c, err)
+	write, release, err := admitRESTWrite(c, h.operations, h.audit)
+	if write == nil {
+		return err
 	}
-	defer tracked.Release()
-	body, err := readMessageMutationsBody(c)
-	if err != nil {
-		return restError(c, err)
-	}
-	media, _, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
-	audit, err := h.audit(request)
-	if err != nil {
-		return restError(c, err)
-	}
-	ctx, err := tracked.Admit()
-	if err != nil {
-		return paymentCategoryError(c, err)
-	}
+	defer release()
 	status, result := http.StatusNoContent, any(nil)
 	if request.Method == http.MethodDelete {
-		err = remove(ctx, *identity, audit)
+		err = remove(write.Context, *identity, write.Audit)
 	} else {
-		status, result, err = run(ctx, *identity, body, media == "application/x-www-form-urlencoded" || media == "multipart/form-data", audit)
+		status, result, err = run(write.Context, *identity, write.Body, write.Form, write.Audit)
 	}
 	var invalid *service.CourseLocationValidationError
 	switch {
