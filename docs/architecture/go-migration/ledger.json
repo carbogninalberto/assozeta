@@ -10499,25 +10499,70 @@
         "target": "modules_overview",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_reads.go",
+        "BE_GO/internal/repository/modules_reads.go",
+        "BE_GO/internal/service/modules_reads.go",
+        "BE_GO/internal/handler/modules_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/service/association_profile.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/payment_info_uuid.go",
+        "BE_GO/internal/repository/payment_categories.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/<module_id>/overview",
+          "/api/v2/modules/<module_id>/overview",
+          "/api/modules/<module_id>/overview"
+        ],
+        "request": "Path module_id parsed by UUIDField.to_python (case, hex and urn forms accepted).",
+        "response": "200 {'data': ModulesSerializerWithResponses}: module fields with sport_association key and unordered responses with attachments and attachments_docs.",
+        "errors": "403 'User is not a sport association' (athletes, before the lookup); 500 page for an owner without an active association or an id the UUIDField rejects; 404 {'error': 'module not found'} for other tenants, deleted/absent associations and unknown ids; 405 other methods.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.modules.read.",
+        "resource_scope": "Module.sport_association = request.user.sport_association.",
+        "side_effects": "None (read).",
+        "transaction": "None (autocommit reads).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_reads_http.json",
+        "TESTS/fixtures/generate_modules_reads_http.py",
+        "TESTS/contracts/test_modules_reads_http.py",
+        "TESTS/adapters/django/modules_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 81/81; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-reads-http-native-r1/results.json",
+          "receipt_sha256": "a975727647a9376d446f83e84f143b4797af5d4cc1fc5c2a0cc9ec5f13c1d8a9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 81/81 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/modules-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "7dc6c0b39e51c65c80e00e1e4754024f8f5fa637cc5676c1451489016dff2e6c"
+        },
+        {
+          "revision": "committing change with the overview lookup's sport_association_id filter dropped",
+          "result": "Mutation control: fails Go on overview-foreign-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/modules-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "dc4b9e1bb4a575186b9b749ec9772768491d258cb7c63d55afe9064dcf9bf573"
+        }
+      ],
+      "notes": [
+        "Implementing: modules list, overview and check-link reads with exact ModulesSerializer (nested 50-field SportAssociationSerializer), ModulesSerializerWithResponses and check-link QueryDict semantics; modules/<custom_link>/info (AllowAny) is not ported and stays on Django."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/<str:module_id>/response/add -> modules_response_add",
@@ -10639,25 +10684,70 @@
         "target": "modules_check_link",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_reads.go",
+        "BE_GO/internal/repository/modules_reads.go",
+        "BE_GO/internal/service/modules_reads.go",
+        "BE_GO/internal/handler/modules_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/service/association_profile.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/payment_info_uuid.go",
+        "BE_GO/internal/repository/payment_categories.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/check-link",
+          "/api/v2/modules/check-link",
+          "/api/modules/check-link"
+        ],
+        "request": "Query custom_link (QueryDict decoding, last value wins); optional 'module' header.",
+        "response": "200 {'valid': True} when no module has the link or the header equals its module_id.",
+        "errors": "400 {'valid': False, 'exception': 'invalid payload.'} for more than 255 characters or a link taken by another module (any association); 500 page for a missing custom_link or a NUL character; 405 other methods.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.modules.read; request.user is not read (athletes and owners without an association pass).",
+        "resource_scope": "Global: Module.objects.filter(custom_link=...) across every association.",
+        "side_effects": "None (read).",
+        "transaction": "None (autocommit reads).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_reads_http.json",
+        "TESTS/fixtures/generate_modules_reads_http.py",
+        "TESTS/contracts/test_modules_reads_http.py",
+        "TESTS/adapters/django/modules_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 81/81; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-reads-http-native-r1/results.json",
+          "receipt_sha256": "a975727647a9376d446f83e84f143b4797af5d4cc1fc5c2a0cc9ec5f13c1d8a9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 81/81 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/modules-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "7dc6c0b39e51c65c80e00e1e4754024f8f5fa637cc5676c1451489016dff2e6c"
+        },
+        {
+          "revision": "committing change with the overview lookup's sport_association_id filter dropped",
+          "result": "Mutation control: fails Go on overview-foreign-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/modules-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "dc4b9e1bb4a575186b9b749ec9772768491d258cb7c63d55afe9064dcf9bf573"
+        }
+      ],
+      "notes": [
+        "Implementing: modules list, overview and check-link reads with exact ModulesSerializer (nested 50-field SportAssociationSerializer), ModulesSerializerWithResponses and check-link QueryDict semantics; modules/<custom_link>/info (AllowAny) is not ported and stays on Django."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/list -> modules_list",
@@ -10674,25 +10764,70 @@
         "target": "modules_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_reads.go",
+        "BE_GO/internal/repository/modules_reads.go",
+        "BE_GO/internal/service/modules_reads.go",
+        "BE_GO/internal/handler/modules_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/service/association_profile.go",
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/service/payment_info_uuid.go",
+        "BE_GO/internal/repository/payment_categories.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/list",
+          "/api/v2/modules/list",
+          "/api/modules/list"
+        ],
+        "request": "No body; query parameters and X-Group-Id ignored.",
+        "response": "200 {'data': ModulesSerializer(many=True)}: every Module field, computed enabled (UTC date), nested SportAssociationSerializer; unordered, unpaginated.",
+        "errors": "403 'User is not a sport association' for athletes; 500 page for an owner without an active association; 405 other methods.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.modules.read.",
+        "resource_scope": "request.user.sport_association (owner; collaborators act as the owner).",
+        "side_effects": "None (read).",
+        "transaction": "None (autocommit reads).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_reads_http.json",
+        "TESTS/fixtures/generate_modules_reads_http.py",
+        "TESTS/contracts/test_modules_reads_http.py",
+        "TESTS/adapters/django/modules_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 81/81; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-reads-http-native-r1/results.json",
+          "receipt_sha256": "a975727647a9376d446f83e84f143b4797af5d4cc1fc5c2a0cc9ec5f13c1d8a9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 81/81 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/modules-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "7dc6c0b39e51c65c80e00e1e4754024f8f5fa637cc5676c1451489016dff2e6c"
+        },
+        {
+          "revision": "committing change with the overview lookup's sport_association_id filter dropped",
+          "result": "Mutation control: fails Go on overview-foreign-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/modules-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "dc4b9e1bb4a575186b9b749ec9772768491d258cb7c63d55afe9064dcf9bf573"
+        }
+      ],
+      "notes": [
+        "Implementing: modules list, overview and check-link reads with exact ModulesSerializer (nested 50-field SportAssociationSerializer), ModulesSerializerWithResponses and check-link QueryDict semantics; modules/<custom_link>/info (AllowAny) is not ported and stays on Django."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/response/<str:module_response_id>/add-attachment -> modules_response_add_attachment",
