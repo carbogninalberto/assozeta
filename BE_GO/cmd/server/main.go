@@ -173,6 +173,9 @@ func run() (runErr error) {
 	paymentCategoriesHandler := handler.NewPaymentCategoriesHandler(service.NewPaymentCategories(repository.NewPaymentCategories(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	paymentInfoHandler := handler.NewPaymentInfoHandler(service.NewPaymentInfo(repository.NewPaymentInfo(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	messageReadsHandler := handler.NewMessageReadsHandler(service.NewMessageReads(repository.NewMessageReads(db)), service.NewActorAuthentication(accounts, tokens), identities, handler.WithMessageListSpoolDirectory(cfg.MessageListSpoolDirectory))
+	profileSettingsHandler := handler.NewProfileSettingsHandler(service.NewProfileSettings(repository.NewProfileSettings(db),
+		service.NewMembershipCardConfigurations(repository.NewMembershipCardConfigurations(db), time.Now), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	messageMutationsHandler := handler.NewMessageMutationsHandler(service.NewMessageMutations(repository.NewMessageMutations(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	workflowWritesHandler := handler.NewAutomationWorkflowWritesHandler(service.NewAutomationWorkflowWrites(repository.NewAutomationWorkflows(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	workflowReadsHandler := handler.NewAutomationWorkflowReadsHandler(service.NewAutomationWorkflowReads(repository.NewAutomationWorkflows(db)), service.NewActorAuthentication(accounts, tokens), identities)
@@ -357,6 +360,8 @@ func run() (runErr error) {
 	e.Any("/profile/update/password", profilePasswordHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/update", profileUpdateHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/settings/tables", profileTablesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/profile/settings", profileSettingsHandler.Settings, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/profile/integrations", profileSettingsHandler.Integrations, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/two-fa/setup", twoFactorSetupHandler.Setup, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/two-fa/info", twoFactorHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/two-fa/update", twoFactorUpdateHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
