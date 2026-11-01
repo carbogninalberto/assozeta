@@ -211,6 +211,7 @@ func run() (runErr error) {
 	carnetWritesHandler := handler.NewCarnetWritesHandler(service.NewCarnetAdds(repository.NewCarnetWrites(db), carnetAssigns, time.Now, uuid.NewString), service.NewCarnetReplaces(repository.NewCarnetWrites(db), carnetAssigns, time.Now), carnetAssigns, service.NewCarnetTopups(repository.NewCarnetWrites(db), time.Now, uuid.NewString), service.NewCarnetMetas(repository.NewCarnetWrites(db), time.Now), service.NewCarnetLinks(repository.NewCarnetWrites(db)), service.NewCarnetToggles(repository.NewCarnetWrites(db), time.Now), service.NewCarnetDeletes(repository.NewCarnetWrites(db), time.Now), service.NewCarnetUpdates(repository.NewCarnetWrites(db), time.Now), service.NewCarnetUnassigns(repository.NewCarnetWrites(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	paymentArchiveHandler := handler.NewPaymentArchiveHandler(service.NewPaymentArchives(repository.NewPaymentArchives(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	attendanceDaysHandler := handler.NewAttendanceDaysHandler(service.NewAttendanceDays(repository.NewAttendanceDays(db), time.Now), service.NewAttendanceMarks(repository.NewAttendanceDays(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	statisticReadsHandler := handler.NewStatisticReadsHandler(service.NewStatisticReads(repository.NewStatisticReads(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
@@ -243,6 +244,9 @@ func run() (runErr error) {
 	e.Any("/testimonials/add", testimonialsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/testimonials/update", testimonialsHandler.Webhook, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/statistic/dashboard/layout", dashboardLayoutHandler.Set, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/statistic/dashboard", statisticReadsHandler.Dashboard, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/statistic/athlete-dashboard", statisticReadsHandler.Athlete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/statistic/report", statisticReadsHandler.Report, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/sport-associations/list", associationListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/check-inconsistencies", inconsistenciesHandler.Check, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/carnet/list", carnetListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
