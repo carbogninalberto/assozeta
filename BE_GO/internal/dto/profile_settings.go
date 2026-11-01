@@ -1,10 +1,8 @@
 package dto
 
 import (
-	"encoding/json"
 	"math/big"
 	"strconv"
-	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
@@ -195,26 +193,7 @@ func parseProfileSetting(field ProfileSettingsField, value any, form bool) (any,
 	return ProfileSettingsRelation{ID: id, Raw: PythonStr(value)}, nil
 }
 
-// profileSettingsRelated is PrimaryKeyRelatedField.to_internal_value before
-// the lookup on a UUID primary key: a bool is a TypeError (incorrect type);
-// queryset.get(pk=value) runs UUIDField.to_python, whose ValidationError
-// quotes str(value) for anything uuid.UUID(int=...) or uuid.UUID(hex=...)
-// rejects (negative or oversized ints, floats, malformed strings, lists and
-// dicts).
+// profileSettingsRelated is supplierRelated (PrimaryKeyRelatedField on a UUID key).
 func profileSettingsRelated(value any) (string, string) {
-	switch v := value.(type) {
-	case bool:
-		return "", "related-incorrect-type:bool"
-	case string, json.Number:
-		if number, ok := v.(json.Number); ok && strings.ContainsAny(string(number), ".eE") {
-			break
-		}
-		if id, ok := supplierUUID(v); ok {
-			return id, ""
-		}
-	case []any, domain.RequestObject:
-	default:
-		return "", "related-incorrect-type:" + pythonTypeName(value)
-	}
-	return "", "related-invalid-uuid:" + PythonStr(value)
+	return supplierRelated(value)
 }

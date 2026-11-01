@@ -207,24 +207,28 @@ func supplierUUID(value any) (string, bool) {
 	return "", false
 }
 
-// supplierRelated is PrimaryKeyRelatedField's pk_field-less to_internal_value
-// before the queryset lookup: lists and dicts are incorrect types; other
-// values are looked up (a value the UUID field rejects does not exist).
+// supplierRelated is PrimaryKeyRelatedField.to_internal_value before the
+// lookup on a UUID primary key: a bool is a TypeError (incorrect type);
+// queryset.get(pk=value) runs UUIDField.to_python, whose ValidationError
+// quotes str(value) for anything uuid.UUID(int=...) or uuid.UUID(hex=...)
+// rejects (negative or oversized ints, floats, malformed strings, lists and
+// dicts).
 func supplierRelated(value any) (id string, code string) {
-	switch value.(type) {
-	case []any, domain.RequestObject:
-		return "", "related-incorrect-type:" + pythonTypeName(value)
+	switch v := value.(type) {
 	case bool:
 		return "", "related-incorrect-type:bool"
+	case string, json.Number:
+		if number, ok := v.(json.Number); ok && strings.ContainsAny(string(number), ".eE") {
+			break
+		}
+		if id, ok := supplierUUID(v); ok {
+			return id, ""
+		}
+	case []any, domain.RequestObject:
+	default:
+		return "", "related-incorrect-type:" + pythonTypeName(value)
 	}
-	if parsed, ok := supplierUUID(value); ok {
-		return parsed, ""
-	}
-	if text, ok := value.(string); ok {
-		// The model UUIDField's django ValidationError, reported as is.
-		return "", "related-invalid-uuid:" + text
-	}
-	return "", "related-incorrect-type:" + pythonTypeName(value)
+	return "", "related-invalid-uuid:" + PythonStr(value)
 }
 
 // modelTextValue validates one present value of a ModelSerializer text field
