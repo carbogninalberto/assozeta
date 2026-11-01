@@ -7075,25 +7075,81 @@
         "target": "course_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_list.go",
+        "BE_GO/internal/repository/course_list.go",
+        "BE_GO/internal/repository/course_overview.go",
+        "BE_GO/internal/service/course_list.go",
+        "BE_GO/internal/service/course_overview.go",
+        "BE_GO/internal/service/balance_sheet_range.go",
+        "BE_GO/internal/handler/course_list.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request check and permission registry",
+        "application_sportassociation",
+        "application_course",
+        "application_course_tags",
+        "application_course_locations",
+        "application_coursetags",
+        "application_courselocation",
+        "application_subscription",
+        "application_coursesubscription",
+        "application_associate",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/list",
+          "/api/v2/course/list",
+          "/api/course/list"
+        ],
+        "request": "Athletes: sport_association_id. Others: subscription_id, query[generalSearch], query[tags], query[tags_and], query[status_flag], sort[field], sort[sort], all, optimized, pagination[page], pagination[perpage]; X-Group-Id; POST body format.",
+        "response": "Athletes: 200 {'data': [CourseSerializer]}. all=1: 200 {'data': [CourseSerializer]} or values(course_id, title). Otherwise 200 {'data': {index: CourseSerializer + current_year + athletes}, 'meta': {total, page, pages, perpage, rowIds}}.",
+        "errors": "400 malformed athlete sport_association_id or POST body parse error; 401; 403 missing sport_association_id / registry / scoped session; 404 Invalid page.; 405; 500 no association, malformed or missing subscription_id, malformed tag or status, unknown ordering, POST export (not ported for pdf/excel).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.read (every method).",
+        "resource_scope": "Athletes: the requested association's live, group-aware ACTIVE courses. Others: request.user's association's live, group-aware courses; course subscriptions scoped during association-scoped sessions.",
+        "side_effects": "None (read).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_list_http.json",
+        "TESTS/fixtures/generate_course_list_http.py",
+        "TESTS/contracts/test_course_list_http.py",
+        "TESTS/adapters/django/course_list_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-list.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 113/113; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-list-http-red-r1/results.json",
+          "receipt_sha256": "6cc39b3bbfe7514feed0de1c481d9dd5815f5eb39b8057ce59ac83da2e21223c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 113/113 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged.",
+          "artifact": "quality-reports/go-migration/course-list-http-versioned-r1/results.json",
+          "receipt_sha256": "6afdccd7db54e98e22ef3a3c1c8f28ec4ca847f4af420bd0acfc3c4a9b38458b"
+        },
+        {
+          "revision": "committing change counting DISTINCT course ids",
+          "result": "Mutation control: fails Go on tags-or-duplicates (meta.total).",
+          "artifact": "quality-reports/go-migration/course-list-http-mutation-r1/results.json",
+          "receipt_sha256": "5665c3f9a3cc2974e332938ddc3154c152ef4b4e28f3c9298fae2384700ce583"
+        }
+      ],
+      "notes": [
+        "Implementing: Implementing: athlete and owner branches, subscription/search/tags/status/sort filters, all/optimized, KTDatatablePagination, current_year and athletes on four transports. Not ported (500 before any work): POST pdf/excel export file generation; orderings Django resolves lazily (transforms, M2M/reverse relations, relation paths), refused after the page checks."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/locations/<str:pk>/delete -> CourseLocationViewSet.as_view({'delete': 'delete'})",
