@@ -66,8 +66,12 @@ func statisticScope(identity domain.ResolvedIdentity, group *string, association
 func StatisticGroup(header string) *string { return supplierGroup(header) }
 
 // BalanceSheetRange is BalanceSheetData.get_range_from_year_and_starting_date
-// (no custom end date) for a UTC instant: [start, next start - 1 day].
+// (no custom end date) with TIME_ZONE='UTC': the balance year containing the
+// instant, [start, next start - 1 day]. ErrStatisticPythonError is the
+// ValueError datetime() raises for a day or month out of range, or a start
+// outside years 1..9999 in the instant's year, the previous or the next one.
 func BalanceSheetRange(moment time.Time, day, month int) (domain.StatisticYear, error) {
+	moment = moment.UTC()
 	valid := func(year int) bool {
 		return year >= 1 && year <= 9999 && time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).Day() == day
 	}

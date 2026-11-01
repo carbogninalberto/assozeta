@@ -8,7 +8,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
-func TestBalanceSheetRange(t *testing.T) {
+func TestBalanceSheetRangeBounds(t *testing.T) {
 	at := func(text string) time.Time {
 		value, err := time.Parse(time.RFC3339, text)
 		if err != nil {

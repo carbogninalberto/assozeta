@@ -75,7 +75,7 @@ association is `503 {"error": "Primary sport association is not configured."}`;
 any exception is `500 {"error": "An error occurred while loading the dashboard"}`
 (JSON, not the HTML page). The association card carries the owner user, the
 review URL and up to five `INSIDE_APP` deliveries addressed to the association id
-in the last 14 days (newest first; the message's own association is not checked).
+in the last 14 days (newest first).
 `subscriptions` counts the athlete's family subscriptions (user, associate user or
 a shared tax code) that are current or undated. Upcoming lessons walk the
 non-archived ones: course subscriptions, the course's registries and their
