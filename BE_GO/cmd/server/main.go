@@ -291,6 +291,12 @@ func run() (runErr error) {
 	courseListHandler := handler.NewCourseListHandler(service.NewCourseLists(repository.NewCourseLists(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/course/list", courseListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseCalendarHandler := handler.NewCourseCalendarHandler(service.NewCourseCalendars(repository.NewCourseCalendars(db), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/course/:uid/calendar", courseCalendarHandler.Calendar, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/calendar/update", courseCalendarHandler.CalendarUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/calendar/events", courseCalendarHandler.Events, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/calendar/events/update", courseCalendarHandler.EventsUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
 	modulesReadsHandler := handler.NewModulesReadsHandler(service.NewModulesReads(repository.NewModulesReads(db),
 		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
