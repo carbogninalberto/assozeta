@@ -283,6 +283,9 @@ func run() (runErr error) {
 	courseOverviewHandler := handler.NewCourseOverviewHandler(service.NewCourseOverviews(repository.NewCourseOverviews(db)),
 		service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/course/:uid/overview", courseOverviewHandler.Overview, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseListHandler := handler.NewCourseListHandler(service.NewCourseLists(repository.NewCourseLists(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities)
+	e.Any("/course/list", courseListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	modulesReadsHandler := handler.NewModulesReadsHandler(service.NewModulesReads(repository.NewModulesReads(db),
 		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)

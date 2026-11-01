@@ -39,6 +39,14 @@ func (s *CourseOverviews) Overview(ctx context.Context, identity domain.Resolved
 	if row == nil {
 		return nil, domain.ErrCourseOverviewNotFound
 	}
+	return map[string]any{"data": map[string]any{"course": courseSerializerData(*row)}}, nil
+}
+
+// courseSerializerData is CourseSerializer(course).data: every Course field,
+// decimals at two places, DRF UTC datetimes, the JSON fields as stored, the
+// tags and locations reads, and athletes, an AthleteSerializer(many=True,
+// allow_null=True) on a missing attribute (None).
+func courseSerializerData(row domain.CourseOverviewRow) map[string]any {
 	var startDate, endDate any
 	if row.StartDate != nil {
 		startDate = dto.DRFUTCDateTime(*row.StartDate)
@@ -46,7 +54,7 @@ func (s *CourseOverviews) Overview(ctx context.Context, identity domain.Resolved
 	if row.EndDate != nil {
 		endDate = dto.DRFUTCDateTime(*row.EndDate)
 	}
-	course := map[string]any{
+	return map[string]any{
 		"course_id": row.ID,
 		// AthleteSerializer(allow_null=True, many=True) on a missing attribute.
 		"athletes": nil, "tags": json.RawMessage(row.Tags), "locations": json.RawMessage(row.Locations),
@@ -59,5 +67,4 @@ func (s *CourseOverviews) Overview(ctx context.Context, identity domain.Resolved
 		"billed_from_subscription_date": row.FromSubscription, "billed_from_day_of_month": row.BilledDay, "auto_renewal": row.AutoRenewal,
 		"deleted": row.Deleted, "sport_association": row.AssociationID, "group": row.GroupID,
 	}
-	return map[string]any{"data": map[string]any{"course": course}}, nil
 }
