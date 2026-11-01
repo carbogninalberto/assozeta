@@ -144,20 +144,11 @@ func (s *ProfileSettings) Settings(ctx context.Context, identity domain.Resolved
 // values and dates datetime() rejects in this or the previous year are a
 // ValueError (500).
 func profileBalanceYear(now time.Time, day, month int64) (int, error) {
-	now = now.UTC()
-	if month < 1 || month > 12 || day < 1 || day > 31 {
+	from, _, ok := balanceSheetRange(now, day, month)
+	if !ok {
 		return 0, ErrProfileSettingsServer
 	}
-	valid := func(year int) bool {
-		return time.Date(year, time.Month(month), int(day), 0, 0, 0, 0, time.UTC).Day() == int(day)
-	}
-	if !valid(now.Year()) || !valid(now.Year()-1) {
-		return 0, ErrProfileSettingsServer
-	}
-	if now.Before(time.Date(now.Year(), time.Month(month), int(day), 0, 0, 0, 0, time.UTC)) {
-		return now.Year() - 1, nil
-	}
-	return now.Year(), nil
+	return from.Year(), nil
 }
 
 // UpdateSettings is profile_settings POST.
