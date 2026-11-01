@@ -376,7 +376,7 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 		if english {
 			return "Incorrect type. Expected pk value, received " + kind + "."
 		}
-		return "Tipo non corretto. Era atteso un valore pk, ricevuto " + kind + "."
+		return "Tipo non corretto. Era atteso un valore pk, ma è stato ricevuto " + kind + "."
 	case strings.HasPrefix(code, "related-invalid-uuid:"):
 		value := strings.TrimPrefix(code, "related-invalid-uuid:")
 		if english {

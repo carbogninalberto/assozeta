@@ -161,6 +161,30 @@
    "effect": null
   },
   {
+   "name": "folders-delete-beyond-int4-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/2147483648/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-below-int4-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/-2147483649/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "effect": null
+  },
+  {
    "name": "folders-delete-wrong-method",
    "actor": "owner",
    "method": "GET",

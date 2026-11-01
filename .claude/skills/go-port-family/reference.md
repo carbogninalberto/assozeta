@@ -33,6 +33,8 @@ Each item was confirmed by an authored family passing on Django. Cite the family
   any lookup, even for athletes. Go: `paymentInfoParseUUID` + `PaymentInfoUUIDError`.
 - `get_object_or_404`: missing row 404 `No <Model> matches the given query.`; a pk the field
   rejects 404 bare `Not found.`.
+- Django 5 integer lookups outside the column's range match nothing (a 404 / not-found path,
+  never a database error): range-check int pks before SQL (`folderIDInRange`).
 - `SportAssociation.objects.get(user=request.user)` is a 500 for athletes and owners without
   an association; `.filter(...).first()` variants return None instead.
 - `scoped_queryset(request, manager)` only filters during impersonation; otherwise a foreign
@@ -54,7 +56,8 @@ Each item was confirmed by an authored family passing on Django. Cite the family
 - BooleanField in a form body without the key is False (`default_empty_html`) unless partial.
 - Related fields: unknown pk `Invalid pk "<id>" - object does not exist.`; malformed UUID
   `“<value>” is not a valid UUID.`; wrong type `Incorrect type. Expected pk value, received <type>.`
-  Go: `supplierRelated`. `tenant_scope` (`BE/application/tenant_scope.py`): a relation to another
+  Go: `supplierRelated` (only a bool is an incorrect type; lists, dicts, floats and out-of-range
+  ints quote str(value) as an invalid UUID). `tenant_scope` (`BE/application/tenant_scope.py`): a relation to another
   tenant's row raises DRF's generic 403 during field validation, escaping all field errors;
   no current association (athletes) means no enforcement.
 - ListField: not a list `Expected a list of items but got type "<type>".`; child errors keyed

@@ -32,6 +32,9 @@ add('anonymous', 'anonymous', 'DELETE', 'a1', 401, {'detail': 'Authentication cr
 add('foreign-not-found', 'owner', 'DELETE', 'f', 404, NOT_FOUND)
 add('missing-not-found', 'owner', 'DELETE', '999999999', 404, NOT_FOUND)
 add('non-integer-not-found', 'owner', 'DELETE', 'abc', 404, {'detail': 'Not found.'})
+# Django 5 integer lookups outside the column range match nothing.
+add('beyond-int4-not-found', 'owner', 'DELETE', '2147483648', 404, NOT_FOUND)
+add('below-int4-not-found', 'owner', 'DELETE', '-2147483649', 404, NOT_FOUND)
 add('wrong-method', 'owner', 'GET', 'a1', 405, {'detail': 'Method "GET" not allowed.'})
 add('options', 'owner', 'OPTIONS', 'a1', 200, {'name': 'Folder', 'description': '', 'renders': ['application/json'],
     'parses': ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']})

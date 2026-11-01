@@ -207,6 +207,19 @@
    "body": {}
   },
   {
+   "name": "folders-move-beyond-int4-folder-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/2147483648/move",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "after": null,
+   "body": {}
+  },
+  {
    "name": "folders-move-foreign-target-denied",
    "actor": "owner",
    "method": "POST",
@@ -245,6 +258,19 @@
    "after": null,
    "body": {
     "new_parent": "abc"
+   }
+  },
+  {
+   "name": "folders-move-beyond-int4-target-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/$folder:a1/move",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "after": null,
+   "body": {
+    "new_parent": 2147483648
    }
   },
   {

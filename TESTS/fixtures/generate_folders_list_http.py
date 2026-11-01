@@ -49,6 +49,8 @@ add('full-collaborator-owner-scope', 'full_collaborator', 200, ROOTS)
 add('admin-impersonating-owner', 'admin', 200, ROOTS, headers={'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']})
 add('foreign-folder-denied', 'owner', 403, {'detail': 'Cannot access folder from different sport association.'}, query='?folder=$folder:f')
 add('missing-folder', 'owner', 404, {'detail': 'Parent folder not found.'}, query='?folder=999999999')
+# Django 5 integer lookups outside the column range match nothing.
+add('beyond-int4-folder', 'owner', 404, {'detail': 'Parent folder not found.'}, query='?folder=2147483648')
 add('non-numeric-folder-server-error', 'owner', 500, '<stable-server-error-page>', query='?folder=abc')
 add('foreign-owner-roots', 'foreign_owner', 200, {'data': [node('f')], 'path': None})
 add('restricted-missing-permission', 'restricted_collaborator', 403, {'detail': 'Missing permission: association.archive.read'})

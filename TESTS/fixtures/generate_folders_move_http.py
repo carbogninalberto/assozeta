@@ -46,10 +46,13 @@ add('admin-without-session', 'admin', 'a1', 403, {'detail': 'Seleziona un utente
 add('anonymous', 'anonymous', 'a1', 401, {'detail': 'Authentication credentials were not provided.'}, body={})
 add('foreign-folder-not-found', 'owner', 'f', 404, {'detail': 'No Folder matches the given query.'}, body={})
 add('non-integer-folder-not-found', 'owner', 'abc', 404, {'detail': 'Not found.'}, body={})
+# Django 5 integer lookups outside the column range match nothing.
+add('beyond-int4-folder-not-found', 'owner', '2147483648', 404, {'detail': 'No Folder matches the given query.'}, body={})
 add('foreign-target-denied', 'owner', 'a1', 403, {'detail': 'Cannot move to folder from different sport association.'},
     body={'new_parent': target('f')})
 add('missing-target-server-error', 'owner', 'a1', 500, SERVER, body={'new_parent': 999999999})
 add('non-integer-target-server-error', 'owner', 'a1', 500, SERVER, body={'new_parent': 'abc'})
+add('beyond-int4-target-server-error', 'owner', 'a1', 500, SERVER, body={'new_parent': 2147483648})
 # InvalidMove raises before any SQL.
 add('into-descendant-server-error', 'owner', 'a', 500, SERVER, body={'new_parent': target('a1a')})
 add('into-itself-server-error', 'owner', 'a1', 500, SERVER, body={'new_parent': target('a1')})

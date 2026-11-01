@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"math"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -32,6 +33,9 @@ func (s *Folders) List(ctx context.Context, identity domain.ResolvedIdentity, fo
 		id, err := dto.PythonIntPrep(folder)
 		if err != nil {
 			return dto.FolderList{}, ErrFolderIDValue
+		}
+		if !folderIDInRange(id) {
+			return dto.FolderList{}, domain.ErrFolderParentNotFound
 		}
 		current, err := s.store.FolderByID(ctx, id)
 		if err != nil {
@@ -86,6 +90,9 @@ func (s *FolderDeletes) Delete(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		return ErrFolderLookup
 	}
+	if !folderIDInRange(id) {
+		return domain.ErrFolderNotFound
+	}
 	if err = tx.DeleteSubtree(ctx, id, association); err != nil {
 		return err
 	}
@@ -122,6 +129,9 @@ func (s *FolderMoves) Move(ctx context.Context, identity domain.ResolvedIdentity
 	if err != nil {
 		return ErrFolderLookup
 	}
+	if !folderIDInRange(id) {
+		return domain.ErrFolderNotFound
+	}
 	if err = tx.OwnFolder(ctx, id, association); err != nil {
 		return err
 	}
@@ -145,4 +155,10 @@ func (s *FolderMoves) Move(ctx context.Context, identity domain.ResolvedIdentity
 		return err
 	}
 	return tx.Commit()
+}
+
+// folderIDInRange reports whether a folder pk fits its integer column: Django
+// 5 integer lookups outside the column's range match nothing.
+func folderIDInRange(id int64) bool {
+	return id >= math.MinInt32 && id <= math.MaxInt32
 }

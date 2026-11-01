@@ -423,6 +423,17 @@
    }
   },
   {
+   "name": "folders-list-beyond-int4-folder",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/list?folder=2147483648",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Parent folder not found."
+   }
+  },
+  {
    "name": "folders-list-non-numeric-folder-server-error",
    "actor": "owner",
    "method": "GET",
