@@ -187,6 +187,7 @@ func run() (runErr error) {
 		service.NewStripeAvailability(repository.NewSocialConfiguration(db), service.StripeEnvironment{PublicKey: cfg.StripePublicKey != "", Secret: cfg.StripeSecretConfigured, Webhook: cfg.StripeEnabled}, cfg.SessionSecret),
 		domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled}, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
+	auditLogHandler := handler.NewAuditLogHandler(service.NewAuditLogs(repository.NewAuditLogs(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	auditSummaryHandler := handler.NewAuditSummaryHandler(service.NewAuditSummaries(repository.NewAuditSummaries(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	suppliersHandler := handler.NewSuppliersHandler(service.NewSuppliers(repository.NewSuppliers(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	carnetListHandler := handler.NewCarnetListHandler(service.NewCarnetLists(repository.NewCarnetList(db), time.Now), service.NewCarnetInfos(repository.NewCarnetList(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
@@ -278,6 +279,8 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/course/:uid/overview", courseOverviewHandler.Overview, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/audit-logs/list", auditLogHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/audit-logs/:id/detail", auditLogHandler.Detail, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/stats", auditSummaryHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/models", auditSummaryHandler.Models, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/supplier/list", suppliersHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
