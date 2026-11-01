@@ -2790,25 +2790,72 @@
         "target": "audit_log_detail",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/audit_logs.go",
+        "BE_GO/internal/repository/audit_logs.go",
+        "BE_GO/internal/dto/audit_logs.go",
+        "BE_GO/internal/dto/audit_logs_test.go",
+        "BE_GO/internal/service/audit_logs.go",
+        "BE_GO/internal/service/audit_logs_resolver.go",
+        "BE_GO/internal/handler/audit_logs.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "auditlog_logentry, application_auditlogindex, django_content_type, bakney_user",
+        "Resolver tables: course, associate, subscription, coursesubscription, payment, invoice, instructor, attendance registry/day, global calendar events, reminders, medical certificate, carnet(+subscription), subscription membership, group, family, tags, sport association, module, camps (+period, subscription), communications message/automation workflow/configuration"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/audit-logs/<log_id>/detail",
+          "/api/v2/audit-logs/<log_id>/detail",
+          "/api/audit-logs/<log_id>/detail"
+        ],
+        "request": "No body.",
+        "response": "200 {\"data\": AuditLogEntrySerializer}.",
+        "errors": "401; 403 as list; 404 {\"error\": \"Sport association not found\"}; 404 {\"error\": \"Audit log not found\"}; 405; 500 for serializer formatter exceptions and refused inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Not in the registry (FULL collaborators bypass it).",
+        "resource_scope": "An entry indexed to the scope user's association (no noise filter).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/audit_logs_http.json",
+        "TESTS/fixtures/generate_audit_logs_http.py",
+        "TESTS/contracts/test_audit_logs_http.py",
+        "TESTS/adapters/django/audit_logs_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/audit-logs.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 132/132; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/audit-logs-http-red-final/results.json",
+          "receipt_sha256": "498287a112f0345b460d312da92ebf41cff7553c5d1490ac80d3b3b8d4e0dc2e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/audit-logs-http-green/results.json",
+          "receipt_sha256": "8a22a7e4bf5c3b4e9d95488c27e24b0653e43a9b0f37c198572a7ab75ed96f69"
+        },
+        {
+          "revision": "noise filter without the IS NOT NULL guard of Django's negated nullable has_key lookup",
+          "result": "Mutation control: fails Go on audit-logs-list-owner-full (a user entry with NULL changes disappears).",
+          "artifact": "quality-reports/go-migration/audit-logs-http-mutation/results.json",
+          "receipt_sha256": "8d1221a2ae9754067243991524045195e9c1e26bb665f26b4e8637760370be0b"
+        }
+      ],
+      "notes": [
+        "Implementing: list and detail with AuditLogEntrySerializer resolvers (default managers, X-Group-Id), formatters and KTDatatablePagination; fromisoformat forms outside the ported subset, NaN/Infinity/lone-surrogate/deep JSON, non-ASCII title/capitalize and malformed UTF-8 query values are refused with the 500 page (audit-logs.md)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:audit-logs/list -> audit_log_list",
@@ -2825,25 +2872,72 @@
         "target": "audit_log_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/audit_logs.go",
+        "BE_GO/internal/repository/audit_logs.go",
+        "BE_GO/internal/dto/audit_logs.go",
+        "BE_GO/internal/dto/audit_logs_test.go",
+        "BE_GO/internal/service/audit_logs.go",
+        "BE_GO/internal/service/audit_logs_resolver.go",
+        "BE_GO/internal/handler/audit_logs.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "auditlog_logentry, application_auditlogindex, django_content_type, bakney_user",
+        "Resolver tables: course, associate, subscription, coursesubscription, payment, invoice, instructor, attendance registry/day, global calendar events, reminders, medical certificate, carnet(+subscription), subscription membership, group, family, tags, sport association, module, camps (+period, subscription), communications message/automation workflow/configuration"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/audit-logs/list",
+          "/api/v2/audit-logs/list",
+          "/api/audit-logs/list"
+        ],
+        "request": "No body.",
+        "response": "200 {\"data\": [AuditLogEntrySerializer | AuditLogListMinimalSerializer (minimal=true)], \"meta\": {total, page, pages, perpage: 10}}.",
+        "errors": "401; 403 unmapped endpoint / administrator without impersonation / scoped athlete session; 404 {\"error\": \"Sport association not found\"}; 404 {\"detail\": \"Invalid page.\"}; 405; 500 for a malformed query[actor_id], serializer formatter exceptions and refused inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Not in the registry (FULL collaborators bypass it).",
+        "resource_scope": "Entries indexed to the scope user's association, minus accesstoken and last_login user entries; resolvers read rows through default managers (X-Group-Id aware).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/audit_logs_http.json",
+        "TESTS/fixtures/generate_audit_logs_http.py",
+        "TESTS/contracts/test_audit_logs_http.py",
+        "TESTS/adapters/django/audit_logs_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/audit-logs.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 132/132; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/audit-logs-http-red-final/results.json",
+          "receipt_sha256": "498287a112f0345b460d312da92ebf41cff7553c5d1490ac80d3b3b8d4e0dc2e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/audit-logs-http-green/results.json",
+          "receipt_sha256": "8a22a7e4bf5c3b4e9d95488c27e24b0653e43a9b0f37c198572a7ab75ed96f69"
+        },
+        {
+          "revision": "noise filter without the IS NOT NULL guard of Django's negated nullable has_key lookup",
+          "result": "Mutation control: fails Go on audit-logs-list-owner-full (a user entry with NULL changes disappears).",
+          "artifact": "quality-reports/go-migration/audit-logs-http-mutation/results.json",
+          "receipt_sha256": "8d1221a2ae9754067243991524045195e9c1e26bb665f26b4e8637760370be0b"
+        }
+      ],
+      "notes": [
+        "Implementing: list and detail with AuditLogEntrySerializer resolvers (default managers, X-Group-Id), formatters and KTDatatablePagination; fromisoformat forms outside the ported subset, NaN/Infinity/lone-surrogate/deep JSON, non-ASCII title/capitalize and malformed UTF-8 query values are refused with the 500 page (audit-logs.md)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:audit-logs/models -> audit_log_models",
