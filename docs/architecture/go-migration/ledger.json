@@ -15361,25 +15361,83 @@
         "target": "statistic_athlete_dashboard",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/statistic_reads.go",
+        "BE_GO/internal/dto/statistic_reads.go",
+        "BE_GO/internal/dto/statistic_reads_test.go",
+        "BE_GO/internal/repository/statistic_reads.go",
+        "BE_GO/internal/service/statistic_reads.go",
+        "BE_GO/internal/service/statistic_reads_test.go",
+        "BE_GO/internal/handler/statistic_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/statistic_views.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/communications/models.py",
+        "BE/instance/models.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/statistic/athlete-dashboard",
+          "/api/v2/statistic/athlete-dashboard",
+          "/api/statistic/athlete-dashboard"
+        ],
+        "request": "No parameters; optional X-Group-Id.",
+        "response": "200 {\"data\": [{\"sport_association\": {...}, \"subscriptions\": n}], \"upcoming_lessons\": [...]}; 503 {\"error\": \"Primary sport association is not configured.\"}.",
+        "errors": "401 anonymous; 403 administrator without impersonation, registry \"Missing permission: association.dashboard.read\", owner session scoped to an athlete (association context); 405 for other methods (after permissions); 403 [\"error: forbidden.\"] for non-athletes; 500 {\"error\": \"An error occurred while loading the dashboard\"} for any exception inside the view.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "DRF IsAuthenticated; registry association.dashboard.read; role athlete.",
+        "resource_scope": "Impersonation association or the instance primary association; athlete family subscriptions (scoped_queryset boundary during association-scoped impersonation).",
+        "side_effects": "None.",
+        "transaction": "Read only; no request transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/statistic_reads_http.json",
+        "TESTS/fixtures/generate_statistic_reads_http.py",
+        "TESTS/contracts/test_statistic_reads_http.py",
+        "TESTS/adapters/django/statistic_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/statistic-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 77/77; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-native-r4/results.json",
+          "receipt_sha256": "a31af0a3348c03e508eb9ee6f1b5019a67f1f3a36050e1eded62df6815772610"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 77/77 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "b0ca71109d23d673e34d7812146753256ca90f2e94b3e777c25a3c94c6099edb"
+        },
+        {
+          "revision": "committing change with bestcourses counting only live course subscriptions (AND NOT cs.deleted in the join)",
+          "result": "Mutation control: fails Go on statistic-reads-bestcourses-owner (best_courses order).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "de77d9ec1b3080c11defcf74056206e3f4cb177d1ce950bd5e2ce3bd2e5c32cb"
+        }
+      ],
+      "notes": [
+        "Implementing: statistic/dashboard (every widget except todaylessons and expiredPayments, refused with the stable 500 page), statistic/athlete-dashboard and statistic/report with HTTP parity on 77 authored cases; date windows anchored at seed time and request-time expectations for the current balance-sheet year and Europe/Rome windows."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:statistic/dashboard -> statistic_dashboard",
@@ -15396,25 +15454,83 @@
         "target": "statistic_dashboard",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/statistic_reads.go",
+        "BE_GO/internal/dto/statistic_reads.go",
+        "BE_GO/internal/dto/statistic_reads_test.go",
+        "BE_GO/internal/repository/statistic_reads.go",
+        "BE_GO/internal/service/statistic_reads.go",
+        "BE_GO/internal/service/statistic_reads_test.go",
+        "BE_GO/internal/handler/statistic_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/statistic_views.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/communications/models.py",
+        "BE/instance/models.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/statistic/dashboard",
+          "/api/v2/statistic/dashboard",
+          "/api/statistic/dashboard"
+        ],
+        "request": "Query widget (QueryDict last value): subscriptions, payments, associates, bestcourses, expiringcarnets, expiringmedicalcertificates, expiredmedicalcertificates, subscriptionstoapprove, incomeAndExpenses (todaylessons and expiredPayments are not ported). Optional X-Group-Id.",
+        "response": "200 {\"data\": {...}} per widget (see doc); 400 [\"error: widget is required.\"]; 404 [\"error: widget not found.\"].",
+        "errors": "401 anonymous; 403 administrator without impersonation, registry \"Missing permission: association.dashboard.read\", owner session scoped to an athlete (association context); 405 for other methods (after permissions); 500 page for athletes, owners without or with a deleted association, a carnet without associate or carnet, and the refused widgets.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "DRF IsAuthenticated; registry association.dashboard.read.",
+        "resource_scope": "scoped_queryset(SportAssociation).get(user=request.user); group-aware managers; impersonation narrows course and carnet subscriptions.",
+        "side_effects": "None.",
+        "transaction": "Read only; no request transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/statistic_reads_http.json",
+        "TESTS/fixtures/generate_statistic_reads_http.py",
+        "TESTS/contracts/test_statistic_reads_http.py",
+        "TESTS/adapters/django/statistic_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/statistic-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 77/77; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-native-r4/results.json",
+          "receipt_sha256": "a31af0a3348c03e508eb9ee6f1b5019a67f1f3a36050e1eded62df6815772610"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 77/77 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "b0ca71109d23d673e34d7812146753256ca90f2e94b3e777c25a3c94c6099edb"
+        },
+        {
+          "revision": "committing change with bestcourses counting only live course subscriptions (AND NOT cs.deleted in the join)",
+          "result": "Mutation control: fails Go on statistic-reads-bestcourses-owner (best_courses order).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "de77d9ec1b3080c11defcf74056206e3f4cb177d1ce950bd5e2ce3bd2e5c32cb"
+        }
+      ],
+      "notes": [
+        "Implementing: statistic/dashboard (every widget except todaylessons and expiredPayments, refused with the stable 500 page), statistic/athlete-dashboard and statistic/report with HTTP parity on 77 authored cases; date windows anchored at seed time and request-time expectations for the current balance-sheet year and Europe/Rome windows."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:statistic/dashboard/layout -> statistic_dashboard_layout",
@@ -15510,25 +15626,83 @@
         "target": "statistic_report",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/statistic_reads.go",
+        "BE_GO/internal/dto/statistic_reads.go",
+        "BE_GO/internal/dto/statistic_reads_test.go",
+        "BE_GO/internal/repository/statistic_reads.go",
+        "BE_GO/internal/service/statistic_reads.go",
+        "BE_GO/internal/service/statistic_reads_test.go",
+        "BE_GO/internal/handler/statistic_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/statistic_views.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/communications/models.py",
+        "BE/instance/models.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/statistic/report",
+          "/api/v2/statistic/report",
+          "/api/statistic/report"
+        ],
+        "request": "Query currentDate ('%Y-%m-%d', empty = today); optional X-Group-Id.",
+        "response": "200 {\"data\": {available_years, subscriptions, kpi_subscriptions, kpi_payments, pie_subscriptions, payments, pie_payments, courses}}.",
+        "errors": "401 anonymous; 403 administrator without impersonation, registry \"Missing permission: association.report.read\", owner session scoped to an athlete (association context); 405 for other methods (after permissions); 403 DRF permission message for non association users (IsAssociationUser, also OPTIONS); 500 page for an invalid currentDate, a missing or deleted association and an accepted subscription without associate.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "DRF IsAuthenticated and IsAssociationUser; registry association.report.read.",
+        "resource_scope": "scoped_queryset(SportAssociation).get(user=request.user); owner balance-sheet year; group-aware managers.",
+        "side_effects": "None.",
+        "transaction": "Read only; no request transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/statistic_reads_http.json",
+        "TESTS/fixtures/generate_statistic_reads_http.py",
+        "TESTS/contracts/test_statistic_reads_http.py",
+        "TESTS/adapters/django/statistic_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/statistic-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 77/77; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-native-r4/results.json",
+          "receipt_sha256": "a31af0a3348c03e508eb9ee6f1b5019a67f1f3a36050e1eded62df6815772610"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 77/77 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "b0ca71109d23d673e34d7812146753256ca90f2e94b3e777c25a3c94c6099edb"
+        },
+        {
+          "revision": "committing change with bestcourses counting only live course subscriptions (AND NOT cs.deleted in the join)",
+          "result": "Mutation control: fails Go on statistic-reads-bestcourses-owner (best_courses order).",
+          "artifact": "quality-reports/go-migration/statistic-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "de77d9ec1b3080c11defcf74056206e3f4cb177d1ce950bd5e2ce3bd2e5c32cb"
+        }
+      ],
+      "notes": [
+        "Implementing: statistic/dashboard (every widget except todaylessons and expiredPayments, refused with the stable 500 page), statistic/athlete-dashboard and statistic/report with HTTP parity on 77 authored cases; date windows anchored at seed time and request-time expectations for the current balance-sheet year and Europe/Rome windows."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:stripe/complete-on-boarding -> stripe_complete_on_boarding",
