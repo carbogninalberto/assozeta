@@ -13439,25 +13439,72 @@
         "target": "AssociateViewSet.as_view({'get': 'info'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/dto/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/internal/service/personas_reads_test.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_associate, application_associatetutorrelation, application_subscription, application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/<pk>/info",
+          "/api/v2/personas/<pk>/info",
+          "/api/personas/<pk>/info"
+        ],
+        "request": "Path pk (UUID field forms); the list query parameters also filter the lookup; optional X-Group-Id.",
+        "response": "200 AssociateSerializer (nested tutors, family_members; unordered lists).",
+        "errors": "401; 403 administrator without impersonation, registry permission, association-scoped athlete session, or athlete ('User is not a sport association'); 405 other methods; 500 missing or soft-deleted association; 404 Not found. (pk the UUID field rejects); 404 No Associate matches the given query.; 500 queryset parameter errors.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.read.",
+        "resource_scope": "get_queryset (live, association, group-aware) then pk.",
+        "side_effects": "None for GET. DELETE (the viewset's soft delete) is not ported: Go refuses a found row with the 500 page before any write.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_reads_http.json",
+        "TESTS/fixtures/generate_personas_reads_http.py",
+        "TESTS/contracts/test_personas_reads_http.py",
+        "TESTS/adapters/django/personas_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 201/201; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-red-r3/results.json",
+          "receipt_sha256": "28e08667d7553d19f695968cdc3660e4945202020ad571101d2124d312321838"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 201/201 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "20e52a6c0a63581e1b46637905947d8db09c11983ed7ee80e7d9047097c5e90d"
+        },
+        {
+          "revision": "committing change with tutors_count as COUNT(DISTINCT r.id)",
+          "result": "Mutation control: fails Go on personas-reads-list-search-tutors-count-join (data[0] associate_id).",
+          "artifact": "quality-reports/go-migration/personas-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "ddfe91e8c48c7bb5c178baa138ae2910e29e627364c21142c2c1216ae1d9a65b"
+        }
+      ],
+      "notes": [
+        "Implementing: Personas list/all/all-tutors/all-with-subscriptions/info with HTTP parity; DELETE soft delete on info, non-Latin search terms and joined orderings are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/<str:pk>/recover -> AssociateViewSet.as_view({'post': 'recover'})",
@@ -13579,25 +13626,72 @@
         "target": "AssociateViewSet.as_view({'get': 'all'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/dto/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/internal/service/personas_reads_test.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_associate, application_associatetutorrelation, application_subscription, application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/all",
+          "/api/v2/personas/all",
+          "/api/personas/all"
+        ],
+        "request": "No parameters; optional X-Group-Id.",
+        "response": "200 {\"data\": [{associate_id, first_name, last_name}]} unordered.",
+        "errors": "401; 403 administrator without impersonation, registry permission, association-scoped athlete session, or athlete ('User is not a sport association'); 405 other methods; 500 missing or soft-deleted association; DELETE: 500 (403 for athletes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.read.",
+        "resource_scope": "Live associates of request.user.sport_association (group-aware).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_reads_http.json",
+        "TESTS/fixtures/generate_personas_reads_http.py",
+        "TESTS/contracts/test_personas_reads_http.py",
+        "TESTS/adapters/django/personas_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 201/201; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-red-r3/results.json",
+          "receipt_sha256": "28e08667d7553d19f695968cdc3660e4945202020ad571101d2124d312321838"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 201/201 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "20e52a6c0a63581e1b46637905947d8db09c11983ed7ee80e7d9047097c5e90d"
+        },
+        {
+          "revision": "committing change with tutors_count as COUNT(DISTINCT r.id)",
+          "result": "Mutation control: fails Go on personas-reads-list-search-tutors-count-join (data[0] associate_id).",
+          "artifact": "quality-reports/go-migration/personas-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "ddfe91e8c48c7bb5c178baa138ae2910e29e627364c21142c2c1216ae1d9a65b"
+        }
+      ],
+      "notes": [
+        "Implementing: Personas list/all/all-tutors/all-with-subscriptions/info with HTTP parity; DELETE soft delete on info, non-Latin search terms and joined orderings are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/all-tutors -> AssociateViewSet.as_view({'get': 'all_tutors'})",
@@ -13614,25 +13708,72 @@
         "target": "AssociateViewSet.as_view({'get': 'all_tutors'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/dto/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/internal/service/personas_reads_test.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_associate, application_associatetutorrelation, application_subscription, application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/all-tutors",
+          "/api/v2/personas/all-tutors",
+          "/api/personas/all-tutors"
+        ],
+        "request": "No parameters; optional X-Group-Id.",
+        "response": "200 [{associate_id, first_name, last_name}] (every live associate) unordered.",
+        "errors": "401; 403 administrator without impersonation, registry permission, association-scoped athlete session, or athlete ('User is not a sport association'); 405 other methods; 500 missing or soft-deleted association; DELETE: 500 (403 for athletes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.read.",
+        "resource_scope": "Live associates of request.user.sport_association (group-aware).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_reads_http.json",
+        "TESTS/fixtures/generate_personas_reads_http.py",
+        "TESTS/contracts/test_personas_reads_http.py",
+        "TESTS/adapters/django/personas_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 201/201; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-red-r3/results.json",
+          "receipt_sha256": "28e08667d7553d19f695968cdc3660e4945202020ad571101d2124d312321838"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 201/201 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "20e52a6c0a63581e1b46637905947d8db09c11983ed7ee80e7d9047097c5e90d"
+        },
+        {
+          "revision": "committing change with tutors_count as COUNT(DISTINCT r.id)",
+          "result": "Mutation control: fails Go on personas-reads-list-search-tutors-count-join (data[0] associate_id).",
+          "artifact": "quality-reports/go-migration/personas-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "ddfe91e8c48c7bb5c178baa138ae2910e29e627364c21142c2c1216ae1d9a65b"
+        }
+      ],
+      "notes": [
+        "Implementing: Personas list/all/all-tutors/all-with-subscriptions/info with HTTP parity; DELETE soft delete on info, non-Latin search terms and joined orderings are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/all-with-subscriptions -> AssociateViewSet.as_view({'get': 'all_with_subscriptions'})",
@@ -13649,25 +13790,72 @@
         "target": "AssociateViewSet.as_view({'get': 'all_with_subscriptions'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/dto/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/internal/service/personas_reads_test.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_associate, application_associatetutorrelation, application_subscription, application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/all-with-subscriptions",
+          "/api/v2/personas/all-with-subscriptions",
+          "/api/personas/all-with-subscriptions"
+        ],
+        "request": "No parameters; optional X-Group-Id.",
+        "response": "200 {\"data\": {associate_id: {subscription_id, associate_id, first_name, last_name, email, tax_code, subscription_status, type}}}.",
+        "errors": "401; 403 administrator without impersonation, unmapped registry endpoint, association-scoped athlete session, or athlete ('User is not a sport association'); 405 other methods; 500 missing or soft-deleted association; DELETE: 500 (403 for athletes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Not in the registry: restricted collaborators get the unmapped-endpoint 403.",
+        "resource_scope": "Current, unarchived, live subscriptions of the association with a live associate (group-aware on the subscription).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_reads_http.json",
+        "TESTS/fixtures/generate_personas_reads_http.py",
+        "TESTS/contracts/test_personas_reads_http.py",
+        "TESTS/adapters/django/personas_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 201/201; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-red-r3/results.json",
+          "receipt_sha256": "28e08667d7553d19f695968cdc3660e4945202020ad571101d2124d312321838"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 201/201 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "20e52a6c0a63581e1b46637905947d8db09c11983ed7ee80e7d9047097c5e90d"
+        },
+        {
+          "revision": "committing change with tutors_count as COUNT(DISTINCT r.id)",
+          "result": "Mutation control: fails Go on personas-reads-list-search-tutors-count-join (data[0] associate_id).",
+          "artifact": "quality-reports/go-migration/personas-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "ddfe91e8c48c7bb5c178baa138ae2910e29e627364c21142c2c1216ae1d9a65b"
+        }
+      ],
+      "notes": [
+        "Implementing: Personas list/all/all-tutors/all-with-subscriptions/info with HTTP parity; DELETE soft delete on info, non-Latin search terms and joined orderings are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/bulk-delete -> AssociateViewSet.as_view({'delete': 'bulk_delete'})",
@@ -13719,25 +13907,72 @@
         "target": "AssociateViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/dto/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/internal/service/personas_reads_test.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_associate, application_associatetutorrelation, application_subscription, application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/list",
+          "/api/v2/personas/list",
+          "/api/personas/list"
+        ],
+        "request": "Query: query[generalSearch], query[is_tutor], query[type], query[minAge], query[maxAge], sort[field], sort[sort], pagination[page], pagination[perpage]; optional X-Group-Id.",
+        "response": "200 {\"data\": [AssociateSearchSerializer], \"meta\": {total, page, pages, perpage, rowIds}}; unordered unless sorted or searched (relevance).",
+        "errors": "401; 403 administrator without impersonation, registry permission, association-scoped athlete session, or athlete ('User is not a sport association'); 405 other methods; 500 missing or soft-deleted association; 404 Invalid page.; 500 invalid is_tutor/minAge/maxAge or unresolvable ordering; DELETE: 500 (403 for athletes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.read.",
+        "resource_scope": "Live associates of request.user.sport_association (group-aware); tutors via base managers.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_reads_http.json",
+        "TESTS/fixtures/generate_personas_reads_http.py",
+        "TESTS/contracts/test_personas_reads_http.py",
+        "TESTS/adapters/django/personas_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 201/201; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-red-r3/results.json",
+          "receipt_sha256": "28e08667d7553d19f695968cdc3660e4945202020ad571101d2124d312321838"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 201/201 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/personas-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "20e52a6c0a63581e1b46637905947d8db09c11983ed7ee80e7d9047097c5e90d"
+        },
+        {
+          "revision": "committing change with tutors_count as COUNT(DISTINCT r.id)",
+          "result": "Mutation control: fails Go on personas-reads-list-search-tutors-count-join (data[0] associate_id).",
+          "artifact": "quality-reports/go-migration/personas-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "ddfe91e8c48c7bb5c178baa138ae2910e29e627364c21142c2c1216ae1d9a65b"
+        }
+      ],
+      "notes": [
+        "Implementing: Personas list/all/all-tutors/all-with-subscriptions/info with HTTP parity; DELETE soft delete on info, non-Latin search terms and joined orderings are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:printing/generate -> printing_generate",
