@@ -198,6 +198,8 @@ func run() (runErr error) {
 	customerInvoiceStatsHandler := handler.NewCustomerInvoiceStatsHandler(service.NewCustomerInvoiceStats(repository.NewSupplierInvoiceStats(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	invoiceDeletesHandler := handler.NewInvoiceDeletesHandler(service.NewInvoiceDeletes(repository.NewInvoiceDeletes(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	foldersHandler := handler.NewFoldersHandler(service.NewFolders(repository.NewFolders(db)), service.NewFolderDeletes(repository.NewFolders(db)), service.NewFolderMoves(repository.NewFolders(db)), service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	folderWritesHandler := handler.NewFolderWritesHandler(service.NewFolderWrites(repository.NewFolders(db), time.Now),
+		service.NewFolderDeletes(repository.NewFolders(db)), service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	documentArchiveHandler := handler.NewDocumentArchiveHandler(service.NewDocumentArchive(repository.NewDocumentArchive(db)), service.NewArchiveWrites(repository.NewDocumentArchive(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	savedReportsHandler := handler.NewSavedReportsHandler(service.NewSavedReports(repository.NewSavedReports(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	courseLocationListHandler := handler.NewCourseLocationListHandler(service.NewCourseLocationLists(repository.NewSearchProfiles(db)), service.NewActorAuthentication(accounts, tokens), identities)
@@ -329,6 +331,8 @@ func run() (runErr error) {
 	e.Any("/documents/:pk/delete", documentArchiveHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/delete", foldersHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/move", foldersHandler.Move, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/folders/add", folderWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/folders/:pk/update", folderWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/:uid/delete", invoiceDeletesHandler.Customer, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/sport-associations/:uid/admin-update", associationAdminHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/templates/list", moduleTemplatesHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))

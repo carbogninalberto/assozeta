@@ -135,6 +135,25 @@ func (t *folderDeleteTransaction) MoveFolder(ctx context.Context, id int64, asso
 	if _, err = t.tx.ExecContext(ctx, `LOCK TABLE application_folder IN SHARE ROW EXCLUSIVE MODE`); err != nil {
 		return err
 	}
+	if err = t.moveNode(ctx, node, target, false); err != nil {
+		return err
+	}
+	var parent *int64
+	if target != nil {
+		parent = &target.ID
+	}
+	// node.save(): the raw updates leave parent_id to the model save.
+	_, err = t.tx.ExecContext(ctx, `UPDATE application_folder SET parent_id=$2 WHERE id=$1`, node.ID, parent)
+	return err
+}
+
+// moveNode ports django-mptt TreeManager._move_node for a child position
+// ('first-child' for move_to(target), 'last-child' for a save() with a new
+// parent), or, for a nil target, makes a child node a root with the next tree
+// id over all folders (move_to(None), or save() placing it right of the
+// rightmost root). InvalidMove is raised before any write; the caller holds
+// the table lock and stores parent_id afterwards.
+func (t *folderDeleteTransaction) moveNode(ctx context.Context, node domain.Folder, target *domain.Folder, lastChild bool) error {
 	exec := func(query string, args ...any) error {
 		_, err := t.tx.ExecContext(ctx, query, args...)
 		return err
@@ -152,73 +171,70 @@ func (t *folderDeleteTransaction) MoveFolder(ctx context.Context, id int64, asso
  rght=CASE WHEN rght>=$1 AND rght<=$2 THEN rght-$5 WHEN rght>$6 THEN rght-$7 ELSE rght END
  WHERE tree_id=$8`, node.Left, node.Right, levelChange, newTree, leftRightChange, gapLeft, gap, node.TreeID)
 	}
-	var parent *int64
-	switch {
-	case target == nil:
-		if node.ParentID != nil {
-			// _make_child_root_node with the next tree id over all folders.
-			var next int64
-			if err = t.tx.GetContext(ctx, &next, `SELECT COALESCE(MAX(tree_id), 0)+1 FROM application_folder`); err != nil {
-				return err
-			}
-			if err = interTreeMove(int64(node.Level), node.Left-1, next); err != nil {
-				return err
-			}
+	if target == nil {
+		if node.ParentID == nil {
+			return nil
 		}
+		// _make_child_root_node with the next tree id over all folders.
+		var next int64
+		if err := t.tx.GetContext(ctx, &next, `SELECT COALESCE(MAX(tree_id), 0)+1 FROM application_folder`); err != nil {
+			return err
+		}
+		return interTreeMove(int64(node.Level), node.Left-1, next)
+	}
+	// _calculate_inter_tree_move_values: the space opens after target_left
+	// (first child) or before target_right (last child).
+	space := target.Left
+	if lastChild {
+		space = target.Right - 1
+	}
+	width := node.Right - node.Left + 1
+	levelChange := int64(node.Level - target.Level - 1)
+	switch {
 	case node.ParentID == nil:
-		// _move_root_node into the target's tree as its first child.
+		// _move_root_node into the target's tree.
 		if node.ID == target.ID || node.TreeID == target.TreeID {
 			return domain.ErrFolderInvalidMove
 		}
-		width := node.Right - node.Left + 1
-		levelChange := int64(node.Level - target.Level - 1)
-		leftRightChange := node.Left - target.Left - 1
-		if err = manageSpace(width, target.Left, target.TreeID); err != nil {
+		leftRightChange := node.Left - space - 1
+		if err := manageSpace(width, space, target.TreeID); err != nil {
 			return err
 		}
-		if err = exec(`UPDATE application_folder SET level=level-$1, lft=lft-$2, rght=rght-$2, tree_id=$3
- WHERE lft>=$4 AND lft<=$5 AND tree_id=$6`, levelChange, leftRightChange, target.TreeID, node.Left, node.Right, node.TreeID); err != nil {
-			return err
-		}
-		parent = &target.ID
+		return exec(`UPDATE application_folder SET level=level-$1, lft=lft-$2, rght=rght-$2, tree_id=$3
+ WHERE lft>=$4 AND lft<=$5 AND tree_id=$6`, levelChange, leftRightChange, target.TreeID, node.Left, node.Right, node.TreeID)
 	case node.TreeID != target.TreeID:
 		// _move_child_to_new_tree.
-		width := node.Right - node.Left + 1
-		if err = manageSpace(width, target.Left, target.TreeID); err != nil {
+		if err := manageSpace(width, space, target.TreeID); err != nil {
 			return err
 		}
-		if err = interTreeMove(int64(node.Level-target.Level-1), node.Left-target.Left-1, target.TreeID); err != nil {
-			return err
-		}
-		parent = &target.ID
+		return interTreeMove(levelChange, node.Left-space-1, target.TreeID)
+	}
+	// _move_child_within_tree.
+	if node.ID == target.ID || (node.Left < target.Left && target.Left < node.Right) {
+		return domain.ErrFolderInvalidMove
+	}
+	var newLeft, newRight int64
+	switch {
+	case lastChild && target.Right > node.Right:
+		newLeft, newRight = target.Right-width, target.Right-1
+	case lastChild:
+		newLeft, newRight = target.Right, target.Right+width-1
+	case target.Left > node.Left:
+		newLeft, newRight = target.Left-width+1, target.Left
 	default:
-		// _move_child_within_tree as first child.
-		if node.ID == target.ID || (node.Left < target.Left && target.Left < node.Right) {
-			return domain.ErrFolderInvalidMove
-		}
-		width := node.Right - node.Left + 1
-		newLeft, newRight := target.Left+1, target.Left+width
-		if target.Left > node.Left {
-			newLeft, newRight = target.Left-width+1, target.Left
-		}
-		levelChange := int64(node.Level - target.Level - 1)
-		leftBoundary, rightBoundary := min(node.Left, newLeft), max(node.Right, newRight)
-		leftRightChange := newLeft - node.Left
-		gap := width
-		if leftRightChange > 0 {
-			gap = -gap
-		}
-		if err = exec(`UPDATE application_folder SET
+		newLeft, newRight = target.Left+1, target.Left+width
+	}
+	leftBoundary, rightBoundary := min(node.Left, newLeft), max(node.Right, newRight)
+	leftRightChange := newLeft - node.Left
+	gap := width
+	if leftRightChange > 0 {
+		gap = -gap
+	}
+	return exec(`UPDATE application_folder SET
  level=CASE WHEN lft>=$1 AND lft<=$2 THEN level-$3 ELSE level END,
  lft=CASE WHEN lft>=$1 AND lft<=$2 THEN lft+$4 WHEN lft>=$5 AND lft<=$6 THEN lft+$7 ELSE lft END,
  rght=CASE WHEN rght>=$1 AND rght<=$2 THEN rght+$4 WHEN rght>=$5 AND rght<=$6 THEN rght+$7 ELSE rght END
- WHERE tree_id=$8`, node.Left, node.Right, levelChange, leftRightChange, leftBoundary, rightBoundary, gap, node.TreeID); err != nil {
-			return err
-		}
-		parent = &target.ID
-	}
-	// node.save(): the raw updates leave parent_id to the model save.
-	return exec(`UPDATE application_folder SET parent_id=$2 WHERE id=$1`, node.ID, parent)
+ WHERE tree_id=$8`, node.Left, node.Right, levelChange, leftRightChange, leftBoundary, rightBoundary, gap, node.TreeID)
 }
 
 func (t *folderDeleteTransaction) OwnFolder(ctx context.Context, id int64, association string) error {
