@@ -8433,25 +8433,76 @@
         "target": "FolderViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/folder_writes.go",
+        "BE_GO/internal/dto/folder_writes.go",
+        "BE_GO/internal/repository/folder_writes.go",
+        "BE_GO/internal/service/folder_writes.go",
+        "BE_GO/internal/handler/folder_writes.go",
+        "BE_GO/internal/repository/folders.go",
+        "BE_GO/internal/handler/folders.go",
+        "BE_GO/internal/dto/folders.go",
+        "BE_GO/internal/dto/supplier_write.go",
+        "BE_GO/internal/dto/payment_category_datetime.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_folder (MPTT)",
+        "tenant_scope related-field checks"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/folders/<pk>/update",
+          "/api/v2/folders/<pk>/update",
+          "/api/folders/<pk>/update"
+        ],
+        "request": "Partial JSON or form object: name, parent, sport_association, created_at.",
+        "response": "200 FolderSerializer with nested children; DELETE 204 empty (deletes the subtree); OPTIONS without actions.",
+        "errors": "401; 403 registry, impersonation, foreign parent or association; 404 Not found. or model 404; 400 field, unique-together, non-dict or 'No data provided'; 500 InvalidMove, athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.update.",
+        "resource_scope": "get_object() on the association folders; parent and association within it.",
+        "side_effects": "Field update; changed parent moves the subtree (last child or new root); DELETE closes the gap and deletes the subtree; no audit.",
+        "transaction": "Autocommit statements.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/folder_writes_http.json",
+        "TESTS/fixtures/generate_folder_writes_http.py",
+        "TESTS/contracts/test_folder_writes_http.py",
+        "TESTS/adapters/django/folder_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/folders.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 80/80; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/folder-writes-http-red-r3/results.json",
+          "receipt_sha256": "5ceabc2b80019fc575b604a5ae49d337d7803473a63241bbe701148d402455ee"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact folder tree states and no audit entries.",
+          "artifact": "quality-reports/go-migration/folder-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "82acb0dd755b905362389dc423106aa3e82cde067fc7aaa29494d92f547a8f3f"
+        },
+        {
+          "revision": "committing change with update re-parenting as first child instead of last child",
+          "result": "Mutation control: fails Go on folder-writes-update-child-within-tree-rightward (state of folder 980002).",
+          "artifact": "quality-reports/go-migration/folder-writes-http-mutation-r2/results.json",
+          "receipt_sha256": "034cb3dc297198f85de8e68a0e61dc54792cf46980dc907637fa99083f4c7daa"
+        }
+      ],
+      "notes": [
+        "Implementing: MPTT last-child insert and re-parenting save, FolderSerializer validation, unique-together quirks, body mutability and DELETE dispatch proven on four transports; an uploaded file as parent/sport_association is refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:folders/add -> FolderViewSet.as_view({'post': 'add'})",
@@ -8468,25 +8519,76 @@
         "target": "FolderViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/folder_writes.go",
+        "BE_GO/internal/dto/folder_writes.go",
+        "BE_GO/internal/repository/folder_writes.go",
+        "BE_GO/internal/service/folder_writes.go",
+        "BE_GO/internal/handler/folder_writes.go",
+        "BE_GO/internal/repository/folders.go",
+        "BE_GO/internal/handler/folders.go",
+        "BE_GO/internal/dto/folders.go",
+        "BE_GO/internal/dto/supplier_write.go",
+        "BE_GO/internal/dto/payment_category_datetime.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_folder (MPTT)",
+        "tenant_scope related-field checks"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/folders/add",
+          "/api/v2/folders/add",
+          "/api/folders/add"
+        ],
+        "request": "JSON object (or empty body), or multipart with a file: name, parent (folder pk or null), created_at; sport_association overwritten.",
+        "response": "201 FolderSerializer (id, name, parent, sport_association, created_at, level, children []); DELETE 500; OPTIONS actions.POST.",
+        "errors": "401; 403 registry, impersonation or foreign parent (tenant scope); 400 field, unique-together or JSON parse errors; 415; 500 athlete/missing association, non-dict or immutable QueryDict body, DELETE without pk, uploaded file as parent.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.update.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user); parent must belong to it.",
+        "side_effects": "MPTT insert as last child (space of 2) or new tree MAX(tree_id)+1; no audit.",
+        "transaction": "Autocommit statements.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/folder_writes_http.json",
+        "TESTS/fixtures/generate_folder_writes_http.py",
+        "TESTS/contracts/test_folder_writes_http.py",
+        "TESTS/adapters/django/folder_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/folders.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 80/80; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/folder-writes-http-red-r3/results.json",
+          "receipt_sha256": "5ceabc2b80019fc575b604a5ae49d337d7803473a63241bbe701148d402455ee"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact folder tree states and no audit entries.",
+          "artifact": "quality-reports/go-migration/folder-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "82acb0dd755b905362389dc423106aa3e82cde067fc7aaa29494d92f547a8f3f"
+        },
+        {
+          "revision": "committing change with update re-parenting as first child instead of last child",
+          "result": "Mutation control: fails Go on folder-writes-update-child-within-tree-rightward (state of folder 980002).",
+          "artifact": "quality-reports/go-migration/folder-writes-http-mutation-r2/results.json",
+          "receipt_sha256": "034cb3dc297198f85de8e68a0e61dc54792cf46980dc907637fa99083f4c7daa"
+        }
+      ],
+      "notes": [
+        "Implementing: MPTT last-child insert and re-parenting save, FolderSerializer validation, unique-together quirks, body mutability and DELETE dispatch proven on four transports; an uploaded file as parent/sport_association is refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:folders/list -> FolderViewSet.as_view({'get': 'list'})",
