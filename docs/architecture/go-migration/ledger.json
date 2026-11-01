@@ -13719,25 +13719,75 @@
         "target": "profile_integrations",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/profile_settings.go",
+        "BE_GO/internal/dto/profile_settings.go",
+        "BE_GO/internal/repository/profile_settings.go",
+        "BE_GO/internal/service/profile_settings.go",
+        "BE_GO/internal/handler/profile_settings.go",
+        "BE_GO/internal/service/membership_card_configuration.go",
+        "BE_GO/internal/repository/membership_card_configuration.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, association-scoped request guard, tenant scope and audit index",
+        "bakney_user",
+        "application_sportassociation",
+        "application_sportassociationmembershipcardconfiguration",
+        "application_paymentcategory"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/profile/integrations",
+          "/api/v2/profile/integrations",
+          "/api/profile/integrations"
+        ],
+        "request": "PATCH: JSON or form review_url and review_url_enabled, unvalidated (stored values as defaults).",
+        "response": "200 {'review_url', 'review_url_enabled'}: stored values on GET, the assigned raw request values on PATCH.",
+        "errors": "401; 403 registry, association-scoped session ('Torna al tuo account per gestire le credenziali.'), 'User is not a sport association'; 405 POST/PUT; 500 no association, non-dict body, a flag the model rejects, null flag, URL over 255 characters (after the audit entry).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry other.settings.read for every method (a read-only collaborator may PATCH).",
+        "resource_scope": "request.user's (the owner's) live association.",
+        "side_effects": "PATCH saves the association (update entry of the str()-changed fields, resolution self).",
+        "transaction": "Not atomic: the pre_save audit entry is kept when the column conversion or constraint fails.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/profile_settings_http.json",
+        "TESTS/fixtures/generate_profile_settings_http.py",
+        "TESTS/contracts/test_profile_settings_http.py",
+        "TESTS/adapters/django/profile_settings_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/profile-settings.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 59/59; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-settings-http-native-r2/results.json",
+          "receipt_sha256": "1269fcb6d4682268e2f1157b6c31ae6509e2329a5cc0c8e3d930d81e5fbb81b3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 59/59 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact configuration, user, association, audit and index effects.",
+          "artifact": "quality-reports/go-migration/profile-settings-http-versioned-r1/results.json",
+          "receipt_sha256": "88c0f46b3d861b2752a6fe0560595af9709ae2a028801a19ca3ce06e886254aa"
+        },
+        {
+          "revision": "committing change with the configuration save rolled back (instead of committed) when the model rejects emit_only_on_approval",
+          "result": "Mutation control: fails Go on post-card-invalid-boolean-keeps-audit (audit.card-count).",
+          "artifact": "quality-reports/go-migration/profile-settings-http-mutation-r1/results.json",
+          "receipt_sha256": "97f31d4f53006c12e3b80b2c08a8030a03a92c618c92cf3bbc574184a97dca49"
+        }
+      ],
+      "notes": [
+        "Implementing: membership-card get-or-create on every method, UserSettingsSerializer validation with tenant-scoped categories, non-atomic user and configuration saves with pre_save audit entries kept on model rejections, unvalidated integrations PATCH echoing raw values, on four transports; multipart file uploads are refused before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/settings -> profile_settings",
@@ -13754,25 +13804,75 @@
         "target": "profile_settings",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/profile_settings.go",
+        "BE_GO/internal/dto/profile_settings.go",
+        "BE_GO/internal/repository/profile_settings.go",
+        "BE_GO/internal/service/profile_settings.go",
+        "BE_GO/internal/handler/profile_settings.go",
+        "BE_GO/internal/service/membership_card_configuration.go",
+        "BE_GO/internal/repository/membership_card_configuration.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, association-scoped request guard, tenant scope and audit index",
+        "bakney_user",
+        "application_sportassociation",
+        "application_sportassociationmembershipcardconfiguration",
+        "application_paymentcategory"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/profile/settings",
+          "/api/v2/profile/settings",
+          "/api/profile/settings"
+        ],
+        "request": "GET: none. POST: JSON or form UserSettingsSerializer fields (30 user settings) plus membership_card_configuration {emit_only_on_approval, customized_template}.",
+        "response": "GET 200 {'settings': the 30 settings, balance_sheet_year as a string, current_year, table_settings and the first membership card configuration}. POST 200 {'status': 'success'}.",
+        "errors": "400 serializer field errors / non_field_errors; 401; 403 registry (no POST/OPTIONS mapping), athlete-scoped session, 'User is not a sport association', foreign payment category; 405 PUT/PATCH; 500 no association, impossible balance start date (GET), a missing validated field, a missing or non-dict membership_card_configuration (after the user save), a configuration flag the model rejects (after its audit entry).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry ('GET') other.settings.read, ('PATCH') other.settings.update; no mapping for POST and OPTIONS.",
+        "resource_scope": "request.user's (the owner's) live association, its user row and first membership card configuration; payment categories of another association are DRF's generic 403.",
+        "side_effects": "Creates the missing card configuration (create entry) on every method; POST saves the user (changed-field update entry) and the configuration (update entry, written in pre_save).",
+        "transaction": "Not atomic: configuration creation, user save and configuration save commit separately; a later failure keeps earlier writes and a pre_save audit entry.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/profile_settings_http.json",
+        "TESTS/fixtures/generate_profile_settings_http.py",
+        "TESTS/contracts/test_profile_settings_http.py",
+        "TESTS/adapters/django/profile_settings_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/profile-settings.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 59/59; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-settings-http-native-r2/results.json",
+          "receipt_sha256": "1269fcb6d4682268e2f1157b6c31ae6509e2329a5cc0c8e3d930d81e5fbb81b3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 59/59 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact configuration, user, association, audit and index effects.",
+          "artifact": "quality-reports/go-migration/profile-settings-http-versioned-r1/results.json",
+          "receipt_sha256": "88c0f46b3d861b2752a6fe0560595af9709ae2a028801a19ca3ce06e886254aa"
+        },
+        {
+          "revision": "committing change with the configuration save rolled back (instead of committed) when the model rejects emit_only_on_approval",
+          "result": "Mutation control: fails Go on post-card-invalid-boolean-keeps-audit (audit.card-count).",
+          "artifact": "quality-reports/go-migration/profile-settings-http-mutation-r1/results.json",
+          "receipt_sha256": "97f31d4f53006c12e3b80b2c08a8030a03a92c618c92cf3bbc574184a97dca49"
+        }
+      ],
+      "notes": [
+        "Implementing: membership-card get-or-create on every method, UserSettingsSerializer validation with tenant-scoped categories, non-atomic user and configuration saves with pre_save audit entries kept on model rejections, unvalidated integrations PATCH echoing raw values, on four transports; multipart file uploads are refused before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/settings/tables -> profile_settings_tables",
