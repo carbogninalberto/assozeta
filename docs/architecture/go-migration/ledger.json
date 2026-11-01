@@ -4034,25 +4034,77 @@
         "target": "full_events_calendar",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_calendar.go",
+        "BE_GO/internal/dto/course_calendar.go",
+        "BE_GO/internal/dto/course_calendar_test.go",
+        "BE_GO/internal/repository/course_calendar.go",
+        "BE_GO/internal/service/course_calendar.go",
+        "BE_GO/internal/handler/course_calendar.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_course",
+        "application_sportassociation",
+        "bakney_user",
+        "application_instructor",
+        "application_attendanceregistry",
+        "application_attendanceday",
+        "application_reminders",
+        "application_globalcalendarevents"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/calendar/events",
+          "/api/v2/calendar/events",
+          "/api/calendar/events"
+        ],
+        "request": "Query start, end, get_lesson, event_id; X-Group-Id.",
+        "response": "200 {'data': {'events': [...]}} (registry events with className, attendace_day_id, course, description, id; then global events).",
+        "errors": "400 Invalid calendar date; 401; 403 registry / IsAssociationUser / scoped session; 405; 500 no association, malformed stored events, lesson details (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.calendar.read; IsAssociationUser; global events need association.events.read for restricted collaborators.",
+        "resource_scope": "The scope user's association, live group-aware courses; instructor collaborators see their events only.",
+        "side_effects": "Creates the association GlobalCalendarEvents row on first read (auditlog entry and index row).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_calendar_http.json",
+        "TESTS/fixtures/generate_course_calendar_http.py",
+        "TESTS/contracts/test_course_calendar_http.py",
+        "TESTS/adapters/django/course_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 159/159; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-native-r9/results.json",
+          "receipt_sha256": "a05d6cdc5afa5771a1bd90531027a45ce77b737dc29b8103a9f08a83ec36ee9f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-r3/results.json",
+          "receipt_sha256": "d6a6221cef5eaf25ec1b75d94c52d3a55b2b4c965fe0ad4303eaecaba1ab5c39"
+        },
+        {
+          "revision": "committing change with the calendar update POST made atomic (rollback instead of commit on an exception)",
+          "result": "Mutation control: fails Go on update-partial-failure-keeps-day.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-r2/results.json",
+          "receipt_sha256": "4a2cf74ca8903001761ffcf353ecd985c9af94f0a4302496df221f8e86588731"
+        }
+      ],
+      "notes": [
+        "Implementing: course calendar read, calendar update POST (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:calendar/events/export -> full_events_calendar_export",
@@ -4104,25 +4156,77 @@
         "target": "full_events_calendar_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_calendar.go",
+        "BE_GO/internal/dto/course_calendar.go",
+        "BE_GO/internal/dto/course_calendar_test.go",
+        "BE_GO/internal/repository/course_calendar.go",
+        "BE_GO/internal/service/course_calendar.go",
+        "BE_GO/internal/handler/course_calendar.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_course",
+        "application_sportassociation",
+        "bakney_user",
+        "application_instructor",
+        "application_attendanceregistry",
+        "application_attendanceday",
+        "application_reminders",
+        "application_globalcalendarevents"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/calendar/events/update",
+          "/api/v2/calendar/events/update",
+          "/api/calendar/events/update"
+        ],
+        "request": "{'action': 'create'|'update'|'delete', 'events': [...], 'event_id'} or a legacy {'events': [...]} snapshot.",
+        "response": "200 {'message': 'Events added.'}.",
+        "errors": "400 mutate_events validation (list detail); 401; 403 IsAssociationUser / Missing event permission; 404 Event not found; 405; 500 no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Excluded from the registry; association.events.<action> checked by mutate_events; IsAssociationUser.",
+        "resource_scope": "The scope user's association (row locked); reminders and instructors of that association and owner.",
+        "side_effects": "Creates/saves GlobalCalendarEvents and creates, updates or deletes Reminders with auditlog entries and index rows.",
+        "transaction": "Atomic.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_calendar_http.json",
+        "TESTS/fixtures/generate_course_calendar_http.py",
+        "TESTS/contracts/test_course_calendar_http.py",
+        "TESTS/adapters/django/course_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 159/159; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-native-r9/results.json",
+          "receipt_sha256": "a05d6cdc5afa5771a1bd90531027a45ce77b737dc29b8103a9f08a83ec36ee9f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-r3/results.json",
+          "receipt_sha256": "d6a6221cef5eaf25ec1b75d94c52d3a55b2b4c965fe0ad4303eaecaba1ab5c39"
+        },
+        {
+          "revision": "committing change with the calendar update POST made atomic (rollback instead of commit on an exception)",
+          "result": "Mutation control: fails Go on update-partial-failure-keeps-day.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-r2/results.json",
+          "receipt_sha256": "4a2cf74ca8903001761ffcf353ecd985c9af94f0a4302496df221f8e86588731"
+        }
+      ],
+      "notes": [
+        "Implementing: course calendar read, calendar update POST (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/<str:uid>/delete -> camps_and_retreats_delete",
@@ -6481,25 +6585,77 @@
         "target": "calendar",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_calendar.go",
+        "BE_GO/internal/dto/course_calendar.go",
+        "BE_GO/internal/dto/course_calendar_test.go",
+        "BE_GO/internal/repository/course_calendar.go",
+        "BE_GO/internal/service/course_calendar.go",
+        "BE_GO/internal/handler/course_calendar.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_course",
+        "application_sportassociation",
+        "bakney_user",
+        "application_instructor",
+        "application_attendanceregistry",
+        "application_attendanceday",
+        "application_reminders",
+        "application_globalcalendarevents"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/calendar",
+          "/api/v2/course/<uid>/calendar",
+          "/api/course/<uid>/calendar"
+        ],
+        "request": "Path uid; X-Group-Id.",
+        "response": "200 {'data': {'status', 'events' (described), 'course': {'title'}, 'sport_association': {'denomination', 'logo'}, 'google_calendar_id', 'google_sync_enabled'}}.",
+        "errors": "400 malformed uid; 403 administrator without session / registry / scoped athlete; 404 Course not found; 405; 500 malformed stored events.",
+        "authentication": "AllowAny; an authenticated request passes identity resolution.",
+        "permissions": "Registry association.courses.read for collaborators.",
+        "resource_scope": "Live, group-aware course of any association within an impersonation boundary.",
+        "side_effects": "None.",
+        "transaction": "Read.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_calendar_http.json",
+        "TESTS/fixtures/generate_course_calendar_http.py",
+        "TESTS/contracts/test_course_calendar_http.py",
+        "TESTS/adapters/django/course_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 159/159; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-native-r9/results.json",
+          "receipt_sha256": "a05d6cdc5afa5771a1bd90531027a45ce77b737dc29b8103a9f08a83ec36ee9f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-r3/results.json",
+          "receipt_sha256": "d6a6221cef5eaf25ec1b75d94c52d3a55b2b4c965fe0ad4303eaecaba1ab5c39"
+        },
+        {
+          "revision": "committing change with the calendar update POST made atomic (rollback instead of commit on an exception)",
+          "result": "Mutation control: fails Go on update-partial-failure-keeps-day.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-r2/results.json",
+          "receipt_sha256": "4a2cf74ca8903001761ffcf353ecd985c9af94f0a4302496df221f8e86588731"
+        }
+      ],
+      "notes": [
+        "Implementing: course calendar read, calendar update POST (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/calendar/update -> calendar_update",
@@ -6516,25 +6672,78 @@
         "target": "calendar_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_calendar.go",
+        "BE_GO/internal/dto/course_calendar.go",
+        "BE_GO/internal/dto/course_calendar_test.go",
+        "BE_GO/internal/repository/course_calendar.go",
+        "BE_GO/internal/service/course_calendar.go",
+        "BE_GO/internal/handler/course_calendar.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_course",
+        "application_sportassociation",
+        "bakney_user",
+        "application_instructor",
+        "application_attendanceregistry",
+        "application_attendanceday",
+        "application_reminders",
+        "application_globalcalendarevents"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/calendar/update",
+          "/api/v2/course/<uid>/calendar/update",
+          "/api/course/<uid>/calendar/update"
+        ],
+        "request": "Path uid; X-Group-Id; POST {'events': [...], 'status': 1|2}; DELETE {'event_id', 'groupId', 'before'}.",
+        "response": "200 {'message': 'Calendar updated.'|'Event deleted.'}; 412 {'message': 'Calendar is already published.'}.",
+        "errors": "400 malformed uid / Missing or wrong events data / Status not valid / JSON parse / {'msg': 'cannot delete a draft.'}; 401; 403 registry / IsAssociationUser / scoped session; 404 Course not found; 405; 500 no association, malformed events, exceptions (POST keeps earlier writes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update; IsAssociationUser.",
+        "resource_scope": "The owner's live, group-aware courses; days scoped to the impersonation boundary.",
+        "side_effects": "Creates, updates or deletes AttendanceRegistry, AttendanceDay and Reminders rows with auditlog entries and index rows.",
+        "transaction": "POST: none (autocommit; partial writes kept). DELETE: atomic with the registry locked.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_calendar_http.json",
+        "TESTS/fixtures/generate_course_calendar_http.py",
+        "TESTS/contracts/test_course_calendar_http.py",
+        "TESTS/adapters/django/course_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 159/159; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-native-r9/results.json",
+          "receipt_sha256": "a05d6cdc5afa5771a1bd90531027a45ce77b737dc29b8103a9f08a83ec36ee9f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-r3/results.json",
+          "receipt_sha256": "d6a6221cef5eaf25ec1b75d94c52d3a55b2b4c965fe0ad4303eaecaba1ab5c39"
+        },
+        {
+          "revision": "committing change with the calendar update POST made atomic (rollback instead of commit on an exception)",
+          "result": "Mutation control: fails Go on update-partial-failure-keeps-day.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-r2/results.json",
+          "receipt_sha256": "4a2cf74ca8903001761ffcf353ecd985c9af94f0a4302496df221f8e86588731"
+        }
+      ],
+      "notes": [
+        "Implementing: course calendar read, calendar update POST (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/delete -> course_delete",
