@@ -17643,25 +17643,71 @@
         "target": "subscription_tags_assign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_tags.go",
+        "BE_GO/internal/repository/subscription_tags.go",
+        "BE_GO/internal/service/subscription_tags.go",
+        "BE_GO/internal/handler/subscription_tags.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_tags",
+        "application_subscription_tags",
+        "application_subscription",
+        "Subscription.save() date defaults (service/subscription_dates.go)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/tags/<tag_id>/assign/<subscription_id>",
+          "/api/v2/subscription/tags/<tag_id>/assign/<subscription_id>",
+          "/api/subscription/tags/<tag_id>/assign/<subscription_id>"
+        ],
+        "request": "Path ids; X-Group-Id.",
+        "response": "200 {\"msg\": \"tag assigned\"}.",
+        "errors": "401; 403 User is not a sport association / registry / scoped session; 404 {\"msg\": str(ValidationError)} tag/subscription; 500 malformed ids, season range error after the link is stored.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The owner's association tags and group-aware subscriptions (deleted included).",
+        "side_effects": "Adds the link when missing, then Subscription.save() fills missing dates (auditlog update).",
+        "transaction": "One transaction; the link is committed before a season range error.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_tags_http.json",
+        "TESTS/fixtures/generate_subscription_tags_http.py",
+        "TESTS/contracts/test_subscription_tags_http.py",
+        "TESTS/adapters/django/subscription_tags_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 79/79; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-native-r2/results.json",
+          "receipt_sha256": "2066660f1affbf4d60496064bacc86ad4da163f2524d5812b78d879745862a40"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 79/79 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-versioned-r1/results.json",
+          "receipt_sha256": "fc77a9d3a93ebce7e6f8d0db47d66cf8e211d47eab074d4f99cc3b46cb104d31"
+        },
+        {
+          "revision": "committing change without committing the stored link before the season range error",
+          "result": "Mutation control: fails Go on subscription-tags-assign-season-error-keeps-link (state.links).",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-mutation-r1/results.json",
+          "receipt_sha256": "5b92b2a263b5de314bc3172a39eb3d29feacdd27e5be93fad151f0c8d3f013db"
+        }
+      ],
+      "notes": [
+        "Implementing: str() ValidationError messages, Python strip() name check, str() storage of any JSON tag_name, sport_association property denial, group-aware subscription lookup, link semantics, Subscription.save() date defaults and the non-atomic season error, and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/tags/<str:tag_id>/delete -> subscription_tags_delete",
@@ -17678,25 +17724,71 @@
         "target": "subscription_tags_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_tags.go",
+        "BE_GO/internal/repository/subscription_tags.go",
+        "BE_GO/internal/service/subscription_tags.go",
+        "BE_GO/internal/handler/subscription_tags.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_tags",
+        "application_subscription_tags",
+        "application_subscription",
+        "Subscription.save() date defaults (service/subscription_dates.go)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/tags/<tag_id>/delete",
+          "/api/v2/subscription/tags/<tag_id>/delete",
+          "/api/subscription/tags/<tag_id>/delete"
+        ],
+        "request": "Path tag_id.",
+        "response": "200 {\"msg\": \"tag deleted\"}.",
+        "errors": "401; 403 User is not a sport association / registry / scoped session; 404 {\"msg\": str(ValidationError)} tag; 500 malformed id.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The owner's association tags.",
+        "side_effects": "Deletes the subscription links and the tag; auditlog delete indexed through changes_json.sport_association.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_tags_http.json",
+        "TESTS/fixtures/generate_subscription_tags_http.py",
+        "TESTS/contracts/test_subscription_tags_http.py",
+        "TESTS/adapters/django/subscription_tags_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 79/79; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-native-r2/results.json",
+          "receipt_sha256": "2066660f1affbf4d60496064bacc86ad4da163f2524d5812b78d879745862a40"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 79/79 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-versioned-r1/results.json",
+          "receipt_sha256": "fc77a9d3a93ebce7e6f8d0db47d66cf8e211d47eab074d4f99cc3b46cb104d31"
+        },
+        {
+          "revision": "committing change without committing the stored link before the season range error",
+          "result": "Mutation control: fails Go on subscription-tags-assign-season-error-keeps-link (state.links).",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-mutation-r1/results.json",
+          "receipt_sha256": "5b92b2a263b5de314bc3172a39eb3d29feacdd27e5be93fad151f0c8d3f013db"
+        }
+      ],
+      "notes": [
+        "Implementing: str() ValidationError messages, Python strip() name check, str() storage of any JSON tag_name, sport_association property denial, group-aware subscription lookup, link semantics, Subscription.save() date defaults and the non-atomic season error, and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/tags/<str:tag_id>/unassign/<str:subscription_id> -> subscription_tags_unassign",
@@ -17713,25 +17805,71 @@
         "target": "subscription_tags_unassign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_tags.go",
+        "BE_GO/internal/repository/subscription_tags.go",
+        "BE_GO/internal/service/subscription_tags.go",
+        "BE_GO/internal/handler/subscription_tags.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_tags",
+        "application_subscription_tags",
+        "application_subscription",
+        "Subscription.save() date defaults (service/subscription_dates.go)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/tags/<tag_id>/unassign/<subscription_id>",
+          "/api/v2/subscription/tags/<tag_id>/unassign/<subscription_id>",
+          "/api/subscription/tags/<tag_id>/unassign/<subscription_id>"
+        ],
+        "request": "Path ids; X-Group-Id.",
+        "response": "200 {\"msg\": \"tag unassigned\"}.",
+        "errors": "401; 403 User is not a sport association / registry / scoped session; 404 {\"msg\": str(ValidationError)} tag/subscription; 500 malformed ids, season range error after the link is removed.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The owner's association tags and group-aware subscriptions (deleted included).",
+        "side_effects": "Removes the link when present, then Subscription.save() fills missing dates (auditlog update).",
+        "transaction": "One transaction; the link removal is committed before a season range error.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_tags_http.json",
+        "TESTS/fixtures/generate_subscription_tags_http.py",
+        "TESTS/contracts/test_subscription_tags_http.py",
+        "TESTS/adapters/django/subscription_tags_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 79/79; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-native-r2/results.json",
+          "receipt_sha256": "2066660f1affbf4d60496064bacc86ad4da163f2524d5812b78d879745862a40"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 79/79 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-versioned-r1/results.json",
+          "receipt_sha256": "fc77a9d3a93ebce7e6f8d0db47d66cf8e211d47eab074d4f99cc3b46cb104d31"
+        },
+        {
+          "revision": "committing change without committing the stored link before the season range error",
+          "result": "Mutation control: fails Go on subscription-tags-assign-season-error-keeps-link (state.links).",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-mutation-r1/results.json",
+          "receipt_sha256": "5b92b2a263b5de314bc3172a39eb3d29feacdd27e5be93fad151f0c8d3f013db"
+        }
+      ],
+      "notes": [
+        "Implementing: str() ValidationError messages, Python strip() name check, str() storage of any JSON tag_name, sport_association property denial, group-aware subscription lookup, link semantics, Subscription.save() date defaults and the non-atomic season error, and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/tags/<str:tag_id>/update -> subscription_tags_update",
@@ -17748,25 +17886,71 @@
         "target": "subscription_tags_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_tags.go",
+        "BE_GO/internal/repository/subscription_tags.go",
+        "BE_GO/internal/service/subscription_tags.go",
+        "BE_GO/internal/handler/subscription_tags.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_tags",
+        "application_subscription_tags",
+        "application_subscription",
+        "Subscription.save() date defaults (service/subscription_dates.go)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/tags/<tag_id>/update",
+          "/api/v2/subscription/tags/<tag_id>/update",
+          "/api/subscription/tags/<tag_id>/update"
+        ],
+        "request": "Path tag_id; tag_name as for add.",
+        "response": "200 {tag_id, tag_name} echoing the value as sent.",
+        "errors": "400 {\"msg\": str(ValidationError)} name; 401; 403 User is not a sport association / registry / scoped session; 404 {\"msg\": str(ValidationError)} tag; 500 non-dict body, malformed id.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The owner's association tags.",
+        "side_effects": "Renames the tag; auditlog update only when the name changes.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_tags_http.json",
+        "TESTS/fixtures/generate_subscription_tags_http.py",
+        "TESTS/contracts/test_subscription_tags_http.py",
+        "TESTS/adapters/django/subscription_tags_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 79/79; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-native-r2/results.json",
+          "receipt_sha256": "2066660f1affbf4d60496064bacc86ad4da163f2524d5812b78d879745862a40"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 79/79 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-versioned-r1/results.json",
+          "receipt_sha256": "fc77a9d3a93ebce7e6f8d0db47d66cf8e211d47eab074d4f99cc3b46cb104d31"
+        },
+        {
+          "revision": "committing change without committing the stored link before the season range error",
+          "result": "Mutation control: fails Go on subscription-tags-assign-season-error-keeps-link (state.links).",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-mutation-r1/results.json",
+          "receipt_sha256": "5b92b2a263b5de314bc3172a39eb3d29feacdd27e5be93fad151f0c8d3f013db"
+        }
+      ],
+      "notes": [
+        "Implementing: str() ValidationError messages, Python strip() name check, str() storage of any JSON tag_name, sport_association property denial, group-aware subscription lookup, link semantics, Subscription.save() date defaults and the non-atomic season error, and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/tags/add -> subscription_tags_add",
@@ -17783,25 +17967,71 @@
         "target": "subscription_tags_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_tags.go",
+        "BE_GO/internal/repository/subscription_tags.go",
+        "BE_GO/internal/service/subscription_tags.go",
+        "BE_GO/internal/handler/subscription_tags.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_tags",
+        "application_subscription_tags",
+        "application_subscription",
+        "Subscription.save() date defaults (service/subscription_dates.go)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/tags/add",
+          "/api/v2/subscription/tags/add",
+          "/api/subscription/tags/add"
+        ],
+        "request": "tag_name (any JSON value; None or a blank string is required).",
+        "response": "200 {\"tag\": {tag_id, tag_name}} echoing the value as sent.",
+        "errors": "400 {\"error\": str(ValidationError)}; 401; 403 User is not a sport association / registry / scoped session; 500 non-dict body, owner without association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The owner's association.",
+        "side_effects": "Creates the tag (str() of the value); auditlog create indexed directly.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_tags_http.json",
+        "TESTS/fixtures/generate_subscription_tags_http.py",
+        "TESTS/contracts/test_subscription_tags_http.py",
+        "TESTS/adapters/django/subscription_tags_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 79/79; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-native-r2/results.json",
+          "receipt_sha256": "2066660f1affbf4d60496064bacc86ad4da163f2524d5812b78d879745862a40"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 79/79 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-versioned-r1/results.json",
+          "receipt_sha256": "fc77a9d3a93ebce7e6f8d0db47d66cf8e211d47eab074d4f99cc3b46cb104d31"
+        },
+        {
+          "revision": "committing change without committing the stored link before the season range error",
+          "result": "Mutation control: fails Go on subscription-tags-assign-season-error-keeps-link (state.links).",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-mutation-r1/results.json",
+          "receipt_sha256": "5b92b2a263b5de314bc3172a39eb3d29feacdd27e5be93fad151f0c8d3f013db"
+        }
+      ],
+      "notes": [
+        "Implementing: str() ValidationError messages, Python strip() name check, str() storage of any JSON tag_name, sport_association property denial, group-aware subscription lookup, link semantics, Subscription.save() date defaults and the non-atomic season error, and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/tags/list -> subscription_tags_list",
@@ -17818,25 +18048,71 @@
         "target": "subscription_tags_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_tags.go",
+        "BE_GO/internal/repository/subscription_tags.go",
+        "BE_GO/internal/service/subscription_tags.go",
+        "BE_GO/internal/handler/subscription_tags.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_tags",
+        "application_subscription_tags",
+        "application_subscription",
+        "Subscription.save() date defaults (service/subscription_dates.go)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/tags/list",
+          "/api/v2/subscription/tags/list",
+          "/api/subscription/tags/list"
+        ],
+        "request": "No input.",
+        "response": "200 {\"tags\": [{tag_id, tag_name}]} ordered by tag_name.",
+        "errors": "401; 403 User is not a sport association / registry / scoped session; 500 owner without association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read.",
+        "resource_scope": "The owner's association tags.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_tags_http.json",
+        "TESTS/fixtures/generate_subscription_tags_http.py",
+        "TESTS/contracts/test_subscription_tags_http.py",
+        "TESTS/adapters/django/subscription_tags_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 79/79; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-native-r2/results.json",
+          "receipt_sha256": "2066660f1affbf4d60496064bacc86ad4da163f2524d5812b78d879745862a40"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 79/79 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-versioned-r1/results.json",
+          "receipt_sha256": "fc77a9d3a93ebce7e6f8d0db47d66cf8e211d47eab074d4f99cc3b46cb104d31"
+        },
+        {
+          "revision": "committing change without committing the stored link before the season range error",
+          "result": "Mutation control: fails Go on subscription-tags-assign-season-error-keeps-link (state.links).",
+          "artifact": "quality-reports/go-migration/subscription-tags-http-mutation-r1/results.json",
+          "receipt_sha256": "5b92b2a263b5de314bc3172a39eb3d29feacdd27e5be93fad151f0c8d3f013db"
+        }
+      ],
+      "notes": [
+        "Implementing: str() ValidationError messages, Python strip() name check, str() storage of any JSON tag_name, sport_association property denial, group-aware subscription lookup, link semantics, Subscription.save() date defaults and the non-atomic season error, and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/validate-token-link-and-get-subscriptions -> validate_token_link_and_get_subscriptions",
