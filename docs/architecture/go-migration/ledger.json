@@ -10319,25 +10319,71 @@
         "target": "invoice_customers_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/handler/invoice_parties.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "auditlog LogEntry/AuditLogIndex resolvers",
+        "DRF page-number pagination and supplier rendering (suppliers family)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-customers/<uid>/update",
+          "/api/v2/invoice-customers/<uid>/update",
+          "/api/invoice-customers/<uid>/update"
+        ],
+        "request": "Body with optional paid and transmitted (assigned raw).",
+        "response": "200 {\"message\": \"Invoice updated\"}.",
+        "errors": "400 malformed UUID; 401; 403 registry or impersonation; 500 missing association/invoice, non-object body containing the keys, rejected values (after the audit entry).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.clientinvoices.update.",
+        "resource_scope": "Impersonation-scoped association of the scope user.",
+        "side_effects": "Customer invoice paid/transmitted update with auditlog's str() diff (direct index).",
+        "transaction": "Autocommit: audit entry, then the update.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_parties_http.json",
+        "TESTS/fixtures/generate_invoice_parties_http.py",
+        "TESTS/contracts/test_invoice_parties_http.py",
+        "TESTS/adapters/django/invoice_parties_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 136/136; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-red-r2/results.json",
+          "receipt_sha256": "7fe6a53ec2aebfec771b314b30c8ea9bcc40795387bf8750de46dd19fe4341ac"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-green-r1/results.json",
+          "receipt_sha256": "40c713dab2c944d41ebacf8c7c3e07b38755d8e15e82662c5db8c68dda63d601"
+        },
+        {
+          "revision": "committing change without the supplier lookup's soft-delete filter",
+          "result": "Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json",
+          "receipt_sha256": "c65fa0498e5d703c4fd7f863ac95d85bb710c3456c37894ceb86d223c68295a5"
+        }
+      ],
+      "notes": [
+        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-customers/add -> invoice_customers_add",
@@ -10389,25 +10435,71 @@
         "target": "invoice_customers_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/handler/invoice_parties.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "auditlog LogEntry/AuditLogIndex resolvers",
+        "DRF page-number pagination and supplier rendering (suppliers family)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-customers/list",
+          "/api/v2/invoice-customers/list",
+          "/api/invoice-customers/list"
+        ],
+        "request": "No body.",
+        "response": "200 {\"data\": [CustomerInvoiceSerializer...]} by -creation_date.",
+        "errors": "401; 403 registry, impersonation or athlete ('User is not a sport association'); 500 missing association; 500 (not ported) while any invoice lacks a PDF.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.clientinvoices.read; administrators need impersonation.",
+        "resource_scope": "request.user.sport_association.",
+        "side_effects": "None in Go (the Django XML/print loop is refused).",
+        "transaction": "Read.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_parties_http.json",
+        "TESTS/fixtures/generate_invoice_parties_http.py",
+        "TESTS/contracts/test_invoice_parties_http.py",
+        "TESTS/adapters/django/invoice_parties_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 136/136; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-red-r2/results.json",
+          "receipt_sha256": "7fe6a53ec2aebfec771b314b30c8ea9bcc40795387bf8750de46dd19fe4341ac"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-green-r1/results.json",
+          "receipt_sha256": "40c713dab2c944d41ebacf8c7c3e07b38755d8e15e82662c5db8c68dda63d601"
+        },
+        {
+          "revision": "committing change without the supplier lookup's soft-delete filter",
+          "result": "Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json",
+          "receipt_sha256": "c65fa0498e5d703c4fd7f863ac95d85bb710c3456c37894ceb86d223c68295a5"
+        }
+      ],
+      "notes": [
+        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-customers/stats -> invoice_customers_stats",
@@ -10596,25 +10688,71 @@
         "target": "invoice_suppliers_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/handler/invoice_parties.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "auditlog LogEntry/AuditLogIndex resolvers",
+        "DRF page-number pagination and supplier rendering (suppliers family)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-suppliers/<uid>/update",
+          "/api/v2/invoice-suppliers/<uid>/update",
+          "/api/invoice-suppliers/<uid>/update"
+        ],
+        "request": "Partial InvoiceSuppliersSerializer fields plus paid for the linked payment.",
+        "response": "200 {\"message\": \"Invoice updated\"}.",
+        "errors": "400 malformed UUID or serializer errors; 401; 403 registry, impersonation or foreign association; 500 missing association/invoice, missing paid with a payment, rejected values; 500 (not ported) nested objects, payment_id, pk change, unloadable payments.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.supplierinvoices.update.",
+        "resource_scope": "Impersonation-scoped association of the scope user.",
+        "side_effects": "Invoice update and linked payment paid/payment_date update, each audited before its save.",
+        "transaction": "Autocommit steps: audit entry, invoice update, payment audit entry, payment update.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_parties_http.json",
+        "TESTS/fixtures/generate_invoice_parties_http.py",
+        "TESTS/contracts/test_invoice_parties_http.py",
+        "TESTS/adapters/django/invoice_parties_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 136/136; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-red-r2/results.json",
+          "receipt_sha256": "7fe6a53ec2aebfec771b314b30c8ea9bcc40795387bf8750de46dd19fe4341ac"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-green-r1/results.json",
+          "receipt_sha256": "40c713dab2c944d41ebacf8c7c3e07b38755d8e15e82662c5db8c68dda63d601"
+        },
+        {
+          "revision": "committing change without the supplier lookup's soft-delete filter",
+          "result": "Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json",
+          "receipt_sha256": "c65fa0498e5d703c4fd7f863ac95d85bb710c3456c37894ceb86d223c68295a5"
+        }
+      ],
+      "notes": [
+        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-suppliers/add -> invoice_suppliers_add",
@@ -10631,25 +10769,71 @@
         "target": "invoice_suppliers_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/handler/invoice_parties.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "auditlog LogEntry/AuditLogIndex resolvers",
+        "DRF page-number pagination and supplier rendering (suppliers family)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-suppliers/add",
+          "/api/v2/invoice-suppliers/add",
+          "/api/invoice-suppliers/add"
+        ],
+        "request": "JSON object: custom_accounts, supplier_id, payment_date, amount, paid and InvoiceSuppliersSerializer fields.",
+        "response": "200 {\"message\": \"Invoice created\"}.",
+        "errors": "400 {\"error\"} account/supplier/category, payment and invoice serializer errors; 401; 403 registry, impersonation or athlete; 500 missing keys, rejected values, invalid X-Group-Id, database rejections; 500 (not ported) nested objects or payment_id.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.supplierinvoices.create.",
+        "resource_scope": "request.user.sport_association; live group-aware supplier.",
+        "side_effects": "Payment create+save and supplier invoice create+save with four audit entries.",
+        "transaction": "Autocommit steps: the payment is kept when the invoice insert fails.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_parties_http.json",
+        "TESTS/fixtures/generate_invoice_parties_http.py",
+        "TESTS/contracts/test_invoice_parties_http.py",
+        "TESTS/adapters/django/invoice_parties_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 136/136; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-red-r2/results.json",
+          "receipt_sha256": "7fe6a53ec2aebfec771b314b30c8ea9bcc40795387bf8750de46dd19fe4341ac"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-green-r1/results.json",
+          "receipt_sha256": "40c713dab2c944d41ebacf8c7c3e07b38755d8e15e82662c5db8c68dda63d601"
+        },
+        {
+          "revision": "committing change without the supplier lookup's soft-delete filter",
+          "result": "Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json",
+          "receipt_sha256": "c65fa0498e5d703c4fd7f863ac95d85bb710c3456c37894ceb86d223c68295a5"
+        }
+      ],
+      "notes": [
+        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-suppliers/list -> invoice_suppliers_list",
@@ -10666,25 +10850,71 @@
         "target": "invoice_suppliers_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/handler/invoice_parties.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "auditlog LogEntry/AuditLogIndex resolvers",
+        "DRF page-number pagination and supplier rendering (suppliers family)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-suppliers/list",
+          "/api/v2/invoice-suppliers/list",
+          "/api/invoice-suppliers/list"
+        ],
+        "request": "query[generalSearch], sort[field], sort[sort], pagination[page], pagination[perpage].",
+        "response": "200 {\"data\": {index: InvoiceSuppliersSerializer}, \"meta\": {total, page, pages, perpage, rowIds}}.",
+        "errors": "401; 403 registry or impersonation; 404 Invalid page.; 500 missing association, unknown sort field; 500 (not ported) relation-path sort or payments with associate/instructor/invoice.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.supplierinvoices.read; administrators need impersonation.",
+        "resource_scope": "Impersonation-scoped association of the scope user.",
+        "side_effects": "None.",
+        "transaction": "Read.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_parties_http.json",
+        "TESTS/fixtures/generate_invoice_parties_http.py",
+        "TESTS/contracts/test_invoice_parties_http.py",
+        "TESTS/adapters/django/invoice_parties_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 136/136; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-red-r2/results.json",
+          "receipt_sha256": "7fe6a53ec2aebfec771b314b30c8ea9bcc40795387bf8750de46dd19fe4341ac"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-green-r1/results.json",
+          "receipt_sha256": "40c713dab2c944d41ebacf8c7c3e07b38755d8e15e82662c5db8c68dda63d601"
+        },
+        {
+          "revision": "committing change without the supplier lookup's soft-delete filter",
+          "result": "Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json",
+          "receipt_sha256": "c65fa0498e5d703c4fd7f863ac95d85bb710c3456c37894ceb86d223c68295a5"
+        }
+      ],
+      "notes": [
+        "Implementing: customer/supplier invoice list, add and update with exact effects; XML/PDF generation and print tasks (customer list loop, valid customer add), nested payment/supplier writes, payment_id stores and invoice pk changes are refused with a 500 before any write. invoice-customers/add stays uncharacterized: its validation outcomes are ported, but a valid add (XML/PDF generation) is refused."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-suppliers/stats -> invoice_suppliers_stats",
