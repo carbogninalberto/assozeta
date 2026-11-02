@@ -274,6 +274,14 @@ func run() (runErr error) {
 	e.Any("/course/tags/:tag_id/delete", courseTagWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/tags/:tag_id/assign/:course_id", courseTagWritesHandler.Assign, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/tags/:tag_id/unassign/:course_id", courseTagWritesHandler.Unassign, middleware.DjangoSessionAudit(sessionAuthentication))
+	subscriptionTagsHandler := handler.NewSubscriptionTagsHandler(service.NewSubscriptionTags(repository.NewSubscriptionTags(db), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/tags/list", subscriptionTagsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/tags/add", subscriptionTagsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/tags/:tag_id/update", subscriptionTagsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/tags/:tag_id/delete", subscriptionTagsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/tags/:tag_id/assign/:subscription_id", subscriptionTagsHandler.Assign, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/tags/:tag_id/unassign/:subscription_id", subscriptionTagsHandler.Unassign, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/list", courseLocationListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	courseLocationWritesHandler := handler.NewCourseLocationWritesHandler(service.NewCourseLocationWrites(repository.NewCourseLocationWrites(db), time.Now,
 		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
