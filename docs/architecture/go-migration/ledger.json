@@ -4558,25 +4558,74 @@
         "target": "camps_and_retreats_periods_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/periods/<uid>/delete",
+          "/api/v2/camps-and-retreats/periods/<uid>/delete",
+          "/api/camps-and-retreats/periods/<uid>/delete"
+        ],
+        "request": "uid path",
+        "response": "200 {'message': 'Deleted successfully'}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 403 {'error'} for users that are not associations or collaborators; 400 ['badly formed hexadecimal UUID string']; 404 {'error': 'Not found'}; 403 {'detail': 'You are not allowed ...'} for another association's row; 500 {'error': 'SportAssociation matching query does not exist.'} without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.delete",
+        "resource_scope": "period's camp association",
+        "side_effects": "deletes the period, its services, subscription periods and link rows; delete entries indexed through the actor association",
+        "transaction": "collector atomic",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_periods_http.json",
+        "TESTS/fixtures/generate_camps_periods_http.py",
+        "TESTS/contracts/test_camps_periods_http.py",
+        "TESTS/adapters/django/camps_periods_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 108/108; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-red-r1/results.json",
+          "receipt_sha256": "68804040722f8fe4c0f851b1885b65c9d5ad2bd36536cd46b8ef685813849977"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-versioned-r2/results.json",
+          "receipt_sha256": "8c0dc43b970abb994a8792561671f4e71558826f2b8b04ced3acf6308991191b"
+        },
+        {
+          "revision": "committing change with the services update rolled back when the payment walk fails",
+          "result": "Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-mutation-r2/results.json",
+          "receipt_sha256": "16db1b2a04d59dc16e449411c0c90a9bbe86700b3d194d7ddab41140d57c4147"
+        }
+      ],
+      "notes": [
+        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/periods/<str:uid>/info -> camps_and_retreats_periods_info",
@@ -4593,25 +4642,74 @@
         "target": "camps_and_retreats_periods_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/periods/<uid>/info",
+          "/api/v2/camps-and-retreats/periods/<uid>/info",
+          "/api/camps-and-retreats/periods/<uid>/info"
+        ],
+        "request": "uid path",
+        "response": "200 {'data': CampsAndRetreatsPeriodInfoSerializer}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 403 {'error': 'Only sport associations can view camps or retreats'} for users that are not associations or collaborators; 400 ['badly formed hexadecimal UUID string']; 404 {'error': 'Not found'}; 403 {'detail': 'You are not allowed ...'} for another association's row; 500 {'error': 'SportAssociation matching query does not exist.'} without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.read",
+        "resource_scope": "period's camp association equals request.user.sport_association",
+        "side_effects": "none",
+        "transaction": "read",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_periods_http.json",
+        "TESTS/fixtures/generate_camps_periods_http.py",
+        "TESTS/contracts/test_camps_periods_http.py",
+        "TESTS/adapters/django/camps_periods_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 108/108; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-red-r1/results.json",
+          "receipt_sha256": "68804040722f8fe4c0f851b1885b65c9d5ad2bd36536cd46b8ef685813849977"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-versioned-r2/results.json",
+          "receipt_sha256": "8c0dc43b970abb994a8792561671f4e71558826f2b8b04ced3acf6308991191b"
+        },
+        {
+          "revision": "committing change with the services update rolled back when the payment walk fails",
+          "result": "Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-mutation-r2/results.json",
+          "receipt_sha256": "16db1b2a04d59dc16e449411c0c90a9bbe86700b3d194d7ddab41140d57c4147"
+        }
+      ],
+      "notes": [
+        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/periods/<str:uid>/update -> camps_and_retreats_periods_update",
@@ -4628,25 +4726,74 @@
         "target": "camps_and_retreats_periods_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/periods/<uid>/update",
+          "/api/v2/camps-and-retreats/periods/<uid>/update",
+          "/api/camps-and-retreats/periods/<uid>/update"
+        ],
+        "request": "partial CampsAndRetreatsPeriodSerializer",
+        "response": "200 {'message': 'Updated successfully', 'period': serializer.data}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 403 {'error'} for users that are not associations or collaborators; 400 ['badly formed hexadecimal UUID string']; 404 {'error': 'Not found'}; 403 {'detail': 'You are not allowed ...'} for another association's row; 500 {'error': 'SportAssociation matching query does not exist.'} without an association; 400 {'error': str(ValidationError)}; 403 tenant PermissionDenied; 500 {'error'} for the immutable QueryDict",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.update",
+        "resource_scope": "period's camp association; tenant-scoped related fields",
+        "side_effects": "saves the row (audited changed fields), then set() on the services links",
+        "transaction": "not atomic (Go: one transaction)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_periods_http.json",
+        "TESTS/fixtures/generate_camps_periods_http.py",
+        "TESTS/contracts/test_camps_periods_http.py",
+        "TESTS/adapters/django/camps_periods_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 108/108; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-red-r1/results.json",
+          "receipt_sha256": "68804040722f8fe4c0f851b1885b65c9d5ad2bd36536cd46b8ef685813849977"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-versioned-r2/results.json",
+          "receipt_sha256": "8c0dc43b970abb994a8792561671f4e71558826f2b8b04ced3acf6308991191b"
+        },
+        {
+          "revision": "committing change with the services update rolled back when the payment walk fails",
+          "result": "Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-mutation-r2/results.json",
+          "receipt_sha256": "16db1b2a04d59dc16e449411c0c90a9bbe86700b3d194d7ddab41140d57c4147"
+        }
+      ],
+      "notes": [
+        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/periods/add -> camps_and_retreats_periods_add",
@@ -4663,25 +4810,74 @@
         "target": "camps_and_retreats_periods_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/periods/add",
+          "/api/v2/camps-and-retreats/periods/add",
+          "/api/camps-and-retreats/periods/add"
+        ],
+        "request": "CampsAndRetreatsPeriodSerializer fields (camps_and_retreats and dates required); JSON or form",
+        "response": "201 {'message': 'Added successfully', 'period': serializer.data} (fee rendered from float(fee))",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 403 {'error'} for users that are not associations or collaborators; 400 {'error': str(ValidationError)}; 500 {'error': str(e)} for the tenant PermissionDenied, the many-to-many create TypeError, the immutable QueryDict and non-dict bodies",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.create",
+        "resource_scope": "tenant-scoped related fields (camps_and_retreats, services)",
+        "side_effects": "creates the period, saves it again; audit create plus a fee update when str(float) differs from the stored Decimal",
+        "transaction": "not atomic (Go: one transaction)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_periods_http.json",
+        "TESTS/fixtures/generate_camps_periods_http.py",
+        "TESTS/contracts/test_camps_periods_http.py",
+        "TESTS/adapters/django/camps_periods_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 108/108; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-red-r1/results.json",
+          "receipt_sha256": "68804040722f8fe4c0f851b1885b65c9d5ad2bd36536cd46b8ef685813849977"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-versioned-r2/results.json",
+          "receipt_sha256": "8c0dc43b970abb994a8792561671f4e71558826f2b8b04ced3acf6308991191b"
+        },
+        {
+          "revision": "committing change with the services update rolled back when the payment walk fails",
+          "result": "Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-mutation-r2/results.json",
+          "receipt_sha256": "16db1b2a04d59dc16e449411c0c90a9bbe86700b3d194d7ddab41140d57c4147"
+        }
+      ],
+      "notes": [
+        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/periods/services/<str:uid>/delete -> camps_and_retreats_periods_services_delete",
@@ -4698,25 +4894,74 @@
         "target": "camps_and_retreats_periods_services_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/periods/services/<uid>/delete",
+          "/api/v2/camps-and-retreats/periods/services/<uid>/delete",
+          "/api/camps-and-retreats/periods/services/<uid>/delete"
+        ],
+        "request": "uid path",
+        "response": "200 {'message': 'Deleted successfully'}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 403 {'error'} for users that are not associations or collaborators; 400 ['badly formed hexadecimal UUID string']; 404 {'error': 'Not found'}; 403 {'detail': 'You are not allowed ...'} for another association's row; 500 {'error': 'SportAssociation matching query does not exist.'} without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.delete",
+        "resource_scope": "service's period camp association",
+        "side_effects": "deletes the link rows and the service; actor-indexed delete entry",
+        "transaction": "collector atomic",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_periods_http.json",
+        "TESTS/fixtures/generate_camps_periods_http.py",
+        "TESTS/contracts/test_camps_periods_http.py",
+        "TESTS/adapters/django/camps_periods_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 108/108; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-red-r1/results.json",
+          "receipt_sha256": "68804040722f8fe4c0f851b1885b65c9d5ad2bd36536cd46b8ef685813849977"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-versioned-r2/results.json",
+          "receipt_sha256": "8c0dc43b970abb994a8792561671f4e71558826f2b8b04ced3acf6308991191b"
+        },
+        {
+          "revision": "committing change with the services update rolled back when the payment walk fails",
+          "result": "Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-mutation-r2/results.json",
+          "receipt_sha256": "16db1b2a04d59dc16e449411c0c90a9bbe86700b3d194d7ddab41140d57c4147"
+        }
+      ],
+      "notes": [
+        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/periods/services/<str:uid>/update -> camps_and_retreats_periods_services_update",
@@ -4733,25 +4978,74 @@
         "target": "camps_and_retreats_periods_services_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/periods/services/<uid>/update",
+          "/api/v2/camps-and-retreats/periods/services/<uid>/update",
+          "/api/camps-and-retreats/periods/services/<uid>/update"
+        ],
+        "request": "partial CampsAndRetreatsPeriodsServiceAddSerializer",
+        "response": "200 {'message': 'Updated successfully', 'period': serializer.data}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 403 {'error'} for users that are not associations or collaborators; 400 ['badly formed hexadecimal UUID string']; 404 {'error': 'Not found'}; 403 {'detail': 'You are not allowed ...'} for another association's row; 500 {'error': 'SportAssociation matching query does not exist.'} without an association; 400 {'error': str(ValidationError)}; 403 tenant PermissionDenied; 500 {'error': str(e)} when the payment walk raises after the save",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.update",
+        "resource_scope": "service's period camp association; tenant-scoped related fields",
+        "side_effects": "saves the service, then updates matching meta_payment_categories, amount and notes of unpaid payments of the period (Payment.save defaults, audited)",
+        "transaction": "not atomic: a failing walk keeps earlier saves (Go commits them, then answers 500)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_periods_http.json",
+        "TESTS/fixtures/generate_camps_periods_http.py",
+        "TESTS/contracts/test_camps_periods_http.py",
+        "TESTS/adapters/django/camps_periods_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 108/108; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-red-r1/results.json",
+          "receipt_sha256": "68804040722f8fe4c0f851b1885b65c9d5ad2bd36536cd46b8ef685813849977"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-versioned-r2/results.json",
+          "receipt_sha256": "8c0dc43b970abb994a8792561671f4e71558826f2b8b04ced3acf6308991191b"
+        },
+        {
+          "revision": "committing change with the services update rolled back when the payment walk fails",
+          "result": "Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-mutation-r2/results.json",
+          "receipt_sha256": "16db1b2a04d59dc16e449411c0c90a9bbe86700b3d194d7ddab41140d57c4147"
+        }
+      ],
+      "notes": [
+        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/periods/services/add -> camps_and_retreats_periods_services_add",
@@ -4768,25 +5062,74 @@
         "target": "camps_and_retreats_periods_services_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/periods/services/add",
+          "/api/v2/camps-and-retreats/periods/services/add",
+          "/api/camps-and-retreats/periods/services/add"
+        ],
+        "request": "CampsAndRetreatsPeriodsServiceAddSerializer fields (camps_and_retreats_period required)",
+        "response": "201 {'message': 'Added successfully', 'service': serializer.data}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 403 {'error'} for users that are not associations or collaborators; 400 {'error': str(ValidationError)}; 500 {'error'} for the tenant PermissionDenied",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.create",
+        "resource_scope": "tenant-scoped related fields (period, payment_category)",
+        "side_effects": "creates the service and saves it again (default float fee audited as an update)",
+        "transaction": "not atomic (Go: one transaction)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_periods_http.json",
+        "TESTS/fixtures/generate_camps_periods_http.py",
+        "TESTS/contracts/test_camps_periods_http.py",
+        "TESTS/adapters/django/camps_periods_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 108/108; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-red-r1/results.json",
+          "receipt_sha256": "68804040722f8fe4c0f851b1885b65c9d5ad2bd36536cd46b8ef685813849977"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-versioned-r2/results.json",
+          "receipt_sha256": "8c0dc43b970abb994a8792561671f4e71558826f2b8b04ced3acf6308991191b"
+        },
+        {
+          "revision": "committing change with the services update rolled back when the payment walk fails",
+          "result": "Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-mutation-r2/results.json",
+          "receipt_sha256": "16db1b2a04d59dc16e449411c0c90a9bbe86700b3d194d7ddab41140d57c4147"
+        }
+      ],
+      "notes": [
+        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet-subscription/<str:uid>/delete/<str:uid_course> -> carnet_subscription_delete",
