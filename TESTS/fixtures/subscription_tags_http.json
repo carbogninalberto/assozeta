@@ -1,0 +1,1433 @@
+{
+ "matrix_version": 1,
+ "scope": "Subscription tags authored sequence with link, date and audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "tags": {
+  "zeta": {
+   "id": "a1000000-0000-4000-8000-000000561001",
+   "name": "Zeta",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "alpha": {
+   "id": "a1000000-0000-4000-8000-000000561002",
+   "name": "Alpha è",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "lower": {
+   "id": "a1000000-0000-4000-8000-000000561003",
+   "name": "bimbi",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000561004",
+   "name": "Estero",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "subscriptions": {
+  "dated": {
+   "id": "a1000000-0000-4000-8000-000000561005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "deleted": false,
+   "group": null,
+   "tags": [
+    "zeta"
+   ]
+  },
+  "undated": {
+   "id": "a1000000-0000-4000-8000-000000561006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "start": null,
+   "end": null,
+   "created": "2026-03-15T10:00:00Z",
+   "deleted": false,
+   "group": null,
+   "tags": []
+  },
+  "pending": {
+   "id": "a1000000-0000-4000-8000-000000561007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "start": null,
+   "end": null,
+   "created": "2025-11-20T23:30:00Z",
+   "deleted": false,
+   "group": null,
+   "tags": [
+    "zeta"
+   ]
+  },
+  "removed": {
+   "id": "a1000000-0000-4000-8000-000000561008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "deleted": true,
+   "group": null,
+   "tags": []
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000561009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "deleted": false,
+   "group": "own_group",
+   "tags": []
+  },
+  "ancient": {
+   "id": "a1000000-0000-4000-8000-000000561010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "0001-06-01T12:00:00Z",
+   "deleted": false,
+   "group": null,
+   "tags": []
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000561011",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "deleted": false,
+   "group": null,
+   "tags": []
+  }
+ },
+ "cases": [
+  {
+   "name": "subscription-tags-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tags": [
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561002",
+      "tag_name": "Alpha è"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561001",
+      "tag_name": "Zeta"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561003",
+      "tag_name": "bimbi"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tags": [
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561002",
+      "tag_name": "Alpha è"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561001",
+      "tag_name": "Zeta"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561003",
+      "tag_name": "bimbi"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "tags": [
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561002",
+      "tag_name": "Alpha è"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561001",
+      "tag_name": "Zeta"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561003",
+      "tag_name": "bimbi"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tags": [
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000561004",
+      "tag_name": "Estero"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/tags/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Tags List",
+    "description": "API endpoint to get the list of tags for the subscriptions\n:param request: None\n:return: list of tags",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-add-missing-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "[ErrorDetail(string='tag_name is required', code='invalid')]"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-add-null-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "[ErrorDetail(string='tag_name is required', code='invalid')]"
+   },
+   "effect": null,
+   "body": {
+    "tag_name": null
+   }
+  },
+  {
+   "name": "subscription-tags-add-blank-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "[ErrorDetail(string='tag_name is required', code='invalid')]"
+   },
+   "effect": null,
+   "body": {
+    "tag_name": " \t \u001c"
+   }
+  },
+  {
+   "name": "subscription-tags-add-form-empty-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "[ErrorDetail(string='tag_name is required', code='invalid')]"
+   },
+   "effect": null,
+   "raw_body": "tag_name=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-tags-add-athlete-before-validation",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-add-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "subscription-tags-add-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "tag_name": "X"
+   }
+  },
+  {
+   "name": "subscription-tags-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "tag_name": "X"
+   }
+  },
+  {
+   "name": "subscription-tags-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "body": {
+    "tag_name": "X"
+   }
+  },
+  {
+   "name": "subscription-tags-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Tags Add",
+    "description": "API endpoint to add a new tag for the subscriptions\n:param request: tag_name\n:return: list of tags",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-add-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tag": {
+     "tag_id": "$new",
+     "tag_name": "Nuovo è"
+    }
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": "Nuovo è"
+   },
+   "body": {
+    "tag_name": "Nuovo è"
+   }
+  },
+  {
+   "name": "subscription-tags-add-padded-name-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tag": {
+     "tag_id": "$new",
+     "tag_name": "  spazi "
+    }
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": "  spazi "
+   },
+   "body": {
+    "tag_name": "  spazi "
+   }
+  },
+  {
+   "name": "subscription-tags-add-false-name",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tag": {
+     "tag_id": "$new",
+     "tag_name": false
+    }
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "full_collaborator",
+    "stored": "False"
+   },
+   "body": {
+    "tag_name": false
+   }
+  },
+  {
+   "name": "subscription-tags-add-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tag": {
+     "tag_id": "$new",
+     "tag_name": "Modulo"
+    }
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": "Modulo"
+   },
+   "raw_body": "tag_name=Modulo",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-tags-update-missing-name",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "[ErrorDetail(string='tag_name is required', code='invalid')]"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-update-blank-name",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "[ErrorDetail(string='tag_name is required', code='invalid')]"
+   },
+   "effect": null,
+   "body": {
+    "tag_name": "\n "
+   }
+  },
+  {
+   "name": "subscription-tags-update-malformed-missing-name",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "[ErrorDetail(string='tag_name is required', code='invalid')]"
+   },
+   "effect": null,
+   "body": {
+    "tag_name": null
+   }
+  },
+  {
+   "name": "subscription-tags-update-athlete-before-validation",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-update-list-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "tag_name"
+   ]
+  },
+  {
+   "name": "subscription-tags-update-malformed-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/abc/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "tag_name": "X"
+   }
+  },
+  {
+   "name": "subscription-tags-update-unknown",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000569998/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='tag not found', code='invalid')]"
+   },
+   "effect": null,
+   "body": {
+    "tag_name": "X"
+   }
+  },
+  {
+   "name": "subscription-tags-update-foreign",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561004/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='tag not found', code='invalid')]"
+   },
+   "effect": null,
+   "body": {
+    "tag_name": "X"
+   }
+  },
+  {
+   "name": "subscription-tags-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "body": {
+    "tag_name": "X"
+   }
+  },
+  {
+   "name": "subscription-tags-update-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {
+    "tag_name": "X"
+   }
+  },
+  {
+   "name": "subscription-tags-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Tags Update",
+    "description": "API endpoint to update a tag for the subscriptions\n:param request: tag_name\n:return: list of tags",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-update-rename",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tag_id": "a1000000-0000-4000-8000-000000561002",
+    "tag_name": "Alfa"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "tag": "alpha",
+    "changes": {
+     "tag_name": [
+      "Alpha è",
+      "Alfa"
+     ]
+    }
+   },
+   "body": {
+    "tag_name": "Alfa"
+   }
+  },
+  {
+   "name": "subscription-tags-update-same-name-no-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tag_id": "a1000000-0000-4000-8000-000000561002",
+    "tag_name": "Alfa"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "tag": "alpha",
+    "changes": {}
+   },
+   "body": {
+    "tag_name": "Alfa"
+   }
+  },
+  {
+   "name": "subscription-tags-update-number-name",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tag_id": "a1000000-0000-4000-8000-000000561002",
+    "tag_name": 0
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "tag": "alpha",
+    "changes": {
+     "tag_name": [
+      "Alfa",
+      "0"
+     ]
+    }
+   },
+   "body": {
+    "tag_name": 0
+   }
+  },
+  {
+   "name": "subscription-tags-update-form",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tag_id": "a1000000-0000-4000-8000-000000561002",
+    "tag_name": "Alfa"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "tag": "alpha",
+    "changes": {
+     "tag_name": [
+      "0",
+      "Alfa"
+     ]
+    }
+   },
+   "raw_body": "tag_name=Alfa",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-tags-assign-unknown-tag",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000569998/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='tag not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-foreign-tag",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561004/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='tag not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-unknown-tag-before-malformed-subscription",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000569998/assign/abc",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='tag not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-malformed-tag-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/abc/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-unknown-subscription",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000569998",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='subscription not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-foreign-subscription",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561011",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='subscription not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-malformed-subscription-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/abc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-group-header-hides",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561009",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='subscription not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-athlete-denied",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-admin-impersonating-foreign-tag",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561004/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='tag not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-assign-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Tags Assign",
+    "description": "API endpoint to update a tag for the subscriptions\n:param request: tag_id, subscription_id\n:return: list of tags",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-assign",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "tag assigned"
+   },
+   "effect": {
+    "kind": "link",
+    "actor": "owner",
+    "add": [
+     [
+      "alpha",
+      "dated"
+     ]
+    ],
+    "remove": [],
+    "dates": {}
+   }
+  },
+  {
+   "name": "subscription-tags-assign-again",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "tag assigned"
+   },
+   "effect": {
+    "kind": "link",
+    "actor": "owner",
+    "add": [],
+    "remove": [],
+    "dates": {}
+   }
+  },
+  {
+   "name": "subscription-tags-assign-deleted-subscription",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "tag assigned"
+   },
+   "effect": {
+    "kind": "link",
+    "actor": "owner",
+    "add": [
+     [
+      "alpha",
+      "removed"
+     ]
+    ],
+    "remove": [],
+    "dates": {}
+   }
+  },
+  {
+   "name": "subscription-tags-assign-grouped-subscription",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561001/assign/a1000000-0000-4000-8000-000000561009",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "tag assigned"
+   },
+   "effect": {
+    "kind": "link",
+    "actor": "full_collaborator",
+    "add": [
+     [
+      "zeta",
+      "grouped"
+     ]
+    ],
+    "remove": [],
+    "dates": {}
+   }
+  },
+  {
+   "name": "subscription-tags-assign-undated-fills-dates",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561003/assign/a1000000-0000-4000-8000-000000561006",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "tag assigned"
+   },
+   "effect": {
+    "kind": "link",
+    "actor": "full_collaborator",
+    "add": [
+     [
+      "lower",
+      "undated"
+     ]
+    ],
+    "remove": [],
+    "dates": {
+     "undated": [
+      "2026-01-01",
+      "2026-12-31"
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-tags-assign-season-error-keeps-link",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/assign/a1000000-0000-4000-8000-000000561010",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "link",
+    "actor": "owner",
+    "add": [
+     [
+      "alpha",
+      "ancient"
+     ]
+    ],
+    "remove": [],
+    "dates": {}
+   }
+  },
+  {
+   "name": "subscription-tags-unassign-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561001/unassign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Tags Unassign",
+    "description": "API endpoint to update a tag for the subscriptions\n:param request: tag_id, subscription_id\n:return: list of tags",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-unassign-foreign-subscription",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561001/unassign/a1000000-0000-4000-8000-000000561011",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='subscription not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-unassign-athlete-denied",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561001/unassign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-unassign",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561001/unassign/a1000000-0000-4000-8000-000000561005",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "tag unassigned"
+   },
+   "effect": {
+    "kind": "link",
+    "actor": "owner",
+    "add": [],
+    "remove": [
+     [
+      "zeta",
+      "dated"
+     ]
+    ],
+    "dates": {}
+   }
+  },
+  {
+   "name": "subscription-tags-unassign-unlinked-keeps-dates-empty",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561002/unassign/a1000000-0000-4000-8000-000000561007",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "tag unassigned"
+   },
+   "effect": {
+    "kind": "link",
+    "actor": "owner",
+    "add": [],
+    "remove": [],
+    "dates": {}
+   }
+  },
+  {
+   "name": "subscription-tags-unassign-undated-fills-dates",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561001/unassign/a1000000-0000-4000-8000-000000561007",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "tag unassigned"
+   },
+   "effect": {
+    "kind": "link",
+    "actor": "owner",
+    "add": [],
+    "remove": [
+     [
+      "zeta",
+      "pending"
+     ]
+    ],
+    "dates": {
+     "pending": [
+      "2025-01-01",
+      "2025-12-31"
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-tags-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000569998/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='tag not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-delete-foreign",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561004/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "[ErrorDetail(string='tag not found', code='invalid')]"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-delete-malformed-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/tags/abc/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-delete-athlete-denied",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561003/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561003/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-delete-wrong-method",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561003/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-tags-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561003/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Tags Delete",
+    "description": "API endpoint to delete a tag for the subscriptions\n:param request: tag_name\n:return: list of tags",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-tags-delete-linked",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/tags/a1000000-0000-4000-8000-000000561003/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "tag deleted"
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "tag": "lower",
+    "remove": [
+     [
+      "lower",
+      "undated"
+     ]
+    ]
+   }
+  }
+ ]
+}
