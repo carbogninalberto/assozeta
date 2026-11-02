@@ -280,6 +280,15 @@ func run() (runErr error) {
 	e.Any("/course/locations/add", courseLocationWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/:pk/update", courseLocationWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/:pk/delete", courseLocationWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	campsPeriodsHandler := handler.NewCampsPeriodsHandler(service.NewCampsPeriods(repository.NewCampsPeriods(db), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/camps-and-retreats/periods/add", campsPeriodsHandler.AddPeriod, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/periods/:uid/info", campsPeriodsHandler.PeriodInfo, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/periods/:uid/update", campsPeriodsHandler.UpdatePeriod, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/periods/:uid/delete", campsPeriodsHandler.DeletePeriod, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/periods/services/add", campsPeriodsHandler.AddService, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/periods/services/:uid/update", campsPeriodsHandler.UpdateService, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/periods/services/:uid/delete", campsPeriodsHandler.DeleteService, middleware.DjangoSessionAudit(sessionAuthentication))
 	courseStateWritesHandler := handler.NewCourseStateWritesHandler(service.NewCourseStateWrites(repository.NewCourseStateWrites(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/course/:uid/enable", courseStateWritesHandler.Enable, middleware.DjangoSessionAudit(sessionAuthentication))
