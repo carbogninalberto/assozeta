@@ -297,6 +297,12 @@ func run() (runErr error) {
 	e.Any("/camps-and-retreats/periods/services/add", campsPeriodsHandler.AddService, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/camps-and-retreats/periods/services/:uid/update", campsPeriodsHandler.UpdateService, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/camps-and-retreats/periods/services/:uid/delete", campsPeriodsHandler.DeleteService, middleware.DjangoSessionAudit(sessionAuthentication))
+	subscriptionMembershipsHandler := handler.NewSubscriptionMembershipsHandler(service.NewSubscriptionMemberships(repository.NewSubscriptionMemberships(db),
+		time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/memberships/list", subscriptionMembershipsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/memberships/add", subscriptionMembershipsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/memberships/:pk/update", subscriptionMembershipsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/memberships/:pk/delete", subscriptionMembershipsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	courseStateWritesHandler := handler.NewCourseStateWritesHandler(service.NewCourseStateWrites(repository.NewCourseStateWrites(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/course/:uid/enable", courseStateWritesHandler.Enable, middleware.DjangoSessionAudit(sessionAuthentication))
