@@ -18006,25 +18006,73 @@
         "target": "SubscriptionMembershipViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_memberships.go",
+        "BE_GO/internal/dto/subscription_membership_write.go",
+        "BE_GO/internal/repository/subscription_memberships.go",
+        "BE_GO/internal/service/subscription_memberships.go",
+        "BE_GO/internal/handler/subscription_memberships.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_subscriptionmembership",
+        "application_subscriptionmembership_attached_membership_docu749f",
+        "application_payment",
+        "application_associate",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/memberships/<pk>/delete",
+          "/api/v2/subscription/memberships/<pk>/delete",
+          "/api/subscription/memberships/<pk>/delete"
+        ],
+        "request": "No body.",
+        "response": "204 without a body.",
+        "errors": "401; 403 registry; 404 malformed, unknown, foreign or filtered-out pk; 500 no association, malformed filter.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.delete.",
+        "resource_scope": "The owner's association memberships through get_queryset (subscription / associate_id query filters also narrow pk lookups); sport_association, associate and payment are tenant-scoped (a foreign row is DRF's generic 403).",
+        "side_effects": "Deletes the document links and the membership (delete entry); documents, associates and payments stay.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_memberships_http.json",
+        "TESTS/fixtures/generate_subscription_memberships_http.py",
+        "TESTS/contracts/test_subscription_memberships_http.py",
+        "TESTS/adapters/django/subscription_memberships_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-memberships.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 85/85; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-red-r3/results.json",
+          "receipt_sha256": "01dbc9592d1ac6d7eb85a59ecbb534f419bcb38a4887578036832d7556a694ef"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-versioned-r1/results.json",
+          "receipt_sha256": "97ff73d84914bfbcf480d3d77acc75a517d47472ad9d99ae9fd216f4bbdf1fbb"
+        },
+        {
+          "revision": "committing change rolling back the save on a documents_data failure",
+          "result": "Mutation control: fails Go on the first add whose document lacks its keys.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-mutation-r1/results.json",
+          "receipt_sha256": "ba05dbaa40eb2f7488cc329470a3561335e325870e93fe2c7e0b1d776d71cdd4"
+        }
+      ],
+      "notes": [
+        "Implementing: list filters, DRF field validation (DD/MM/YYYY dates, decimal, tenant-scoped relations with group-aware querysets), viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads, documents_data form keys, primary-key changes and multipart add bodies with files are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/memberships/<str:pk>/update -> SubscriptionMembershipViewSet.as_view({'patch': 'update'})",
@@ -18041,25 +18089,74 @@
         "target": "SubscriptionMembershipViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_memberships.go",
+        "BE_GO/internal/dto/subscription_membership_write.go",
+        "BE_GO/internal/repository/subscription_memberships.go",
+        "BE_GO/internal/service/subscription_memberships.go",
+        "BE_GO/internal/handler/subscription_memberships.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_subscriptionmembership",
+        "application_subscriptionmembership_attached_membership_docu749f",
+        "application_payment",
+        "application_associate",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/memberships/<pk>/update",
+          "/api/v2/subscription/memberships/<pk>/update",
+          "/api/subscription/memberships/<pk>/update"
+        ],
+        "request": "Partial JSON or form serializer fields; DELETE deletes the membership.",
+        "response": "200 the serialized membership; 204 for DELETE.",
+        "errors": "400 field errors and {'exception': 'document key not present'}; 401; 403 registry / foreign relation; 404 malformed, unknown, foreign or filtered-out pk; 500 no association, malformed filter.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The owner's association memberships through get_queryset (subscription / associate_id query filters also narrow pk lookups); sport_association, associate and payment are tenant-scoped (a foreign row is DRF's generic 403).",
+        "side_effects": "Saves every field and audits the changed ones; a changed primary key is not ported (refused before any write).",
+        "transaction": "Not atomic: a documents_data failure after the save keeps the change.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_memberships_http.json",
+        "TESTS/fixtures/generate_subscription_memberships_http.py",
+        "TESTS/contracts/test_subscription_memberships_http.py",
+        "TESTS/adapters/django/subscription_memberships_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-memberships.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 85/85; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-red-r3/results.json",
+          "receipt_sha256": "01dbc9592d1ac6d7eb85a59ecbb534f419bcb38a4887578036832d7556a694ef"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-versioned-r1/results.json",
+          "receipt_sha256": "97ff73d84914bfbcf480d3d77acc75a517d47472ad9d99ae9fd216f4bbdf1fbb"
+        },
+        {
+          "revision": "committing change rolling back the save on a documents_data failure",
+          "result": "Mutation control: fails Go on the first add whose document lacks its keys.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-mutation-r1/results.json",
+          "receipt_sha256": "ba05dbaa40eb2f7488cc329470a3561335e325870e93fe2c7e0b1d776d71cdd4"
+        }
+      ],
+      "notes": [
+        "Implementing: list filters, DRF field validation (DD/MM/YYYY dates, decimal, tenant-scoped relations with group-aware querysets), viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads, documents_data form keys, primary-key changes and multipart add bodies with files are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/memberships/add -> SubscriptionMembershipViewSet.as_view({'post': 'add'})",
@@ -18076,25 +18173,74 @@
         "target": "SubscriptionMembershipViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_memberships.go",
+        "BE_GO/internal/dto/subscription_membership_write.go",
+        "BE_GO/internal/repository/subscription_memberships.go",
+        "BE_GO/internal/service/subscription_memberships.go",
+        "BE_GO/internal/handler/subscription_memberships.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_subscriptionmembership",
+        "application_subscriptionmembership_attached_membership_docu749f",
+        "application_payment",
+        "application_associate",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/memberships/add",
+          "/api/v2/subscription/memberships/add",
+          "/api/subscription/memberships/add"
+        ],
+        "request": "JSON SubscriptionMembershipSerializer fields (subscription_membership_id, associate, payment, creation_date, start_date, end_date as DD/MM/YYYY, membership_type, membership_number, description, price, documents_data); sport_association is always the owner's.",
+        "response": "201 the serialized membership.",
+        "errors": "400 field errors and {'exception': 'document key not present'}; 401; 403 registry / scoped session / athletes ('User is not a sport association') / foreign relation; 500 no association, non-dict or form body, DELETE without pk, bad base64.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.create.",
+        "resource_scope": "The owner's association memberships through get_queryset (subscription / associate_id query filters also narrow pk lookups); sport_association, associate and payment are tenant-scoped (a foreign row is DRF's generic 403).",
+        "side_effects": "Creates the membership (create entry); document uploads are not ported (refused before any write).",
+        "transaction": "Not atomic: a documents_data failure after the save keeps the saved membership.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_memberships_http.json",
+        "TESTS/fixtures/generate_subscription_memberships_http.py",
+        "TESTS/contracts/test_subscription_memberships_http.py",
+        "TESTS/adapters/django/subscription_memberships_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-memberships.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 85/85; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-red-r3/results.json",
+          "receipt_sha256": "01dbc9592d1ac6d7eb85a59ecbb534f419bcb38a4887578036832d7556a694ef"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-versioned-r1/results.json",
+          "receipt_sha256": "97ff73d84914bfbcf480d3d77acc75a517d47472ad9d99ae9fd216f4bbdf1fbb"
+        },
+        {
+          "revision": "committing change rolling back the save on a documents_data failure",
+          "result": "Mutation control: fails Go on the first add whose document lacks its keys.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-mutation-r1/results.json",
+          "receipt_sha256": "ba05dbaa40eb2f7488cc329470a3561335e325870e93fe2c7e0b1d776d71cdd4"
+        }
+      ],
+      "notes": [
+        "Implementing: list filters, DRF field validation (DD/MM/YYYY dates, decimal, tenant-scoped relations with group-aware querysets), viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads, documents_data form keys, primary-key changes and multipart add bodies with files are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/memberships/list -> SubscriptionMembershipViewSet.as_view({'get': 'list'})",
@@ -18111,25 +18257,75 @@
         "target": "SubscriptionMembershipViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_memberships.go",
+        "BE_GO/internal/dto/subscription_membership_write.go",
+        "BE_GO/internal/repository/subscription_memberships.go",
+        "BE_GO/internal/service/subscription_memberships.go",
+        "BE_GO/internal/handler/subscription_memberships.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_subscriptionmembership",
+        "application_subscriptionmembership_attached_membership_docu749f",
+        "application_payment",
+        "application_associate",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/memberships/list",
+          "/api/v2/subscription/memberships/list",
+          "/api/subscription/memberships/list"
+        ],
+        "request": "Optional query subscription and associate_id (UUIDs; blank ignored).",
+        "response": "200 {'data': [membership]} unordered, with paid and nested attached_membership_documents.",
+        "errors": "401; 403 registry / scoped session; 500 no association (athletes), malformed filter, DELETE without pk.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read.",
+        "resource_scope": "The owner's association memberships through get_queryset (subscription / associate_id query filters also narrow pk lookups); sport_association, associate and payment are tenant-scoped (a foreign row is DRF's generic 403).",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_memberships_http.json",
+        "TESTS/fixtures/generate_subscription_memberships_http.py",
+        "TESTS/contracts/test_subscription_memberships_http.py",
+        "TESTS/adapters/django/subscription_memberships_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-memberships.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 85/85; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-red-r3/results.json",
+          "receipt_sha256": "01dbc9592d1ac6d7eb85a59ecbb534f419bcb38a4887578036832d7556a694ef"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-versioned-r1/results.json",
+          "receipt_sha256": "97ff73d84914bfbcf480d3d77acc75a517d47472ad9d99ae9fd216f4bbdf1fbb"
+        },
+        {
+          "revision": "committing change rolling back the save on a documents_data failure",
+          "result": "Mutation control: fails Go on the first add whose document lacks its keys.",
+          "artifact": "quality-reports/go-migration/subscription-memberships-http-mutation-r1/results.json",
+          "receipt_sha256": "ba05dbaa40eb2f7488cc329470a3561335e325870e93fe2c7e0b1d776d71cdd4"
+        }
+      ],
+      "notes": [
+        "Implementing: list filters, DRF field validation (DD/MM/YYYY dates, decimal, tenant-scoped relations with group-aware querysets), viewset DELETE routing, non-atomic documents_data failures and audit on four transports; document uploads, documents_data form keys, primary-key changes and multipart add bodies with files are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/renew -> subscription_renew",
