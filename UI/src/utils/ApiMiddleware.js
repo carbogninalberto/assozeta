@@ -1,6 +1,7 @@
 import {readImpersonation, contextKey, recoverInvalidImpersonation} from './impersonation.js';
 import {sessionToken} from '../store/stores.js';
 import {get} from 'svelte/store';
+import {hasSessionToken} from './accountSession.js';
 
 sessionToken.useLocalStorage();
 
@@ -253,7 +254,7 @@ export const apiFetch = async function (url, fetchData = {method: 'GET'}) {
         jsonResponse = await response.json();
     } else if (response.status == 401) {
         error = true;
-        if (localStorage.getItem('sessionToken') && !fetchData.skipForbidden) {
+        if (hasSessionToken() && !fetchData.skipForbidden) {
             localStorage.clear();
             window.location.reload();
         }
