@@ -137,7 +137,9 @@ def prune_storage():
             save_operation(op, media=kept)
     # An unsuccessful restore never replaced data, so its snapshot only
     # duplicates the current state; a retry always takes a fresh one.
-    retained = settings.DATA_RESTORE_RECOVERY_BACKUPS
+    retained = getattr(settings, 'DATA_RESTORE_RECOVERY_BACKUPS', None)
+    if retained is None:
+        retained = int(os.environ.get('DATA_RESTORE_RECOVERY_BACKUPS', 1))
     for op in terminal.exclude(backup_path='').order_by('-created_at', '-id').iterator():
         if op.state == 'completed' and retained > 0:
             retained -= 1
