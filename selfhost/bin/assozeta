@@ -1269,8 +1269,10 @@ report_failure() {
     printf '@@ASSOZETA_ERROR %s\n' "$1"
 }
 
+# The object mirror is written by root in the MinIO client container, so only
+# root can delete staged files while archiving them.
 backup_tar_removes_files() {
-    tar --version 2>/dev/null | grep -q 'GNU tar'
+    [ "$(id -u)" -eq 0 ] && tar --version 2>/dev/null | grep -q 'GNU tar'
 }
 
 backup_estimated_kib() {

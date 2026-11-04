@@ -19,6 +19,7 @@ prod_app_services_running() { return 1; }
 stop_prod_data_services() { :; }
 start_prod_app_services() { :; }
 release_prod_lock() { :; }
+id() { printf '%s\n' "$TEST_UID"; }
 prod_compose() {
     case "$*" in
         *pg_database_size*) [ -n "$TEST_DATABASE_BYTES" ] && printf '%s\\n' "$TEST_DATABASE_BYTES" ;;
@@ -50,12 +51,12 @@ class BackupSpaceTests(unittest.TestCase):
         self.backups.mkdir()
         self.log = self.root / 'commands.log'
 
-    def run_cli(self, body, available=100 * GIB, database=GIB, objects=2 * GIB, gnu_tar='0', **env):
+    def run_cli(self, body, available=100 * GIB, database=GIB, objects=2 * GIB, gnu_tar='0', uid='0', **env):
         return subprocess.run(['sh', '-c', DEFINITIONS + STUBS + body], capture_output=True, text=True, env={
             **os.environ, 'ASSOZETA_INSTALL_ROOT': str(self.root), 'ASSOZETA_ENV_FILE': str(self.env),
             'TEST_LOG': str(self.log), 'TEST_AVAILABLE_KIB': str(available // 1024),
             'TEST_DATABASE_BYTES': str(database) if database is not None else '',
-            'TEST_OBJECT_BYTES': str(objects), 'TEST_GNU_TAR': gnu_tar, **env,
+            'TEST_OBJECT_BYTES': str(objects), 'TEST_GNU_TAR': gnu_tar, 'TEST_UID': uid, **env,
         })
 
     def test_insufficient_space_stops_before_services_and_is_reported_to_runner(self):
@@ -84,6 +85,11 @@ class BackupSpaceTests(unittest.TestCase):
             names = {name.removeprefix('./') for name in archive.getnames()}
         self.assertTrue({'postgres.dump', 'manifest.txt', 'config.env'} <= names)
         self.assertEqual([path.name for path in self.backups.iterdir()], [archives[0].name])
+
+    def test_non_root_users_cannot_delete_staged_objects_and_need_two_copies(self):
+        result = self.run_cli('backup_prod', available=5 * GIB, gnu_tar='1', uid='1000')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('7168 MB required', result.stderr)
 
     def test_unknown_size_keeps_previous_behaviour(self):
         result = self.run_cli('backup_prod', available=GIB, database=None)
