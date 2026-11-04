@@ -13,7 +13,7 @@
         UsersThree,
     } from 'phosphor-svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
-    import {hasLoggedInSession} from 'utils/accountSession.js';
+    import {applyWizardChoices, hasLoggedInSession, resumeAfterAccountLogin} from 'utils/accountSession.js';
     import {register, init, _, waitLocale, locale} from 'svelte-i18n';
     import Step0 from './wizard/Step0.svelte';
     import Step1 from './wizard/Step1.svelte';
@@ -273,11 +273,17 @@
             initialLocale: 'it',
         });
         await waitLocale();
+        // Back from "CREA o ACCEDI con l'account": read before clearing sessionStorage.
+        const resumed = resumeAfterAccountLogin(window.location.hash);
         // localStorage.clear();
         sessionStorage.clear();
         sessionStorage.setItem('sportAssociationUsername', params?.sportAssociationUsername);
         // sessionStorage.setItem('redirectAfterLogin', 1);
         await loadData();
+        if (resumed) {
+            applyWizardChoices(wizardData.formData, resumed.state);
+            toStep(1);
+        }
         loaded = true;
     });
 </script>

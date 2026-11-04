@@ -55,32 +55,13 @@ test('an identity change in another tab reloads and closes its old document', ()
     assert.equal(reloads,1);
 });
 
-test('a tab without a session awaiting its account popup login is not reloaded', async () => {
-    const {AWAITING_ACCOUNT_LOGIN} = await import('./accountSession.js');
-    const observe = (userData, awaiting) => {
-        let listener, reloads = 0;
-        localStorage.setItem('userData', userData);
-        globalThis.window = {addEventListener: (name, fn) => { listener = fn; }, location: {reload: () => reloads++},
-            [AWAITING_ACCOUNT_LOGIN]: awaiting};
-        observeLoginIdentity();
-        return {fire: value => listener({key: 'loginIdentity', newValue: value}), reloads: () => reloads,
-            win: globalThis.window};
-    };
-    // The opener of "CREA o ACCEDI con l'account" keeps its wizard and popup.
-    const opener = observe('{}', true);
-    opener.fire('member-1');
-    assert.equal(opener.reloads(), 0);
-    // It is now that member: a later login as someone else still reloads it.
-    opener.win[AWAITING_ACCOUNT_LOGIN] = false;
-    opener.fire('member-1');
-    assert.equal(opener.reloads(), 0);
-    opener.fire('member-2');
-    assert.equal(opener.reloads(), 1);
-    // Tabs without a pending popup login, or with another identity, still reload.
-    const other = observe('{}', false);
-    other.fire('member-1');
-    assert.equal(other.reloads(), 1);
-    const signedIn = observe(JSON.stringify({user_id: 'member-0'}), true);
-    signedIn.fire('member-1');
-    assert.equal(signedIn.reloads(), 1);
+test('the Bakney handoff reset keeps the registration link waiting for this login', async () => {
+    const {ACCOUNT_RETURN_KEY} = await import('./accountSession.js');
+    const record = JSON.stringify({path: '#/subscribe/club/preregistration', state: null, at: Date.now()});
+    sessionStorage.setItem(ACCOUNT_RETURN_KEY, record);
+    sessionStorage.setItem('redirectAfterLogin', 'old');
+    initializeLoginSession({access_token:'a', refresh_token:'r', expires_in:3600, role:'athlete',
+        user_data:{user_id:'member-1'}}, true);
+    assert.equal(sessionStorage.getItem(ACCOUNT_RETURN_KEY), record);
+    assert.equal(sessionStorage.getItem('redirectAfterLogin'), null);
 });

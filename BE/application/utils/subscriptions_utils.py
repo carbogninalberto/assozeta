@@ -706,7 +706,10 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
     if created_storage_keys is None:
         created_storage_keys = []
     preregistration = False
-    preregistration_user = user
+    # A renewal keeps the owner of the renewed subscription; otherwise the owner
+    # is resolved below exactly as for a normal registration (including an
+    # account created in this request).
+    preregistration_user = None
     if 'preregistration' in data.keys() and data['preregistration'] is not None and \
             data['preregistration'] is True:
         if 'subscription_id' in data.keys() and data['subscription_id'] is not None:
@@ -1136,7 +1139,8 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         subscription_data['creation_date'] = date_from # the actual start date
         subscription_data['start_date'] = current_date_from
         subscription_data['end_date'] = current_date_to
-        subscription_data['user'] = preregistration_user
+        if preregistration_user is not None:
+            subscription_data['user'] = preregistration_user
 
     try:
         # Create the subscription with all data in a single query

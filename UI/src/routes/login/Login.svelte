@@ -1,6 +1,6 @@
 <script>
     import {initializeLoginSession} from 'utils/loginSession.js';
-    import {closeAccountLoginPopup} from 'utils/accountSession.js';
+    import {accountReturnPath} from 'utils/accountSession.js';
     import {Capacitor} from '@capacitor/core';
     import {Eye, EyeOff} from 'lucide-svelte';
     import * as jose from 'jose';
@@ -479,9 +479,10 @@
                     setPermissions(profileResult.response.info.role);
                     role.set(profileResult.response.info.role);
                 }
-                // Opened by "CREA o ACCEDI con l'account": its page continues.
-                if (closeAccountLoginPopup()) return;
-                if (!collaborator && response.role != 'athlete' && location.href != '/welcome')
+                // Back to the registration link that asked for an account, if any.
+                const back = accountReturnPath();
+                if (back) location.href = '/' + back;
+                else if (!collaborator && response.role != 'athlete' && location.href != '/welcome')
                     location.href = '/#/welcome';
                 else location.href = '/';
                 // location.replace('/');
@@ -643,8 +644,6 @@
                 }
             }).then(function() { */
             initializeLoginSession(response);
-            // Opened by "CREA o ACCEDI con l'account": its page continues.
-            if (closeAccountLoginPopup()) return;
             // location.replace('/');
 
             // before redirect check if need to do stripe onboarding or show onboarded page
@@ -669,7 +668,9 @@
                     location.href = '/#/stripe/onboarded';
                 } else {
                     setPermissions(response.role);
-                    location.href = '/';
+                    // Back to the registration link that asked for an account, if any.
+                    const back = accountReturnPath();
+                    location.href = back ? '/' + back : '/';
                 }
             }, 1000);
             //});

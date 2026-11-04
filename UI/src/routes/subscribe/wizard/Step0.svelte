@@ -2,7 +2,7 @@
     import {SmartSelect} from 'components/formBuilder/preview-blocks';
     import {onMount} from 'svelte';
     import {sessionToken, userData} from 'store/stores';
-    import {continueWithAccount} from 'utils/accountSession.js';
+    import {continueWithAccount, wizardChoices} from 'utils/accountSession.js';
     import {ArrowRight, ArrowDown} from 'phosphor-svelte';
     import Select from 'svelte-select/Select.svelte';
     import FederationSettings from './partials/federation-settings.svelte';
@@ -148,7 +148,7 @@
     }
 
     function checkLogin() {
-        continueWithAccount(() => wizardData.toStep(1));
+        continueWithAccount(() => wizardData.toStep(1), {state: wizardChoices(wizardData.formData)});
     }
 
     function canContinue() {
