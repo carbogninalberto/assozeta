@@ -409,7 +409,8 @@
                             La fatturazione dell’istanza resta invariata.</InstanceAlert>
                     {/if}
                     <InstanceAlert tone="warning">I dati attuali saranno sostituiti. Prima di procedere verrà creato e verificato
-                        un backup di sicurezza scaricabile. Durante il ripristino le modifiche e i processi in background saranno sospesi.</InstanceAlert>
+                        un backup di sicurezza scaricabile. Durante il ripristino le modifiche e i processi in background saranno sospesi.
+                        Al termine, i backup di sicurezza dei ripristini precedenti verranno eliminati: scaricali prima se vuoi conservarli.</InstanceAlert>
                     {#if selected.preview.missing_media}
                         <Switch id="restore-missing-media" bind:checked={allowMissing} disabled={busy}
                             label={`Accetto che ${selected.preview.missing_media} allegati o firme non inclusi non siano recuperati`} />
@@ -433,7 +434,7 @@
             </div>
         {/if}
         {#if backups.length}
-            <InstanceAccordion id="data-recovery-history" title="Backup di sicurezza" description="Copie dei dati precedenti, create prima di ogni ripristino." count={backups.length}>
+            <InstanceAccordion id="data-recovery-history" title="Backup di sicurezza" description="Copia dei dati precedenti all’ultimo ripristino completato." count={backups.length}>
             {#each backups as op}
                 <div class="recovery-row">
                     <div class="recovery-caption"><strong>{new Date(op.created_at).toLocaleString('it-IT')}</strong><span>{labels[op.stage] || op.stage}</span></div>

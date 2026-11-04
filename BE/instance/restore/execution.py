@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.files import File
 from django.core.files.storage import default_storage
+from django.db.models import Q
 from django.utils import timezone
 from application.services.export_service import AssociationExportService
 from instance.models import DataRestore, InstanceConfiguration
@@ -101,6 +102,63 @@ def cleanup(op):
         logger.exception('Restore temporary-file cleanup will be retried: %s', op.id)
 
 
+def referenced_restore_keys():
+    """Staged objects that a record, including a soft-deleted one, still reads."""
+    from docmanager.models import Document
+    from application.models import Subscription
+    keys = set(Document._base_manager.filter(filepath__startswith='restores/')
+               .values_list('filepath', flat=True))
+    for key, url in (Subscription._base_manager.filter(Q(signature_storage_key__startswith='restores/') |
+                                                       Q(signature_url__contains='/restores/'))
+                     .values_list('signature_storage_key', 'signature_url')):
+        keys.add(key)
+        if url and '/restores/' in url:
+            keys.add('restores/' + url.split('/restores/', 1)[1])
+    return keys
+
+
+def prune_storage():
+    """Drop attachment copies replaced by a later restore and old recovery files.
+
+    Each restore stages every attachment under its own prefix and keeps a full
+    recovery archive, so repeated restores otherwise multiply storage and the
+    size of every server backup. The newest DATA_RESTORE_RECOVERY_BACKUPS
+    completed restores keep their recovery archive. The caller holds the
+    exclusive restore lock, so no restore is staging or replacing meanwhile.
+    """
+    terminal = DataRestore.objects.exclude(state__in=DataRestore.ACTIVE)
+    referenced = referenced_restore_keys()
+    for op in terminal.filter(state='completed').exclude(media={}).iterator():
+        kept = {identity: key for identity, key in op.media.items() if key in referenced}
+        for key in set(op.media.values()) - referenced:
+            default_storage.delete(key)
+        if kept != op.media:
+            logger.info('Removed %s superseded restore attachments: %s', len(op.media) - len(kept), op.id)
+            save_operation(op, media=kept)
+    # An unsuccessful restore never replaced data, so its snapshot only
+    # duplicates the current state; a retry always takes a fresh one.
+    retained = getattr(settings, 'DATA_RESTORE_RECOVERY_BACKUPS', None)
+    if retained is None:
+        retained = int(os.environ.get('DATA_RESTORE_RECOVERY_BACKUPS', 1))
+    for op in terminal.exclude(backup_path='').order_by('-created_at', '-id').iterator():
+        if op.state == 'completed' and retained > 0:
+            retained -= 1
+            continue
+        default_storage.delete(op.backup_path)
+        save_operation(op, backup_path='', backup_sha256='')
+        logger.info('Removed restore recovery archive: %s', op.id)
+    # Retries replace backup_path; earlier attempts' archives are unreachable.
+    for op in terminal.iterator():
+        try:
+            _, files = default_storage.listdir(f'restores/{op.id}/recovery')
+        except FileNotFoundError:
+            continue
+        for filename in files:
+            key = f'restores/{op.id}/recovery/{filename}'
+            if key != op.backup_path:
+                default_storage.delete(key)
+
+
 def stage_media(op, archive, progress=None):
     # After interruption, remove uncommitted objects and rebuild the mapping. The
     # durable completion state is checked before reaching this function.
@@ -185,3 +243,8 @@ def execute(operation_id):
             op.refresh_from_db()
             if op.state not in DataRestore.ACTIVE:
                 cleanup(op)
+            if op.state == 'completed':
+                try:
+                    prune_storage()
+                except Exception:
+                    logger.exception('Restore storage pruning will be retried')

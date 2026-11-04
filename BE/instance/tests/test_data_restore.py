@@ -736,6 +736,67 @@ class RestoreTests(TransactionTestCase):
         self.assertEqual(active.state, 'queued')
         self.assertTrue(default_storage.exists(active.upload_path))
 
+    def restore_document(self, identity, content):
+        op = self.start(self.upload(self.archive({
+            'Document': [{'document_id': identity, 'filename': 'new.pdf', 'filepath': 'bakney/source.pdf'}],
+            'SportAssociationDocumentsArchive': [{
+                'sport_association_documents_archive_id': str(uuid.uuid4()),
+                'sport_association_id': self.source_association, 'document_id': identity,
+            }],
+        }, {f'files/general_documents/{identity}/new.pdf': content})))
+        execute(op.pk)
+        op.refresh_from_db()
+        self.assertEqual(op.state, 'completed', op.error)
+        return op
+
+    def test_later_restore_prunes_superseded_attachments_and_recovery_archives(self):
+        from docmanager.models import Document
+        identity = str(uuid.uuid4())
+        first = self.restore_document(identity, b'first bytes')
+        first_media, first_backup = list(first.media.values()), first.backup_path
+        self.assertTrue(default_storage.exists(first_backup))
+        second = self.restore_document(identity, b'second bytes')
+        first.refresh_from_db()
+        # The second recovery archive already holds the first restore's files.
+        self.assertEqual(first.media, {})
+        self.assertEqual(first.backup_path, '')
+        for key in first_media + [first_backup]:
+            self.assertFalse(default_storage.exists(key))
+        with default_storage.open(Document.objects.get(pk=identity).filepath) as source:
+            self.assertEqual(source.read(), b'second bytes')
+        self.assertTrue(default_storage.exists(second.backup_path))
+        self.assertEqual([row['id'] for row in self.client.get(self.endpoint).data['backups']], [str(second.id)])
+
+    def test_pruning_keeps_referenced_attachments_and_configured_recovery_archives(self):
+        from docmanager.models import Document
+        from instance.restore.execution import prune_storage
+        identity, retained = str(uuid.uuid4()), str(uuid.uuid4())
+        first = self.restore_document(identity, b'first bytes')
+        kept_key = next(iter(first.media.values()))
+        # A record outside the replaced association data still reads this copy.
+        Document.objects.create(document_id=uuid.uuid4(), filename='kept.pdf', filepath=kept_key)
+        with override_settings(DATA_RESTORE_RECOVERY_BACKUPS=2):
+            second = self.restore_document(retained, b'second bytes')
+            prune_storage()
+        first.refresh_from_db()
+        self.assertTrue(default_storage.exists(kept_key))
+        self.assertEqual(list(first.media.values()), [kept_key])
+        self.assertTrue(default_storage.exists(first.backup_path))
+        self.assertTrue(default_storage.exists(second.backup_path))
+
+    def test_cleanup_task_removes_failed_and_orphaned_recovery_archives(self):
+        from instance.tasks import cleanup_data_restores
+        completed = self.restore_document(str(uuid.uuid4()), b'bytes')
+        orphan = default_storage.save(f'restores/{completed.id}/recovery/earlier-attempt.zip', ContentFile(b'old'))
+        failed = DataRestore.objects.create(owner=self.owner, association_id=self.association.pk, state='failed',
+                                            backup_path=default_storage.save('restores/failed/recovery/x.zip', ContentFile(b'x')))
+        cleanup_data_restores.run()
+        failed.refresh_from_db()
+        self.assertEqual(failed.backup_path, '')
+        self.assertFalse(default_storage.exists('restores/failed/recovery/x.zip'))
+        self.assertFalse(default_storage.exists(orphan))
+        self.assertTrue(default_storage.exists(completed.backup_path))
+
     def test_normal_tasks_defer_during_restore_and_exclusive_lifecycle_work(self):
         from celery.exceptions import Retry
         from instance.restore.task_base import CoordinatedTask

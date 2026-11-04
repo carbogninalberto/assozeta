@@ -168,6 +168,19 @@ must be encrypted or stored with restrictive permissions. A backup on the same
 server does not protect against disk or host loss; copy it to independent
 storage.
 
+Before stopping anything, backup checks the free space in the destination. The
+object mirror is staged uncompressed next to the archive, so it requires the
+database plus object-storage size twice (once with GNU tar, which deletes staged
+files as they are archived) plus `ASSOZETA_BACKUP_SPACE_MARGIN_MB` (default
+1024). An upgrade also reserves `ASSOZETA_UPGRADE_IMAGE_SPACE_MB` (default 2048)
+for the new images. When space is short, the command stops without touching the
+services and the update page shows the required and available space.
+
+After a successful backup, only the newest `ASSOZETA_BACKUP_KEEP` archives
+(default 2, set in `.env`; `0` disables pruning) are kept in `selfhost/backups/`.
+The archive of a pending upgrade is never removed, and other destinations are
+not pruned. Copy archives off-host before they are rotated out.
+
 Backup stops the API, worker, and scheduler services while PostgreSQL and MinIO
 are snapshotted, then restarts them only if any were running beforehand. Caddy
 serves the maintenance page during this interval. Expect brief write downtime
