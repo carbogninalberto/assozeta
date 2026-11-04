@@ -28,7 +28,8 @@ from application.models import CourseSubscription, CourseSubscriptionInstallment
 from application.exceptions import DuplicateSubscriptionError
 from application.models.payment_models import Payment, PaymentCategory
 from application.models.subscriptions_models import Signature, MedicalCertificate, SubscriptionMembership
-from application.models.subscriptions_models import Subscription
+from application.models.subscriptions_models import Subscription, future_renewal_exists
+from application.models.carnet_models import CarnetSubscription
 from application.models.user_models import SportAssociation, User
 from application.serializers.auth_serializers import UserSerializer, UserAccountSerializer
 from application.serializers.courses_serializers import CourseSubscriptionSerializer, CourseEventsSerializer
@@ -44,7 +45,8 @@ from core.settings import STORAGE_DIR
 from docmanager.models import Document
 from notifications.services import NotificationService
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, TrigramSimilarity
-from django.db.models import F, Value as V, CharField, Q, Case, When, FloatField, BigIntegerField
+from django.db.models import F, Value as V, CharField, Q, Case, When, FloatField, BigIntegerField, Exists, OuterRef, \
+    Prefetch
 from django.db.models.functions import Concat, Cast
 
 logger = logging.getLogger(__name__)
@@ -465,21 +467,8 @@ def check_if_subscription_exists(sport_association, associate_data, date_from, d
             custom_data=custom_data
         )
 
-        # can be renewed if is not current
-        renewal_available = not sub.is_current
-
-        if renewal_available is True:
-            # if it is renewable, make sure there is no subscription created later than current
-            current_year_sub = Subscription.objects.filter(
-                sport_association=sub.sport_association,
-                start_date__gte=sub.end_date,
-                archived=False,
-                associate__tax_code__iexact=sub.associate.tax_code
-            ).count()
-            # can be renewed if there is no subscription created later than current
-            renewal_available = current_year_sub == 0
         # if renewal is not available, then the subscription already exists
-        return not renewal_available
+        return not sub.is_renewal_available()
     return exists
 
 
@@ -1267,7 +1256,19 @@ def get_optimized_subscriptions(user):
     tax_codes = scoped_queryset(user, Subscription.objects).filter(user=user).values_list('associate__tax_code', flat=True).distinct()
     if len(tax_codes) == 0:
         []
-    subscriptions = scoped_queryset(user, Subscription.objects).filter(Q(user=user) | Q(associate__tax_code__in=tax_codes)).prefetch_related('medical', 'medical__document', 'associate', 'sport_association').order_by('-creation_date')
+    subscriptions = scoped_queryset(user, Subscription.objects).filter(
+        Q(user=user) | Q(associate__tax_code__in=tax_codes)
+    ).select_related(
+        'medical', 'medical__document', 'associate', 'associate__user'
+    ).prefetch_related(
+        # Few distinct, wide rows: a join would repeat them on every subscription row
+        'sport_association', 'associate__sport_association__user',
+        'tags',
+        Prefetch('coursesubscription_set', queryset=CourseSubscription.objects.select_related('course'))
+    ).annotate(
+        _has_carnets=Exists(CarnetSubscription.objects.filter(subscription=OuterRef('pk'))),
+        _has_future_renewal=future_renewal_exists(),
+    ).order_by('-creation_date')
     return SubscriptionSerializerAthleteOptimizedList(subscriptions, many=True).data
 
 

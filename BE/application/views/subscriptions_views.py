@@ -59,7 +59,7 @@ from application.serializers.subscriptions_serializers import SubscriptionSerial
     SubscriptionFastBasicSerializer, SubscriptionTransferCreateSerializer, \
     SubscriptionMembershipSerializer, SubscriptionFastOptimizedSerializer
 from application.serializers.auth_serializers import UserAccountSerializer
-from application.models.subscriptions_models import Subscription
+from application.models.subscriptions_models import Subscription, future_renewal_exists
 from application.serializers.user_serializers import AssociateSerializer, MedicalAppointmentsSerializer
 from application.utils.api_utils import is_valid_uuid, SubscriptionMaps, BalanceSheetData, KTDatatablePagination, \
     check_date, generate_image_with_text
@@ -852,25 +852,18 @@ def _parse_list_query_params(request):
     return params
 
 
-def _get_base_subscriptions_queryset(sport_association, params={}):
-    """Get base optimized subscriptions queryset with all necessary joins."""
-    from django.db.models import Prefetch, Exists, OuterRef
-
-    payments_prefetch = Prefetch(
+def _active_payments_prefetch():
+    """Non-archived payments of each associate, read by the payments_info/all_payments_paid fields."""
+    return Prefetch(
         'associate__payment_set',
         queryset=Payment.objects.filter(archived=False).only(
             'payment_id', 'paid', 'amount', 'archived', 'associate_id'
         )
     )
 
-    # Subquery to check if there's a future subscription for renewal_available
-    # This runs ONCE for all subscriptions instead of N times
-    future_subscription_exists = Subscription.objects.filter(
-        sport_association=OuterRef('sport_association'),
-        start_date__gte=OuterRef('end_date'),
-        archived=False,
-        associate__tax_code__iexact=OuterRef('associate__tax_code')
-    )
+
+def _get_base_subscriptions_queryset(sport_association, params={}):
+    """Get base optimized subscriptions queryset with all necessary joins."""
     if params['mode'] is None:
         return Subscription.objects.filter(
             sport_association=sport_association,
@@ -881,16 +874,15 @@ def _get_base_subscriptions_queryset(sport_association, params={}):
             'medical',
             'medical__document',
             'document_pdf',
-            'user',
-            'sport_association',
             'payment'
         ).prefetch_related(
             # Many-to-many and reverse relationships
             'tags',
-            payments_prefetch
+            # Few distinct, wide rows: a join would repeat them on every subscription row
+            'user',
+            _active_payments_prefetch()
         ).annotate(
-            # Annotate whether a future renewal exists (eliminates N+1 queries)
-            _has_future_renewal=Exists(future_subscription_exists)
+            _has_future_renewal=future_renewal_exists()
         ).order_by('-creation_date')
     else:
        return Subscription.objects.filter(
@@ -907,7 +899,10 @@ def _apply_basic_filters(subscriptions, params):
             for tag_id in params['tags_ids']:
                 subscriptions = subscriptions.filter(tags__tag_id=tag_id)
         else:
-            subscriptions = subscriptions.filter(tags__tag_id__in=params['tags_ids'])
+            # A subquery instead of a join: a join returns a subscription once per matching tag.
+            subscriptions = subscriptions.filter(subscription_id__in=Subscription.tags.through.objects.filter(
+                tags_id__in=params['tags_ids']
+            ).values('subscription_id'))
 
     if params['from_age']:
         subscriptions = subscriptions.filter(associate__born_date__lte=datetime.now() - relativedelta(years=int(params['from_age'])))
@@ -1113,8 +1108,10 @@ def subscription_list(request):
         elif params['filter'] != 'all':
             subscriptions = subscriptions.filter(status_flag=params['filter'])
 
-        # Optimize queryset with select_related to avoid N+1 queries
-        subscriptions = subscriptions.select_related('associate')
+        subscriptions = subscriptions.select_related('associate').only(
+            'subscription_id', 'start_date', 'end_date', 'associate__associate_id', 'associate__first_name',
+            'associate__last_name', 'associate__tax_code', 'associate__family_id', 'associate__family_role',
+        )
 
         # Use high-performance serializer (base Serializer instead of ModelSerializer)
         subs = SubscriptionFastBasicSerializer(subscriptions, many=True).data
@@ -1148,10 +1145,14 @@ def subscription_list_archived(request):
         'medical',
         'medical__document',
         'document_pdf',
-        'user',
-        'sport_association'
     ).prefetch_related(
-        'tags'
+        'tags',
+        # Few distinct, wide rows: a join would repeat them on every subscription row
+        'user',
+        'sport_association',
+        _active_payments_prefetch()
+    ).annotate(
+        _has_future_renewal=future_renewal_exists()
     ).order_by('-creation_date')
     data = {}
 
@@ -1183,8 +1184,9 @@ def subscription_list_archived(request):
 
     subscriptions = paginator.paginate_queryset(queryset=subscriptions, request=request)
 
-    for idx, subscription in enumerate(subscriptions):
-        data[idx] = SubscriptionSerializer(subscription).data
+    serialized = SubscriptionSerializer(subscriptions, many=True).data
+    for idx, (subscription, row) in enumerate(zip(subscriptions, serialized)):
+        data[idx] = row
         date_from, date_to = BalanceSheetData.get_range_from_year_and_starting_date(
             date=subscription.creation_date,
             starting_day=request.user.balance_sheet_start_day,
@@ -1198,19 +1200,7 @@ def subscription_list_archived(request):
         if data[idx]['current_year']:
             data[idx]['renewal_available'] = False
         else:
-            # override the date_from and date_to to get the correct renewal_available
-            date_from, date_to = BalanceSheetData.get_range_from_year_and_starting_date(
-                date=timezone.now(),
-                starting_day=request.user.balance_sheet_start_day,
-                starting_month=request.user.balance_sheet_start_month
-            )
-            current_year_sub = scoped_queryset(request, Subscription.objects).filter(
-                sport_association=sport_association,
-                start_date__gte=subscription.end_date,
-                archived=False,
-                associate__tax_code__iexact=subscription.associate.tax_code
-            ).count()
-            data[idx]['renewal_available'] = current_year_sub == 0
+            data[idx]['renewal_available'] = not subscription.has_future_renewal()
         if subscription.medical is not None:
             if subscription.medical.document:
                 data[idx]['medical_document'] = subscription.medical.document.document_id

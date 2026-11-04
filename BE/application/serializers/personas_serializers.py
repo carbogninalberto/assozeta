@@ -248,19 +248,7 @@ class AssociateSubscriptionSerializer(serializers.ModelSerializer):
         return obj.associate.age
 
     def get_renewal_available(self, obj):
-        # renewable available only if not current sub and there is not a sub in the current year
-        renewal_available = not obj.is_current
-
-        # check if there is a subscription created later than current
-        if renewal_available is True:
-            current_year_sub = Subscription.objects.filter(
-                sport_association=obj.sport_association,
-                start_date__gte=obj.end_date,
-                archived=False,
-                associate__tax_code__iexact=obj.associate.tax_code
-            ).count()
-            renewal_available = current_year_sub == 0
-        return renewal_available
+        return obj.is_renewal_available()
 
     class Meta:
         model = Subscription

@@ -23,7 +23,7 @@ from application.models.payment_models import Payment, SupplierAndCustomers
 from application.models.user_models import User, Associate, SportAssociation, Instructor
 from application.utils.api_utils import BalanceSheetData, parse_date
 from docmanager.models import Document
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 
 logger = logging.getLogger(__name__)
 
@@ -560,6 +560,17 @@ class Subscription(GroupModelMixin):
         """
         return self.signature_url
 
+    def has_future_renewal(self):
+        """Uses the ``_has_future_renewal`` annotation when the queryset provides it."""
+        if hasattr(self, '_has_future_renewal'):
+            return self._has_future_renewal
+        return Subscription._base_manager.filter(pk=self.pk).annotate(
+            _has_future_renewal=future_renewal_exists()
+        ).values_list('_has_future_renewal', flat=True).get()
+
+    def is_renewal_available(self):
+        return not self.is_current and not self.has_future_renewal()
+
     @property
     def has_signature(self):
         return bool(self.signature_storage_key or self.signature_url)
@@ -734,6 +745,25 @@ class Subscription(GroupModelMixin):
                 exc_info=True
             )
             raise StorageUnavailableError()
+
+
+def future_renewal_exists():
+    """
+    Exists() subquery, correlated on the outer subscription: a non-archived
+    subscription of the same person (case-insensitive tax code) in the same
+    association starting on or after the outer subscription's end date.
+
+    The associate is scoped to the association too, so Postgres can look the
+    tax code up through ``associate_tax_code_upper_idx`` instead of scanning
+    every associate of every association for each row.
+    """
+    return Exists(Subscription.objects.filter(
+        sport_association=OuterRef('sport_association'),
+        start_date__gte=OuterRef('end_date'),
+        archived=False,
+        associate__sport_association=OuterRef('sport_association'),
+        associate__tax_code__iexact=OuterRef('associate__tax_code'),
+    ))
 
 
 class SubscriptionMembership(models.Model):
