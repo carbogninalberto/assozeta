@@ -5071,11 +5071,11 @@
       "title": "Come pagano gli atleti",
       "content_sha256": "b35a85b0d1ef0590691a892e2cfd38113f726d358e550cf0332133ef0ae4dc85",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "38575b8ef772c31018085a2a72d39aa3f075a63bfd43eaee15ed723e7864e449",
+      "recipe_sha256": "7067ffd109e1a7c8d5189974518625575dc5b15fe97acd1dc9beeba810fb075f",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "4499f450885f4dccc564ea89430e53852d132f5b5a1504df2f23ba69be6cb123",
-        "sha256": "38575b8ef772c31018085a2a72d39aa3f075a63bfd43eaee15ed723e7864e449",
+        "previous_sha256": "38575b8ef772c31018085a2a72d39aa3f075a63bfd43eaee15ed723e7864e449",
+        "sha256": "7067ffd109e1a7c8d5189974518625575dc5b15fe97acd1dc9beeba810fb075f",
         "purpose": "editorial-review-only"
       }
     },
@@ -5167,11 +5167,11 @@
       "title": "Come funziona per i tuoi atleti?",
       "content_sha256": "6fe7f2fd3393d4c2a8d863b1994c93961a32bbc6f0d6dcb4a68667ca0f4b9eea",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "38575b8ef772c31018085a2a72d39aa3f075a63bfd43eaee15ed723e7864e449",
+      "recipe_sha256": "7067ffd109e1a7c8d5189974518625575dc5b15fe97acd1dc9beeba810fb075f",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "4499f450885f4dccc564ea89430e53852d132f5b5a1504df2f23ba69be6cb123",
-        "sha256": "38575b8ef772c31018085a2a72d39aa3f075a63bfd43eaee15ed723e7864e449",
+        "previous_sha256": "38575b8ef772c31018085a2a72d39aa3f075a63bfd43eaee15ed723e7864e449",
+        "sha256": "7067ffd109e1a7c8d5189974518625575dc5b15fe97acd1dc9beeba810fb075f",
         "purpose": "editorial-review-only"
       }
     },
@@ -5203,11 +5203,11 @@
       "title": "I pagamenti sono sicuri?",
       "content_sha256": "c5755aa6b736278d337b07936c486bb24d2835d1c2718c77ef01af3820cd3477",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "8b4b7e603678320feef4e6c69b533bda5a857495d72ddf53b0b023ad71054a60",
+      "recipe_sha256": "c2aeb0b04b0e87d0a32cfed8fa14de20a8656df61cae85bd59c8f8421b6af484",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "4499f450885f4dccc564ea89430e53852d132f5b5a1504df2f23ba69be6cb123",
-        "sha256": "8b4b7e603678320feef4e6c69b533bda5a857495d72ddf53b0b023ad71054a60",
+        "previous_sha256": "8b4b7e603678320feef4e6c69b533bda5a857495d72ddf53b0b023ad71054a60",
+        "sha256": "c2aeb0b04b0e87d0a32cfed8fa14de20a8656df61cae85bd59c8f8421b6af484",
         "purpose": "editorial-review-only"
       }
     },
