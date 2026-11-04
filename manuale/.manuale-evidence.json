@@ -2251,11 +2251,11 @@
       "title": "Come funziona il login con il 2FA",
       "content_sha256": "4f801685a40641b9eb967072f1864e12d766d0e5b56268accd22dc999528d287",
       "recipe_module": "docs/manuale/communication-auth-reference-recipes.mjs",
-      "recipe_sha256": "33cd939633d12c147c68406163bde51f59539957300c6a4a254b2862b3f244bf",
+      "recipe_sha256": "9ee5759aae3c62075fbefc0cc0944998a23bd6e1e3dfe2f5765b9c8d77cdbe1d",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "e611da0dd655733461079af22fd806e5cce93c5145a6456f5adf0d41e4f34903",
-        "sha256": "33cd939633d12c147c68406163bde51f59539957300c6a4a254b2862b3f244bf",
+        "previous_sha256": "33cd939633d12c147c68406163bde51f59539957300c6a4a254b2862b3f244bf",
+        "sha256": "9ee5759aae3c62075fbefc0cc0944998a23bd6e1e3dfe2f5765b9c8d77cdbe1d",
         "purpose": "editorial-review-only"
       }
     },

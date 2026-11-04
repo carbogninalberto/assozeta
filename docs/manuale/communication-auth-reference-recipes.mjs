@@ -20,7 +20,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
     "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e",
     "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
-    "UI/src/routes/login/Login.svelte": "1510aacbaefbe51d95da6a5b1f7cac164bc7318bc4e733fefe50c4e39755e5f0",
+    "UI/src/routes/login/Login.svelte": "ea7407fc05acb265734c11853af0d6e06cfb26d598426b412d71d317f20e61e6",
     "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
     "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
     "UI/src/components/inputs/email-builder/emailbuilder.js": "1e96505ab77517ff72f491223a91992d80d33ad8b79a42d13868c844ab331f07"

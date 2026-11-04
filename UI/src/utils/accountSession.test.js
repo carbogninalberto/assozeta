@@ -10,7 +10,9 @@ function storage() {
         removeItem: key => values.delete(key), clear: () => values.clear()};
 }
 globalThis.localStorage = storage();
-const {hasSessionToken, hasLoggedInSession, continueWithAccount} = await import('./accountSession.js');
+const {hasSessionToken, hasLoggedInSession, continueWithAccount, closeAccountLoginPopup, ACCOUNT_LOGIN_WINDOW,
+    AWAITING_ACCOUNT_LOGIN} = await import('./accountSession.js');
+const {get} = await import('svelte/store');
 const {sessionToken, userData} = await import('../store/stores.js');
 
 function fakeWindow() {
@@ -73,7 +75,8 @@ test('CREA o ACCEDI as anonymous opens the login popup and waits for the login',
     let continued = 0;
     continueWithAccount(() => { continued += 1; }, {win, storage: store});
     assert.equal(continued, 0, 'must not skip to the next step without an account');
-    assert.deepEqual(win.opened, [['https://club.example.test/#/login?redirect=/', 'Login', 'width=600,height=600']]);
+    assert.deepEqual(win.opened, [['https://club.example.test/#/login?redirect=/', ACCOUNT_LOGIN_WINDOW, 'width=600,height=600']]);
+    assert.equal(win[AWAITING_ACCOUNT_LOGIN], true, 'the opener is marked as awaiting its popup login');
     win.tick();
     win.tick();
     assert.equal(continued, 0);
@@ -87,6 +90,7 @@ test('CREA o ACCEDI as anonymous opens the login popup and waits for the login',
     assert.equal(continued, 1);
     assert.equal(win.closed, 1);
     assert.equal(win.timers.size, 0, 'polling stops after login');
+    assert.equal(win[AWAITING_ACCOUNT_LOGIN], false);
     win.tick();
     assert.equal(continued, 1);
 });
@@ -132,4 +136,43 @@ test('every "CREA o ACCEDI" entry point uses the shared account flow', () => {
         assert.match(source, /continueWithAccount\(/, file);
         assert.doesNotMatch(source, /window\.open\(/, file);
     }
+});
+
+test('continuing after the popup login refreshes the opener session stores', () => {
+    localStorage.clear();
+    sessionToken.useLocalStorage();
+    userData.useLocalStorage();
+    sessionToken.set(null);
+    userData.set({});
+    const win = fakeWindow();
+    let continued = 0;
+    continueWithAccount(() => { continued += 1; }, {win});
+    assert.equal(get(sessionToken), null);
+    // The popup writes the session into the shared storage.
+    localStorage.setItem('sessionToken', JSON.stringify('popup-access'));
+    localStorage.setItem('userData', JSON.stringify({user_id: 'user-9', first_name: 'Ada'}));
+    win.tick();
+    assert.equal(continued, 1);
+    assert.equal(get(sessionToken), 'popup-access');
+    assert.deepEqual(get(userData), {user_id: 'user-9', first_name: 'Ada'});
+});
+
+test('only the account login popup closes itself after logging in', () => {
+    const popup = (name, opener) => {
+        const win = {name, opener, closed: 0};
+        win.close = () => { win.closed += 1; };
+        return win;
+    };
+    const live = {closed: false};
+    const own = popup(ACCOUNT_LOGIN_WINDOW, live);
+    assert.equal(closeAccountLoginPopup(own), true);
+    assert.equal(own.closed, 1);
+    for (const win of [popup('', live), popup('Login', live), popup(ACCOUNT_LOGIN_WINDOW, null),
+        popup(ACCOUNT_LOGIN_WINDOW, {closed: true})]) {
+        assert.equal(closeAccountLoginPopup(win), false);
+        assert.equal(win.closed, 0);
+    }
+    const crossOrigin = popup(ACCOUNT_LOGIN_WINDOW, null);
+    Object.defineProperty(crossOrigin, 'opener', {get() { throw new Error('blocked'); }});
+    assert.equal(closeAccountLoginPopup(crossOrigin), false);
 });

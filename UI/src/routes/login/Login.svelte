@@ -1,5 +1,6 @@
 <script>
     import {initializeLoginSession} from 'utils/loginSession.js';
+    import {closeAccountLoginPopup} from 'utils/accountSession.js';
     import {Capacitor} from '@capacitor/core';
     import {Eye, EyeOff} from 'lucide-svelte';
     import * as jose from 'jose';
@@ -478,6 +479,8 @@
                     setPermissions(profileResult.response.info.role);
                     role.set(profileResult.response.info.role);
                 }
+                // Opened by "CREA o ACCEDI con l'account": its page continues.
+                if (closeAccountLoginPopup()) return;
                 if (!collaborator && response.role != 'athlete' && location.href != '/welcome')
                     location.href = '/#/welcome';
                 else location.href = '/';
@@ -640,6 +643,8 @@
                 }
             }).then(function() { */
             initializeLoginSession(response);
+            // Opened by "CREA o ACCEDI con l'account": its page continues.
+            if (closeAccountLoginPopup()) return;
             // location.replace('/');
 
             // before redirect check if need to do stripe onboarding or show onboarded page

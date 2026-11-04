@@ -21,6 +21,8 @@ async function bundle(wizard) {
     const result = await build({
         stdin: {
             contents: `import Step0 from ${JSON.stringify(step0)};
+                import {observeLoginIdentity} from ${JSON.stringify(source + '/src/utils/loginSession.js')};
+                window.observeLoginIdentity = observeLoginIdentity;
                 window.mountStep0 = wizardData => new Step0({target: document.body, props: {wizardData}});`,
             resolveDir: ui,
         },
@@ -46,9 +48,9 @@ async function bundle(wizard) {
     return result.outputFiles[0].text;
 }
 
-async function mount(page, code, {preregistration, loggedIn}) {
+async function mount(page, code, {preregistration, loggedIn, realPopup = false}) {
     await page.goto(origin + '/');
-    await page.evaluate(({preregistration, loggedIn}) => {
+    await page.evaluate(({preregistration, loggedIn, realPopup}) => {
         localStorage.clear();
         if (loggedIn) {
             localStorage.setItem('sessionToken', JSON.stringify('access-token'));
@@ -57,7 +59,8 @@ async function mount(page, code, {preregistration, loggedIn}) {
         window.requests = [];
         window.steps = [];
         window.popups = [];
-        window.open = (...args) => {
+        window.documentMarker = 'original-document';
+        if (!realPopup) window.open = (...args) => {
             const popup = {args, closed: 0, close() { popup.closed += 1; }};
             window.popups.push(popup);
             return popup;
@@ -74,8 +77,10 @@ async function mount(page, code, {preregistration, loggedIn}) {
             nextStep: () => window.steps.push(['nextStep']),
             createSubscription: () => window.steps.push(['createSubscription']),
         };
-    }, {preregistration, loggedIn});
+    }, {preregistration, loggedIn, realPopup});
     await page.addScriptTag({content: code});
+    // As main.js: every app document reloads when another tab changes identity.
+    if (realPopup) await page.evaluate(() => window.observeLoginIdentity());
     await page.evaluate(() => window.mountStep0(window.wizardData));
 }
 
@@ -85,7 +90,8 @@ try {
     const page = await browser.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
-    await page.route(origin + '/**', route => route.fulfill({contentType: 'text/html', body: '<html><body></body></html>'}));
+    // Context-wide, so the real login popup is served too.
+    await page.context().route(origin + '/**', route => route.fulfill({contentType: 'text/html', body: '<html><body></body></html>'}));
 
     for (const wizard of wizards) {
         const code = await bundle(wizard);
@@ -101,7 +107,7 @@ try {
             await account.click();
             assert.deepEqual(await page.evaluate(() => window.steps), [], `${label}: skipped the login and changed step`);
             assert.deepEqual(await page.evaluate(() => window.popups.map(p => p.args)),
-                [[origin + '/#/login?redirect=/', 'Login', 'width=600,height=600']], `${label}: login popup not opened`);
+                [[origin + '/#/login?redirect=/', 'assozeta-account-login', 'width=600,height=600']], `${label}: login popup not opened`);
             await page.waitForTimeout(1300);
             assert.deepEqual(await page.evaluate(() => window.steps), [], `${label}: continued without logging in`);
 
@@ -114,6 +120,24 @@ try {
             assert.equal(await page.evaluate(() => window.popups[0].closed), 1, `${label}: login popup not closed`);
             await page.waitForTimeout(1300);
             assert.deepEqual(await page.evaluate(() => window.steps), [['toStep', 1]], `${label}: polling did not stop`);
+
+            // Real popup and identity observer: logging in inside the popup must
+            // close it and continue this wizard, not reload this tab and orphan it.
+            await mount(page, code, {preregistration, loggedIn: false, realPopup: true});
+            const opened = page.waitForEvent('popup');
+            await page.getByRole('button', {name: "CREA o ACCEDI con l'account"}).click();
+            const popup = await opened;
+            assert.equal(popup.url(), origin + '/#/login?redirect=/', `${label}: unexpected login popup URL`);
+            await popup.evaluate(() => {
+                // What initializeLoginSession() stores after a successful login.
+                localStorage.setItem('sessionToken', JSON.stringify('popup-access'));
+                localStorage.setItem('userData', JSON.stringify({user_id: 'member-1', first_name: 'Ada', last_name: 'Rossi'}));
+                localStorage.setItem('loginIdentity', 'member-1');
+            });
+            await expect.poll(() => popup.isClosed(), {timeout: 5000, message: `${label}: login tab left open`}).toBe(true);
+            await expect.poll(() => page.evaluate(() => window.steps), {timeout: 5000}).toEqual([['toStep', 1]]);
+            assert.equal(await page.evaluate(() => window.documentMarker), 'original-document',
+                `${label}: the wizard tab was reloaded by the login`);
 
             // "Continua senza account" still goes to the next step without an account.
             await mount(page, code, {preregistration, loggedIn: false});

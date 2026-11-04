@@ -54,3 +54,33 @@ test('an identity change in another tab reloads and closes its old document', ()
     listener({key:'loginIdentity',newValue:'another-user'});
     assert.equal(reloads,1);
 });
+
+test('a tab without a session awaiting its account popup login is not reloaded', async () => {
+    const {AWAITING_ACCOUNT_LOGIN} = await import('./accountSession.js');
+    const observe = (userData, awaiting) => {
+        let listener, reloads = 0;
+        localStorage.setItem('userData', userData);
+        globalThis.window = {addEventListener: (name, fn) => { listener = fn; }, location: {reload: () => reloads++},
+            [AWAITING_ACCOUNT_LOGIN]: awaiting};
+        observeLoginIdentity();
+        return {fire: value => listener({key: 'loginIdentity', newValue: value}), reloads: () => reloads,
+            win: globalThis.window};
+    };
+    // The opener of "CREA o ACCEDI con l'account" keeps its wizard and popup.
+    const opener = observe('{}', true);
+    opener.fire('member-1');
+    assert.equal(opener.reloads(), 0);
+    // It is now that member: a later login as someone else still reloads it.
+    opener.win[AWAITING_ACCOUNT_LOGIN] = false;
+    opener.fire('member-1');
+    assert.equal(opener.reloads(), 0);
+    opener.fire('member-2');
+    assert.equal(opener.reloads(), 1);
+    // Tabs without a pending popup login, or with another identity, still reload.
+    const other = observe('{}', false);
+    other.fire('member-1');
+    assert.equal(other.reloads(), 1);
+    const signedIn = observe(JSON.stringify({user_id: 'member-0'}), true);
+    signedIn.fire('member-1');
+    assert.equal(signedIn.reloads(), 1);
+});
