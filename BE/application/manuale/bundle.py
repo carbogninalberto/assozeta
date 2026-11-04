@@ -2,6 +2,11 @@
 
 Image deployment is activation: no shared-volume mutation or network request is
 needed, and rollback restores the previous package with the previous image.
+
+A release may carry the manual verified for an earlier release instead of
+rebuilding it. The image then declares that exact origin in MANUAL_CARRIED_FROM
+("<release> <revision>", written at build time next to the bundle); the bundle
+must match the declared origin, and is served unchanged for the running version.
 """
 import json
 import re
@@ -10,8 +15,25 @@ from pathlib import Path
 from .index import EvidenceError, ManualIndex, file_digest, owned_path, png_dimensions
 
 
+def carried_origin(root):
+    """The (release, revision) a carried manual was verified for, or None."""
+    marker = Path(root).parent / 'MANUAL_CARRIED_FROM'
+    if not marker.is_file():
+        return None
+    parts = marker.read_text().split()
+    if not parts:
+        return None
+    if len(parts) != 2 or not re.fullmatch(r'[0-9a-f]{40}', parts[1]):
+        raise EvidenceError('Invalid carried manual origin')
+    return parts[0], parts[1]
+
+
 def load_bundle(root, *, revision, release, required=False, verify_assets=False):
     root = Path(root)
+    origin = carried_origin(root) if root.exists() else None
+    running = (revision, release)
+    if origin is not None:
+        release, revision = origin
     if not root.exists():
         if required:
             raise EvidenceError('Required release manual is missing')
@@ -51,6 +73,8 @@ def load_bundle(root, *, revision, release, required=False, verify_assets=False)
             png_dimensions(path.read_bytes())
     index.asset_root = str(root)
     index.asset_content_addressed = False
+    if origin is not None:
+        index.carried_for = {running}
     return index
 
 

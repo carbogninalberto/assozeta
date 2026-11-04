@@ -35,19 +35,32 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertEqual(candidate['with']['retention-days'], 90)
         self.assertEqual(shared['jobs']['appliance']['needs'], 'verify')
 
-    def test_installable_images_require_manual_verification(self):
+    def test_release_images_bundle_a_fresh_or_carried_manual(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
-        self.assertIn('manual-release', jobs['publish']['needs'])
-        self.assertIn("needs.manual-release.result == 'success'", jobs['publish']['if'])
+        # The slow manual build runs only on an explicit manual dispatch.
         gate = jobs['manual-release']
         self.assertEqual(gate['uses'], './.github/workflows/manuale-release.yml')
+        self.assertEqual(gate['if'], "github.event_name == 'workflow_dispatch' && inputs.include_manual")
+        self.assertIn('manual-release', jobs['publish']['needs'])
+        self.assertIn("needs.manual-release.result == 'success'", jobs['publish']['if'])
         steps = jobs['publish']['steps']
         download = next(step for step in steps if step.get('uses', '').startswith('actions/download-artifact@'))
         self.assertEqual(download['with']['name'], 'manuale-release-runtime')
         self.assertEqual(download['with']['path'], 'BE/release-manual')
+        self.assertIn("needs.manual-release.result == 'success'", download['if'])
+        carried = next(step for step in steps if step.get('id') == 'carried')
+        self.assertIn("needs.manual-release.result != 'success'", carried['if'])
+        self.assertIn("env.RELEASE_TAG != ''", carried['if'])
+        self.assertIn('assozeta-backend:latest', carried['env']['SOURCE_IMAGE'])
+        self.assertIn('BE/release-manual', carried['run'])
         build = next(step for step in steps if step.get('uses', '').startswith('docker/build-push-action@'))
-        self.assertIn('REQUIRE_MANUAL=', build['with']['build-args'])
-        self.assertIn('manual-release', jobs['release-bundle']['needs'])
+        args = build['with']['build-args']
+        self.assertIn("REQUIRE_MANUAL=${{ needs.manual-release.result == 'success' || steps.carried.outputs.origin != '' }}", args)
+        self.assertIn('MANUAL_CARRIED_FROM=${{ steps.carried.outputs.origin }}', args)
+        self.assertIn('VERSION=${{ env.RELEASE_TAG || github.sha }}', args)
+        # Assets attach after the public images, whether or not a manual was rebuilt.
+        self.assertEqual(jobs['release-bundle']['needs'], ['publish', 'verify-release-images'])
+        self.assertIn("needs.verify-release-images.result == 'success'", jobs['release-bundle']['if'])
 
     def test_exact_package_and_historical_rehearsal_are_separate_required_phases(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/manuale-verify.yml').read_text())['jobs']
@@ -67,25 +80,38 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def test_failed_manual_gate_cannot_allow_release_publication(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
         expression = jobs['publish']['if'].strip().removeprefix('${{').removesuffix('}}').strip()
-        for event, manual, quality, cancelled in itertools.product(
-                ('release', 'workflow_dispatch', 'push'),
-                ('success', 'failure', 'cancelled', 'skipped'),
-                ('success', 'failure', 'cancelled', 'skipped'), (True, False)):
-            with self.subTest(event=event, manual=manual, quality=quality, cancelled=cancelled):
-                values = {'validate': 'success', 'production-smoke': 'success',
+        results = ('success', 'failure', 'cancelled', 'skipped')
+        for event, manual, quality, target, include, tag, cancelled in itertools.product(
+                ('release', 'workflow_dispatch', 'push'), results, results, results,
+                (True, False), ('', 'v1.0.0'), (True, False)):
+            if event != 'workflow_dispatch' and (include or tag):
+                continue  # inputs exist only on manual dispatch
+            with self.subTest(event=event, manual=manual, quality=quality, target=target,
+                              include=include, tag=tag, cancelled=cancelled):
+                values = {'validate': 'success', 'production-smoke': 'success', 'release-target': target,
                           'manual-release': manual, 'selfhost-quality': quality}
                 source = re.sub(r'needs\.([a-z-]+)\.result', lambda match: repr(values[match[1]]), expression)
                 source = source.replace('github.event_name', repr(event))
-                source = source.replace('!cancelled()', repr(not cancelled)).replace('&&', ' and ').replace('||', ' or ')
+                source = source.replace('inputs.include_manual', repr(include)).replace('inputs.release_tag', repr(tag))
+                source = source.replace('!cancelled()', repr(not cancelled)).replace('!=', ' NE ')
+                source = source.replace('!', ' not ').replace(' NE ', '!=')
+                source = source.replace('&&', ' and ').replace('||', ' or ')
                 tree = ast.parse('(' + source + ')', mode='eval')
-                allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.Eq, ast.Constant)
+                allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.Eq, ast.NotEq,
+                           ast.UnaryOp, ast.Not, ast.Constant)
                 self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(tree)))
                 permitted = eval(compile(tree, '<publication guard>', 'eval'), {'__builtins__': {}})
+                release_mode = event == 'release' or bool(tag)
+                requested = event == 'workflow_dispatch' and include
                 expected = not cancelled and (
-                    manual == 'success' or event == 'push' and manual == 'skipped') and (
+                    target == 'success' or not release_mode and target == 'skipped') and (
+                    manual == 'success' or not requested and manual == 'skipped') and (
                     quality == 'success' or event == 'push' and quality == 'skipped')
-                self.assertEqual(permitted, expected)
-
+                self.assertEqual(bool(permitted), expected)
+                if requested and manual != 'success':
+                    self.assertFalse(permitted, 'a requested manual must succeed')
+                if release_mode and target != 'success':
+                    self.assertFalse(permitted, 'a release must run from its tag')
 
 FAKE_CACHE = '''import json, sys
 from pathlib import Path
