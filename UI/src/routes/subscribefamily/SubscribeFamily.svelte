@@ -13,6 +13,7 @@
         UsersThree,
     } from 'phosphor-svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
+    import {hasLoggedInSession} from 'utils/accountSession.js';
     import {register, init, _, waitLocale, locale} from 'svelte-i18n';
     import Step0 from './wizard/Step0.svelte';
     import Step1 from './wizard/Step1.svelte';
@@ -185,7 +186,7 @@
         if (!res.error) {
             toast.success('Nuova iscrizione creata con successo.');
             setTimeout(() => {
-                if (localStorage.getItem('sessionToken')) {
+                if (hasLoggedInSession()) {
                     // check the role from the localstorage "role"
                     if (JSON.parse(localStorage.getItem('role')) === 'association') {
                         // redirect to the page #/members/list

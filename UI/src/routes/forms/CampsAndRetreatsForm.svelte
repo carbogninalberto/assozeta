@@ -1,6 +1,7 @@
 <script>
     import {CheckCircle, Copy} from 'phosphor-svelte';
     import {sessionToken, userData} from 'store/stores';
+    import {continueWithAccount} from 'utils/accountSession.js';
     import {link, push} from 'svelte-spa-router';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
     import {getDataFromForm} from 'utils/Functions';
@@ -17,31 +18,7 @@
     let data;
 
     function checkLogin() {
-        // check that user is logged in by checking local storage for:
-        // - sessionToken
-        // - userData
-        // - refreshToken
-        // - expires
-
-        if (localStorage.getItem('sessionToken')) {
-            location.reload();
-        } else {
-            // if not logged in, open window to login page and wait until the session token is set
-            // then close the window and continue
-            const loginWindow = window.open(
-                `${window.location.origin}/#/login?redirect=${window.location.pathname}`,
-                'Login',
-                'width=600,height=600'
-            );
-
-            const interval = setInterval(() => {
-                if (localStorage.getItem('sessionToken')) {
-                    clearInterval(interval);
-                    loginWindow.close();
-                }
-                location.reload();
-            }, 200);
-        }
+        continueWithAccount(() => location.reload());
     }
 
     async function create(formData) {
