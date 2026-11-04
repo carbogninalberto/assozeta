@@ -36,6 +36,23 @@ published releases or manual dispatch. Its complete quality gates remain enabled
 by default. PRs cannot trigger image publishing, release assets, contributor
 updates or the published-release rehearsal.
 
+Releases do not rebuild the manual. A published release copies the verified
+manual of the current `:latest` backend image into its own image unchanged and
+records its origin in `MANUAL_CARRIED_FROM`; the reader keeps reporting the
+release the manual was verified for. To rebuild, verify and bundle a new
+manual, publish the release, then run **Build and publish images** manually
+from the release tag with `release_tag` set to that tag and `include_manual`
+checked:
+
+```sh
+gh workflow run publish-images.yml --ref v1.0.28 -f release_tag=v1.0.28 -f include_manual=true
+```
+
+That run republishes the release images and assets for the same tag, so new
+installations and later upgrades receive the new manual; instances that already
+installed the tag keep the carried manual until their next upgrade. Run it after
+the automatic release run has finished.
+
 Local workflow validation:
 
 ```sh
