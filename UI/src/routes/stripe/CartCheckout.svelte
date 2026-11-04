@@ -13,6 +13,8 @@
     import {onMount} from 'svelte';
     import {Files, PersonSimpleRun, Wallet} from 'phosphor-svelte';
     import {blockPage, unblockPage} from 'store/loadingStore.js';
+    import {stripeConfig} from 'store/instanceStore.js';
+    import {get} from 'svelte/store';
 
     export let inModal = false;
     export let id;
@@ -101,15 +103,18 @@
     }
 
     async function initStripe() {
-        if (!__bakney.STRIPE_KEY)
-            return console.warn('[STRIPE] Cannot load Stripe Component because of missing public key');
-        return Stripe(__bakney.STRIPE_KEY);
+        // Read the runtime instance config: Vite inlines `__bakney` per reference, so the
+        // key applied at runtime by applyRuntimeConfig is not visible through `__bakney` here.
+        const publicKey = get(stripeConfig)?.publicKey;
+        if (!publicKey) return console.warn('[STRIPE] Cannot load Stripe Component because of missing public key');
+        return Stripe(publicKey);
     }
 
     async function loadStripeComponent() {
         const client_secret = stripeData.client_secret || null;
         const stripe = await initStripe();
-        if (destroyed || !stripe) return;
+        if (destroyed) return;
+        if (!stripe) return unblockPage();
 
         if (client_secret == null)
             return console.warn('[STRIPE] Cannot load Stripe Component because of missing client_secret');
