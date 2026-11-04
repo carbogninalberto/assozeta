@@ -23,7 +23,13 @@ Collaborators and administrators impersonating the owner cannot use these APIs.
    finished. The current owner remains signed in. Before reloading, the page
    fetches and stores the restored association profile and clears a selected
    group that might have been replaced. A failed profile refresh can be retried.
-   Older recovery copies remain available through **Carica backup precedenti**,
+   Only the newest completed restore keeps its recovery copy by default
+   (`DATA_RESTORE_RECOVERY_BACKUPS`, default `1`). Older recovery copies, copies
+   left by failed restores and attachment copies replaced by a later restore are
+   deleted after each completed restore and by the hourly cleanup task, unless a
+   record still references them. A recovery ZIP already contains the attachments
+   it replaced. Download any copy you want to keep before restoring again.
+   Retained copies remain listed through **Carica backup precedenti**,
    independently of the latest ten upload/restore receipts.
 
 This replaces the association's exported business graph. It retains the local
