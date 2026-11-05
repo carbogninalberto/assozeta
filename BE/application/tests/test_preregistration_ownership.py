@@ -8,7 +8,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from application.models.subscriptions_models import Subscription
 from application.models.user_models import User
 from application.tests.base import BaseAPITestCase
-from application.tests.fixtures.factories import create_test_associate, create_test_subscription, create_test_user
+from application.tests.fixtures.factories import (
+    create_test_associate, create_test_sport_association, create_test_subscription, create_test_user,
+)
 
 
 def payload(association_username, *, preregistration, new_member=None, tax_code=None):
@@ -80,14 +82,51 @@ class PreregistrationOwnershipTests(BaseAPITestCase):
         self.assertEqual(response.status_code, 200, response.data)
         self.assertEqual(self.created(tax_code).user, member)
 
-    def test_renewal_keeps_the_owner_of_the_renewed_subscription(self):
-        member = create_test_user(role=User.ATHLETE)
-        associate = create_test_associate(sport_association=self.sport_association, user=member)
-        renewed = create_test_subscription(sport_association=self.sport_association, associate=associate, user=member,
-                                           status_flag=Subscription.ACCEPTED)
+    def renewable(self, owner, association=None):
+        association = association or self.sport_association
+        associate = create_test_associate(sport_association=association, user=owner)
+        return create_test_subscription(sport_association=association, associate=associate, user=owner,
+                                        status_flag=Subscription.ACCEPTED)
+
+    def renew(self, client, renewed):
         body = payload(self.user.username, preregistration=True)
         body['subscription_id'] = str(renewed.subscription_id)
-        response = self.as_user(member).post('/subscription/add', body, format='json')
+        return client.post('/subscription/add', body, format='json')
+
+    def renewals_of(self, renewed):
+        return Subscription.objects.filter(associate__tax_code=renewed.associate.tax_code).exclude(pk=renewed.pk)
+
+    def test_renewal_keeps_the_owner_of_the_renewed_subscription(self):
+        member = create_test_user(role=User.ATHLETE)
+        renewed = self.renewable(member)
+        response = self.renew(self.as_user(member), renewed)
         self.assertEqual(response.status_code, 200, response.data)
-        new = Subscription.objects.filter(associate=associate).exclude(pk=renewed.pk).get()
-        self.assertEqual(new.user, member)
+        self.assertEqual(self.renewals_of(renewed).get().user, member)
+
+    def test_association_renews_its_member_and_the_member_keeps_it(self):
+        member = create_test_user(role=User.ATHLETE)
+        renewed = self.renewable(member)
+        response = self.renew(self.as_user(self.user), renewed)
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(self.renewals_of(renewed).get().user, member)
+
+    def test_renewal_requires_the_owner_or_the_association(self):
+        owner = create_test_user(role=User.ATHLETE)
+        renewed = self.renewable(owner)
+        for label, client in (('another member', self.as_user(create_test_user(role=User.ATHLETE))),
+                              ('anonymous', self.anonymous())):
+            with self.subTest(label):
+                response = self.renew(client, renewed)
+                self.assertEqual(response.status_code, 400, response.data)
+                self.assertFalse(self.renewals_of(renewed).exists())
+
+    def test_renewal_stays_within_the_association_of_the_link(self):
+        member = create_test_user(role=User.ATHLETE)
+        other_association = create_test_sport_association()
+        renewed = self.renewable(member, other_association)
+        response = self.renew(self.as_user(member), renewed)
+        self.assertEqual(response.status_code, 400, response.data)
+        self.assertFalse(self.renewals_of(renewed).exists())
+        response = self.renew(self.as_user(self.user), renewed)
+        self.assertEqual(response.status_code, 400, response.data)
+        self.assertFalse(self.renewals_of(renewed).exists())

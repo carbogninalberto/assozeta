@@ -10,8 +10,9 @@ function storage() {
         removeItem: key => values.delete(key), clear: () => values.clear()};
 }
 globalThis.localStorage = storage();
-const {hasSessionToken, hasLoggedInSession, continueWithAccount, accountReturnPath, resumeAfterAccountLogin,
-    wizardChoices, applyWizardChoices, ACCOUNT_RETURN_KEY, ACCOUNT_RETURN_TTL_MS} = await import('./accountSession.js');
+const {hasSessionToken, hasLoggedInSession, continueWithAccount, postLoginDestination, resumeAfterAccountLogin,
+    discardAccountReturn, wizardChoices, applyWizardChoices, ACCOUNT_RETURN_KEY, ACCOUNT_RESUME_KEY,
+    ACCOUNT_RETURN_TTL_MS, ACCOUNT_RESUME_TTL_MS} = await import('./accountSession.js');
 const {sessionToken, userData} = await import('../store/stores.js');
 
 function fakeWindow(hash = '#/subscribe/club/preregistration') {
@@ -75,7 +76,6 @@ test('CREA o ACCEDI as anonymous logs in in the same tab and remembers the page'
     assert.deepEqual(win.assigned, ['https://club.example.test/#/login']);
     assert.deepEqual(JSON.parse(session.getItem(ACCOUNT_RETURN_KEY)),
         {path: '#/subscribe/club/preregistration', state: {plan_id: 'p1'}, at: 1000});
-    assert.equal(accountReturnPath({session, now: 2000}), '#/subscribe/club/preregistration');
 });
 
 test('CREA o ACCEDI when already logged in continues in place', () => {
@@ -89,54 +89,76 @@ test('CREA o ACCEDI when already logged in continues in place', () => {
     assert.equal(session.getItem(ACCOUNT_RETURN_KEY), null);
 });
 
-test('the login returns only to registration entry points, never elsewhere', () => {
-    for (const hash of ['#/subscribe/club', '#/subscribe/club/preregistration', '#/subscribe-multiple/club/true/tok-1',
-        '#/subscribefamily/club/tok_2', '#/forms/link-1', '#/camps-and-retreats/forms/5c7c2a61-58e0-4d32-9c84-eed93038981d']) {
+test('the login returns only to registration entry points of this application', () => {
+    for (const hash of ['#/subscribe/club', '#/subscribe/club/preregistration', '#/subscribe/ASD+CLUB@2/preregistration',
+        '#/subscribe-multiple/club/true/tok-1', '#/subscribefamily/club/tok_2', "#/forms/corso-(estate)!,'26",
+        '#/camps-and-retreats/forms/5c7c2a61-58e0-4d32-9c84-eed93038981d']) {
         const session = storage();
         continueWithAccount(() => {}, {win: fakeWindow(hash), storage: storage(), session, now: 0});
-        assert.equal(accountReturnPath({session, now: 1}), hash, hash);
+        assert.equal(postLoginDestination({session, now: 1}), '/' + hash, hash);
     }
-    for (const hash of ['', '#/', '#/dashboard', '#/payment/list', '#//evil.example.test', '#/subscribe/../payment/list',
-        '#/subscribe/club"><img>', 'https://evil.example.test/#/subscribe/x', '#/subscribe/x\\evil', '#/forms/' + 'a'.repeat(600)]) {
+    for (const hash of ['', '#/', '#/subscribe/', '#/dashboard', '#/payment/list', '#//evil.example.test',
+        '#/subscribe/../payment/list', '#/subscribe/club"><img>', 'https://evil.example.test/#/subscribe/x',
+        '#/subscribe/x\\evil', '#/subscribe/x y', '#/forms/' + 'a'.repeat(1100)]) {
         const session = storage();
         continueWithAccount(() => {}, {win: fakeWindow(hash), storage: storage(), session, now: 0});
         assert.equal(session.getItem(ACCOUNT_RETURN_KEY), null, hash);
         // A tampered record is discarded too.
         session.setItem(ACCOUNT_RETURN_KEY, JSON.stringify({path: hash, state: null, at: 0}));
-        assert.equal(accountReturnPath({session, now: 1}), null, hash);
+        assert.equal(postLoginDestination({session, now: 1}), '/', hash);
         assert.equal(session.getItem(ACCOUNT_RETURN_KEY), null, hash);
+        assert.equal(session.getItem(ACCOUNT_RESUME_KEY), null, hash);
     }
     const session = storage();
     session.setItem(ACCOUNT_RETURN_KEY, 'not json');
-    assert.equal(accountReturnPath({session}), null);
+    assert.equal(postLoginDestination({session}), '/');
+    assert.equal(postLoginDestination({session: storage(), fallback: '/#/welcome'}), '/#/welcome');
 });
 
-test('a stale return is ignored', () => {
-    const session = storage();
-    continueWithAccount(() => {}, {win: fakeWindow(), storage: storage(), session, now: 0});
-    assert.equal(accountReturnPath({session, now: ACCOUNT_RETURN_TTL_MS + 1}), null);
-    assert.equal(session.getItem(ACCOUNT_RETURN_KEY), null);
+test('the login claims the return exactly once; stale or discarded returns are ignored', () => {
+    const remember = now => {
+        const session = storage();
+        continueWithAccount(() => {}, {win: fakeWindow(), storage: storage(), session, state: {plan_id: 'p1'}, now});
+        return session;
+    };
+    let session = remember(0);
+    assert.equal(postLoginDestination({session, now: 5}), '/#/subscribe/club/preregistration');
+    assert.equal(session.getItem(ACCOUNT_RETURN_KEY), null, 'claimed');
+    assert.equal(postLoginDestination({session, now: 6}), '/', 'a later login in this tab goes to the default page');
+    session = remember(0);
+    assert.equal(postLoginDestination({session, now: ACCOUNT_RETURN_TTL_MS + 1}), '/');
+    session = remember(0);
+    discardAccountReturn(session);
+    assert.equal(postLoginDestination({session, now: 1}), '/', 'logout discards it');
 });
 
 test('the page resumes once, only when logged in and only on the remembered page', () => {
-    const remember = () => {
+    const claimed = () => {
         const session = storage();
         continueWithAccount(() => {}, {win: fakeWindow(), storage: storage(), session, state: {plan_id: 'p1'}, now: 0});
+        postLoginDestination({session, now: 10});
         return session;
     };
     const store = storage();
     login(store);
-    let session = remember();
-    assert.deepEqual(resumeAfterAccountLogin('#/subscribe/club/preregistration', {session, storage: store, now: 1}),
+    let session = claimed();
+    assert.deepEqual(resumeAfterAccountLogin('#/subscribe/club/preregistration', {session, storage: store, now: 20}),
         {state: {plan_id: 'p1'}});
-    assert.equal(resumeAfterAccountLogin('#/subscribe/club/preregistration', {session, storage: store, now: 1}), null,
+    assert.equal(resumeAfterAccountLogin('#/subscribe/club/preregistration', {session, storage: store, now: 20}), null,
         'consumed: a later visit starts normally');
-    session = remember();
-    assert.equal(resumeAfterAccountLogin('#/subscribe/other', {session, storage: store, now: 1}), null);
-    assert.equal(session.getItem(ACCOUNT_RETURN_KEY), null, 'another page also consumes it');
-    session = remember();
-    assert.equal(resumeAfterAccountLogin('#/subscribe/club/preregistration', {session, storage: storage(), now: 1}), null,
+    session = claimed();
+    assert.equal(resumeAfterAccountLogin('#/subscribe/other', {session, storage: store, now: 20}), null);
+    assert.equal(session.getItem(ACCOUNT_RESUME_KEY), null, 'another page also consumes it');
+    session = claimed();
+    assert.equal(resumeAfterAccountLogin('#/subscribe/club/preregistration', {session, storage: storage(), now: 20}), null,
         'without a login the page starts normally');
+    session = claimed();
+    assert.equal(resumeAfterAccountLogin('#/subscribe/club/preregistration',
+        {session, storage: store, now: 10 + ACCOUNT_RESUME_TTL_MS + 1}), null, 'the resume is short-lived');
+    // An unclaimed return (login abandoned) never resumes a page by itself.
+    session = storage();
+    continueWithAccount(() => {}, {win: fakeWindow(), storage: storage(), session, state: {plan_id: 'p1'}, now: 0});
+    assert.equal(resumeAfterAccountLogin('#/subscribe/club/preregistration', {session, storage: store, now: 1}), null);
 });
 
 test('the first-step choices survive the login', () => {
@@ -196,6 +218,7 @@ test('every "CREA o ACCEDI" entry point uses the shared account flow', () => {
         assert.match(fs.readFileSync(path.join(src, file), 'utf8'), /resumeAfterAccountLogin\(window\.location\.hash\)/, file);
     }
     for (const file of ['routes/login/Login.svelte', 'routes/login/BakneyLogin.svelte']) {
-        assert.match(fs.readFileSync(path.join(src, file), 'utf8'), /accountReturnPath\(\)/, file);
+        assert.match(fs.readFileSync(path.join(src, file), 'utf8'), /reloadAppAt\(postLoginDestination\(\)\)/, file);
     }
+    assert.match(fs.readFileSync(path.join(src, 'components/Header.svelte'), 'utf8'), /discardAccountReturn\(\)/);
 });

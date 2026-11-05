@@ -53,6 +53,8 @@ const links = {
 };
 
 async function mount(page, code, {preregistration, loggedIn, hash = ''}) {
+    // A fresh document for every case: a fragment-only goto would keep the previous mount.
+    await page.goto('about:blank');
     await page.goto(origin + '/' + hash);
     await page.evaluate(({preregistration, loggedIn}) => {
         localStorage.clear();

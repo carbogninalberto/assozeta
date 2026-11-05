@@ -8,7 +8,7 @@ const reviewed = {
   "UI/src/routes/association/Members/detail/DetailDrawer.svelte": "27863e56e04a266fa1184d72397972b66de35c1e9d097fc9bab29dfe0b493f18",
   "UI/src/routes/association/Members/detail/Detail.svelte": "f7b31cc364221cb6c1acff533dec9ea286a926bbc0fc6a70075e4b5593874bb6",
   "UI/src/routes/association/Members/detail/sections/Info.svelte": "720d401c86e498d7efdba75321ce399fe2788033cf453690b3c6bf6869d5cff7",
-  "BE/application/views/subscriptions_views.py": "1f55021d86c1df051b8b02be483fd463aae04462866a783572933740a4aa11d7",
+  "BE/application/views/subscriptions_views.py": "9b7573ba55c3f14a41f6fa69e8e43d36a504b50f9fb11c1e11e61b4d481ed090",
   "BE/application/services/subscription_service.py": "95a5be71f2a72859d80e4f19dbcbcb2c8e61d43180152e7258cffe7ce772201d",
   "BE/application/serializers/subscriptions_serializers.py": "1e53f7d66701653856b6d5701f5bd80a6d5febb06872a27abc9a50615859f451",
   "BE/application/models/subscriptions_models.py": "b6b592e5ced8b685df6196e877ad75679bdf650c0d79774de9c537455eab465a",

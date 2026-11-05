@@ -14,7 +14,7 @@ from io import BytesIO
 from dateutil import parser
 
 from dateutil.relativedelta import relativedelta
-from django.core.exceptions import FieldDoesNotExist
+from django.core.exceptions import FieldDoesNotExist, ValidationError as DjangoValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -631,8 +631,35 @@ def get_membership_fee(data, sport_association: SportAssociation, subscription_t
     return None, None
 
 
-def fill_data_preregisration(data):
-    subscription = Subscription.objects.filter(subscription_id=data['subscription_id']).first()
+def _renewal_source(data, user, requester):
+    """The subscription a preregistration renews, if the requester may renew it.
+
+    It must belong to the association of this registration, and the requester
+    must be that association or the account that owns the subscription.
+    """
+    if requester is None or not getattr(requester, 'is_authenticated', False):
+        return None
+    username = data.get('sport_association')
+    if username:
+        association = SportAssociation.objects.filter(user__username=username).first()
+    else:
+        association = getattr(user, 'sport_association', None)
+    if association is None:
+        return None
+    subscription = Subscription.objects.filter(subscription_id=data['subscription_id'],
+                                               sport_association=association).first()
+    if subscription is None:
+        return None
+    if association.user_id == requester.pk or (subscription.user_id is not None and subscription.user_id == requester.pk):
+        return subscription
+    return None
+
+
+def fill_data_preregisration(data, user=None, requester=None):
+    try:
+        subscription = _renewal_source(data, user, requester)
+    except (ValueError, DjangoValidationError):
+        subscription = None
     if subscription is not None:
         sub_type = data['associate_data']['type']
         data['associate_data'] = AssociateSerializer(subscription.associate).data
@@ -668,7 +695,7 @@ def fill_data_preregisration(data):
         }
         return data, subscription.user
     else:
-        raise ValidationError({'msg': 'Subscription id is required.', "code": 400})
+        raise ValidationError({'msg': 'Iscrizione da rinnovare non trovata.', "code": 400})
 
 
 def safe_int(value, default=0):
@@ -686,7 +713,7 @@ def safe_int(value, default=0):
         return default
 
 
-def create_subscription(data, user, auth_token, is_athlete_request=False):
+def create_subscription(data, user, auth_token, is_athlete_request=False, requester=None):
     created_storage_keys = []
     try:
         with transaction.atomic():
@@ -695,14 +722,16 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
                 user,
                 auth_token,
                 is_athlete_request=is_athlete_request,
-                created_storage_keys=created_storage_keys
+                created_storage_keys=created_storage_keys,
+                requester=requester,
             )
     except Exception:
         cleanup_storage_keys(created_storage_keys)
         raise
 
 
-def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, created_storage_keys=None):
+def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, created_storage_keys=None,
+                              requester=None):
     if created_storage_keys is None:
         created_storage_keys = []
     preregistration = False
@@ -710,10 +739,12 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
     # is resolved below exactly as for a normal registration (including an
     # account created in this request).
     preregistration_user = None
+    renewal = False
     if 'preregistration' in data.keys() and data['preregistration'] is not None and \
             data['preregistration'] is True:
         if 'subscription_id' in data.keys() and data['subscription_id'] is not None:
-            data, preregistration_user = fill_data_preregisration(data)
+            data, preregistration_user = fill_data_preregisration(data, user, requester)
+            renewal = True
         preregistration = True
 
     now = date.today()
@@ -1139,7 +1170,7 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         subscription_data['creation_date'] = date_from # the actual start date
         subscription_data['start_date'] = current_date_from
         subscription_data['end_date'] = current_date_to
-        if preregistration_user is not None:
+        if renewal:
             subscription_data['user'] = preregistration_user
 
     try:

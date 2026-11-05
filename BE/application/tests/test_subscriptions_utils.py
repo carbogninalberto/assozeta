@@ -248,10 +248,25 @@ class SubscriptionPreregistrationTests(SubscriptionUtilsTestCase):
             'associate_data': {'type': Subscription.ASSOCIATE_AND_MEMBER},
         }
 
-        result, user = fill_data_preregisration(data)
+        association_user = self.sport_association.user
+        result, user = fill_data_preregisration(data, association_user, association_user)
 
         self.assertEqual(result['associate_data']['first_name'], self.associate.first_name)
         self.assertEqual(user, subscription.user)
+
+    def test_renewal_needs_an_authorized_requester(self):
+        subscription = create_test_subscription(
+            sport_association=self.sport_association,
+            associate=self.associate,
+        )
+        data = {
+            'subscription_id': str(subscription.subscription_id),
+            'associate_data': {'type': Subscription.ASSOCIATE_AND_MEMBER},
+        }
+        with self.assertRaises(ValidationError):
+            fill_data_preregisration(dict(data))
+        with self.assertRaises(ValidationError):
+            fill_data_preregisration(dict(data), self.sport_association.user, None)
 
     def test_missing_subscription_raises(self):
         with self.assertRaises(ValidationError):

@@ -29,7 +29,7 @@ const reviewed = {
   "BE/application/views/carnet_views.py": "709e3ae74f5ceeeb682899b7c95e371d573a94ebc5c4bce19fa3a485d017c0c6",
   "BE/application/views/attendee_views.py": "fb716a7de4aa8dc5a8db52ca6f6ec05494be54bc00d8358a49ff3e425d7625e3",
   "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
-  "BE/application/utils/subscriptions_utils.py": "712f9b2b7b83a0a92731c3bd594009d46df068d9a2f383d30ba5bb97a602937d",
+  "BE/application/utils/subscriptions_utils.py": "15f430f091b40a99055dce408e5aa3496a0585ad9b140bd281492325a8aafbaf",
   "BE/application/utils/attendance_utils.py": "f86f4c8294a50d56c5fe5b26582810acec9fcd0cd5fbd192a4ff511d72bb0a22",
   "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
   "BE/application/serializers/carnet_serializers.py": "50c7c38f09e9f60146c418c1816172dfb66310106a25faac6583fc2633146b7c",

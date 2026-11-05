@@ -266,10 +266,9 @@
         sessionStorage.setItem('sportAssociationUsername', params?.sportAssociationUsername);
         // sessionStorage.setItem('redirectAfterLogin', 1);
         await loadData();
-        if (resumed) {
-            applyWizardChoices(wizardData.formData, resumed.state);
-            toStep(1);
-        }
+        // Back from the login: keep the first-step choices on the first step,
+        // where the member continues (or renews) with the account.
+        if (resumed) applyWizardChoices(wizardData.formData, resumed.state);
         loaded = true;
     });
 </script>

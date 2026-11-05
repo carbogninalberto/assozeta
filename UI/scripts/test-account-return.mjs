@@ -1,5 +1,5 @@
 // Regression: "CREA o ACCEDI con l'account" logs in in the same tab and comes
-// back to the registration link, already logged in, on the next step. Mounts the
+// back to the registration link, logged in, with the first-step choice kept. Mounts the
 // actual Subscribe page with the actual stores and login-session code; only the
 // network layer is replaced.
 import assert from 'node:assert/strict';
@@ -20,15 +20,14 @@ const result = await build({
         // index.html provides moment globally in the application.
         contents: `import moment from 'moment'; window.moment = moment;
             import Subscribe from ${JSON.stringify(source + '/src/routes/subscribe/Subscribe.svelte')};
-            import {initializeLoginSession} from ${JSON.stringify(source + '/src/utils/loginSession.js')};
-            import {accountReturnPath} from ${JSON.stringify(source + '/src/utils/accountSession.js')};
+            import {initializeLoginSession, reloadAppAt} from ${JSON.stringify(source + '/src/utils/loginSession.js')};
+            import {postLoginDestination} from ${JSON.stringify(source + '/src/utils/accountSession.js')};
             window.mountSubscribe = () => new Subscribe({target: document.body,
                 props: {params: {sportAssociationUsername: 'club', preregistration: 'preregistration'}}});
             // What the login page does after a successful login.
             window.completeLogin = response => {
                 initializeLoginSession(response);
-                const back = accountReturnPath();
-                location.href = back ? '/' + back : '/';
+                reloadAppAt(postLoginDestination());
             };`,
         resolveDir: ui,
     },
@@ -71,7 +70,7 @@ async function open(page) {
             sport_association_id: 'association-1',
             user: {username: 'club', avatar_image: null, disable_account_creation: false, force_account_creation: false,
                 online_payments: false, preview_and_custom_features: [],
-                sport_association: {denomination: 'Club', enabled_for: ['associate'], enable_quotes_management: false,
+                sport_association: {denomination: 'Club', enabled_for: ['associate', 'membership'], enable_quotes_management: false,
                     preregistration_module_closed: false, remaining_preregistration_days: 30, additional_fields: [],
                     configuration: {mandatory_phone: false, mandatory_email: false}}},
         };
@@ -90,11 +89,16 @@ try {
     page.on('pageerror', e => errors.push(e.message));
     context.on('page', p => { if (p !== page) popups.push(p.url()); });
 
-    // An anonymous visitor opens the preregistration link.
+    const continueAs = () => page.getByRole('button', {name: /Continua come/});
+
+    // An anonymous visitor opens the preregistration link and picks a type.
     await page.goto(origin + '/' + link);
     await open(page);
     const account = page.getByRole('button', {name: "CREA o ACCEDI con l'account"});
-    await expect(account).toBeEnabled({timeout: 15000});
+    await expect(account).toBeDisabled({timeout: 15000});
+    await page.getByPlaceholder("Seleziona un'opzione").click();
+    await page.getByText('Tesserato', {exact: true}).click();
+    await expect(account).toBeEnabled();
     await account.click();
 
     // Same tab: off to the login page, with the way back remembered.
@@ -102,30 +106,31 @@ try {
     assert.deepEqual(popups, [], 'the login must not open another tab');
     const remembered = await page.evaluate(() => JSON.parse(sessionStorage.getItem('accountLoginReturn')));
     assert.equal(remembered.path, link);
-    assert.equal(remembered.state.associate_type, 1, 'the first-step choice is kept');
+    assert.equal(remembered.state.associate_type, 3, 'the first-step choice is kept');
 
-    // The login page completes the login and returns to the link.
-    await page.evaluate(() => window.completeLogin({access_token: 'member-access', refresh_token: 'member-refresh',
-        expires_in: 3600, role: 'athlete', user_data: {user_id: 'member-1', first_name: 'Ada', last_name: 'Rossi'}}));
-    await expect.poll(() => new URL(page.url()).hash).toBe(link);
+    // The login page completes the login: a full reload back on the link.
+    await Promise.all([page.waitForEvent('load'), page.evaluate(() => window.completeLogin({access_token: 'member-access',
+        refresh_token: 'member-refresh', expires_in: 3600, role: 'athlete',
+        user_data: {user_id: 'member-1', first_name: 'Ada', last_name: 'Rossi'}}))]);
+    assert.equal(new URL(page.url()).hash, link);
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('accountLoginReturn')), null, 'claimed once');
 
-    // The registration page opens again (the router mounts it afresh) and resumes
-    // on the next step, logged in, instead of starting over.
-    await page.reload();
+    // The registration resumes on its first step, logged in, with the type kept:
+    // the member continues (or renews) with the account.
     await open(page);
-    await expect(page.getByRole('heading', {name: 'Associato', exact: true})).toBeVisible({timeout: 15000});
+    await expect(continueAs()).toBeEnabled({timeout: 15000});
+    await expect(page.getByText('Tesserato', {exact: true})).toBeVisible();
     await expect(page.getByRole('button', {name: "CREA o ACCEDI con l'account"})).toHaveCount(0);
-    assert.equal(await page.evaluate(() => sessionStorage.getItem('accountLoginReturn')), null, 'resumed once');
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('accountLoginResume')), null, 'resumed once');
 
-    // A later visit to the link starts normally, as the logged-in member.
+    // A later visit to the link starts normally: nothing chosen yet.
     await page.reload();
     await open(page);
-    await expect(page.getByRole('button', {name: /Continua come/})).toBeVisible({timeout: 15000});
-    await expect(page.getByRole('heading', {name: 'Associato', exact: true})).toHaveCount(0);
+    await expect(continueAs()).toBeDisabled({timeout: 15000});
 
     assert.deepEqual(popups, []);
     assert.deepEqual(errors, [], 'Unexpected browser runtime errors');
-    console.log('PASS: "CREA o ACCEDI" logs in in the same tab and resumes the registration on the next step.');
+    console.log('PASS: "CREA o ACCEDI" logs in in the same tab and resumes the registration with its choices.');
 } finally {
     await browser?.close();
 }

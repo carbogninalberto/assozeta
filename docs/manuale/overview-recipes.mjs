@@ -1,8 +1,8 @@
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
-  "UI/src/App.svelte": "aec02257fc69d1ce8cbe6be715c6b47509d77e13a466fde7b87372d9e3a95c7e",
-  "UI/src/components/Header.svelte": "5d14ae36e89af617183a1dda1a5bbaba84c67b740ed1d8f1dc9274aea481b198",
+  "UI/src/App.svelte": "fa45b87b4a3d2daa5f430852ce81dd5843719e0d5b5942304893731fa7322720",
+  "UI/src/components/Header.svelte": "0273165f624534e66e53888c62f7f405f5efd0f1cd85bc65664ffb214f88e972",
   "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
   "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
   "UI/src/routes/manuale/Manuale.svelte": "e6981a17b7bef6bf32a798f5d469d9acdfa78ea9eff9b8bb081e649f51138b7d",
@@ -22,7 +22,7 @@ const reviewed = {
   "UI/src/routes/association/Members/MembersBook.svelte": "e123edd1de7d765f5a9b98d9ad019940ed2de36c40df3d78d1e605205849ae7d",
   "UI/src/components/modals/ShareModuleSubscriptionLink.svelte": "999bf9e16be7b8389a0181cd7f5c45f383dcb9c690925b653b9bf7d3333261ea",
   "UI/src/routes/association/Members/subscription/share/link-share-header.svelte": "384f60f3b95d3d1acaecf7ede4d2d01d9d29763740a31c84d0c87994a1a30246",
-  "UI/src/routes/subscribe/Subscribe.svelte": "bbfcbf961e6e26720fbdcda0da9ee618e813effcf4fd12ab51c411cad97e6ebd",
+  "UI/src/routes/subscribe/Subscribe.svelte": "0f641909fcb888ca034290f6f781e8ff459851ab9731d9f091322edb790a4502",
   "UI/src/routes/subscribe/wizard/Step0.svelte": "6219f8340109f6637059137a679d7e73d272b95a61893a0e2aa2f58d071064a9",
   "UI/src/routes/subscribe/wizard/Step1.svelte": "50bbcd39de0d80293f59f6a0953a2498efd488ebf062582ae6b964c4b9a4c4f5",
   "UI/src/routes/subscribe/wizard/partials/additional-fields.svelte": "25eacb675ca1f76cf2ceae6af39126b8e32032acc6e395a414b087d838d311b3",
