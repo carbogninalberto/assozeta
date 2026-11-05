@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name='associate',
-            index=models.Index(django.db.models.functions.text.Upper('tax_code'), models.F('sport_association'), name='associate_tax_code_upper_idx'),
+            index=models.Index(django.db.models.functions.text.Upper('tax_code'), name='associate_tax_code_upper_idx'),
         ),
     ]

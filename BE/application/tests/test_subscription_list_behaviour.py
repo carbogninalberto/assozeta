@@ -114,7 +114,16 @@ class RenewalAvailableScenarioMixin(SubscriptionListScenarioMixin):
             **FUTURE,
         )
 
-        # Without a tax code nobody can be matched as the same person.
+        # The associate of a renewal may since have been moved to another association
+        # (AssociateSerializer.create reuses associate_id): it still counts.
+        moved_owner = self.associate(tax_code='RNWMOV90A01H501X')
+        s['past_with_future_of_moved_associate'] = self.subscription(associate=moved_owner, **PAST)
+        self.subscription(
+            associate=self.associate(sport_association=create_test_sport_association(), tax_code='RNWMOV90A01H501X'),
+            **FUTURE,
+        )
+
+        # In the paginated list a missing tax code never matches.
         s['past_without_tax_code'] = self.subscription(associate=self.associate(tax_code=None), **PAST)
         self.subscription(associate=self.associate(tax_code=None), **FUTURE)
         return s
@@ -128,6 +137,7 @@ class RenewalAvailableScenarioMixin(SubscriptionListScenarioMixin):
         'past_with_overlapping_later': True,
         'past_with_case_insensitive_future': False,
         'past_with_foreign_future': True,
+        'past_with_future_of_moved_associate': False,
         'past_without_tax_code': True,
     }
 
@@ -360,6 +370,28 @@ class SubscriptionListArchivedBehaviourTests(SubscriptionListScenarioMixin, Test
         self.assertEqual(row['associate']['associate_id'], str(associate.associate_id))
         self.assertFalse(row['renewal_available'])
         self.assertTrue(row['current_year'])
+
+    def test_archived_subscription_without_associate(self):
+        # Hard-deleting an associate leaves its subscriptions with associate=NULL (on_delete=SET_NULL).
+        orphan = self.subscription(archived=True, **PAST)
+        orphan.associate.delete()
+
+        _, rows = self.list_rows(path='/subscription/list/archived')
+        row = rows[str(orphan.subscription_id)]
+
+        self.assertIsNone(row['associate'])
+        self.assertIsNone(row['age'])
+
+    def test_archived_renewal_matches_missing_tax_codes(self):
+        # Unlike the paginated list, the archived list has always matched associates
+        # without a tax code with each other (tax_code__iexact=None is IS NULL).
+        archived = self.subscription(associate=self.associate(tax_code=None), archived=True,
+                                     creation_date=timezone.now() - datetime.timedelta(days=730), **PAST)
+        self.subscription(associate=self.associate(tax_code=None), **FUTURE)
+
+        _, rows = self.list_rows(path='/subscription/list/archived')
+
+        self.assertFalse(rows[str(archived.subscription_id)]['renewal_available'])
 
     def test_archived_renewal_available(self):
         # Archived rows derive current_year from creation_date, not from start/end dates.

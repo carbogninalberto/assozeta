@@ -181,7 +181,7 @@ class SubscriptionOptimizedSerializer(serializers.ModelSerializer):
         }
 
     def get_age(self, obj):
-        return obj.get_age()
+        return obj.get_age() if obj.associate else None
 
     def get_plain_medical_label(self, obj):
         return obj.get_plain_medical_label()
@@ -432,7 +432,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return {"total": sum([payment.amount for payment in payments]), "to_be_paid": sum([payment.amount for payment in payments if not payment.paid])}
 
     def get_age(self, obj):
-        return obj.get_age()
+        return obj.get_age() if obj.associate else None
 
     def create(self, validated_data):
         # Remove deprecated 'signature' field if present

@@ -453,9 +453,9 @@ class Associate(GroupModelMixin):
             models.Index(fields=['born_date']),
             # For case-insensitive tax_code lookups
             models.Index(fields=['sport_association'], name='associate_sport_assoc_id_idx'),
-            # Renewal lookups (future_renewal_exists); unlike unique_tax_code_sport_assoc_upper_active
-            # it is not partial, so it also serves queries that do not filter on deleted.
-            models.Index(Upper('tax_code'), 'sport_association', name='associate_tax_code_upper_idx'),
+            # Renewal lookups (future_renewal_exists) match tax codes across associations and deleted
+            # associates, which the partial unique_tax_code_sport_assoc_upper_active index cannot serve.
+            models.Index(Upper('tax_code'), name='associate_tax_code_upper_idx'),
         ]
 
     @property

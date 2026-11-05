@@ -561,12 +561,23 @@ class Subscription(GroupModelMixin):
         return self.signature_url
 
     def has_future_renewal(self):
-        """Uses the ``_has_future_renewal`` annotation when the queryset provides it."""
-        if hasattr(self, '_has_future_renewal'):
+        """
+        Whether a later subscription of the same person exists (see ``future_renewal_exists``).
+
+        Uses the ``_has_future_renewal`` annotation when the queryset provides it. Without a tax
+        code the annotation never matches, while this lookup has always matched every associate
+        without one (``iexact=None`` is ``IS NULL``), so that case keeps the lookup.
+        """
+        if self.associate is None:
+            return False
+        if hasattr(self, '_has_future_renewal') and self.associate.tax_code is not None:
             return self._has_future_renewal
-        return Subscription._base_manager.filter(pk=self.pk).annotate(
-            _has_future_renewal=future_renewal_exists()
-        ).values_list('_has_future_renewal', flat=True).get()
+        return Subscription.objects.filter(
+            sport_association=self.sport_association_id,
+            start_date__gte=self.end_date,
+            archived=False,
+            associate__tax_code__iexact=self.associate.tax_code
+        ).exists()
 
     def is_renewal_available(self):
         return not self.is_current and not self.has_future_renewal()
@@ -753,15 +764,14 @@ def future_renewal_exists():
     subscription of the same person (case-insensitive tax code) in the same
     association starting on or after the outer subscription's end date.
 
-    The associate is scoped to the association too, so Postgres can look the
-    tax code up through ``associate_tax_code_upper_idx`` instead of scanning
-    every associate of every association for each row.
+    The associate is deliberately not scoped to the association: an associate
+    can be moved to another association while its old subscriptions stay.
+    ``associate_tax_code_upper_idx`` serves the UPPER(tax_code) lookup.
     """
     return Exists(Subscription.objects.filter(
         sport_association=OuterRef('sport_association'),
         start_date__gte=OuterRef('end_date'),
         archived=False,
-        associate__sport_association=OuterRef('sport_association'),
         associate__tax_code__iexact=OuterRef('associate__tax_code'),
     ))
 
