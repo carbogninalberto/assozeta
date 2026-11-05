@@ -203,8 +203,8 @@ await scenario({id, actions: async ({page, api, open, actor, input, capture, rep
         await snap('tags-and', table);
         panel = await tagPanel(); await setChecked(panel.getByLabel('Contiene i tag selezionati', {exact: true}), false);
         const or = await change(() => panel.getByRole('button', {name: 'Applica', exact: true}).click(),
-            q => q.get('query[tags_and]') === '0' && q.get('query[tags]')?.split(',').length === 2, 4);
-        // Current backend joins return Sara twice for two matching tags; never claim deduplicated rows.
+            q => q.get('query[tags_and]') === '0' && q.get('query[tags]')?.split(',').length === 2, 3);
+        // Sara matches both tags and is listed once: rows and unique members must agree.
         proof('tag_or_rows', or.meta.total); proof('tag_or_unique_members', new Set(values(or.data).map(r => r.subscription_id)).size);
         await snap('tags-or', table);
         await page.getByRole('button', {name: /^Rimuovi filtro Filtra Tag/}).click(); await expect(rows).toHaveCount(3);

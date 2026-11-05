@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.validators import MaxValueValidator, RegexValidator
 from django.db import models
+from django.db.models.functions import Upper
 from google.auth.transport.requests import Request
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
@@ -451,7 +452,10 @@ class Associate(GroupModelMixin):
             # For sorting
             models.Index(fields=['born_date']),
             # For case-insensitive tax_code lookups
-            models.Index(fields=['sport_association'], name='associate_sport_assoc_id_idx')
+            models.Index(fields=['sport_association'], name='associate_sport_assoc_id_idx'),
+            # Renewal lookups (future_renewal_exists) match tax codes across associations and deleted
+            # associates, which the partial unique_tax_code_sport_assoc_upper_active index cannot serve.
+            models.Index(Upper('tax_code'), name='associate_tax_code_upper_idx'),
         ]
 
     @property
