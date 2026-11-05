@@ -14,7 +14,7 @@ const reviewed = {
   "UI/src/routes/association/course/instructor/info/modals/AddEditModal.svelte": "19133f13c71dbcf769df0371d32248cff54c7fa2e4291d42c5c28969bd1152e9",
   "BE/application/views/instructor_views.py": "3d957e0a987583744dda1db2d0040eb8b0abdc90b5bf85546debc4a0405d189c",
   "BE/application/serializers/user_serializers.py": "b6c13df61ad39bf22722f3fc69659129fd0cedbbda588e7cbc727989b00e07f6",
-  "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
+  "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "BE/core/settings.py": "947afe0d72ca1b8a11564718893f4ddc1ae9b1d93a5f71d53231baab437c730c"
 };
