@@ -46,8 +46,16 @@ async function bundle(wizard) {
     return result.outputFiles[0].text;
 }
 
-async function mount(page, code, {preregistration, loggedIn}) {
-    await page.goto(origin + '/');
+const links = {
+    subscribe: preregistration => preregistration ? '#/subscribe/club/preregistration' : '#/subscribe/club',
+    'subscribe-multiple': preregistration => `#/subscribe-multiple/club/${preregistration}/tok-1`,
+    subscribefamily: () => '#/subscribefamily/club/tok-1',
+};
+
+async function mount(page, code, {preregistration, loggedIn, hash = ''}) {
+    // A fresh document for every case: a fragment-only goto would keep the previous mount.
+    await page.goto('about:blank');
+    await page.goto(origin + '/' + hash);
     await page.evaluate(({preregistration, loggedIn}) => {
         localStorage.clear();
         if (loggedIn) {
@@ -93,27 +101,21 @@ try {
             const label = `${wizard}${preregistration ? ' (preregistration)' : ''}`;
 
             // Anonymous visitor: must be sent to the login, not to Anagrafica.
-            await mount(page, code, {preregistration, loggedIn: false});
+            const hash = links[wizard](preregistration);
+            await mount(page, code, {preregistration, loggedIn: false, hash});
             assert.equal(await page.evaluate(() => localStorage.getItem('sessionToken')), 'null',
                 `${label}: anonymous visitors persist the 'null' token default`);
             const account = page.getByRole('button', {name: "CREA o ACCEDI con l'account"});
             await expect(account).toBeEnabled();
             await account.click();
             assert.deepEqual(await page.evaluate(() => window.steps), [], `${label}: skipped the login and changed step`);
-            assert.deepEqual(await page.evaluate(() => window.popups.map(p => p.args)),
-                [[origin + '/#/login?redirect=/', 'Login', 'width=600,height=600']], `${label}: login popup not opened`);
-            await page.waitForTimeout(1300);
+            // Same tab: the login opens here and the way back is remembered.
+            await expect.poll(() => new URL(page.url()).hash, {message: `${label}: login not opened`}).toBe('#/login');
+            assert.deepEqual(await page.evaluate(() => window.popups), [], `${label}: opened another tab`);
+            const remembered = await page.evaluate(() => JSON.parse(sessionStorage.getItem('accountLoginReturn')));
+            assert.equal(remembered?.path, hash, `${label}: way back not remembered`);
+            assert.equal(remembered.state.associate_type, 1, `${label}: first-step choice not kept`);
             assert.deepEqual(await page.evaluate(() => window.steps), [], `${label}: continued without logging in`);
-
-            // The popup logs in: the wizard continues with the account and closes it.
-            await page.evaluate(() => {
-                localStorage.setItem('sessionToken', JSON.stringify('access-token'));
-                localStorage.setItem('userData', JSON.stringify({user_id: 'user-1'}));
-            });
-            await expect.poll(() => page.evaluate(() => window.steps), {timeout: 5000}).toEqual([['toStep', 1]]);
-            assert.equal(await page.evaluate(() => window.popups[0].closed), 1, `${label}: login popup not closed`);
-            await page.waitForTimeout(1300);
-            assert.deepEqual(await page.evaluate(() => window.steps), [['toStep', 1]], `${label}: polling did not stop`);
 
             // "Continua senza account" still goes to the next step without an account.
             await mount(page, code, {preregistration, loggedIn: false});

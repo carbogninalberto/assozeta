@@ -196,6 +196,7 @@ def subscription_tags_unassign(request, tag_id, subscription_id):
 def subscription_renew(request):
     logger.info("Subscription renewal started", extra={'user_id': str(request.user.user_id)})
     data = request.data
+    requester = request.user
     if request.user.role != User.ASSOCIATION:
         request.user = scoped_queryset(request, SportAssociation.objects).get(sport_association_id=data['sport_association']['sport_association_id']).user
 
@@ -204,7 +205,8 @@ def subscription_renew(request):
         with transaction.atomic():
             # Delay callbacks until creation and renewal post-processing both succeed.
             logger.info("Creating new subscription", extra={'user_id': str(request.user.user_id), 'sport_association_id': str(request.user.sport_association.sport_association_id)})
-            ok, fresh_sub = create_subscription(data, request.user, request.headers.get('authorization'), False)
+            ok, fresh_sub = create_subscription(data, request.user, request.headers.get('authorization'), False,
+                                                requester=requester)
             if not ok or fresh_sub is None:
                 raise RuntimeError("error creating subscription")
             created_storage_keys.extend(getattr(fresh_sub, '_created_storage_keys', []))
@@ -312,7 +314,8 @@ def _handle_family_subscription(data, request, is_athlete_request):
                         entry,
                         request.user,
                         request.headers.get('authorization'),
-                        is_athlete_request
+                        is_athlete_request,
+                        requester=getattr(request, 'subscription_requester', None),
                     )
                     if fresh_sub is not None:
                         created_storage_keys.extend(getattr(fresh_sub, '_created_storage_keys', []))
@@ -388,6 +391,10 @@ def _prepare_subscription_request(request, data, mode):
         }
     )
 
+    # The account making this request, before an anonymous request is attributed
+    # to the association below; renewals are authorized against it.
+    request.subscription_requester = request.user if request.user.is_authenticated else None
+
     # Handle anonymous user
     if not request.user.is_authenticated:
         logger.info("New anonymous subscription request")
@@ -432,7 +439,8 @@ def subscription_add(request):
 
         # Handle single subscription
         logger.info("Creating single subscription")
-        ok, fresh_sub = create_subscription(data, request.user, request.headers.get('authorization'), is_athlete_request)
+        ok, fresh_sub = create_subscription(data, request.user, request.headers.get('authorization'), is_athlete_request,
+                                            requester=request.subscription_requester)
         logger.info(f"is creation successful: {ok}")
         payment_amount = fresh_sub.payment.amount if fresh_sub.payment is not None else 0
         payment_id = fresh_sub.payment.payment_id if fresh_sub.payment is not None else None
@@ -1495,7 +1503,7 @@ def subscription_associates_draft_approve(request):
                 draft.data,
                 request.user,
                 request.headers.get('authorization'
-            ), is_athlete_request=False)
+            ), is_athlete_request=False, requester=request.user)
             if ok:
                 draft.delete()
                 approved += 1

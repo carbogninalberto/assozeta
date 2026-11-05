@@ -1,7 +1,7 @@
 <script>
     import {CheckCircle, Copy} from 'phosphor-svelte';
     import {sessionToken, userData} from 'store/stores';
-    import {continueWithAccount} from 'utils/accountSession.js';
+    import {continueWithAccount, resumeAfterAccountLogin} from 'utils/accountSession.js';
     import {link, push} from 'svelte-spa-router';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
     import {getDataFromForm} from 'utils/Functions';
@@ -74,6 +74,8 @@
     }
 
     onMount(async () => {
+        // Back from "CREA o ACCEDI con l'account": the page now loads with the session.
+        resumeAfterAccountLogin(window.location.hash);
         if ($sessionToken) await fetchData();
     });
 </script>

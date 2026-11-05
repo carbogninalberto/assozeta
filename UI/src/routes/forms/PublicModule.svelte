@@ -2,7 +2,7 @@
     import ModuleRender from 'components/formBuilder/module-render.svelte';
     import {CheckCircle, Copy, SmileyMeh, SmileyWink, TrashSimple} from 'phosphor-svelte';
     import {sessionToken, userData} from 'store/stores';
-    import {continueWithAccount} from 'utils/accountSession.js';
+    import {continueWithAccount, resumeAfterAccountLogin} from 'utils/accountSession.js';
     import * as easing from 'svelte/easing';
     import {onMount} from 'svelte';
     import {link, push} from 'svelte-spa-router';
@@ -24,6 +24,8 @@
     let alreadyResponed = false;
 
     onMount(async () => {
+        // Back from "CREA o ACCEDI con l'account": the page now loads with the session.
+        resumeAfterAccountLogin(window.location.hash);
         await fetchInfo();
     });
     async function fetchInfo() {

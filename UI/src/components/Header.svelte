@@ -28,6 +28,7 @@
         Wallet,
     } from 'phosphor-svelte';
     import HeaderActions from './HeaderActions.svelte';
+    import {discardAccountReturn} from 'utils/accountSession.js';
     import NotificationsDrawer from './NotificationsDrawer.svelte';
     import {canPerformAction} from 'utils/Permissions';
     import {oemConfig, manualEnabled, assistantEnabled} from 'store/instanceStore.js';
@@ -38,6 +39,7 @@
 
     function signOut() {
         localStorage.clear();
+        discardAccountReturn();
         // Clear all cookies
         document.cookie.split(';').forEach(cookie => {
             const name = cookie.split('=')[0].trim();

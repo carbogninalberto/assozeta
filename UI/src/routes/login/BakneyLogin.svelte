@@ -2,6 +2,7 @@
     import {onMount} from 'svelte';
     import {originalFetch} from 'utils/ApiMiddleware.js';
     import {initializeLoginSession, reloadAppAt} from 'utils/loginSession.js';
+    import {postLoginDestination} from 'utils/accountSession.js';
 
     const endpoint = '/bakney/v1/session';
     const messages = {
@@ -53,7 +54,8 @@
         try {
             const response = await request('POST', {confirm_for: pending.confirm_for});
             initializeLoginSession(response, true);
-            reloadAppAt('/');
+            // Back to the registration link that asked for an account, if any.
+            reloadAppAt(postLoginDestination());
         } catch (e) { showError(e.message); }
     }
 

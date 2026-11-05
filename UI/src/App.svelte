@@ -211,6 +211,7 @@
                 !$location.includes('/stripe/cart-pay') &&
                 !$location.includes('/subscribe/') &&
                 !$location.includes('/subscribe-family/') &&
+                !$location.includes('/subscribefamily/') &&
                 !$location.includes('/subscribe-multiple/') &&
                 !$location.includes('/forms/') &&
                 !$location.includes('/invite') &&
@@ -363,6 +364,7 @@
                 !$location.includes('/stripe/cart-pay') &&
                 !$location.includes('/subscribe/') &&
                 !$location.includes('/subscribe-family/') &&
+                !$location.includes('/subscribefamily/') &&
                 !$location.includes('/subscribe-multiple/') &&
                 !$location.includes('/forms/') &&
                 !$location.includes('/invite') &&
@@ -400,6 +402,7 @@
                     !$location.includes('/stripe/cart-pay') &&
                     !$location.includes('/subscribe/') &&
                     !$location.includes('/subscribe-family/') &&
+                !$location.includes('/subscribefamily/') &&
                     !$location.includes('/subscribe-multiple/') &&
                     !$location.includes('/forms/') &&
                     !$location.includes('/invite') &&
@@ -438,7 +441,8 @@
         on:routeLoading={() => (isLoaded = false)}
         on:routeLoaded={() => (isLoaded = true)}
         on:conditionsFailed={() => push('/login')} />
-{:else if JSON.parse(localStorage.getItem('sessionToken')) !== null && !$location.includes('/card') && !$location.includes('/attendance-scanner-mode') && !$location.includes('/welcome') && !$location.includes('/forms/') && !$location.includes('/email-builder') && !$location.includes('/subscribe/') && !$location.includes('/subscribe-family/') && !$location.includes('/subscribe-multiple/') && !$location.includes('/invite') && !$location.includes('/reset') && !$location.includes('/shared-calendar') && !$location.includes('/stripe/cart-pay') && $location != '/error' && $location != '/login' && localStorage.getItem('sessionToken') != null && localStorage.getItem('currentPage') != 'login' && sessionStorage.getItem('inconsistencies') == null}
+{:else if JSON.parse(localStorage.getItem('sessionToken')) !== null && !$location.includes('/card') && !$location.includes('/attendance-scanner-mode') && !$location.includes('/welcome') && !$location.includes('/forms/') && !$location.includes('/email-builder') && !$location.includes('/subscribe/') && !$location.includes('/subscribe-family/') &&
+                !$location.includes('/subscribefamily/') && !$location.includes('/subscribe-multiple/') && !$location.includes('/invite') && !$location.includes('/reset') && !$location.includes('/shared-calendar') && !$location.includes('/stripe/cart-pay') && $location != '/error' && $location != '/login' && localStorage.getItem('sessionToken') != null && localStorage.getItem('currentPage') != 'login' && sessionStorage.getItem('inconsistencies') == null}
     <DashboardLayout routerComponent={Router} {routes} />
     {#if $userDataStore?.onboarding && !($userDataStore?.onboarding?.create_membership && $userDataStore?.onboarding?.view_membership && $userDataStore?.onboarding?.approve_payment && $userDataStore?.onboarding?.download_invoice && $userDataStore?.onboarding?.view_collaborators && $userDataStore?.onboarding?.view_settings)}
         <OnboardingChecklist />

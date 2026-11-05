@@ -54,3 +54,14 @@ test('an identity change in another tab reloads and closes its old document', ()
     listener({key:'loginIdentity',newValue:'another-user'});
     assert.equal(reloads,1);
 });
+
+test('the Bakney handoff reset keeps the registration link waiting for this login', async () => {
+    const {ACCOUNT_RETURN_KEY} = await import('./accountSession.js');
+    const record = JSON.stringify({path: '#/subscribe/club/preregistration', state: null, at: Date.now()});
+    sessionStorage.setItem(ACCOUNT_RETURN_KEY, record);
+    sessionStorage.setItem('redirectAfterLogin', 'old');
+    initializeLoginSession({access_token:'a', refresh_token:'r', expires_in:3600, role:'athlete',
+        user_data:{user_id:'member-1'}}, true);
+    assert.equal(sessionStorage.getItem(ACCOUNT_RETURN_KEY), record);
+    assert.equal(sessionStorage.getItem('redirectAfterLogin'), null);
+});
