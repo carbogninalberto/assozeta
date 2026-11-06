@@ -176,10 +176,22 @@ files as they are archived) plus `ASSOZETA_BACKUP_SPACE_MARGIN_MB` (default
 for the new images. When space is short, the command stops without touching the
 services and the update page shows the required and available space.
 
-After a successful backup, only the newest `ASSOZETA_BACKUP_KEEP` archives
-(default 2, set in `.env`; `0` disables pruning) are kept in `selfhost/backups/`.
-The archive of a pending upgrade is never removed, and other destinations are
-not pruned. Copy archives off-host before they are rotated out.
+Each archive in `selfhost/backups/` has a small `<archive>.meta` file that
+records its origin: `manual` (`assozeta backup`), `pre-upgrade`, `scheduled`
+or `pre-restore`. Rotation runs only after a backup or an upgrade succeeds and
+counts only automatic archives (scheduled and pre-upgrade): the newest
+`ASSOZETA_BACKUP_KEEP` of them are kept (default 3, set in `.env`; `0`
+disables rotation). It never removes:
+
+- manual or pre-restore archives, or archives created before origins were
+  recorded (they have no `.meta` file);
+- archives marked `keep=true` in their `.meta` file;
+- the archive taken before the last successful upgrade, until the next upgrade
+  succeeds;
+- the archive of a pending upgrade.
+
+Other destinations are not rotated. Copy archives off-host before they are
+rotated out, and remove manual archives yourself when no longer needed.
 
 Backup stops the API, worker, and scheduler services while PostgreSQL and MinIO
 are snapshotted, then restarts them only if any were running beforehand. Caddy

@@ -84,7 +84,8 @@ class BackupSpaceTests(unittest.TestCase):
         with tarfile.open(archives[0]) as archive:
             names = {name.removeprefix('./') for name in archive.getnames()}
         self.assertTrue({'postgres.dump', 'manifest.txt', 'config.env'} <= names)
-        self.assertEqual([path.name for path in self.backups.iterdir()], [archives[0].name])
+        self.assertEqual(sorted(path.name for path in self.backups.iterdir()),
+                         [archives[0].name, archives[0].name + '.meta'])
 
     def test_non_root_users_cannot_delete_staged_objects_and_need_two_copies(self):
         result = self.run_cli('backup_prod', available=5 * GIB, gnu_tar='1', uid='1000')
@@ -96,34 +97,90 @@ class BackupSpaceTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('free disk space was not checked', result.stdout)
 
-    def test_retention_keeps_newest_and_pending_upgrade_archives(self):
-        names = [f'assozeta-2026100{day}T000000Z.tar.gz' for day in range(1, 6)]
-        for name in names + ['notes.txt']:
-            (self.backups / name).write_text('x')
+    def archives(self, origins, directory=None, extra=None):
+        """Create one archive per day, with a sidecar unless the origin is None."""
+        directory = directory or self.backups
+        names = []
+        for day, origin in enumerate(origins, start=1):
+            name = f'assozeta-202610{day:02d}T000000Z.tar.gz'
+            (directory / name).write_text('x')
+            if origin is not None:
+                fields = {'origin': origin, **(extra or {}).get(day, {})}
+                (directory / (name + '.meta')).write_text(
+                    ''.join(f'{key}={value}\n' for key, value in fields.items()))
+            names.append(name)
+        return names
+
+    def remaining(self, directory=None):
+        return sorted(path.name for path in (directory or self.backups).glob('*.tar.gz'))
+
+    def prune(self, **env):
+        result = self.run_cli(f'destination="{self.backups}"; backup_prune', **env)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result
+
+    def test_backup_records_its_origin(self):
+        result = self.run_cli('backup_prod')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        result = self.run_cli('backup_origin=pre-upgrade; backup_prod')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        metas = sorted(self.backups.glob('assozeta-*.tar.gz.meta'))
+        self.assertEqual(len(metas), 2)
+        self.assertEqual(sorted(meta.read_text().splitlines()[0] for meta in metas),
+                         ['origin=manual', 'origin=pre-upgrade'])
+        self.assertIn('version=1.0.3\n', metas[0].read_text())
+        self.assertEqual(metas[0].stat().st_mode & 0o777, 0o600)
+
+    def test_rotation_keeps_newest_automatic_and_never_manual_or_legacy(self):
+        origins = [None, 'manual', 'pre-upgrade', 'scheduled', 'pre-upgrade', 'manual',
+                   'pre-restore', 'scheduled', 'pre-upgrade', 'scheduled']
+        names = self.archives(origins)
+        (self.backups / 'notes.txt').write_text('x')
+        result = self.prune()
+        self.assertEqual(self.remaining(), sorted(names[i] for i in (0, 1, 5, 6, 7, 8, 9)))
+        self.assertFalse((self.backups / (names[2] + '.meta')).exists())
+        self.assertTrue((self.backups / 'notes.txt').exists())
+        self.assertIn('removed old automatic backup ' + names[4], result.stdout)
+
+    def test_manual_backup_survives_repeated_upgrade_attempts(self):
+        names = self.archives(['manual'] + ['pre-upgrade'] * 6)
+        self.prune()
+        self.assertEqual(self.remaining(), sorted([names[0], *names[4:]]))
+
+    def test_kept_last_successful_and_pending_upgrade_archives_are_protected(self):
+        names = self.archives(['pre-upgrade'] * 7, extra={
+            1: {'keep': 'true'}, 2: {'upgrade': 'completed'}, 3: {'upgrade': 'completed'}})
         pending = self.root / '.updater/pending-distribution'
         pending.mkdir(parents=True)
-        (pending / 'transaction.json').write_text(f'{{"backup": {{"path": "{self.backups / names[0]}"}}}}')
-        result = self.run_cli(f'destination="{self.backups}"; backup_prune')
+        (pending / 'transaction.json').write_text(f'{{"backup": {{"path": "{self.backups / names[3]}"}}}}')
+        self.prune()
+        # Day 1 is kept and uses no automatic slot, day 3 is the last
+        # successful upgrade and day 4 belongs to the pending transaction.
+        self.assertEqual(self.remaining(), sorted([names[0], *names[2:]]))
+        self.assertFalse((self.backups / names[1]).exists())
+
+    def test_successful_upgrade_marks_its_backup_and_moves_the_protection(self):
+        names = self.archives(['pre-upgrade'] * 5, extra={1: {'upgrade': 'completed'}})
+        result = self.run_cli(f'destination="{self.backups}"; '
+                              f'backup_mark_upgrade_completed "{self.backups / names[4]}"; backup_prune')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(sorted(path.name for path in self.backups.iterdir()),
-                         sorted([names[0], names[3], names[4], 'notes.txt']))
+        self.assertIn('upgrade=completed\n', (self.backups / (names[4] + '.meta')).read_text())
+        self.assertEqual(self.remaining(), sorted(names[2:]))
 
     def test_retention_is_configurable_and_skips_custom_destinations(self):
-        names = [f'assozeta-2026100{day}T000000Z.tar.gz' for day in range(1, 4)]
-        for name in names:
-            (self.backups / name).write_text('x')
         custom = self.root / 'custom'
         custom.mkdir()
-        for name in names:
-            (custom / name).write_text('x')
+        self.archives(['scheduled'] * 5, directory=custom)
+        names = self.archives(['scheduled'] * 5)
         self.assertEqual(self.run_cli(f'destination="{custom}"; backup_prune').returncode, 0)
-        self.assertEqual(len(list(custom.iterdir())), 3)
-        self.assertEqual(self.run_cli(f'destination="{self.backups}"; backup_prune',
-                                      ASSOZETA_BACKUP_KEEP='0').returncode, 0)
-        self.assertEqual(len(list(self.backups.iterdir())), 3)
+        self.assertEqual(len(self.remaining(custom)), 5)
+        self.prune(ASSOZETA_BACKUP_KEEP='0')
+        self.assertEqual(len(self.remaining()), 5)
+        self.prune(ASSOZETA_BACKUP_KEEP='x')
+        self.assertEqual(len(self.remaining()), 5)
         self.env.write_text(self.env.read_text() + 'ASSOZETA_BACKUP_KEEP=1\n')
-        self.assertEqual(self.run_cli(f'destination="{self.backups}"; backup_prune').returncode, 0)
-        self.assertEqual([path.name for path in self.backups.iterdir()], [names[2]])
+        self.prune()
+        self.assertEqual(self.remaining(), [names[4]])
 
 
 if __name__ == '__main__':
