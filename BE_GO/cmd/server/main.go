@@ -327,6 +327,13 @@ func run() (runErr error) {
 	e.Any("/modules/check-link", modulesReadsHandler.CheckLink, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/overview", modulesReadsHandler.Overview, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	instructorHoursHandler := handler.NewInstructorHoursHandler(service.NewInstructorHoursService(repository.NewInstructorHours(db), time.Now,
+		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/instructor/:uid/hours/list", instructorHoursHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instructor/:uid/hours/add", instructorHoursHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instructor/:uid/hours/calculate", instructorHoursHandler.Calculate, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instructor/:uid/hours/:instructor_hours_id/update", instructorHoursHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instructor/:uid/hours/:instructor_hours_id/delete", instructorHoursHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/list", auditLogHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/:id/detail", auditLogHandler.Detail, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/stats", auditSummaryHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
