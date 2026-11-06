@@ -21,7 +21,7 @@ const reviewed = {
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/components/buttons/ApproveButton.svelte": "4531bd12ab2764ec6069c516c8797660122deea749f26516ea0851dad58f4f0f",
   "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
-  "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
+  "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
   "BE/application/signals.py": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
 };
 const contracts = [

@@ -21,6 +21,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 
 from django.db import transaction
+from django.template.loader import render_to_string
 
 from application.models.balance_sheet_models import CustomAccounts, CustomAccountsTransfer
 from application.serializers.balance_sheet import CustomAccountSerializer
@@ -594,19 +595,15 @@ def payment_request(request, uid):
             description = "per l'iscrizione "
         elif payment.subject == Payment.COURSE:
             description = f"per il corso "
-        email_html = f"""
-                Ciao {payment.associate.first_name} {payment.associate.last_name},<br>
-                ti informiamo che il pagamento di {payment.amount}€ {description}è in attesa di pagamento.<br>
-                Per favore procedi con il pagamento.<br>
-                <br>
-                
-                Se hai un già un account {settings.WHITELABEL_NAME}, puoi vedere i dettagli del pagamento online cliccando <a href="{settings.APP_URL}">qui</a>.<br>
-                
-                {f"<br>Puoi pagare online! <br><br>" if payment.sport_association.user.online_payments is True else ''}
-                
-                Cordiali saluti,<br>
-                {payment.sport_association.denomination}
-                """
+        email_html = render_to_string('email/payment/pending.html', {
+            'recipient_name': f"{payment.associate.first_name} {payment.associate.last_name}",
+            'description': description,
+            'amount': payment.amount,
+            'application_name': settings.WHITELABEL_NAME,
+            'application_url': settings.APP_URL,
+            'association_name': payment.sport_association.denomination,
+            'online_payments_enabled': payment.sport_association.user.online_payments is True,
+        })
         send_mail_async.apply_async(
             kwargs={
                 "subject": f"{payment.sport_association.denomination} | Pagamento in attesa",

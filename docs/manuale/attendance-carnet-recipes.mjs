@@ -28,7 +28,7 @@ const reviewed = {
   // Reviewed: documented carnet workflows are unchanged.
   "BE/application/views/carnet_views.py": "709e3ae74f5ceeeb682899b7c95e371d573a94ebc5c4bce19fa3a485d017c0c6",
   "BE/application/views/attendee_views.py": "fb716a7de4aa8dc5a8db52ca6f6ec05494be54bc00d8358a49ff3e425d7625e3",
-  "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
+  "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
   "BE/application/utils/subscriptions_utils.py": "01555509691b282190e09a21771aa920c19a677c63823a01ab7a73602273554e",
   "BE/application/utils/attendance_utils.py": "f86f4c8294a50d56c5fe5b26582810acec9fcd0cd5fbd192a4ff511d72bb0a22",
   "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
@@ -38,7 +38,7 @@ const reviewed = {
   "BE/application/models/attendee_models.py": "5f7e748de06d17bd2d8eb1bbfa4c9d69eb9d3af6d6ec63bfd0e919b3af5f58f4",
   "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
-  "BE/application/tasks.py": "ee7d03286be8cc3e6fec84861496020ac40d2dfe56ec02102fb75c0170d35ebc"
+  "BE/application/tasks.py": "869fe4be173a93e015be7166c72e0b08a0d4b1140b00cf8510926e58087aba70"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","<span class=\"menu-text\">Corsi e Abbonamenti</span>",75],
