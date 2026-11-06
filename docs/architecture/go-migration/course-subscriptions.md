@@ -1,0 +1,107 @@
+# Course subscriptions list, update, delete and bulk-delete — implementing with HTTP parity
+
+`GET course-subscriptions/list`, `PATCH course-subscriptions/<pk>/update`, `DELETE course-subscriptions/<pk>/delete` and
+`DELETE course-subscriptions/bulk-delete` (`CourseSubscriptionViewSet` list/update/delete/bulk_delete, with the
+`CourseSubscription.delete()` soft delete and the course subscription, installment and payment `pre_delete` signals) are
+implemented in Go (`BE_GO/internal/{domain,dto,repository,handler}/course_subscriptions.go`,
+`BE_GO/internal/service/course_subscriptions.go` and `course_subscription_update.go`). Registry `association.courses.read`,
+`.update` and `.delete`. Django remains the execution owner. `course-subscriptions/add` and the list export are not ported.
+
+## Routing and lookups
+
+- The viewset's own `delete()` answers DELETE on every mapped route: on `list` (no pk) it reads
+  `request.user.sport_association` and then fails (500); on `update` it soft-deletes a live row. `Allow`: list
+  `GET, POST, HEAD, DELETE, OPTIONS`, update `PATCH, DELETE, OPTIONS`, delete and bulk-delete `DELETE, OPTIONS`. OPTIONS on
+  `list` describes the serializer under `actions.POST` (nested subscription, associate, payment, user, instructor, supplier,
+  invoice and document serializers); the other routes have no actions. The scoped-request guard names the view
+  `CourseSubscriptionViewSet`, which is not an athlete view.
+- `User.sport_association` comes first: athletes get `403 User is not a sport association`, an owner without an
+  association a 500. `get_queryset()` keeps the rows whose course (joined directly: deleted and grouped courses included)
+  belongs to it, through the soft-delete manager (`all_objects()` for `include_deleted=true`, any case, and for the
+  delete action). `course_id` and `subscription_id` filter when present; a value the UUID column rejects (including a
+  blank one) is a 500.
+- `get_object()` uses `django.shortcuts.get_object_or_404`, which does not catch the UUID `ValidationError`: a malformed pk is
+  a 500; a missing, foreign or (outside the delete route) deleted row is `404 No CourseSubscription matches the given query.`.
+
+## List
+
+`{'data': [...]}`, unordered. Each row is `CourseSubscriptionOverviewSerializer`:
+
+- `subscription` is `SubscriptionSerializerSimplify` (the associate through `AssociateSerializer`, `current_year` against the
+  UTC date) and `medical_label` is `Subscription.get_medical_label()`: the age from `date.today()` (UTC), `Esente per N
+  giorni` under six (0 without a birth date), otherwise the certificate against today in Europe/Rome (`Mancante da` days
+  since the subscription's creation, `Scaduto da`, `N giorni rimanenti`), with the `AG` badge for competitive certificates.
+  A row without subscription renders both as null.
+- `installments` are the live, group-aware (`X-Group-Id`) installments; `paid` is `payment.paid` and `payment_date` the UTC
+  date.
+- `membership_payments` are the live, group-aware membership payments through `PaymentSerializer` (user, associate,
+  supplier, attachments, custom account, category name and `get_subscription_id`'s installment / course subscription /
+  carnet / associate lookups).
+- `carnets` are the enabled holdings: lessons left from `meta.lessons_left` (default: the carnet's lessons), used and
+  display only with lessons, the creation date as `%d/%m/%Y` in UTC.
+
+`POST` runs the PDF/Excel export after building the same queryset: an unknown or missing `format` (or a body that is not a
+dict) is a 500, as in Django.
+
+## Update (atomic, partial)
+
+- After `get_object()`, `scoped_queryset(...).select_for_update().get(pk=...)`: an association-scoped session outside the
+  row's subscription and course association is a 500 (DoesNotExist).
+- Field validation: a writable `course_subscription_id` (UUIDField, UniqueValidator on the live rows), `subscription_id`
+  (UUIDField; a boolean is an integer UUID), `creation_date`, `billed_from` and `billed_until` (DateTimeFields, the last two
+  nullable), the BooleanFields, `billed_frequency` (0..32767) and `billed_from_day_of_month` (1..28), `membership_fee`
+  (DecimalField(9, 2), a blank value is None), the JSONFields `multiple_quote` and `events`, and `course`, whose queryset
+  `Course.objects.all()` is evaluated once at import time (live courses). An empty HTML
+  value of an optional non-null field is skipped; of a nullable one it is None.
+- `validate()` applies to a membership course or instance: the course must be the association's and unchanged, the
+  subscription (group-aware lookup) must belong to the course's association and be unchanged, both period dates are
+  required with the end not before the start, the duration within 1..12 months and the fee not negative.
+- For a membership with a billing end, the unpaid live group-aware payment whose `meta.billed_until` is the current end is
+  the current payment (two: 400); without one and without any payment for that end, a lone unpaid payment is recovered when
+  both dates are sent; otherwise an unpaid payment means a mismatch (400). The payment's `meta.billed_from` must parse
+  (`%Y-%m-%d`), a changed start (or a recovery) moves the period start, the end may not precede it and the period may not
+  overlap another membership payment (jsonb comparisons). These errors render the view's `{'field': 'text'}`.
+- `Model.save()` writes every column; auditlog records the changed fields, indexed through the course's association. The
+  entry's `object_repr` is `CourseSubscription.__str__`, `str(self.__dict__)` of the in-memory instance: values the
+  serializer set keep DRF's types (zoneinfo datetimes, the request JSON), values read back keep the database's; the
+  `ModelState` address is the only part that is not reproducible.
+- The current payment then takes the fee, the period dates (when the start changed), the description and the merged meta,
+  and `Payment.save()` fills a null category with the first `entrate e proventi da attività tipiche` category; the entry is
+  indexed directly. A subscription that does not exist fails the deferred foreign key at commit (500, nothing saved).
+
+## Delete and bulk delete
+
+- `delete()` soft-deletes: the live group-aware installments go through the collector (keys in order for `pre_delete`,
+  reversed for the deletes). Each unpaid installment payment is deleted by `delete_related_payment`; Payment's own
+  `pre_delete` deletes that payment's live installments first, so the trail is payment, installment, payment, then the
+  installments again. SET_NULL references and through rows of deleted payments are cleared. The row is then saved with
+  `deleted=True` (an update entry resolved through its course). A row that is already deleted (delete route) is hidden from
+  auditlog's default manager: its save is an update entry with every field against None.
+- `bulk_delete` reads `request.data.get('course_subscription_ids', [])` (a list or text body is a 500; null is not iterable,
+  text is iterated by character, null members are dropped, integers and booleans are integer UUIDs) and hard-deletes the
+  live rows of the association (and of the scoped session). The installments (base manager) get `pre_delete` first; then
+  `delete_related_course_payment` runs per row: for a row with a payment it fails on `Payment.objects.get(id=...)` (logged,
+  nothing else happens); otherwise a membership's unpaid live payments are deleted and then the row's live group-aware
+  installments. Through rows go, then installments and rows are deleted with entries in reversed key order.
+- Delete entries for payments are indexed through their stored association, installments and course subscriptions through
+  the actor's own association (none for a collaborator).
+
+## Not ported (refused before any write)
+
+- `POST course-subscriptions/add` (not routed in Go) and the list export for `pdf` and `excel` (500).
+- Update: non-null `events` (installment edits), a changed primary key (Model.save() would insert a copy) and HTML-form
+  input for the JSON fields `multiple_quote` and `events`: 500.
+- Membership payments with an instructor or an invoice in any rendered row: 500.
+- A soft delete whose row's own payment is also the unpaid payment of one of its installments (Django's save would fail
+  after the autocommitted deletes): 500.
+
+## Evidence
+
+`TESTS/fixtures/course_subscriptions_http.json` (107 cases, generated by `TESTS/fixtures/generate_course_subscriptions_http.py`).
+
+- RED (`red-r1`): Django 107/107; Go 404 on the first case.
+- GREEN (`versioned-r1`): 107/107 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact course subscription,
+  installment, payment, through-row, audit and index effects.
+- Mutation (`mutation-r1`): dropping the `X-Group-Id` filter from the soft delete's installment query fails
+  `course-subscriptions-delete-group-installments` (CAUGHT).
+- `subscription-memberships` stays green after the route block was added to `main.go`.

@@ -317,6 +317,12 @@ func run() (runErr error) {
 	e.Any("/subscription/associates-draft/bulk-delete", associateDraftsHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/associates-draft/:uid/edit", associateDraftsHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/associates-draft/:uid/delete", associateDraftsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseSubscriptionsHandler := handler.NewCourseSubscriptionsHandler(service.NewCourseSubscriptions(repository.NewCourseSubscriptions(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/course-subscriptions/list", courseSubscriptionsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course-subscriptions/bulk-delete", courseSubscriptionsHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course-subscriptions/:pk/update", courseSubscriptionsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course-subscriptions/:pk/delete", courseSubscriptionsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	courseStateWritesHandler := handler.NewCourseStateWritesHandler(service.NewCourseStateWrites(repository.NewCourseStateWrites(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/course/:uid/enable", courseStateWritesHandler.Enable, middleware.DjangoSessionAudit(sessionAuthentication))
