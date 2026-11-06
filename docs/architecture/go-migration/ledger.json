@@ -9856,25 +9856,78 @@
         "target": "instructor_hours_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_hours.go",
+        "BE_GO/internal/dto/instructor_hours_write.go",
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go",
+        "BE_GO/internal/handler/instructor_hours.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_instructorhours",
+        "application_instructor",
+        "application_payment",
+        "docmanager_document",
+        "application_course",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_subscription",
+        "application_associate"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/hours/<instructor_hours_id>/delete",
+          "/api/v2/instructor/<uid>/hours/<instructor_hours_id>/delete",
+          "/api/instructor/<uid>/hours/<instructor_hours_id>/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {'msg': 'hours deleted.'}.",
+        "errors": "400 malformed ids; 401; 403 registry; 404 {'error': 'hours not found'}.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.instructor.hours.delete.",
+        "resource_scope": "The hour of the uid instructor owned by request.user.",
+        "side_effects": "Deletes the hour's document (audited) and the hour (audited).",
+        "transaction": "Django: two deletes, not atomic; Go: one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_hours_http.json",
+        "TESTS/fixtures/generate_instructor_hours_http.py",
+        "TESTS/contracts/test_instructor_hours_http.py",
+        "TESTS/adapters/django/instructor_hours_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
+          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
+          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+        },
+        {
+          "revision": "committing change without the deleted filter on the related payment lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
+          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+        }
+      ],
+      "notes": [
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/hours/<str:instructor_hours_id>/update -> instructor_hours_update",
@@ -9891,25 +9944,78 @@
         "target": "instructor_hours_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_hours.go",
+        "BE_GO/internal/dto/instructor_hours_write.go",
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go",
+        "BE_GO/internal/handler/instructor_hours.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_instructorhours",
+        "application_instructor",
+        "application_payment",
+        "docmanager_document",
+        "application_course",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_subscription",
+        "application_associate"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/hours/<instructor_hours_id>/update",
+          "/api/v2/instructor/<uid>/hours/<instructor_hours_id>/update",
+          "/api/instructor/<uid>/hours/<instructor_hours_id>/update"
+        ],
+        "request": "Partial InstructorHoursSerializer fields (JSON or form).",
+        "response": "200 {'success': True}.",
+        "errors": "400 malformed ids, JSON parse error, field / non_field errors; 401; 403 registry / foreign payment; 404 {'error': 'hours not found'}.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.instructor.hours.update.",
+        "resource_scope": "The hour of the uid instructor owned by request.user.",
+        "side_effects": "Saves every field and audits the changed ones; a new instructor_hours_id inserts a copy (audited as update then create).",
+        "transaction": "Single save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_hours_http.json",
+        "TESTS/fixtures/generate_instructor_hours_http.py",
+        "TESTS/contracts/test_instructor_hours_http.py",
+        "TESTS/adapters/django/instructor_hours_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
+          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
+          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+        },
+        {
+          "revision": "committing change without the deleted filter on the related payment lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
+          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+        }
+      ],
+      "notes": [
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/hours/add -> instructor_hours_add",
@@ -9926,25 +10032,78 @@
         "target": "instructor_hours_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_hours.go",
+        "BE_GO/internal/dto/instructor_hours_write.go",
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go",
+        "BE_GO/internal/handler/instructor_hours.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_instructorhours",
+        "application_instructor",
+        "application_payment",
+        "docmanager_document",
+        "application_course",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_subscription",
+        "application_associate"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/hours/add",
+          "/api/v2/instructor/<uid>/hours/add",
+          "/api/instructor/<uid>/hours/add"
+        ],
+        "request": "JSON InstructorHoursSerializer fields; instructor is always the uid.",
+        "response": "200 {'msg': 'hours added.'}.",
+        "errors": "400 malformed uid, JSON parse error, field errors; 401; 403 registry / scoped session / foreign payment; 404 {'error': 'instructor not found'}; 500 form, list or null body.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.instructor.hours.create.",
+        "resource_scope": "The uid instructor (looked up by id); payment is tenant-scoped and group-aware.",
+        "side_effects": "Creates one InstructorHours row (audited, in-memory defaults).",
+        "transaction": "Single insert.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_hours_http.json",
+        "TESTS/fixtures/generate_instructor_hours_http.py",
+        "TESTS/contracts/test_instructor_hours_http.py",
+        "TESTS/adapters/django/instructor_hours_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
+          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
+          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+        },
+        {
+          "revision": "committing change without the deleted filter on the related payment lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
+          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+        }
+      ],
+      "notes": [
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/hours/add/compensation -> instructor_hours_add_compensation",
@@ -9996,25 +10155,78 @@
         "target": "instructor_hours_calculate",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_hours.go",
+        "BE_GO/internal/dto/instructor_hours_write.go",
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go",
+        "BE_GO/internal/handler/instructor_hours.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_instructorhours",
+        "application_instructor",
+        "application_payment",
+        "docmanager_document",
+        "application_course",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_subscription",
+        "application_associate"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/hours/calculate",
+          "/api/v2/instructor/<uid>/hours/calculate",
+          "/api/instructor/<uid>/hours/calculate"
+        ],
+        "request": "period ('A al B'), courses ([{'course_id': ...}]), optional percentage (0-100).",
+        "response": "200 {'data': {'amount': number, 'calculation_data': [entry]}}.",
+        "errors": "400 courses required / invalid courses / period / date / percentage, malformed uid, JSON parse error; 401; 403 registry / scoped session; 404 instructor not found; 500 malformed course id, non-string period, mixed date formats, NaN percentage, non-dict body.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.instructor.hours.read.",
+        "resource_scope": "The listed courses (live, group-aware) and their live course subscriptions.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_hours_http.json",
+        "TESTS/fixtures/generate_instructor_hours_http.py",
+        "TESTS/contracts/test_instructor_hours_http.py",
+        "TESTS/adapters/django/instructor_hours_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
+          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
+          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+        },
+        {
+          "revision": "committing change without the deleted filter on the related payment lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
+          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+        }
+      ],
+      "notes": [
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/hours/list -> instructor_hours_list",
@@ -10031,25 +10243,78 @@
         "target": "instructor_hours_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_hours.go",
+        "BE_GO/internal/dto/instructor_hours_write.go",
+        "BE_GO/internal/repository/instructor_hours.go",
+        "BE_GO/internal/service/instructor_hours.go",
+        "BE_GO/internal/handler/instructor_hours.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_instructorhours",
+        "application_instructor",
+        "application_payment",
+        "docmanager_document",
+        "application_course",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_subscription",
+        "application_associate"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/hours/list",
+          "/api/v2/instructor/<uid>/hours/list",
+          "/api/instructor/<uid>/hours/list"
+        ],
+        "request": "Query query[date_range] ('A al B', YYYY/MM/DD or DD/MM/YYYY, else the last 365 days), query[generalSearch], pagination[page], pagination[perpage].",
+        "response": "200 {'data': [InstructorHoursSerializer], 'meta': {total, page, pages, perpage, rowIds}} ordered by -date, -creation_date.",
+        "errors": "400 malformed uid; 401; 403 registry / scoped session; 404 Invalid page.; 500 date_range without one ' al '.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.instructor.hours.read.",
+        "resource_scope": "Hours of the uid instructor owned by request.user.",
+        "side_effects": "Page rows with a paid payment are marked paid (audited); page rows with a document and no payment delete the document (audited, SET_NULL references nulled).",
+        "transaction": "Django: per-row saves, not atomic; Go: one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_hours_http.json",
+        "TESTS/fixtures/generate_instructor_hours_http.py",
+        "TESTS/contracts/test_instructor_hours_http.py",
+        "TESTS/adapters/django/instructor_hours_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-hours.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
+          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
+          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+        },
+        {
+          "revision": "committing change without the deleted filter on the related payment lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
+          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+        }
+      ],
+      "notes": [
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/info -> instructor_info",
