@@ -1,4 +1,4 @@
-{% load instance_branding %}{% instance_brand_palette as brand %}
+{% load instance_branding %}{% instance_email_brand as brand %}
 <!DOCTYPE html>
 <html lang="it" xmlns:v="urn:schemas-microsoft-com:vml" style="font-family: 'Poppins', sans-serif">
 <head>
@@ -10,7 +10,7 @@
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
   <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: "Segoe UI", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->
-  <title>{% block title %}{{ settings.WHITELABEL_NAME }}{% endblock %}</title>
+  <title>{% block title %}{{ brand.app_name }}{% endblock %}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
@@ -26,14 +26,18 @@
   </style>
 </head>
 <body style="font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0">
-  <div style="font-family: 'Poppins', sans-serif; display: none">{% block preheader %}{{ settings.WHITELABEL_NAME }}{% endblock %}</div>
-  <div role="article" aria-roledescription="email" aria-label="{% block aria_label %}{{ settings.WHITELABEL_NAME }}{% endblock %}" lang="it" style="font-family: 'Poppins', sans-serif">
+  <div style="font-family: 'Poppins', sans-serif; display: none">{% block preheader %}{{ brand.app_name }}{% endblock %}</div>
+  <div role="article" aria-roledescription="email" aria-label="{% block aria_label %}{{ brand.app_name }}{% endblock %}" lang="it" style="font-family: 'Poppins', sans-serif">
     <table style="width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" cellpadding="0" cellspacing="0" role="presentation">
       <tr><td align="center" style="font-family: 'Poppins', sans-serif; background-color: #f8fafc">
         <table class="sm-w-full" style="font-family: 'Poppins', sans-serif; width: 600px" cellpadding="0" cellspacing="0" role="presentation">
-          {% if settings.IS_WHITELABEL is False %}
+          {% if brand.logo or brand.self_hosted %}
           <tr><td class="sm-py-8 sm-px-6" style="font-family: 'Poppins', sans-serif; padding: 48px; text-align: center">
-            <a href="https://bakney.com" style="font-family: 'Poppins', sans-serif"><img src="https://bakney.com/images/logo.png" width="200" alt="Bakney" style="font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle"></a>
+            {% if brand.logo %}
+            <a href="{{ brand.logo.href }}" style="font-family: 'Poppins', sans-serif"><img src="{{ brand.logo.url }}" width="200" alt="{{ brand.name }}" style="font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle"></a>
+            {% elif brand.self_hosted %}
+            <span style="font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; color: {{ brand.primary }}">{{ brand.name }}</span>
+            {% endif %}
           </td></tr>
           {% endif %}
           <tr><td align="center" class="sm-px-6" style="font-family: 'Poppins', sans-serif">

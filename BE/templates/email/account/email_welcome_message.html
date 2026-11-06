@@ -1,14 +1,14 @@
 {% extends "email/_base.html" %}
-{% block title %}Benvenuto su {{ settings.WHITELABEL_NAME }}{% endblock %}
-{% block preheader %}Benvenuto su {{ settings.WHITELABEL_NAME }}{% endblock %}
-{% block aria_label %}Benvenuto su {{ settings.WHITELABEL_NAME }}{% endblock %}
+{% block title %}Benvenuto su {{ brand.app_name }}{% endblock %}
+{% block preheader %}Benvenuto su {{ brand.app_name }}{% endblock %}
+{% block aria_label %}Benvenuto su {{ brand.app_name }}{% endblock %}
 {% block content %}
 <p>Ciao <b>{{ first_name }} {{ last_name }}</b>,</p>
-<p class="sm-leading-8" style="margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000">Ti diamo il benvenuto su <b>{{ settings.WHITELABEL_NAME }}</b>. Non perdere tempo, inizia subito!</p>
-<p><a href="{{ app_host }}" class="email-button hover-bg-indigo-500" style="text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600">Accedi Subito &rarr;</a></p>
+<p class="sm-leading-8" style="margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000">Ti diamo il benvenuto su <b>{{ brand.app_name }}</b>. Non perdere tempo, inizia subito!</p>
+<p><a href="{{ app_host }}" class="email-button hover-bg-indigo-500" style="background-color: {{ brand.primary }}; color: {{ brand.foreground }}; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600">Accedi Subito &rarr;</a></p>
 <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0">
 <p>Se hai problemi, copia ed incolla il seguente link:</p>
 <p>{{ app_host }}</p>
 <p>Se hai ricevuto per errore questa email, ignorala.</p>
-<p>Un saluto,<br>Il team di <b>{{ settings.WHITELABEL_NAME }}</b></p>
+<p>Un saluto,<br>Il team di <b>{{ brand.app_name }}</b></p>
 {% endblock %}

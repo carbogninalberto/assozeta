@@ -1,28 +1,33 @@
+from unittest.mock import patch
+
 from django.test import SimpleTestCase
 from django.template.loader import render_to_string
 
 
+@patch('application.templatetags.instance_branding.InstanceConfiguration.get_config', return_value=None)
 class ExternalEmailTemplateTests(SimpleTestCase):
-    def test_payment_receipt_renders_values_and_approved_description_html(self):
+    def test_payment_receipt_renders_values_and_escapes_description(self, _get_config):
         html = render_to_string('email/payment/payment_receipt.html', {
             'recipient_name': 'Ada <Rossi>',
             'amount': 150.0,
             'receipt_number': 42,
             'payment_date': '22/10/2026',
-            'description': 'Ricevuta <b>approvata</b>',
+            'description': 'Ricevuta <b>approvata</b>\nseconda riga',
             'download_url': 'https://example.test/receipt?id=42&token=abc',
             'association_name': 'Associazione & Co',
         })
 
         self.assertIn('Ada &lt;Rossi&gt;', html)
-        self.assertIn('150.0€ n. 42 del 22/10/2026', html)
-        self.assertIn('Ricevuta <b>approvata</b>', html)
+        self.assertIn('150,00€ n. 42 del 22/10/2026', html)
+        self.assertIn('Ricevuta &lt;b&gt;approvata&lt;/b&gt;<br>seconda riga', html)
+        self.assertNotIn('<b>approvata</b>', html)
         self.assertIn('Associazione &amp; Co', html)
         self.assertIn("font-family: 'Poppins', sans-serif", html)
         self.assertIn('.email-button', html)
+        self.assertIn('class="email-button" style="background-color: #351dc2; color: #ffffff;', html)
         self.assertIn('background-color: #f8fafc', html)
 
-    def test_pending_payment_escapes_user_values_and_supports_online_payments(self):
+    def test_pending_payment_escapes_user_values_and_supports_online_payments(self, _get_config):
         html = render_to_string('email/payment/pending.html', {
             'recipient_name': 'Ada <Rossi>',
             'description': 'per il corso <extra>',
@@ -39,7 +44,7 @@ class ExternalEmailTemplateTests(SimpleTestCase):
         self.assertIn('Puoi pagare online!', html)
         self.assertNotIn('<extra>', html)
 
-    def test_event_reminder_escapes_event_content(self):
+    def test_event_reminder_escapes_event_content(self, _get_config):
         html = render_to_string('email/reminders/event.html', {
             'event_title': 'Corso <speciale>',
             'event_reminder_text': '30 minuti',
@@ -52,7 +57,7 @@ class ExternalEmailTemplateTests(SimpleTestCase):
         self.assertIn('Descrizione &amp; dettagli', html)
         self.assertNotIn('<speciale>', html)
 
-    def test_assigned_fee_escapes_fee_data(self):
+    def test_assigned_fee_escapes_fee_data(self, _get_config):
         html = render_to_string('email/payment/fee_assigned.html', {
             'recipient_name': 'Ada <Rossi>',
             'fee_name': 'Quota <annuale>',

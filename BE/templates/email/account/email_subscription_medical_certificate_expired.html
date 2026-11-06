@@ -1,13 +1,13 @@
 {% extends "email/_base.html" %}
-{% block title %}Abbiamo un aggiornamento importante su {{ settings.WHITELABEL_NAME }}{% endblock %}
-{% block preheader %}Abbiamo un aggiornamento importante su {{ settings.WHITELABEL_NAME }}{% endblock %}
-{% block aria_label %}Abbiamo un aggiornamento importante su {{ settings.WHITELABEL_NAME }}{% endblock %}
+{% block title %}Abbiamo un aggiornamento importante su {{ brand.app_name }}{% endblock %}
+{% block preheader %}Abbiamo un aggiornamento importante su {{ brand.app_name }}{% endblock %}
+{% block aria_label %}Abbiamo un aggiornamento importante su {{ brand.app_name }}{% endblock %}
 {% block content %}
-<p style="margin: 0 0 24px">Ciao,<br>Abbiamo un aggiornamento per te su <b>{{ settings.WHITELABEL_NAME }}</b>.<br>Il certificato medico dell'atleta <b>{{ athlete_first_name }} {{ athlete_last_name }}</b> iscritto all'associazione <b>{{ sport_association.denomination }}</b> è scaduto il:<br><br><b>{{ certificate_expiring_date }}</b><br><br>Aggiorna il certificato medico il prima possibile.</p>
-<p><a href="{{ app_host }}" class="email-button hover-bg-indigo-500" style="text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600">Accedi a {{ settings.WHITELABEL_NAME }}</a></p>
+<p style="margin: 0 0 24px">Ciao,<br>Abbiamo un aggiornamento per te su <b>{{ brand.app_name }}</b>.<br>Il certificato medico dell'atleta <b>{{ athlete_first_name }} {{ athlete_last_name }}</b> iscritto all'associazione <b>{{ sport_association.denomination }}</b> è scaduto il:<br><br><b>{{ certificate_expiring_date }}</b><br><br>Aggiorna il certificato medico il prima possibile.</p>
+<p><a href="{{ app_host }}" class="email-button hover-bg-indigo-500" style="background-color: {{ brand.primary }}; color: {{ brand.foreground }}; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600">Accedi a {{ brand.app_name }}</a></p>
 <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0">
 <p>Se hai problemi, copia ed incolla il seguente link:</p>
 <p>{{ app_host }}</p>
 <p>Se hai ricevuto per errore questa email, ignorala.</p>
-<p>Un saluto,<br>Il team di <b>{{ settings.WHITELABEL_NAME }}</b></p>
+<p>Un saluto,<br>Il team di <b>{{ brand.app_name }}</b></p>
 {% endblock %}
