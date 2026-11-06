@@ -6928,25 +6928,81 @@
         "target": "CourseSubscriptionViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/handler/course_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_payment",
+        "application_payment_attachments",
+        "application_carnetsubscription_course_subscription",
+        "application_course",
+        "application_subscription",
+        "application_associate",
+        "application_medicalcertificate",
+        "application_paymentcategory",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course-subscriptions/<pk>/delete",
+          "/api/v2/course-subscriptions/<pk>/delete",
+          "/api/course-subscriptions/<pk>/delete"
+        ],
+        "request": "No body.",
+        "response": "204 without a body.",
+        "errors": "401; 403 registry / scoped session / athletes; 404 unknown or foreign pk; 500 malformed pk, no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.delete.",
+        "resource_scope": "The owner's association rows through get_queryset (course__sport_association, soft-delete manager or all_objects() for include_deleted / the delete action); scoped sessions add scoped_queryset's subscription and course boundary on update and bulk-delete; installments and membership payments are group-aware (X-Group-Id).",
+        "side_effects": "Deletes the live group-aware installments (unpaid installment payments deleted by the signals, SET_NULL references and through rows cleared, payment/installment/payment entries) and saves deleted=True; deleted rows are found and saved again.",
+        "transaction": "One transaction (Django autocommits each collector).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_subscriptions_http.json",
+        "TESTS/fixtures/generate_course_subscriptions_http.py",
+        "TESTS/contracts/test_course_subscriptions_http.py",
+        "TESTS/adapters/django/course_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 107/107; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-red-r2/results.json",
+          "receipt_sha256": "31592bdb101ced76518e9e6e0443e9be06e97c09c7f4b72159ded49c189130a1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-versioned-r2/results.json",
+          "receipt_sha256": "702b6ab793babab430e23cd8adbc10941566380afb695e4280a964ebd7854c1d"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the soft delete's installment query",
+          "result": "Mutation control: fails Go on course-subscriptions-delete-group-installments.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json",
+          "receipt_sha256": "15a4209b3f2b4288f1a1f85aa5f68bb0e968b343847a6dedb1ffa84f09d29da3"
+        }
+      ],
+      "notes": [
+        "Implementing: list rendering (nested subscription, Rome-dated medical label, group-aware installments and membership payments through PaymentSerializer, carnets), partial update with the membership validate() and current-payment period sync, the soft delete and bulk hard delete with the installment/payment pre_delete signal cascades, viewset DELETE routing and audit (including CourseSubscription's __dict__ object_repr) on four transports; course-subscriptions/add, the PDF/Excel export, non-null events, HTML-form JSON fields, primary-key changes, membership payments with an instructor or invoice and soft deletes sharing the row's payment with an installment are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course-subscriptions/<str:pk>/update -> CourseSubscriptionViewSet.as_view({'patch': 'update'})",
@@ -6963,25 +7019,82 @@
         "target": "CourseSubscriptionViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/handler/course_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_payment",
+        "application_payment_attachments",
+        "application_carnetsubscription_course_subscription",
+        "application_course",
+        "application_subscription",
+        "application_associate",
+        "application_medicalcertificate",
+        "application_paymentcategory",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course-subscriptions/<pk>/update",
+          "/api/v2/course-subscriptions/<pk>/update",
+          "/api/course-subscriptions/<pk>/update"
+        ],
+        "request": "Partial JSON or form CourseSubscriptionOverviewSerializer fields; DELETE soft-deletes a live row.",
+        "response": "200 the serialized course subscription; 204 for DELETE.",
+        "errors": "400 field errors, membership validate() errors and the view's {'billed_until'|'billed_from': text} period errors; 401; 403 registry / scoped session / athletes; 404 unknown, foreign or deleted pk; 500 malformed pk, no association, scoped row outside the session, unknown subscription (deferred FK), not-ported inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's association rows through get_queryset (course__sport_association, soft-delete manager or all_objects() for include_deleted / the delete action); scoped sessions add scoped_queryset's subscription and course boundary on update and bulk-delete; installments and membership payments are group-aware (X-Group-Id).",
+        "side_effects": "Saves every column and audits the changed fields (indexed through the course); a matched membership payment takes the fee, period, description and meta and a default category (direct entry). Non-null events and primary-key changes are not ported (refused before any write).",
+        "transaction": "Atomic (@transaction.atomic).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_subscriptions_http.json",
+        "TESTS/fixtures/generate_course_subscriptions_http.py",
+        "TESTS/contracts/test_course_subscriptions_http.py",
+        "TESTS/adapters/django/course_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 107/107; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-red-r2/results.json",
+          "receipt_sha256": "31592bdb101ced76518e9e6e0443e9be06e97c09c7f4b72159ded49c189130a1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-versioned-r2/results.json",
+          "receipt_sha256": "702b6ab793babab430e23cd8adbc10941566380afb695e4280a964ebd7854c1d"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the soft delete's installment query",
+          "result": "Mutation control: fails Go on course-subscriptions-delete-group-installments.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json",
+          "receipt_sha256": "15a4209b3f2b4288f1a1f85aa5f68bb0e968b343847a6dedb1ffa84f09d29da3"
+        }
+      ],
+      "notes": [
+        "Implementing: list rendering (nested subscription, Rome-dated medical label, group-aware installments and membership payments through PaymentSerializer, carnets), partial update with the membership validate() and current-payment period sync, the soft delete and bulk hard delete with the installment/payment pre_delete signal cascades, viewset DELETE routing and audit (including CourseSubscription's __dict__ object_repr) on four transports; course-subscriptions/add, the PDF/Excel export, non-null events, HTML-form JSON fields, primary-key changes, membership payments with an instructor or invoice and soft deletes sharing the row's payment with an installment are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course-subscriptions/add -> CourseSubscriptionViewSet.as_view({'post': 'add'})",
@@ -7033,25 +7146,81 @@
         "target": "CourseSubscriptionViewSet.as_view({'delete': 'bulk_delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/handler/course_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_payment",
+        "application_payment_attachments",
+        "application_carnetsubscription_course_subscription",
+        "application_course",
+        "application_subscription",
+        "application_associate",
+        "application_medicalcertificate",
+        "application_paymentcategory",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course-subscriptions/bulk-delete",
+          "/api/v2/course-subscriptions/bulk-delete",
+          "/api/course-subscriptions/bulk-delete"
+        ],
+        "request": "JSON or form {'course_subscription_ids': [...]} (missing: none).",
+        "response": "204 without a body.",
+        "errors": "401; 403 registry / scoped session / athletes; 500 non-dict body, no association, null or non-UUID ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.delete.",
+        "resource_scope": "The owner's association rows through get_queryset (course__sport_association, soft-delete manager or all_objects() for include_deleted / the delete action); scoped sessions add scoped_queryset's subscription and course boundary on update and bulk-delete; installments and membership payments are group-aware (X-Group-Id).",
+        "side_effects": "Hard-deletes the matching live rows with their installments (base manager), the installments' unpaid payments and, for memberships without a payment, the unpaid membership payments; through rows removed; delete entries in the collector's order.",
+        "transaction": "One transaction (QuerySet.delete()).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_subscriptions_http.json",
+        "TESTS/fixtures/generate_course_subscriptions_http.py",
+        "TESTS/contracts/test_course_subscriptions_http.py",
+        "TESTS/adapters/django/course_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 107/107; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-red-r2/results.json",
+          "receipt_sha256": "31592bdb101ced76518e9e6e0443e9be06e97c09c7f4b72159ded49c189130a1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-versioned-r2/results.json",
+          "receipt_sha256": "702b6ab793babab430e23cd8adbc10941566380afb695e4280a964ebd7854c1d"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the soft delete's installment query",
+          "result": "Mutation control: fails Go on course-subscriptions-delete-group-installments.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json",
+          "receipt_sha256": "15a4209b3f2b4288f1a1f85aa5f68bb0e968b343847a6dedb1ffa84f09d29da3"
+        }
+      ],
+      "notes": [
+        "Implementing: list rendering (nested subscription, Rome-dated medical label, group-aware installments and membership payments through PaymentSerializer, carnets), partial update with the membership validate() and current-payment period sync, the soft delete and bulk hard delete with the installment/payment pre_delete signal cascades, viewset DELETE routing and audit (including CourseSubscription's __dict__ object_repr) on four transports; course-subscriptions/add, the PDF/Excel export, non-null events, HTML-form JSON fields, primary-key changes, membership payments with an instructor or invoice and soft deletes sharing the row's payment with an installment are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course-subscriptions/list -> CourseSubscriptionViewSet.as_view({'get': 'list', 'post': 'list'})",
@@ -7068,25 +7237,84 @@
         "target": "CourseSubscriptionViewSet.as_view({'get': 'list', 'post': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/handler/course_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "application_coursesubscription",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_payment",
+        "application_payment_attachments",
+        "application_carnetsubscription_course_subscription",
+        "application_course",
+        "application_subscription",
+        "application_associate",
+        "application_medicalcertificate",
+        "application_paymentcategory",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course-subscriptions/list",
+          "/api/v2/course-subscriptions/list",
+          "/api/course-subscriptions/list"
+        ],
+        "request": "Optional query course_id and subscription_id (UUIDs; a blank or malformed value is a 500) and include_deleted ('true', any case). POST body {'format': ...} for the export.",
+        "response": "200 {'data': [course subscription]} unordered, with nested subscription, medical_label, installments, membership_payments and carnets; OPTIONS describes the serializer under actions.POST.",
+        "errors": "401; 403 registry / scoped session / athletes ('User is not a sport association'); 500 no association, malformed filter, DELETE without pk, export with an unknown or missing format (pdf/excel not ported, refused with 500).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.read.",
+        "resource_scope": "The owner's association rows through get_queryset (course__sport_association, soft-delete manager or all_objects() for include_deleted / the delete action); scoped sessions add scoped_queryset's subscription and course boundary on update and bulk-delete; installments and membership payments are group-aware (X-Group-Id).",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_subscriptions_http.json",
+        "TESTS/fixtures/generate_course_subscriptions_http.py",
+        "TESTS/contracts/test_course_subscriptions_http.py",
+        "TESTS/adapters/django/course_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 107/107; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-red-r2/results.json",
+          "receipt_sha256": "31592bdb101ced76518e9e6e0443e9be06e97c09c7f4b72159ded49c189130a1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-versioned-r2/results.json",
+          "receipt_sha256": "702b6ab793babab430e23cd8adbc10941566380afb695e4280a964ebd7854c1d"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the soft delete's installment query",
+          "result": "Mutation control: fails Go on course-subscriptions-delete-group-installments.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json",
+          "receipt_sha256": "15a4209b3f2b4288f1a1f85aa5f68bb0e968b343847a6dedb1ffa84f09d29da3"
+        }
+      ],
+      "notes": [
+        "Implementing: list rendering (nested subscription, Rome-dated medical label, group-aware installments and membership payments through PaymentSerializer, carnets), partial update with the membership validate() and current-payment period sync, the soft delete and bulk hard delete with the installment/payment pre_delete signal cascades, viewset DELETE routing and audit (including CourseSubscription's __dict__ object_repr) on four transports; course-subscriptions/add, the PDF/Excel export, non-null events, HTML-form JSON fields, primary-key changes, membership payments with an instructor or invoice and soft deletes sharing the row's payment with an installment are refused (500) before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/attendees -> attendees",
