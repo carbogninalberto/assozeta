@@ -17726,25 +17726,73 @@
         "target": "subscription_associates_draft_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/associates_draft.go",
+        "BE_GO/internal/dto/associates_draft.go",
+        "BE_GO/internal/repository/associates_draft.go",
+        "BE_GO/internal/service/associates_draft.go",
+        "BE_GO/internal/handler/associates_draft.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_associateimportdraft",
+        "application_associateimportdraftstatus",
+        "application_medicalcertificate",
+        "application_sportassociation",
+        "application_family"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/associates-draft/<uid>/delete",
+          "/api/v2/subscription/associates-draft/<uid>/delete",
+          "/api/subscription/associates-draft/<uid>/delete"
+        ],
+        "request": "Body parsed and ignored.",
+        "response": "200 {'msg': 'successfully deleted.'} (also for unknown or foreign drafts).",
+        "errors": "400 JSON parse (before the athlete check), is_valid_uuid list; 401 (anonymous; athletes empty); 403 registry / scoped session; 500 no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.delete.",
+        "resource_scope": "The association's draft.",
+        "side_effects": "Deletes the draft (delete entry, changes_json.sport_association).",
+        "transaction": "Single delete.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/associates_draft_http.json",
+        "TESTS/fixtures/generate_associates_draft_http.py",
+        "TESTS/contracts/test_associates_draft_http.py",
+        "TESTS/adapters/django/associates_draft_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 128/128; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-native-r2/results.json",
+          "receipt_sha256": "4800f994e73fb01af5807f4490c54db7e63ed903790e9123a25bc4bbe8f73bd2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-versioned-r1/results.json",
+          "receipt_sha256": "af0dee75717bfce76db11fd9b17331d42189606a86c9e36669757e92deb3b86d"
+        },
+        {
+          "revision": "committing change rolling back the edit when the certificate expiration does not parse",
+          "result": "Mutation control: fails Go on the first edit that expects the saved draft and the created certificate.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-mutation-r1/results.json",
+          "receipt_sha256": "95821025e393fd819ec06a9f6d8466b8650996f8cb01dc1266a91fba1973d7f9"
+        }
+      ],
+      "notes": [
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/associates-draft/<str:uid>/edit -> subscription_associates_draft_edit",
@@ -17761,25 +17809,73 @@
         "target": "subscription_associates_draft_edit",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/associates_draft.go",
+        "BE_GO/internal/dto/associates_draft.go",
+        "BE_GO/internal/repository/associates_draft.go",
+        "BE_GO/internal/service/associates_draft.go",
+        "BE_GO/internal/handler/associates_draft.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_associateimportdraft",
+        "application_associateimportdraftstatus",
+        "application_medicalcertificate",
+        "application_sportassociation",
+        "application_family"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/associates-draft/<uid>/edit",
+          "/api/v2/subscription/associates-draft/<uid>/edit",
+          "/api/subscription/associates-draft/<uid>/edit"
+        ],
+        "request": "JSON edit_data (associate, associate_tutor, medical_certificate, ...) and certificate_expiring_date (%d/%m/%Y); without edit_data nothing is written.",
+        "response": "200 {'data': request.data} with the mutated edit_data (certificate id, expiration text).",
+        "errors": "400 JSON parse (before the athlete check), is_valid_uuid list; 401 (anonymous; athletes empty); 403 registry / scoped session; 404 {'msg': 'not found.'}; 500 no association, non-dict body or edit_data parts, missing/unparseable born_date, malformed medical_id, bad expiration, unported dateutil formats.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The association's draft; the medical certificate by medical_id.",
+        "side_effects": "Saves the draft (once more first when medical_certificate is missing), links or creates a MedicalCertificate for request.user and stores its expiration (auditlog create/update entries; certificate entries indexed to the actor's own association).",
+        "transaction": "Not atomic: a failure after a write keeps the earlier saves and the created certificate.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/associates_draft_http.json",
+        "TESTS/fixtures/generate_associates_draft_http.py",
+        "TESTS/contracts/test_associates_draft_http.py",
+        "TESTS/adapters/django/associates_draft_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 128/128; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-native-r2/results.json",
+          "receipt_sha256": "4800f994e73fb01af5807f4490c54db7e63ed903790e9123a25bc4bbe8f73bd2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-versioned-r1/results.json",
+          "receipt_sha256": "af0dee75717bfce76db11fd9b17331d42189606a86c9e36669757e92deb3b86d"
+        },
+        {
+          "revision": "committing change rolling back the edit when the certificate expiration does not parse",
+          "result": "Mutation control: fails Go on the first edit that expects the saved draft and the created certificate.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-mutation-r1/results.json",
+          "receipt_sha256": "95821025e393fd819ec06a9f6d8466b8650996f8cb01dc1266a91fba1973d7f9"
+        }
+      ],
+      "notes": [
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/associates-draft/add -> subscription_associates_draft_add",
@@ -17796,25 +17892,73 @@
         "target": "subscription_associates_draft_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/associates_draft.go",
+        "BE_GO/internal/dto/associates_draft.go",
+        "BE_GO/internal/repository/associates_draft.go",
+        "BE_GO/internal/service/associates_draft.go",
+        "BE_GO/internal/handler/associates_draft.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_associateimportdraft",
+        "application_associateimportdraftstatus",
+        "application_medicalcertificate",
+        "application_sportassociation",
+        "application_family"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/associates-draft/add",
+          "/api/v2/subscription/associates-draft/add",
+          "/api/subscription/associates-draft/add"
+        ],
+        "request": "JSON new_user_account, associate_data, associate_tutor_data, signature, medical_certificate (stored raw); form bodies store last values.",
+        "response": "200 {'msg': 'Draft saved!'}.",
+        "errors": "400 JSON parse; 401 (anonymous; no active association, athletes included, empty before the body); 403 registry / scoped session / tenant-scoped relation; 500 missing key, non-dict body, data jsonb cannot store.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.create.",
+        "resource_scope": "The owner's first active association; AssociateSerializer sport_association is tenant-scoped (generic 403), family must exist.",
+        "side_effects": "Creates the draft with valid = associate (then tutor) AssociateSerializer.is_valid() (create entry, direct).",
+        "transaction": "Single insert.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/associates_draft_http.json",
+        "TESTS/fixtures/generate_associates_draft_http.py",
+        "TESTS/contracts/test_associates_draft_http.py",
+        "TESTS/adapters/django/associates_draft_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 128/128; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-native-r2/results.json",
+          "receipt_sha256": "4800f994e73fb01af5807f4490c54db7e63ed903790e9123a25bc4bbe8f73bd2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-versioned-r1/results.json",
+          "receipt_sha256": "af0dee75717bfce76db11fd9b17331d42189606a86c9e36669757e92deb3b86d"
+        },
+        {
+          "revision": "committing change rolling back the edit when the certificate expiration does not parse",
+          "result": "Mutation control: fails Go on the first edit that expects the saved draft and the created certificate.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-mutation-r1/results.json",
+          "receipt_sha256": "95821025e393fd819ec06a9f6d8466b8650996f8cb01dc1266a91fba1973d7f9"
+        }
+      ],
+      "notes": [
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/associates-draft/bulk-delete -> subscription_associates_draft_bulk_delete",
@@ -17831,25 +17975,73 @@
         "target": "subscription_associates_draft_bulk_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/associates_draft.go",
+        "BE_GO/internal/dto/associates_draft.go",
+        "BE_GO/internal/repository/associates_draft.go",
+        "BE_GO/internal/service/associates_draft.go",
+        "BE_GO/internal/handler/associates_draft.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_associateimportdraft",
+        "application_associateimportdraftstatus",
+        "application_medicalcertificate",
+        "application_sportassociation",
+        "application_family"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/associates-draft/bulk-delete",
+          "/api/v2/subscription/associates-draft/bulk-delete",
+          "/api/subscription/associates-draft/bulk-delete"
+        ],
+        "request": "associate_import_draft_ids list (None dropped; UUIDField.to_python, integers as uuid.UUID(int=...)).",
+        "response": "200 {'msg': 'n/m bozze eliminate con successo.', 'deleted_count': n, 'total_count': m}.",
+        "errors": "400 {'msg': ...} for a non-list value; 401 (anonymous; athletes empty, before the body); 403 registry / scoped session; 500 non-dict body, no association, rejected id.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.delete.",
+        "resource_scope": "request.user.sport_association's drafts.",
+        "side_effects": "Deletes the matching drafts (one delete entry each, changes_json.sport_association).",
+        "transaction": "Single delete.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/associates_draft_http.json",
+        "TESTS/fixtures/generate_associates_draft_http.py",
+        "TESTS/contracts/test_associates_draft_http.py",
+        "TESTS/adapters/django/associates_draft_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 128/128; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-native-r2/results.json",
+          "receipt_sha256": "4800f994e73fb01af5807f4490c54db7e63ed903790e9123a25bc4bbe8f73bd2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-versioned-r1/results.json",
+          "receipt_sha256": "af0dee75717bfce76db11fd9b17331d42189606a86c9e36669757e92deb3b86d"
+        },
+        {
+          "revision": "committing change rolling back the edit when the certificate expiration does not parse",
+          "result": "Mutation control: fails Go on the first edit that expects the saved draft and the created certificate.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-mutation-r1/results.json",
+          "receipt_sha256": "95821025e393fd819ec06a9f6d8466b8650996f8cb01dc1266a91fba1973d7f9"
+        }
+      ],
+      "notes": [
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/associates-draft/list -> subscription_associates_draft_list",
@@ -17866,25 +18058,73 @@
         "target": "subscription_associates_draft_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/associates_draft.go",
+        "BE_GO/internal/dto/associates_draft.go",
+        "BE_GO/internal/repository/associates_draft.go",
+        "BE_GO/internal/service/associates_draft.go",
+        "BE_GO/internal/handler/associates_draft.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_associateimportdraft",
+        "application_associateimportdraftstatus",
+        "application_medicalcertificate",
+        "application_sportassociation",
+        "application_family"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/associates-draft/list",
+          "/api/v2/subscription/associates-draft/list",
+          "/api/subscription/associates-draft/list"
+        ],
+        "request": "None.",
+        "response": "200 {'data': {idx: draft data + associate_import_draft_id + valid}, 'approving': bool|null, 'importing': bool|null}.",
+        "errors": "401 (anonymous; athletes empty, no challenge); 403 registry / scoped session; 500 no or deleted association, non-dict draft data.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read.",
+        "resource_scope": "The owner's association drafts (scoped_queryset during impersonation); statuses through request.user.sport_association.",
+        "side_effects": "Saves doing=False on an importing status older than an hour or an approving one older than five minutes (auditlog update, direct).",
+        "transaction": "Single read with the status saves.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/associates_draft_http.json",
+        "TESTS/fixtures/generate_associates_draft_http.py",
+        "TESTS/contracts/test_associates_draft_http.py",
+        "TESTS/adapters/django/associates_draft_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/associates-draft.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 128/128; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-native-r2/results.json",
+          "receipt_sha256": "4800f994e73fb01af5807f4490c54db7e63ed903790e9123a25bc4bbe8f73bd2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 128/128 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-versioned-r1/results.json",
+          "receipt_sha256": "af0dee75717bfce76db11fd9b17331d42189606a86c9e36669757e92deb3b86d"
+        },
+        {
+          "revision": "committing change rolling back the edit when the certificate expiration does not parse",
+          "result": "Mutation control: fails Go on the first edit that expects the saved draft and the created certificate.",
+          "artifact": "quality-reports/go-migration/associates-draft-http-mutation-r1/results.json",
+          "receipt_sha256": "95821025e393fd819ec06a9f6d8466b8650996f8cb01dc1266a91fba1973d7f9"
+        }
+      ],
+      "notes": [
+        "Implementing: list with status expiry, add with AssociateSerializer validity (field rules, tenant-scoped relations), edit with mandatory-field and dateutil age validity, certificate linking/creation and non-atomic saves, delete and bulk-delete with audit on four transports; dateutil formats outside the ported subset and years before 1000 are refused (500) before any write; list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/associates-draft/list/approve -> subscription_associates_draft_approve",
