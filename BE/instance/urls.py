@@ -5,6 +5,7 @@ from django.urls import path
 from .sso.views import PairingAdminView
 from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView, InstanceReleasesView, InstanceUpdatesView, InstanceRestartsView
 
+from .backups import BackupDownloadTokenView, BackupDownloadView, BackupOverviewView
 from .diagnostics import DiagnosticsView
 from .operations import EmailSettingsView, EmailTestView
 from .integrations import IntegrationSettingsView, IntegrationTestView
@@ -30,6 +31,9 @@ urlpatterns = [
     path('admin/data-restore/<uuid:operation_id>/<str:action>', DataRestoreActionView.as_view(), name='instance-data-restore-action'),
     path('admin/integrations/<str:provider>/test', IntegrationTestView.as_view(), name='instance-integration-test'),
     path('admin/integrations/<str:provider>', IntegrationSettingsView.as_view(), name='instance-integration-settings'),
+    path('admin/backups', BackupOverviewView.as_view(), name='instance-backups'),
+    path('admin/backups/download-token', BackupDownloadTokenView.as_view(), name='instance-backup-download-token'),
+    path('admin/backups/<str:name>/download', BackupDownloadView.as_view(), name='instance-backup-download'),
     path('admin/diagnostics', DiagnosticsView.as_view(), name='instance-diagnostics'),
     path('admin/email', EmailSettingsView.as_view(), name='instance-email-settings'),
     path('admin/email/test', EmailTestView.as_view(), name='instance-email-test'),

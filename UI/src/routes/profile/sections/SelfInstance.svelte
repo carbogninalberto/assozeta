@@ -12,6 +12,7 @@
     import InstanceUpdateStatus from './InstanceUpdateStatus.svelte';
     import {getApiHost, saveRuntimeConfig, clearInstanceCache} from 'store/instanceStore.js';
     import InstanceBranding from './InstanceBranding.svelte';
+    import InstanceBackups from './InstanceBackups.svelte';
     import InstanceEmail from './InstanceEmail.svelte';
     import BakneyPairing from './BakneyPairing.svelte';
     import InstanceIntegrations from './InstanceIntegrations.svelte';
@@ -36,7 +37,7 @@
     let integrationBusy = false;
     let pairingBusy = false;
     let section = 'overview';
-    const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['ai', 'Bot AI'], ['updates', 'Aggiornamenti e backup'], ['diagnostics', 'Diagnostica']];
+    const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['ai', 'Bot AI'], ['updates', 'Aggiornamenti'], ['backups', 'Backup e ripristino'], ['diagnostics', 'Diagnostica']];
     onMount(() => {
         const syncTab = () => {
             if (readProfileLocation().page === 'self-instance') section = profileTab('self-instance', sections.map(([id]) => id), 'overview');
@@ -354,7 +355,7 @@
                     <h2 id="instance-overview">Panoramica</h2>
                     <div class="overview-grid">
                         <div class="overview-tile"><span>Istanza</span><strong>{info.config.oem.name}</strong><span>{info.config.oem.supportEmail || 'Email di supporto non impostata'}</span></div>
-                        <div class="overview-tile"><span>Versione installata</span><strong>{info.running_version || 'Non riconosciuta'}</strong><button class="text-action" on:click={() => section = 'updates'}>Visualizza release e backup</button></div>
+                        <div class="overview-tile"><span>Versione installata</span><strong>{info.running_version || 'Non riconosciuta'}</strong><button class="text-action" on:click={() => section = 'updates'}>Visualizza aggiornamenti</button></div>
                         <div class="overview-tile"><span>Servizi essenziali</span><strong>{healthLabels[diagnostics?.overall] || healthLabels.not_checked}</strong><span>{diagnostics?.checked_at ? `Ultima verifica: ${new Date(diagnostics.checked_at).toLocaleString('it-IT')}` : 'Nessuna diagnostica eseguita'}</span></div>
                     </div>
                     <p class="mt-4">I risultati descrivono l’ultima verifica e non costituiscono monitoraggio continuo. Le integrazioni facoltative sono valutate separatamente.</p>
@@ -367,6 +368,10 @@
                     {/if}
                 </section>
                 {#if section === 'overview'}<div class="mt-8"><BakneyPairing {request} bind:busy={pairingBusy} disabled={apiUnavailable || !!active || starting} /></div>{/if}
+            </div>
+            <div hidden={section !== 'backups'}>
+                {#if section === 'backups'}<InstanceBackups {request} active={!!active || starting}
+                    checks={(diagnostics?.checks || []).filter(check => ['backups', 'updater'].includes(check.id))} />{/if}
             </div>
             <div hidden={section !== 'ai'}><InstanceIntegration provider="ai" title="Bot AI" {request} bind:changes={aiChanges} bind:busy={aiBusy} disabled={apiUnavailable || !!active || starting} onSaved={refreshAI} /></div>
             <div hidden={section !== 'email'}><InstanceEmail {request} bind:changes={emailChanges} bind:busy={emailBusy} disabled={apiUnavailable || !!active || starting} onSaved={loadDiagnostics} /></div>
@@ -462,16 +467,6 @@
             {/if}
 
             {#if section === 'updates'}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} collapseHistory />{/if}
-
-            <InstanceAccordion id="instance-backups" title="Backup e ripristino" description="Stato dei backup e istruzioni per il recupero dei dati.">
-                {#each (diagnostics?.checks || []).filter(check => ['backups', 'updater'].includes(check.id)) as check}<div class="mb-3"><DiagnosticResult {check} /></div>{/each}
-                <p>Un backup viene creato prima di ogni aggiornamento. La presenza di un archivio non dimostra che possa essere ripristinato.</p>
-                <h3 class="font-size-lg mt-5">Operazioni sul server e recupero</h3>
-                <p>Dalla cartella selfhost dell’installazione:</p>
-                <p><code>./bin/assozeta backup</code> crea un backup coerente; l’applicazione viene fermata temporaneamente.</p>
-                <p>Conserva una copia protetta fuori dal server. Prova il ripristino su un’installazione isolata seguendo selfhost/UPDATES.md prima di un aggiornamento importante.</p>
-                <p>Se un aggiornamento richiede recupero, segui le istruzioni mostrate nello stato operazione. Il comando <code>./bin/assozeta recover-upgrade PERCORSO_BACKUP</code> ripristina versione, configurazione e dati; richiede l’accesso al server.</p>
-            </InstanceAccordion>
 
             <InstanceAccordion id="release-notes" title="Note di rilascio" description="Le novità dell’ultima versione e degli aggiornamenti disponibili.">
                 {#if catalog?.pending?.length > 0}

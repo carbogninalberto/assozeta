@@ -32,10 +32,56 @@ def deployment_mode():
     return getattr(settings, 'ASSOZETA_DEPLOYMENT_MODE', 'development')
 
 
-def call_runner(method, path, payload=None):
+def _runner_directory():
     if deployment_mode() != 'production':
         raise UpdaterUnavailable('Gli aggiornamenti dell’installazione sono disabilitati in sviluppo.')
-    directory = Path(getattr(settings, 'ASSOZETA_UPDATER_DIRECTORY', '/run/assozeta-updater'))
+    return Path(getattr(settings, 'ASSOZETA_UPDATER_DIRECTORY', '/run/assozeta-updater'))
+
+
+class RunnerBody:
+    """File-like runner response that owns, and closes, its connection."""
+
+    def __init__(self, connection, response):
+        self.connection = connection
+        self.response = response
+
+    def read(self, size=-1):
+        return self.response.read(size)
+
+    def close(self):
+        self.response.close()
+        self.connection.close()
+
+
+def open_runner_stream(path):
+    """GET a binary runner resource; return (size, RunnerBody)."""
+    directory = _runner_directory()
+    connection = UnixConnection(directory / 'runner.sock')
+    connection.timeout = 300
+    try:
+        token = (directory / 'token').read_text().strip()
+        if not token:
+            raise OSError('Missing runner credentials')
+        connection.request('GET', path, headers={'Authorization': f'Bearer {token}'})
+        response = connection.getresponse()
+        if response.status >= 400:
+            try:
+                message = json.loads(response.read()).get('error', 'Risorsa non disponibile.')
+            except ValueError:
+                message = 'Risorsa non disponibile.'
+            raise UpdaterRejected(message, response.status)
+        size = int(response.getheader('Content-Length', ''))
+    except UpdaterRejected:
+        connection.close()
+        raise
+    except (OSError, ValueError, http.client.HTTPException) as exc:
+        connection.close()
+        raise UpdaterUnavailable('Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.') from exc
+    return size, RunnerBody(connection, response)
+
+
+def call_runner(method, path, payload=None):
+    directory = _runner_directory()
     connection = UnixConnection(directory / 'runner.sock')
     try:
         token = (directory / 'token').read_text().strip()

@@ -62,15 +62,40 @@ try {
         let runnerHistory = Array.from({length: 20}, (_, index) => ({id: `fixture-operation-${index}`, source_version: '1.0.2', target_version: '1.0.3', stage: 'completed', actor_id: 'fixture-owner', created_at: '2026-09-18T12:00:00Z'}));
         const latestRelease = {id: 4, tag: 'v1.0.4', name: 'Miglioramenti dell’istanza', published_at: '2026-09-23T12:00:00Z', artifacts_ready: true, url: 'https://example.test/release',
             notes: '# Novità della versione\n\n' + 'Migliorata la gestione degli aggiornamenti e la consultazione delle versioni precedenti.\n\n'.repeat(30) + 'Fine delle note di rilascio.'};
+        const GIB = 1024 ** 3;
+        const backupArchive = 'assozeta-20261106T200459Z.tar.gz';
+        const backupOverview = {available: true, retention: {automatic: 3},
+            archives: [
+                {name: backupArchive, size: 3 * GIB, created_at: '2026-11-06T20:04:59+00:00', version: '1.0.3', origin: 'manual', keep: false, last_upgrade: false, pending_upgrade: false, location: 'local'},
+                {name: 'assozeta-20261101T020000Z.tar.gz', size: 3 * GIB, created_at: '2026-11-01T02:00:00+00:00', version: '1.0.2', origin: 'pre-upgrade', keep: false, last_upgrade: true, pending_upgrade: false, location: 'local'},
+                {name: 'assozeta-20261001T020000Z.tar.gz', size: 2 * GIB, created_at: '2026-10-01T02:00:00+00:00', version: null, origin: 'unknown', keep: false, last_upgrade: false, pending_upgrade: false, location: 'local'},
+            ],
+            disk: {total: 40 * GIB, used: 33 * GIB, free: 7 * GIB, backups: 8 * GIB, database: GIB, objects: 3 * GIB},
+            next_backup: {estimated: 4 * GIB, required: 9 * GIB, fits: false}};
+        const backupPasswords = [];
         await page.route('**/api/instance/**', async route => {
             const request = route.request();
             const endpoint = new URL(request.url()).pathname.replace('/api/instance', '');
             const method = request.method();
             let value = {};
             let status = 200;
+            if (endpoint === `/admin/backups/${backupArchive}/download`) {
+                assert.equal(new URL(request.url()).searchParams.get('download_token'), 'fixture-token');
+                await route.fulfill({status: 200, contentType: 'application/gzip', body: Buffer.from([0x1f, 0x8b, 0, 0]),
+                    headers: {'Content-Disposition': `attachment; filename="${backupArchive}"`}});
+                return;
+            }
             if (endpoint === '/admin') value = {config: {oem: {name: 'Diagnostic Club', abbreviation: 'DC', primaryColor: '#234582', supportEmail: 'help@example.test'}}, running_version: '1.0.3', configured_version: '1.0.3', mode: 'production'};
             else if (endpoint === '/admin/releases') value = {history: [latestRelease], pending: [latestRelease], latest: latestRelease, relation: 'behind'};
             else if (endpoint === '/admin/updates') value = {available: true, can_update: true, active: null, history: runnerHistory};
+            else if (endpoint === '/admin/backups' && method === 'GET') value = backupOverview;
+            else if (endpoint === '/admin/backups/download-token' && method === 'POST') {
+                const input = request.postDataJSON();
+                backupPasswords.push(input.password);
+                assert.equal(input.name, backupArchive);
+                if (input.password === 'fixture-secret') value = {download_token: 'fixture-token', expires_in: 300};
+                else {status = 400; value = {error: 'Password non corretta.'};}
+            }
             else if (endpoint === '/admin/bakney-pairing' && method === 'GET') value = {state: 'disconnected', pairing_id: null, forwarding_enabled: false};
             else if (endpoint.startsWith('/admin/integrations/')) {
                 const provider = endpoint.split('/').at(-1);
@@ -214,13 +239,38 @@ try {
         await setSwitch(page, 'stripe-confirm-reset', 'Confermo il ripristino di Stripe da .env', true);
         await page.getByRole('button', {name: 'Ripristina Stripe', exact: true}).click();
         await expect(page.getByLabel('Chiave pubblica Stripe', {exact: true})).toHaveValue('pk_test_environment');
-        await navigate('Aggiornamenti e backup');
+        await navigate('Backup e ripristino');
         await expect(page.getByRole('heading', {name: 'Backup e ripristino', exact: true})).toBeVisible();
+        await expect(page.getByRole('img', {name: /Disco del server: 33 GB usati su 40 GB, 7 GB liberi/})).toBeVisible();
+        await expect(page.getByRole('alert').filter({hasText: 'Il prossimo backup potrebbe non entrare nel disco'})).toBeVisible();
+        await expect(page.getByText('La rotazione conserva gli ultimi 3 backup automatici.', {exact: false})).toBeVisible();
+        const backupRows = page.locator('.backups-table tbody tr');
+        await expect(backupRows).toHaveCount(3);
+        await expect(backupRows.nth(0)).toContainText('Manuale');
+        await expect(backupRows.nth(1)).toContainText('Prima di un aggiornamento');
+        await expect(backupRows.nth(1)).toContainText('Ultimo aggiornamento riuscito');
+        await expect(backupRows.nth(2)).toContainText('Non registrata');
+        await backupRows.nth(0).getByRole('button', {name: /^Scarica il backup del/}).click();
+        await expect(page.getByLabel('Conferma la tua password')).toBeFocused();
+        await expect(page.getByRole('note')).toContainText('non è cifrato');
+        await page.screenshot({path: path.join(output, `backups-${viewport.width}.png`), fullPage: true});
+        await page.getByLabel('Conferma la tua password').fill('wrong');
+        await page.getByRole('button', {name: 'Scarica backup', exact: true}).click();
+        await expect(page.getByText('Password non corretta.', {exact: true})).toBeVisible();
+        await expect(page.getByLabel('Conferma la tua password')).toHaveValue('');
+        await page.getByLabel('Conferma la tua password').fill('fixture-secret');
+        const backupDownload = page.waitForEvent('download');
+        await page.getByRole('button', {name: 'Scarica backup', exact: true}).click();
+        assert.equal((await backupDownload).suggestedFilename(), backupArchive);
+        await expect(page.getByLabel('Conferma la tua password')).toHaveCount(0);
+        assert.deepEqual(backupPasswords, ['wrong', 'fixture-secret']);
+        backupPasswords.length = 0;
+        await navigate('Aggiornamenti');
         await expect(page.getByRole('heading', {name: 'Cronologia aggiornamenti', exact: true})).toBeVisible();
         const updates = page.locator('.updates-sections');
         await expect(updates.getByRole('heading').first()).toHaveText('Versione e aggiornamenti');
         const panels = updates.locator('details.instance-accordion');
-        await expect(panels).toHaveCount(4);
+        await expect(panels).toHaveCount(3);
         for (const panel of await panels.all()) await expect(panel).toHaveJSProperty('open', false);
         await page.screenshot({path: path.join(output, `updates-collapsed-${viewport.width}.png`), fullPage: true});
         const operationHistory = panels.filter({has: page.getByRole('heading', {name: 'Cronologia aggiornamenti', exact: true})});
@@ -251,7 +301,7 @@ try {
         await page.locator('.review-panel').getByRole('button', {name: 'Annulla', exact: true}).click();
         await navigate('Identità e logo');
         await expect(page.getByRole('heading', {name: 'Identità dell’istanza', exact: true})).toBeVisible();
-        for (const label of ['Panoramica', 'Email', 'Diagnostica', 'Aggiornamenti e backup', 'Integrazioni', 'Identità e logo']) {
+        for (const label of ['Panoramica', 'Email', 'Diagnostica', 'Aggiornamenti', 'Backup e ripristino', 'Integrazioni', 'Identità e logo']) {
             await navigate(label);
             assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${label}: horizontal overflow`);
         }
@@ -259,7 +309,7 @@ try {
         await page.reload();
         await expect(page.getByRole('heading', {name: 'Ultimo aggiornamento', exact: true})).toBeVisible();
         await expect(page.getByText('Ripristina il backup verificato.', {exact: true})).toBeVisible();
-        await navigate('Aggiornamenti e backup');
+        await navigate('Aggiornamenti');
         await expect(page.getByText('Ripristina il backup verificato.', {exact: true}).filter({visible: true})).toBeVisible();
         assert.deepEqual(errors, []);
         reports.push({viewport, passed: true, scope: 'Real Svelte components, fixture API; keyboard navigation, saves/reloads, failed saves, SMTP actions, failed diagnostics, integration environment values, masked secrets, saves/reloads, failed saves, explicit resets, update history/recovery visibility, overflow.'});
