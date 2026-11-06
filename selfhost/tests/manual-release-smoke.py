@@ -341,8 +341,12 @@ def main():
                     "c=InstanceConfiguration.objects.get(); "
                     "c.display_settings={**c.display_settings,'sidebar':{**c.display_settings.get('sidebar',{}),'showManual':False}}; "
                     "c.save(update_fields=['display_settings'])"), env=env)
+                existing_backups = set((installation / 'backups').glob('*.tar.gz'))
                 command([cli, 'backup'], env=env)
-                historical_backup = max((installation / 'backups').glob('*.tar.gz'), key=lambda path: path.stat().st_mtime_ns)
+                created_backups = set((installation / 'backups').glob('*.tar.gz')) - existing_backups
+                if len(created_backups) != 1:
+                    raise RuntimeError('Manual backup did not create exactly one archive')
+                historical_backup, = created_backups
                 historical_environment = env_file.read_bytes()
                 target_tag = repositories['backend'] + ':' + args.release
                 for fault, corrupt in corrupt_images.items():
@@ -374,6 +378,11 @@ def main():
                         raise RuntimeError('Historical upgrade changed association data: ' + key)
                 contracts('upgrade-historical', browser=True)
                 record('real published ' + args.previous_release + ': upgrade preserves association data and delivers the manual with legacy branding and empty download volume')
+                # Each rejected candidate took its own pre-upgrade backup;
+                # rotation must never remove the owner's manual backup.
+                if not historical_backup.is_file():
+                    raise RuntimeError('Backup rotation removed the manual backup ' + historical_backup.name)
+                record('backup rotation keeps the manual backup across repeated pre-upgrade backups')
                 # Restore the old schema and its data before selecting old code.
                 command([cli, 'stop'], env=env)
                 command([cli, 'restore', historical_backup, '--yes'], env=env)

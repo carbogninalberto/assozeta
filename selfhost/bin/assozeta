@@ -1319,11 +1319,45 @@ backup_require_space() {
     log "backup needs about $(( required_kib / 1024 )) MB; $(( available_kib / 1024 )) MB available"
 }
 
-# Keep the newest ASSOZETA_BACKUP_KEEP automatic archives (default 2). Only the
-# default directory is pruned, never the archive of a pending upgrade.
+# Each archive has a sidecar "<archive>.meta" of key=value lines:
+#   origin   manual | scheduled | pre-upgrade | pre-restore
+#   keep     true when the owner asked to keep it ("Conserva")
+#   upgrade  completed once the upgrade that took it succeeded
+# Archives without a sidecar predate this format and are treated as manual.
+backup_meta_value() {
+    [ -f "$2.meta" ] || return 0
+    env_value "$1" "$2.meta"
+}
+
+backup_write_meta() {
+    meta_archive=$1
+    meta_origin=$2
+    meta_temporary="$meta_archive.meta.tmp.$$"
+    {
+        printf 'origin=%s\n' "$meta_origin"
+        printf 'created_at=%s\n' "$timestamp"
+        printf 'version=%s\n' "$(env_value ASSOZETA_VERSION "$PROD_ENV")"
+    } > "$meta_temporary" && chmod 600 "$meta_temporary" && mv -f "$meta_temporary" "$meta_archive.meta" || {
+        rm -f "$meta_temporary"
+        log "warning: could not record the origin of $meta_archive; it will not be rotated automatically"
+    }
+}
+
+# Record that the upgrade which took this archive succeeded, so rotation keeps
+# it until the next upgrade succeeds.
+backup_mark_upgrade_completed() {
+    [ -f "$1.meta" ] || return 0
+    set_env_value upgrade completed "$1.meta" || log "warning: could not mark $1 as the last successful upgrade backup"
+}
+
+# Keep the newest ASSOZETA_BACKUP_KEEP automatic archives (default 3). Only
+# scheduled and pre-upgrade archives count; manual, pre-restore, kept and
+# legacy archives are never removed automatically. The archive of the last
+# successful upgrade and of a pending upgrade are kept as well. Only the
+# default directory is pruned. Call it only after a backup or upgrade succeeds.
 backup_prune() {
     keep=${ASSOZETA_BACKUP_KEEP:-$(env_value ASSOZETA_BACKUP_KEEP "$PROD_ENV")}
-    keep=${keep:-2}
+    keep=${keep:-3}
     case "$keep" in
         ""|*[!0-9]*) log "warning: ASSOZETA_BACKUP_KEEP must be a non-negative integer; old backups were kept"; return 0 ;;
     esac
@@ -1331,14 +1365,30 @@ backup_prune() {
     [ "$destination" = "$SELFHOST_DIR/backups" ] || return 0
     transaction="$SELFHOST_DIR/.updater/pending-distribution/transaction.json"
     # Timestamped names sort chronologically.
-    ls "$destination" | grep -E '^assozeta-[0-9]{8}T[0-9]{6}Z(-[0-9]+)?\.tar\.gz$' | sort -r | \
-        awk -v keep="$keep" 'NR > keep' | while IFS= read -r old_archive; do
-            if [ -f "$transaction" ] && grep -qF "$old_archive" "$transaction"; then
-                continue
-            fi
-            rm -f "$destination/$old_archive"
-            log "removed old backup $old_archive (keeping the newest $keep)"
-        done
+    archives=$(ls "$destination" | grep -E '^assozeta-[0-9]{8}T[0-9]{6}Z(-[0-9]+)?\.tar\.gz$' | sort -r)
+    last_upgrade=
+    for candidate in $archives; do
+        if [ "$(backup_meta_value upgrade "$destination/$candidate")" = completed ]; then
+            last_upgrade=$candidate
+            break
+        fi
+    done
+    automatic=0
+    for candidate in $archives; do
+        case "$(backup_meta_value origin "$destination/$candidate")" in
+            scheduled|pre-upgrade) ;;
+            *) continue ;;
+        esac
+        [ "$(backup_meta_value keep "$destination/$candidate")" != true ] || continue
+        automatic=$((automatic + 1))
+        [ "$automatic" -gt "$keep" ] || continue
+        [ "$candidate" != "$last_upgrade" ] || continue
+        if [ -f "$transaction" ] && grep -qF "$candidate" "$transaction"; then
+            continue
+        fi
+        rm -f "$destination/$candidate" "$destination/$candidate.meta"
+        log "removed old automatic backup $candidate (keeping the newest $keep)"
+    done
 }
 
 backup_prod() {
@@ -1417,6 +1467,7 @@ EOF
     backup_cleanup 0 || cleanup_status=$?
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
     log "backup created: $archive"
+    backup_write_meta "$archive" "${backup_origin:-manual}"
     backup_prune
     log "the archive contains secrets; copy it off-host and protect it"
 }
@@ -1658,9 +1709,11 @@ upgrade_prod() {
     fi
     printf '%s\n' '@@ASSOZETA_STAGE backup'
     backup_keep_stopped=true
+    backup_origin=pre-upgrade
     # The new images are pulled after the backup, onto the same Docker host.
     backup_extra_space_mb=${ASSOZETA_UPGRADE_IMAGE_SPACE_MB:-2048}
     backup_prod
+    upgrade_backup=$archive
     printf '%s\n' '@@ASSOZETA_STAGE downloading'
     if [ "$managed_update" = true ]; then
         if ! run_updater_tool /runner/distribution.py prepare "$SELFHOST_DIR" "$PROD_ENV" "$version" "$archive" "${ASSOZETA_OPERATION_ID:-}"; then
@@ -1703,6 +1756,11 @@ upgrade_prod() {
         if ! run_updater_tool /runner/cleanup.py "$SELFHOST_DIR" "$PROD_ENV"; then
             log "cleanup warning: automatic maintenance failed; upgrade remains successful"
         fi
+    fi
+    if [ -f "$upgrade_backup" ]; then
+        backup_mark_upgrade_completed "$upgrade_backup"
+        destination=$(dirname -- "$upgrade_backup")
+        backup_prune
     fi
     log "upgrade complete; previous version was $previous"
 }
