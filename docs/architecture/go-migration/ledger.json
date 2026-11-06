@@ -4243,25 +4243,74 @@
         "target": "camps_and_retreats_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_core.go",
+        "BE_GO/internal/dto/camps_core_write.go",
+        "BE_GO/internal/repository/camps_core.go",
+        "BE_GO/internal/service/camps_core.go",
+        "BE_GO/internal/handler/camps_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/<uid>/delete",
+          "/api/v2/camps-and-retreats/<uid>/delete",
+          "/api/camps-and-retreats/<uid>/delete"
+        ],
+        "request": "uid path parameter (is_valid_uuid)",
+        "response": "200 {'message': 'Camp or retreat deleted successfully'}",
+        "errors": "400 malformed uid; 401/403 transport and registry; 405; 403 {'error'} for non associations; 404; 403 {'detail'} for another association's camp; 500 {'error'} without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.delete",
+        "resource_scope": "camp association against request.user.sport_association",
+        "side_effects": "deletes the camp, its periods, services, subscriptions, subscription periods and their link rows; delete entries indexed through changes_json.sport_association (camp) and the actor's association (cascades)",
+        "transaction": "collector delete is atomic (Go: one transaction)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_core_http.json",
+        "TESTS/fixtures/generate_camps_core_http.py",
+        "TESTS/contracts/test_camps_core_http.py",
+        "TESTS/adapters/django/camps_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 88/88; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-versioned-r1/results.json",
+          "receipt_sha256": "104a9870e171c9d0e5ff3fa93c23f6833a915e3aa7ab16056501dae22914b4f9"
+        },
+        {
+          "revision": "committing change with the camp's delete entry indexed through the actor instead of changes_json.sport_association",
+          "result": "Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500).",
+          "artifact": "quality-reports/go-migration/camps-core-http-mutation-r1/results.json",
+          "receipt_sha256": "c05ad19fe1cc529277e267a07aa9f435856561be4e4a7734620c148c71e5e9ce"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/<str:uid>/info -> camps_and_retreats_info",
@@ -4278,25 +4327,74 @@
         "target": "camps_and_retreats_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_core.go",
+        "BE_GO/internal/dto/camps_core_write.go",
+        "BE_GO/internal/repository/camps_core.go",
+        "BE_GO/internal/service/camps_core.go",
+        "BE_GO/internal/handler/camps_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/<uid>/info",
+          "/api/v2/camps-and-retreats/<uid>/info",
+          "/api/camps-and-retreats/<uid>/info"
+        ],
+        "request": "uid path parameter (is_valid_uuid)",
+        "response": "200 {'data': CampsAndRetreatsInfoSerializer data with periods by start_date}; users that are not associations or collaborators get CampsAndRetreatsPublicInfoSerializer data",
+        "errors": "400 malformed uid; 401/403 transport and registry; 405; 404 {'error': 'Camp or retreat not found'}; 403 {'detail'} for another association's camp; 500 {'error'} without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.read",
+        "resource_scope": "camp association against request.user.sport_association (public serializer for other roles)",
+        "side_effects": "none",
+        "transaction": "read only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_core_http.json",
+        "TESTS/fixtures/generate_camps_core_http.py",
+        "TESTS/contracts/test_camps_core_http.py",
+        "TESTS/adapters/django/camps_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 88/88; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-versioned-r1/results.json",
+          "receipt_sha256": "104a9870e171c9d0e5ff3fa93c23f6833a915e3aa7ab16056501dae22914b4f9"
+        },
+        {
+          "revision": "committing change with the camp's delete entry indexed through the actor instead of changes_json.sport_association",
+          "result": "Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500).",
+          "artifact": "quality-reports/go-migration/camps-core-http-mutation-r1/results.json",
+          "receipt_sha256": "c05ad19fe1cc529277e267a07aa9f435856561be4e4a7734620c148c71e5e9ce"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/<str:uid>/subscriptions/add -> camps_and_retreats_subscriptions_add",
@@ -4453,25 +4551,74 @@
         "target": "camps_and_retreats_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_core.go",
+        "BE_GO/internal/dto/camps_core_write.go",
+        "BE_GO/internal/repository/camps_core.go",
+        "BE_GO/internal/service/camps_core.go",
+        "BE_GO/internal/handler/camps_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/<uid>/update",
+          "/api/v2/camps-and-retreats/<uid>/update",
+          "/api/camps-and-retreats/<uid>/update"
+        ],
+        "request": "partial CampsAndRetreatsSerializer fields; JSON or form",
+        "response": "200 {'message': 'Camp or retreat updated successfully', 'camp_and_retreat': serializer.data}",
+        "errors": "400 malformed uid; 401/403 transport and registry; 405; 403 {'error'} for non associations; 404; 403 {'detail'} for another association's camp and for a sport_association of another tenant; 400 {'error': str(ValidationError)}; 500 {'error'} without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.update",
+        "resource_scope": "camp association against request.user.sport_association; tenant-scoped sport_association field",
+        "side_effects": "updates the camp; audit update of changed fields indexed direct",
+        "transaction": "not atomic (Go: one transaction)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_core_http.json",
+        "TESTS/fixtures/generate_camps_core_http.py",
+        "TESTS/contracts/test_camps_core_http.py",
+        "TESTS/adapters/django/camps_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 88/88; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-versioned-r1/results.json",
+          "receipt_sha256": "104a9870e171c9d0e5ff3fa93c23f6833a915e3aa7ab16056501dae22914b4f9"
+        },
+        {
+          "revision": "committing change with the camp's delete entry indexed through the actor instead of changes_json.sport_association",
+          "result": "Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500).",
+          "artifact": "quality-reports/go-migration/camps-core-http-mutation-r1/results.json",
+          "receipt_sha256": "c05ad19fe1cc529277e267a07aa9f435856561be4e4a7734620c148c71e5e9ce"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/add -> camps_and_retreats_add",
@@ -4488,25 +4635,74 @@
         "target": "camps_and_retreats_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_core.go",
+        "BE_GO/internal/dto/camps_core_write.go",
+        "BE_GO/internal/repository/camps_core.go",
+        "BE_GO/internal/service/camps_core.go",
+        "BE_GO/internal/handler/camps_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/add",
+          "/api/v2/camps-and-retreats/add",
+          "/api/camps-and-retreats/add"
+        ],
+        "request": "CampsAndRetreatsSerializer fields (camps_and_retreats_id, title, description); sport_association is overwritten with the user's association; JSON mapping",
+        "response": "201 {'message': 'Camp or retreat added successfully', 'camp_and_retreat': serializer.data}",
+        "errors": "401/403 transport and registry; 405; 403 {'error'} for non associations; 400 {'error': str(ValidationError)}; 500 {'error': str(e)} without an association and for form, list, scalar and null bodies (item assignment)",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.create",
+        "resource_scope": "the user's association",
+        "side_effects": "creates the camp (audit create indexed direct); the second save changes nothing",
+        "transaction": "not atomic (Go: one transaction)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_core_http.json",
+        "TESTS/fixtures/generate_camps_core_http.py",
+        "TESTS/contracts/test_camps_core_http.py",
+        "TESTS/adapters/django/camps_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 88/88; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-versioned-r1/results.json",
+          "receipt_sha256": "104a9870e171c9d0e5ff3fa93c23f6833a915e3aa7ab16056501dae22914b4f9"
+        },
+        {
+          "revision": "committing change with the camp's delete entry indexed through the actor instead of changes_json.sport_association",
+          "result": "Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500).",
+          "artifact": "quality-reports/go-migration/camps-core-http-mutation-r1/results.json",
+          "receipt_sha256": "c05ad19fe1cc529277e267a07aa9f435856561be4e4a7734620c148c71e5e9ce"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/list -> camps_and_retreats_list",
@@ -4523,25 +4719,74 @@
         "target": "camps_and_retreats_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_core.go",
+        "BE_GO/internal/dto/camps_core_write.go",
+        "BE_GO/internal/repository/camps_core.go",
+        "BE_GO/internal/service/camps_core.go",
+        "BE_GO/internal/handler/camps_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/list",
+          "/api/v2/camps-and-retreats/list",
+          "/api/camps-and-retreats/list"
+        ],
+        "request": "no parameters",
+        "response": "200 {'data': CampsAndRetreatsSerializer(many=True).data} for the camps of the request user's association (no ordering)",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 403 {'error'} for users that are not associations or collaborators; 500 page without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.read",
+        "resource_scope": "request.user.sport_association",
+        "side_effects": "none",
+        "transaction": "read only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_core_http.json",
+        "TESTS/fixtures/generate_camps_core_http.py",
+        "TESTS/contracts/test_camps_core_http.py",
+        "TESTS/adapters/django/camps_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 88/88; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp, period, service, subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-core-http-versioned-r1/results.json",
+          "receipt_sha256": "104a9870e171c9d0e5ff3fa93c23f6833a915e3aa7ab16056501dae22914b4f9"
+        },
+        {
+          "revision": "committing change with the camp's delete entry indexed through the actor instead of changes_json.sport_association",
+          "result": "Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500).",
+          "artifact": "quality-reports/go-migration/camps-core-http-mutation-r1/results.json",
+          "receipt_sha256": "c05ad19fe1cc529277e267a07aa9f435856561be4e4a7734620c148c71e5e9ce"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats list/add/info/update/delete (camp_and_retreats_views.py) with CampsAndRetreatsSerializer.save, the public info serializer and the camp delete cascade. Not ported (500 before any write): multipart file parts on add or update, and a changed primary key on update."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/periods/<str:uid>/delete -> camps_and_retreats_periods_delete",
