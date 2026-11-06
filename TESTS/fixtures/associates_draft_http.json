@@ -1,0 +1,5137 @@
+{
+ "matrix_version": 1,
+ "scope": "Associate import drafts authored sequence with draft, certificate, status and audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "drafts": {
+  "complete": {
+   "id": "a1000000-0000-4000-8000-000000573003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "1980-01-01",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma"
+    },
+    "associate_tutor": {},
+    "new_user_account": {
+     "new_member": false
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000573001",
+     "filename": null,
+     "certificate_expring_date": null
+    }
+   },
+   "valid": true
+  },
+  "partial": {
+   "id": "a1000000-0000-4000-8000-000000573004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {
+     "first_name": "Ada"
+    },
+    "associate_tutor": null,
+    "score": 1.5,
+    "big": 12345678901234567890123,
+    "nested": [
+     1,
+     "è",
+     null,
+     true
+    ]
+   },
+   "valid": false
+  },
+  "unknown_validity": {
+   "id": "a1000000-0000-4000-8000-000000573005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {}
+   },
+   "valid": null
+  },
+  "removable": {
+   "id": "a1000000-0000-4000-8000-000000573006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {
+     "first_name": "Rimosso"
+    },
+    "valid": "stored key"
+   },
+   "valid": false
+  },
+  "bulk_a": {
+   "id": "a1000000-0000-4000-8000-000000573007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {
+     "first_name": "Primo"
+    }
+   },
+   "valid": true
+  },
+  "bulk_b": {
+   "id": "a1000000-0000-4000-8000-000000573008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {
+     "first_name": "Secondo"
+    }
+   },
+   "valid": false
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000573009",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "data": {
+    "associate": {
+     "first_name": "Estero"
+    }
+   },
+   "valid": true
+  }
+ },
+ "statuses": {
+  "own_importing": {
+   "id": "a1000000-0000-4000-8000-000000573010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "type": 1,
+   "doing": true,
+   "created": "2020-01-01T00:00:00Z"
+  },
+  "own_approving_new": {
+   "id": "a1000000-0000-4000-8000-000000573011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "type": 2,
+   "doing": true,
+   "created": "2099-01-01T00:00:00Z"
+  },
+  "own_approving_old": {
+   "id": "a1000000-0000-4000-8000-000000573012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "type": 2,
+   "doing": false,
+   "created": "2020-01-01T00:00:00Z"
+  },
+  "foreign_importing": {
+   "id": "a1000000-0000-4000-8000-000000573013",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "type": 1,
+   "doing": true,
+   "created": "2099-01-01T00:00:00Z"
+  }
+ },
+ "certificates": {
+  "linked": {
+   "id": "a1000000-0000-4000-8000-000000573001",
+   "user": "owner",
+   "expiration": "2026-01-31",
+   "created": "2026-01-01T08:00:00Z"
+  }
+ },
+ "families": {
+  "family": {
+   "id": "a1000000-0000-4000-8000-000000573002"
+  }
+ },
+ "cases": [
+  {
+   "name": "associates-draft-list-owner-expires-importing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "1980-01-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {},
+      "new_user_account": {
+       "new_member": false
+      },
+      "signature": {
+       "there_is_signature": false,
+       "data": ""
+      },
+      "medical_certificate": {
+       "medical_id": "a1000000-0000-4000-8000-000000573001",
+       "filename": null,
+       "certificate_expring_date": null
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573003",
+      "valid": true
+     },
+     "1": {
+      "associate": {
+       "first_name": "Ada"
+      },
+      "associate_tutor": null,
+      "score": 1.5,
+      "big": 12345678901234567890123,
+      "nested": [
+       1,
+       "è",
+       null,
+       true
+      ],
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573004",
+      "valid": false
+     },
+     "2": {
+      "associate": {},
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573005",
+      "valid": null
+     },
+     "3": {
+      "associate": {
+       "first_name": "Rimosso"
+      },
+      "valid": false,
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573006"
+     },
+     "4": {
+      "associate": {
+       "first_name": "Primo"
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573007",
+      "valid": true
+     },
+     "5": {
+      "associate": {
+       "first_name": "Secondo"
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573008",
+      "valid": false
+     }
+    },
+    "approving": true,
+    "importing": false
+   },
+   "effect": {
+    "kind": "status",
+    "actor": "owner",
+    "rows": {
+     "own_importing": false
+    }
+   },
+   "indexed": true
+  },
+  {
+   "name": "associates-draft-list-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "1980-01-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {},
+      "new_user_account": {
+       "new_member": false
+      },
+      "signature": {
+       "there_is_signature": false,
+       "data": ""
+      },
+      "medical_certificate": {
+       "medical_id": "a1000000-0000-4000-8000-000000573001",
+       "filename": null,
+       "certificate_expring_date": null
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573003",
+      "valid": true
+     },
+     "1": {
+      "associate": {
+       "first_name": "Ada"
+      },
+      "associate_tutor": null,
+      "score": 1.5,
+      "big": 12345678901234567890123,
+      "nested": [
+       1,
+       "è",
+       null,
+       true
+      ],
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573004",
+      "valid": false
+     },
+     "2": {
+      "associate": {},
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573005",
+      "valid": null
+     },
+     "3": {
+      "associate": {
+       "first_name": "Rimosso"
+      },
+      "valid": false,
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573006"
+     },
+     "4": {
+      "associate": {
+       "first_name": "Primo"
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573007",
+      "valid": true
+     },
+     "5": {
+      "associate": {
+       "first_name": "Secondo"
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573008",
+      "valid": false
+     }
+    },
+    "approving": true,
+    "importing": false
+   },
+   "effect": null,
+   "indexed": true
+  },
+  {
+   "name": "associates-draft-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "1980-01-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {},
+      "new_user_account": {
+       "new_member": false
+      },
+      "signature": {
+       "there_is_signature": false,
+       "data": ""
+      },
+      "medical_certificate": {
+       "medical_id": "a1000000-0000-4000-8000-000000573001",
+       "filename": null,
+       "certificate_expring_date": null
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573003",
+      "valid": true
+     },
+     "1": {
+      "associate": {
+       "first_name": "Ada"
+      },
+      "associate_tutor": null,
+      "score": 1.5,
+      "big": 12345678901234567890123,
+      "nested": [
+       1,
+       "è",
+       null,
+       true
+      ],
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573004",
+      "valid": false
+     },
+     "2": {
+      "associate": {},
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573005",
+      "valid": null
+     },
+     "3": {
+      "associate": {
+       "first_name": "Rimosso"
+      },
+      "valid": false,
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573006"
+     },
+     "4": {
+      "associate": {
+       "first_name": "Primo"
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573007",
+      "valid": true
+     },
+     "5": {
+      "associate": {
+       "first_name": "Secondo"
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573008",
+      "valid": false
+     }
+    },
+    "approving": true,
+    "importing": false
+   },
+   "effect": null,
+   "indexed": true
+  },
+  {
+   "name": "associates-draft-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Estero"
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573009",
+      "valid": true
+     }
+    },
+    "approving": false,
+    "importing": true
+   },
+   "effect": null,
+   "indexed": true
+  },
+  {
+   "name": "associates-draft-list-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "associates-draft-list-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "associates-draft-list-athlete-unauthorized",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null
+  },
+  {
+   "name": "associates-draft-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-list-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Associates Draft List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-add-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-valid-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "full_collaborator",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-empty-associate-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {},
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {},
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-iso-born-date-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "1980-01-01",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "1980-01-01",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-impossible-born-date-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "31/02/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "31/02/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-cap-letters-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "0010A",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "0010A",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-cap-unicode-digits-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "٠٠١٠٠",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "٠٠١٠٠",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-cap-padded-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": " 00100 ",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": " 00100 ",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-email-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-email-blank-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-sex-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "X",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "X",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-sex-null-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": null,
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": null,
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-is-minor-text-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": "Yes",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": "Yes",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-is-minor-text-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": "maybe",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": "maybe",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-associate-id-blank-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "associate_id": "  "
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate_id": "  "
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-phone-number-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": 3331234567,
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": 3331234567,
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-tax-code-too-long-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RRRRRRRRRRRRRRRRRRRRRRRRRR",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RRRRRRRRRRRRRRRRRRRRRRRRRR",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-name-bool-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": true,
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": true,
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-null-associate-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": null,
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": null,
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-list-associate-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": [
+      {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/01/1980",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma",
+       "email": "mario@example.com",
+       "phone": "333 1234567",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      }
+     ],
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": [
+     {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ],
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-tutor-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {
+      "born_date": "2010-02-30"
+     },
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {
+     "born_date": "2010-02-30"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-unknown-association-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000579998"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000579998"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-malformed-association-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "abc"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "abc"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-blank-association-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": ""
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": ""
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-known-family-valid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "family": "a1000000-0000-4000-8000-000000573002"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": true
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "family": "a1000000-0000-4000-8000-000000573002"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-unknown-family-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "family": "a1000000-0000-4000-8000-000000579998"
+     },
+     "associate_tutor": {},
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "family": "a1000000-0000-4000-8000-000000579998"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-foreign-tutor-after-invalid-associate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "stored": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "X",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor": {
+      "sport_association": "a1000000-0000-4000-8000-000000701002"
+     },
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    },
+    "valid": false
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "X",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {
+     "sport_association": "a1000000-0000-4000-8000-000000701002"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-foreign-tutor-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {
+     "sport_association": "a1000000-0000-4000-8000-000000701002"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-foreign-association-denied-before-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "x",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701002"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-deleted-association-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701003"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-form-strings-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Draft saved!"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "valid": false,
+    "stored": {
+     "associate": "b",
+     "associate_tutor": "c",
+     "new_user_account": "a",
+     "signature": "d",
+     "medical_certificate": "f"
+    }
+   },
+   "raw_body": "new_user_account=a&associate_data=b&associate_tutor_data=c&signature=d&medical_certificate=e&medical_certificate=f",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "associates-draft-add-missing-medical-certificate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-missing-signature-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    {
+     "new_user_account": {
+      "new_member": true,
+      "username": "mrossi"
+     },
+     "associate_data": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/01/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "email": "mario@example.com",
+      "phone": "333 1234567",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "associate_tutor_data": {},
+     "signature": {
+      "there_is_signature": false,
+      "data": ""
+     },
+     "medical_certificate": {
+      "medical_id": null,
+      "filename": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "associates-draft-add-null-character-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Ma\u0000rio",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{x",
+   "content_type": "application/json"
+  },
+  {
+   "name": "associates-draft-add-athlete-unauthorized",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-athlete-before-body",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "raw_body": "{x",
+   "content_type": "application/json"
+  },
+  {
+   "name": "associates-draft-add-owner-without-association-unauthorized",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "raw_body": "{x",
+   "content_type": "application/json"
+  },
+  {
+   "name": "associates-draft-add-deleted-association-unauthorized",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.create"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "username": "mrossi"
+    },
+    "associate_data": {
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "sex": "M",
+     "tax_code": "RSSMRA80A01H501U",
+     "born_date": "01/01/1980",
+     "born_city": "Roma",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "email": "mario@example.com",
+     "phone": "333 1234567",
+     "is_minor": false,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "associate_tutor_data": {},
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": null
+    }
+   }
+  },
+  {
+   "name": "associates-draft-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/associates-draft/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Associates Draft Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-edit-adult-linked-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "1980-01-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {},
+      "medical_certificate": {
+       "medical_id": "a1000000-0000-4000-8000-000000573001",
+       "filename": "cert.pdf",
+       "certificate_expring_date": "31/12/2027"
+      },
+      "extra": 1.0
+     },
+     "certificate_expiring_date": "31/12/2027"
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "complete",
+    "valid": true,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "1980-01-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {},
+      "medical_certificate": {
+       "medical_id": "a1000000-0000-4000-8000-000000573001",
+       "filename": "cert.pdf",
+       "certificate_expring_date": "31/12/2027"
+      },
+      "extra": 1.0
+     }
+    ],
+    "first_save": false,
+    "final_save": true,
+    "certificate": {
+     "label": "linked",
+     "expiration": "2027-12-31",
+     "updated": true
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "1980-01-01",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "associate_tutor": {},
+     "medical_certificate": {
+      "medical_id": "a1000000-0000-4000-8000-000000573001",
+      "filename": "cert.pdf",
+      "certificate_expring_date": null
+     },
+     "extra": 1.0
+    },
+    "certificate_expiring_date": "31/12/2027"
+   }
+  },
+  {
+   "name": "associates-draft-edit-minor-adult-tutor-creates-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573004/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "2015-06-01T10:00:00Z",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": "01/31/1980"
+      },
+      "medical_certificate": {
+       "medical_id": "$new",
+       "filename": null,
+       "certificate_expring_date": null
+      }
+     }
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "partial",
+    "valid": true,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "2015-06-01T10:00:00Z",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": "01/31/1980"
+      },
+      "medical_certificate": {
+       "medical_id": null,
+       "filename": null,
+       "certificate_expring_date": null
+      }
+     },
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "2015-06-01T10:00:00Z",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": "01/31/1980"
+      },
+      "medical_certificate": {
+       "medical_id": "$mc",
+       "filename": null,
+       "certificate_expring_date": null
+      }
+     }
+    ],
+    "first_save": true,
+    "final_save": true,
+    "certificate": {
+     "label": null,
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "2015-06-01T10:00:00Z",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "associate_tutor": {
+      "born_date": "01/31/1980"
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-minor-minor-tutor-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573005/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "2015-06-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": "13/03/2012"
+      },
+      "medical_certificate": {
+       "medical_id": "$new",
+       "filename": null,
+       "certificate_expring_date": null
+      }
+     },
+     "certificate_expiring_date": ""
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "full_collaborator",
+    "draft": "unknown_validity",
+    "valid": false,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "2015-06-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": "13/03/2012"
+      },
+      "medical_certificate": {
+       "medical_id": null,
+       "filename": null,
+       "certificate_expring_date": null
+      }
+     },
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "2015-06-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": "13/03/2012"
+      },
+      "medical_certificate": {
+       "medical_id": "$mc",
+       "filename": null,
+       "certificate_expring_date": null
+      }
+     }
+    ],
+    "first_save": true,
+    "final_save": true,
+    "certificate": {
+     "label": null,
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "2015-06-01",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "associate_tutor": {
+      "born_date": "13/03/2012"
+     }
+    },
+    "certificate_expiring_date": ""
+   }
+  },
+  {
+   "name": "associates-draft-edit-minor-tutor-blank-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573004/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": ""
+      },
+      "medical_certificate": {
+       "medical_id": "$new"
+      }
+     }
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "partial",
+    "valid": true,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": ""
+      },
+      "medical_certificate": {
+       "medical_id": "$mc"
+      }
+     }
+    ],
+    "first_save": false,
+    "final_save": true,
+    "certificate": {
+     "label": null,
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/06/2015",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "associate_tutor": {
+      "born_date": ""
+     },
+     "medical_certificate": {
+      "medical_id": null
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-minor-tutor-missing-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573004/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {},
+      "medical_certificate": {
+       "medical_id": "$new"
+      }
+     }
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "partial",
+    "valid": true,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {},
+      "medical_certificate": {
+       "medical_id": "$mc"
+      }
+     }
+    ],
+    "first_save": false,
+    "final_save": true,
+    "certificate": {
+     "label": null,
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/06/2015",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "associate_tutor": {},
+     "medical_certificate": {
+      "medical_id": null
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-minor-tutor-number-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573004/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": 2012
+      },
+      "medical_certificate": {
+       "medical_id": "$new"
+      }
+     }
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "partial",
+    "valid": true,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": 2012
+      },
+      "medical_certificate": {
+       "medical_id": "$mc"
+      }
+     }
+    ],
+    "first_save": false,
+    "final_save": true,
+    "certificate": {
+     "label": null,
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/06/2015",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "associate_tutor": {
+      "born_date": 2012
+     },
+     "medical_certificate": {
+      "medical_id": null
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-minor-tutor-list-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573004/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": [
+       "2012-01-01"
+      ],
+      "medical_certificate": {
+       "medical_id": "$new"
+      }
+     }
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "partial",
+    "valid": true,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": [
+       "2012-01-01"
+      ],
+      "medical_certificate": {
+       "medical_id": "$mc"
+      }
+     }
+    ],
+    "first_save": false,
+    "final_save": true,
+    "certificate": {
+     "label": null,
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/06/2015",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "associate_tutor": [
+      "2012-01-01"
+     ],
+     "medical_certificate": {
+      "medical_id": null
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-minor-tutor-impossible-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573004/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": "2012-02-30"
+      },
+      "medical_certificate": {
+       "medical_id": "$new"
+      }
+     }
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "partial",
+    "valid": true,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/06/2015",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "associate_tutor": {
+       "born_date": "2012-02-30"
+      },
+      "medical_certificate": {
+       "medical_id": "$mc"
+      }
+     }
+    ],
+    "first_save": false,
+    "final_save": true,
+    "certificate": {
+     "label": null,
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/06/2015",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "associate_tutor": {
+      "born_date": "2012-02-30"
+     },
+     "medical_certificate": {
+      "medical_id": null
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-missing-mandatory-new-certificate-expiring",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573004/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "1980-01-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "medical_certificate": {
+       "medical_id": "$new",
+       "certificate_expring_date": "1/2/2028"
+      }
+     },
+     "certificate_expiring_date": "1/2/2028"
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "partial",
+    "valid": false,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "1980-01-01",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "medical_certificate": {
+       "medical_id": "$mc",
+       "certificate_expring_date": "1/2/2028"
+      }
+     }
+    ],
+    "first_save": false,
+    "final_save": true,
+    "certificate": {
+     "label": null,
+     "expiration": "2028-02-01",
+     "updated": true
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "1980-01-01",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "medical_certificate": {}
+    },
+    "certificate_expiring_date": "1/2/2028"
+   }
+  },
+  {
+   "name": "associates-draft-edit-all-mandatory-empty-linked-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "edit_data": {
+      "associate": {
+       "first_name": "",
+       "last_name": "",
+       "sex": "",
+       "tax_code": "",
+       "born_date": null,
+       "born_city": "",
+       "address": "",
+       "address_cap": "",
+       "address_city": ""
+      },
+      "medical_certificate": {
+       "medical_id": "a1000000-0000-4000-8000-000000573001"
+      }
+     }
+    }
+   },
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "complete",
+    "valid": false,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "",
+       "last_name": "",
+       "sex": "",
+       "tax_code": "",
+       "born_date": null,
+       "born_city": "",
+       "address": "",
+       "address_cap": "",
+       "address_city": ""
+      },
+      "medical_certificate": {
+       "medical_id": "a1000000-0000-4000-8000-000000573001"
+      }
+     }
+    ],
+    "first_save": false,
+    "final_save": true,
+    "certificate": {
+     "label": "linked",
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "",
+      "last_name": "",
+      "sex": "",
+      "tax_code": "",
+      "born_date": null,
+      "born_city": "",
+      "address": "",
+      "address_cap": "",
+      "address_city": ""
+     },
+     "medical_certificate": {
+      "medical_id": "A1000000-0000-4000-8000-000000573001"
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-bad-expiration-after-saves-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573005/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "unknown_validity",
+    "valid": true,
+    "saves": [
+     {
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "sex": "M",
+       "tax_code": "RSSMRA80A01H501U",
+       "born_date": "01/31/1985",
+       "born_city": "Roma",
+       "address": "Via Roma 1",
+       "address_cap": "00100",
+       "address_city": "Roma"
+      },
+      "medical_certificate": {
+       "medical_id": null,
+       "filename": null,
+       "certificate_expring_date": null
+      }
+     }
+    ],
+    "first_save": true,
+    "final_save": false,
+    "certificate": {
+     "label": null,
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "01/31/1985",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     }
+    },
+    "certificate_expiring_date": "2027-12-31"
+   }
+  },
+  {
+   "name": "associates-draft-edit-numeric-expiration-after-certificate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "edit",
+    "actor": "owner",
+    "draft": "complete",
+    "valid": true,
+    "saves": [],
+    "first_save": false,
+    "final_save": false,
+    "certificate": {
+     "label": "linked",
+     "expiration": null,
+     "updated": false
+    }
+   },
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "1980-01-01",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "medical_certificate": {
+      "medical_id": "a1000000-0000-4000-8000-000000573001"
+     }
+    },
+    "certificate_expiring_date": 20271231
+   }
+  },
+  {
+   "name": "associates-draft-edit-malformed-medical-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "1980-01-01",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "medical_certificate": {
+      "medical_id": "abc"
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-list-medical-certificate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "1980-01-01",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     },
+     "medical_certificate": []
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-missing-associate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {}
+   }
+  },
+  {
+   "name": "associates-draft-edit-string-associate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {
+     "associate": "x"
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-missing-born-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-number-born-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": 19800101,
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-impossible-born-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "1980-02-30",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-day-first-overflow-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "13/13/1980",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-blank-born-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": {
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "sex": "M",
+      "tax_code": "RSSMRA80A01H501U",
+      "born_date": "",
+      "born_city": "Roma",
+      "address": "Via Roma 1",
+      "address_cap": "00100",
+      "address_city": "Roma"
+     }
+    }
+   }
+  },
+  {
+   "name": "associates-draft-edit-string-edit-data-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "edit_data": "x"
+   }
+  },
+  {
+   "name": "associates-draft-edit-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "associates-draft-edit-list-body-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000579998/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "not found."
+   },
+   "effect": null,
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "associates-draft-edit-without-edit-data",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "note": 1.5,
+     "nothing": null,
+     "text": "è"
+    }
+   },
+   "effect": null,
+   "body": {
+    "note": 1.5,
+    "nothing": null,
+    "text": "è"
+   }
+  },
+  {
+   "name": "associates-draft-edit-form-without-edit-data",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "a": "2",
+     "b": "x"
+    }
+   },
+   "effect": null,
+   "raw_body": "a=1&a=2&b=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "associates-draft-edit-form-edit-data-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "edit_data=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "associates-draft-edit-urn-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/urn:uuid:a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {}
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000579998/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "not found."
+   },
+   "effect": null,
+   "body": {
+    "edit_data": {}
+   }
+  },
+  {
+   "name": "associates-draft-edit-foreign",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573009/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "not found."
+   },
+   "effect": null,
+   "body": {
+    "edit_data": {}
+   }
+  },
+  {
+   "name": "associates-draft-edit-malformed-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/abc/edit",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-non-hex-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/gggggggggggggggggggggggggggggggg/edit",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "invalid literal for int() with base 16: 'gggggggggggggggggggggggggggggggg'"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-athlete-unauthorized",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-athlete-malformed-json",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{x",
+   "content_type": "application/json"
+  },
+  {
+   "name": "associates-draft-edit-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-edit-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-edit-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573003/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Associates Draft Edit",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-delete-athlete-unauthorized",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-delete-athlete-malformed-json",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{x",
+   "content_type": "application/json"
+  },
+  {
+   "name": "associates-draft-delete-malformed-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-delete-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.delete"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-delete-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-delete-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Associates Draft Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-delete-foreign-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573009/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "successfully deleted."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-delete-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000579998/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "successfully deleted."
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-delete-own-list-body",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "successfully deleted."
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "full_collaborator",
+    "labels": [
+     "removable"
+    ]
+   },
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "associates-draft-delete-again",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/a1000000-0000-4000-8000-000000573006/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "successfully deleted."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-bulk-athlete-unauthorized",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "raw_body": "{x",
+   "content_type": "application/json"
+  },
+  {
+   "name": "associates-draft-bulk-not-list",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "La richiesta deve contenere una lista di ID da eliminare."
+   },
+   "effect": null,
+   "body": {
+    "associate_import_draft_ids": "x"
+   }
+  },
+  {
+   "name": "associates-draft-bulk-form-not-list",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "La richiesta deve contenere una lista di ID da eliminare."
+   },
+   "effect": null,
+   "raw_body": "associate_import_draft_ids=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "associates-draft-bulk-list-body-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "x"
+   ]
+  },
+  {
+   "name": "associates-draft-bulk-malformed-id-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate_import_draft_ids": [
+     "a1000000-0000-4000-8000-000000573007",
+     "abc"
+    ]
+   }
+  },
+  {
+   "name": "associates-draft-bulk-float-id-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate_import_draft_ids": [
+     1.5
+    ]
+   }
+  },
+  {
+   "name": "associates-draft-bulk-missing-key",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "0/0 bozze eliminate con successo.",
+    "deleted_count": 0,
+    "total_count": 0
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-bulk-empty-body",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "0/0 bozze eliminate con successo.",
+    "deleted_count": 0,
+    "total_count": 0
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-bulk-integer-and-null",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "0/2 bozze eliminate con successo.",
+    "deleted_count": 0,
+    "total_count": 2
+   },
+   "effect": null,
+   "body": {
+    "associate_import_draft_ids": [
+     5,
+     null
+    ]
+   }
+  },
+  {
+   "name": "associates-draft-bulk-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-bulk-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.delete"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-bulk-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-bulk-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "associates-draft-bulk-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Associates Draft Bulk Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "associates-draft-bulk-delete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/associates-draft/bulk-delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "2/6 bozze eliminate con successo.",
+    "deleted_count": 2,
+    "total_count": 6
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "labels": [
+     "bulk_a",
+     "bulk_b"
+    ]
+   },
+   "body": {
+    "associate_import_draft_ids": [
+     "a1000000-0000-4000-8000-000000573007",
+     "{A1000000-0000-4000-8000-000000573008}",
+     "a1000000-0000-4000-8000-000000573007",
+     "a1000000-0000-4000-8000-000000573009",
+     "a1000000-0000-4000-8000-000000579998",
+     null
+    ]
+   }
+  },
+  {
+   "name": "associates-draft-list-after-writes-foreign-kept",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/associates-draft/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "associate": {
+       "first_name": "Estero"
+      },
+      "associate_import_draft_id": "a1000000-0000-4000-8000-000000573009",
+      "valid": true
+     }
+    },
+    "approving": false,
+    "importing": true
+   },
+   "effect": null,
+   "indexed": true
+  }
+ ]
+}
