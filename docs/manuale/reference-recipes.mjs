@@ -3,7 +3,7 @@ import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.m
 const reviewed = {
   "BE/application/management/commands/seed_selfhost.py": "de0393c2d68e684dc715c729036104822ea7edc625274f42fccf39e80b0e663b",
   "BE/application/views/billing_views.py": "28ee7ec15b5bc759546d5df4aaaf4558fe577cbedc8ab60a5256f7dcda06a4c8",
-  "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
+  "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
   "BE/core/authentication.py": "4ea4b9041f1c19aef3105fa9518edb3fb880d1deddef46be7dff701c7a3da3d2",
   "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e",
   "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",

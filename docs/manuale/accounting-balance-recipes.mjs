@@ -22,7 +22,7 @@ const reviewed = {
   "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",
   "UI/src/routes/accounting/payment/category/modals/EditModal.svelte": "270b2663c133c813a352959e9b4177ae4f6361ce879537242a7d9af06bed51a8",
   "UI/src/routes/accounting/payment/modals/partials/meta-payment-categories.svelte": "f308dd00d75f43f09aa620da3aea449bfa3a3fc42f60e037c6d72ac670a50602",
-  "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
+  "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
   "BE/application/serializers/payment_serializers.py": "abc31bd21b536db8cfe5972c24d0befed834914fb8bdeb832205c2e8b62b4e4f",
   "BE/application/views/supplier_views.py": "a332d25f18ba6b713cf75785aa58194bdf1165e313f8c3981efd33f3d3628321",
   "UI/src/routes/accounting/suppliers-and-customers/partials/supplier-customer-form.svelte": "05845d83a87bccabdf06c33a7cef340d146030056e6209f629da5f3ed9f92d0f",
@@ -32,7 +32,7 @@ const reviewed = {
   "UI/src/components/invoice/InvoiceForm.svelte": "2038f91a400229decbec387a661cdc95336afea0c2c2c565253826db67955b30",
   "UI/src/routes/accounting/suppliersInvoice/SuppliersInvoiceList.svelte": "d75d7352440b1a92ffe9b392b0cb0757605a96e3f64d638891a9db209872c5d5",
   "UI/src/routes/accounting/suppliersInvoice/modals/EditModal.svelte": "edaee3b087e7bc1d36b324e8328cb337979af4c2ac9ccea2bc4959ba0f86a6f6",
-  "BE/application/views/invoice_views.py": "b6db30b40d0c54c663d5d80a7037161bd68642aeb1056926f5d09baba08394b5",
+  "BE/application/views/invoice_views.py": "500cf26719455a1a86aacb63e5c99bc9cbcc470a0bb1d275df926fbb884c8260",
   "BE/application/serializers/invoice_serializers.py": "3a52147b36fe7977661358f629cfc45101aa59d15aae06f5f7078c1662ff3fb9",
   "BE/application/models/invoices_models.py": "5848c1bcdbafdd6d644f5dd70e82979095d1bdbe85c989075784e54418fc1af6"
 };
