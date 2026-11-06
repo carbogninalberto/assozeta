@@ -163,6 +163,25 @@ func campsCategoryInfo(category *domain.PaymentCategoryState) map[string]any {
 	return dto.PaymentCategoryFromState(*category).JSONMap()
 }
 
+// campsPeriodInfoJSON is CampsAndRetreatsPeriodInfoSerializer's data: dates
+// as %d/%m/%Y, comma fees and the services newest first.
+func campsPeriodInfoJSON(info *service.CampsPeriodInfo) map[string]any {
+	data := campsPeriodJSON(&info.Period)
+	row := info.Period.Row
+	data["start_date"] = row.Start.UTC().Format("02/01/2006")
+	data["end_date"] = row.End.UTC().Format("02/01/2006")
+	data["fee"] = dto.CampsCommaFee(row.Fee)
+	services := make([]map[string]any, 0, len(info.Services))
+	for index := range info.Services {
+		item := &info.Services[index]
+		value := campsServiceJSON(item, dto.CampsCommaFee(item.Fee))
+		value["payment_category_info"] = campsCategoryInfo(item.Category)
+		services = append(services, value)
+	}
+	data["services"] = services
+	return data
+}
+
 func (h *CampsPeriodsHandler) AddPeriod(c echo.Context) error {
 	return h.serve(c, http.MethodPost, "camps_and_retreats_periods_add", "Camps And Retreats Periods Add", "",
 		func(ctx context.Context, identity domain.ResolvedIdentity, write *restWrite) error {
@@ -183,20 +202,7 @@ func (h *CampsPeriodsHandler) PeriodInfo(c echo.Context) error {
 			if err != nil {
 				return campsError(c, err, false, "Only sport associations can view camps or retreats")
 			}
-			data := campsPeriodJSON(&info.Period)
-			row := info.Period.Row
-			data["start_date"] = row.Start.UTC().Format("02/01/2006")
-			data["end_date"] = row.End.UTC().Format("02/01/2006")
-			data["fee"] = dto.CampsCommaFee(row.Fee)
-			services := make([]map[string]any, 0, len(info.Services))
-			for index := range info.Services {
-				item := &info.Services[index]
-				value := campsServiceJSON(item, dto.CampsCommaFee(item.Fee))
-				value["payment_category_info"] = campsCategoryInfo(item.Category)
-				services = append(services, value)
-			}
-			data["services"] = services
-			return c.JSON(200, map[string]any{"data": data})
+			return c.JSON(200, map[string]any{"data": campsPeriodInfoJSON(info)})
 		})
 }
 
