@@ -6,6 +6,7 @@ download needs the owner's password again and is recorded in the audit log.
 """
 import logging
 import re
+from uuid import uuid4
 
 from auditlog.models import LogEntry
 from django.conf import settings
@@ -137,7 +138,7 @@ class BackupDownloadTokenView(APIView):
             InstanceConfiguration.get_config(), action=LogEntry.Action.ACCESS, actor=actor,
             changes={'backup_download': ['', name]},
             additional_data={'backup': name, 'actor_id': str(actor.pk)}, force_log=True)
-        token = signing.dumps({'name': name, 'actor': str(actor.pk)}, salt=TOKEN_SALT)
+        token = signing.dumps({'name': name, 'actor': str(actor.pk), 'id': uuid4().hex}, salt=TOKEN_SALT)
         return Response({'download_token': token, 'expires_in': TOKEN_MAX_AGE})
 
 
@@ -158,6 +159,9 @@ class BackupDownloadView(APIView):
         actor = User.objects.filter(pk=claims.get('actor')).first()
         if not is_instance_administrator(actor, InstanceConfiguration.get_config()):
             return Response({'error': 'Download non autorizzato.'}, status=403)
+        # Single use: a link copied from a log or history cannot be replayed.
+        if not isinstance(claims.get('id'), str) or not cache.add(f'instance:backup-download-used:{claims["id"]}', True, timeout=TOKEN_MAX_AGE + 60):
+            return Response({'error': 'Link di download già usato. Conferma di nuovo la password.'}, status=403)
         try:
             size, body = open_runner_stream(f'/backups/{name}')
         except UpdaterRejected as exc:

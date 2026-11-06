@@ -135,6 +135,10 @@ class BackupPageTests(TestCase):
         self.assertEqual(response['Cache-Control'], 'no-store')
         self.assertEqual(asyncio.run(collect(response)), b'archive-bytes')
         self.assertTrue(body.closed)
+        # The same link cannot be used twice.
+        replay = anonymous.get(f'/instance/admin/backups/{ARCHIVE}/download', {'download_token': token})
+        self.assertEqual(replay.status_code, 403)
+        self.assertEqual(stream.call_count, 1)
 
     @patch('instance.backups.open_runner_stream')
     def test_download_rejects_bad_tokens_other_archives_and_revoked_owners(self, stream):
@@ -153,10 +157,10 @@ class BackupPageTests(TestCase):
     @patch('instance.backups.open_runner_stream')
     def test_download_reports_missing_archives_and_runner_failures(self, stream):
         self.client.force_authenticate(user=self.owner)
-        token = self.token().data['download_token']
         url = f'/instance/admin/backups/{ARCHIVE}/download'
         for exception, code in ((UpdaterRejected('Backup non trovato.', 404), 404), (UpdaterUnavailable('Giù.'), 503)):
             stream.side_effect = exception
+            token = self.token().data['download_token']
             self.assertEqual(APIClient().get(url, {'download_token': token}).status_code, code)
 
 
