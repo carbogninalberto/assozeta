@@ -297,6 +297,13 @@ func run() (runErr error) {
 	e.Any("/camps-and-retreats/periods/services/add", campsPeriodsHandler.AddService, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/camps-and-retreats/periods/services/:uid/update", campsPeriodsHandler.UpdateService, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/camps-and-retreats/periods/services/:uid/delete", campsPeriodsHandler.DeleteService, middleware.DjangoSessionAudit(sessionAuthentication))
+	campsCoreHandler := handler.NewCampsCoreHandler(service.NewCampsCore(repository.NewCampsPeriods(db), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/camps-and-retreats/list", campsCoreHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/add", campsCoreHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/:uid/info", campsCoreHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/:uid/update", campsCoreHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/camps-and-retreats/:uid/delete", campsCoreHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionMembershipsHandler := handler.NewSubscriptionMembershipsHandler(service.NewSubscriptionMemberships(repository.NewSubscriptionMemberships(db),
 		time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/memberships/list", subscriptionMembershipsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
