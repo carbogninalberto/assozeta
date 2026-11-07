@@ -277,7 +277,7 @@ def instructor_hours_calculate(request, uid):
         return Response({'error': 'courses is required'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Validate instructor exists
-    instructor = Instructor.objects.filter(instructor_id=uid).first()
+    instructor = Instructor.objects.filter(instructor_id=uid, user=request.user).first()
     if not instructor:
         return Response({'error': 'instructor not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -287,7 +287,7 @@ def instructor_hours_calculate(request, uid):
     except (KeyError, TypeError):
         return Response({'error': 'Invalid courses format'}, status=status.HTTP_400_BAD_REQUEST)
 
-    courses_objs = Course.objects.filter(course_id__in=course_ids)
+    courses_objs = Course.objects.filter(course_id__in=course_ids, sport_association__user=request.user)
 
     # Parse payment range
     payment_from, payment_to = None, None
@@ -415,7 +415,7 @@ def instructor_hours_add_compensation(request, uid):
 
 
     # validate instructor
-    instructor = Instructor.objects.filter(instructor_id=uid).first()
+    instructor = Instructor.objects.filter(instructor_id=uid, user=request.user).first()
     if not instructor:
         return Response({'error': 'instructor not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -490,7 +490,7 @@ def instructor_hours_add(request, uid):
     data = request.data
 
     # validate instructor
-    instructor = Instructor.objects.filter(instructor_id=uid).first()
+    instructor = Instructor.objects.filter(instructor_id=uid, user=request.user).first()
     if not instructor:
         return Response({'error': 'instructor not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -562,7 +562,7 @@ def instructor_update(request, uid):
     if not is_valid_uuid(uid):
         return Response({'error': 'invalid instructor id'}, status=status.HTTP_400_BAD_REQUEST)
 
-    instructor = Instructor.objects.filter(instructor_id=uid).first()
+    instructor = Instructor.objects.filter(instructor_id=uid, user=request.user).first()
 
     if not instructor:
         logger.error("Instructor not found for update", extra={
@@ -573,9 +573,8 @@ def instructor_update(request, uid):
 
     data = request.data
 
-    # check if empty user
-    if not data.get('user'):
-        data['user'] = request.user.user_id
+    # the instructor stays with the association's owner
+    data['user'] = request.user.user_id
 
     # TODO: custom users must be implemented
 
@@ -604,7 +603,7 @@ def instructor_delete(request, uid):
     if not is_valid_uuid(uid):
         return Response({'error': 'invalid instructor id'}, status=status.HTTP_400_BAD_REQUEST)
 
-    instructor = Instructor.objects.filter(instructor_id=uid).first()
+    instructor = Instructor.objects.filter(instructor_id=uid, user=request.user).first()
 
     if not instructor:
         logger.error("Instructor not found for deletion", extra={

@@ -101,7 +101,7 @@ export const memberAuthoredWorkflows = Object.freeze({
         outcome: {field: 'member_authored_workflow', expected: {
             baseline_members: 3, current_members: 3, previous_members: 0, future_members: 0,
             custom_overlap_members: 3, custom_disjoint_members: 0, detail_dates_match: true,
-            tag_and_rows: 1, tag_or_rows: 4, tag_or_unique_members: 3,
+            tag_and_rows: 1, tag_or_rows: 3, tag_or_unique_members: 3,
             age_range_members: 1, age_upper_only_members: 2, combined_empty_members: 0,
             reset_restored_members: 3, current_excel_members: 1, full_csv_members: 3,
             complete_export_ignores_filters: true, column_hidden_locally: true,

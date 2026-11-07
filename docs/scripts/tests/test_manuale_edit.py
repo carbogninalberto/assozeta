@@ -107,7 +107,7 @@ class EditorialTransactionTests(unittest.TestCase):
         application, manual = root / 'application', root / 'manual'
         (application / 'docs/manuale').mkdir(parents=True)
         (application / 'BE').mkdir()
-        for relative in ('docs/scripts/manuale-scaffold.py', 'BE/application/manuale/index.py'):
+        for relative in ('docs/scripts/manuale-scaffold.py', 'BE/application/manuale/index.py', 'BE/application/manuale/recipe_binding.py'):
             target = application / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / relative, target)

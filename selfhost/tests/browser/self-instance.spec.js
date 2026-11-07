@@ -122,7 +122,7 @@ for (const viewport of viewports) {
                 expect(await logo.evaluate(img => getComputedStyle(img).objectFit)).toBe('contain');
                 expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
             } else if (phase === 'start') {
-                await page.getByRole('button', {name: 'Aggiornamenti e backup', exact: true}).click();
+                await page.getByRole('button', {name: 'Aggiornamenti', exact: true}).click();
                 await page.getByRole('button', {name: 'Esamina aggiornamento a v2.0.2', exact: true}).click();
                 await expect(page.getByRole('heading', {name: 'Aggiorna a v2.0.2', exact: true})).toBeVisible();
                 expect(await page.locator('body').innerText()).toContain('Complete fixture release 2');
@@ -160,11 +160,11 @@ for (const viewport of viewports) {
                 await expect(page.getByRole('heading', {name: 'Self Instance', exact: true})).toBeVisible();
             } else if (phase === 'completed') {
                 await expect(page.getByRole('heading', {name: 'Self Instance', exact: true})).toBeVisible();
-                await page.getByRole('button', {name: 'Aggiornamenti e backup', exact: true}).click();
+                await page.getByRole('button', {name: 'Aggiornamenti', exact: true}).click();
                 await expect(page.getByRole('region', {name: 'Stato aggiornamenti'})).toContainText('Aggiornamento completato');
                 await expect(page.locator('.version-grid')).toContainText('2.0.2');
                 await page.reload();
-                await page.getByRole('button', {name: 'Aggiornamenti e backup', exact: true}).click();
+                await page.getByRole('button', {name: 'Aggiornamenti', exact: true}).click();
                 await expect(page.getByRole('region', {name: 'Stato aggiornamenti'})).toContainText('Aggiornamento completato');
             } else { throw new Error(`Unknown browser phase: ${phase}`); }
         } finally {

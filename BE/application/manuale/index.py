@@ -648,6 +648,10 @@ class ManualIndex:
             return index
 
     def check_version(self, *, revision, release):
+        # A carried release bundle was verified for its declared origin and
+        # accepted for this running version by bundle.load_bundle.
+        if (revision, release) in getattr(self, 'carried_for', ()):
+            return
         meta = self.value['metadata']
         if not revision or revision != meta['application_revision'] or not release or release != meta['release']:
             raise EvidenceError('No verified manual for the running application revision/release')

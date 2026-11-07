@@ -920,7 +920,7 @@ def attendance_mark(request, uid):
 
     # get subscription
     subscription = scoped_queryset(request, Subscription.objects).filter(
-        subscription_id=uid).first()
+        subscription_id=uid, sport_association__user=request.user).first()
     if subscription is None:
         return Response({"msg": "Iscrizione non trovata."}, status.HTTP_404_NOT_FOUND)
 
@@ -935,7 +935,8 @@ def attendance_mark(request, uid):
     if attendance_day_id is None:
         # get course_subscription
         course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
-            subscription=subscription
+            subscription=subscription,
+            course__sport_association__user=request.user,
         ).select_related('course').iterator(chunk_size=100)
 
         for course_subscription in course_subscriptions:
@@ -966,7 +967,8 @@ def attendance_mark(request, uid):
             available_attendance_days.append(attendance_day)
     else:
         attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(
-            attendance_day_id=attendance_day_id
+            attendance_day_id=attendance_day_id,
+            attendance_registry__course__sport_association__user=request.user,
         ).select_related('attendance_registry', 'attendance_registry__course').first()
 
         if attendance_day is None:

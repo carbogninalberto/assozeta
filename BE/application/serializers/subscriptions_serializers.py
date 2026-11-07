@@ -17,6 +17,14 @@ from docmanager.models import Document
 SUBSCRIPTION_INTERNAL_FIELDS = ('signature_storage_key',)
 
 
+def _active_payments(associate):
+    """Non-archived payments of the associate, from the queryset's prefetch when present."""
+    prefetched = getattr(associate, '_prefetched_objects_cache', {}).get('payment_set')
+    if prefetched is not None:
+        return list(prefetched)
+    return list(Payment.objects.filter(associate=associate, archived=False))
+
+
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
@@ -112,22 +120,7 @@ class SubscriptionOptimizedSerializer(serializers.ModelSerializer):
         OPTIMIZED: Uses pre-computed annotation (_has_future_renewal) from queryset
         to avoid N+1 queries. Falls back to direct query if annotation not available.
         """
-        # Use pre-computed annotation if available (no extra query)
-        if hasattr(obj, '_has_future_renewal'):
-            return not obj.is_current and not obj._has_future_renewal
-
-        # Fallback to direct query (for backward compatibility with other views)
-        renewal_available = not obj.is_current
-
-        if renewal_available is True:
-            current_year_sub = Subscription.objects.filter(
-                sport_association=obj.sport_association,
-                start_date__gte=obj.end_date,
-                archived=False,
-                associate__tax_code__iexact=obj.associate.tax_code
-            ).count()
-            renewal_available = current_year_sub == 0
-        return renewal_available
+        return obj.is_renewal_available()
 
     def get_medical(self, obj):
         if obj.medical is not None:
@@ -188,7 +181,7 @@ class SubscriptionOptimizedSerializer(serializers.ModelSerializer):
         }
 
     def get_age(self, obj):
-        return obj.get_age()
+        return obj.get_age() if obj.associate else None
 
     def get_plain_medical_label(self, obj):
         return obj.get_plain_medical_label()
@@ -399,19 +392,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return obj.has_signature
 
     def get_renewal_available(self, obj):
-        # renewable available only if not current sub and there is not a sub in the current year
-        renewal_available = not obj.is_current
-
-        # check if there is a subscription created later than current
-        if renewal_available is True:
-            current_year_sub = Subscription.objects.filter(
-                sport_association=obj.sport_association,
-                start_date__gte=obj.end_date,
-                archived=False,
-                associate__tax_code__iexact=obj.associate.tax_code
-            ).count()
-            renewal_available = current_year_sub == 0
-        return renewal_available
+        return obj.is_renewal_available()
 
     def get_medical(self, obj):
         if obj.medical is not None and obj.medical.document is not None:
@@ -442,24 +423,16 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return [{'tag_id': tag.tag_id, 'tag_name': tag.tag_name} for tag in obj.tags.all()]
 
     def get_all_payments_paid(self, obj):
-        payments = Payment.objects.filter(
-            associate=obj.associate,
-            paid=False,
-            archived=False
-        ).count()
-        return payments == 0
+        return not any(not payment.paid for payment in _active_payments(obj.associate))
 
     def get_payments_info(self, obj):
         # sum all payments to be paid and all the payments
-        payments = Payment.objects.filter(
-            associate=obj.associate,
-            archived=False
-        )
+        payments = _active_payments(obj.associate)
 
         return {"total": sum([payment.amount for payment in payments]), "to_be_paid": sum([payment.amount for payment in payments if not payment.paid])}
 
     def get_age(self, obj):
-        return obj.get_age()
+        return obj.get_age() if obj.associate else None
 
     def create(self, validated_data):
         # Remove deprecated 'signature' field if present
@@ -543,27 +516,22 @@ class SubscriptionFastBasicSerializer(serializers.Serializer):
 
     Expected to be used with a queryset that has select_related('associate') applied.
     """
-    subscription_id = serializers.UUIDField(read_only=True)
-    associate = serializers.SerializerMethodField()
-    current_year = serializers.SerializerMethodField()
 
-    def get_associate(self, obj):
-        """Manually serialize associate fields without nested serializer overhead."""
-        if not obj.associate:
-            return None
-
+    def to_representation(self, obj):
+        """Build the dict directly: per-field DRF processing dominates on lists of thousands of rows."""
+        associate = obj.associate
         return {
-            'associate_id': str(obj.associate.associate_id),
-            'first_name': obj.associate.first_name,
-            'last_name': obj.associate.last_name,
-            'tax_code': obj.associate.tax_code,
-            'family': str(obj.associate.family_id) if obj.associate.family_id else None,
-            'family_role': obj.associate.family_role,
+            'subscription_id': str(obj.subscription_id),
+            'associate': {
+                'associate_id': str(associate.associate_id),
+                'first_name': associate.first_name,
+                'last_name': associate.last_name,
+                'tax_code': associate.tax_code,
+                'family': str(associate.family_id) if associate.family_id else None,
+                'family_role': associate.family_role,
+            } if associate else None,
+            'current_year': obj.is_current,
         }
-
-    def get_current_year(self, obj):
-        """Check if subscription is current without triggering extra queries."""
-        return obj.is_current
 
 
 class SubscriptionSerializerSimplify(serializers.ModelSerializer):
@@ -627,7 +595,7 @@ class DictListSerializer(serializers.ListSerializer):
 class SubscriptionSerializerAthleteOptimizedList(serializers.ModelSerializer):
     # user = UserSerializer()
     associate = AssociateSerializer()
-    sport_association = SportAssociationSearchSerializer()
+    sport_association = serializers.SerializerMethodField(read_only=True)
     is_current = serializers.BooleanField(read_only=True)
     carnets = serializers.SerializerMethodField(read_only=True)
     medical = serializers.SerializerMethodField(read_only=True)
@@ -639,7 +607,16 @@ class SubscriptionSerializerAthleteOptimizedList(serializers.ModelSerializer):
     signature_present = serializers.SerializerMethodField(read_only=True)
     # attendance_registry = serializers.SerializerMethodField(read_only=True)
 
+    def get_sport_association(self, obj):
+        # The rows share one or two associations, whose serializer queries several tables: serialize each once.
+        cache = self.context.setdefault('_sport_associations', {})
+        if obj.sport_association_id not in cache:
+            cache[obj.sport_association_id] = SportAssociationSearchSerializer(obj.sport_association).data
+        return cache[obj.sport_association_id]
+
     def get_carnets(self, obj):
+        if hasattr(obj, '_has_carnets'):
+            return obj._has_carnets
         return CarnetSubscription.objects.filter(subscription=obj).count() > 0
 
     def get_signature_present(self, obj):
@@ -666,21 +643,21 @@ class SubscriptionSerializerAthleteOptimizedList(serializers.ModelSerializer):
         return None
 
     def get_renewal_available(self, obj):
-        # renewable available only if not current sub and there is not a sub in the current year
-        renewal_available = not obj.is_current
-
-        # check if there is a subscription created later than current
-        if renewal_available is True:
-            current_year_sub = Subscription.objects.filter(
-                sport_association=obj.sport_association,
-                start_date__gte=obj.end_date,
-                archived=False,
-                associate__tax_code__iexact=obj.associate.tax_code
-            ).count()
-            renewal_available = current_year_sub == 0
-        return renewal_available
+        return obj.is_renewal_available()
 
     def get_courses(self, obj):
+        prefetched = getattr(obj, '_prefetched_objects_cache', {}).get('coursesubscription_set')
+        if prefetched is not None:
+            return [{
+                'course_subscription_id': cs.course_subscription_id,
+                'paid': cs.paid,
+                'creation_date': cs.creation_date,
+                'course__title': cs.course.title if cs.course else None,
+                'course__course_id': cs.course.course_id if cs.course else None,
+                'course__one_fee_payment': cs.course.one_fee_payment if cs.course else None,
+                'course__one_fee': cs.course.one_fee if cs.course else None,
+                'one_fee_payment': cs.one_fee_payment,
+            } for cs in prefetched]
         courses = CourseSubscription.objects.filter(subscription=obj) \
             .select_related().values(
             'course_subscription_id',

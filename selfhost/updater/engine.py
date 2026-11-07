@@ -60,6 +60,7 @@ class Engine:
             # Only a canonical validated version reaches argv. Never execute client commands.
             with os.fdopen(os.open(log, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'w') as output:
                 os.fchmod(output.fileno(), 0o600)
+                reported = None
                 with subprocess.Popen(
                     self.launch_command(operation),
                     env=environment, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
@@ -67,12 +68,17 @@ class Engine:
                     for line in process.stdout:
                         output.write(line)
                         output.flush()
+                        if line.startswith('@@ASSOZETA_ERROR '):
+                            # A fixed lifecycle-script message; it never contains secrets.
+                            reported = line.strip().split(' ', 1)[1][:500]
                         if line.startswith('@@ASSOZETA_STAGE '):
                             candidate = line.strip().split(' ', 1)[1]
                             if candidate in STAGES:
                                 stage = candidate
                                 self.journal.update(operation_id, stage=stage)
                     if process.wait() != 0:
+                        if reported:
+                            raise ReleaseError(reported)
                         raise RuntimeError('Il comando di aggiornamento non è terminato correttamente.')
             stage = 'health_check'
             self.journal.update(operation_id, stage=stage)

@@ -1,3 +1,4 @@
+import {ACCOUNT_RETURN_KEY} from './accountSession.js';
 import {sessionToken, refreshToken, expires, role, userData, tablesSettings, currentPage} from '../store/stores.js';
 
 // Shared by direct login and the Bakney handoff. A handoff is followed by a full
@@ -8,8 +9,11 @@ export function initializeLoginSession(response, resetIdentity = false) {
         throw new Error('Risposta di accesso non valida.');
     }
     if (resetIdentity) {
+        // The registration link waiting for this login survives the reset.
+        const accountReturn = sessionStorage.getItem(ACCOUNT_RETURN_KEY);
         localStorage.clear();
         sessionStorage.clear();
+        if (accountReturn) sessionStorage.setItem(ACCOUNT_RETURN_KEY, accountReturn);
     }
     const values = {
         sessionToken: [sessionToken, response.access_token],

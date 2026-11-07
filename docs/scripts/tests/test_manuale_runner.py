@@ -201,7 +201,8 @@ class ManualRunnerTests(unittest.TestCase):
             repo.mkdir()
             for args in [('init', '-q'), ('config', 'user.name', 'Fixture'), ('config', 'user.email', 'fixture@example.test')]:
                 subprocess.run(['git', '-C', str(repo), *args], check=True)
-        for relative in ('docs/scripts/manuale.py', 'docs/scripts/manuale-scaffold.py', 'BE/application/manuale/index.py'):
+        for relative in ('docs/scripts/manuale.py', 'docs/scripts/manuale-scaffold.py', 'BE/application/manuale/index.py',
+                         'BE/application/manuale/recipe_binding.py'):
             destination = application / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(runner.ROOT / relative, destination)

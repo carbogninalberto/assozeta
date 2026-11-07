@@ -202,6 +202,41 @@ must be encrypted or stored with restrictive permissions. A backup on the same
 server does not protect against disk or host loss; copy it to independent
 storage.
 
+Before stopping anything, backup checks the free space in the destination. The
+object mirror is staged uncompressed next to the archive, so it requires the
+database plus object-storage size twice (once with GNU tar, which deletes staged
+files as they are archived) plus `ASSOZETA_BACKUP_SPACE_MARGIN_MB` (default
+1024). An upgrade also reserves `ASSOZETA_UPGRADE_IMAGE_SPACE_MB` (default 2048)
+for the new images. When space is short, the command stops without touching the
+services and the update page shows the required and available space.
+
+Each archive in `selfhost/backups/` has a small `<archive>.meta` file that
+records its origin: `manual` (`assozeta backup`), `pre-upgrade`, `scheduled`
+or `pre-restore`. Rotation runs only after a backup or an upgrade succeeds and
+counts only automatic archives (scheduled and pre-upgrade): the newest
+`ASSOZETA_BACKUP_KEEP` of them are kept (default 3, set in `.env`; `0`
+disables rotation). It never removes:
+
+- manual or pre-restore archives, or archives created before origins were
+  recorded (they have no `.meta` file);
+- archives marked `keep=true` in their `.meta` file;
+- the archive taken before the last successful upgrade, until the next upgrade
+  succeeds;
+- the archive of a pending upgrade.
+
+Other destinations are not rotated. Copy archives off-host before they are
+rotated out, and remove manual archives yourself when no longer needed.
+
+The instance owner sees these archives in **Self Instance → Backup e
+ripristino**. The page shows the disk that holds `selfhost/backups/` (database,
+documents and files, backups, other use and free space), a marker for the
+estimated size of the next backup, and a warning when the space the backup needs
+is not free. Each archive lists its date, size, version, origin and location.
+The page is read-only: archives are created, kept and deleted on the server.
+Downloading an archive asks for the owner's password again and is recorded in
+the audit log. The download is the unencrypted server archive, including its
+secrets, so store it as safely as the server itself.
+
 Backup stops both APIs, worker, and scheduler services while PostgreSQL and MinIO
 are snapshotted, then restarts them only if any were running beforehand. Caddy
 serves the maintenance page during this interval. Expect brief write downtime

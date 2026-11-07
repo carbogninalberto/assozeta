@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1.7
 FROM docker:29-cli
-RUN apk add --no-cache python3 curl openssl util-linux git
+# GNU tar lets backups delete staged files while archiving them.
+RUN apk add --no-cache python3 curl openssl util-linux git tar
 WORKDIR /runner
 COPY selfhost/updater/*.py ./
 COPY selfhost/bin/check-manual-image ./check-manual-image

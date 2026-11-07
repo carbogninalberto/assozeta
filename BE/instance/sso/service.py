@@ -136,15 +136,20 @@ def local_user(pairing, user_id):
         user = User.objects.get(pk=uuid.UUID(str(user_id)), is_active=True, deleted=False)
     except (User.DoesNotExist, ValueError, TypeError):
         raise SSOError('account_unavailable', 403) from None
-    if (user.role != User.ATHLETE or user.is_superuser or user.is_staff or user.connected_user_id
-            or Instructor.objects.filter(associated_user_id=user.pk).exists()):
+    # Everyone but the association itself is eligible: athletes, instructors and collaborators.
+    if user.role not in (User.ATHLETE, User.COLLABORATOR) or user.is_superuser or user.is_staff:
         raise SSOError('account_not_eligible', 403)
     # Source UUIDs are preserved by ImportService. Never merge identities by email.
     association = SportAssociation._base_manager.select_related('user').filter(pk=pairing.association_id).first()
     if (not association or association.deleted or not association.user.is_active or association.user.deleted
-            or association.user.role != User.ASSOCIATION or not Associate._base_manager.filter(
-                user_id=user.pk, sport_association_id=pairing.association_id,
-                deleted=False, disabled=False, draft=False).exists()):
+            or association.user.role != User.ASSOCIATION):
+        raise SSOError('membership_required', 403)
+    # Any undeleted link counts; disabled and draft members are still eligible.
+    owner = association.user
+    if not (user.connected_user_id == owner.pk
+            or Associate._base_manager.filter(user_id=user.pk, sport_association_id=association.pk,
+                                              deleted=False).exists()
+            or Instructor.objects.filter(user=owner, associated_user_id=user.pk).exists()):
         raise SSOError('membership_required', 403)
     return user
 

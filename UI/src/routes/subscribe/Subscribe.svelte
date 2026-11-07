@@ -4,6 +4,7 @@
     import {onMount} from 'svelte';
     import {ArrowRight, FirstAid, FirstAidKit, Info, Lock, PaperPlaneTilt, PersonSimpleRun, Signature} from 'phosphor-svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
+    import {applyWizardChoices, hasLoggedInSession, resumeAfterAccountLogin} from 'utils/accountSession.js';
     import {register, init, _, waitLocale, locale} from 'svelte-i18n';
     import Step0 from './wizard/Step0.svelte';
     import Step1 from './wizard/Step1.svelte';
@@ -171,7 +172,7 @@
         if (!res.error) {
             toast.success('Nuova iscrizione creata con successo.');
             setTimeout(() => {
-                if (localStorage.getItem('sessionToken')) {
+                if (hasLoggedInSession()) {
                     // check the role from the localstorage "role"
                     if (JSON.parse(localStorage.getItem('role')) === 'association') {
                         // redirect to the page #/members/list
@@ -258,11 +259,16 @@
             initialLocale: 'it',
         });
         await waitLocale();
+        // Back from "CREA o ACCEDI con l'account": read before clearing sessionStorage.
+        const resumed = resumeAfterAccountLogin(window.location.hash);
         // localStorage.clear();
         sessionStorage.clear();
         sessionStorage.setItem('sportAssociationUsername', params?.sportAssociationUsername);
         // sessionStorage.setItem('redirectAfterLogin', 1);
         await loadData();
+        // Back from the login: keep the first-step choices on the first step,
+        // where the member continues (or renews) with the account.
+        if (resumed) applyWizardChoices(wizardData.formData, resumed.state);
         loaded = true;
     });
 </script>

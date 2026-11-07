@@ -465,6 +465,23 @@ class EngineTests(unittest.TestCase):
                 self.assertIn(expected, record['error'])
                 self.assertNotIn('private-secret', json.dumps(record))
 
+    def test_lifecycle_reported_failure_replaces_generic_stage_error(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = root / '.env'
+            env.write_text(official_environment())
+            journal = Journal(root / '.updater/operations.sqlite3')
+            operation = journal.create(request())
+            engine = Engine(root, env, journal, resolver=lambda _: {'tag': 'v1.0.2', 'artifacts_ready': True})
+            script = ('print("@@ASSOZETA_STAGE backup"); '
+                      'print("@@ASSOZETA_ERROR Spazio su disco insufficiente per il backup"); raise SystemExit(1)')
+            with patch.object(engine, 'launch_command', return_value=[sys.executable, '-c', script]):
+                engine.execute(operation)
+            record = journal.records()[0]
+            self.assertEqual(record['status'], 'failed')
+            self.assertEqual(record['failed_stage'], 'backup')
+            self.assertEqual(record['error'], 'Spazio su disco insufficiente per il backup')
+
     def test_missing_receipt_is_private_logged_failure_and_blocks_retry(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

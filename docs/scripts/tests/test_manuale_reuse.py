@@ -70,7 +70,8 @@ class ReuseFixtureTests(unittest.TestCase):
             write(self.old_code, relative, '// Offline dependency fixture\n' if relative.endswith('.mjs') else '# Offline dependency fixture\n')
         # Exercise the actual pure editorial projector, with an explicit unit
         # procedure. These files do not execute browsers or fabricate captures.
-        for relative in ('docs/manuale/manual-content.mjs', 'docs/manuale/rendered-content.mjs', 'docs/scripts/manuale-project.mjs'):
+        for relative in ('docs/manuale/manual-content.mjs', 'docs/manuale/rendered-content.mjs', 'docs/manuale/recipe-binding.mjs',
+                         'docs/scripts/manuale-project.mjs'):
             write(self.old_code, relative, (ROOT / relative).read_text())
         write(self.old_code, 'docs/manuale/authored-workflows.mjs', 'export const authoredWorkflows = ' + json.dumps({
             'unit-members': {'checkpoints': [{'id': 'unit-list', 'caption': 'Unit fixture'}], 'sections': [

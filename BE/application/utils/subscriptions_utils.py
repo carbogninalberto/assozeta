@@ -14,7 +14,7 @@ from io import BytesIO
 from dateutil import parser
 
 from dateutil.relativedelta import relativedelta
-from django.core.exceptions import FieldDoesNotExist
+from django.core.exceptions import FieldDoesNotExist, ValidationError as DjangoValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -28,7 +28,8 @@ from application.models import CourseSubscription, CourseSubscriptionInstallment
 from application.exceptions import DuplicateSubscriptionError
 from application.models.payment_models import Payment, PaymentCategory
 from application.models.subscriptions_models import Signature, MedicalCertificate, SubscriptionMembership
-from application.models.subscriptions_models import Subscription
+from application.models.subscriptions_models import Subscription, future_renewal_exists
+from application.models.carnet_models import CarnetSubscription
 from application.models.user_models import SportAssociation, User
 from application.serializers.auth_serializers import UserSerializer, UserAccountSerializer
 from application.serializers.courses_serializers import CourseSubscriptionSerializer, CourseEventsSerializer
@@ -44,7 +45,8 @@ from core.settings import STORAGE_DIR
 from docmanager.models import Document
 from notifications.services import NotificationService
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, TrigramSimilarity
-from django.db.models import F, Value as V, CharField, Q, Case, When, FloatField, BigIntegerField
+from django.db.models import F, Value as V, CharField, Q, Case, When, FloatField, BigIntegerField, Exists, OuterRef, \
+    Prefetch
 from django.db.models.functions import Concat, Cast
 
 logger = logging.getLogger(__name__)
@@ -465,21 +467,8 @@ def check_if_subscription_exists(sport_association, associate_data, date_from, d
             custom_data=custom_data
         )
 
-        # can be renewed if is not current
-        renewal_available = not sub.is_current
-
-        if renewal_available is True:
-            # if it is renewable, make sure there is no subscription created later than current
-            current_year_sub = Subscription.objects.filter(
-                sport_association=sub.sport_association,
-                start_date__gte=sub.end_date,
-                archived=False,
-                associate__tax_code__iexact=sub.associate.tax_code
-            ).count()
-            # can be renewed if there is no subscription created later than current
-            renewal_available = current_year_sub == 0
         # if renewal is not available, then the subscription already exists
-        return not renewal_available
+        return not sub.is_renewal_available()
     return exists
 
 
@@ -631,8 +620,35 @@ def get_membership_fee(data, sport_association: SportAssociation, subscription_t
     return None, None
 
 
-def fill_data_preregisration(data):
-    subscription = Subscription.objects.filter(subscription_id=data['subscription_id']).first()
+def _renewal_source(data, user, requester):
+    """The subscription a preregistration renews, if the requester may renew it.
+
+    It must belong to the association of this registration, and the requester
+    must be that association or the account that owns the subscription.
+    """
+    if requester is None or not getattr(requester, 'is_authenticated', False):
+        return None
+    username = data.get('sport_association')
+    if username:
+        association = SportAssociation.objects.filter(user__username=username).first()
+    else:
+        association = getattr(user, 'sport_association', None)
+    if association is None:
+        return None
+    subscription = Subscription.objects.filter(subscription_id=data['subscription_id'],
+                                               sport_association=association).first()
+    if subscription is None:
+        return None
+    if association.user_id == requester.pk or (subscription.user_id is not None and subscription.user_id == requester.pk):
+        return subscription
+    return None
+
+
+def fill_data_preregisration(data, user=None, requester=None):
+    try:
+        subscription = _renewal_source(data, user, requester)
+    except (ValueError, DjangoValidationError):
+        subscription = None
     if subscription is not None:
         sub_type = data['associate_data']['type']
         data['associate_data'] = AssociateSerializer(subscription.associate).data
@@ -668,7 +684,7 @@ def fill_data_preregisration(data):
         }
         return data, subscription.user
     else:
-        raise ValidationError({'msg': 'Subscription id is required.', "code": 400})
+        raise ValidationError({'msg': 'Iscrizione da rinnovare non trovata.', "code": 400})
 
 
 def safe_int(value, default=0):
@@ -686,7 +702,7 @@ def safe_int(value, default=0):
         return default
 
 
-def create_subscription(data, user, auth_token, is_athlete_request=False):
+def create_subscription(data, user, auth_token, is_athlete_request=False, requester=None):
     created_storage_keys = []
     try:
         with transaction.atomic():
@@ -695,22 +711,29 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
                 user,
                 auth_token,
                 is_athlete_request=is_athlete_request,
-                created_storage_keys=created_storage_keys
+                created_storage_keys=created_storage_keys,
+                requester=requester,
             )
     except Exception:
         cleanup_storage_keys(created_storage_keys)
         raise
 
 
-def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, created_storage_keys=None):
+def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, created_storage_keys=None,
+                              requester=None):
     if created_storage_keys is None:
         created_storage_keys = []
     preregistration = False
-    preregistration_user = user
+    # A renewal keeps the owner of the renewed subscription; otherwise the owner
+    # is resolved below exactly as for a normal registration (including an
+    # account created in this request).
+    preregistration_user = None
+    renewal = False
     if 'preregistration' in data.keys() and data['preregistration'] is not None and \
             data['preregistration'] is True:
         if 'subscription_id' in data.keys() and data['subscription_id'] is not None:
-            data, preregistration_user = fill_data_preregisration(data)
+            data, preregistration_user = fill_data_preregisration(data, user, requester)
+            renewal = True
         preregistration = True
 
     now = date.today()
@@ -1136,7 +1159,8 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         subscription_data['creation_date'] = date_from # the actual start date
         subscription_data['start_date'] = current_date_from
         subscription_data['end_date'] = current_date_to
-        subscription_data['user'] = preregistration_user
+        if renewal:
+            subscription_data['user'] = preregistration_user
 
     try:
         # Create the subscription with all data in a single query
@@ -1232,7 +1256,19 @@ def get_optimized_subscriptions(user):
     tax_codes = scoped_queryset(user, Subscription.objects).filter(user=user).values_list('associate__tax_code', flat=True).distinct()
     if len(tax_codes) == 0:
         []
-    subscriptions = scoped_queryset(user, Subscription.objects).filter(Q(user=user) | Q(associate__tax_code__in=tax_codes)).prefetch_related('medical', 'medical__document', 'associate', 'sport_association').order_by('-creation_date')
+    subscriptions = scoped_queryset(user, Subscription.objects).filter(
+        Q(user=user) | Q(associate__tax_code__in=tax_codes)
+    ).select_related(
+        'medical', 'medical__document', 'associate', 'associate__user'
+    ).prefetch_related(
+        # Few distinct, wide rows: a join would repeat them on every subscription row
+        'sport_association', 'associate__sport_association__user',
+        'tags',
+        Prefetch('coursesubscription_set', queryset=CourseSubscription.objects.select_related('course'))
+    ).annotate(
+        _has_carnets=Exists(CarnetSubscription.objects.filter(subscription=OuterRef('pk'))),
+        _has_future_renewal=future_renewal_exists(),
+    ).order_by('-creation_date')
     return SubscriptionSerializerAthleteOptimizedList(subscriptions, many=True).data
 
 

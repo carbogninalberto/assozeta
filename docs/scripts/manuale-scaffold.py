@@ -20,6 +20,21 @@ def git(root, *arguments):
     return subprocess.run(['git', '-C', str(root), *arguments], check=True, capture_output=True, text=True).stdout.strip()
 
 
+def recipe_binding():
+    """This checkout's BE/application/manuale/recipe_binding.py (no Django imports); ROOT is the data."""
+    code = Path(__file__).resolve().parents[2] / 'BE/application/manuale/recipe_binding.py'
+    spec = importlib.util.spec_from_file_location('manual_recipe_binding', code)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def section_recipe_sha256(module, key):
+    """The reviewed section's current binding to its recipe module."""
+    binding = recipe_binding()
+    return binding.section_recipe_sha256(owned(ROOT, module).read_bytes(), binding.section_sources(ROOT).get(key))
+
+
 def digest(contents):
     return hashlib.sha256(contents).hexdigest()
 
@@ -228,7 +243,7 @@ def validate_authoring_input(output):
         module = binding.get('recipe_module', '')
         if not module.startswith('docs/manuale/') or not module.endswith('.mjs') or not re.fullmatch('[a-f0-9]{64}', binding.get('recipe_sha256', '')):
             raise ValueError('Invalid reviewed recipe binding: ' + key)
-        if digest(owned(ROOT, module).read_bytes()) != binding['recipe_sha256']:
+        if section_recipe_sha256(module, key) != binding['recipe_sha256']:
             raise ValueError('Recipe changed; review existing content before preparation: ' + module)
         mdx = owned(output, relative).read_text()
         body = reviewed_section_body(mdx, key, binding['title'])
@@ -303,7 +318,7 @@ def review_content(output, selected, *, refresh_recipe_bindings=False, wording_o
         module = binding['recipe_module']
         if not module.startswith('docs/manuale/') or not module.endswith('.mjs'):
             raise ValueError('Invalid reviewed recipe module: ' + str(module))
-        current_recipe = digest(owned(ROOT, module).read_bytes())
+        current_recipe = section_recipe_sha256(module, key)
         if binding.get('recipe_sha256', current_recipe) != current_recipe and not refresh_recipe_bindings:
             raise ValueError('Recipe changed; update reviewed bindings before editing prose: ' + binding['recipe_module'])
         relative = key.rsplit('#', 1)[0]

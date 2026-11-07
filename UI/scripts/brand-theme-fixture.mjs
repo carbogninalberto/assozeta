@@ -36,7 +36,7 @@ const server = await createServer({root, configFile: false, logLevel: 'error',
                     window.addEventListener('save', event => window.savedEmail = event.detail);
                 };
                 window.brandTest.mountPayment = async (cart=false) => {
-                    window.__bakney.STRIPE_KEY = 'pk_test_fixture';
+                    store.instanceConfig.update(config => ({...config, stripe: {...config?.stripe, publicKey: 'pk_test_fixture'}}));
                     window.__bakney.env.API.PAYMENT = {INFO:'/api/payment/{id}'};
                     window.__bakney.env.API.STRIPE = {PAY:'/api/intent/{id}',MULTIPLE_PAY:'/api/intent/cart'};
                     window.paymentUpdates=[];

@@ -1364,6 +1364,133 @@ restore_rollback_live_data() {
     return "$rollback_status"
 }
 
+# Reported verbatim by the update runner instead of a generic stage failure.
+report_failure() {
+    printf '@@ASSOZETA_ERROR %s\n' "$1"
+}
+
+# The object mirror is written by root in the MinIO client container, so only
+# root can delete staged files while archiving them.
+backup_tar_removes_files() {
+    [ "$(id -u)" -eq 0 ] && tar --version 2>/dev/null | grep -q 'GNU tar'
+}
+
+backup_estimated_kib() {
+    database_bytes=$(prod_compose exec -T postgres psql -U "$database_user" -d "$database_name" -Atc \
+        'SELECT pg_database_size(current_database())' 2>/dev/null | tr -d '[:space:]') || return 1
+    objects_bytes=$(prod_compose --profile tools run --rm \
+        --entrypoint /bin/sh \
+        minio-init -c \
+        "mc alias set local http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" >/dev/null && mc du --json local/$bucket" \
+        2>/dev/null | sed -n 's/.*"size":\([0-9][0-9]*\).*/\1/p' | tail -n 1) || return 1
+    case "$database_bytes$objects_bytes" in
+        ""|*[!0-9]*) return 1 ;;
+    esac
+    [ -n "$database_bytes" ] && [ -n "$objects_bytes" ] || return 1
+    printf '%s\n' $(( (database_bytes + objects_bytes) / 1024 + 1 ))
+}
+
+# Staged objects and the compressed archive coexist unless tar deletes each
+# staged file once archived. Attachments are mostly PDFs and images, so the
+# archive is budgeted at its uncompressed size.
+backup_require_space() {
+    margin_mb=${ASSOZETA_BACKUP_SPACE_MARGIN_MB:-1024}
+    validate_positive_integer "$margin_mb" || die "ASSOZETA_BACKUP_SPACE_MARGIN_MB must be a positive integer"
+    case "${backup_extra_space_mb:-0}" in
+        *[!0-9]*) die "ASSOZETA_UPGRADE_IMAGE_SPACE_MB must be a non-negative integer" ;;
+    esac
+    if ! estimated_kib=$(backup_estimated_kib); then
+        log "warning: could not estimate the backup size; free disk space was not checked"
+        return 0
+    fi
+    copies=2
+    backup_tar_removes_files && copies=1
+    required_kib=$(( estimated_kib * copies + (margin_mb + ${backup_extra_space_mb:-0}) * 1024 ))
+    available_kib=$(df -Pk "$destination" | awk 'NR == 2 { print $4 }')
+    case "$available_kib" in
+        ""|*[!0-9]*) die "could not determine free disk space in $destination" ;;
+    esac
+    if [ "$available_kib" -lt "$required_kib" ]; then
+        required_mb=$(( required_kib / 1024 ))
+        available_mb=$(( available_kib / 1024 ))
+        report_failure "Spazio su disco insufficiente per il backup: servono circa $required_mb MB, disponibili $available_mb MB. Libera spazio sul server (per esempio spostando altrove i backup meno recenti) e riprova."
+        die "insufficient disk space for the backup in $destination: about $required_mb MB required, $available_mb MB available; copy older archives off-host and remove them"
+    fi
+    log "backup needs about $(( required_kib / 1024 )) MB; $(( available_kib / 1024 )) MB available"
+}
+
+# Each archive has a sidecar "<archive>.meta" of key=value lines:
+#   origin   manual | scheduled | pre-upgrade | pre-restore
+#   keep     true when the owner asked to keep it ("Conserva")
+#   upgrade  completed once the upgrade that took it succeeded
+# Archives without a sidecar predate this format and are treated as manual.
+backup_meta_value() {
+    [ -f "$2.meta" ] || return 0
+    env_value "$1" "$2.meta"
+}
+
+backup_write_meta() {
+    meta_archive=$1
+    meta_origin=$2
+    meta_temporary="$meta_archive.meta.tmp.$$"
+    {
+        printf 'origin=%s\n' "$meta_origin"
+        printf 'created_at=%s\n' "$timestamp"
+        printf 'version=%s\n' "$(env_value ASSOZETA_VERSION "$PROD_ENV")"
+    } > "$meta_temporary" && chmod 600 "$meta_temporary" && mv -f "$meta_temporary" "$meta_archive.meta" || {
+        rm -f "$meta_temporary"
+        log "warning: could not record the origin of $meta_archive; it will not be rotated automatically"
+    }
+}
+
+# Record that the upgrade which took this archive succeeded, so rotation keeps
+# it until the next upgrade succeeds.
+backup_mark_upgrade_completed() {
+    [ -f "$1.meta" ] || return 0
+    set_env_value upgrade completed "$1.meta" || log "warning: could not mark $1 as the last successful upgrade backup"
+}
+
+# Keep the newest ASSOZETA_BACKUP_KEEP automatic archives (default 3). Only
+# scheduled and pre-upgrade archives count; manual, pre-restore, kept and
+# legacy archives are never removed automatically. The archive of the last
+# successful upgrade and of a pending upgrade are kept as well. Only the
+# default directory is pruned. Call it only after a backup or upgrade succeeds.
+backup_prune() {
+    keep=${ASSOZETA_BACKUP_KEEP:-$(env_value ASSOZETA_BACKUP_KEEP "$PROD_ENV")}
+    keep=${keep:-3}
+    case "$keep" in
+        ""|*[!0-9]*) log "warning: ASSOZETA_BACKUP_KEEP must be a non-negative integer; old backups were kept"; return 0 ;;
+    esac
+    [ "$keep" -gt 0 ] || return 0
+    [ "$destination" = "$SELFHOST_DIR/backups" ] || return 0
+    transaction="$SELFHOST_DIR/.updater/pending-distribution/transaction.json"
+    # Timestamped names sort chronologically.
+    archives=$(ls "$destination" | grep -E '^assozeta-[0-9]{8}T[0-9]{6}Z(-[0-9]+)?\.tar\.gz$' | sort -r)
+    last_upgrade=
+    for candidate in $archives; do
+        if [ "$(backup_meta_value upgrade "$destination/$candidate")" = completed ]; then
+            last_upgrade=$candidate
+            break
+        fi
+    done
+    automatic=0
+    for candidate in $archives; do
+        case "$(backup_meta_value origin "$destination/$candidate")" in
+            scheduled|pre-upgrade) ;;
+            *) continue ;;
+        esac
+        [ "$(backup_meta_value keep "$destination/$candidate")" != true ] || continue
+        automatic=$((automatic + 1))
+        [ "$automatic" -gt "$keep" ] || continue
+        [ "$candidate" != "$last_upgrade" ] || continue
+        if [ -f "$transaction" ] && grep -qF "$candidate" "$transaction"; then
+            continue
+        fi
+        rm -f "$destination/$candidate" "$destination/$candidate.meta"
+        log "removed old automatic backup $candidate (keeping the newest $keep)"
+    done
+}
+
 backup_prod() {
     preflight
     [ -f "$PROD_ENV" ] || die "run configure first"
@@ -1406,6 +1533,8 @@ backup_prod() {
     prod_compose up -d --wait postgres minio
     prod_compose --profile tools run --rm minio-init
 
+    backup_require_space
+
     log "stopping application services for consistent backup"
     backup_app_stopped=true
     stop_prod_data_services
@@ -1420,7 +1549,7 @@ backup_prod() {
         -v "$working/objects:/backup:z" \
         --entrypoint /bin/sh \
         minio-init -c \
-        "mc alias set local http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" && mc mirror local/$bucket /backup"
+        "mc alias set local http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" && mc mirror --quiet local/$bucket /backup"
 
     cp "$PROD_ENV" "$working/config.env"
     cat > "$working/manifest.txt" <<EOF
@@ -1431,12 +1560,18 @@ bucket=$bucket
 aws_location=$aws_location
 EOF
 
-    tar -C "$working" -czf "$archive" .
+    if backup_tar_removes_files; then
+        tar -C "$working" --remove-files -czf "$archive" ./postgres.dump ./objects ./config.env ./manifest.txt
+    else
+        tar -C "$working" -czf "$archive" .
+    fi
     chmod 600 "$archive"
     cleanup_status=0
     backup_cleanup 0 || cleanup_status=$?
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
     log "backup created: $archive"
+    backup_write_meta "$archive" "${backup_origin:-manual}"
+    backup_prune
     log "the archive contains secrets; copy it off-host and protect it"
 }
 
@@ -1689,7 +1824,11 @@ upgrade_prod() {
     fi
     printf '%s\n' '@@ASSOZETA_STAGE backup'
     backup_keep_stopped=true
+    backup_origin=pre-upgrade
+    # The new images are pulled after the backup, onto the same Docker host.
+    backup_extra_space_mb=${ASSOZETA_UPGRADE_IMAGE_SPACE_MB:-2048}
     backup_prod
+    upgrade_backup=$archive
     printf '%s\n' '@@ASSOZETA_STAGE downloading'
     if [ "$managed_update" = true ]; then
         if ! run_updater_tool /runner/distribution.py prepare "$SELFHOST_DIR" "$PROD_ENV" "$version" "$archive" "${ASSOZETA_OPERATION_ID:-}"; then
@@ -1732,6 +1871,11 @@ upgrade_prod() {
         if ! run_updater_tool /runner/cleanup.py "$SELFHOST_DIR" "$PROD_ENV"; then
             log "cleanup warning: automatic maintenance failed; upgrade remains successful"
         fi
+    fi
+    if [ -f "$upgrade_backup" ]; then
+        backup_mark_upgrade_completed "$upgrade_backup"
+        destination=$(dirname -- "$upgrade_backup")
+        backup_prune
     fi
     log "upgrade complete; previous version was $previous"
 }

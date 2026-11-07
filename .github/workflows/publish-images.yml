@@ -18,26 +18,59 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
+      release_tag:
+        description: >-
+          Existing release tag to (re)publish, for example v1.0.28. Run the
+          workflow from that tag. Empty publishes commit images only.
+        type: string
+        default: ""
+      include_manual:
+        description: Build, verify and bundle the manual (slow); releases skip it otherwise
+        type: boolean
+        default: false
       force_full_manual:
-        description: Force full manual verification and historical appliance rehearsal
+        description: With include_manual, force full manual verification and historical appliance rehearsal
         type: boolean
         default: false
 
 permissions:
   contents: read
 
+# Releases publish without rebuilding the manual: the backend image carries the
+# verified manual of the previous release unchanged (MANUAL_CARRIED_FROM). The
+# manual is rebuilt, verified and bundled only on an explicit manual dispatch
+# with include_manual.
+env:
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+
 jobs:
   go-quality:
     uses: ./.github/workflows/go-quality.yml
 
+  release-target:
+    name: Check release target
+    if: github.event_name == 'release' || inputs.release_tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the workflow to run from the release tag
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          set -eu
+          case "$RELEASE_TAG" in v[0-9]*) ;; *) echo "Invalid release tag: $RELEASE_TAG" >&2; exit 1 ;; esac
+          if [ "$REF" != "refs/tags/$RELEASE_TAG" ]; then
+            echo "Run this workflow from the tag (Use workflow from: $RELEASE_TAG); got $REF" >&2
+            exit 1
+          fi
+
   manual-release:
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.include_manual
     uses: ./.github/workflows/manuale-release.yml
     permissions:
       contents: read
       actions: read
     with:
-      release: ${{ github.event.release.tag_name || github.sha }}
+      release: ${{ github.event.release.tag_name || inputs.release_tag || github.sha }}
       force_full: ${{ inputs.force_full_manual || false }}
       # Published below, after authorization but outside the image chain.
       evidence_store: false
@@ -94,16 +127,19 @@ jobs:
     name: Publish ${{ matrix.name }}
     # A skipped full-quality job is expected only for branch pushes. Explicit
     # results keep failures/cancellation from bypassing the publication gates.
+    # A requested manual must succeed; an unrequested one is skipped.
     if: >-
       ${{ !cancelled() &&
           needs.validate.result == 'success' &&
           needs.go-quality.result == 'success' &&
           needs.production-smoke.result == 'success' &&
+          (needs.release-target.result == 'success' ||
+           (github.event_name != 'release' && !inputs.release_tag && needs.release-target.result == 'skipped')) &&
           (needs.manual-release.result == 'success' ||
-           (github.event_name == 'push' && needs.manual-release.result == 'skipped')) &&
+           (!(github.event_name == 'workflow_dispatch' && inputs.include_manual) && needs.manual-release.result == 'skipped')) &&
           (needs.selfhost-quality.result == 'success' ||
            (github.event_name == 'push' && needs.selfhost-quality.result == 'skipped')) }}
-    needs: [validate, production-smoke, selfhost-quality, manual-release, go-quality]
+    needs: [validate, production-smoke, selfhost-quality, manual-release, release-target, go-quality]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -146,11 +182,40 @@ jobs:
           persist-credentials: false
 
       - name: Download the verified release manual
-        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && github.event_name != 'push'
+        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && needs.manual-release.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: manuale-release-runtime
           path: ${{ matrix.context }}/release-manual
+
+      - name: Carry the manual of the previous release
+        # Releases without include_manual reuse the verified manual of the
+        # current :latest release image unchanged (it may itself be carried).
+        id: carried
+        if: matrix.name == 'backend' && needs.manual-release.result != 'success' && env.RELEASE_TAG != ''
+        env:
+          SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/assozeta-backend:latest
+        run: |
+          set -euo pipefail
+          if ! docker pull --quiet "$SOURCE_IMAGE"; then
+            echo "::warning::No previous release image; publishing without a manual"
+            exit 0
+          fi
+          container=$(docker create "$SOURCE_IMAGE")
+          trap 'docker rm -f "$container" >/dev/null' EXIT
+          work=$(mktemp -d)
+          # The image directory is read-only: stream it and make the copy writable.
+          docker cp "$container:/app/release-manual" - | tar -x -C "$work"
+          chmod -R u+rwX "$work/release-manual"
+          if [ ! -f "$work/release-manual/bundle.json" ]; then
+            echo "::warning::$SOURCE_IMAGE has no manual; publishing without a manual"
+            exit 0
+          fi
+          origin=$(python3 -c 'import json,sys; b=json.load(open(sys.argv[1])); print(b["release"], b["application_revision"])' "$work/release-manual/bundle.json")
+          find BE/release-manual -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
+          cp -a "$work/release-manual/." BE/release-manual/
+          echo "Carrying the manual verified for $origin"
+          echo "origin=$origin" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -173,9 +238,9 @@ jobs:
           tags: |
             type=sha,prefix=sha-
             type=raw,value=edge,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ github.event_name == 'release' }}
-            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            type=semver,pattern={{version}},value=${{ env.RELEASE_TAG }},enable=${{ env.RELEASE_TAG != '' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.RELEASE_TAG }},enable=${{ env.RELEASE_TAG != '' }}
+            type=raw,value=latest,enable=${{ env.RELEASE_TAG != '' && !github.event.release.prerelease }}
 
       - name: Build and publish
         uses: docker/build-push-action@v6
@@ -188,9 +253,10 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           build-args: |
-            VERSION=${{ github.event.release.tag_name || github.sha }}
+            VERSION=${{ env.RELEASE_TAG || github.sha }}
             CODE_REVISION=${{ github.sha }}
-            REQUIRE_MANUAL=${{ github.event_name != 'push' }}
+            REQUIRE_MANUAL=${{ needs.manual-release.result == 'success' || steps.carried.outputs.origin != '' }}
+            MANUAL_CARRIED_FROM=${{ steps.carried.outputs.origin }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
           provenance: true
@@ -198,7 +264,7 @@ jobs:
 
   verify-release-images:
     name: Verify release images are public
-    if: github.event_name == 'release'
+    if: ${{ !cancelled() && needs.publish.result == 'success' && (github.event_name == 'release' || inputs.release_tag) }}
     needs: publish
     runs-on: ubuntu-latest
     steps:
@@ -210,7 +276,6 @@ jobs:
       - name: Verify anonymous pull of release-tag images
         env:
           IMAGE_OWNER: ${{ github.repository_owner }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
           RELEASE_TAG="${RELEASE_TAG#v}"
@@ -253,8 +318,11 @@ jobs:
 
   release-bundle:
     name: Attach self-host bundle
-    if: github.event_name == 'release'
-    needs: [publish, verify-release-images, manual-release]
+    if: >-
+      ${{ !cancelled() && needs.publish.result == 'success' &&
+          needs.verify-release-images.result == 'success' &&
+          (github.event_name == 'release' || inputs.release_tag) }}
+    needs: [publish, verify-release-images]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -284,17 +352,16 @@ jobs:
           PY
 
       - name: Create bundle
-        run: tar -czf "assozeta-selfhost-${{ github.event.release.tag_name }}.tar.gz" selfhost
+        run: tar -czf "assozeta-selfhost-$RELEASE_TAG.tar.gz" selfhost
 
       - name: Upload release asset
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" "assozeta-selfhost-${{ github.event.release.tag_name }}.tar.gz" --clobber
+        run: gh release upload "$RELEASE_TAG" "assozeta-selfhost-$RELEASE_TAG.tar.gz" --clobber
 
       - name: Publish verified update manifest
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
           PYTHONPATH: BE/instance
         run: |
           python3 selfhost/updater/build_manifest.py "$RELEASE_TAG" "assozeta-selfhost-$RELEASE_TAG.tar.gz" assozeta-update.json

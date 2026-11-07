@@ -190,7 +190,14 @@ or its required ownership tables are unavailable.
 ## Failure and recovery
 
 Keep the backup and `.updater` state after a failure. Backups contain secrets and
-must be protected when copied off-host. After migrations begin, reverting image
+must be protected when copied off-host. Rotation keeps only the newest
+`ASSOZETA_BACKUP_KEEP` automatic archives (default 3), plus manual and kept
+archives, the archive of the last successful upgrade and the archive recorded by
+a pending distribution transaction (see [Backups](README.md#backups)); copy any
+other archive off-host before retrying.
+An update that lacks disk space for its backup stops before the services are
+stopped and reports the required and available space instead of a generic
+backup failure (see [Backups](README.md#backups)). After migrations begin, reverting image
 tags alone is not a database rollback. Do not delete a pending distribution
 transaction merely to retry an update.
 The runner keeps status available but rejects new updates while that transaction

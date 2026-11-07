@@ -50,6 +50,8 @@ FROM base AS production
 ARG VERSION=v0.0.0
 ARG CODE_REVISION=unknown
 ARG REQUIRE_MANUAL=false
+# "<release> <revision>" of an earlier release whose verified manual is carried.
+ARG MANUAL_CARRIED_FROM=""
 
 RUN groupadd --gid 10001 assozeta \
     && useradd --uid 10001 --gid assozeta --create-home assozeta
@@ -59,6 +61,8 @@ COPY --chown=assozeta:assozeta . .
 RUN printf '%s\n' "$VERSION" > VERSION \
     && printf '%s\n' "$CODE_REVISION" > CODE_REVISION \
     && printf '%s\n' "$REQUIRE_MANUAL" > MANUAL_REQUIRED \
+    && rm -f MANUAL_CARRIED_FROM \
+    && if [ -n "$MANUAL_CARRIED_FROM" ]; then printf '%s\n' "$MANUAL_CARRIED_FROM" > MANUAL_CARRIED_FROM; fi \
     && chown -R root:root /app/release-manual \
     && chmod -R a+rX,a-w /app/release-manual \
     && chmod +x entrypoint.sh \

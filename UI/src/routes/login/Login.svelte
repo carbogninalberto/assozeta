@@ -1,5 +1,6 @@
 <script>
-    import {initializeLoginSession} from 'utils/loginSession.js';
+    import {initializeLoginSession, reloadAppAt} from 'utils/loginSession.js';
+    import {discardAccountReturn, postLoginDestination} from 'utils/accountSession.js';
     import {Capacitor} from '@capacitor/core';
     import {Eye, EyeOff} from 'lucide-svelte';
     import * as jose from 'jose';
@@ -478,8 +479,14 @@
                     setPermissions(profileResult.response.info.role);
                     role.set(profileResult.response.info.role);
                 }
-                if (!collaborator && response.role != 'athlete' && location.href != '/welcome')
-                    location.href = '/#/welcome';
+                if (response.role == 'athlete') {
+                    // Back to the registration link that asked for an account, if any.
+                    reloadAppAt(postLoginDestination());
+                    return;
+                }
+                // Other new accounts always go through their onboarding.
+                discardAccountReturn();
+                if (!collaborator && location.href != '/welcome') location.href = '/#/welcome';
                 else location.href = '/';
                 // location.replace('/');
                 // replace('/');
@@ -664,7 +671,9 @@
                     location.href = '/#/stripe/onboarded';
                 } else {
                     setPermissions(response.role);
-                    location.href = '/';
+                    // Back to the registration link that asked for an account, if any; a
+                    // full reload starts the application for the new session.
+                    reloadAppAt(postLoginDestination());
                 }
             }, 1000);
             //});

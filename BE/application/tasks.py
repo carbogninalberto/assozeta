@@ -1359,17 +1359,13 @@ def send_reminders():
 
         for reminder in reminders:
             # send the reminder via email to the user and/or the instructor
-            message = f'''
-            <p>Ciao {reminder.sport_association.denomination},</p>
-            <p>Il tuo evento "{reminder.event_title}" inizierà tra {reminder.event_reminder_text}.</p>
-            <br>
-            <p>Descrizione dell'evento:</p>
-            <p>{reminder.event_description if reminder.event_description and reminder.event_description != '' else 'Nessun dettaglio.'}</p>
-            <br>
-            <p>Per maggiori informazioni, visita il tuo profilo su {settings.WHITELABEL_NAME}.</p>
-            
-            <p>Lo staff di {settings.WHITELABEL_NAME}</p>
-            '''
+            message = render_to_string('email/reminders/event.html', {
+                'event_title': reminder.event_title,
+                'event_reminder_text': reminder.event_reminder_text,
+                'event_description': reminder.event_description or 'Nessun dettaglio.',
+                'association_name': reminder.sport_association.denomination,
+                'application_name': settings.WHITELABEL_NAME,
+            })
             reply_to = [reminder.sport_association.user.email]
             if reminder.user:
                 # send email to the user
@@ -1561,16 +1557,13 @@ def association_quote_assign(date=None, sport_association=None):
 
                     logger.info("Sending quote email", extra={'task_name': 'association_quote_assign', 'recipient': subscription.user.email})
 
-                    # send the reminder via email to the user and/or the instructor
-                    message = f'''
-                        <p>Ciao {subscription.associate.first_name} {subscription.associate.last_name},</p>
-                        <p>Ti è stata assegnata la quota associativa "{payment_meta['subscription_data']['name']}" con importo {plan['subscription_fee']} €.</p>
-                        <br>
-                        <p>Per maggiori informazioni, visita il tuo profilo su {settings.WHITELABEL_NAME}.</p>
-
-                        <p>Cordialmente, <br />
-                         {sport_association.denomination}</p>
-                    '''
+                    message = render_to_string('email/payment/fee_assigned.html', {
+                        'recipient_name': f"{subscription.associate.first_name} {subscription.associate.last_name}",
+                        'fee_name': payment_meta['subscription_data']['name'],
+                        'amount': plan['subscription_fee'],
+                        'application_name': settings.WHITELABEL_NAME,
+                        'association_name': sport_association.denomination,
+                    })
                     if subscription.user:
                         # send email to the user
                         send_email_html(

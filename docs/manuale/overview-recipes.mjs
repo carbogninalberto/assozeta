@@ -1,8 +1,8 @@
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
-  "UI/src/App.svelte": "aec02257fc69d1ce8cbe6be715c6b47509d77e13a466fde7b87372d9e3a95c7e",
-  "UI/src/components/Header.svelte": "5d14ae36e89af617183a1dda1a5bbaba84c67b740ed1d8f1dc9274aea481b198",
+  "UI/src/App.svelte": "fa45b87b4a3d2daa5f430852ce81dd5843719e0d5b5942304893731fa7322720",
+  "UI/src/components/Header.svelte": "0273165f624534e66e53888c62f7f405f5efd0f1cd85bc65664ffb214f88e972",
   "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
   "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
   "UI/src/routes/manuale/Manuale.svelte": "e6981a17b7bef6bf32a798f5d469d9acdfa78ea9eff9b8bb081e649f51138b7d",
@@ -22,8 +22,8 @@ const reviewed = {
   "UI/src/routes/association/Members/MembersBook.svelte": "e123edd1de7d765f5a9b98d9ad019940ed2de36c40df3d78d1e605205849ae7d",
   "UI/src/components/modals/ShareModuleSubscriptionLink.svelte": "999bf9e16be7b8389a0181cd7f5c45f383dcb9c690925b653b9bf7d3333261ea",
   "UI/src/routes/association/Members/subscription/share/link-share-header.svelte": "384f60f3b95d3d1acaecf7ede4d2d01d9d29763740a31c84d0c87994a1a30246",
-  "UI/src/routes/subscribe/Subscribe.svelte": "378e90166b90d806ad9b1eface40d2cd9125c08cb35b248868ac6e9bb3b1e51b",
-  "UI/src/routes/subscribe/wizard/Step0.svelte": "3350b71dd2dd2b3cfe1790f9e91ca4d2bf5e70bd94247c5ab59b49965a9d1edf",
+  "UI/src/routes/subscribe/Subscribe.svelte": "0f641909fcb888ca034290f6f781e8ff459851ab9731d9f091322edb790a4502",
+  "UI/src/routes/subscribe/wizard/Step0.svelte": "6219f8340109f6637059137a679d7e73d272b95a61893a0e2aa2f58d071064a9",
   "UI/src/routes/subscribe/wizard/Step1.svelte": "50bbcd39de0d80293f59f6a0953a2498efd488ebf062582ae6b964c4b9a4c4f5",
   "UI/src/routes/subscribe/wizard/partials/additional-fields.svelte": "25eacb675ca1f76cf2ceae6af39126b8e32032acc6e395a414b087d838d311b3",
   "UI/src/routes/subscribe/wizard/Step2.svelte": "871d4ff3b52672efd93b0348c3b587d355aeaa31edd60696d777e1b5db35a128",
@@ -32,7 +32,7 @@ const reviewed = {
   "BE/application/views/profile_views.py": "2aa3a223244222df909cb3a77eea10e4a93a5fea7f8b4533b977eb33d87d40d4",
   "BE/application/views/search_views.py": "0cc8b4378133ef496ae8d193ad0904456dc92f394f8a04aebf9a5e3d58e1e380",
   "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
-  "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
+  "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
   "UI/src/routes/association/archive/TemplatesList.svelte": "2fb5b32a1326a36787f24bca61ad8a456f420c90742d8da30938fa3d72d6f173",

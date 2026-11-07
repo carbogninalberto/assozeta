@@ -2,6 +2,7 @@
     import {SmartSelect} from 'components/formBuilder/preview-blocks';
     import {onMount} from 'svelte';
     import {sessionToken, userData} from 'store/stores';
+    import {continueWithAccount, wizardChoices} from 'utils/accountSession.js';
     import {ArrowRight, ArrowDown} from 'phosphor-svelte';
     import FederationSettings from './partials/federation-settings.svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
@@ -146,31 +147,7 @@
     }
 
     function checkLogin() {
-        // check that user is logged in by checking local storage for:
-        // - sessionToken
-        // - userData
-        // - refreshToken
-        // - expires
-
-        if (localStorage.getItem('sessionToken')) {
-            wizardData.toStep(1);
-        } else {
-            // if not logged in, open window to login page and wait until the session token is set
-            // then close the window and continue
-            const loginWindow = window.open(
-                `${window.location.origin}/#/login?redirect=${window.location.pathname}`,
-                'Login',
-                'width=600,height=600'
-            );
-
-            const interval = setInterval(() => {
-                if (localStorage.getItem('sessionToken')) {
-                    clearInterval(interval);
-                    loginWindow.close();
-                    wizardData.toStep(1);
-                }
-            }, 1000);
-        }
+        continueWithAccount(() => wizardData.toStep(1), {state: wizardChoices(wizardData.formData)});
     }
 
     function canContinue() {

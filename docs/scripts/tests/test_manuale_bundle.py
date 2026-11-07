@@ -71,6 +71,37 @@ class BundleTests(unittest.TestCase):
         self.assertIsNone(load_bundle(self.root / 'absent', revision=self.revision,
                                      release='v-fixture', required=False))
 
+    def test_carried_manual_is_served_only_for_its_declared_origin(self):
+        self.bundle()
+        from application.manuale.bundle import load_bundle
+        root = self.root / 'bundle/runtime'
+        marker = root.parent / 'MANUAL_CARRIED_FROM'
+        running = {'revision': 'e' * 40, 'release': 'v-next'}
+        # Without a declared origin a newer release never accepts the bundle.
+        with self.assertRaises(index.EvidenceError):
+            load_bundle(root, required=True, **running)
+        marker.write_text(f'v-fixture {self.revision}\n')
+        loaded = load_bundle(root, required=True, verify_assets=True, **running)
+        loaded.check_version(**running)
+        self.assertTrue(loaded.applicable(**running))
+        # Metadata stays honest about the release the manual was verified for.
+        self.assertEqual(loaded.value['metadata']['release'], 'v-fixture')
+        with self.assertRaises(index.EvidenceError):
+            loaded.check_version(revision='d' * 40, release='v-other')
+        for origin in (f'v-other {self.revision}', 'v-fixture ' + 'f' * 40):
+            marker.write_text(origin)
+            with self.assertRaises(index.EvidenceError):
+                load_bundle(root, required=True, **running)
+        for malformed in ('v-fixture', f'v-fixture {self.revision} extra', 'v-fixture not-a-sha'):
+            marker.write_text(malformed)
+            with self.assertRaises(index.EvidenceError):
+                load_bundle(root, required=True, **running)
+        image = root / 'images/action/1.png'
+        marker.write_text(f'v-fixture {self.revision}')
+        image.write_bytes(b'corrupt')
+        with self.assertRaises(index.EvidenceError):
+            load_bundle(root, required=True, verify_assets=True, **running)
+
     def test_resealed_tampered_index_does_not_match_bundle_receipt(self):
         self.bundle()
         from application.manuale.bundle import load_bundle
