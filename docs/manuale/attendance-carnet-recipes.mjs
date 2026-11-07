@@ -27,10 +27,10 @@ const reviewed = {
   "BE/application/views/course_views.py": "79bfbd622601a9d17c811c76cc99e2a4b1ac9d38a05a67b190e0b233c2672baa",
   // Reviewed: documented carnet workflows are unchanged.
   "BE/application/views/carnet_views.py": "709e3ae74f5ceeeb682899b7c95e371d573a94ebc5c4bce19fa3a485d017c0c6",
-  "BE/application/views/attendee_views.py": "548ff6f65abfcb751ada25c7cd054f7eb8939fa7f2cb44bca6d5d5e4c4bafe0e",
+  "BE/application/views/attendee_views.py": "42339322645259eb8fdaaa60d209fc62f277f4b770e112a628dbfa4e5e868d54",
   "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
   "BE/application/utils/subscriptions_utils.py": "01555509691b282190e09a21771aa920c19a677c63823a01ab7a73602273554e",
-  "BE/application/utils/attendance_utils.py": "f86f4c8294a50d56c5fe5b26582810acec9fcd0cd5fbd192a4ff511d72bb0a22",
+  "BE/application/utils/attendance_utils.py": "14176dd427ee9faa8fe2d942da1053dab99dc18b3e65e41f9100e1c79f3b3938",
   "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
   "BE/application/serializers/carnet_serializers.py": "50c7c38f09e9f60146c418c1816172dfb66310106a25faac6583fc2633146b7c",
   "BE/application/models/courses_models.py": "6a9cd0b923ab5b6a9dd120bcb7f81c1dac30914657fcd14b3fdb9e9c427d78c6",

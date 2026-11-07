@@ -12,7 +12,7 @@ const reviewed = {
   "UI/src/routes/association/course/instructor/modals/EditModal.svelte": "002185a9e3f93ba4e6260b0f529f7e153494aac6df71d829f6d2320f319b48dc",
   "UI/src/routes/association/course/instructor/info/Instructor.svelte": "1501b33bbe3fc27b751a3d0450038c6b47e78dd8e1c0b781fc43ca1a394fe6a5",
   "UI/src/routes/association/course/instructor/info/modals/AddEditModal.svelte": "19133f13c71dbcf769df0371d32248cff54c7fa2e4291d42c5c28969bd1152e9",
-  "BE/application/views/instructor_views.py": "8d123d493be57054c23f4700132351da4364b57e40721f90612b747157abaa19",
+  "BE/application/views/instructor_views.py": "111d01ab43c07ef99fc95bc6214d1702b4b5511b2f84d52edcaf2896e893bc6c",
   "BE/application/serializers/user_serializers.py": "b6c13df61ad39bf22722f3fc69659129fd0cedbbda588e7cbc727989b00e07f6",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",

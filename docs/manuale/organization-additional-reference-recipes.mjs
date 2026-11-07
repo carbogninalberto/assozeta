@@ -22,7 +22,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
     "UI/src/routes/association/course/instructor/add/sections/Section1.svelte": "991fbfebdbf28eb862ce140436ee8444b3ec16dd2c187bad61cce31600b23a28",
     "UI/src/routes/association/course/instructor/modals/EditModal.svelte": "002185a9e3f93ba4e6260b0f529f7e153494aac6df71d829f6d2320f319b48dc",
-    "BE/application/views/instructor_views.py": "8d123d493be57054c23f4700132351da4364b57e40721f90612b747157abaa19",
+    "BE/application/views/instructor_views.py": "111d01ab43c07ef99fc95bc6214d1702b4b5511b2f84d52edcaf2896e893bc6c",
     "UI/src/routes/association/course/instructor/info/modals/AddEditModal.svelte": "19133f13c71dbcf769df0371d32248cff54c7fa2e4291d42c5c28969bd1152e9",
     "UI/src/routes/association/course/instructor/info/Instructor.svelte": "1501b33bbe3fc27b751a3d0450038c6b47e78dd8e1c0b781fc43ca1a394fe6a5",
     "BE/application/utils/instructors_utils.py": "6c333d73ce96a6bcaceda43015657fb57a23fb6b6937dcf49eefcff0936e73f9",
