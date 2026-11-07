@@ -171,7 +171,7 @@ def calendar_update(request, uid):
     course_attendance_registry = scoped_queryset(request, AttendanceRegistry.objects).filter(course=course).first()
 
     events_ids = [event['event_id'] for event in data['events']]
-    reminders = Reminders.objects.filter(event_id__in=events_ids)
+    reminders = Reminders.objects.filter(sport_association=sport_association, event_id__in=events_ids)
     # loop through events to update reminders
     for event in data['events']:
         current_reminder = reminders.filter(event_id=event['event_id']).first()
@@ -189,7 +189,7 @@ def calendar_update(request, uid):
             if 'extendedProps' in event.keys() and 'instructor' in event['extendedProps']:
                 try:
                     instructor_id = event['extendedProps']['instructor']['instructor_id']
-                    instructor = Instructor.objects.filter(instructor_id=instructor_id).first()
+                    instructor = Instructor.objects.filter(user=request.user, instructor_id=instructor_id).first()
                 except Exception as e:
                     logger.error(f"Error getting instructor: {e}")
             reminder = Reminders.objects.create(
@@ -225,7 +225,7 @@ def calendar_update(request, uid):
             if 'extendedProps' in event.keys() and 'instructor' in event['extendedProps']:
                 try:
                     instructor_id = event['extendedProps']['instructor']['instructor_id']
-                    instructor = Instructor.objects.filter(instructor_id=instructor_id).first()
+                    instructor = Instructor.objects.filter(user=request.user, instructor_id=instructor_id).first()
                 except Exception as e:
                     logger.error(f"Error getting instructor: {e}")
 
@@ -428,6 +428,7 @@ def attendees_update(request, uid, attendance_day_uid):
                 Q(course_subscription=course_subscription) |
                 Q(course_subscription__isnull=True),
                 subscription=course_subscription.subscription,
+                subscription__sport_association=sport_association,
                 disabled=False,
             ).order_by('-creation_date')
             carnet_found = False
@@ -472,6 +473,7 @@ def attendees_update(request, uid, attendance_day_uid):
                 Q(course_subscription=course_subscription) |
                 Q(course_subscription__isnull=True),
                 subscription=course_subscription.subscription,
+                subscription__sport_association=sport_association,
                 disabled=False,
             ).order_by('-creation_date')
             carnet = None
@@ -621,6 +623,8 @@ def subscription_attendance(request, uid):
     else:
         sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
         subscription = scoped_queryset(request, Subscription.objects).filter(sport_association=sport_association, subscription_id=uid).first()
+    if subscription is None:
+        return Response({"msg": "Iscrizione non trovata."}, status=status.HTTP_404_NOT_FOUND)
     # get course subscriptions for the current subscription
     if selected_course_id == 'all':
         course_subscriptions = scoped_queryset(request, CourseSubscription.objects.all_objects()).filter(subscription=subscription).select_related('subscription__associate')
@@ -698,6 +702,8 @@ def subscription_calendar(request, uid):
     else:
         sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
         subscription = scoped_queryset(request, Subscription.objects).filter(sport_association=sport_association, subscription_id=uid).first()
+    if subscription is None:
+        return Response({"msg": "Iscrizione non trovata."}, status=status.HTTP_404_NOT_FOUND)
     # get course subscriptions for the current subscription
     courses = scoped_queryset(request, CourseSubscription.objects).filter(subscription=subscription).values_list('course__course_id', flat=True)
     registries = scoped_queryset(request, AttendanceRegistry.objects).filter(course_id__in=courses)
