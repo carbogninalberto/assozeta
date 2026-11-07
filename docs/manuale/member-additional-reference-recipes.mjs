@@ -40,7 +40,7 @@ export const memberAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/Members/detail/sections/Medical.svelte": "79d036985cf8fd39eccb9885255b1ccfb9baa4dfa5c657a0bc3d0efcee07e150",
     "UI/src/routes/association/Members/detail/sections/modals/AddMedicalCertificate.svelte": "95803afa6d9e428067e18c4f560c5e70bffa01a57360f0ee8eac746bd2dcf3e8",
     "UI/src/routes/association/Members/detail/sections/modals/medicalCertificateUpload.js": "8b78ae7aaf29c309c5eaf6d8f2ed00078a085beba54ef7316675a585f2a83f21",
-    "BE/application/views/statistic_views.py": "9a97f4e8fac492aff785b6636165a4583510473d057616fd9f2f1e0a9b0693de",
+    "BE/application/views/statistic_views.py": "9d528567f5bd542ec80ce77c2dc4569aea5f61665aaa4584bf7080ffdcc87a0a",
     "UI/src/components/widgets/ExpiringMedicalCertificates.svelte": "92b85d8bcd047a6fd097096a0b455244540408feddaac6eaff318477ad5e0592",
     "UI/src/components/widgets/ExpiredMedicalCertificates.svelte": "9ef5000617081a07a048cc6a502b283fca7b860f6385404c6b3ee4ac21709615",
     "UI/src/routes/dashboard/Dashboard.svelte": "d5cd8e48b8fb6f07c310735ae87169911c145daae237a5e84ec21d1876e41f9a",

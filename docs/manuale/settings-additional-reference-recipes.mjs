@@ -15,7 +15,7 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "BE/application/tasks.py": "869fe4be173a93e015be7166c72e0b08a0d4b1140b00cf8510926e58087aba70",
   "BE/core/celery.py": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352",
   "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
-  "BE/application/views/course_views.py": "5d32e168d9af6100c280b0d0043ca381742f7c2cc300e94f4edd1fd89cb9fc98",
+  "BE/application/views/course_views.py": "79bfbd622601a9d17c811c76cc99e2a4b1ac9d38a05a67b190e0b233c2672baa",
   "BE/application/utils/subscriptions_utils.py": "01555509691b282190e09a21771aa920c19a677c63823a01ab7a73602273554e",
   "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
   "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",

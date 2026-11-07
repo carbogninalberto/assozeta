@@ -29,7 +29,7 @@ const reviewed = {
   "UI/src/routes/association/course/overview/OverviewCourse.svelte": "5aed27d46e9ce99c75452e3cd766db412daaaeca7ac2084a20581358195c06ce",
   "UI/src/routes/association/course/overview/components/Calendar.svelte": "5cdbdd7e450b7ccbcc87eee2349be0b156e9bdb2b79f79f750da99656fb6224e",
   "UI/src/routes/calendar/SharedCalendar.svelte": "e227f0c66c62b3fe02e546509939453fc7bd8dbe5e4e5cd07fb99affdc0e5a42",
-  "BE/application/views/attendee_views.py": "fb716a7de4aa8dc5a8db52ca6f6ec05494be54bc00d8358a49ff3e425d7625e3",
+  "BE/application/views/attendee_views.py": "548ff6f65abfcb751ada25c7cd054f7eb8939fa7f2cb44bca6d5d5e4c4bafe0e",
   "BE/application/utils/global_calendar.py": "eac4ba8a31d10419af31d18fd36d972ba85a6d3f7251193a56aeda97ec717b47",
   "BE/application/models/attendee_models.py": "5f7e748de06d17bd2d8eb1bbfa4c9d69eb9d3af6d6ec63bfd0e919b3af5f58f4",
   "UI/src/routes/profile/sections/Integrations.svelte": "939a23d1aa9a1e73f98387275cee630504a8c863fa2e901d5ad683fe470ad6ae",

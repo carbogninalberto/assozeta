@@ -24,10 +24,10 @@ const reviewed = {
   "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
   "BE/application/urls.py": "b475e7ed8c26a891854c4021d7308aefb192d2a26df8b3ee916a33f88e7cc359",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-  "BE/application/views/course_views.py": "5d32e168d9af6100c280b0d0043ca381742f7c2cc300e94f4edd1fd89cb9fc98",
+  "BE/application/views/course_views.py": "79bfbd622601a9d17c811c76cc99e2a4b1ac9d38a05a67b190e0b233c2672baa",
   // Reviewed: documented carnet workflows are unchanged.
   "BE/application/views/carnet_views.py": "709e3ae74f5ceeeb682899b7c95e371d573a94ebc5c4bce19fa3a485d017c0c6",
-  "BE/application/views/attendee_views.py": "fb716a7de4aa8dc5a8db52ca6f6ec05494be54bc00d8358a49ff3e425d7625e3",
+  "BE/application/views/attendee_views.py": "548ff6f65abfcb751ada25c7cd054f7eb8939fa7f2cb44bca6d5d5e4c4bafe0e",
   "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
   "BE/application/utils/subscriptions_utils.py": "01555509691b282190e09a21771aa920c19a677c63823a01ab7a73602273554e",
   "BE/application/utils/attendance_utils.py": "f86f4c8294a50d56c5fe5b26582810acec9fcd0cd5fbd192a4ff511d72bb0a22",
