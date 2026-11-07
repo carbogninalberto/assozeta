@@ -340,6 +340,13 @@ func run() (runErr error) {
 	e.Any("/course/:uid/calendar/update", courseCalendarHandler.CalendarUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/calendar/events", courseCalendarHandler.Events, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/calendar/events/update", courseCalendarHandler.EventsUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseWritesHandler := handler.NewCourseWritesHandler(service.NewCourseWrites(repository.NewCourseWrites(db), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/course/add", courseWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/update", courseWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/delete", courseWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/overview/:uid_subscription/update", courseWritesHandler.OverviewUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/overview/:uid_subscription/delete", courseWritesHandler.OverviewDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	modulesReadsHandler := handler.NewModulesReadsHandler(service.NewModulesReads(repository.NewModulesReads(db),
 		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
