@@ -359,6 +359,13 @@ func run() (runErr error) {
 	e.Any("/course/:uid/attendees/:attendance_day_uid/update", courseAttendanceHandler.AttendeesUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/attendance", courseAttendanceHandler.SubscriptionAttendance, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/attendance/:uid/mark", courseAttendanceHandler.Mark, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseWritesHandler := handler.NewCourseWritesHandler(service.NewCourseWrites(repository.NewCourseWrites(db), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/course/add", courseWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/update", courseWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/delete", courseWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/overview/:uid_subscription/update", courseWritesHandler.OverviewUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/overview/:uid_subscription/delete", courseWritesHandler.OverviewDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	modulesReadsHandler := handler.NewModulesReadsHandler(service.NewModulesReads(repository.NewModulesReads(db),
 		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
