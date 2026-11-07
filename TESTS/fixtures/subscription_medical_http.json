@@ -1,0 +1,4219 @@
+{
+ "matrix_version": 1,
+ "scope": "Subscription medical appointments and certificates authored sequence with effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "a1": {
+   "id": "a1000000-0000-4000-8000-000000593001",
+   "token": "a1000000-0000-4000-8000-000000593002",
+   "filename": "a1.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "a2": {
+   "id": "a1000000-0000-4000-8000-000000593003",
+   "token": "a1000000-0000-4000-8000-000000593004",
+   "filename": "a2.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "a3": {
+   "id": "a1000000-0000-4000-8000-000000593005",
+   "token": "a1000000-0000-4000-8000-000000593006",
+   "filename": "a3.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "bad": {
+   "id": "a1000000-0000-4000-8000-000000593007",
+   "token": "a1000000-0000-4000-8000-000000593008",
+   "filename": "bad.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000593009",
+   "token": "a1000000-0000-4000-8000-000000593010",
+   "filename": "abroad.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000593011",
+   "token": "a1000000-0000-4000-8000-000000593012",
+   "filename": "deleted.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000593013",
+   "token": "a1000000-0000-4000-8000-000000593014",
+   "filename": "grouped.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "del1": {
+   "id": "a1000000-0000-4000-8000-000000593015",
+   "token": "a1000000-0000-4000-8000-000000593016",
+   "filename": "del1.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "del2": {
+   "id": "a1000000-0000-4000-8000-000000593017",
+   "token": "a1000000-0000-4000-8000-000000593018",
+   "filename": "del2.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "del3": {
+   "id": "a1000000-0000-4000-8000-000000593019",
+   "token": "a1000000-0000-4000-8000-000000593020",
+   "filename": "del3.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "cert_remove": {
+   "id": "a1000000-0000-4000-8000-000000593021",
+   "token": "a1000000-0000-4000-8000-000000593022",
+   "filename": "cert_remove.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "cert_shared": {
+   "id": "a1000000-0000-4000-8000-000000593023",
+   "token": "a1000000-0000-4000-8000-000000593024",
+   "filename": "cert_shared.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  },
+  "cert_copy": {
+   "id": "a1000000-0000-4000-8000-000000593025",
+   "token": "a1000000-0000-4000-8000-000000593026",
+   "filename": "cert_copy.pdf",
+   "created": "2026-02-01T08:00:00Z"
+  }
+ },
+ "certificates": {
+  "main": {
+   "id": "a1000000-0000-4000-8000-000000593027",
+   "user": "owner",
+   "expiration": "2026-06-30",
+   "notes": "Visita annuale",
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "shared": {
+   "id": "a1000000-0000-4000-8000-000000593028",
+   "user": "owner",
+   "expiration": "2026-07-31",
+   "notes": "Condiviso",
+   "competitive": true,
+   "document": "cert_copy",
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "drafted": {
+   "id": "a1000000-0000-4000-8000-000000593029",
+   "user": "owner",
+   "expiration": "2026-08-31",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000593030",
+   "user": "athlete",
+   "expiration": "2026-05-31",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000593031",
+   "user": "owner",
+   "expiration": "2026-04-30",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000593032",
+   "user": "owner",
+   "expiration": "2026-03-31",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000593033",
+   "user": "foreign_owner",
+   "expiration": "2026-09-30",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "scoped": {
+   "id": "a1000000-0000-4000-8000-000000593034",
+   "user": "owner",
+   "expiration": "2026-10-31",
+   "notes": "Isolato",
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "expire": {
+   "id": "a1000000-0000-4000-8000-000000593035",
+   "user": "owner",
+   "expiration": "2026-11-30",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "remove": {
+   "id": "a1000000-0000-4000-8000-000000593036",
+   "user": "owner",
+   "expiration": "2026-12-31",
+   "notes": "Da rimuovere",
+   "competitive": false,
+   "document": "cert_remove",
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "keepdoc": {
+   "id": "a1000000-0000-4000-8000-000000593037",
+   "user": "owner",
+   "expiration": "2026-12-30",
+   "notes": null,
+   "competitive": false,
+   "document": "cert_shared",
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "twice": {
+   "id": "a1000000-0000-4000-8000-000000593038",
+   "user": "owner",
+   "expiration": "2026-12-29",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "null_shared": {
+   "id": "a1000000-0000-4000-8000-000000593039",
+   "user": "owner",
+   "expiration": "2026-12-28",
+   "notes": "Copia",
+   "competitive": false,
+   "document": "cert_copy",
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "scoped_null": {
+   "id": "a1000000-0000-4000-8000-000000593040",
+   "user": "owner",
+   "expiration": "2026-12-27",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "owned": {
+   "id": "a1000000-0000-4000-8000-000000593041",
+   "user": "owner",
+   "expiration": "2026-02-28",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "athlete_owned": {
+   "id": "a1000000-0000-4000-8000-000000593042",
+   "user": "athlete",
+   "expiration": "2026-02-27",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "owned_shared": {
+   "id": "a1000000-0000-4000-8000-000000593043",
+   "user": "owner",
+   "expiration": "2026-02-26",
+   "notes": "Bozza",
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "copy_fail": {
+   "id": "a1000000-0000-4000-8000-000000593044",
+   "user": "owner",
+   "expiration": "2026-02-25",
+   "notes": null,
+   "competitive": false,
+   "document": null,
+   "created": "2026-01-10T09:00:00Z"
+  }
+ },
+ "subscriptions": {
+  "main": {
+   "id": "a1000000-0000-4000-8000-000000593045",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "main",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "empty": {
+   "id": "a1000000-0000-4000-8000-000000593046",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "badregion": {
+   "id": "a1000000-0000-4000-8000-000000593047",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000593048",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": "abroad",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000593049",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "deleted",
+   "deleted": true,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000593050",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "grouped",
+   "deleted": false,
+   "group": "own_group",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "other": {
+   "id": "a1000000-0000-4000-8000-000000593051",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "del": {
+   "id": "a1000000-0000-4000-8000-000000593052",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "shared": {
+   "id": "a1000000-0000-4000-8000-000000593053",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "shared",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "abroad_shared": {
+   "id": "a1000000-0000-4000-8000-000000593054",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": "shared",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "drafted": {
+   "id": "a1000000-0000-4000-8000-000000593055",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "drafted",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000593056",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "medical": "athlete",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "scoped": {
+   "id": "a1000000-0000-4000-8000-000000593057",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "scoped",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "abroad_scoped": {
+   "id": "a1000000-0000-4000-8000-000000593058",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": "scoped",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "expire": {
+   "id": "a1000000-0000-4000-8000-000000593059",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "expire",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "remove": {
+   "id": "a1000000-0000-4000-8000-000000593060",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "remove",
+   "deleted": false,
+   "group": null,
+   "start": null,
+   "end": null,
+   "created": "2026-03-15T10:00:00Z"
+  },
+  "keepdoc": {
+   "id": "a1000000-0000-4000-8000-000000593061",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "keepdoc",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "twice_a": {
+   "id": "a1000000-0000-4000-8000-000000593062",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "twice",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "twice_b": {
+   "id": "a1000000-0000-4000-8000-000000593063",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "twice",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "null_copy": {
+   "id": "a1000000-0000-4000-8000-000000593064",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "null_shared",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "abroad_null": {
+   "id": "a1000000-0000-4000-8000-000000593065",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": "null_shared",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "scoped_null": {
+   "id": "a1000000-0000-4000-8000-000000593066",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "scoped_null",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "abroad_drafted": {
+   "id": "a1000000-0000-4000-8000-000000593067",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": "owned_shared",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "copy_fail": {
+   "id": "a1000000-0000-4000-8000-000000593068",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "copy_fail",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "abroad_copy_fail": {
+   "id": "a1000000-0000-4000-8000-000000593069",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": "copy_fail",
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  }
+ },
+ "appointments": {
+  "a1": {
+   "id": "a1000000-0000-4000-8000-000000593070",
+   "subscription": "main",
+   "region": "agonistica",
+   "document": "a1",
+   "date": "2026-03-10",
+   "notes": "Prima visita",
+   "sport": "Calcio",
+   "meta": {
+    "k": 1,
+    "b": [
+     true,
+     null
+    ]
+   },
+   "address": "Via Roma 1",
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "a2": {
+   "id": "a1000000-0000-4000-8000-000000593071",
+   "subscription": "main",
+   "region": "non-agonistica-sicilia",
+   "document": "a2",
+   "date": "2026-05-01",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-04-01T08:30:00.123456Z"
+  },
+  "a3": {
+   "id": "a1000000-0000-4000-8000-000000593072",
+   "subscription": "main",
+   "region": "agonistica-piemonte-biella",
+   "document": "a3",
+   "date": null,
+   "notes": "",
+   "sport": "Nuoto è",
+   "meta": {},
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "bad": {
+   "id": "a1000000-0000-4000-8000-000000593073",
+   "subscription": "badregion",
+   "region": "sconosciuta",
+   "document": "bad",
+   "date": "2026-01-05",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000593074",
+   "subscription": "abroad",
+   "region": "agonistica",
+   "document": "abroad",
+   "date": "2026-02-05",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000593075",
+   "subscription": "deleted",
+   "region": "agonistica-toscana",
+   "document": "deleted",
+   "date": "2026-02-06",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000593076",
+   "subscription": "grouped",
+   "region": "non-agonistica",
+   "document": "grouped",
+   "date": "2026-02-07",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "keepdoc": {
+   "id": "a1000000-0000-4000-8000-000000593077",
+   "subscription": "other",
+   "region": "agonistica",
+   "document": "cert_shared",
+   "date": "2026-02-08",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "del1": {
+   "id": "a1000000-0000-4000-8000-000000593078",
+   "subscription": "del",
+   "region": "agonistica-lombardia",
+   "document": "del1",
+   "date": "2026-02-09",
+   "notes": null,
+   "sport": null,
+   "meta": {
+    "x": "y"
+   },
+   "address": "Via Po 2",
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "del2": {
+   "id": "a1000000-0000-4000-8000-000000593079",
+   "subscription": "del",
+   "region": "agonistica-sicilia",
+   "document": "del2",
+   "date": "2026-02-10",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "del3": {
+   "id": "a1000000-0000-4000-8000-000000593080",
+   "subscription": "del",
+   "region": "non-agonistica-emilia-romagna",
+   "document": "del3",
+   "date": null,
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  }
+ },
+ "drafts": {
+  "none": {
+   "id": "a1000000-0000-4000-8000-000000593081",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {
+     "first_name": "Ada"
+    }
+   },
+   "valid": false
+  },
+  "linked": {
+   "id": "a1000000-0000-4000-8000-000000593082",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {
+     "first_name": "Bea"
+    },
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000593041",
+     "filename": "c.pdf",
+     "certificate_expring_date": "28/02/2026"
+    }
+   },
+   "valid": true
+  },
+  "other_user": {
+   "id": "a1000000-0000-4000-8000-000000593083",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000593042",
+     "filename": null,
+     "certificate_expring_date": null
+    }
+   },
+   "valid": false
+  },
+  "draft_shared": {
+   "id": "a1000000-0000-4000-8000-000000593084",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000593043",
+     "filename": "b.pdf",
+     "certificate_expring_date": null
+    }
+   },
+   "valid": false
+  },
+  "no_id": {
+   "id": "a1000000-0000-4000-8000-000000593085",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "medical_certificate": {
+     "filename": "x.pdf"
+    }
+   },
+   "valid": false
+  },
+  "bad_id": {
+   "id": "a1000000-0000-4000-8000-000000593086",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "medical_certificate": {
+     "medical_id": "abc",
+     "filename": null,
+     "certificate_expring_date": null
+    }
+   },
+   "valid": false
+  },
+  "list": {
+   "id": "a1000000-0000-4000-8000-000000593087",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": [
+    1,
+    2
+   ],
+   "valid": false
+  },
+  "mc_none": {
+   "id": "a1000000-0000-4000-8000-000000593088",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "medical_certificate": null
+   },
+   "valid": false
+  },
+  "bad_date": {
+   "id": "a1000000-0000-4000-8000-000000593089",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {},
+   "valid": false
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000593090",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "data": {
+    "medical_certificate": {
+     "medical_id": "a1000000-0000-4000-8000-000000593029",
+     "filename": null,
+     "certificate_expring_date": null
+    }
+   },
+   "valid": false
+  }
+ },
+ "cases": [
+  {
+   "name": "subscription-medical-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593072",
+      "document_token": "a1000000-0000-4000-8000-000000593006",
+      "appointment_region": "Visita Agonistica Piemonte Biella",
+      "region": "agonistica-piemonte-biella",
+      "date": null,
+      "notes": "",
+      "sport": "Nuoto è",
+      "meta": {},
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593005"
+     },
+     "1": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593071",
+      "document_token": "a1000000-0000-4000-8000-000000593004",
+      "appointment_region": "Visita Non Agonistica Sicilia",
+      "region": "non-agonistica-sicilia",
+      "date": "2026-05-01",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-04-01T08:30:00.123456Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593003"
+     },
+     "2": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593070",
+      "document_token": "a1000000-0000-4000-8000-000000593002",
+      "appointment_region": "Visita Agonistica",
+      "region": "agonistica",
+      "date": "2026-03-10",
+      "notes": "Prima visita",
+      "sport": "Calcio",
+      "meta": {
+       "k": 1,
+       "b": [
+        true,
+        null
+       ]
+      },
+      "address": "Via Roma 1",
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593072",
+      "document_token": "a1000000-0000-4000-8000-000000593006",
+      "appointment_region": "Visita Agonistica Piemonte Biella",
+      "region": "agonistica-piemonte-biella",
+      "date": null,
+      "notes": "",
+      "sport": "Nuoto è",
+      "meta": {},
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593005"
+     },
+     "1": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593071",
+      "document_token": "a1000000-0000-4000-8000-000000593004",
+      "appointment_region": "Visita Non Agonistica Sicilia",
+      "region": "non-agonistica-sicilia",
+      "date": "2026-05-01",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-04-01T08:30:00.123456Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593003"
+     },
+     "2": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593070",
+      "document_token": "a1000000-0000-4000-8000-000000593002",
+      "appointment_region": "Visita Agonistica",
+      "region": "agonistica",
+      "date": "2026-03-10",
+      "notes": "Prima visita",
+      "sport": "Calcio",
+      "meta": {
+       "k": 1,
+       "b": [
+        true,
+        null
+       ]
+      },
+      "address": "Via Roma 1",
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593072",
+      "document_token": "a1000000-0000-4000-8000-000000593006",
+      "appointment_region": "Visita Agonistica Piemonte Biella",
+      "region": "agonistica-piemonte-biella",
+      "date": null,
+      "notes": "",
+      "sport": "Nuoto è",
+      "meta": {},
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593005"
+     },
+     "1": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593071",
+      "document_token": "a1000000-0000-4000-8000-000000593004",
+      "appointment_region": "Visita Non Agonistica Sicilia",
+      "region": "non-agonistica-sicilia",
+      "date": "2026-05-01",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-04-01T08:30:00.123456Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593003"
+     },
+     "2": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593070",
+      "document_token": "a1000000-0000-4000-8000-000000593002",
+      "appointment_region": "Visita Agonistica",
+      "region": "agonistica",
+      "date": "2026-03-10",
+      "notes": "Prima visita",
+      "sport": "Calcio",
+      "meta": {
+       "k": 1,
+       "b": [
+        true,
+        null
+       ]
+      },
+      "address": "Via Roma 1",
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-owner-full-session",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593072",
+      "document_token": "a1000000-0000-4000-8000-000000593006",
+      "appointment_region": "Visita Agonistica Piemonte Biella",
+      "region": "agonistica-piemonte-biella",
+      "date": null,
+      "notes": "",
+      "sport": "Nuoto è",
+      "meta": {},
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593005"
+     },
+     "1": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593071",
+      "document_token": "a1000000-0000-4000-8000-000000593004",
+      "appointment_region": "Visita Non Agonistica Sicilia",
+      "region": "non-agonistica-sicilia",
+      "date": "2026-05-01",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-04-01T08:30:00.123456Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593003"
+     },
+     "2": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593070",
+      "document_token": "a1000000-0000-4000-8000-000000593002",
+      "appointment_region": "Visita Agonistica",
+      "region": "agonistica",
+      "date": "2026-03-10",
+      "notes": "Prima visita",
+      "sport": "Calcio",
+      "meta": {
+       "k": 1,
+       "b": [
+        true,
+        null
+       ]
+      },
+      "address": "Via Roma 1",
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593046/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {}
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-deleted-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593049/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593075",
+      "document_token": "a1000000-0000-4000-8000-000000593012",
+      "appointment_region": "Visita Agonistica Toscana",
+      "region": "agonistica-toscana",
+      "date": "2026-02-06",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593049",
+      "document": "a1000000-0000-4000-8000-000000593011"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-grouped-own-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593050/medical-appointments/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593076",
+      "document_token": "a1000000-0000-4000-8000-000000593014",
+      "appointment_region": "Visita Non Agonistica",
+      "region": "non-agonistica",
+      "date": "2026-02-07",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593050",
+      "document": "a1000000-0000-4000-8000-000000593013"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-grouped-foreign-group-hides",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593050/medical-appointments/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "data": "no subscription found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-grouped-malformed-group-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593050/medical-appointments/list",
+   "headers": {
+    "X-Group-Id": "abc"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593076",
+      "document_token": "a1000000-0000-4000-8000-000000593014",
+      "appointment_region": "Visita Non Agonistica",
+      "region": "non-agonistica",
+      "date": "2026-02-07",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593050",
+      "document": "a1000000-0000-4000-8000-000000593013"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-foreign-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593048/medical-appointments/list",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no subscription found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593048/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593074",
+      "document_token": "a1000000-0000-4000-8000-000000593010",
+      "appointment_region": "Visita Agonistica",
+      "region": "agonistica",
+      "date": "2026-02-05",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593048",
+      "document": "a1000000-0000-4000-8000-000000593009"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000599998/medical-appointments/list",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no subscription found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-unknown-region-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593047/medical-appointments/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-malformed-uid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/abc/medical-appointments/list",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-braced-uid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/{a1000000-0000-4000-8000-000000593045}/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593072",
+      "document_token": "a1000000-0000-4000-8000-000000593006",
+      "appointment_region": "Visita Agonistica Piemonte Biella",
+      "region": "agonistica-piemonte-biella",
+      "date": null,
+      "notes": "",
+      "sport": "Nuoto è",
+      "meta": {},
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593005"
+     },
+     "1": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593071",
+      "document_token": "a1000000-0000-4000-8000-000000593004",
+      "appointment_region": "Visita Non Agonistica Sicilia",
+      "region": "non-agonistica-sicilia",
+      "date": "2026-05-01",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-04-01T08:30:00.123456Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593003"
+     },
+     "2": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593070",
+      "document_token": "a1000000-0000-4000-8000-000000593002",
+      "appointment_region": "Visita Agonistica",
+      "region": "agonistica",
+      "date": "2026-03-10",
+      "notes": "Prima visita",
+      "sport": "Calcio",
+      "meta": {
+       "k": 1,
+       "b": [
+        true,
+        null
+       ]
+      },
+      "address": "Via Roma 1",
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593045",
+      "document": "a1000000-0000-4000-8000-000000593001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-malformed-uid-before-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/abc/medical-appointments/list",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593056/medical-appointments/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-deleted-association-owner-server-error",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-list-restricted-before-method",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Medical Appointments List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-malformed-uid",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/abc/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-malformed-appointment",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000599998/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no medical appointment found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-other-subscription-path",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no medical appointment found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-foreign",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593048/medical-appointments/a1000000-0000-4000-8000-000000593074/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no medical appointment found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-athlete-denied",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Medical Appointments Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "appointments": [
+     "del1"
+    ],
+    "index": true
+   }
+  },
+  {
+   "name": "subscription-medical-delete-again",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593078/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no medical appointment found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-delete-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593079/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "full_collaborator",
+    "appointments": [
+     "del2"
+    ],
+    "index": false
+   }
+  },
+  {
+   "name": "subscription-medical-delete-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593052/medical-appointments/a1000000-0000-4000-8000-000000593080/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "admin",
+    "appointments": [
+     "del3"
+    ],
+    "index": true
+   }
+  },
+  {
+   "name": "subscription-medical-delete-deleted-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593049/medical-appointments/a1000000-0000-4000-8000-000000593075/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "appointments": [
+     "deleted"
+    ],
+    "index": true
+   }
+  },
+  {
+   "name": "subscription-medical-delete-grouped-ignores-group-header",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593050/medical-appointments/a1000000-0000-4000-8000-000000593076/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "appointments": [
+     "grouped"
+    ],
+    "index": true
+   }
+  },
+  {
+   "name": "subscription-medical-edit-malformed-uid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/abc/medical-certificate/edit",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-malformed-json-before-lookup",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000599998/medical-certificate/edit",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{bad",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-medical-edit-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000599998/medical-certificate/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-foreign",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593048/medical-certificate/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-draft-uid-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593081/medical-certificate/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-without-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593046/medical-certificate/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Medical certificate not found"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-without-certificate-null-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593046/medical-certificate/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Medical certificate not found"
+   },
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-medical-edit-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-deleted-association-owner",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-athlete-other-user",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-grouped-foreign-group-hides",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593050/medical-certificate/edit",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-edit-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Medical Certificate Edit",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-edit-empty-body-no-change",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-edit-notes",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "main",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "Visita annuale",
+        "Nuove note è"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "main": {
+      "notes": "Nuove note è"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": "Nuove note è"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-same-values-no-audit",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": "Nuove note è",
+    "competitive_medical_certificate": false
+   }
+  },
+  {
+   "name": "subscription-medical-edit-competitive",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "main",
+      "action": 1,
+      "changes": {
+       "competitive_medical_certificate": [
+        "False",
+        "True"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "main": {
+      "notes": "Nuove note è",
+      "competitive_medical_certificate": true
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "competitive_medical_certificate": true,
+    "ignored": 1
+   }
+  },
+  {
+   "name": "subscription-medical-edit-competitive-non-boolean-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "competitive_medical_certificate": 0
+   }
+  },
+  {
+   "name": "subscription-medical-edit-notes-number",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "full_collaborator",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "main",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "Nuove note è",
+        "12.5"
+       ],
+       "competitive_medical_certificate": [
+        "True",
+        "False"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "main": {
+      "notes": "12.5",
+      "competitive_medical_certificate": false
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": 12.5,
+    "competitive_medical_certificate": false
+   }
+  },
+  {
+   "name": "subscription-medical-edit-notes-dict",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "main",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "12.5",
+        "{'a': [1, None, True], 'b': 'è'}"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "main": {
+      "notes": "{'a': [1, None, True], 'b': 'è'}"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": {
+     "a": [
+      1,
+      null,
+      true
+     ],
+     "b": "è"
+    }
+   }
+  },
+  {
+   "name": "subscription-medical-edit-notes-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "main",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "{'a': [1, None, True], 'b': 'è'}",
+        "None"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "main": {
+      "notes": null
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": null
+   }
+  },
+  {
+   "name": "subscription-medical-edit-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "main",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        "Modulo"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "main": {
+      "notes": "Modulo"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "raw_body": "notes=Primo&notes=Modulo&competitive_medical_certificate=true",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-medical-edit-list-body-without-keys",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": [
+    "x",
+    1
+   ]
+  },
+  {
+   "name": "subscription-medical-edit-list-body-with-notes-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "notes"
+   ]
+  },
+  {
+   "name": "subscription-medical-edit-string-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "\"my notes\"",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-medical-edit-string-body-without-keys",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "raw_body": "\"x\"",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-medical-edit-null-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-medical-edit-number-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "3",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-medical-edit-nul-notes-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "notes": "a\u0000b"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593045/medical-certificate/edit",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "admin",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "main",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "Modulo",
+        "Admin"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "main": {
+      "notes": "Admin"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": "Admin"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-athlete-own-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593056/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "athlete",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "athlete",
+      "action": 1,
+      "changes": {
+       "competitive_medical_certificate": [
+        "False",
+        "True"
+       ],
+       "notes": [
+        "None",
+        "Atleta"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "athlete": {
+      "notes": "Atleta",
+      "competitive_medical_certificate": true
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": "Atleta",
+    "competitive_medical_certificate": true
+   }
+  },
+  {
+   "name": "subscription-medical-edit-deleted-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593049/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "deleted",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        "Eliminata"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "deleted": {
+      "notes": "Eliminata"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": "Eliminata"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-grouped-own-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593050/medical-certificate/edit",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "grouped",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        "Gruppo"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "grouped": {
+      "notes": "Gruppo"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": "Gruppo"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-shared-certificate-copied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593053/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor",
+      "copy_of": "shared"
+     },
+     {
+      "model": "Subscription",
+      "key": "shared",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593028",
+        "$new"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "Condiviso",
+        "Solo mio"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "shared": {
+      "medical_id": "$new"
+     }
+    },
+    "copy": {
+     "from": "shared",
+     "notes": "Solo mio"
+    },
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": "Solo mio"
+   }
+  },
+  {
+   "name": "subscription-medical-edit-draft-referenced-certificate-copied",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593055/medical-certificate/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "full_collaborator",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor",
+      "copy_of": "drafted"
+     },
+     {
+      "model": "Subscription",
+      "key": "drafted",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593029",
+        "$new"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "competitive_medical_certificate": [
+        "False",
+        "True"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "drafted": {
+      "medical_id": "$new"
+     }
+    },
+    "copy": {
+     "from": "drafted",
+     "competitive_medical_certificate": true
+    },
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "competitive_medical_certificate": true
+   }
+  },
+  {
+   "name": "subscription-medical-edit-scoped-session-isolates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593057/medical-certificate/edit",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate updated"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor",
+      "copy_of": "scoped"
+     },
+     {
+      "model": "Subscription",
+      "key": "scoped",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593034",
+        "$new"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "Isolato",
+        "Sessione"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "scoped": {
+      "medical_id": "$new"
+     }
+    },
+    "copy": {
+     "from": "scoped",
+     "notes": "Sessione"
+    },
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "notes": "Sessione"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-malformed-uid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/abc/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/01/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-unknown-before-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000599998/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "raw_body": "{bad",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-medical-expire-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{bad",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-medical-expire-foreign",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593048/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/01/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-foreign-draft",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593090/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/01/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/01/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-athlete-other-user",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/01/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-athlete-draft-not-found",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593081/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Subscription not found"
+   },
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/01/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-expire-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-expire-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-expire-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-expire-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-expire-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Medical Certificate Set Certificate Expiration",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-medical-expire-missing-key-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "date": "01/01/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "certificate_expiring_date"
+   ]
+  },
+  {
+   "name": "subscription-medical-expire-iso-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "2027-01-01"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-impossible-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "31/02/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-number-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": 1
+   }
+  },
+  {
+   "name": "subscription-medical-expire-empty-string-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": ""
+   }
+  },
+  {
+   "name": "subscription-medical-expire-set",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-09-15 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "expire",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "2026-11-30",
+        "2027-09-15 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "expire": {
+      "expiration_date": "2027-09-15"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "15/09/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-same-date-still-audited",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-09-15 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "full_collaborator",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "expire",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "2027-09-15",
+        "2027-09-15 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "15/09/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-short-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2028-02-01 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "expire",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "2027-09-15",
+        "2028-02-01 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "expire": {
+      "expiration_date": "2028-02-01"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "raw_body": "certificate_expiring_date=1/2/2028",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-medical-expire-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593059/medical-certificate/set-certificate-expiration",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2028-03-01 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "admin",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "expire",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "2028-02-01",
+        "2028-03-01 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "expire": {
+      "expiration_date": "2028-03-01"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "01/03/2028"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-athlete-own-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593056/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-05-31 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "athlete",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "athlete",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "2026-05-31",
+        "2027-05-31 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     }
+    ],
+    "certificates": {
+     "athlete": {
+      "expiration_date": "2027-05-31",
+      "notes": "Atleta",
+      "competitive_medical_certificate": true
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "31/05/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-shared-copy-then-bad-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593068/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor",
+      "copy_of": "copy_fail"
+     },
+     {
+      "model": "Subscription",
+      "key": "copy_fail",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593044",
+        "$new"
+       ]
+      },
+      "index": "own"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "copy_fail": {
+      "medical_id": "$new"
+     }
+    },
+    "copy": {
+     "from": "copy_fail"
+    },
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "x"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-null-removes-certificate-and-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593060/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate removed"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "Subscription",
+      "key": "remove",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593036",
+        "None"
+       ],
+       "start_date": [
+        "None",
+        "2026-01-01"
+       ],
+       "end_date": [
+        "None",
+        "2026-12-31"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "remove",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "actor"
+     },
+     {
+      "model": "Document",
+      "key": "cert_remove",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "remove": {
+      "medical_id": null,
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31"
+     }
+    },
+    "copy": null,
+    "created": null,
+    "removed": [
+     "remove"
+    ],
+    "documents_removed": [
+     "cert_remove"
+    ],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": null
+   }
+  },
+  {
+   "name": "subscription-medical-expire-null-keeps-referenced-document",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593061/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate removed"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "full_collaborator",
+    "audit": [
+     {
+      "model": "Subscription",
+      "key": "keepdoc",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593037",
+        "None"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "keepdoc",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "keepdoc": {
+      "medical_id": null
+     }
+    },
+    "copy": null,
+    "created": null,
+    "removed": [
+     "keepdoc"
+    ],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": null
+   }
+  },
+  {
+   "name": "subscription-medical-expire-null-detaches-other-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593062/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate removed"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "Subscription",
+      "key": "twice_a",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593038",
+        "None"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "twice",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "twice_a": {
+      "medical_id": null
+     }
+    },
+    "copy": null,
+    "created": null,
+    "removed": [
+     "twice"
+    ],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": [
+     "twice_b"
+    ]
+   },
+   "body": {
+    "certificate_expiring_date": null
+   }
+  },
+  {
+   "name": "subscription-medical-expire-null-foreign-shared-copy-removed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593064/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate removed"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor",
+      "copy_of": "null_shared"
+     },
+     {
+      "model": "Subscription",
+      "key": "null_copy",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593039",
+        "$new"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "Subscription",
+      "key": "null_copy",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "$new",
+        "None"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "null_copy": {
+      "medical_id": null
+     }
+    },
+    "copy": {
+     "from": "null_shared",
+     "removed": true
+    },
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": null
+   }
+  },
+  {
+   "name": "subscription-medical-expire-null-scoped-session-detaches-only",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593066/medical-certificate/set-certificate-expiration",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate removed"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "Subscription",
+      "key": "scoped_null",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000593040",
+        "None"
+       ]
+      },
+      "index": "own"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {
+     "scoped_null": {
+      "medical_id": null
+     }
+    },
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": null
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-creates-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593081/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-01-31 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "AssociateImportDraft",
+      "key": "none",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{\"associate\": {\"first_name\": \"Ada\"}}",
+        "{\"associate\": {\"first_name\": \"Ada\"}, \"medical_certificate\": {\"certificate_expring_date\": null, \"filename\": null, \"medical_id\": null}}"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "None",
+        "2027-01-31 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     },
+     {
+      "model": "AssociateImportDraft",
+      "key": "none",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{\"associate\": {\"first_name\": \"Ada\"}, \"medical_certificate\": {\"certificate_expring_date\": null, \"filename\": null, \"medical_id\": null}}",
+        "{\"associate\": {\"first_name\": \"Ada\"}, \"medical_certificate\": {\"certificate_expring_date\": \"31/01/2027\", \"filename\": null, \"medical_id\": \"$new\"}}"
+       ]
+      },
+      "index": "own"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": "2027-01-31"
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {
+     "none": {
+      "associate": {
+       "first_name": "Ada"
+      },
+      "medical_certificate": {
+       "medical_id": "$new",
+       "filename": null,
+       "certificate_expring_date": "31/01/2027"
+      }
+     }
+    },
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "31/01/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-linked-certificate",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593082/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-02-28 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "full_collaborator",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "owned",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "2026-02-28",
+        "2027-02-28 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     },
+     {
+      "model": "AssociateImportDraft",
+      "key": "linked",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{\"associate\": {\"first_name\": \"Bea\"}, \"medical_certificate\": {\"certificate_expring_date\": \"28/02/2026\", \"filename\": \"c.pdf\", \"medical_id\": \"a1000000-0000-4000-8000-000000593041\"}}",
+        "{\"associate\": {\"first_name\": \"Bea\"}, \"medical_certificate\": {\"certificate_expring_date\": \"28/02/2027\", \"filename\": \"c.pdf\", \"medical_id\": \"a1000000-0000-4000-8000-000000593041\"}}"
+       ]
+      },
+      "index": "own"
+     }
+    ],
+    "certificates": {
+     "owned": {
+      "expiration_date": "2027-02-28"
+     }
+    },
+    "subscriptions": {},
+    "copy": null,
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {
+     "linked": {
+      "associate": {
+       "first_name": "Bea"
+      },
+      "medical_certificate": {
+       "medical_id": "a1000000-0000-4000-8000-000000593041",
+       "filename": "c.pdf",
+       "certificate_expring_date": "28/02/2027"
+      }
+     }
+    },
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "28/02/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-other-uploader-new-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593083/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-03-31 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "None",
+        "2027-03-31 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     },
+     {
+      "model": "AssociateImportDraft",
+      "key": "other_user",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{\"medical_certificate\": {\"certificate_expring_date\": null, \"filename\": null, \"medical_id\": \"a1000000-0000-4000-8000-000000593042\"}}",
+        "{\"medical_certificate\": {\"certificate_expring_date\": \"31/03/2027\", \"filename\": null, \"medical_id\": \"$new\"}}"
+       ]
+      },
+      "index": "own"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": "2027-03-31"
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {
+     "other_user": {
+      "medical_certificate": {
+       "medical_id": "$new",
+       "filename": null,
+       "certificate_expring_date": "31/03/2027"
+      }
+     }
+    },
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "31/03/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-shared-certificate-copied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593084/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-04-30 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor",
+      "copy_of": "owned_shared"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "2026-02-26",
+        "2027-04-30 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     },
+     {
+      "model": "AssociateImportDraft",
+      "key": "draft_shared",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{\"medical_certificate\": {\"certificate_expring_date\": null, \"filename\": \"b.pdf\", \"medical_id\": \"a1000000-0000-4000-8000-000000593043\"}}",
+        "{\"medical_certificate\": {\"certificate_expring_date\": \"30/04/2027\", \"filename\": \"b.pdf\", \"medical_id\": \"$new\"}}"
+       ]
+      },
+      "index": "own"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": {
+     "from": "owned_shared",
+     "expiration_date": "2027-04-30"
+    },
+    "created": null,
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {
+     "draft_shared": {
+      "medical_certificate": {
+       "medical_id": "$new",
+       "filename": "b.pdf",
+       "certificate_expring_date": "30/04/2027"
+      }
+     }
+    },
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "30/04/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-without-id-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593085/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Medical certificate update with date 2027-05-01 00:00:00+00:00"
+   },
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "expiration_date": [
+        "None",
+        "2027-05-01 00:00:00+00:00"
+       ]
+      },
+      "index": "actor"
+     },
+     {
+      "model": "AssociateImportDraft",
+      "key": "no_id",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{\"medical_certificate\": {\"filename\": \"x.pdf\"}}",
+        "{\"medical_certificate\": {\"certificate_expring_date\": \"01/05/2027\", \"filename\": \"x.pdf\", \"medical_id\": \"$new\"}}"
+       ]
+      },
+      "index": "own"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": "2027-05-01"
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {
+     "no_id": {
+      "medical_certificate": {
+       "filename": "x.pdf",
+       "medical_id": "$new",
+       "certificate_expring_date": "01/05/2027"
+      }
+     }
+    },
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "01/05/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-malformed-certificate-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593086/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/05/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-list-data-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593087/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/05/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-null-certificate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593088/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "certificate_expiring_date": "01/05/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-missing-key-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593089/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-medical-expire-draft-bad-date-keeps-writes",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593089/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "AssociateImportDraft",
+      "key": "bad_date",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{}",
+        "{\"medical_certificate\": {\"certificate_expring_date\": null, \"filename\": null, \"medical_id\": null}}"
+       ]
+      },
+      "index": "own"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": null
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {
+     "bad_date": {
+      "medical_certificate": {
+       "medical_id": null,
+       "filename": null,
+       "certificate_expring_date": null
+      }
+     }
+    },
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": "31/02/2027"
+   }
+  },
+  {
+   "name": "subscription-medical-expire-draft-null-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593089/medical-certificate/set-certificate-expiration",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "write",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "MedicalCertificate",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "certificates": {},
+    "subscriptions": {},
+    "copy": null,
+    "created": {
+     "user": "owner",
+     "expiration": null
+    },
+    "removed": [],
+    "documents_removed": [],
+    "drafts": {},
+    "detached": []
+   },
+   "body": {
+    "certificate_expiring_date": null
+   }
+  }
+ ]
+}

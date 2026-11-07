@@ -323,6 +323,14 @@ func run() (runErr error) {
 	e.Any("/subscription/associates-draft/bulk-delete", associateDraftsHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/associates-draft/:uid/edit", associateDraftsHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/associates-draft/:uid/delete", associateDraftsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	subscriptionMedicalHandler := handler.NewSubscriptionMedicalHandler(service.NewSubscriptionMedical(repository.NewSubscriptionMedical(db), time.Now,
+		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/:uid/medical-appointments/list", subscriptionMedicalHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/medical-appointments/:medical_appointments_id/delete", subscriptionMedicalHandler.Delete,
+		middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/medical-certificate/edit", subscriptionMedicalHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/medical-certificate/set-certificate-expiration", subscriptionMedicalHandler.SetExpiration,
+		middleware.DjangoSessionAudit(sessionAuthentication))
 	courseSubscriptionsHandler := handler.NewCourseSubscriptionsHandler(service.NewCourseSubscriptions(repository.NewCourseSubscriptions(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/course-subscriptions/list", courseSubscriptionsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
