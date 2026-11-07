@@ -7960,25 +7960,77 @@
         "target": "course_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/delete",
+          "/api/v2/course/<uid>/delete",
+          "/api/course/<uid>/delete"
+        ],
+        "request": "no body",
+        "response": "200 {'data': {'msg': 'course deleted.'}}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 400 uuid error list; 404 {'msg': 'Course not found.'} (missing, deleted, group-hidden); 403 User not allowed. (other association); 500 for athletes, owners without an association and courses without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.courses.delete",
+        "resource_scope": "the owner's association; Course.objects (live, group-aware)",
+        "side_effects": "hard-deletes the course with its course subscriptions (all rows), installments, attendance registries and days, links and the unpaid payments deleted by the pre_delete signals; delete entries in the collector's order",
+        "transaction": "atomic (Collector.delete)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
+          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+        },
+        {
+          "revision": "committing change without the soft-delete filter in the live course lookup",
+          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+        }
+      ],
+      "notes": [
+        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/disable -> course_disable",
@@ -8266,25 +8318,77 @@
         "target": "course_overview_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/overview/<uid_subscription>/delete",
+          "/api/v2/course/<uid>/overview/<uid_subscription>/delete",
+          "/api/course/<uid>/overview/<uid_subscription>/delete"
+        ],
+        "request": "optional {'installments': [installment ids]}",
+        "response": "200 {'data': {'msg': 'associate deleted.'}}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry); 405 other methods; 400 uuid error lists; 403 User not allowed. (other association); 500 for athletes, a missing course or course subscription, malformed installment ids, and a save whose payment was deleted with an installment (after auditlog's entry)",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.courses.update",
+        "resource_scope": "the owner's association; Course.objects (live, group-aware); Subscription.objects; CourseSubscription.objects (live)",
+        "side_effects": "deletes the listed (or every unpaid) installment with its unpaid payment, then soft-deletes the course subscription (its live installments and the deleted save); all audited",
+        "transaction": "not atomic",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
+          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+        },
+        {
+          "revision": "committing change without the soft-delete filter in the live course lookup",
+          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+        }
+      ],
+      "notes": [
+        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/overview/<str:uid_subscription>/update -> course_overview_update",
@@ -8301,25 +8405,77 @@
         "target": "course_overview_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/overview/<uid_subscription>/update",
+          "/api/v2/course/<uid>/overview/<uid_subscription>/update",
+          "/api/course/<uid>/overview/<uid_subscription>/update"
+        ],
+        "request": "object with 'multi_payments' / 'one_fee_payment' (truthy) and 'all' (exactly true forces past events)",
+        "response": "200 {'data': {'msg': 'course subscription update.'}}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry); 405 other methods; 400 uuid error lists; 403 User not allowed. (owner of another course, athlete of another subscription); 500 without the live course subscription, and (after the writes) a past event without 'all'",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.courses.update",
+        "resource_scope": "CourseSubscription.objects (live) by course and subscription; the owner's association or, for athletes, the subscription's",
+        "side_effects": "drops unpaid or payment-less installments (and their payments), deletes an unpaid single payment, saves the course subscription, creates one payment and installment per payable event or the one-fee payment; all audited",
+        "transaction": "not atomic",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
+          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+        },
+        {
+          "revision": "committing change without the soft-delete filter in the live course lookup",
+          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+        }
+      ],
+      "notes": [
+        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/pin -> course_pin",
@@ -8414,25 +8570,77 @@
         "target": "course_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/update",
+          "/api/v2/course/<uid>/update",
+          "/api/course/<uid>/update"
+        ],
+        "request": "JSON or form object of raw course values (title, description, one_fee, fee, locations, multiple_quotes, events, billing fields, start_date, end_date)",
+        "response": "200 {'status': 'success'}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 400 ['badly formed hexadecimal UUID string']; 400 {'msg:': 'course not found.'}; 400 CourseEventsSerializer errors (after the locations were replaced); 500 for a non-object body, non-text title/description, malformed locations (after the clear) and calendar-invalid dates",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.courses.update",
+        "resource_scope": "Course.objects.filter(course_id=uid).first() (live, group-aware)",
+        "side_effects": "replaces the location links, saves the course (auditlog diff of str() values, indexed directly); a changed title rewrites matching live group-aware payments' meta strings and description (bulk_update, no audit)",
+        "transaction": "not atomic: location changes stay when a later step fails",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
+          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+        },
+        {
+          "revision": "committing change without the soft-delete filter in the live course lookup",
+          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+        }
+      ],
+      "notes": [
+        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/add -> course_add",
@@ -8449,25 +8657,77 @@
         "target": "course_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/add",
+          "/api/v2/course/add",
+          "/api/course/add"
+        ],
+        "request": "JSON {'new_course': CourseAddSerializer fields (+ optional 'locations' [{'course_location_id'}]), 'subscriptions': [subscription ids]}; exactly these two keys",
+        "response": "200 {'status': 'success'}",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 400 {'msg': 'validation errors.'} for other keys; 400 serializer field errors / {'msg:': 'not valid course information.', 'details': {'events': [...]}} / CourseEventsSerializer errors; 500 for athletes and owners without an association, a missing or null title/description, a list body, and (after the course exists) an unknown subscription or malformed location",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.courses.create",
+        "resource_scope": "SportAssociation.objects.get(user=request.user); Subscription.objects (group-aware); CourseLocation.objects",
+        "side_effects": "creates the course (create entry indexed through the actor, association save indexed through its changes), its location links, and per subscription a course subscription with a course-fee payment or one payment and installment per payable event; every create and save is audited",
+        "transaction": "not atomic (no ATOMIC_REQUESTS): work saved before a late error stays",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
+          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+        },
+        {
+          "revision": "committing change without the soft-delete filter in the live course lookup",
+          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+        }
+      ],
+      "notes": [
+        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/list -> course_list",
