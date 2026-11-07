@@ -573,9 +573,8 @@ def instructor_update(request, uid):
 
     data = request.data
 
-    # check if empty user
-    if not data.get('user'):
-        data['user'] = request.user.user_id
+    # the instructor stays with the association's owner
+    data['user'] = request.user.user_id
 
     # TODO: custom users must be implemented
 

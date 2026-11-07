@@ -623,13 +623,14 @@ def subscription_attendance(request, uid):
     else:
         sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
         subscription = scoped_queryset(request, Subscription.objects).filter(sport_association=sport_association, subscription_id=uid).first()
-    if subscription is None:
-        return Response({"msg": "Iscrizione non trovata."}, status=status.HTTP_404_NOT_FOUND)
     # get course subscriptions for the current subscription
     if selected_course_id == 'all':
         course_subscriptions = scoped_queryset(request, CourseSubscription.objects.all_objects()).filter(subscription=subscription).select_related('subscription__associate')
     else:
         course_subscriptions = scoped_queryset(request, CourseSubscription.objects.all_objects()).filter(subscription=subscription, course__course_id=selected_course_id).select_related('subscription__associate')
+    if subscription is None:
+        # a subscription the caller cannot see has no attendance
+        course_subscriptions = course_subscriptions.none()
     # get courses from course subscriptions
     courses = []
     courses_detailed = []
@@ -702,10 +703,11 @@ def subscription_calendar(request, uid):
     else:
         sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
         subscription = scoped_queryset(request, Subscription.objects).filter(sport_association=sport_association, subscription_id=uid).first()
-    if subscription is None:
-        return Response({"msg": "Iscrizione non trovata."}, status=status.HTTP_404_NOT_FOUND)
     # get course subscriptions for the current subscription
     courses = scoped_queryset(request, CourseSubscription.objects).filter(subscription=subscription).values_list('course__course_id', flat=True)
+    if subscription is None:
+        # a subscription the caller cannot see has no events
+        courses = courses.none()
     registries = scoped_queryset(request, AttendanceRegistry.objects).filter(course_id__in=courses)
 
     events = []

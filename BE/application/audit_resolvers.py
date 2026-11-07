@@ -74,24 +74,15 @@ def course_subscription_installment_resolver(obj):
 
 
 def instructor_resolver(obj):
-    """Instructor -> owner's SportAssociation (Instructor has no sport_association FK)."""
-    from application.models.user_models import SportAssociation
-    user_id = getattr(obj, 'user_id', None)
-    if user_id:
-        association = SportAssociation.objects.filter(user_id=user_id).first()
-        if association:
-            return association, 'instructor.user.sport_association'
-    return None
+    """Instructor -> its owner's SportAssociation (Instructor has no sport_association FK)."""
+    resolved = user_resolver(obj.user) if getattr(obj, 'user_id', None) else None
+    return (resolved[0], 'instructor.user.sport_association') if resolved else None
 
 
 def instructor_hours_resolver(obj):
-    """InstructorHours -> Instructor -> sport_association (if direct) or via its owner"""
-    if hasattr(obj, 'instructor') and obj.instructor:
-        if hasattr(obj.instructor, 'sport_association') and obj.instructor.sport_association:
-            return obj.instructor.sport_association, 'instructor.sport_association'
-        resolved = instructor_resolver(obj.instructor)
-        if resolved:
-            return resolved[0], 'instructor.user.sport_association'
+    """InstructorHours -> Instructor -> its owner's SportAssociation"""
+    if getattr(obj, 'instructor', None):
+        return instructor_resolver(obj.instructor)
     return None
 
 

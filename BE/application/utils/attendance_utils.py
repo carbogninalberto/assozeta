@@ -150,15 +150,18 @@ def get_extended_prop_for_attendance_day(event: AttendanceDay):
     total_course_subscriptions = len(potential_attendees)
 
     extended_props = event_data.get('extendedProps', {}) if event_data else {}
+    # instructor labels come from the course association's own instructors
+    course_association = event.attendance_registry.course.sport_association
+    owner_id = course_association.user_id if course_association else None
     if extended_props and 'instructor' in extended_props and extended_props['instructor'] and 'instructor_id' in extended_props['instructor']:
-        instructor = Instructor.objects.filter(instructor_id=extended_props['instructor']['instructor_id']).first()
+        instructor = Instructor.objects.filter(instructor_id=extended_props['instructor']['instructor_id'], user_id=owner_id).first()
         if instructor:
             extended_props['instructor']['label'] = instructor.get_full_name()
     # check if it's a type of list of instructors
     elif extended_props and 'instructor' in extended_props and isinstance(extended_props['instructor'], list):
         for idx, instructor in enumerate(extended_props['instructor']):
             if 'instructor_id' in instructor:
-                instructor_obj = Instructor.objects.filter(instructor_id=instructor['instructor_id']).first()
+                instructor_obj = Instructor.objects.filter(instructor_id=instructor['instructor_id'], user_id=owner_id).first()
                 if instructor_obj:
                     extended_props['instructor'][idx]['label'] = instructor_obj.get_full_name()
 

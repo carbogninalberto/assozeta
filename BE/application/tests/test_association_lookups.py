@@ -120,13 +120,16 @@ class AttendanceLookupTests(OtherAssociationMixin, BaseAPITestCase):
         day.refresh_from_db()
         self.assertEqual(len(day.attendees), 1)
 
-    def test_history_of_another_association_is_not_found(self):
+    def test_history_of_another_association_is_empty(self):
         orphan_course = create_test_course(sport_association=self.other_association)
         CourseSubscription.objects.create(course=orphan_course, subscription=None)
 
-        for path in ('attendance', 'calendar'):
-            response = self.client.get(f'/subscription/{self.other_subscription.subscription_id}/{path}')
-            self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, path)
+        response = self.client.get(f'/subscription/{self.other_subscription.subscription_id}/attendance')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['data']['attendance_days'], [])
+        response = self.client.get(f'/subscription/{self.other_subscription.subscription_id}/calendar')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(orphan_course.title, response.content.decode())
 
     def test_attendee_of_another_association_keeps_its_carnet(self):
         course = create_test_course(sport_association=self.sport_association)
@@ -279,6 +282,16 @@ class InstructorHoursLookupTests(OtherAssociationMixin, BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         hours.refresh_from_db()
         self.assertEqual(hours.instructor, second)
+
+    def test_instructor_update_keeps_the_owner(self):
+        response = self.client.patch(f'/instructor/{self.instructor.instructor_id}/update', {
+            'user': str(self.other_user.user_id), 'first_name': 'Renamed', 'last_name': 'L',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+        self.instructor.refresh_from_db()
+        self.assertEqual(self.instructor.user, self.user)
+        self.assertEqual(self.instructor.first_name, 'Renamed')
 
     def test_instructor_of_another_association_cannot_be_changed(self):
         response = self.client.patch(f'/instructor/{self.other_instructor.instructor_id}/update',
