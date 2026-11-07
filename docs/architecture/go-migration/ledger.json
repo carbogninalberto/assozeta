@@ -4467,25 +4467,79 @@
         "target": "camps_and_retreats_subscriptions_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_subscriptions.go",
+        "BE_GO/internal/dto/camps_subscriptions.go",
+        "BE_GO/internal/repository/camps_subscriptions.go",
+        "BE_GO/internal/service/camps_subscriptions.go",
+        "BE_GO/internal/handler/camps_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/<uid>/subscriptions/add",
+          "/api/v2/camps-and-retreats/<uid>/subscriptions/add",
+          "/api/camps-and-retreats/<uid>/subscriptions/add"
+        ],
+        "request": "uid path parameter (camp); body: camps_and_retreats_subscription_id, status_flag, created_at, subscription, periods [{camps_and_retreats_period, services [{camps_and_retreats_period_service_id}]}]",
+        "response": "201 {'message': 'Added successfully', 'subscription': CampsAndRetreatsSubscriptionInfoSerializer}",
+        "errors": "401/403 transport and registry; 405; 400 {'error': str(ValidationError)} (uid, serializer, enrollment validation); 403 tenant scope and enrollment scope; 500 {'error'} non-mapping bodies, missing subscription key, service without category",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.create",
+        "resource_scope": "tenant-scoped relations; registration of the camp's association; camp owner, or athlete direct/family ownership; periods of the camp and services of the period",
+        "side_effects": "creates the camp subscription, its subscription periods with link rows and one unpaid payment; create/update entries indexed through the camp association",
+        "transaction": "atomic (Go: one transaction)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_subscriptions_http.json",
+        "TESTS/fixtures/generate_camps_subscriptions_http.py",
+        "TESTS/contracts/test_camps_subscriptions_http.py",
+        "TESTS/adapters/django/camps_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 111/111; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json",
+          "receipt_sha256": "77da92ef53cb4bb7314659788c33656c39a7369c2d99bb24b10f0b840b439d4f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-versioned-r1/results.json",
+          "receipt_sha256": "ce7fffe5b5818533deff5cbe5ec97f28a570595ea926b7c7f6a0b8e0aefc64f6"
+        },
+        {
+          "revision": "committing change with the deleted subscription period's entry rendered from the stored row (after the shared payment's SET_NULL) instead of the instance as loaded",
+          "result": "Mutation control: fails Go on update-owner-replace-periods (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json",
+          "receipt_sha256": "3c114ae94e854612ed8b2e590c9c2959f784bb99bf30e464b1ed973d70d35720"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/<str:uid>/subscriptions/delete -> camps_and_retreats_subscriptions_delete",
@@ -4502,25 +4556,79 @@
         "target": "camps_and_retreats_subscriptions_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_subscriptions.go",
+        "BE_GO/internal/dto/camps_subscriptions.go",
+        "BE_GO/internal/repository/camps_subscriptions.go",
+        "BE_GO/internal/service/camps_subscriptions.go",
+        "BE_GO/internal/handler/camps_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/<uid>/subscriptions/delete",
+          "/api/v2/camps-and-retreats/<uid>/subscriptions/delete",
+          "/api/camps-and-retreats/<uid>/subscriptions/delete"
+        ],
+        "request": "uid path parameter (camp subscription)",
+        "response": "200 {'message': 'Deleted successfully'}",
+        "errors": "401/403 transport and registry; 405; 400 malformed uid; 403 {'error'} for non associations; 404; 403 {'detail'} another association; 500 {'error'} without an association",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.delete",
+        "resource_scope": "camp association against request.user.sport_association",
+        "side_effects": "deletes unpaid payments and subscription periods, then the camp subscription with its remaining subscription periods and link rows; payment entries indexed through changes_json.sport_association, the others through the actor's association",
+        "transaction": "not atomic (Go: one transaction; no exception path after a write)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_subscriptions_http.json",
+        "TESTS/fixtures/generate_camps_subscriptions_http.py",
+        "TESTS/contracts/test_camps_subscriptions_http.py",
+        "TESTS/adapters/django/camps_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 111/111; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json",
+          "receipt_sha256": "77da92ef53cb4bb7314659788c33656c39a7369c2d99bb24b10f0b840b439d4f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-versioned-r1/results.json",
+          "receipt_sha256": "ce7fffe5b5818533deff5cbe5ec97f28a570595ea926b7c7f6a0b8e0aefc64f6"
+        },
+        {
+          "revision": "committing change with the deleted subscription period's entry rendered from the stored row (after the shared payment's SET_NULL) instead of the instance as loaded",
+          "result": "Mutation control: fails Go on update-owner-replace-periods (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json",
+          "receipt_sha256": "3c114ae94e854612ed8b2e590c9c2959f784bb99bf30e464b1ed973d70d35720"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/<str:uid>/subscriptions/list -> camps_and_retreats_subscriptions_list",
@@ -4537,25 +4645,79 @@
         "target": "camps_and_retreats_subscriptions_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_subscriptions.go",
+        "BE_GO/internal/dto/camps_subscriptions.go",
+        "BE_GO/internal/repository/camps_subscriptions.go",
+        "BE_GO/internal/service/camps_subscriptions.go",
+        "BE_GO/internal/handler/camps_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/<uid>/subscriptions/list",
+          "/api/v2/camps-and-retreats/<uid>/subscriptions/list",
+          "/api/camps-and-retreats/<uid>/subscriptions/list"
+        ],
+        "request": "uid path parameter (camp; is_valid_uuid after the role check); X-Group-Id filters registrations and payments",
+        "response": "200 {'data': [CampsAndRetreatsSubscriptionListInfoSerializer]} newest first",
+        "errors": "401/403 transport and registry; 405; 403 {'error'} for non associations; 400 malformed uid; 500 page without an association or with a missing or group-hidden registration",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.read",
+        "resource_scope": "camp subscriptions of request.user.sport_association and the camp",
+        "side_effects": "none",
+        "transaction": "read only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_subscriptions_http.json",
+        "TESTS/fixtures/generate_camps_subscriptions_http.py",
+        "TESTS/contracts/test_camps_subscriptions_http.py",
+        "TESTS/adapters/django/camps_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 111/111; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json",
+          "receipt_sha256": "77da92ef53cb4bb7314659788c33656c39a7369c2d99bb24b10f0b840b439d4f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-versioned-r1/results.json",
+          "receipt_sha256": "ce7fffe5b5818533deff5cbe5ec97f28a570595ea926b7c7f6a0b8e0aefc64f6"
+        },
+        {
+          "revision": "committing change with the deleted subscription period's entry rendered from the stored row (after the shared payment's SET_NULL) instead of the instance as loaded",
+          "result": "Mutation control: fails Go on update-owner-replace-periods (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json",
+          "receipt_sha256": "3c114ae94e854612ed8b2e590c9c2959f784bb99bf30e464b1ed973d70d35720"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/<str:uid>/subscriptions/update -> camps_and_retreats_subscriptions_update",
@@ -4572,25 +4734,79 @@
         "target": "camps_and_retreats_subscriptions_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_subscriptions.go",
+        "BE_GO/internal/dto/camps_subscriptions.go",
+        "BE_GO/internal/repository/camps_subscriptions.go",
+        "BE_GO/internal/service/camps_subscriptions.go",
+        "BE_GO/internal/handler/camps_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/camps-and-retreats/<uid>/subscriptions/update",
+          "/api/v2/camps-and-retreats/<uid>/subscriptions/update",
+          "/api/camps-and-retreats/<uid>/subscriptions/update"
+        ],
+        "request": "uid path parameter (camp subscription); body periods (the add shape, read as given)",
+        "response": "200 {'message': 'Updated successfully'}",
+        "errors": "401/403 transport and registry; 405; 400 malformed uid; 403 {'error'} for non associations; 404; 403 {'detail'} another association; 500 {'error'} without an association, non-mapping bodies and Python exceptions after partial writes",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.campsandretreats.update",
+        "resource_scope": "camp association against request.user.sport_association",
+        "side_effects": "deletes unpaid payments and their subscription periods, creates the requested periods with link rows and one unpaid payment; entries indexed through changes_json.sport_association (payments), the actor's association (deletes) or the camp association",
+        "transaction": "not atomic: writes before an exception are kept (Go: committed before the 500)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_subscriptions_http.json",
+        "TESTS/fixtures/generate_camps_subscriptions_http.py",
+        "TESTS/contracts/test_camps_subscriptions_http.py",
+        "TESTS/adapters/django/camps_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 111/111; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json",
+          "receipt_sha256": "77da92ef53cb4bb7314659788c33656c39a7369c2d99bb24b10f0b840b439d4f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact camp subscription, subscription period, payment, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-versioned-r1/results.json",
+          "receipt_sha256": "ce7fffe5b5818533deff5cbe5ec97f28a570595ea926b7c7f6a0b8e0aefc64f6"
+        },
+        {
+          "revision": "committing change with the deleted subscription period's entry rendered from the stored row (after the shared payment's SET_NULL) instead of the instance as loaded",
+          "result": "Mutation control: fails Go on update-owner-replace-periods (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json",
+          "receipt_sha256": "3c114ae94e854612ed8b2e590c9c2959f784bb99bf30e464b1ed973d70d35720"
+        }
+      ],
+      "notes": [
+        "Implementing: camps and retreats subscriptions list/add/update/delete (camp_and_retreats_views.py) with camps_and_retreats_utils (delete_unpaid_periods, add_new_periods, generate_payment_for_periods) and CampsAndRetreatsSubscriptionInfoSerializer.save. Not ported (500 before any write): file parts, update forms with a periods key, payment creation with an X-Group-Id that is not an existing group, amounts numeric(9,2) or the non-negative constraint would reject, notes over 5120 characters, and list payments with an instructor or an invoice."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:camps-and-retreats/<str:uid>/update -> camps_and_retreats_update",
