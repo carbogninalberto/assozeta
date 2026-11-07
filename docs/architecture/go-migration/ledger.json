@@ -18356,25 +18356,76 @@
         "target": "subscription_archive",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_lifecycle.go",
+        "BE_GO/internal/repository/subscription_lifecycle.go",
+        "BE_GO/internal/service/subscription_lifecycle.go",
+        "BE_GO/internal/handler/subscription_lifecycle.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "Course subscription delete collector and payment archive save (BE_GO/internal/repository/course_subscriptions.go, payment_archive.go)",
+        "Subscription date defaults (BE_GO/internal/service/subscription_dates.go)",
+        "application_subscription",
+        "application_subscription_tags",
+        "application_payment",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_sportassociation",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/archive",
+          "/api/v2/subscription/<uid>/archive",
+          "/api/subscription/<uid>/archive"
+        ],
+        "request": "No body.",
+        "response": "200 {'data': {'msg': 'subscription archival completed.'}}.",
+        "errors": "401 anonymous; 403 registry / scoped session / IsAssociationUser generic detail (athletes) / {'exception': 'User not allowed.'}; 404 {'exception': 'Subscription not found'}; 405; 500 {'exception': ['“<uid>” is not a valid UUID.']} for a malformed uid, the HTML page for owners without an association and refused paths.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.archive.update; IsAssociationUser.",
+        "resource_scope": "Scoped group-aware subscription of request.user's association; live (scoped) course subscriptions; live group-aware installments; live group-aware payments of the association and associate created within the subscription dates.",
+        "side_effects": "Toggles archived; archiving saves unpaid payments archived (Payment.save() defaults), installments and course subscriptions archived, the subscription, then the period's unpaid unarchived payments; update entries for changed rows (payment and subscription direct, installment course_subscription.course.sport_association, course subscription course.sport_association with its str(__dict__) repr).",
+        "transaction": "Django autocommits each save; Go commits the request in one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_lifecycle_http.json",
+        "TESTS/fixtures/generate_subscription_lifecycle_http.py",
+        "TESTS/contracts/test_subscription_lifecycle_http.py",
+        "TESTS/adapters/django/subscription_lifecycle_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-lifecycle.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 51/51; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-native-r1/results.json",
+          "receipt_sha256": "ce82ee07a8b8591569582d2f1c7b116514facee05e8342dceb6659a93b7b727e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 51/51 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-versioned-r1/results.json",
+          "receipt_sha256": "f9c659a4641529b6e8c511eb6a58d4284410acd2ffccb9b4b4b56ad1e02d145a"
+        },
+        {
+          "revision": "committing change without the X-Group-Id filter of the archive installment query",
+          "result": "Mutation control: fails Go on subscription-lifecycle-archive-group-scoped (an installment outside the group is archived).",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-mutation-r1/results.json",
+          "receipt_sha256": "47303f2657155291fe72b80de4934bd548a5500ab44fe934e51b42b4402b7cb9"
+        }
+      ],
+      "notes": [
+        "Implementing: reject (status and acceptance reset with Subscription.save() date defaults), archive (toggle; archiving cascades to unpaid course subscription, installment and subscription payments, installments, course subscriptions and the period's unpaid payments, with Payment.save() defaults) and delete (SubscriptionService.delete_subscription: unpaid payment deletes with the pre_delete signals, installment archive/delete, soft deletes, period payment deletes and the subscription collector with its course subscription and installment cascades) with audit on four transports; invoices of unpaid payments, payments hidden from Payment.objects (archive), stored signature keys, other cascading models, unpaid payments reached twice and missing period dates are refused (500) before any write; subscription/<uid>/approve (Celery workflow dispatch) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/attendance -> subscription_attendance",
@@ -18552,25 +18603,76 @@
         "target": "subscription_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_lifecycle.go",
+        "BE_GO/internal/repository/subscription_lifecycle.go",
+        "BE_GO/internal/service/subscription_lifecycle.go",
+        "BE_GO/internal/handler/subscription_lifecycle.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "Course subscription delete collector and payment archive save (BE_GO/internal/repository/course_subscriptions.go, payment_archive.go)",
+        "Subscription date defaults (BE_GO/internal/service/subscription_dates.go)",
+        "application_subscription",
+        "application_subscription_tags",
+        "application_payment",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_sportassociation",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/delete",
+          "/api/v2/subscription/<uid>/delete",
+          "/api/subscription/<uid>/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {'data': {'msg': 'subscription delete.'}}.",
+        "errors": "401 anonymous; 403 registry / scoped session / {'exception': 'User not allowed.'}; 404 {'msg': 'Subscription not found.'}; 405; 500 {'exception': ['“<uid>” is not a valid UUID.']} for a malformed uid, the HTML page for athletes, owners without an association and refused paths.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.delete.",
+        "resource_scope": "Scoped group-aware subscription of request.user's association; its live course subscriptions (not scoped); live group-aware installments and period payments.",
+        "side_effects": "Deletes unpaid course subscription, installment and subscription payments (Payment pre_delete installment cascade), archives paid installments, soft-deletes the course subscriptions, saves the subscription archived, deletes the period's unpaid unarchived payments, then deletes the subscription with its tag links, course subscriptions and installments (collector pre_delete signals); SET_NULL references cleared; delete entries indexed changes_json.sport_association (payment, subscription) or the actor's association (installment, course subscription).",
+        "transaction": "Django autocommits each step; Go commits the request in one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_lifecycle_http.json",
+        "TESTS/fixtures/generate_subscription_lifecycle_http.py",
+        "TESTS/contracts/test_subscription_lifecycle_http.py",
+        "TESTS/adapters/django/subscription_lifecycle_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-lifecycle.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 51/51; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-native-r1/results.json",
+          "receipt_sha256": "ce82ee07a8b8591569582d2f1c7b116514facee05e8342dceb6659a93b7b727e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 51/51 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-versioned-r1/results.json",
+          "receipt_sha256": "f9c659a4641529b6e8c511eb6a58d4284410acd2ffccb9b4b4b56ad1e02d145a"
+        },
+        {
+          "revision": "committing change without the X-Group-Id filter of the archive installment query",
+          "result": "Mutation control: fails Go on subscription-lifecycle-archive-group-scoped (an installment outside the group is archived).",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-mutation-r1/results.json",
+          "receipt_sha256": "47303f2657155291fe72b80de4934bd548a5500ab44fe934e51b42b4402b7cb9"
+        }
+      ],
+      "notes": [
+        "Implementing: reject (status and acceptance reset with Subscription.save() date defaults), archive (toggle; archiving cascades to unpaid course subscription, installment and subscription payments, installments, course subscriptions and the period's unpaid payments, with Payment.save() defaults) and delete (SubscriptionService.delete_subscription: unpaid payment deletes with the pre_delete signals, installment archive/delete, soft deletes, period payment deletes and the subscription collector with its course subscription and installment cascades) with audit on four transports; invoices of unpaid payments, payments hidden from Payment.objects (archive), stored signature keys, other cascading models, unpaid payments reached twice and missing period dates are refused (500) before any write; subscription/<uid>/approve (Celery workflow dispatch) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/delete-document/<str:subscription_file_id> -> subscription_delete_document",
@@ -18972,25 +19074,76 @@
         "target": "subscription_reject",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_lifecycle.go",
+        "BE_GO/internal/repository/subscription_lifecycle.go",
+        "BE_GO/internal/service/subscription_lifecycle.go",
+        "BE_GO/internal/handler/subscription_lifecycle.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "Course subscription delete collector and payment archive save (BE_GO/internal/repository/course_subscriptions.go, payment_archive.go)",
+        "Subscription date defaults (BE_GO/internal/service/subscription_dates.go)",
+        "application_subscription",
+        "application_subscription_tags",
+        "application_payment",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_sportassociation",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/reject",
+          "/api/v2/subscription/<uid>/reject",
+          "/api/subscription/<uid>/reject"
+        ],
+        "request": "No body.",
+        "response": "200 {'data': {'msg': 'subscription rejected.'}}.",
+        "errors": "400 is_valid_uuid list; 401 anonymous; 403 registry / scoped session / {'detail': 'User not allowed.'} (another association) / {'detail': 'User cannot change the status of the subscription.'} (already rejected); 404 {'msg': 'Subscription not found.'}; 405; 500 athletes and owners without an association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "scoped_queryset(Subscription.objects): group-aware (X-Group-Id), soft-deleted rows included; the row's association must be request.user's.",
+        "side_effects": "status_flag=3, acceptance_date=None and Subscription.save() date defaults (update entry with the changed fields, direct).",
+        "transaction": "Single save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_lifecycle_http.json",
+        "TESTS/fixtures/generate_subscription_lifecycle_http.py",
+        "TESTS/contracts/test_subscription_lifecycle_http.py",
+        "TESTS/adapters/django/subscription_lifecycle_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-lifecycle.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 51/51; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-native-r1/results.json",
+          "receipt_sha256": "ce82ee07a8b8591569582d2f1c7b116514facee05e8342dceb6659a93b7b727e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 51/51 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-versioned-r1/results.json",
+          "receipt_sha256": "f9c659a4641529b6e8c511eb6a58d4284410acd2ffccb9b4b4b56ad1e02d145a"
+        },
+        {
+          "revision": "committing change without the X-Group-Id filter of the archive installment query",
+          "result": "Mutation control: fails Go on subscription-lifecycle-archive-group-scoped (an installment outside the group is archived).",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-mutation-r1/results.json",
+          "receipt_sha256": "47303f2657155291fe72b80de4934bd548a5500ab44fe934e51b42b4402b7cb9"
+        }
+      ],
+      "notes": [
+        "Implementing: reject (status and acceptance reset with Subscription.save() date defaults), archive (toggle; archiving cascades to unpaid course subscription, installment and subscription payments, installments, course subscriptions and the period's unpaid payments, with Payment.save() defaults) and delete (SubscriptionService.delete_subscription: unpaid payment deletes with the pre_delete signals, installment archive/delete, soft deletes, period payment deletes and the subscription collector with its course subscription and installment cascades) with audit on four transports; invoices of unpaid payments, payments hidden from Payment.objects (archive), stored signature keys, other cascading models, unpaid payments reached twice and missing period dates are refused (500) before any write; subscription/<uid>/approve (Celery workflow dispatch) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/transfer -> subscription_transfer",
