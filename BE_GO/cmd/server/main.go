@@ -347,6 +347,12 @@ func run() (runErr error) {
 	e.Any("/course/:uid/calendar/update", courseCalendarHandler.CalendarUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/calendar/events", courseCalendarHandler.Events, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/calendar/events/update", courseCalendarHandler.EventsUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseAttendanceHandler := handler.NewCourseAttendanceHandler(service.NewCourseAttendance(repository.NewCourseAttendance(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/course/:uid/attendees", courseAttendanceHandler.Attendees, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/attendees/:attendance_day_uid/update", courseAttendanceHandler.AttendeesUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/attendance", courseAttendanceHandler.SubscriptionAttendance, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/attendance/:uid/mark", courseAttendanceHandler.Mark, middleware.DjangoSessionAudit(sessionAuthentication))
 	modulesReadsHandler := handler.NewModulesReadsHandler(service.NewModulesReads(repository.NewModulesReads(db),
 		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
