@@ -2755,25 +2755,81 @@
         "target": "attendance_mark",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_attendance.go",
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/service/course_attendance.go",
+        "BE_GO/internal/handler/course_attendance.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "course-calendar JSON/UUID helpers and handler responses; course-subscriptions medical label",
+        "application_attendanceregistry",
+        "application_attendanceday",
+        "application_carnetsubscription",
+        "application_carnetsubscription_course_subscription",
+        "application_carnet",
+        "application_payment",
+        "application_coursesubscription",
+        "application_course",
+        "application_subscription",
+        "application_associate",
+        "application_medicalcertificate",
+        "application_instructor",
+        "application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/attendance/<uid>/mark",
+          "/api/v2/attendance/<uid>/mark",
+          "/api/attendance/<uid>/mark"
+        ],
+        "request": "Optional {'attendance_day_id': ...}.",
+        "response": "200 {'msg': 'Check-in effettuato! Ciao <name>.'} / already checked in; 207 {'msg': 'Seleziona il corso per il check-in.', 'data': [...]}.",
+        "errors": "400 malformed id; 401; 403 registry / scoped session; 404 {'msg': ...} subscription, day or no course today; 412 unpaid or finished carnet; 500 non-dict body, malformed day id, selected day with attendees, no course subscription for the selected day, not-ported inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.attendance.update; IsAuthenticated.",
+        "resource_scope": "Scoped, group-aware subscription by key; scoped live course subscriptions, registries and days; today's day by its UTC date against the Europe/Rome date.",
+        "side_effects": "Carnet consumed (meta save) and the course subscription appended to the day's attendees; audited updates.",
+        "transaction": "Not atomic in Django; Go commits the work done before an exception or answer.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_attendance_http.json",
+        "TESTS/fixtures/generate_course_attendance_http.py",
+        "TESTS/contracts/test_course_attendance_http.py",
+        "TESTS/adapters/django/course_attendance_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-attendance.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-native-r1/results.json",
+          "receipt_sha256": "66bfbddb97f3234a7ba1b8c1ec77d12c7107ae4fb0128e1a52fce00f72942f98"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-r1/results.json",
+          "receipt_sha256": "a68c112e2679c6df44a4240d172e3a06a78a1ba130597597339895eaf8d7845c"
+        },
+        {
+          "revision": "committing change rolling back instead of committing on a 412 answer",
+          "result": "Mutation control: fails Go on course-attendance-update-partial-keeps-carnet.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-r1/results.json",
+          "receipt_sha256": "6ce01d5ef34f3e41c9d7b2b526d18defcee578314e08218f3f00f873ece66954"
+        }
+      ],
+      "notes": [
+        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons given back and consumed, not atomic), subscription_attendance and attendance_mark (today's check-in with carnet) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:audit-logs/<int:log_id>/detail -> audit_log_detail",
@@ -7331,25 +7387,81 @@
         "target": "attendees",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_attendance.go",
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/service/course_attendance.go",
+        "BE_GO/internal/handler/course_attendance.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "course-calendar JSON/UUID helpers and handler responses; course-subscriptions medical label",
+        "application_attendanceregistry",
+        "application_attendanceday",
+        "application_carnetsubscription",
+        "application_carnetsubscription_course_subscription",
+        "application_carnet",
+        "application_payment",
+        "application_coursesubscription",
+        "application_course",
+        "application_subscription",
+        "application_associate",
+        "application_medicalcertificate",
+        "application_instructor",
+        "application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/attendees",
+          "/api/v2/course/<uid>/attendees",
+          "/api/course/<uid>/attendees"
+        ],
+        "request": "No body or query read; X-Group-Id filters the course.",
+        "response": "200 {'data': {'events': [{title, allDay, extended_props, attendance_day_id, attendance_registry, date, start, end, attendees, expected_absences}]}} ({'events': []} without a registry); extended_props is get_extended_prop_for_attendance_day for events with extendedProps.",
+        "errors": "400 malformed id; 401; 403 registry / IsAssociationUser / scoped session; 404 {'detail': 'Course not found.'}; 500 no association, malformed stored events or attendee lists, not-ported inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.attendance.read; IsAssociationUser.",
+        "resource_scope": "The owner's live association; its live, group-aware course; scoped registries, days and course subscriptions.",
+        "side_effects": "Links unlinked days to their events (map_unlinked_attendance, and the extended-props link that also saves the in-memory expected_absences names); audited AttendanceDay updates.",
+        "transaction": "Not atomic in Django; Go commits the work done before an exception.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_attendance_http.json",
+        "TESTS/fixtures/generate_course_attendance_http.py",
+        "TESTS/contracts/test_course_attendance_http.py",
+        "TESTS/adapters/django/course_attendance_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-attendance.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-native-r1/results.json",
+          "receipt_sha256": "66bfbddb97f3234a7ba1b8c1ec77d12c7107ae4fb0128e1a52fce00f72942f98"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-r1/results.json",
+          "receipt_sha256": "a68c112e2679c6df44a4240d172e3a06a78a1ba130597597339895eaf8d7845c"
+        },
+        {
+          "revision": "committing change rolling back instead of committing on a 412 answer",
+          "result": "Mutation control: fails Go on course-attendance-update-partial-keeps-carnet.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-r1/results.json",
+          "receipt_sha256": "6ce01d5ef34f3e41c9d7b2b526d18defcee578314e08218f3f00f873ece66954"
+        }
+      ],
+      "notes": [
+        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons given back and consumed, not atomic), subscription_attendance and attendance_mark (today's check-in with carnet) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/attendees/<str:attendance_day_uid>/update -> attendees_update",
@@ -7366,25 +7478,81 @@
         "target": "attendees_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_attendance.go",
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/service/course_attendance.go",
+        "BE_GO/internal/handler/course_attendance.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "course-calendar JSON/UUID helpers and handler responses; course-subscriptions medical label",
+        "application_attendanceregistry",
+        "application_attendanceday",
+        "application_carnetsubscription",
+        "application_carnetsubscription_course_subscription",
+        "application_carnet",
+        "application_payment",
+        "application_coursesubscription",
+        "application_course",
+        "application_subscription",
+        "application_associate",
+        "application_medicalcertificate",
+        "application_instructor",
+        "application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/attendees/<attendance_day_uid>/update",
+          "/api/v2/course/<uid>/attendees/<attendance_day_uid>/update",
+          "/api/course/<uid>/attendees/<attendance_day_uid>/update"
+        ],
+        "request": "{'attendees': [{'course_subscription_id': ...}, ...]} as the only key.",
+        "response": "200 {'message': 'Attendance Registry updated.'}.",
+        "errors": "400 malformed ids / ['Missing or wrong events data.']; 401; 403 registry / IsAssociationUser / scoped session; 404 course, registry or day; 412 unpaid or finished carnet; 500 no association, non-dict body, malformed attendees, removed attendee without course subscription, not-ported inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.attendance.update; IsAssociationUser.",
+        "resource_scope": "The owner's live association, its live group-aware course, the course's first registry and that registry's day; scoped course subscriptions and carnet holdings.",
+        "side_effects": "Carnet holdings: lessons given back for removed attendees and consumed for new ones (meta saves); the day's attendees saved; audited updates.",
+        "transaction": "Not atomic in Django: holdings saved before a 412 or an exception stay; Go commits at the same point.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_attendance_http.json",
+        "TESTS/fixtures/generate_course_attendance_http.py",
+        "TESTS/contracts/test_course_attendance_http.py",
+        "TESTS/adapters/django/course_attendance_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-attendance.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-native-r1/results.json",
+          "receipt_sha256": "66bfbddb97f3234a7ba1b8c1ec77d12c7107ae4fb0128e1a52fce00f72942f98"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-r1/results.json",
+          "receipt_sha256": "a68c112e2679c6df44a4240d172e3a06a78a1ba130597597339895eaf8d7845c"
+        },
+        {
+          "revision": "committing change rolling back instead of committing on a 412 answer",
+          "result": "Mutation control: fails Go on course-attendance-update-partial-keeps-carnet.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-r1/results.json",
+          "receipt_sha256": "6ce01d5ef34f3e41c9d7b2b526d18defcee578314e08218f3f00f873ece66954"
+        }
+      ],
+      "notes": [
+        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons given back and consumed, not atomic), subscription_attendance and attendance_mark (today's check-in with carnet) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/calendar -> calendar",
@@ -17747,25 +17915,81 @@
         "target": "subscription_attendance",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_attendance.go",
+        "BE_GO/internal/repository/course_attendance.go",
+        "BE_GO/internal/service/course_attendance.go",
+        "BE_GO/internal/handler/course_attendance.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "course-calendar JSON/UUID helpers and handler responses; course-subscriptions medical label",
+        "application_attendanceregistry",
+        "application_attendanceday",
+        "application_carnetsubscription",
+        "application_carnetsubscription_course_subscription",
+        "application_carnet",
+        "application_payment",
+        "application_coursesubscription",
+        "application_course",
+        "application_subscription",
+        "application_associate",
+        "application_medicalcertificate",
+        "application_instructor",
+        "application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/attendance",
+          "/api/v2/subscription/<uid>/attendance",
+          "/api/subscription/<uid>/attendance"
+        ],
+        "request": "Query course (default 'all'); X-Group-Id filters the subscription.",
+        "response": "200 {'data': {'attendance_days': [...], 'courses': [...], 'stats': {...}}}.",
+        "errors": "400 malformed id; 401; 403 registry / role / scoped session; 500 no association for non-athletes, malformed course filter or stored attendees.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read; IsAssociationUser | IsAthleteUser.",
+        "resource_scope": "Athletes: their scoped group-aware subscription; others: the owner's association's; course subscriptions through all_objects() filtered by that subscription; scoped registries and days.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_attendance_http.json",
+        "TESTS/fixtures/generate_course_attendance_http.py",
+        "TESTS/contracts/test_course_attendance_http.py",
+        "TESTS/adapters/django/course_attendance_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-attendance.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 96/96; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-native-r1/results.json",
+          "receipt_sha256": "66bfbddb97f3234a7ba1b8c1ec77d12c7107ae4fb0128e1a52fce00f72942f98"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-r1/results.json",
+          "receipt_sha256": "a68c112e2679c6df44a4240d172e3a06a78a1ba130597597339895eaf8d7845c"
+        },
+        {
+          "revision": "committing change rolling back instead of committing on a 412 answer",
+          "result": "Mutation control: fails Go on course-attendance-update-partial-keeps-carnet.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-r1/results.json",
+          "receipt_sha256": "6ce01d5ef34f3e41c9d7b2b526d18defcee578314e08218f3f00f873ece66954"
+        }
+      ],
+      "notes": [
+        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons given back and consumed, not atomic), subscription_attendance and attendance_mark (today's check-in with carnet) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/calendar -> subscription_calendar",
