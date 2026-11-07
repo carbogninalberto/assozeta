@@ -13705,25 +13705,82 @@
         "target": "payment_bulk_archive",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "payment-archive save defaults and course-subscriptions payment rendering and delete cascade",
+        "application_payment",
+        "application_payment_attachments",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_coursesubscription",
+        "application_carnetsubscription",
+        "application_invoicesuppliers",
+        "application_paymentcategory",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_associate",
+        "application_subscription",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment-bulk/archive",
+          "/api/v2/payment-bulk/archive",
+          "/api/payment-bulk/archive"
+        ],
+        "request": "JSON or form {'payment_ids': [...]}.",
+        "response": "200 {'message': 'All payments archived'}.",
+        "errors": "401; 403 registry / scoped session; 500 missing key, non-dict body, None/number ids, ids the UUID field rejects, athletes, no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.archive.update.",
+        "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association.",
+        "side_effects": "archived=True on the matching live rows via bulk_update: no signals, no audit.",
+        "transaction": "Single UPDATE.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_state_http.json",
+        "TESTS/fixtures/generate_payment_state_http.py",
+        "TESTS/contracts/test_payment_state_http.py",
+        "TESTS/adapters/django/payment_state_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-state.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 130/130; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
+          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
+          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
+          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
+          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+        }
+      ],
+      "notes": [
+        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment-bulk/delete -> payment_bulk_delete",
@@ -13740,25 +13797,82 @@
         "target": "payment_bulk_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "payment-archive save defaults and course-subscriptions payment rendering and delete cascade",
+        "application_payment",
+        "application_payment_attachments",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_coursesubscription",
+        "application_carnetsubscription",
+        "application_invoicesuppliers",
+        "application_paymentcategory",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_associate",
+        "application_subscription",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment-bulk/delete",
+          "/api/v2/payment-bulk/delete",
+          "/api/payment-bulk/delete"
+        ],
+        "request": "JSON or form {'payment_ids': [...]}.",
+        "response": "200 {'message': 'All payments deleted'}.",
+        "errors": "401; 403 registry / scoped session; 500 missing key, non-dict body, None/number ids, ids the UUID field rejects, athletes, no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.delete.",
+        "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association.",
+        "side_effects": "deleted=True (soft delete) on the matching live rows via bulk_update: no signals, no audit, installments untouched.",
+        "transaction": "Single UPDATE.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_state_http.json",
+        "TESTS/fixtures/generate_payment_state_http.py",
+        "TESTS/contracts/test_payment_state_http.py",
+        "TESTS/adapters/django/payment_state_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-state.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 130/130; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
+          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
+          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
+          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
+          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+        }
+      ],
+      "notes": [
+        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/<str:uid>/approve -> payment_approve",
@@ -13890,25 +14004,82 @@
         "target": "payment_cancel",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "payment-archive save defaults and course-subscriptions payment rendering and delete cascade",
+        "application_payment",
+        "application_payment_attachments",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_coursesubscription",
+        "application_carnetsubscription",
+        "application_invoicesuppliers",
+        "application_paymentcategory",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_associate",
+        "application_subscription",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/<uid>/cancel",
+          "/api/v2/payment/<uid>/cancel",
+          "/api/payment/<uid>/cancel"
+        ],
+        "request": "No body read.",
+        "response": "200 {'data': {'msg': 'payment cancelled.', 'payment': PaymentSerializer of the payment before the save}}.",
+        "errors": "400 {'error': 'Payment not paid.'}; 401; 403 registry / scoped session / {'detail': 'User not allowed.'} for another association's payment; 500 malformed id, missing/deleted/other-group payment, athletes, no association, failing Payment.save(), invoiced paid payments (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.update.",
+        "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association.",
+        "side_effects": "paid=False with Payment.save() defaults (category, description); audited update indexed directly.",
+        "transaction": "Not atomic in Django (a single save); one transaction in Go.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_state_http.json",
+        "TESTS/fixtures/generate_payment_state_http.py",
+        "TESTS/contracts/test_payment_state_http.py",
+        "TESTS/adapters/django/payment_state_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-state.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 130/130; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
+          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
+          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
+          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
+          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+        }
+      ],
+      "notes": [
+        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/<str:uid>/delete -> payment_delete",
@@ -13925,25 +14096,82 @@
         "target": "payment_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "payment-archive save defaults and course-subscriptions payment rendering and delete cascade",
+        "application_payment",
+        "application_payment_attachments",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_coursesubscription",
+        "application_carnetsubscription",
+        "application_invoicesuppliers",
+        "application_paymentcategory",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_associate",
+        "application_subscription",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/<uid>/delete",
+          "/api/v2/payment/<uid>/delete",
+          "/api/payment/<uid>/delete"
+        ],
+        "request": "No body read.",
+        "response": "200 {'data': {'msg': 'payment deleted.'}}.",
+        "errors": "400 malformed uuid list; 401; 403 registry / scoped session; 404 {'msg': 'Payment not found.'} missing, foreign, deleted or other-group payment; 500 athletes, no association, invoiced payments (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.delete.",
+        "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association.",
+        "side_effects": "Hard delete through Payment's pre_delete signal: live group-aware installments deleted (an unpaid payment deleted first by the installment signal), SET_NULL references cleared, attachment and membership through rows removed; audit P / installments / P.",
+        "transaction": "Atomic (the deletion collector).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_state_http.json",
+        "TESTS/fixtures/generate_payment_state_http.py",
+        "TESTS/contracts/test_payment_state_http.py",
+        "TESTS/adapters/django/payment_state_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-state.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 130/130; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
+          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
+          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
+          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
+          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+        }
+      ],
+      "notes": [
+        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/<str:uid>/generate-invoice -> payment_generate_invoice",
