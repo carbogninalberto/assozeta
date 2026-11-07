@@ -193,6 +193,16 @@ disables rotation). It never removes:
 Other destinations are not rotated. Copy archives off-host before they are
 rotated out, and remove manual archives yourself when no longer needed.
 
+The instance owner sees these archives in **Self Instance → Backup e
+ripristino**. The page shows the disk that holds `selfhost/backups/` (database,
+documents and files, backups, other use and free space), a marker for the
+estimated size of the next backup, and a warning when the space the backup needs
+is not free. Each archive lists its date, size, version, origin and location.
+The page is read-only: archives are created, kept and deleted on the server.
+Downloading an archive asks for the owner's password again and is recorded in
+the audit log. The download is the unencrypted server archive, including its
+secrets, so store it as safely as the server itself.
+
 Backup stops the API, worker, and scheduler services while PostgreSQL and MinIO
 are snapshotted, then restarts them only if any were running beforehand. Caddy
 serves the maintenance page during this interval. Expect brief write downtime

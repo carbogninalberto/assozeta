@@ -21,8 +21,8 @@ CHECKS = (
     ('scheduler', 'Scheduler', True, 'diagnostics'),
     ('renderer', 'Renderer PDF', True, 'diagnostics'),
     ('email', 'Configurazione email', False, 'email'),
-    ('updater', 'Servizio aggiornamenti', False, 'updates'),
-    ('backups', 'Preparazione backup', False, 'updates'),
+    ('updater', 'Servizio aggiornamenti', False, 'backups'),
+    ('backups', 'Preparazione backup', False, 'backups'),
 )
 
 

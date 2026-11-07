@@ -448,6 +448,8 @@ MIDDLEWARE = [
 # request profiler as well as the production API audit logger.
 SILKY_IGNORE_PATHS = ['/instance/admin/data-restore', '/instance/admin/email', '/instance/admin/email/test', '/instance/admin/diagnostics',
                      '/instance/admin/integrations/stripe', '/instance/admin/integrations/google', '/instance/admin/integrations/apple']
+# The backup download token request carries the owner's password.
+SILKY_IGNORE_PATHS += ['/instance/admin/backups/download-token']
 SILKY_IGNORE_PATHS += ['/instance/admin/bakney-pairing', *[
     '/bakney/v1/' + action for action in ('pairing/challenge', 'pairing/commit', 'login-start', 'callback', 'session')]]
 
@@ -737,6 +739,7 @@ DRF_API_LOGGER_PATH_TYPE = 'ABSOLUTE'
 DRF_LOGGER_QUEUE_MAX_SIZE = 1 # Default to 50 if not specified.
 DRF_LOGGER_INTERVAL = 1 # In Seconds, Default to 10 seconds if not specified.
 DRF_API_LOGGER_SKIP_URL_NAME = ['', 'health', 'instance-email-settings', 'instance-email-test', 'instance-diagnostics', 'instance-integration-settings']
+DRF_API_LOGGER_SKIP_URL_NAME += ['instance-backup-download-token']
 DRF_API_LOGGER_SKIP_URL_NAME += ['bakney-pairing-admin', 'bakney-pairing-challenge', 'bakney-pairing-commit',
                                'bakney-sso-start', 'bakney-sso-callback', 'bakney-sso-session']
 DRF_API_LOGGER_SLOW_API_ABOVE = 300

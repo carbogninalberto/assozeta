@@ -11,6 +11,7 @@ import sys
 import threading
 from uuid import UUID
 
+from backups import BackupNotFound, inventory, open_archive
 from diagnostics import backup_readiness
 from engine import Engine
 from journal import Journal, Conflict
@@ -110,6 +111,28 @@ def serve(root, env_file, engine_class=Engine):
             self.end_headers()
             self.wfile.write(payload)
 
+        def send_archive(self, name):
+            try:
+                stream, size = open_archive(root, name)
+            except BackupNotFound:
+                self.respond(404, {'error': 'Backup non trovato.'})
+                return
+            with stream:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/gzip')
+                self.send_header('Content-Length', str(size))
+                self.send_header('Cache-Control', 'no-store')
+                self.end_headers()
+                # The API forwards at the browser's pace; allow slow clients.
+                self.request.settimeout(300)
+                remaining = size
+                while remaining > 0:
+                    chunk = stream.read(min(1024 * 1024, remaining))
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    remaining -= len(chunk)
+
         def authorized(self):
             if not hmac.compare_digest(self.headers.get('Authorization', ''), f'Bearer {token}'):
                 self.respond(403, {'error': 'Access denied.'})
@@ -121,6 +144,15 @@ def serve(root, env_file, engine_class=Engine):
                 return
             if self.path == '/diagnostics':
                 self.respond(200, backup_readiness(root))
+                return
+            if self.path == '/backups':
+                try:
+                    self.respond(200, inventory(root, env_file))
+                except OSError:
+                    self.respond(503, {'error': 'La cartella dei backup non è leggibile. Verifica i permessi sul server.'})
+                return
+            if self.path.startswith('/backups/'):
+                self.send_archive(self.path[len('/backups/'):])
                 return
             if self.path != '/status':
                 self.respond(404, {'error': 'Unknown endpoint.'})
