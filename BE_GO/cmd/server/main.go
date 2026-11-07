@@ -282,6 +282,11 @@ func run() (runErr error) {
 	e.Any("/subscription/tags/:tag_id/delete", subscriptionTagsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/tags/:tag_id/assign/:subscription_id", subscriptionTagsHandler.Assign, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/tags/:tag_id/unassign/:subscription_id", subscriptionTagsHandler.Unassign, middleware.DjangoSessionAudit(sessionAuthentication))
+	subscriptionLifecycleHandler := handler.NewSubscriptionLifecycleHandler(service.NewSubscriptionLifecycles(repository.NewSubscriptionLifecycles(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/:uid/reject", subscriptionLifecycleHandler.Reject, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/archive", subscriptionLifecycleHandler.Archive, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/delete", subscriptionLifecycleHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/list", courseLocationListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	courseLocationWritesHandler := handler.NewCourseLocationWritesHandler(service.NewCourseLocationWrites(repository.NewCourseLocationWrites(db), time.Now,
 		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
