@@ -7,8 +7,8 @@ Routes (BE/application/views/attendee_views.py):
   `google_sync_enabled` is the scope user's Google credentials flag.
 - POST/DELETE course/<uid>/calendar/update (`calendar_update`, IsAuthenticated +
   IsAssociationUser): POST validates the body keys and status, resolves the
-  owner's association (a 500 without one) and course (404), updates reminders
-  by event id, then creates, replaces (DRAFT) or merges
+  owner's association (a 500 without one) and course (404), updates the
+  association's reminders by event id (instructors of request.user), then creates, replaces (DRAFT) or merges
   (PUBLISHED) the registry with its attendance days. POST is not atomic: work
   saved before an exception stays. DELETE (atomic) removes one event, a group
   of events (before True/False/all) or resets the registry to an empty draft.
@@ -58,7 +58,7 @@ INSTRUCTORS = {
     'ivo': {'id': nid(), 'user': OWNER, 'first_name': 'Ivo', 'last_name': 'Due', 'associated_user': None},
     'ugo': {'id': nid(), 'user': FOREIGN_OWNER, 'first_name': 'Ugo', 'last_name': 'Tre', 'associated_user': None},
 }
-INES, IVO = INSTRUCTORS['ines']['id'], INSTRUCTORS['ivo']['id']
+INES, IVO, UGO = INSTRUCTORS['ines']['id'], INSTRUCTORS['ivo']['id'], INSTRUCTORS['ugo']['id']
 
 # Insertion order is the courses' heap order, which assigns the default colors.
 COURSES = {
@@ -79,7 +79,7 @@ EB = {1: eid('b0', 1), 2: 'B0000000-0000-4000-8000-000000000002'}
 EC = {1: eid('c0', 1)}
 ED = {n: eid('d0', n) for n in range(1, 3)}
 EG = {n: eid('e0', n) for n in range(1, 4)}
-EX, EF, EBR = eid('f0', 1), eid('f1', 1), eid('f2', 1)
+EX, EF, EBR, EZ = eid('f0', 1), eid('f1', 1), eid('f2', 1), eid('f3', 1)
 GL = {n: eid('90', n) for n in range(1, 6)}
 SEED_CREATED = '2026-10-01T08:00:00Z'
 
@@ -144,13 +144,14 @@ def reminder(event_id, title, description, course_title, text, send_at, *, user=
             'sport_association': association}
 
 
-REMINDER_IDS = {label: nid() for label in ('a2', 'gl1', 'g3', 'foreign')}
+REMINDER_IDS = {label: nid() for label in ('a2', 'gl1', 'g3', 'foreign', 'foreign_z')}
 REMINDERS = {
     REMINDER_IDS['a2']: reminder(EA[2], 'Lezione 2', 'Portare scarpe', None, '1 ore', '2026-11-09T16:00:00Z'),
     REMINDER_IDS['gl1']: reminder(GL[1], 'Assemblea', '', None, '2 giorni', '2026-11-03T19:00:00Z'),
     REMINDER_IDS['g3']: reminder(EG[3], 'Gruppo 3', '', None, '15 minuti', '2026-11-13T09:45:00Z'),
     REMINDER_IDS['foreign']: reminder(EF, 'Estero 1', 'Fuori sede', None, '1 ore', '2026-11-04T09:00:00Z',
                                       user=FOREIGN_OWNER, association=FOREIGN),
+    REMINDER_IDS['foreign_z']: reminder(EZ, 'Zeta 1', '', None, '2 ore', '2026-11-05T08:00:00Z', user=FOREIGN_OWNER, association=FOREIGN),
 }
 RM = REMINDER_IDS
 
@@ -599,6 +600,13 @@ add('update-replaces-draft', 'owner', UPD('delta'), 200, UPDATED, method='POST',
 # A registry in an unknown status answers 412 after the reminder pass.
 add('update-odd-status', 'owner', UPD('epsilon'), 412, {'message': 'Calendar is already published.'}, method='POST',
     body={'events': [], 'status': PUBLISHED, 'note': 'extra key'})
+# Only the association's reminders and request.user's instructors: another association's reminder
+# for the same event id stays, a new one is created without the other owner's instructor.
+Z1 = event(EZ, 'Zeta 1', '2026-11-05T10:00:00.000Z', '2026-11-05T11:00:00.000Z',
+           props={'reminder_enabled': True, 'reminder_amount': 1, 'reminder_unit': 'hours', 'instructor': {'instructor_id': UGO}})
+STATE['reminders']['$new:reminder-z1'] = reminder(EZ, 'Zeta 1', '', None, '1 ore', '2026-11-05T09:00:00Z')
+add('update-other-association-reminder-kept', 'owner', UPD('epsilon'), 412, {'message': 'Calendar is already published.'}, method='POST',
+    body={'events': [Z1], 'status': PUBLISHED}, audit=[reminder_create('$new:reminder-z1', 'owner')])
 
 # Published merge: existing events are rewritten in place and their day is
 # found by the previous start; new events are appended with a day; the

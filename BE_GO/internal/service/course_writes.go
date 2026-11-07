@@ -188,9 +188,11 @@ func courseAuditValues(row domain.CourseWriteRow) (map[string]string, error) {
 }
 
 // courseWritesLocations replaces nothing itself: it adds each listed
-// location (CourseLocation.objects.filter(...).first()).
+// location of the association, or already linked to the course
+// (CourseLocation.objects.filter(...).first()).
 // failed reports Django's exception (the caller commits and answers 500).
-func courseWritesLocations(ctx context.Context, tx domain.CourseWritesTransaction, course string, value any) (failed bool, err error) {
+func courseWritesLocations(ctx context.Context, tx domain.CourseWritesTransaction, course, association string, linked []string,
+	value any) (failed bool, err error) {
 	items, ok := dto.PythonIterate(value)
 	if !ok {
 		return true, nil
@@ -211,7 +213,7 @@ func courseWritesLocations(ctx context.Context, tx domain.CourseWritesTransactio
 		if !ok {
 			return true, nil
 		}
-		exists, err := tx.LocationExists(ctx, id)
+		exists, err := tx.LocationLinkable(ctx, id, association, linked)
 		if err != nil {
 			return false, err
 		}
@@ -230,8 +232,9 @@ type courseUpdateDate struct {
 }
 
 // Update follows course_update: is_valid_uuid, the live group-aware course
-// (400 {'msg:': 'course not found.'}), then each body
-// value in the view's order, Course.save() and the title signal.
+// (400 {'msg:': 'course not found.'}), the caller's association (403 unless
+// it is the course's), then each body value in the view's order,
+// Course.save() and the title signal.
 func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdentity, raw string, request CourseWritesRequest) error {
 	id, err := paymentInfoParseUUID(raw)
 	if err != nil {
@@ -249,6 +252,13 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	}
 	if course == nil {
 		return domain.ErrCourseWritesUpdateNotFound
+	}
+	association, err := tx.OwnerAssociationFirst(ctx, identity.ScopeUser.ID)
+	if err != nil {
+		return err
+	}
+	if association == nil || course.AssociationID == nil || *course.AssociationID != *association {
+		return domain.ErrCourseWritesForeign
 	}
 	data := domain.RequestObject{}
 	if request.Body != nil {
@@ -380,10 +390,14 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	}
 	// The writes, in the view's order: locations are replaced immediately.
 	if locationsPresent {
+		linked, err := tx.LinkedLocations(ctx, course.ID)
+		if err != nil {
+			return err
+		}
 		if err = tx.ClearLocations(ctx, course.ID); err != nil {
 			return err
 		}
-		failed, err := courseWritesLocations(ctx, tx, course.ID, locations)
+		failed, err := courseWritesLocations(ctx, tx, course.ID, *association, linked, locations)
 		if err != nil {
 			return err
 		}
@@ -433,7 +447,7 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	}
 	// Course.save() dispatches update_metadata_courses when the title changed.
 	if !sameText(course.Title, row.Title) {
-		if err = s.rewriteTitle(ctx, tx, course.Title, *row.Title, group); err != nil {
+		if err = s.rewriteTitle(ctx, tx, course.Title, *row.Title, *association, group); err != nil {
 			if errors.Is(err, domain.ErrCourseWritesServer) {
 				return courseWritesLate(tx, err)
 			}
@@ -443,15 +457,16 @@ func (s *CourseWrites) Update(ctx context.Context, identity domain.ResolvedIdent
 	return tx.Commit()
 }
 
-// rewriteTitle is update_metadata_courses_callback: the live group-aware
-// payments whose meta text or description contains the old title
+// rewriteTitle is update_metadata_courses_callback: the course association's
+// live group-aware payments whose meta text or description contains the old title
 // (case-insensitively) get it replaced (case-sensitively) in their top-level
 // meta strings and description, written with bulk_update (no audit).
-func (s *CourseWrites) rewriteTitle(ctx context.Context, tx domain.CourseWritesTransaction, old *string, title string, group *string) error {
+func (s *CourseWrites) rewriteTitle(ctx context.Context, tx domain.CourseWritesTransaction, old *string, title, association string,
+	group *string) error {
 	if old == nil || *old == "" {
 		return nil
 	}
-	payments, err := tx.TitlePayments(ctx, *old, group)
+	payments, err := tx.TitlePayments(ctx, *old, association, group)
 	if err != nil {
 		return err
 	}
@@ -579,7 +594,7 @@ func (s *CourseWrites) Add(ctx context.Context, identity domain.ResolvedIdentity
 	}
 	courseObject := newCourse.(domain.RequestObject)
 	if locations, present := courseObject.Lookup("locations"); present {
-		failed, err := courseWritesLocations(ctx, tx, row.ID, locations)
+		failed, err := courseWritesLocations(ctx, tx, row.ID, association, nil, locations)
 		if err != nil {
 			return err
 		}
@@ -617,7 +632,8 @@ func (s *CourseWrites) Add(ctx context.Context, identity domain.ResolvedIdentity
 		if err != nil {
 			return err
 		}
-		if subscription == nil {
+		if subscription == nil || subscription.AssociationID == nil || *subscription.AssociationID != association {
+			// Subscription.objects.get(subscription_id=..., sport_association=...): DoesNotExist.
 			return courseWritesLate(tx, domain.ErrCourseWritesServer)
 		}
 		zero := "0.00"

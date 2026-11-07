@@ -10,17 +10,22 @@ payment marks the hour paid (Model.save(), audited), and a document without a
 payment is deleted (the hour's document_id is nulled by the collector; the
 response still renders the in-memory id and token).
 
-add looks the instructor up by id, sets ``data['instructor'] = uid``
+add looks the instructor up by id and ``user=request.user``, sets ``data['instructor'] = uid``
 (a non-dict or form body is a 500) and saves InstructorHoursSerializer
 (fields '__all__'; model defaults the serializer does not provide stay the
 model's in-memory values, which auditlog records). update and delete look the
 instructor up by id and ``user=request.user`` and the hour by instructor and
 id (404 ``{'error': 'hours not found'}``) before reading the body; update is a
 partial serializer save (a new primary key inserts a copy), delete removes the
-hour's document first. calculate sums paid payments of the listed courses in
-the period (membership payments, installments, or the subscription payment)
-and applies an optional percentage. auditlog records every hour and document
-change; the index resolves the actor's association. Run with ``python3 -I``
+hour's document first. calculate looks the
+instructor up the same way and sums paid payments of the listed courses of
+the caller's association in the period (membership payments, installments, or
+the subscription payment) and applies an optional percentage. The
+serializer's instructor relation answers 403 for another association's
+instructor (resolved through its owner). auditlog records every hour and
+document change; the index resolves an hour stored when its entry is written
+through its instructor's owner's association, everything else through the
+actor's. Run with ``python3 -I``
 after the instructor-list generator.
 """
 import json
@@ -86,6 +91,9 @@ COURSES = {
     'grouped': {'id': next(ids), 'title': 'Gruppo', 'type': 1, 'multi': False, 'deleted': False, 'group': 'own_group'},
     'removed': {'id': next(ids), 'title': 'Rimosso', 'type': 1, 'multi': False, 'deleted': True, 'group': None},
 }
+for row in COURSES.values():
+    row['association'] = OWN
+COURSES['abroad'] = {'id': next(ids), 'title': 'Estero', 'type': 1, 'multi': False, 'deleted': False, 'group': None, 'association': FOREIGN}
 IN, LATE = '2026-09-15T08:30:00Z', '2026-10-02T10:00:00Z'
 PAYMENTS.update({
     'mp1': payment(OWN, '30.00', date='2026-09-10T10:00:00.250000Z'), 'mp2': payment(OWN, '3.00', paid=False, date=IN),
@@ -97,6 +105,7 @@ PAYMENTS.update({
     'ps4': payment(OWN, '0.00', date=IN), 'ps5': payment(OWN, '5.00', date='2026-09-30T00:00:00Z'),
     'ps6': payment(OWN, '3.00', date='2026-09-30T00:00:01Z'), 'ps7': payment(OWN, '3.00'),
     'ps8': payment(OWN, '1.00', date=IN, deleted=True), 'pg': payment(OWN, '9.00', date=IN), 'pr': payment(OWN, '3.00', date=IN),
+    'pf': payment(FOREIGN, '11.00', date=IN),
 })
 
 
@@ -114,6 +123,7 @@ COURSE_SUBSCRIPTIONS = {
     'cs_s5': course_subscription('single', 'sara', payment='ps5'), 'cs_s6': course_subscription('single', 'sara', payment='ps6'),
     'cs_s7': course_subscription('single', 'sara', payment='ps7'), 'cs_s8': course_subscription('single', 'sara', payment='ps8'),
     'cs_g': course_subscription('grouped', 'sara', payment='pg'), 'cs_r': course_subscription('removed', 'sara', payment='pr'),
+    'cs_f': course_subscription('abroad', 'sara', payment='pf'),
 }
 INSTALLMENTS = {
     'i1': {'id': next(ids), 'course_subscription': 'cs_q', 'payment': 'pi1', 'deleted': False, 'group': None},
@@ -263,10 +273,11 @@ add('add-null-percentage-and-amount-given', 'full_collaborator', ADD(), 200, ADD
     body={'hours': ' 0.5 ', 'percentage_billing': None, 'amount': '1e1', 'period': '', 'notes': None, 'courses': None},
     effect=created('draft', 'full_collaborator', defaults=('hourly_billing',),
                    columns={'hours': '0.50', 'date': '$today', 'percentage_billing': None, 'amount': '10.00', 'period': ''}))
-add('add-abroad-instructor', 'owner', ADD('abroad'), 200, ADDED, method='POST', body={'hours': 1, 'date': '01/09/2026'},
-    effect=created('abroad', 'owner', date=False, columns={'hours': '1.00', 'date': '2026-09-01'}))
-add('add-athlete', 'athlete', ADD(), 200, ADDED, method='POST', body={'hours': '1'},
-    effect=created('draft', 'athlete', columns={'hours': '1.00', 'date': '$today'}))
+# Only the caller's own instructors: another owner's instructor, or any for an athlete, is not found.
+add('add-other-association-instructor', 'owner', ADD('abroad'), 404, NOT_INSTRUCTOR, method='POST', body={'hours': 1, 'date': '01/09/2026'})
+add('add-other-owner-instructor', 'foreign_owner', ADD('abroad'), 200, ADDED, method='POST', body={'hours': 1, 'date': '01/09/2026'},
+    effect=created('abroad', 'foreign_owner', date=False, columns={'hours': '1.00', 'date': '2026-09-01'}))
+add('add-athlete-not-found', 'athlete', ADD(), 404, NOT_INSTRUCTOR, method='POST', body={'hours': '1'})
 add('add-grouped-payment-with-group-header', 'owner', ADD(), 200, ADDED, method='POST',
     body={'hours': '1', 'payment': PAYMENTS['grouped']['id']}, headers={'X-Group-Id': IDS['own_group']},
     effect=created('draft', 'owner', columns={'hours': '1.00', 'date': '$today', 'payment_id': PAYMENTS['grouped']['id']}))
@@ -346,6 +357,9 @@ add('update-validation-errors', 'owner', UPD('draft_row'), 400, {
                           'amount': '1234567890'})
 add('update-foreign-payment-denied', 'owner', UPD('draft_row'), 403, FORBIDDEN, method='PATCH',
     body={'hours': None, 'payment': PAYMENTS['abroad']['id']})
+# The instructor relation resolves through the instructor's owner: another association's one is denied.
+add('update-other-association-instructor-denied', 'owner', UPD('draft_row'), 403, FORBIDDEN, method='PATCH',
+    body={'hours': None, 'instructor': INSTRUCTORS['abroad']['id']})
 add('update-list-body', 'owner', UPD('draft_row'), 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']},
     method='PATCH', body=['hours'])
 add('update-null-body', 'owner', UPD('draft_row'), 400, {'non_field_errors': ['No data provided']}, method='PATCH', raw_body='null',
@@ -416,10 +430,18 @@ ENTRIES = [entry('cs_m', 'mp1'), entry('cs_m', 'mp5'), entry('cs_q', 'pi1', 'i1'
            entry('cs_s1', 'ps1'), entry('cs_s5', 'ps5'), entry('cs_s8', 'ps8')]
 TOTAL = sum(Decimal(PAYMENTS[p]['amount']) for p in ('mp1', 'mp5', 'pi1', 'pi4', 'pi6', 'ps1', 'ps5', 'ps8'))
 ALL_COURSES = [{'course_id': COURSES[label]['id']} for label in ('member', 'multi', 'single', 'grouped', 'removed')]
+ABROAD_COURSE = {'course_id': COURSES['abroad']['id']}
 SEPTEMBER = '2026/09/01 al 2026/09/30'
 calculated = lambda amount, entries: {'data': {'amount': amount, 'calculation_data': {'$unordered': entries}}}
 add('calculate', 'owner', CALC(), 200, calculated(float(TOTAL + Decimal('9.00')), ENTRIES + [entry('cs_g', 'pg')]), method='POST',
-    body={'period': SEPTEMBER, 'courses': ALL_COURSES + [{'course_id': UNKNOWN}, {'course_id': None, 'title': 'x'}]})
+    body={'period': SEPTEMBER, 'courses': ALL_COURSES + [{'course_id': UNKNOWN}, {'course_id': None, 'title': 'x'}, ABROAD_COURSE]})
+# Only courses of the caller's association count (Estero is another association's).
+add('calculate-other-association-course-ignored', 'owner', CALC(), 200, calculated(0, []), method='POST',
+    body={'period': SEPTEMBER, 'courses': [ABROAD_COURSE]})
+add('calculate-other-owner', 'foreign_owner', CALC('abroad'), 200, calculated(11.0, [entry('cs_f', 'pf')]), method='POST',
+    body={'period': SEPTEMBER, 'courses': [ABROAD_COURSE] + ALL_COURSES})
+add('calculate-other-association-instructor', 'owner', CALC('abroad'), 404, NOT_INSTRUCTOR, method='POST',
+    body={'period': SEPTEMBER, 'courses': ALL_COURSES})
 add('calculate-percentage', 'full_collaborator', CALC('draft'), 200, calculated(float(TOTAL) * (12.5 / 100), ENTRIES), method='POST',
     body={'period': '01/09/2026 al 30/09/2026', 'courses': ALL_COURSES[:3], 'percentage': ' 12.5 '})
 add('calculate-integer-percentage', 'owner', CALC(), 200, calculated(float(TOTAL) * (33 / 100), ENTRIES), method='POST',

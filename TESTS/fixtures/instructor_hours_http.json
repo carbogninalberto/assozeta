@@ -211,7 +211,7 @@
    "group": "own_group"
   },
   "mp1": {
-   "id": "a1000000-0000-4000-8000-000000966038",
+   "id": "a1000000-0000-4000-8000-000000966039",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "30.00",
    "paid": true,
@@ -220,7 +220,7 @@
    "group": null
   },
   "mp2": {
-   "id": "a1000000-0000-4000-8000-000000966039",
+   "id": "a1000000-0000-4000-8000-000000966040",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": false,
@@ -229,7 +229,7 @@
    "group": null
   },
   "mp3": {
-   "id": "a1000000-0000-4000-8000-000000966040",
+   "id": "a1000000-0000-4000-8000-000000966041",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": true,
@@ -238,7 +238,7 @@
    "group": null
   },
   "mp4": {
-   "id": "a1000000-0000-4000-8000-000000966041",
+   "id": "a1000000-0000-4000-8000-000000966042",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": true,
@@ -247,7 +247,7 @@
    "group": null
   },
   "mp5": {
-   "id": "a1000000-0000-4000-8000-000000966042",
+   "id": "a1000000-0000-4000-8000-000000966043",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "7.00",
    "paid": true,
@@ -256,7 +256,7 @@
    "group": "own_group"
   },
   "mp6": {
-   "id": "a1000000-0000-4000-8000-000000966043",
+   "id": "a1000000-0000-4000-8000-000000966044",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": true,
@@ -265,7 +265,7 @@
    "group": null
   },
   "pi1": {
-   "id": "a1000000-0000-4000-8000-000000966044",
+   "id": "a1000000-0000-4000-8000-000000966045",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "20.00",
    "paid": true,
@@ -274,7 +274,7 @@
    "group": null
   },
   "pi2": {
-   "id": "a1000000-0000-4000-8000-000000966045",
+   "id": "a1000000-0000-4000-8000-000000966046",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": false,
@@ -283,7 +283,7 @@
    "group": null
   },
   "pi3": {
-   "id": "a1000000-0000-4000-8000-000000966046",
+   "id": "a1000000-0000-4000-8000-000000966047",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": true,
@@ -292,7 +292,7 @@
    "group": null
   },
   "pi4": {
-   "id": "a1000000-0000-4000-8000-000000966047",
+   "id": "a1000000-0000-4000-8000-000000966048",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "2.50",
    "paid": true,
@@ -301,7 +301,7 @@
    "group": null
   },
   "pi6": {
-   "id": "a1000000-0000-4000-8000-000000966048",
+   "id": "a1000000-0000-4000-8000-000000966049",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "4.00",
    "paid": true,
@@ -310,7 +310,7 @@
    "group": null
   },
   "ps1": {
-   "id": "a1000000-0000-4000-8000-000000966049",
+   "id": "a1000000-0000-4000-8000-000000966050",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "50.50",
    "paid": true,
@@ -319,7 +319,7 @@
    "group": null
   },
   "ps3": {
-   "id": "a1000000-0000-4000-8000-000000966050",
+   "id": "a1000000-0000-4000-8000-000000966051",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": false,
@@ -328,7 +328,7 @@
    "group": null
   },
   "ps4": {
-   "id": "a1000000-0000-4000-8000-000000966051",
+   "id": "a1000000-0000-4000-8000-000000966052",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "0.00",
    "paid": true,
@@ -337,7 +337,7 @@
    "group": null
   },
   "ps5": {
-   "id": "a1000000-0000-4000-8000-000000966052",
+   "id": "a1000000-0000-4000-8000-000000966053",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "5.00",
    "paid": true,
@@ -346,7 +346,7 @@
    "group": null
   },
   "ps6": {
-   "id": "a1000000-0000-4000-8000-000000966053",
+   "id": "a1000000-0000-4000-8000-000000966054",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": true,
@@ -355,7 +355,7 @@
    "group": null
   },
   "ps7": {
-   "id": "a1000000-0000-4000-8000-000000966054",
+   "id": "a1000000-0000-4000-8000-000000966055",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
    "paid": true,
@@ -364,7 +364,7 @@
    "group": null
   },
   "ps8": {
-   "id": "a1000000-0000-4000-8000-000000966055",
+   "id": "a1000000-0000-4000-8000-000000966056",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "1.00",
    "paid": true,
@@ -373,7 +373,7 @@
    "group": null
   },
   "pg": {
-   "id": "a1000000-0000-4000-8000-000000966056",
+   "id": "a1000000-0000-4000-8000-000000966057",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "9.00",
    "paid": true,
@@ -382,9 +382,18 @@
    "group": null
   },
   "pr": {
-   "id": "a1000000-0000-4000-8000-000000966057",
+   "id": "a1000000-0000-4000-8000-000000966058",
    "association": "a1000000-0000-4000-8000-000000701001",
    "amount": "3.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "pf": {
+   "id": "a1000000-0000-4000-8000-000000966059",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "amount": "11.00",
    "paid": true,
    "date": "2026-09-15T08:30:00Z",
    "deleted": false,
@@ -644,7 +653,8 @@
    "type": 3,
    "multi": false,
    "deleted": false,
-   "group": null
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
   },
   "multi": {
    "id": "a1000000-0000-4000-8000-000000966034",
@@ -652,7 +662,8 @@
    "type": 2,
    "multi": true,
    "deleted": false,
-   "group": null
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
   },
   "single": {
    "id": "a1000000-0000-4000-8000-000000966035",
@@ -660,7 +671,8 @@
    "type": 1,
    "multi": false,
    "deleted": false,
-   "group": null
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
   },
   "grouped": {
    "id": "a1000000-0000-4000-8000-000000966036",
@@ -668,7 +680,8 @@
    "type": 1,
    "multi": false,
    "deleted": false,
-   "group": "own_group"
+   "group": "own_group",
+   "association": "a1000000-0000-4000-8000-000000701001"
   },
   "removed": {
    "id": "a1000000-0000-4000-8000-000000966037",
@@ -676,12 +689,22 @@
    "type": 1,
    "multi": false,
    "deleted": true,
-   "group": null
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000966038",
+   "title": "Estero",
+   "type": 1,
+   "multi": false,
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
   }
  },
  "course_subscriptions": {
   "cs_m": {
-   "id": "a1000000-0000-4000-8000-000000966058",
+   "id": "a1000000-0000-4000-8000-000000966060",
    "course": "member",
    "subscription": "maria",
    "payment": null,
@@ -695,7 +718,7 @@
    ]
   },
   "cs_m_removed": {
-   "id": "a1000000-0000-4000-8000-000000966059",
+   "id": "a1000000-0000-4000-8000-000000966061",
    "course": "member",
    "subscription": "maria",
    "payment": null,
@@ -705,7 +728,7 @@
    ]
   },
   "cs_q": {
-   "id": "a1000000-0000-4000-8000-000000966060",
+   "id": "a1000000-0000-4000-8000-000000966062",
    "course": "multi",
    "subscription": "luca",
    "payment": null,
@@ -713,7 +736,7 @@
    "memberships": []
   },
   "cs_s1": {
-   "id": "a1000000-0000-4000-8000-000000966061",
+   "id": "a1000000-0000-4000-8000-000000966063",
    "course": "single",
    "subscription": "sara",
    "payment": "ps1",
@@ -721,7 +744,7 @@
    "memberships": []
   },
   "cs_s2": {
-   "id": "a1000000-0000-4000-8000-000000966062",
+   "id": "a1000000-0000-4000-8000-000000966064",
    "course": "single",
    "subscription": "sara",
    "payment": null,
@@ -729,7 +752,7 @@
    "memberships": []
   },
   "cs_s3": {
-   "id": "a1000000-0000-4000-8000-000000966063",
+   "id": "a1000000-0000-4000-8000-000000966065",
    "course": "single",
    "subscription": "sara",
    "payment": "ps3",
@@ -737,7 +760,7 @@
    "memberships": []
   },
   "cs_s4": {
-   "id": "a1000000-0000-4000-8000-000000966064",
+   "id": "a1000000-0000-4000-8000-000000966066",
    "course": "single",
    "subscription": "sara",
    "payment": "ps4",
@@ -745,7 +768,7 @@
    "memberships": []
   },
   "cs_s5": {
-   "id": "a1000000-0000-4000-8000-000000966065",
+   "id": "a1000000-0000-4000-8000-000000966067",
    "course": "single",
    "subscription": "sara",
    "payment": "ps5",
@@ -753,7 +776,7 @@
    "memberships": []
   },
   "cs_s6": {
-   "id": "a1000000-0000-4000-8000-000000966066",
+   "id": "a1000000-0000-4000-8000-000000966068",
    "course": "single",
    "subscription": "sara",
    "payment": "ps6",
@@ -761,7 +784,7 @@
    "memberships": []
   },
   "cs_s7": {
-   "id": "a1000000-0000-4000-8000-000000966067",
+   "id": "a1000000-0000-4000-8000-000000966069",
    "course": "single",
    "subscription": "sara",
    "payment": "ps7",
@@ -769,7 +792,7 @@
    "memberships": []
   },
   "cs_s8": {
-   "id": "a1000000-0000-4000-8000-000000966068",
+   "id": "a1000000-0000-4000-8000-000000966070",
    "course": "single",
    "subscription": "sara",
    "payment": "ps8",
@@ -777,7 +800,7 @@
    "memberships": []
   },
   "cs_g": {
-   "id": "a1000000-0000-4000-8000-000000966069",
+   "id": "a1000000-0000-4000-8000-000000966071",
    "course": "grouped",
    "subscription": "sara",
    "payment": "pg",
@@ -785,52 +808,60 @@
    "memberships": []
   },
   "cs_r": {
-   "id": "a1000000-0000-4000-8000-000000966070",
+   "id": "a1000000-0000-4000-8000-000000966072",
    "course": "removed",
    "subscription": "sara",
    "payment": "pr",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_f": {
+   "id": "a1000000-0000-4000-8000-000000966073",
+   "course": "abroad",
+   "subscription": "sara",
+   "payment": "pf",
    "deleted": false,
    "memberships": []
   }
  },
  "installments": {
   "i1": {
-   "id": "a1000000-0000-4000-8000-000000966071",
+   "id": "a1000000-0000-4000-8000-000000966074",
    "course_subscription": "cs_q",
    "payment": "pi1",
    "deleted": false,
    "group": null
   },
   "i2": {
-   "id": "a1000000-0000-4000-8000-000000966072",
+   "id": "a1000000-0000-4000-8000-000000966075",
    "course_subscription": "cs_q",
    "payment": "pi2",
    "deleted": false,
    "group": null
   },
   "i3": {
-   "id": "a1000000-0000-4000-8000-000000966073",
+   "id": "a1000000-0000-4000-8000-000000966076",
    "course_subscription": "cs_q",
    "payment": "pi3",
    "deleted": true,
    "group": null
   },
   "i4": {
-   "id": "a1000000-0000-4000-8000-000000966074",
+   "id": "a1000000-0000-4000-8000-000000966077",
    "course_subscription": "cs_q",
    "payment": "pi4",
    "deleted": false,
    "group": null
   },
   "i5": {
-   "id": "a1000000-0000-4000-8000-000000966075",
+   "id": "a1000000-0000-4000-8000-000000966078",
    "course_subscription": "cs_q",
    "payment": null,
    "deleted": false,
    "group": null
   },
   "i6": {
-   "id": "a1000000-0000-4000-8000-000000966076",
+   "id": "a1000000-0000-4000-8000-000000966079",
    "course_subscription": "cs_q",
    "payment": "pi6",
    "deleted": false,
@@ -2057,7 +2088,7 @@
    "effect": {
     "actor": "owner",
     "rows": {
-     "a1000000-0000-4000-8000-000000966078": {
+     "a1000000-0000-4000-8000-000000966081": {
       "compensation_type": "percentage",
       "hourly_billing": "12.50",
       "percentage_billing": "7.50",
@@ -2089,7 +2120,7 @@
     "audit": [
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000966078",
+      "key": "a1000000-0000-4000-8000-000000966081",
       "action": 0,
       "changes": "$created",
       "overrides": {}
@@ -2097,7 +2128,7 @@
     ]
    },
    "body": {
-    "instructor_hours_id": "a1000000-0000-4000-8000-000000966078",
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000966081",
     "instructor": "a1000000-0000-4000-8000-000000950005",
     "document_token": "ignored",
     "creation_date": "2026-09-01T10:00:00+02:00",
@@ -2180,8 +2211,24 @@
    }
   },
   {
-   "name": "instructor-hours-add-abroad-instructor",
+   "name": "instructor-hours-add-other-association-instructor",
    "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "body": {
+    "hours": 1,
+    "date": "01/09/2026"
+   }
+  },
+  {
+   "name": "instructor-hours-add-other-owner-instructor",
+   "actor": "foreign_owner",
    "method": "POST",
    "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/add",
    "headers": {},
@@ -2190,7 +2237,7 @@
     "msg": "hours added."
    },
    "effect": {
-    "actor": "owner",
+    "actor": "foreign_owner",
     "rows": {
      "$new": {
       "compensation_type": "hourly",
@@ -2230,51 +2277,16 @@
    }
   },
   {
-   "name": "instructor-hours-add-athlete",
+   "name": "instructor-hours-add-athlete-not-found",
    "actor": "athlete",
    "method": "POST",
    "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
    "headers": {},
-   "status": 200,
+   "status": 404,
    "response": {
-    "msg": "hours added."
+    "error": "instructor not found"
    },
-   "effect": {
-    "actor": "athlete",
-    "rows": {
-     "$new": {
-      "compensation_type": "hourly",
-      "hourly_billing": "0.00",
-      "percentage_billing": "0.00",
-      "courses": null,
-      "period": null,
-      "amount": "0.00",
-      "paid": false,
-      "payment_id": null,
-      "notes": null,
-      "calculation_data": [],
-      "document_id": null,
-      "instructor_id": "a1000000-0000-4000-8000-000000950004",
-      "hours": "1.00",
-      "date": "$today"
-     }
-    },
-    "documents": {},
-    "audit": [
-     {
-      "model": "InstructorHours",
-      "key": "$new",
-      "action": 0,
-      "changes": "$created",
-      "overrides": {
-       "hourly_billing": "0.0",
-       "percentage_billing": "0.0",
-       "amount": "0.0",
-       "date": "$now"
-      }
-     }
-    ]
-   },
+   "effect": null,
    "body": {
     "hours": "1"
    }
@@ -2974,6 +2986,22 @@
    }
   },
   {
+   "name": "instructor-hours-update-other-association-instructor-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966023/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "hours": null,
+    "instructor": "a1000000-0000-4000-8000-000000950005"
+   }
+  },
+  {
    "name": "instructor-hours-update-list-body",
    "actor": "owner",
    "method": "PATCH",
@@ -3115,7 +3143,7 @@
    "effect": {
     "actor": "owner",
     "rows": {
-     "a1000000-0000-4000-8000-000000966077": {
+     "a1000000-0000-4000-8000-000000966080": {
       "$copy": "copyable",
       "hours": "9.50"
      }
@@ -3124,14 +3152,14 @@
     "audit": [
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000966077",
+      "key": "a1000000-0000-4000-8000-000000966080",
       "action": 1,
       "changes": "$created",
       "overrides": {}
      },
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000966077",
+      "key": "a1000000-0000-4000-8000-000000966080",
       "action": 0,
       "changes": "$created",
       "overrides": {}
@@ -3139,7 +3167,7 @@
     ]
    },
    "body": {
-    "instructor_hours_id": "a1000000-0000-4000-8000-000000966077",
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000966080",
     "hours": "9.5"
    }
   },
@@ -3512,66 +3540,66 @@
       "$unordered": [
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 30.0,
         "payment_date": "2026-09-10T10:00:00.250000Z"
        },
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 7.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966071",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
         "amount": 20.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966077",
         "amount": 2.5,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966076",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966079",
         "amount": 4.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966061",
+        "course_subscription": "a1000000-0000-4000-8000-000000966063",
         "full_athlete_name": "Sara Neri",
         "amount": 50.5,
         "payment_date": "2026-09-20T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966065",
+        "course_subscription": "a1000000-0000-4000-8000-000000966067",
         "full_athlete_name": "Sara Neri",
         "amount": 5.0,
         "payment_date": "2026-09-30T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966068",
+        "course_subscription": "a1000000-0000-4000-8000-000000966070",
         "full_athlete_name": "Sara Neri",
         "amount": 1.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Gruppo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966069",
+        "course_subscription": "a1000000-0000-4000-8000-000000966071",
         "full_athlete_name": "Sara Neri",
         "amount": 9.0,
         "payment_date": "2026-09-15T08:30:00Z"
@@ -3605,6 +3633,114 @@
      {
       "course_id": null,
       "title": "x"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966038"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-other-association-course-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 0,
+     "calculation_data": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": null,
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966038"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-other-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 11.0,
+     "calculation_data": {
+      "$unordered": [
+       {
+        "course": "Estero",
+        "course_subscription": "a1000000-0000-4000-8000-000000966073",
+        "full_athlete_name": "Sara Neri",
+        "amount": 11.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       }
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966038"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966033"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966034"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966035"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966036"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966037"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-other-association-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/calculate",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966033"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966034"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966035"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966036"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966037"
      }
     ]
    }
@@ -3623,59 +3759,59 @@
       "$unordered": [
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 30.0,
         "payment_date": "2026-09-10T10:00:00.250000Z"
        },
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 7.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966071",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
         "amount": 20.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966077",
         "amount": 2.5,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966076",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966079",
         "amount": 4.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966061",
+        "course_subscription": "a1000000-0000-4000-8000-000000966063",
         "full_athlete_name": "Sara Neri",
         "amount": 50.5,
         "payment_date": "2026-09-20T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966065",
+        "course_subscription": "a1000000-0000-4000-8000-000000966067",
         "full_athlete_name": "Sara Neri",
         "amount": 5.0,
         "payment_date": "2026-09-30T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966068",
+        "course_subscription": "a1000000-0000-4000-8000-000000966070",
         "full_athlete_name": "Sara Neri",
         "amount": 1.0,
         "payment_date": "2026-09-15T08:30:00Z"
@@ -3715,59 +3851,59 @@
       "$unordered": [
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 30.0,
         "payment_date": "2026-09-10T10:00:00.250000Z"
        },
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 7.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966071",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
         "amount": 20.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966077",
         "amount": 2.5,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966076",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966079",
         "amount": 4.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966061",
+        "course_subscription": "a1000000-0000-4000-8000-000000966063",
         "full_athlete_name": "Sara Neri",
         "amount": 50.5,
         "payment_date": "2026-09-20T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966065",
+        "course_subscription": "a1000000-0000-4000-8000-000000966067",
         "full_athlete_name": "Sara Neri",
         "amount": 5.0,
         "payment_date": "2026-09-30T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966068",
+        "course_subscription": "a1000000-0000-4000-8000-000000966070",
         "full_athlete_name": "Sara Neri",
         "amount": 1.0,
         "payment_date": "2026-09-15T08:30:00Z"
@@ -3807,59 +3943,59 @@
       "$unordered": [
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 30.0,
         "payment_date": "2026-09-10T10:00:00.250000Z"
        },
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 7.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966071",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
         "amount": 20.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966077",
         "amount": 2.5,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966076",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966079",
         "amount": 4.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966061",
+        "course_subscription": "a1000000-0000-4000-8000-000000966063",
         "full_athlete_name": "Sara Neri",
         "amount": 50.5,
         "payment_date": "2026-09-20T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966065",
+        "course_subscription": "a1000000-0000-4000-8000-000000966067",
         "full_athlete_name": "Sara Neri",
         "amount": 5.0,
         "payment_date": "2026-09-30T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966068",
+        "course_subscription": "a1000000-0000-4000-8000-000000966070",
         "full_athlete_name": "Sara Neri",
         "amount": 1.0,
         "payment_date": "2026-09-15T08:30:00Z"
@@ -3899,59 +4035,59 @@
       "$unordered": [
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 30.0,
         "payment_date": "2026-09-10T10:00:00.250000Z"
        },
        {
         "course": "Abbonamento è",
-        "course_subscription": "a1000000-0000-4000-8000-000000966058",
+        "course_subscription": "a1000000-0000-4000-8000-000000966060",
         "full_athlete_name": "Maria Bianchi",
         "amount": 7.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966071",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
         "amount": 20.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966074",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966077",
         "amount": 2.5,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Quote",
-        "course_subscription": "a1000000-0000-4000-8000-000000966060",
+        "course_subscription": "a1000000-0000-4000-8000-000000966062",
         "full_athlete_name": "Luca Verdi",
-        "course_subscription_installment": "a1000000-0000-4000-8000-000000966076",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966079",
         "amount": 4.0,
         "payment_date": "2026-09-15T08:30:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966061",
+        "course_subscription": "a1000000-0000-4000-8000-000000966063",
         "full_athlete_name": "Sara Neri",
         "amount": 50.5,
         "payment_date": "2026-09-20T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966065",
+        "course_subscription": "a1000000-0000-4000-8000-000000966067",
         "full_athlete_name": "Sara Neri",
         "amount": 5.0,
         "payment_date": "2026-09-30T00:00:00Z"
        },
        {
         "course": "Singolo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966068",
+        "course_subscription": "a1000000-0000-4000-8000-000000966070",
         "full_athlete_name": "Sara Neri",
         "amount": 1.0,
         "payment_date": "2026-09-15T08:30:00Z"
@@ -3993,7 +4129,7 @@
       "$unordered": [
        {
         "course": "Gruppo",
-        "course_subscription": "a1000000-0000-4000-8000-000000966069",
+        "course_subscription": "a1000000-0000-4000-8000-000000966071",
         "full_athlete_name": "Sara Neri",
         "amount": 9.0,
         "payment_date": "2026-09-15T08:30:00Z"

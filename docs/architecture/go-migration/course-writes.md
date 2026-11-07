@@ -30,9 +30,11 @@ answering 500 or 400).
    the create entry records `'0.0'` for a defaulted fee and one fee and is indexed through the actor (the course has no association
    yet); the association save records `sport_association` (and `0.00 -> 0.0` for the defaults), indexed through its changes
    (auditlog writes before the UPDATE). Title and description have `<` and `>` escaped.
-5. `locations`: each `course_location_id` found by `CourseLocation.objects.filter(...).first()` is added (unknown ids are skipped;
-   a malformed item is a 500 after the course exists).
-6. Per subscription (`Subscription.objects.get`, group-aware; a miss is a 500 after the course exists):
+5. `locations`: each `course_location_id` found among the association's locations
+   (`CourseLocation.objects.filter(..., sport_association=...).first()`) is added (unknown ids and other associations' locations
+   are skipped; a malformed item is a 500 after the course exists).
+6. Per subscription (`Subscription.objects.get` within the association, group-aware; an unknown or other association's
+   subscription is a 500 after the course exists):
    `CourseSubscription.objects.create(...)` (float `membership_fee` in memory: `'0.0'`, and `str(self.__dict__)` as `object_repr`);
    for instalment courses one `Payment` (`Quota Corso`, the default category, the association's default bank account, the event
    date) and one installment per event not before the row's UTC creation date (past events need `full_installments_plan`);
@@ -42,16 +44,19 @@ answering 500 or 400).
 ## course/<uid>/update
 
 - `is_valid_uuid(uid)` (400 list), then `Course.objects.filter(course_id=uid).first()` (live, group-aware):
-  `400 {'msg:': 'course not found.'}`. A non-dict body or a non-text `title`/`description` is a 500.
+  `400 {'msg:': 'course not found.'}`. Then `SportAssociation.objects.filter(user=request.user).first()`: unless it is the
+  course's association (athletes, owners without an association, another association's course)
+  `403 {'detail': 'User not allowed.'}`, before any write. A non-dict body or a non-text `title`/`description` is a 500.
 - The body values are assigned raw in the view's order: escaped `title`/`description`, `one_fee` (one-fee courses only), `fee`,
-  `locations` (cleared, then each found location added, immediately), `multiple_quotes`, `events` (instalment courses only:
+  `locations` (the linked locations are read, the links cleared, then each listed location that is the association's or was
+  already linked to the course is added, immediately), `multiple_quotes`, `events` (instalment courses only:
   each revalidated by `CourseEventsSerializer`, a failure answers its 400 after the locations were replaced; stored as
   `{'id', 'amount' 0.00, 'payment_date' DD/MM/YYYY}`), the billing booleans and integers, `start_date`/`end_date`.
 - `Course.save()`: auditlog compares `str()` of the in-memory values (`'60.5'`, `'45'`, `'1'`, `'True'`, JSON
   `json.dumps(sort_keys=True)`, naive UTC datetimes) with the stored ones; the entry is indexed directly. A calendar-invalid date
   is a 500 at save (after the locations).
-- A changed title runs `update_metadata_courses`: the live group-aware payments whose `meta` text or description contains the old
-  title (case-insensitively) get it replaced case-sensitively in their top-level meta strings and description (`bulk_update`, no
+- A changed title runs `update_metadata_courses`: the course association's live group-aware payments whose `meta` text or
+  description contains the old title (case-insensitively; nothing for a course without an association) get it replaced case-sensitively in their top-level meta strings and description (`bulk_update`, no
   audit).
 
 ## course/<uid>/delete
@@ -77,8 +82,9 @@ Response `{'data': {'msg': 'associate deleted.'}}`.
 
 ## course/<uid>/overview/<uid_subscription>/update
 
-The live course subscription (`.first()`, 500 when missing); owners must own the course (403), athletes the subscription (403;
-the payments then belong to the subscription's association). `multi_payments` (truthy): instalment rows drop their installments
+The live course subscription (`.first()`, 500 when missing); non-athletes need an association (403 without one) that is the
+course's (403 otherwise, also for a course without an association; a missing course is a 500), athletes must own the
+subscription (403; the payments then belong to the subscription's association). `multi_payments` (truthy): instalment rows drop their installments
 whose payment is unpaid or missing (each payment deleted, the installment's entry recording payment None); single-payment rows
 delete their unpaid payment and are saved as instalment rows; then every valid course event (`%d/%m/%Y`; invalid ones are
 skipped) not before the row's creation date, or any with `all` exactly true, gets a payment (`Rata n.N del DD/MM/YY (title)`
@@ -96,12 +102,12 @@ Response `{'data': {'msg': 'course subscription update.'}}`.
   booleans other than `true`/`false`, 0/1 and `'t'`/`'True'`/`'1'`/`'f'`/`'False'`/`'0'`, non-integer or out-of-range billing
   integers (null `billed_from_day_of_month`), dates other than ISO `YYYY-MM-DD[THH:MM[:SS[.fff|.ffffff]]][Z|±HH:MM]` strings or
   null, and events carrying `course_subscription_installment_id`.
-- Event dates with non-ASCII digits; overview routes with a body that is not an object; course-overview update for an owner
-  without an association or a subscription without one, and a non-canonical `X-Group-Id`.
+- Event dates with non-ASCII digits; overview routes with a body that is not an object; course-overview update for an athlete
+  whose subscription has no association, and a non-canonical `X-Group-Id`.
 
 ## Evidence
 
-`TESTS/fixtures/course_writes_http.json` (96 cases, generated by `TESTS/fixtures/generate_course_writes_http.py`).
+`TESTS/fixtures/course_writes_http.json` (104 cases, generated by `TESTS/fixtures/generate_course_writes_http.py`).
 
 - RED (`red-r1`): Django 96/96; Go 404 on the first case.
 - GREEN (`versioned-r2`): 96/96 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact course, course
@@ -110,3 +116,11 @@ Response `{'data': {'msg': 'course subscription update.'}}`.
   control (`mutation-r2`) running `delete_related_course_payment`'s installment delete for a row with a payment fails
   `delete-full-cascade` (audit count).
 - `course-subscriptions`, `course-state-writes` and `course-overview` stay green after the route block was added to `main.go`.
+
+Association lookups (course update only for the caller's association's course, linked locations, subscriptions within the
+association, title rewrite of the association's payments, course-overview update without an association):
+
+- RED (`red-sync1`): Django 104/104; Go fails `update-full` (another association's payment rewritten).
+- GREEN (`versioned-sync1`): 104/104 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
+- Mutation (`mutation-sync1`): dropping the association filter from the title rewrite's payment lookup fails `update-full`
+  (CAUGHT).

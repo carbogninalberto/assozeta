@@ -95,7 +95,8 @@ type CourseAttendanceTransaction interface {
 	// RegistryDays is the scoped days of a registry ordered by date.
 	RegistryDays(ctx context.Context, registry string, scope *string) ([]AttendanceDayRow, error)
 	// Day is the scoped day by key, of registry when given.
-	Day(ctx context.Context, id string, registry *string, scope *string) (*AttendanceDayRow, error)
+	// Day: owner (when given) is the user of the course's association.
+	Day(ctx context.Context, id string, registry, owner *string, scope *string) (*AttendanceDayRow, error)
 	// TodayDay is the first scoped day of the registry whose UTC date is date.
 	TodayDay(ctx context.Context, registry, date string, scope *string) (*AttendanceDayRow, error)
 	// DaysOfRegistries is the scoped days of the courses' scoped registries, newest first.
@@ -106,17 +107,22 @@ type CourseAttendanceTransaction interface {
 	CourseSubscriptionFor(ctx context.Context, course, subscription string, scope AttendanceScope) (*AttendanceCourseSubscription, error)
 	// SubscriptionCourses is the scoped course subscriptions of a subscription,
 	// in database order; course filters course_id.
-	SubscriptionCourses(ctx context.Context, subscription, course *string, all bool, scope AttendanceScope) ([]AttendanceCourseSubscription, error)
+	// SubscriptionCourses: owner (when given) is the user of the course's association.
+	SubscriptionCourses(ctx context.Context, subscription, course, owner *string, all bool, scope AttendanceScope) ([]AttendanceCourseSubscription, error)
 	// CourseMembers is CourseSubscription.objects.filter(course=...) in database order.
 	CourseMembers(ctx context.Context, course string) ([]AttendanceCourseSubscription, error)
 	Person(ctx context.Context, subscription string) (*AttendancePerson, error)
 	// Subscription is the scoped, group-aware subscription by key, of
 	// association and/or user when given.
-	Subscription(ctx context.Context, id string, association, user, group *string, scope AttendanceScope) (*string, error)
-	InstructorName(ctx context.Context, id string) (*AttendancePerson, error)
+	// Subscription: owner (when given) is the user of the subscription's association.
+	Subscription(ctx context.Context, id string, association, owner, user, group *string, scope AttendanceScope) (*string, error)
+	// InstructorName is the instructor of the owner of the course's association
+	// (Instructor.objects.filter(instructor_id=id, user_id=owner).first()).
+	InstructorName(ctx context.Context, id string, courseAssociation *string) (*AttendancePerson, error)
 	// Holdings is the scoped carnet query of the views: the course
 	// subscription's or unlinked holdings of subscription, enabled, newest first.
-	Holdings(ctx context.Context, courseSubscription string, subscription *string, scope *string) ([]AttendanceHolding, error)
+	// Holdings: association (when given) is the subscription's association.
+	Holdings(ctx context.Context, courseSubscription string, subscription, association *string, scope *string) ([]AttendanceHolding, error)
 	StoredDay(ctx context.Context, id string) (*AttendanceDayRow, error)
 	StoredHoldingMeta(ctx context.Context, id string) (*string, error)
 	UpdateDay(ctx context.Context, id string, attendees, absences, event *string) error

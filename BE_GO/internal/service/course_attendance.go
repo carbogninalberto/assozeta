@@ -50,6 +50,9 @@ type attendanceRun struct {
 	scope    domain.AttendanceScope
 	actor    *string
 	resolved bool
+	// labels is the listed course's association: instructor labels come
+	// from its owner's instructors.
+	labels *string
 }
 
 // run executes one view: the work is committed unless the input is refused
@@ -423,6 +426,7 @@ func (s *CourseAttendance) Attendees(ctx context.Context, identity domain.Resolv
 		if course == nil {
 			return nil, domain.ErrCalendarCourseNotFound
 		}
+		r.labels = course.AssociationID
 		registry, err := r.tx.FirstRegistry(ctx, course.ID, r.scope.Association)
 		if err != nil {
 			return nil, err
@@ -751,7 +755,7 @@ func (r *attendanceRun) instructorLabels(ctx context.Context, props any) (any, e
 		if err != nil || prepared == nil {
 			return item, err
 		}
-		person, err := r.tx.InstructorName(ctx, *prepared)
+		person, err := r.tx.InstructorName(ctx, *prepared, r.labels)
 		if err != nil || person == nil {
 			return item, err
 		}
@@ -839,7 +843,7 @@ func (s *CourseAttendance) AttendeesUpdate(ctx context.Context, identity domain.
 		if registry == nil {
 			return nil, attendanceAnswer(404, "detail", "Course Attendance Registry not found.")
 		}
-		day, err := r.tx.Day(ctx, dayID.String(), &registry.ID, r.scope.Association)
+		day, err := r.tx.Day(ctx, dayID.String(), &registry.ID, nil, r.scope.Association)
 		if err != nil {
 			return nil, err
 		}
@@ -886,7 +890,7 @@ func (s *CourseAttendance) AttendeesUpdate(ctx context.Context, identity domain.
 			if row == nil {
 				continue
 			}
-			holdings, err := r.tx.Holdings(ctx, row.ID, row.SubscriptionID, r.scope.Association)
+			holdings, err := r.tx.Holdings(ctx, row.ID, row.SubscriptionID, &association, r.scope.Association)
 			if err != nil {
 				return nil, err
 			}
@@ -954,7 +958,7 @@ func (r *attendanceRun) returnLessons(ctx context.Context, course domain.Attenda
 		if row == nil {
 			return errCalendarRaised
 		}
-		holdings, err := r.tx.Holdings(ctx, row.ID, row.SubscriptionID, r.scope.Association)
+		holdings, err := r.tx.Holdings(ctx, row.ID, row.SubscriptionID, course.AssociationID, r.scope.Association)
 		if err != nil {
 			return err
 		}
@@ -1047,13 +1051,13 @@ func (s *CourseAttendance) SubscriptionAttendance(ctx context.Context, identity 
 		var subscription *string
 		groupID := supplierGroup(group)
 		if identity.ScopeUser.Role == domain.RoleAthlete {
-			subscription, err = r.tx.Subscription(ctx, id.String(), nil, &identity.ScopeUser.ID, groupID, r.scope)
+			subscription, err = r.tx.Subscription(ctx, id.String(), nil, nil, &identity.ScopeUser.ID, groupID, r.scope)
 		} else {
 			association, err := r.tx.OwnerAssociation(ctx, identity.ScopeUser.ID, r.scope.Association)
 			if err != nil {
 				return nil, err
 			}
-			subscription, err = r.tx.Subscription(ctx, id.String(), &association, nil, groupID, r.scope)
+			subscription, err = r.tx.Subscription(ctx, id.String(), &association, nil, nil, groupID, r.scope)
 			if err != nil {
 				return nil, err
 			}
@@ -1070,9 +1074,12 @@ func (s *CourseAttendance) SubscriptionAttendance(ctx context.Context, identity 
 			text := parsed.String()
 			selected = &text
 		}
-		rows, err := r.tx.SubscriptionCourses(ctx, subscription, selected, true, r.scope)
-		if err != nil {
-			return nil, err
+		rows := []domain.AttendanceCourseSubscription{}
+		if subscription != nil {
+			// A subscription the caller cannot see has no attendance.
+			if rows, err = r.tx.SubscriptionCourses(ctx, subscription, selected, nil, true, r.scope); err != nil {
+				return nil, err
+			}
 		}
 		courses, detailed, members := []string{}, []any{}, map[string]bool{}
 		for _, row := range rows {
@@ -1150,7 +1157,8 @@ func (s *CourseAttendance) Mark(ctx context.Context, identity domain.ResolvedIde
 	}
 	selected, _ := data.Lookup("attendance_day_id")
 	return s.run(ctx, identity, audit, func(r *attendanceRun) (any, error) {
-		subscription, err := r.tx.Subscription(ctx, id.String(), nil, nil, supplierGroup(group), r.scope)
+		owner := &identity.ScopeUser.ID
+		subscription, err := r.tx.Subscription(ctx, id.String(), nil, owner, nil, supplierGroup(group), r.scope)
 		if err != nil {
 			return nil, err
 		}
@@ -1162,7 +1170,7 @@ func (s *CourseAttendance) Mark(ctx context.Context, identity domain.ResolvedIde
 		already := false
 		var courseSub *domain.AttendanceCourseSubscription
 		if selected == nil {
-			rows, err := r.tx.SubscriptionCourses(ctx, subscription, nil, false, r.scope)
+			rows, err := r.tx.SubscriptionCourses(ctx, subscription, nil, owner, false, r.scope)
 			if err != nil {
 				return nil, err
 			}
@@ -1205,7 +1213,7 @@ func (s *CourseAttendance) Mark(ctx context.Context, identity domain.ResolvedIde
 			}
 			var day *domain.AttendanceDayRow
 			if prepared != nil {
-				if day, err = r.tx.Day(ctx, *prepared, nil, r.scope.Association); err != nil {
+				if day, err = r.tx.Day(ctx, *prepared, nil, owner, r.scope.Association); err != nil {
 					return nil, err
 				}
 			}
@@ -1278,7 +1286,7 @@ func (r *attendanceRun) checkIn(ctx context.Context, day domain.AttendanceDayRow
 	if courseSub == nil {
 		return nil, errCalendarRaised
 	}
-	holdings, err := r.tx.Holdings(ctx, courseSub.ID, courseSub.SubscriptionID, r.scope.Association)
+	holdings, err := r.tx.Holdings(ctx, courseSub.ID, courseSub.SubscriptionID, nil, r.scope.Association)
 	if err != nil {
 		return nil, err
 	}

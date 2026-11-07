@@ -401,6 +401,18 @@
     "instructor": null,
     "completed": false,
     "sport_association": "a1000000-0000-4000-8000-000000701002"
+   },
+   "a1000000-0000-4000-8000-000000960030": {
+    "event_id": "f3000000-0000-4000-8000-000000000001",
+    "event_title": "Zeta 1",
+    "event_description": "",
+    "event_course_title": null,
+    "event_reminder_text": "2 ore",
+    "send_at": "2026-11-05T08:00:00Z",
+    "user": "a1000000-0000-4000-8000-000000700007",
+    "instructor": null,
+    "completed": false,
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
    }
   },
   "logo": "data:image/png;base64,QUJD",
@@ -2244,6 +2256,19 @@
        "event_course_title": null,
        "event_reminder_text": "1 ore",
        "send_at": "2026-11-04T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700007",
        "instructor": null,
        "completed": false,
@@ -4403,6 +4428,19 @@
        "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
       }
      ],
      "globals": [
@@ -4793,6 +4831,19 @@
        "event_course_title": null,
        "event_reminder_text": "1 ore",
        "send_at": "2026-11-04T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700007",
        "instructor": null,
        "completed": false,
@@ -5210,6 +5261,19 @@
        "event_course_title": null,
        "event_reminder_text": "1 ore",
        "send_at": "2026-11-04T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700007",
        "instructor": null,
        "completed": false,
@@ -5763,6 +5827,19 @@
        "event_course_title": null,
        "event_reminder_text": "1 ore",
        "send_at": "2026-11-04T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700007",
        "instructor": null,
        "completed": false,
@@ -6362,6 +6439,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -6462,6 +6552,528 @@
     "events": [],
     "status": 2,
     "note": "extra key"
+   }
+  },
+  {
+   "name": "course-calendar-update-other-association-reminder-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000960008/calendar/update",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "message": "Calendar is already published."
+   },
+   "effect": {
+    "state": {
+     "registries": [
+      {
+       "ref": "a1000000-0000-4000-8000-000000960014",
+       "course": "a1000000-0000-4000-8000-000000960004",
+       "status": 2,
+       "events": [
+        {
+         "event_id": "a0000000-0000-4000-8000-000000000001",
+         "title": "Lezione 1",
+         "start": "2026-11-02T17:00:00.000Z",
+         "end": "2026-11-02T18:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "instructor": {
+           "instructor_id": "a1000000-0000-4000-8000-000000960001",
+           "label": "Ines Uno"
+          },
+          "groupId": "gA"
+         }
+        },
+        {
+         "event_id": "a0000000-0000-4000-8000-000000000002",
+         "title": "Lezione 2",
+         "start": "2026-11-09T17:00:00.000Z",
+         "end": "2026-11-09T18:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "groupId": "gA",
+          "reminder_enabled": true,
+          "reminder_amount": 1,
+          "reminder_unit": "hours",
+          "description": "Portare scarpe"
+         }
+        },
+        {
+         "event_id": "a0000000-0000-4000-8000-000000000003",
+         "title": "Lezione 3",
+         "start": "2026-11-16T17:00:00.000Z",
+         "end": "2026-11-16T18:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "groupId": "gA"
+         },
+         "className": "fc-custom"
+        },
+        {
+         "event_id": "a0000000-0000-4000-8000-000000000004",
+         "title": "Recupero",
+         "start": "2026-11-20T09:00:00.000Z",
+         "end": null,
+         "allDay": true
+        }
+       ],
+       "creation_date": "2026-10-01T08:00:00Z"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960015",
+       "course": "a1000000-0000-4000-8000-000000960007",
+       "status": 1,
+       "events": [
+        {
+         "event_id": "d0000000-0000-4000-8000-000000000001",
+         "title": "Delta 1",
+         "start": "2026-10-30T16:00:00.000Z",
+         "end": "2026-10-30T17:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {}
+        },
+        {
+         "event_id": "d0000000-0000-4000-8000-000000000002",
+         "title": "Delta 2",
+         "start": "2026-11-06T16:00:00.000Z",
+         "end": "2026-11-06T17:00:00.000Z",
+         "allDay": false
+        }
+       ],
+       "creation_date": "2026-10-01T08:00:00Z"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960016",
+       "course": "a1000000-0000-4000-8000-000000960008",
+       "status": 3,
+       "events": [],
+       "creation_date": "2026-10-01T08:00:00Z"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960017",
+       "course": "a1000000-0000-4000-8000-000000960009",
+       "status": 2,
+       "events": [
+        {
+         "event_id": "e0000000-0000-4000-8000-000000000001",
+         "title": "Gruppo 1",
+         "start": "2026-11-11T10:00:00.000Z",
+         "end": "2026-11-11T11:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "groupId": "gG"
+         }
+        },
+        {
+         "event_id": "e0000000-0000-4000-8000-000000000002",
+         "title": "Gruppo 2",
+         "start": "2026-11-12T10:00:00.000Z",
+         "end": "2026-11-12T11:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "groupId": "gG"
+         }
+        },
+        {
+         "event_id": "e0000000-0000-4000-8000-000000000003",
+         "title": "Gruppo 3",
+         "start": "2026-11-13T10:00:00.000Z",
+         "end": "2026-11-13T11:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "groupId": "gG",
+          "reminder_enabled": true,
+          "reminder_amount": 15,
+          "reminder_unit": "minutes"
+         }
+        }
+       ],
+       "creation_date": "2026-10-01T08:00:00Z"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960018",
+       "course": "a1000000-0000-4000-8000-000000960010",
+       "status": 2,
+       "events": [
+        {
+         "event_id": "f0000000-0000-4000-8000-000000000001",
+         "title": "Fantasma",
+         "start": "2026-11-03T10:00:00.000Z",
+         "end": "2026-11-03T11:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {}
+        }
+       ],
+       "creation_date": "2026-10-01T08:00:00Z"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960019",
+       "course": "a1000000-0000-4000-8000-000000960011",
+       "status": 2,
+       "events": [
+        {
+         "event_id": "f1000000-0000-4000-8000-000000000001",
+         "title": "Estero 1",
+         "start": "2026-11-04T10:00:00.000Z",
+         "end": "2026-11-04T11:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "description": "Fuori sede"
+         }
+        }
+       ],
+       "creation_date": "2026-10-01T08:00:00Z"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960020",
+       "course": "a1000000-0000-4000-8000-000000960013",
+       "status": 2,
+       "events": [
+        {
+         "event_id": "f2000000-0000-4000-8000-000000000001",
+         "title": "Rotto",
+         "start": "2026-11-05T10:00:00.000Z",
+         "extendedProps": null
+        }
+       ],
+       "creation_date": "2026-10-01T08:00:00Z"
+      },
+      {
+       "ref": "$new:registry-beta",
+       "course": "a1000000-0000-4000-8000-000000960005",
+       "status": 2,
+       "events": [
+        {
+         "event_id": "b0000000-0000-4000-8000-000000000001",
+         "title": "Prova",
+         "start": "2026-11-03T18:00:00.000Z",
+         "end": "2026-11-03T19:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "groupId": "gB"
+         }
+        },
+        {
+         "event_id": "B0000000-0000-4000-8000-000000000002",
+         "title": "Prova 2",
+         "start": "2026-11-10T18:00:00.000Z",
+         "end": "2026-11-10T19:00:00.000Z",
+         "allDay": false,
+         "extendedProps": {
+          "reminder_enabled": false
+         }
+        }
+       ],
+       "creation_date": "$any"
+      },
+      {
+       "ref": "$new:registry-gamma",
+       "course": "a1000000-0000-4000-8000-000000960006",
+       "status": 2,
+       "events": [
+        {
+         "event_id": "c0000000-0000-4000-8000-000000000001",
+         "title": "Gamma 1",
+         "start": "2026-11-04T08:30:00+01:00",
+         "end": "2026-11-04T09:30:00+01:00",
+         "allDay": false,
+         "extendedProps": {
+          "reminder_enabled": true,
+          "reminder_amount": "30",
+          "reminder_unit": "minutes",
+          "course_title": "Corso Gamma",
+          "instructor": {
+           "instructor_id": "a1000000-0000-4000-8000-000000960002"
+          }
+         }
+        }
+       ],
+       "creation_date": "$any"
+      }
+     ],
+     "days": [
+      {
+       "ref": "a1000000-0000-4000-8000-000000960021",
+       "registry": "a1000000-0000-4000-8000-000000960014",
+       "title": "Lezione 1",
+       "date": "2026-11-02T17:00:00Z",
+       "associated_event": "a0000000-0000-4000-8000-000000000001",
+       "attendees": [],
+       "expected_absences": null,
+       "auto_marked": false
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960022",
+       "registry": "a1000000-0000-4000-8000-000000960014",
+       "title": "Lezione 2",
+       "date": "2026-11-09T17:00:00Z",
+       "associated_event": "a0000000-0000-4000-8000-000000000002",
+       "attendees": null,
+       "expected_absences": null,
+       "auto_marked": false
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960023",
+       "registry": "a1000000-0000-4000-8000-000000960014",
+       "title": "Lezione 3",
+       "date": "2026-11-16T17:00:00Z",
+       "associated_event": null,
+       "attendees": null,
+       "expected_absences": null,
+       "auto_marked": false
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960024",
+       "registry": "a1000000-0000-4000-8000-000000960014",
+       "title": "Recupero",
+       "date": "2026-11-20T09:00:00Z",
+       "associated_event": "a0000000-0000-4000-8000-000000000004",
+       "attendees": null,
+       "expected_absences": null,
+       "auto_marked": false
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960025",
+       "registry": "a1000000-0000-4000-8000-000000960017",
+       "title": "Gruppo 3",
+       "date": "2026-11-13T10:00:00Z",
+       "associated_event": "e0000000-0000-4000-8000-000000000003",
+       "attendees": null,
+       "expected_absences": null,
+       "auto_marked": false
+      },
+      {
+       "ref": "$new:day-b1",
+       "registry": "$new:registry-beta",
+       "title": "Prova",
+       "date": "2026-11-03T18:00:00Z",
+       "associated_event": "b0000000-0000-4000-8000-000000000001",
+       "attendees": null,
+       "expected_absences": null,
+       "auto_marked": false
+      },
+      {
+       "ref": "$new:day-b2",
+       "registry": "$new:registry-beta",
+       "title": "Prova 2",
+       "date": "2026-11-10T18:00:00Z",
+       "associated_event": "b0000000-0000-4000-8000-000000000002",
+       "attendees": null,
+       "expected_absences": null,
+       "auto_marked": false
+      },
+      {
+       "ref": "$new:day-c1",
+       "registry": "$new:registry-gamma",
+       "title": "Gamma 1",
+       "date": "2026-11-04T07:30:00Z",
+       "associated_event": "c0000000-0000-4000-8000-000000000001",
+       "attendees": null,
+       "expected_absences": null,
+       "auto_marked": false
+      }
+     ],
+     "reminders": [
+      {
+       "ref": "a1000000-0000-4000-8000-000000960026",
+       "event_id": "a0000000-0000-4000-8000-000000000002",
+       "event_title": "Lezione 2",
+       "event_description": "Portare scarpe",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-09T16:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960027",
+       "event_id": "90000000-0000-4000-8000-000000000001",
+       "event_title": "Assemblea",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 giorni",
+       "send_at": "2026-11-03T19:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960028",
+       "event_id": "e0000000-0000-4000-8000-000000000003",
+       "event_title": "Gruppo 3",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "15 minuti",
+       "send_at": "2026-11-13T09:45:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960029",
+       "event_id": "f1000000-0000-4000-8000-000000000001",
+       "event_title": "Estero 1",
+       "event_description": "Fuori sede",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-04T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
+       "ref": "$new:reminder-c1",
+       "event_id": "c0000000-0000-4000-8000-000000000001",
+       "event_title": "Gamma 1",
+       "event_description": "",
+       "event_course_title": "Corso Gamma",
+       "event_reminder_text": "30 minuti",
+       "send_at": "2026-11-04T07:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      }
+     ],
+     "globals": [
+      {
+       "ref": "$new:global-own",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "events": [
+        {
+         "event_id": "90000000-0000-4000-8000-000000000001",
+         "title": "Assemblea",
+         "start": "2026-11-05T19:00:00Z",
+         "end": "2026-11-05T21:00:00Z",
+         "allDay": false,
+         "extendedProps": {
+          "reminder_enabled": true,
+          "reminder_amount": 2,
+          "reminder_unit": "days"
+         }
+        },
+        {
+         "event_id": "90000000-0000-4000-8000-000000000002",
+         "title": "Festa",
+         "start": "2026-12-20",
+         "allDay": true
+        }
+       ]
+      },
+      {
+       "ref": "$new:global-foreign",
+       "sport_association": "a1000000-0000-4000-8000-000000701002",
+       "events": null
+      }
+     ]
+    },
+    "audit": [
+     {
+      "model": "reminders",
+      "action": 0,
+      "key": "$new:reminder-z1",
+      "changes": {
+       "reminders_id": [
+        "None",
+        "$new:reminder-z1"
+       ],
+       "event_id": [
+        "None",
+        "f3000000-0000-4000-8000-000000000001"
+       ],
+       "event_title": [
+        "None",
+        "Zeta 1"
+       ],
+       "event_description": [
+        "None",
+        ""
+       ],
+       "event_reminder_text": [
+        "None",
+        "1 ore"
+       ],
+       "send_at": [
+        "None",
+        "2026-11-05 09:00:00"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "completed": [
+        "None",
+        "False"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "events": [
+     {
+      "event_id": "f3000000-0000-4000-8000-000000000001",
+      "title": "Zeta 1",
+      "start": "2026-11-05T10:00:00.000Z",
+      "end": "2026-11-05T11:00:00.000Z",
+      "allDay": false,
+      "extendedProps": {
+       "reminder_enabled": true,
+       "reminder_amount": 1,
+       "reminder_unit": "hours",
+       "instructor": {
+        "instructor_id": "a1000000-0000-4000-8000-000000960003"
+       }
+      }
+     }
+    ],
+    "status": 2
    }
   },
   {
@@ -6862,6 +7474,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -6871,6 +7496,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -7528,6 +8166,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -7537,6 +8188,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -8064,6 +8728,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -8073,6 +8750,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -8699,6 +9389,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -8708,6 +9411,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -9147,6 +9863,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -9156,6 +9885,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -9745,6 +10487,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -9754,6 +10509,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -10108,6 +10876,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -10117,6 +10898,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -10462,6 +11256,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -10471,6 +11278,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -10979,6 +11799,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -10988,6 +11821,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -11385,6 +12231,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -11394,6 +12253,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -11746,6 +12618,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -11755,6 +12640,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -12108,6 +13006,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -12117,6 +13028,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -12401,6 +13325,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -12410,6 +13347,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -12792,6 +13742,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -12801,6 +13764,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -13199,6 +14175,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -13208,6 +14197,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -13601,6 +14603,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -13610,6 +14625,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -14074,6 +15102,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -14083,6 +15124,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -14475,6 +15529,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -14484,6 +15551,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },
@@ -15039,6 +16119,19 @@
        "sport_association": "a1000000-0000-4000-8000-000000701002"
       },
       {
+       "ref": "a1000000-0000-4000-8000-000000960030",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "2 ore",
+       "send_at": "2026-11-05T08:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700007",
+       "instructor": null,
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701002"
+      },
+      {
        "ref": "$new:reminder-c1",
        "event_id": "c0000000-0000-4000-8000-000000000001",
        "event_title": "Gamma 1",
@@ -15048,6 +16141,19 @@
        "send_at": "2026-11-04T07:00:00Z",
        "user": "a1000000-0000-4000-8000-000000700001",
        "instructor": "a1000000-0000-4000-8000-000000960002",
+       "completed": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001"
+      },
+      {
+       "ref": "$new:reminder-z1",
+       "event_id": "f3000000-0000-4000-8000-000000000001",
+       "event_title": "Zeta 1",
+       "event_description": "",
+       "event_course_title": null,
+       "event_reminder_text": "1 ore",
+       "send_at": "2026-11-05T09:00:00Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "instructor": null,
        "completed": false,
        "sport_association": "a1000000-0000-4000-8000-000000701001"
       },

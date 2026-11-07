@@ -414,8 +414,8 @@ func calendarDescribe(events any, courseTitle *string) (any, error) {
 
 type calendarReminderScope struct {
 	association    string
-	reminderFilter *string // the global calendar filters reminders by association
-	instructorUser *string // and instructors by the scope user
+	reminderFilter *string // reminders of the association
+	instructorUser *string // instructors of the scope user
 }
 
 // reminderValues computes send_at and the reminder text: parse_datetime(start)
@@ -796,7 +796,10 @@ func calendarStatusValue(status any) int {
 
 func (w *calendarWrite) updatePost(ctx context.Context, course *domain.CalendarCourse, registry *domain.CalendarRegistry, stored any,
 	rawEvents any, events []any, status any, association string) (any, error) {
-	if err := w.reminders(ctx, events, calendarReminderScope{association: association}); err != nil {
+	// Reminders of the association; instructors of request.user.
+	user := w.identity.ScopeUser.ID
+	if err := w.reminders(ctx, events, calendarReminderScope{association: association, reminderFilter: &association,
+		instructorUser: &user}); err != nil {
 		return nil, err
 	}
 	switch {

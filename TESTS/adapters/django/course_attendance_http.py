@@ -1,6 +1,6 @@
 """Parent-only course attendance HTTP runner; imports are inert.
 
-Seeds an instructor, payments, a carnet, associates (one with a competitive
+Seeds two instructors (of two owners), payments, a carnet, associates (one with a competitive
 certificate), subscriptions, courses, course subscriptions (one deleted, one
 without subscription), registries with their events, attendance days ('{today}'
 days dated on the Europe/Rome date at seeding) and carnet holdings with their
@@ -52,6 +52,9 @@ def seed_rows(source, created):
     instructor = source['instructor']
     insert(Instructor, Instructor(instructor_id=instructor['id'], user_id=ids['owner'], first_name=instructor['first'],
                                   last_name=instructor['last']))
+    other = source['other_instructor']
+    insert(Instructor, Instructor(instructor_id=other['id'], user_id=ids[other['owner']], first_name=other['first'],
+                                  last_name=other['last']))
     for row in source['payments'].values():
         insert(Payment, Payment(payment_id=row['id'], sport_association_id=ids['own_association'], amount=Decimal('10.00'), paid=row['paid']))
     insert(Carnet, Carnet(carnet_id=source['carnet'], title='Carnet dieci', lessons_number=10, sport_association_id=ids['own_association'],

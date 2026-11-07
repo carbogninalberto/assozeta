@@ -318,8 +318,35 @@
    "deleted": false,
    "group_id": null
   },
-  "d_full": {
+  "u_linked": {
    "course_id": "c0000000-0000-4000-8000-000000000018",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "status_flag": 2,
+   "course_type": 1,
+   "creation_date": "2026-02-01T08:00:00Z",
+   "title": "Collegato",
+   "description": "Descrizione Collegato",
+   "multi_payments": false,
+   "fee": "50.00",
+   "events": null,
+   "one_fee_payment": false,
+   "one_fee": "0.00",
+   "google_calendar_id": null,
+   "google_background_color": "#123456",
+   "multiple_quotes": null,
+   "start_date": null,
+   "end_date": null,
+   "pinned": false,
+   "billed_duration_is_sport_season": false,
+   "billed_frequency": 1,
+   "billed_from_subscription_date": false,
+   "billed_from_day_of_month": 1,
+   "auto_renewal": false,
+   "deleted": false,
+   "group_id": null
+  },
+  "d_full": {
+   "course_id": "c0000000-0000-4000-8000-000000000019",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -346,7 +373,7 @@
    "group_id": null
   },
   "d_empty": {
-   "course_id": "c0000000-0000-4000-8000-000000000019",
+   "course_id": "c0000000-0000-4000-8000-000000000020",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -373,7 +400,7 @@
    "group_id": null
   },
   "d_far": {
-   "course_id": "c0000000-0000-4000-8000-000000000020",
+   "course_id": "c0000000-0000-4000-8000-000000000021",
    "sport_association_id": "a1000000-0000-4000-8000-000000701002",
    "status_flag": 2,
    "course_type": 1,
@@ -400,7 +427,7 @@
    "group_id": null
   },
   "d_gone": {
-   "course_id": "c0000000-0000-4000-8000-000000000021",
+   "course_id": "c0000000-0000-4000-8000-000000000022",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -427,7 +454,7 @@
    "group_id": null
   },
   "d_group": {
-   "course_id": "c0000000-0000-4000-8000-000000000022",
+   "course_id": "c0000000-0000-4000-8000-000000000023",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -454,7 +481,7 @@
    "group_id": "a1000000-0000-4000-8000-000000714001"
   },
   "d_orphan": {
-   "course_id": "c0000000-0000-4000-8000-000000000023",
+   "course_id": "c0000000-0000-4000-8000-000000000024",
    "sport_association_id": null,
    "status_flag": 2,
    "course_type": 1,
@@ -481,7 +508,7 @@
    "group_id": null
   },
   "o_del": {
-   "course_id": "c0000000-0000-4000-8000-000000000024",
+   "course_id": "c0000000-0000-4000-8000-000000000025",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -508,7 +535,7 @@
    "group_id": null
   },
   "o_else": {
-   "course_id": "c0000000-0000-4000-8000-000000000025",
+   "course_id": "c0000000-0000-4000-8000-000000000026",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -535,7 +562,7 @@
    "group_id": null
   },
   "o_stale": {
-   "course_id": "c0000000-0000-4000-8000-000000000026",
+   "course_id": "c0000000-0000-4000-8000-000000000027",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -562,7 +589,7 @@
    "group_id": null
   },
   "o_text": {
-   "course_id": "c0000000-0000-4000-8000-000000000027",
+   "course_id": "c0000000-0000-4000-8000-000000000028",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -589,7 +616,7 @@
    "group_id": null
   },
   "o_upd": {
-   "course_id": "c0000000-0000-4000-8000-000000000028",
+   "course_id": "c0000000-0000-4000-8000-000000000029",
    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
    "status_flag": 2,
    "course_type": 1,
@@ -634,7 +661,7 @@
  },
  "payments": {
   "pm_meta": {
-   "payment_id": "c0000000-0000-4000-8000-000000000029",
+   "payment_id": "c0000000-0000-4000-8000-000000000030",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
@@ -667,7 +694,36 @@
    "course": null
   },
   "pm_desc": {
-   "payment_id": "c0000000-0000-4000-8000-000000000030",
+   "payment_id": "c0000000-0000-4000-8000-000000000031",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Iscrizione Nuoto 2026",
+   "payment_category_id": null,
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": null,
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "pm_far": {
+   "payment_id": "c0000000-0000-4000-8000-000000000032",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
@@ -687,7 +743,9 @@
    "payment_intent_id": null,
    "archived": false,
    "invoice_fiscal_code": null,
-   "meta": null,
+   "meta": {
+    "course_title": "Nuoto"
+   },
    "notes": null,
    "custom_accounts_id": null,
    "signature_id": null,
@@ -696,7 +754,7 @@
    "course": null
   },
   "pm_case": {
-   "payment_id": "c0000000-0000-4000-8000-000000000031",
+   "payment_id": "c0000000-0000-4000-8000-000000000033",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
@@ -727,7 +785,7 @@
    "course": null
   },
   "pm_nested": {
-   "payment_id": "c0000000-0000-4000-8000-000000000032",
+   "payment_id": "c0000000-0000-4000-8000-000000000034",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
@@ -760,7 +818,7 @@
    "course": null
   },
   "pm_gone": {
-   "payment_id": "c0000000-0000-4000-8000-000000000033",
+   "payment_id": "c0000000-0000-4000-8000-000000000035",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
@@ -789,64 +847,6 @@
    "course": null
   },
   "d_pa": {
-   "payment_id": "c0000000-0000-4000-8000-000000000034",
-   "type": "default",
-   "subject": 2,
-   "amount": "10.00",
-   "creation_date": "2026-03-01T08:00:00Z",
-   "payment_date": null,
-   "paid": false,
-   "expense": false,
-   "description": "Quota",
-   "payment_category_id": null,
-   "meta_payment_categories": null,
-   "invoice_id": null,
-   "user_id": null,
-   "associate_id": null,
-   "supplier_id": null,
-   "instructor_id": null,
-   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-   "payment_intent_id": null,
-   "archived": false,
-   "invoice_fiscal_code": null,
-   "meta": null,
-   "notes": null,
-   "custom_accounts_id": null,
-   "signature_id": null,
-   "deleted": false,
-   "group_id": null,
-   "course": null
-  },
-  "d_pb": {
-   "payment_id": "c0000000-0000-4000-8000-000000000035",
-   "type": "default",
-   "subject": 2,
-   "amount": "10.00",
-   "creation_date": "2026-03-01T08:00:00Z",
-   "payment_date": null,
-   "paid": true,
-   "expense": false,
-   "description": "Quota",
-   "payment_category_id": null,
-   "meta_payment_categories": null,
-   "invoice_id": null,
-   "user_id": null,
-   "associate_id": null,
-   "supplier_id": null,
-   "instructor_id": null,
-   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-   "payment_intent_id": null,
-   "archived": false,
-   "invoice_fiscal_code": null,
-   "meta": null,
-   "notes": null,
-   "custom_accounts_id": null,
-   "signature_id": null,
-   "deleted": false,
-   "group_id": null,
-   "course": null
-  },
-  "d_pm": {
    "payment_id": "c0000000-0000-4000-8000-000000000036",
    "type": "default",
    "subject": 2,
@@ -875,14 +875,14 @@
    "group_id": null,
    "course": null
   },
-  "d_pg": {
+  "d_pb": {
    "payment_id": "c0000000-0000-4000-8000-000000000037",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
    "creation_date": "2026-03-01T08:00:00Z",
    "payment_date": null,
-   "paid": false,
+   "paid": true,
    "expense": false,
    "description": "Quota",
    "payment_category_id": null,
@@ -901,10 +901,10 @@
    "custom_accounts_id": null,
    "signature_id": null,
    "deleted": false,
-   "group_id": "a1000000-0000-4000-8000-000000714001",
+   "group_id": null,
    "course": null
   },
-  "d_ph": {
+  "d_pm": {
    "payment_id": "c0000000-0000-4000-8000-000000000038",
    "type": "default",
    "subject": 2,
@@ -933,8 +933,37 @@
    "group_id": null,
    "course": null
   },
-  "o1_pa": {
+  "d_pg": {
    "payment_id": "c0000000-0000-4000-8000-000000000039",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": null,
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": null,
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": "a1000000-0000-4000-8000-000000714001",
+   "course": null
+  },
+  "d_ph": {
+   "payment_id": "c0000000-0000-4000-8000-000000000040",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
@@ -962,36 +991,7 @@
    "group_id": null,
    "course": null
   },
-  "o1_pb": {
-   "payment_id": "c0000000-0000-4000-8000-000000000040",
-   "type": "default",
-   "subject": 2,
-   "amount": "10.00",
-   "creation_date": "2026-03-01T08:00:00Z",
-   "payment_date": null,
-   "paid": true,
-   "expense": false,
-   "description": "Quota",
-   "payment_category_id": null,
-   "meta_payment_categories": null,
-   "invoice_id": null,
-   "user_id": null,
-   "associate_id": null,
-   "supplier_id": null,
-   "instructor_id": null,
-   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-   "payment_intent_id": null,
-   "archived": false,
-   "invoice_fiscal_code": null,
-   "meta": null,
-   "notes": null,
-   "custom_accounts_id": null,
-   "signature_id": null,
-   "deleted": false,
-   "group_id": null,
-   "course": null
-  },
-  "o2_pd": {
+  "o1_pa": {
    "payment_id": "c0000000-0000-4000-8000-000000000041",
    "type": "default",
    "subject": 2,
@@ -1020,14 +1020,14 @@
    "group_id": null,
    "course": null
   },
-  "o2_pe": {
+  "o1_pb": {
    "payment_id": "c0000000-0000-4000-8000-000000000042",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
    "creation_date": "2026-03-01T08:00:00Z",
    "payment_date": null,
-   "paid": false,
+   "paid": true,
    "expense": false,
    "description": "Quota",
    "payment_category_id": null,
@@ -1049,7 +1049,7 @@
    "group_id": null,
    "course": null
   },
-  "o3_p": {
+  "o2_pd": {
    "payment_id": "c0000000-0000-4000-8000-000000000043",
    "type": "default",
    "subject": 2,
@@ -1078,7 +1078,7 @@
    "group_id": null,
    "course": null
   },
-  "u1_p": {
+  "o2_pe": {
    "payment_id": "c0000000-0000-4000-8000-000000000044",
    "type": "default",
    "subject": 2,
@@ -1107,7 +1107,7 @@
    "group_id": null,
    "course": null
   },
-  "u2_pa": {
+  "o3_p": {
    "payment_id": "c0000000-0000-4000-8000-000000000045",
    "type": "default",
    "subject": 2,
@@ -1136,14 +1136,14 @@
    "group_id": null,
    "course": null
   },
-  "u2_pb": {
+  "u1_p": {
    "payment_id": "c0000000-0000-4000-8000-000000000046",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
    "creation_date": "2026-03-01T08:00:00Z",
    "payment_date": null,
-   "paid": true,
+   "paid": false,
    "expense": false,
    "description": "Quota",
    "payment_category_id": null,
@@ -1165,7 +1165,7 @@
    "group_id": null,
    "course": null
   },
-  "u3_pa": {
+  "u2_pa": {
    "payment_id": "c0000000-0000-4000-8000-000000000047",
    "type": "default",
    "subject": 2,
@@ -1194,8 +1194,66 @@
    "group_id": null,
    "course": null
   },
-  "u4_p": {
+  "u2_pb": {
    "payment_id": "c0000000-0000-4000-8000-000000000048",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": null,
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": null,
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "u3_pa": {
+   "payment_id": "c0000000-0000-4000-8000-000000000049",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": null,
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": null,
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "u4_p": {
+   "payment_id": "c0000000-0000-4000-8000-000000000050",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
@@ -1226,8 +1284,8 @@
  },
  "course_subscriptions": {
   "d_cs_a": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000049",
-   "course_id": "c0000000-0000-4000-8000-000000000018",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000051",
+   "course_id": "c0000000-0000-4000-8000-000000000019",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
    "subscription_id": "c0000000-0000-4000-8000-000000000005",
@@ -1247,12 +1305,12 @@
    "deleted": false
   },
   "d_cs_b": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000050",
-   "course_id": "c0000000-0000-4000-8000-000000000018",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000052",
+   "course_id": "c0000000-0000-4000-8000-000000000019",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
    "subscription_id": "c0000000-0000-4000-8000-000000000004",
-   "payment_id": "c0000000-0000-4000-8000-000000000036",
+   "payment_id": "c0000000-0000-4000-8000-000000000038",
    "multi_payments": false,
    "one_fee_payment": false,
    "archived": false,
@@ -1268,8 +1326,8 @@
    "deleted": true
   },
   "d_cs_g": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000051",
-   "course_id": "c0000000-0000-4000-8000-000000000022",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000053",
+   "course_id": "c0000000-0000-4000-8000-000000000023",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
    "subscription_id": "c0000000-0000-4000-8000-000000000006",
@@ -1289,48 +1347,6 @@
    "deleted": false
   },
   "o1": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000052",
-   "course_id": "c0000000-0000-4000-8000-000000000024",
-   "paid": false,
-   "creation_date": "2026-06-01T10:00:00Z",
-   "subscription_id": "c0000000-0000-4000-8000-000000000005",
-   "payment_id": null,
-   "multi_payments": true,
-   "one_fee_payment": false,
-   "archived": false,
-   "type": 1,
-   "multiple_quote": null,
-   "billed_frequency": 1,
-   "billed_from": null,
-   "billed_until": null,
-   "billed_from_day_of_month": 1,
-   "membership_active": true,
-   "membership_fee": "0.00",
-   "auto_renewal": false,
-   "deleted": false
-  },
-  "o1_other": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000053",
-   "course_id": "c0000000-0000-4000-8000-000000000024",
-   "paid": false,
-   "creation_date": "2026-06-01T10:00:00Z",
-   "subscription_id": "c0000000-0000-4000-8000-000000000004",
-   "payment_id": null,
-   "multi_payments": true,
-   "one_fee_payment": false,
-   "archived": false,
-   "type": 1,
-   "multiple_quote": null,
-   "billed_frequency": 1,
-   "billed_from": null,
-   "billed_until": null,
-   "billed_from_day_of_month": 1,
-   "membership_active": true,
-   "membership_fee": "0.00",
-   "auto_renewal": false,
-   "deleted": false
-  },
-  "o2": {
    "course_subscription_id": "c0000000-0000-4000-8000-000000000054",
    "course_id": "c0000000-0000-4000-8000-000000000025",
    "paid": false,
@@ -1351,13 +1367,55 @@
    "auto_renewal": false,
    "deleted": false
   },
-  "o3": {
+  "o1_other": {
    "course_subscription_id": "c0000000-0000-4000-8000-000000000055",
+   "course_id": "c0000000-0000-4000-8000-000000000025",
+   "paid": false,
+   "creation_date": "2026-06-01T10:00:00Z",
+   "subscription_id": "c0000000-0000-4000-8000-000000000004",
+   "payment_id": null,
+   "multi_payments": true,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false
+  },
+  "o2": {
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000056",
    "course_id": "c0000000-0000-4000-8000-000000000026",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
    "subscription_id": "c0000000-0000-4000-8000-000000000005",
-   "payment_id": "c0000000-0000-4000-8000-000000000043",
+   "payment_id": null,
+   "multi_payments": true,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false
+  },
+  "o3": {
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000057",
+   "course_id": "c0000000-0000-4000-8000-000000000027",
+   "paid": false,
+   "creation_date": "2026-06-01T10:00:00Z",
+   "subscription_id": "c0000000-0000-4000-8000-000000000005",
+   "payment_id": "c0000000-0000-4000-8000-000000000045",
    "multi_payments": true,
    "one_fee_payment": false,
    "archived": false,
@@ -1373,8 +1431,8 @@
    "deleted": false
   },
   "o4": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000056",
-   "course_id": "c0000000-0000-4000-8000-000000000027",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
+   "course_id": "c0000000-0000-4000-8000-000000000028",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
    "subscription_id": "c0000000-0000-4000-8000-000000000005",
@@ -1394,12 +1452,12 @@
    "deleted": false
   },
   "u1": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000057",
-   "course_id": "c0000000-0000-4000-8000-000000000028",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000059",
+   "course_id": "c0000000-0000-4000-8000-000000000029",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
    "subscription_id": "c0000000-0000-4000-8000-000000000005",
-   "payment_id": "c0000000-0000-4000-8000-000000000044",
+   "payment_id": "c0000000-0000-4000-8000-000000000046",
    "multi_payments": false,
    "one_fee_payment": true,
    "archived": false,
@@ -1415,8 +1473,8 @@
    "deleted": false
   },
   "u2": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
-   "course_id": "c0000000-0000-4000-8000-000000000028",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
+   "course_id": "c0000000-0000-4000-8000-000000000029",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
    "subscription_id": "c0000000-0000-4000-8000-000000000004",
@@ -1436,7 +1494,7 @@
    "deleted": false
   },
   "u3": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000059",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000061",
    "course_id": "c0000000-0000-4000-8000-000000000014",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -1457,12 +1515,12 @@
    "deleted": false
   },
   "u4": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
-   "course_id": "c0000000-0000-4000-8000-000000000028",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000062",
+   "course_id": "c0000000-0000-4000-8000-000000000029",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
    "subscription_id": "c0000000-0000-4000-8000-000000000006",
-   "payment_id": "c0000000-0000-4000-8000-000000000048",
+   "payment_id": "c0000000-0000-4000-8000-000000000050",
    "multi_payments": false,
    "one_fee_payment": false,
    "archived": false,
@@ -1478,7 +1536,7 @@
    "deleted": false
   },
   "u5": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000061",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000063",
    "course_id": "c0000000-0000-4000-8000-000000000013",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -1499,7 +1557,7 @@
    "deleted": false
   },
   "u_far": {
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000062",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000064",
    "course_id": "c0000000-0000-4000-8000-000000000017",
    "paid": false,
    "creation_date": "2026-06-01T10:00:00Z",
@@ -1522,32 +1580,32 @@
  },
  "installments": {
   "d_ia": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000063",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000049",
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000065",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000051",
    "id": 0,
    "amount": "10.00",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "c0000000-0000-4000-8000-000000000034",
+   "payment_id": "c0000000-0000-4000-8000-000000000036",
    "archived": false,
    "group_id": null,
    "deleted": false
   },
   "d_ib": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000064",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000049",
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000066",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000051",
    "id": 1,
    "amount": "10.00",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "c0000000-0000-4000-8000-000000000035",
+   "payment_id": "c0000000-0000-4000-8000-000000000037",
    "archived": false,
    "group_id": null,
    "deleted": false
   },
   "d_ic": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000065",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000050",
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000067",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000052",
    "id": 0,
    "amount": "10.00",
    "paid": false,
@@ -1558,44 +1616,20 @@
    "deleted": false
   },
   "d_ig": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000066",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000051",
-   "id": 0,
-   "amount": "10.00",
-   "paid": false,
-   "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "c0000000-0000-4000-8000-000000000037",
-   "archived": false,
-   "group_id": "a1000000-0000-4000-8000-000000714001",
-   "deleted": false
-  },
-  "d_ih": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000067",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000051",
-   "id": 1,
-   "amount": "10.00",
-   "paid": false,
-   "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "c0000000-0000-4000-8000-000000000038",
-   "archived": false,
-   "group_id": null,
-   "deleted": false
-  },
-  "o1_a": {
    "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000068",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000052",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000053",
    "id": 0,
    "amount": "10.00",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
    "payment_id": "c0000000-0000-4000-8000-000000000039",
    "archived": false,
-   "group_id": null,
+   "group_id": "a1000000-0000-4000-8000-000000714001",
    "deleted": false
   },
-  "o1_b": {
+  "d_ih": {
    "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000069",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000052",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000053",
    "id": 1,
    "amount": "10.00",
    "paid": false,
@@ -1605,32 +1639,8 @@
    "group_id": null,
    "deleted": false
   },
-  "o1_c": {
+  "o1_a": {
    "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000070",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000052",
-   "id": 2,
-   "amount": "10.00",
-   "paid": false,
-   "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": null,
-   "archived": false,
-   "group_id": null,
-   "deleted": false
-  },
-  "o1_x": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000071",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000053",
-   "id": 0,
-   "amount": "10.00",
-   "paid": false,
-   "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": null,
-   "archived": false,
-   "group_id": null,
-   "deleted": false
-  },
-  "o2_d": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000072",
    "course_subscription_id": "c0000000-0000-4000-8000-000000000054",
    "id": 0,
    "amount": "10.00",
@@ -1641,21 +1651,69 @@
    "group_id": null,
    "deleted": false
   },
-  "o2_e": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000073",
+  "o1_b": {
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000071",
    "course_subscription_id": "c0000000-0000-4000-8000-000000000054",
    "id": 1,
    "amount": "10.00",
-   "paid": true,
+   "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
    "payment_id": "c0000000-0000-4000-8000-000000000042",
    "archived": false,
    "group_id": null,
    "deleted": false
   },
-  "o2_f": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000074",
+  "o1_c": {
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000072",
    "course_subscription_id": "c0000000-0000-4000-8000-000000000054",
+   "id": 2,
+   "amount": "10.00",
+   "paid": false,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": null,
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
+  "o1_x": {
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000073",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000055",
+   "id": 0,
+   "amount": "10.00",
+   "paid": false,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": null,
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
+  "o2_d": {
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000074",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000056",
+   "id": 0,
+   "amount": "10.00",
+   "paid": false,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": "c0000000-0000-4000-8000-000000000043",
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
+  "o2_e": {
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000075",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000056",
+   "id": 1,
+   "amount": "10.00",
+   "paid": true,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": "c0000000-0000-4000-8000-000000000044",
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
+  "o2_f": {
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000076",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000056",
    "id": 2,
    "amount": "10.00",
    "paid": false,
@@ -1666,20 +1724,8 @@
    "deleted": false
   },
   "o3_a": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000075",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000055",
-   "id": 0,
-   "amount": "10.00",
-   "paid": false,
-   "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "c0000000-0000-4000-8000-000000000043",
-   "archived": false,
-   "group_id": null,
-   "deleted": false
-  },
-  "u2_a": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000076",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000077",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000057",
    "id": 0,
    "amount": "10.00",
    "paid": false,
@@ -1689,21 +1735,33 @@
    "group_id": null,
    "deleted": false
   },
+  "u2_a": {
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000078",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
+   "id": 0,
+   "amount": "10.00",
+   "paid": false,
+   "payment_date": "2099-01-10T00:00:00Z",
+   "payment_id": "c0000000-0000-4000-8000-000000000047",
+   "archived": false,
+   "group_id": null,
+   "deleted": false
+  },
   "u2_b": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000077",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000079",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
    "id": 1,
    "amount": "10.00",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "c0000000-0000-4000-8000-000000000046",
+   "payment_id": "c0000000-0000-4000-8000-000000000048",
    "archived": false,
    "group_id": null,
    "deleted": false
   },
   "u2_c": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000078",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000080",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
    "id": 2,
    "amount": "10.00",
    "paid": false,
@@ -1714,20 +1772,20 @@
    "deleted": false
   },
   "u3_a": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000079",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000059",
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000081",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000061",
    "id": 0,
    "amount": "10.00",
    "paid": false,
    "payment_date": "2099-01-10T00:00:00Z",
-   "payment_id": "c0000000-0000-4000-8000-000000000047",
+   "payment_id": "c0000000-0000-4000-8000-000000000049",
    "archived": false,
    "group_id": null,
    "deleted": false
   },
   "u3_b": {
-   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000080",
-   "course_subscription_id": "c0000000-0000-4000-8000-000000000059",
+   "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000082",
+   "course_subscription_id": "c0000000-0000-4000-8000-000000000061",
    "id": 1,
    "amount": "10.00",
    "paid": false,
@@ -1740,8 +1798,8 @@
  },
  "registries": {
   "d_ar": {
-   "attendance_registry_id": "c0000000-0000-4000-8000-000000000081",
-   "course_id": "c0000000-0000-4000-8000-000000000018",
+   "attendance_registry_id": "c0000000-0000-4000-8000-000000000083",
+   "course_id": "c0000000-0000-4000-8000-000000000019",
    "creation_date": "2026-02-02T08:00:00Z",
    "events": [
     {
@@ -1753,8 +1811,8 @@
  },
  "days": {
   "d_ad": {
-   "attendance_day_id": "c0000000-0000-4000-8000-000000000082",
-   "attendance_registry_id": "c0000000-0000-4000-8000-000000000081",
+   "attendance_day_id": "c0000000-0000-4000-8000-000000000084",
+   "attendance_registry_id": "c0000000-0000-4000-8000-000000000083",
    "title": "Lunedì",
    "date": "2026-02-09T17:00:00Z",
    "attendees": [],
@@ -1769,13 +1827,17 @@
    "c0000000-0000-4000-8000-000000000010"
   ],
   [
-   "c0000000-0000-4000-8000-000000000018",
+   "c0000000-0000-4000-8000-000000000019",
    "c0000000-0000-4000-8000-000000000008"
+  ],
+  [
+   "c0000000-0000-4000-8000-000000000018",
+   "c0000000-0000-4000-8000-000000000009"
   ]
  ],
  "course_tags": [
   [
-   "c0000000-0000-4000-8000-000000000018",
+   "c0000000-0000-4000-8000-000000000019",
    "c0000000-0000-4000-8000-000000000011"
   ]
  ],
@@ -1784,7 +1846,7 @@
    "name": "course-writes-delete-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {},
    "status": 401,
    "response": {
@@ -1796,7 +1858,7 @@
    "name": "course-writes-delete-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -1808,7 +1870,7 @@
    "name": "course-writes-delete-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -1820,7 +1882,7 @@
    "name": "course-writes-delete-owner-scoped-athlete-denied",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -1835,7 +1897,7 @@
    "name": "course-writes-delete-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {},
    "status": 405,
    "response": {
@@ -1847,7 +1909,7 @@
    "name": "course-writes-delete-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -1880,7 +1942,7 @@
    "name": "course-writes-delete-athlete-server-error",
    "actor": "athlete",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1890,7 +1952,7 @@
    "name": "course-writes-delete-owner-without-association",
    "actor": "owner_without_association",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1912,7 +1974,7 @@
    "name": "course-writes-delete-deleted",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000021/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000022/delete",
    "headers": {},
    "status": 404,
    "response": {
@@ -1924,7 +1986,7 @@
    "name": "course-writes-delete-group-header-hides",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000022/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000023/delete",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -1938,7 +2000,7 @@
    "name": "course-writes-delete-foreign-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000021/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -1950,7 +2012,7 @@
    "name": "course-writes-delete-course-without-association",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000023/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000024/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1960,7 +2022,7 @@
    "name": "course-writes-delete-empty-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000020/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -1972,7 +2034,7 @@
     "actor": "owner",
     "rows": {
      "application.Course": {
-      "c0000000-0000-4000-8000-000000000019": null
+      "c0000000-0000-4000-8000-000000000020": null
      }
     },
     "created": {},
@@ -1980,7 +2042,7 @@
     "audit": [
      {
       "model": "course",
-      "key": "c0000000-0000-4000-8000-000000000019",
+      "key": "c0000000-0000-4000-8000-000000000020",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -1999,7 +2061,7 @@
    "name": "course-writes-delete-full-cascade",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000018/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000019/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -2011,25 +2073,25 @@
     "actor": "full_collaborator",
     "rows": {
      "application.Course": {
-      "c0000000-0000-4000-8000-000000000018": null
+      "c0000000-0000-4000-8000-000000000019": null
      },
      "application.CourseSubscription": {
-      "c0000000-0000-4000-8000-000000000049": null,
-      "c0000000-0000-4000-8000-000000000050": null
+      "c0000000-0000-4000-8000-000000000051": null,
+      "c0000000-0000-4000-8000-000000000052": null
      },
      "application.CourseSubscriptionInstallment": {
-      "c0000000-0000-4000-8000-000000000063": null,
-      "c0000000-0000-4000-8000-000000000064": null,
-      "c0000000-0000-4000-8000-000000000065": null
+      "c0000000-0000-4000-8000-000000000065": null,
+      "c0000000-0000-4000-8000-000000000066": null,
+      "c0000000-0000-4000-8000-000000000067": null
      },
      "application.Payment": {
-      "c0000000-0000-4000-8000-000000000034": null
+      "c0000000-0000-4000-8000-000000000036": null
      },
      "application.AttendanceRegistry": {
-      "c0000000-0000-4000-8000-000000000081": null
+      "c0000000-0000-4000-8000-000000000083": null
      },
      "application.AttendanceDay": {
-      "c0000000-0000-4000-8000-000000000082": null
+      "c0000000-0000-4000-8000-000000000084": null
      }
     },
     "created": {},
@@ -2037,7 +2099,7 @@
      "application.Course_locations": {
       "remove": [
        [
-        "c0000000-0000-4000-8000-000000000018",
+        "c0000000-0000-4000-8000-000000000019",
         "c0000000-0000-4000-8000-000000000008"
        ]
       ]
@@ -2045,7 +2107,7 @@
      "application.Course_tags": {
       "remove": [
        [
-        "c0000000-0000-4000-8000-000000000018",
+        "c0000000-0000-4000-8000-000000000019",
         "c0000000-0000-4000-8000-000000000011"
        ]
       ]
@@ -2054,7 +2116,7 @@
     "audit": [
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000034",
+      "key": "c0000000-0000-4000-8000-000000000036",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2068,7 +2130,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000063",
+      "key": "c0000000-0000-4000-8000-000000000065",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2079,7 +2141,7 @@
      },
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000034",
+      "key": "c0000000-0000-4000-8000-000000000036",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2093,7 +2155,29 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000064",
+      "key": "c0000000-0000-4000-8000-000000000066",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": null,
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000067",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": null,
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000066",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2114,30 +2198,8 @@
       "repr": null
      },
      {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000064",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": null,
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000063",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": null,
-      "repr": null
-     },
-     {
       "model": "attendanceday",
-      "key": "c0000000-0000-4000-8000-000000000082",
+      "key": "c0000000-0000-4000-8000-000000000084",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2148,29 +2210,29 @@
      },
      {
       "model": "coursesubscription",
-      "key": "c0000000-0000-4000-8000-000000000050",
+      "key": "c0000000-0000-4000-8000-000000000052",
       "action": 2,
       "changes": {
        "$stored": "delete",
        "overrides": {}
       },
       "index": null,
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000050'), 'course_id': UUID('c0000000-0000-4000-8000-000000000018'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000004'), 'payment_id': UUID('c0000000-0000-4000-8000-000000000036'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000052'), 'course_id': UUID('c0000000-0000-4000-8000-000000000019'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000004'), 'payment_id': UUID('c0000000-0000-4000-8000-000000000038'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      },
      {
       "model": "coursesubscription",
-      "key": "c0000000-0000-4000-8000-000000000049",
+      "key": "c0000000-0000-4000-8000-000000000051",
       "action": 2,
       "changes": {
        "$stored": "delete",
        "overrides": {}
       },
       "index": null,
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000049'), 'course_id': UUID('c0000000-0000-4000-8000-000000000018'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000051'), 'course_id': UUID('c0000000-0000-4000-8000-000000000019'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
      },
      {
       "model": "attendanceregistry",
-      "key": "c0000000-0000-4000-8000-000000000081",
+      "key": "c0000000-0000-4000-8000-000000000083",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2181,7 +2243,7 @@
      },
      {
       "model": "course",
-      "key": "c0000000-0000-4000-8000-000000000018",
+      "key": "c0000000-0000-4000-8000-000000000019",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2200,7 +2262,7 @@
    "name": "course-writes-delete-grouped-cascade",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000022/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000023/delete",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -2214,18 +2276,18 @@
     "actor": "owner",
     "rows": {
      "application.Course": {
-      "c0000000-0000-4000-8000-000000000022": null
+      "c0000000-0000-4000-8000-000000000023": null
      },
      "application.CourseSubscription": {
-      "c0000000-0000-4000-8000-000000000051": null
+      "c0000000-0000-4000-8000-000000000053": null
      },
      "application.CourseSubscriptionInstallment": {
-      "c0000000-0000-4000-8000-000000000066": null,
-      "c0000000-0000-4000-8000-000000000067": null
+      "c0000000-0000-4000-8000-000000000068": null,
+      "c0000000-0000-4000-8000-000000000069": null
      },
      "application.Payment": {
-      "c0000000-0000-4000-8000-000000000037": null,
-      "c0000000-0000-4000-8000-000000000038": null
+      "c0000000-0000-4000-8000-000000000039": null,
+      "c0000000-0000-4000-8000-000000000040": null
      }
     },
     "created": {},
@@ -2233,7 +2295,7 @@
     "audit": [
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000037",
+      "key": "c0000000-0000-4000-8000-000000000039",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2247,7 +2309,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000066",
+      "key": "c0000000-0000-4000-8000-000000000068",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2261,7 +2323,7 @@
      },
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000037",
+      "key": "c0000000-0000-4000-8000-000000000039",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2275,7 +2337,7 @@
      },
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000038",
+      "key": "c0000000-0000-4000-8000-000000000040",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2289,7 +2351,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000067",
+      "key": "c0000000-0000-4000-8000-000000000069",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2303,7 +2365,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000066",
+      "key": "c0000000-0000-4000-8000-000000000068",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2317,7 +2379,7 @@
      },
      {
       "model": "coursesubscription",
-      "key": "c0000000-0000-4000-8000-000000000051",
+      "key": "c0000000-0000-4000-8000-000000000053",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2327,11 +2389,11 @@
        "a1000000-0000-4000-8000-000000701001",
        "actor.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000051'), 'course_id': UUID('c0000000-0000-4000-8000-000000000022'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000053'), 'course_id': UUID('c0000000-0000-4000-8000-000000000023'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
      },
      {
       "model": "course",
-      "key": "c0000000-0000-4000-8000-000000000022",
+      "key": "c0000000-0000-4000-8000-000000000023",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -2543,14 +2605,14 @@
       }
      },
      "application.Payment": {
-      "c0000000-0000-4000-8000-000000000029": {
+      "c0000000-0000-4000-8000-000000000030": {
        "meta": {
         "course_title": "Nuoto &lt;b&gt;libero&lt;/b&gt;",
         "n": 2,
         "note": "Nuoto &lt;b&gt;libero&lt;/b&gt; e Nuoto &lt;b&gt;libero&lt;/b&gt;"
        }
       },
-      "c0000000-0000-4000-8000-000000000030": {
+      "c0000000-0000-4000-8000-000000000031": {
        "description": "Iscrizione Nuoto &lt;b&gt;libero&lt;/b&gt; 2026"
       }
      }
@@ -2568,10 +2630,6 @@
        [
         "c0000000-0000-4000-8000-000000000012",
         "c0000000-0000-4000-8000-000000000008"
-       ],
-       [
-        "c0000000-0000-4000-8000-000000000012",
-        "c0000000-0000-4000-8000-000000000009"
        ]
       ]
      }
@@ -2677,6 +2735,111 @@
     "start_date": "2026-09-01",
     "end_date": "2027-06-30T18:30:00+02:00",
     "ignored": "x"
+   }
+  },
+  {
+   "name": "course-writes-update-linked-location-kept",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {
+     "application.Course_locations": {
+      "add": [
+       [
+        "c0000000-0000-4000-8000-000000000018",
+        "c0000000-0000-4000-8000-000000000008"
+       ]
+      ]
+     }
+    },
+    "audit": []
+   },
+   "body": {
+    "locations": [
+     {
+      "course_location_id": "c0000000-0000-4000-8000-000000000009"
+     },
+     {
+      "course_location_id": "c0000000-0000-4000-8000-000000000008"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-writes-update-unlisted-location-removed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {
+     "application.Course_locations": {
+      "remove": [
+       [
+        "c0000000-0000-4000-8000-000000000018",
+        "c0000000-0000-4000-8000-000000000009"
+       ]
+      ]
+     }
+    },
+    "audit": []
+   },
+   "body": {
+    "locations": [
+     {
+      "course_location_id": "c0000000-0000-4000-8000-000000000008"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-writes-update-other-association-location-not-linked",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {
+     "application.Course_locations": {
+      "remove": [
+       [
+        "c0000000-0000-4000-8000-000000000018",
+        "c0000000-0000-4000-8000-000000000008"
+       ]
+      ]
+     }
+    },
+    "audit": []
+   },
+   "body": {
+    "locations": [
+     {
+      "course_location_id": "c0000000-0000-4000-8000-000000000009"
+     }
+    ]
    }
   },
   {
@@ -2886,8 +3049,41 @@
    }
   },
   {
-   "name": "course-writes-update-athlete",
+   "name": "course-writes-update-athlete-denied",
    "actor": "athlete",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000014/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "fee": null,
+    "multiple_quotes": {
+     "a": "è"
+    }
+   }
+  },
+  {
+   "name": "course-writes-update-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000014/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "fee": null
+   }
+  },
+  {
+   "name": "course-writes-update-clear-fee",
+   "actor": "owner",
    "method": "PATCH",
    "path": "/course/c0000000-0000-4000-8000-000000000014/update",
    "headers": {},
@@ -2896,7 +3092,7 @@
     "status": "success"
    },
    "effect": {
-    "actor": "athlete",
+    "actor": "owner",
     "rows": {
      "application.Course": {
       "c0000000-0000-4000-8000-000000000014": {
@@ -2985,47 +3181,34 @@
    "body": {}
   },
   {
-   "name": "course-writes-update-course-lontano",
+   "name": "course-writes-update-other-association-course-denied",
    "actor": "owner",
    "method": "PATCH",
    "path": "/course/c0000000-0000-4000-8000-000000000017/update",
    "headers": {},
-   "status": 200,
+   "status": 403,
    "response": {
-    "status": "success"
+    "detail": "User not allowed."
    },
-   "effect": {
-    "actor": "owner",
-    "rows": {
-     "application.Course": {
-      "c0000000-0000-4000-8000-000000000017": {
-       "description": "Altra"
-      }
-     }
-    },
-    "created": {},
-    "links": {},
-    "audit": [
-     {
-      "model": "course",
-      "key": "c0000000-0000-4000-8000-000000000017",
-      "action": 1,
-      "changes": {
-       "description": [
-        "Descrizione Lontano",
-        "Altra"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701002",
-       "direct"
-      ],
-      "repr": null
-     }
-    ]
-   },
+   "effect": null,
    "body": {
-    "description": "Altra"
+    "description": "Altra",
+    "locations": []
+   }
+  },
+  {
+   "name": "course-writes-update-other-association-owner",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000012/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "title": "Altro"
    }
   },
   {
@@ -3085,7 +3268,7 @@
    "name": "course-writes-overview-delete-anonymous",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/delete",
    "headers": {},
    "status": 401,
    "response": {
@@ -3097,7 +3280,7 @@
    "name": "course-writes-overview-delete-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -3109,7 +3292,7 @@
    "name": "course-writes-overview-delete-wrong-method",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/delete",
    "headers": {},
    "status": 405,
    "response": {
@@ -3121,7 +3304,7 @@
    "name": "course-writes-overview-delete-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -3154,7 +3337,7 @@
    "name": "course-writes-overview-delete-malformed-subscription",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/abc/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/abc/delete",
    "headers": {},
    "status": 400,
    "response": [
@@ -3166,7 +3349,7 @@
    "name": "course-writes-overview-delete-athlete-server-error",
    "actor": "athlete",
    "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000004/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000004/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3198,7 +3381,7 @@
    "name": "course-writes-overview-delete-missing-row",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000004/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000004/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3208,7 +3391,7 @@
    "name": "course-writes-overview-delete-installments-text",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/delete",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3221,7 +3404,7 @@
    "name": "course-writes-overview-delete-listed-installments",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000024/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000025/overview/c0000000-0000-4000-8000-000000000005/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -3233,17 +3416,17 @@
     "actor": "owner",
     "rows": {
      "application.CourseSubscription": {
-      "c0000000-0000-4000-8000-000000000052": {
+      "c0000000-0000-4000-8000-000000000054": {
        "deleted": true
       }
      },
      "application.CourseSubscriptionInstallment": {
-      "c0000000-0000-4000-8000-000000000068": null,
-      "c0000000-0000-4000-8000-000000000069": null,
-      "c0000000-0000-4000-8000-000000000070": null
+      "c0000000-0000-4000-8000-000000000070": null,
+      "c0000000-0000-4000-8000-000000000071": null,
+      "c0000000-0000-4000-8000-000000000072": null
      },
      "application.Payment": {
-      "c0000000-0000-4000-8000-000000000039": null
+      "c0000000-0000-4000-8000-000000000041": null
      }
     },
     "created": {},
@@ -3251,7 +3434,7 @@
     "audit": [
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000039",
+      "key": "c0000000-0000-4000-8000-000000000041",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -3260,62 +3443,6 @@
       "index": [
        "a1000000-0000-4000-8000-000000701001",
        "changes_json.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000068",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000039",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "changes_json.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000068",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000069",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
       ],
       "repr": null
      },
@@ -3334,67 +3461,6 @@
       "repr": null
      },
      {
-      "model": "coursesubscription",
-      "key": "c0000000-0000-4000-8000-000000000052",
-      "action": 1,
-      "changes": {
-       "deleted": [
-        "False",
-        "True"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "course.sport_association"
-      ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000052'), 'course_id': UUID('c0000000-0000-4000-8000-000000000024'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
-     }
-    ]
-   },
-   "body": {
-    "installments": [
-     "c0000000-0000-4000-8000-000000000068",
-     "c0000000-0000-4000-8000-000000000069",
-     "c0000000-0000-4000-8000-000000000071",
-     "c0000000-0000-4000-8000-000000999999",
-     null
-    ]
-   }
-  },
-  {
-   "name": "course-writes-overview-delete-unpaid-installments",
-   "actor": "full_collaborator",
-   "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000025/overview/c0000000-0000-4000-8000-000000000005/delete",
-   "headers": {},
-   "status": 200,
-   "response": {
-    "data": {
-     "msg": "associate deleted."
-    }
-   },
-   "effect": {
-    "actor": "full_collaborator",
-    "rows": {
-     "application.CourseSubscription": {
-      "c0000000-0000-4000-8000-000000000054": {
-       "deleted": true
-      }
-     },
-     "application.CourseSubscriptionInstallment": {
-      "c0000000-0000-4000-8000-000000000072": null,
-      "c0000000-0000-4000-8000-000000000073": null,
-      "c0000000-0000-4000-8000-000000000074": null
-     },
-     "application.Payment": {
-      "c0000000-0000-4000-8000-000000000041": null,
-      "c0000000-0000-4000-8000-000000000042": null
-     }
-    },
-    "created": {},
-    "links": {},
-    "audit": [
-     {
       "model": "payment",
       "key": "c0000000-0000-4000-8000-000000000041",
       "action": 2,
@@ -3410,18 +3476,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000072",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": null,
-      "repr": null
-     },
-     {
-      "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000041",
+      "key": "c0000000-0000-4000-8000-000000000070",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -3429,7 +3484,21 @@
       },
       "index": [
        "a1000000-0000-4000-8000-000000701001",
-       "changes_json.sport_association"
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000071",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
       ],
       "repr": null
      },
@@ -3441,68 +3510,10 @@
        "$stored": "delete",
        "overrides": {}
       },
-      "index": null,
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000074",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": null,
-      "repr": null
-     },
-     {
-      "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000042",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
       "index": [
        "a1000000-0000-4000-8000-000000701001",
-       "changes_json.sport_association"
+       "actor.sport_association"
       ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000073",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": null,
-      "repr": null
-     },
-     {
-      "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000042",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "changes_json.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000073",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": null,
       "repr": null
      },
      {
@@ -3522,118 +3533,22 @@
       "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000054'), 'course_id': UUID('c0000000-0000-4000-8000-000000000025'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      }
     ]
-   }
-  },
-  {
-   "name": "course-writes-overview-delete-own-payment-fails",
-   "actor": "owner",
-   "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000026/overview/c0000000-0000-4000-8000-000000000005/delete",
-   "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "effect": {
-    "actor": "owner",
-    "rows": {
-     "application.CourseSubscription": {
-      "c0000000-0000-4000-8000-000000000055": {
-       "payment_id": null
-      }
-     },
-     "application.CourseSubscriptionInstallment": {
-      "c0000000-0000-4000-8000-000000000075": null
-     },
-     "application.Payment": {
-      "c0000000-0000-4000-8000-000000000043": null
-     }
-    },
-    "created": {},
-    "links": {},
-    "audit": [
-     {
-      "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000043",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "changes_json.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000075",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000043",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "changes_json.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000075",
-      "action": 2,
-      "changes": {
-       "$stored": "delete",
-       "overrides": {}
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ],
-      "repr": null
-     },
-     {
-      "model": "coursesubscription",
-      "key": "c0000000-0000-4000-8000-000000000055",
-      "action": 1,
-      "changes": {
-       "payment": [
-        "None",
-        "c0000000-0000-4000-8000-000000000043"
-       ],
-       "deleted": [
-        "False",
-        "True"
-       ]
-      },
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "course.sport_association"
-      ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000055'), 'course_id': UUID('c0000000-0000-4000-8000-000000000026'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('c0000000-0000-4000-8000-000000000043'), 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
-     }
+   },
+   "body": {
+    "installments": [
+     "c0000000-0000-4000-8000-000000000070",
+     "c0000000-0000-4000-8000-000000000071",
+     "c0000000-0000-4000-8000-000000000073",
+     "c0000000-0000-4000-8000-000000999999",
+     null
     ]
    }
   },
   {
-   "name": "course-writes-overview-delete-installments-empty-text",
-   "actor": "owner",
+   "name": "course-writes-overview-delete-unpaid-installments",
+   "actor": "full_collaborator",
    "method": "DELETE",
-   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "path": "/course/c0000000-0000-4000-8000-000000000026/overview/c0000000-0000-4000-8000-000000000005/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -3642,17 +3557,137 @@
     }
    },
    "effect": {
-    "actor": "owner",
+    "actor": "full_collaborator",
     "rows": {
      "application.CourseSubscription": {
       "c0000000-0000-4000-8000-000000000056": {
        "deleted": true
       }
+     },
+     "application.CourseSubscriptionInstallment": {
+      "c0000000-0000-4000-8000-000000000074": null,
+      "c0000000-0000-4000-8000-000000000075": null,
+      "c0000000-0000-4000-8000-000000000076": null
+     },
+     "application.Payment": {
+      "c0000000-0000-4000-8000-000000000043": null,
+      "c0000000-0000-4000-8000-000000000044": null
      }
     },
     "created": {},
     "links": {},
     "audit": [
+     {
+      "model": "payment",
+      "key": "c0000000-0000-4000-8000-000000000043",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000074",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": null,
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "key": "c0000000-0000-4000-8000-000000000043",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000074",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": null,
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000076",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": null,
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "key": "c0000000-0000-4000-8000-000000000044",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000075",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": null,
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "key": "c0000000-0000-4000-8000-000000000044",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000075",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": null,
+      "repr": null
+     },
      {
       "model": "coursesubscription",
       "key": "c0000000-0000-4000-8000-000000000056",
@@ -3667,7 +3702,155 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000056'), 'course_id': UUID('c0000000-0000-4000-8000-000000000027'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000056'), 'course_id': UUID('c0000000-0000-4000-8000-000000000026'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-writes-overview-delete-own-payment-fails",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CourseSubscription": {
+      "c0000000-0000-4000-8000-000000000057": {
+       "payment_id": null
+      }
+     },
+     "application.CourseSubscriptionInstallment": {
+      "c0000000-0000-4000-8000-000000000077": null
+     },
+     "application.Payment": {
+      "c0000000-0000-4000-8000-000000000045": null
+     }
+    },
+    "created": {},
+    "links": {},
+    "audit": [
+     {
+      "model": "payment",
+      "key": "c0000000-0000-4000-8000-000000000045",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000077",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "key": "c0000000-0000-4000-8000-000000000045",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "key": "c0000000-0000-4000-8000-000000000077",
+      "action": 2,
+      "changes": {
+       "$stored": "delete",
+       "overrides": {}
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "key": "c0000000-0000-4000-8000-000000000057",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "c0000000-0000-4000-8000-000000000045"
+       ],
+       "deleted": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000057'), 'course_id': UUID('c0000000-0000-4000-8000-000000000027'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('c0000000-0000-4000-8000-000000000045'), 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-writes-overview-delete-installments-empty-text",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "associate deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CourseSubscription": {
+      "c0000000-0000-4000-8000-000000000058": {
+       "deleted": true
+      }
+     }
+    },
+    "created": {},
+    "links": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "key": "c0000000-0000-4000-8000-000000000058",
+      "action": 1,
+      "changes": {
+       "deleted": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000058'), 'course_id': UUID('c0000000-0000-4000-8000-000000000028'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      }
     ]
    },
@@ -3679,7 +3862,7 @@
    "name": "course-writes-overview-update-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
    "headers": {},
    "status": 401,
    "response": {
@@ -3692,7 +3875,7 @@
    "name": "course-writes-overview-update-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -3705,7 +3888,7 @@
    "name": "course-writes-overview-update-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
    "headers": {},
    "status": 405,
    "response": {
@@ -3717,7 +3900,7 @@
    "name": "course-writes-overview-update-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -3751,7 +3934,7 @@
    "name": "course-writes-overview-update-malformed-subscription",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/abc/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/abc/update",
    "headers": {},
    "status": 400,
    "response": [
@@ -3764,7 +3947,7 @@
    "name": "course-writes-overview-update-missing-row",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000007/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000007/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3789,10 +3972,25 @@
    }
   },
   {
+   "name": "course-writes-overview-update-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "multi_payments": true
+   }
+  },
+  {
    "name": "course-writes-overview-update-athlete-other-subscription",
    "actor": "athlete",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -3807,7 +4005,7 @@
    "name": "course-writes-overview-update-no-flags",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -3831,7 +4029,7 @@
    "name": "course-writes-overview-update-to-installments",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000005/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -3843,14 +4041,14 @@
     "actor": "owner",
     "rows": {
      "application.CourseSubscription": {
-      "c0000000-0000-4000-8000-000000000057": {
+      "c0000000-0000-4000-8000-000000000059": {
        "payment_id": null,
        "multi_payments": true,
        "one_fee_payment": false
       }
      },
      "application.Payment": {
-      "c0000000-0000-4000-8000-000000000044": null
+      "c0000000-0000-4000-8000-000000000046": null
      }
     },
     "created": {
@@ -3879,9 +4077,9 @@
        "invoice_fiscal_code": null,
        "meta": {
         "description": "Rata n.2 del 10/01/99 (Pilates)",
-        "course_id": "c0000000-0000-4000-8000-000000000028",
+        "course_id": "c0000000-0000-4000-8000-000000000029",
         "course_title": "Pilates",
-        "course_subscription_id": "c0000000-0000-4000-8000-000000000057",
+        "course_subscription_id": "c0000000-0000-4000-8000-000000000059",
         "payment_date": "2099-01-10"
        },
        "notes": null,
@@ -3896,7 +4094,7 @@
       {
        "$sym": "@u1i1",
        "course_subscription_installment_id": "@u1i1",
-       "course_subscription_id": "c0000000-0000-4000-8000-000000000057",
+       "course_subscription_id": "c0000000-0000-4000-8000-000000000059",
        "id": 1,
        "amount": "20.00",
        "paid": false,
@@ -3912,7 +4110,7 @@
     "audit": [
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000044",
+      "key": "c0000000-0000-4000-8000-000000000046",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -3926,7 +4124,7 @@
      },
      {
       "model": "coursesubscription",
-      "key": "c0000000-0000-4000-8000-000000000057",
+      "key": "c0000000-0000-4000-8000-000000000059",
       "action": 1,
       "changes": {
        "multi_payments": [
@@ -3942,7 +4140,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000057'), 'course_id': UUID('c0000000-0000-4000-8000-000000000028'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000059'), 'course_id': UUID('c0000000-0000-4000-8000-000000000029'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
      },
      {
       "model": "payment",
@@ -3983,7 +4181,7 @@
    "name": "course-writes-overview-update-regenerate-athlete",
    "actor": "athlete",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000004/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000004/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -3995,11 +4193,11 @@
     "actor": "athlete",
     "rows": {
      "application.CourseSubscriptionInstallment": {
-      "c0000000-0000-4000-8000-000000000076": null,
-      "c0000000-0000-4000-8000-000000000078": null
+      "c0000000-0000-4000-8000-000000000078": null,
+      "c0000000-0000-4000-8000-000000000080": null
      },
      "application.Payment": {
-      "c0000000-0000-4000-8000-000000000045": null
+      "c0000000-0000-4000-8000-000000000047": null
      }
     },
     "created": {
@@ -4028,9 +4226,9 @@
        "invoice_fiscal_code": null,
        "meta": {
         "description": "Rata n.1 del 10/01/20 (Pilates)",
-        "course_id": "c0000000-0000-4000-8000-000000000028",
+        "course_id": "c0000000-0000-4000-8000-000000000029",
         "course_title": "Pilates",
-        "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
+        "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
         "payment_date": "2020-01-10"
        },
        "notes": null,
@@ -4064,9 +4262,9 @@
        "invoice_fiscal_code": null,
        "meta": {
         "description": "Rata n.2 del 10/01/99 (Pilates)",
-        "course_id": "c0000000-0000-4000-8000-000000000028",
+        "course_id": "c0000000-0000-4000-8000-000000000029",
         "course_title": "Pilates",
-        "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
+        "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
         "payment_date": "2099-01-10"
        },
        "notes": null,
@@ -4081,7 +4279,7 @@
       {
        "$sym": "@u2i0",
        "course_subscription_installment_id": "@u2i0",
-       "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
+       "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
        "id": 0,
        "amount": "20.00",
        "paid": false,
@@ -4094,7 +4292,7 @@
       {
        "$sym": "@u2i1",
        "course_subscription_installment_id": "@u2i1",
-       "course_subscription_id": "c0000000-0000-4000-8000-000000000058",
+       "course_subscription_id": "c0000000-0000-4000-8000-000000000060",
        "id": 1,
        "amount": "20.00",
        "paid": false,
@@ -4110,7 +4308,7 @@
     "audit": [
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000045",
+      "key": "c0000000-0000-4000-8000-000000000047",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4124,7 +4322,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000076",
+      "key": "c0000000-0000-4000-8000-000000000078",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4135,7 +4333,7 @@
      },
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000045",
+      "key": "c0000000-0000-4000-8000-000000000047",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4149,7 +4347,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000076",
+      "key": "c0000000-0000-4000-8000-000000000078",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4165,7 +4363,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000078",
+      "key": "c0000000-0000-4000-8000-000000000080",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4253,18 +4451,18 @@
     "actor": "full_collaborator",
     "rows": {
      "application.CourseSubscription": {
-      "c0000000-0000-4000-8000-000000000059": {
+      "c0000000-0000-4000-8000-000000000061": {
        "payment_id": "@u3p",
        "multi_payments": false,
        "one_fee_payment": true
       }
      },
      "application.CourseSubscriptionInstallment": {
-      "c0000000-0000-4000-8000-000000000079": null,
-      "c0000000-0000-4000-8000-000000000080": null
+      "c0000000-0000-4000-8000-000000000081": null,
+      "c0000000-0000-4000-8000-000000000082": null
      },
      "application.Payment": {
-      "c0000000-0000-4000-8000-000000000047": null
+      "c0000000-0000-4000-8000-000000000049": null
      }
     },
     "created": {
@@ -4312,7 +4510,7 @@
     "audit": [
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000047",
+      "key": "c0000000-0000-4000-8000-000000000049",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4326,7 +4524,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000079",
+      "key": "c0000000-0000-4000-8000-000000000081",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4337,7 +4535,7 @@
      },
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000047",
+      "key": "c0000000-0000-4000-8000-000000000049",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4351,7 +4549,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000079",
+      "key": "c0000000-0000-4000-8000-000000000081",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4367,7 +4565,7 @@
      },
      {
       "model": "coursesubscriptioninstallment",
-      "key": "c0000000-0000-4000-8000-000000000080",
+      "key": "c0000000-0000-4000-8000-000000000082",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4392,7 +4590,7 @@
      },
      {
       "model": "coursesubscription",
-      "key": "c0000000-0000-4000-8000-000000000059",
+      "key": "c0000000-0000-4000-8000-000000000061",
       "action": 1,
       "changes": {
        "payment": [
@@ -4412,7 +4610,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000059'), 'course_id': UUID('c0000000-0000-4000-8000-000000000014'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('@u3p'), 'multi_payments': False, 'one_fee_payment': True, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000061'), 'course_id': UUID('c0000000-0000-4000-8000-000000000014'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('@u3p'), 'multi_payments': False, 'one_fee_payment': True, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
      }
     ]
    },
@@ -4447,7 +4645,7 @@
    "name": "course-writes-overview-update-without-all-fails",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/c0000000-0000-4000-8000-000000000028/overview/c0000000-0000-4000-8000-000000000006/update",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000006/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -4455,13 +4653,13 @@
     "actor": "owner",
     "rows": {
      "application.CourseSubscription": {
-      "c0000000-0000-4000-8000-000000000060": {
+      "c0000000-0000-4000-8000-000000000062": {
        "payment_id": null,
        "multi_payments": true
       }
      },
      "application.Payment": {
-      "c0000000-0000-4000-8000-000000000048": null
+      "c0000000-0000-4000-8000-000000000050": null
      }
     },
     "created": {},
@@ -4469,7 +4667,7 @@
     "audit": [
      {
       "model": "payment",
-      "key": "c0000000-0000-4000-8000-000000000048",
+      "key": "c0000000-0000-4000-8000-000000000050",
       "action": 2,
       "changes": {
        "$stored": "delete",
@@ -4483,7 +4681,7 @@
      },
      {
       "model": "coursesubscription",
-      "key": "c0000000-0000-4000-8000-000000000060",
+      "key": "c0000000-0000-4000-8000-000000000062",
       "action": 1,
       "changes": {
        "multi_payments": [
@@ -4495,7 +4693,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000060'), 'course_id': UUID('c0000000-0000-4000-8000-000000000028'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000062'), 'course_id': UUID('c0000000-0000-4000-8000-000000000029'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000006'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
      }
     ]
    },
@@ -5116,10 +5314,6 @@
        [
         "@nc1",
         "c0000000-0000-4000-8000-000000000008"
-       ],
-       [
-        "@nc1",
-        "c0000000-0000-4000-8000-000000000009"
        ]
       ]
      }
@@ -6086,6 +6280,107 @@
     },
     "subscriptions": [
      "c0000000-0000-4000-8000-000000999999"
+    ]
+   }
+  },
+  {
+   "name": "course-writes-add-other-association-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {
+     "application.Course": [
+      {
+       "$sym": "@nc6",
+       "course_id": "@nc6",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "$now",
+       "title": "Estera",
+       "description": "Note",
+       "multi_payments": false,
+       "fee": "5.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "$color",
+       "multiple_quotes": null,
+       "start_date": null,
+       "end_date": null,
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "group_id": null
+      }
+     ]
+    },
+    "links": {},
+    "audit": [
+     {
+      "model": "course",
+      "key": "@nc6",
+      "action": 0,
+      "changes": {
+       "$stored": "create",
+       "overrides": {
+        "sport_association": [
+         "None",
+         "None"
+        ],
+        "one_fee": [
+         "None",
+         "0.0"
+        ]
+       }
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "course",
+      "key": "@nc6",
+      "action": 1,
+      "changes": {
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "one_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "body": {
+    "new_course": {
+     "title": "Estera",
+     "description": "Note",
+     "fee": "5"
+    },
+    "subscriptions": [
+     "c0000000-0000-4000-8000-000000000007"
     ]
    }
   }

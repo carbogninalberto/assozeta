@@ -6,19 +6,23 @@ course_add (POST course/add) requires exactly the keys ``new_course`` and
 events checks render {'msg:': ..., 'details': ...}), escapes < and > in the
 title and description, creates the course (Course.objects.create keeps the
 serializer's float 0.0 defaults in memory: auditlog records '0.0'), saves
-its association, adds the listed locations and, per
-subscription (Subscription.objects.get: a miss is a 500 after the course
-exists), creates the course subscription with its course-fee payment or
+its association, adds the listed locations of the association and, per
+subscription (Subscription.objects.get within the association: an unknown
+or other association's subscription is a 500 after the course exists), creates the course subscription with its course-fee payment or
 its future installments; every create and save is audited.
 
 course_update (PATCH) checks the uid, finds the live group-aware course
-(400 {'msg:': 'course not found.'}), assigns the raw body
+(400 {'msg:': 'course not found.'}), answers 403 'User not allowed.' unless
+the course is of the caller's association (athletes and owners without an
+association included), assigns the raw body
 values (escaping title/description; one_fee only for one-fee courses,
 events only for instalment courses, revalidated and stored as DD/MM/YYYY
-and 0.00 text), replaces the locations immediately (not atomic: a later
+and 0.00 text), replaces the locations immediately with the listed ones of
+the association or already linked to the course (not atomic: a later
 event error answers 400 with the locations already changed) and saves:
 auditlog diffs str() of the in-memory values; a changed title rewrites the
-live group-aware payments whose meta or description contains the old title.
+course association's live group-aware payments whose meta or description
+contains the old title.
 
 course_delete (POST) hard-deletes the owner's live group-aware course
 through the collector: installments, attendance days, course subscriptions
@@ -84,6 +88,7 @@ COURSES = {
     'u_gone': course('Cancellato', deleted=True),
     'u_group': course('Gruppo', group=OWN_GROUP),
     'u_far': course('Lontano', association=FOREIGN),
+    'u_linked': course('Collegato'),
     'd_full': course('Calcio'),
     'd_empty': course('Vuoto'),
     'd_far': course('Estero', association=FOREIGN),
@@ -96,7 +101,7 @@ COURSES = {
     'o_text': course('Boxe'),
     'o_upd': course('Pilates', one_fee='30.00', one_fee_payment=True, events=OV_EVENTS),
 }
-COURSE_LOCATIONS = [('u_main', 'old'), ('d_full', 'own')]
+COURSE_LOCATIONS = [('u_main', 'old'), ('d_full', 'own'), ('u_linked', 'far')]
 COURSE_TAGS = [('d_full', 'own')]
 
 
@@ -112,7 +117,8 @@ def payment(amount='10.00', *, paid=False, association=OWN, associate=None, user
 PAYMENTS = {
     # title rewrite after a course title change (live, group-aware)
     'pm_meta': payment(meta={'course_title': 'Nuoto', 'n': 2, 'note': 'Nuoto e Nuoto'}),
-    'pm_desc': payment(association=FOREIGN, description='Iscrizione Nuoto 2026'),
+    'pm_desc': payment(description='Iscrizione Nuoto 2026'),
+    'pm_far': payment(association=FOREIGN, description='Iscrizione Nuoto 2026', meta={'course_title': 'Nuoto'}),
     'pm_case': payment(description='quota NUOTO', meta={'x': 'nuoto'}),
     'pm_nested': payment(meta={'info': {'t': 'Nuoto'}}),
     'pm_gone': payment(description='Nuoto', deleted=True),
@@ -412,7 +418,9 @@ rows, audit = updated('u_main', 'owner', {
     title=title, description='Vasca &lt;25m&gt;', fee='60.50', one_fee='45.00', multiple_quotes=[{'quote_id': 'q1', 'amount': '10,00'}],
     billed_duration_is_sport_season=True, billed_frequency=3, billed_from_subscription_date=True, billed_from_day_of_month=15,
     auto_renewal=True, start_date='2026-09-01T00:00:00Z', end_date='2027-06-30T16:30:00Z')
-# The old title is matched case-insensitively in meta text and description, replaced case-sensitively.
+# The old title is matched case-insensitively in meta text and description, replaced case-sensitively,
+# in the payments of the course's association only (pm_far stays); only the association's
+# locations or ones already linked are linked (far is another association's).
 rows[PAYMENT] = {pid('pm_meta'): change_row(PAYMENT, 'pm_meta', meta={'course_title': title, 'n': 2, 'note': f'{title} e {title}'}),
                  pid('pm_desc'): change_row(PAYMENT, 'pm_desc', description=f'Iscrizione {title} 2026')}
 add('update-full', 'owner', f'/course/{cid("u_main")}/update', 200, UPDATED, method='PATCH', body={
@@ -423,7 +431,17 @@ add('update-full', 'owner', f'/course/{cid("u_main")}/update', 200, UPDATED, met
     'billed_frequency': 3, 'billed_from_subscription_date': 1, 'billed_from_day_of_month': 15, 'auto_renewal': 'True',
     'start_date': '2026-09-01', 'end_date': '2027-06-30T18:30:00+02:00', 'ignored': 'x'},
     result=effect('owner', rows=rows, audit=audit,
-                  links={LOCATION_LINK: {'remove': [[cid('u_main'), lid('old')]], 'add': [[cid('u_main'), lid('own')], [cid('u_main'), lid('far')]]}}))
+                  links={LOCATION_LINK: {'remove': [[cid('u_main'), lid('old')]], 'add': [[cid('u_main'), lid('own')]]}}))
+# A location already linked to the course stays linkable, whatever its association.
+add('update-linked-location-kept', 'owner', f'/course/{cid("u_linked")}/update', 200, UPDATED, method='PATCH',
+    body={'locations': [{'course_location_id': lid('far')}, {'course_location_id': lid('own')}]},
+    result=effect('owner', links={LOCATION_LINK: {'add': [[cid('u_linked'), lid('own')]]}}))
+add('update-unlisted-location-removed', 'owner', f'/course/{cid("u_linked")}/update', 200, UPDATED, method='PATCH',
+    body={'locations': [{'course_location_id': lid('own')}]},
+    result=effect('owner', links={LOCATION_LINK: {'remove': [[cid('u_linked'), lid('far')]]}}))
+add('update-other-association-location-not-linked', 'owner', f'/course/{cid("u_linked")}/update', 200, UPDATED, method='PATCH',
+    body={'locations': [{'course_location_id': lid('far')}]},
+    result=effect('owner', links={LOCATION_LINK: {'remove': [[cid('u_linked'), lid('own')]]}}))
 
 new_events = [{'id': 1, 'amount': '20.00', 'payment_date': '01/02/2099'}, {'id': 2, 'amount': '30.50', 'payment_date': '01/03/2099'}]
 rows, audit = updated('u_multi', 'owner', {'events': ['[{"amount": "25.00", "id": 0, "payment_date": "10/01/2099"}]',
@@ -443,16 +461,22 @@ add('update-event-invalid-after-locations', 'owner', f'/course/{cid("u_multi")}/
 rows, audit = updated('u_plain', 'full_collaborator', {'fee': ['50.00', '70']}, fee='70.00')
 add('update-ignored-fields', 'full_collaborator', f'/course/{cid("u_plain")}/update', 200, UPDATED, method='PATCH',
     body={'one_fee': 99, 'events': [{'id': 0}], 'fee': 70}, result=effect('full_collaborator', rows=rows, audit=audit))
-rows, audit = updated('u_plain', 'athlete', {'fee': ['70.00', 'None'], 'multiple_quotes': ['null', '{"a": "\\u00e8"}']}, fee=None,
+# Only a course of the caller's association: athletes and owners without one are denied.
+add('update-athlete-denied', 'athlete', f'/course/{cid("u_plain")}/update', 403, NOT_ALLOWED, method='PATCH',
+    body={'fee': None, 'multiple_quotes': {'a': 'è'}})
+add('update-owner-without-association', 'owner_without_association', f'/course/{cid("u_plain")}/update', 403, NOT_ALLOWED,
+    method='PATCH', body={'fee': None})
+rows, audit = updated('u_plain', 'owner', {'fee': ['70.00', 'None'], 'multiple_quotes': ['null', '{"a": "\\u00e8"}']}, fee=None,
                       multiple_quotes={'a': 'è'})
-add('update-athlete', 'athlete', f'/course/{cid("u_plain")}/update', 200, UPDATED, method='PATCH',
-    body={'fee': None, 'multiple_quotes': {'a': 'è'}}, result=effect('athlete', rows=rows, audit=audit))
+add('update-clear-fee', 'owner', f'/course/{cid("u_plain")}/update', 200, UPDATED, method='PATCH',
+    body={'fee': None, 'multiple_quotes': {'a': 'è'}}, result=effect('owner', rows=rows, audit=audit))
 add('update-same-values', 'owner', f'/course/{cid("u_plain")}/update', 200, UPDATED, method='PATCH',
     body={'fee': None, 'title': 'Scherma', 'multiple_quotes': {'a': 'è'}, 'locations': []}, result=effect('owner'))
 add('update-empty-body', 'owner', f'/course/{cid("u_plain")}/update', 200, UPDATED, method='PATCH', body={}, result=effect('owner'))
-rows, audit = updated('u_far', 'owner', {'description': ['Descrizione Lontano', 'Altra']}, description='Altra')
-add('update-course-lontano', 'owner', f'/course/{cid("u_far")}/update', 200, UPDATED, method='PATCH', body={'description': 'Altra'},
-    result=effect('owner', rows=rows, audit=audit))
+add('update-other-association-course-denied', 'owner', f'/course/{cid("u_far")}/update', 403, NOT_ALLOWED, method='PATCH',
+    body={'description': 'Altra', 'locations': []})
+add('update-other-association-owner', 'foreign_owner', f'/course/{cid("u_main")}/update', 403, NOT_ALLOWED, method='PATCH',
+    body={'title': 'Altro'})
 rows, audit = updated('u_group', 'owner', {'title': ['Gruppo', 'Gruppo 2'], 'end_date': ['None', '2026-12-31 10:00:00']}, title='Gruppo 2',
                       end_date='2026-12-31T10:00:00Z')
 add('update-grouped', 'owner', f'/course/{cid("u_group")}/update', 200, UPDATED, method='PATCH', headers=GROUP('own_group'),
@@ -523,6 +547,8 @@ add('overview-update-malformed-course', 'owner', f'/course/abc/overview/{sid("lu
 add('overview-update-malformed-subscription', 'owner', f'/course/{cid("o_upd")}/overview/abc/update', 400, MALFORMED, body={})
 add('overview-update-missing-row', 'owner', ou('o_upd', 'hans'), 500, SERVER, body={'multi_payments': True})
 add('overview-update-foreign-course', 'owner', ou('u_far', 'hans'), 403, NOT_ALLOWED, body={'multi_payments': True})
+add('overview-update-owner-without-association', 'owner_without_association', ou('o_upd', 'luisa'), 403, NOT_ALLOWED,
+    body={'multi_payments': True})
 add('overview-update-athlete-other-subscription', 'athlete', ou('o_upd', 'luisa'), 403, NOT_ALLOWED, body={'multi_payments': True})
 add('overview-update-no-flags', 'owner', ou('o_upd', 'luisa'), 200, OV_UPDATED, body={'multi_payments': False, 'one_fee_payment': 0},
     result=effect('owner'))
@@ -661,7 +687,7 @@ add('add-course-fee', actor, '/course/add', 200, ADDED, body={
         COURSE: [new_course('@nc1', 'Yoga &lt;i&gt;', 'Mattina &gt; sera', fee='50.00')],
         CSM: [new_cs('@cs1', '@nc1', sid('luisa'), False, '@p1')],
         PAYMENT: [new_payment('@p1', '50.00', user=luisa[0], associate=luisa[1])]},
-        links={LOCATION_LINK: {'add': [['@nc1', lid('own')], ['@nc1', lid('far')]]}}, audit=audit))
+        links={LOCATION_LINK: {'add': [['@nc1', lid('own')]]}}, audit=audit))
 # Instalments: one installment per future event and subscription (past events need
 # full_installments_plan); each row's final save records only the float membership_fee.
 actor = 'full_collaborator'
@@ -704,6 +730,10 @@ add('add-default-fee-payment', actor, '/course/add', 200, ADDED,
 add('add-unknown-subscription', actor, '/course/add', 500, SERVER,
     body={'new_course': {'title': 'Parziale', 'description': 'Note', 'fee': '5'}, 'subscriptions': [UNKNOWN]},
     result=effect(actor, created={COURSE: [new_course('@nc5', 'Parziale', 'Note', fee='5.00')]}, audit=course_entries('@nc5', actor, ('one_fee',))))
+# Subscriptions resolve within the association: another association's one fails like an unknown one.
+add('add-other-association-subscription', actor, '/course/add', 500, SERVER,
+    body={'new_course': {'title': 'Estera', 'description': 'Note', 'fee': '5'}, 'subscriptions': [sid('hans')]},
+    result=effect(actor, created={COURSE: [new_course('@nc6', 'Estera', 'Note', fee='5.00')]}, audit=course_entries('@nc6', actor, ('one_fee',))))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course add, update and delete and course-overview update and delete authored '

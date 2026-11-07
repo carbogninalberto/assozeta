@@ -162,7 +162,7 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 					return nil, err
 				}
 				event := domain.InstructorHoursAudit{Model: "InstructorHours", Key: row.ID, Action: 1,
-					Changes: map[string][2]string{"paid": {"False", "True"}}}
+					Changes: map[string][2]string{"paid": {"False", "True"}}, Instructor: &row.InstructorID}
 				if err := tx.AppendAudit(ctx, event, association, audit, s.moment()); err != nil {
 					return nil, err
 				}
@@ -248,12 +248,20 @@ func (s *InstructorHoursService) related(ctx context.Context, tx domain.Instruct
 		errs[name] = []string{"related-does-not-exist:" + dto.PythonStr(value)}
 	}
 	if write.Instructor.ID != nil {
-		found, err := tx.InstructorExists(ctx, *write.Instructor.ID)
+		found, owner, err := tx.InstructorAssociation(ctx, *write.Instructor.ID)
 		if err != nil {
 			return err
 		}
 		if !found {
 			missing("instructor")
+		} else if owner != nil {
+			current, err := tx.FirstAssociation(ctx, identity.ScopeUser.ID)
+			if err != nil {
+				return err
+			}
+			if current != nil && *current != *owner {
+				return ErrInstructorHoursForbidden
+			}
 		}
 	}
 	if write.Payment.ID != nil {
@@ -357,7 +365,7 @@ func (s *InstructorHoursService) Add(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return err
 	}
-	found, err := s.store.InstructorExists(ctx, id)
+	found, err := s.store.OwnedInstructorExists(ctx, id, identity.ScopeUser.ID)
 	if err != nil {
 		return err
 	}
@@ -427,7 +435,7 @@ func (s *InstructorHoursService) Add(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return err
 	}
-	event := domain.InstructorHoursAudit{Model: "InstructorHours", Key: row.ID, Action: 0, Changes: changes}
+	event := domain.InstructorHoursAudit{Model: "InstructorHours", Key: row.ID, Action: 0, Changes: changes, Instructor: &row.InstructorID}
 	if err := tx.AppendAudit(ctx, event, association, audit, s.moment()); err != nil {
 		return err
 	}
@@ -500,6 +508,10 @@ func (s *InstructorHoursService) Update(ctx context.Context, identity domain.Res
 		}
 		for _, action := range []int{1, 0} {
 			event := domain.InstructorHoursAudit{Model: "InstructorHours", Key: row.ID, Action: action, Changes: changes}
+			if action == 0 {
+				// The update entry is written before the copy exists (the actor's association).
+				event.Instructor = &row.InstructorID
+			}
 			if err := tx.AppendAudit(ctx, event, association, audit, s.moment()); err != nil {
 				return err
 			}
@@ -514,7 +526,8 @@ func (s *InstructorHoursService) Update(ctx context.Context, identity domain.Res
 		return err
 	}
 	if len(changes) > 0 {
-		event := domain.InstructorHoursAudit{Model: "InstructorHours", Key: row.ID, Action: 1, Changes: changes}
+		// auditlog's pre_save entry resolves the stored row: the previous instructor.
+		event := domain.InstructorHoursAudit{Model: "InstructorHours", Key: row.ID, Action: 1, Changes: changes, Instructor: &old.InstructorID}
 		if err := tx.AppendAudit(ctx, event, association, audit, s.moment()); err != nil {
 			return err
 		}
@@ -691,7 +704,8 @@ func decimalAdd(total *big.Rat, text string) error {
 }
 
 // Calculate follows instructor_hours_calculate (a read).
-func (s *InstructorHoursService) Calculate(ctx context.Context, raw string, load InstructorHoursBody, group string) (map[string]any, error) {
+func (s *InstructorHoursService) Calculate(ctx context.Context, identity domain.ResolvedIdentity, raw string, load InstructorHoursBody,
+	group string) (map[string]any, error) {
 	id, err := messageReadsParseUUID(raw)
 	if err != nil {
 		return nil, err
@@ -711,7 +725,7 @@ func (s *InstructorHoursService) Calculate(ctx context.Context, raw string, load
 	if !dto.PythonTruthy(courses) {
 		return nil, instructorHoursAnswer(400, "error", "courses is required")
 	}
-	found, err := s.store.InstructorExists(ctx, id)
+	found, err := s.store.OwnedInstructorExists(ctx, id, identity.ScopeUser.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -772,7 +786,7 @@ func (s *InstructorHoursService) Calculate(ctx context.Context, raw string, load
 		factor = &number
 	}
 	groupID := supplierGroup(group)
-	rows, err := s.store.Courses(ctx, ids, groupID)
+	rows, err := s.store.Courses(ctx, ids, identity.ScopeUser.ID, groupID)
 	if err != nil {
 		return nil, err
 	}
