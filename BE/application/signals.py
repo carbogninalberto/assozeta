@@ -109,8 +109,12 @@ def update_metadata_courses_callback(sender, instance, title, **kwargs):
         logger.error('update_metadata_courses_callback: no title received')
         return
 
-    # get all the payments related to this course
-    payments = Payment.objects.filter(
+    if not instance.sport_association_id:
+        logger.error('update_metadata_courses_callback: course without association')
+        return
+
+    # get the association's payments related to this course
+    payments = Payment.objects.filter(sport_association_id=instance.sport_association_id).filter(
         Q(meta__icontains=title) |
         Q(description__icontains=title)
     )

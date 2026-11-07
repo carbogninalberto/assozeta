@@ -238,14 +238,13 @@ class InstructorHoursResolverTests(BaseResolverTestCase):
             last_name='Instructor'
         )
         mock_hours = MagicMock()
-        mock_instructor = MagicMock()
-        mock_instructor.sport_association = self.sport_association
-        mock_hours.instructor = mock_instructor
+        mock_hours.instructor = instructor
 
         result = instructor_hours_resolver(mock_hours)
 
         self.assertIsNotNone(result)
         self.assertEqual(result[0], self.sport_association)
+        self.assertEqual(result[1], 'instructor.user.sport_association')
 
     def test_resolver_without_instructor(self):
         """Test resolver returns None when no instructor."""

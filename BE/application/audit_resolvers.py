@@ -73,11 +73,16 @@ def course_subscription_installment_resolver(obj):
     return None
 
 
+def instructor_resolver(obj):
+    """Instructor -> its owner's SportAssociation (Instructor has no sport_association FK)."""
+    resolved = user_resolver(obj.user) if getattr(obj, 'user_id', None) else None
+    return (resolved[0], 'instructor.user.sport_association') if resolved else None
+
+
 def instructor_hours_resolver(obj):
-    """InstructorHours -> Instructor -> sport_association (if direct) or via courses"""
-    if hasattr(obj, 'instructor') and obj.instructor:
-        if hasattr(obj.instructor, 'sport_association') and obj.instructor.sport_association:
-            return obj.instructor.sport_association, 'instructor.sport_association'
+    """InstructorHours -> Instructor -> its owner's SportAssociation"""
+    if getattr(obj, 'instructor', None):
+        return instructor_resolver(obj.instructor)
     return None
 
 
@@ -281,7 +286,6 @@ def setup_audit_resolvers():
     direct_fk_models = [
         # User models
         Associate,
-        Instructor,
         Group,
         PreviewAndCustomFeatures,
         UsersOnboarding,
@@ -353,7 +357,8 @@ def setup_audit_resolvers():
     # User model - special handling
     register_resolver(User, user_resolver)
 
-    # Instructor hours
+    # Instructor (through its owner) and instructor hours
+    register_resolver(Instructor, instructor_resolver)
     register_resolver(InstructorHours, instructor_hours_resolver)
 
     # Associate tutor relation

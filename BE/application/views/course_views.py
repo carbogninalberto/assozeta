@@ -90,12 +90,14 @@ def course_add(request):
                 # add only the new locations
                 for l in data['new_course']['locations']:
                     # get course location l
-                    course_location = CourseLocation.objects.filter(course_location_id=l['course_location_id']).first()
+                    course_location = CourseLocation.objects.filter(
+                        course_location_id=l['course_location_id'], sport_association=sport_association).first()
                     if course_location is not None:
                         course.locations.add(course_location)
 
             for subscription in subscriptions:
-                sub = scoped_queryset(request, Subscription.objects).get(subscription_id=subscription)
+                sub = scoped_queryset(request, Subscription.objects).get(
+                    subscription_id=subscription, sport_association=sport_association)
                 course_subscription = CourseSubscription.objects.create(
                     course=course,
                     subscription=sub,
@@ -182,6 +184,10 @@ def course_update(request, uid):
         })
         raise ValidationError({"msg:": "course not found."})
 
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
+    if sport_association is None or course.sport_association_id != sport_association.sport_association_id:
+        raise PermissionDenied("User not allowed.")
+
     # updating the course each field separately if it is in the body
     if 'title' in data.keys():
         # sanitize input for XSS attacks and other security issues
@@ -197,11 +203,14 @@ def course_update(request, uid):
         course.fee = data['fee']
     if 'locations' in data.keys():
         # load the locations
+        linked_locations = set(course.locations.values_list('course_location_id', flat=True))
         course.locations.clear()
         # add only the new locations
         for l in data['locations']:
-            # get course location l
-            course_location = CourseLocation.objects.filter(course_location_id=l['course_location_id']).first()
+            # get course location l: one of the association's, or one already linked to the course
+            course_location = CourseLocation.objects.filter(
+                Q(sport_association=sport_association) | Q(course_location_id__in=linked_locations),
+                course_location_id=l['course_location_id']).first()
             if course_location is not None:
                 course.locations.add(course_location)
     if 'multiple_quotes' in data.keys():
@@ -906,8 +915,8 @@ def course_overview_update(request, uid, uid_subscription):
         raise Exception("Error in updating user.")
 
     is_athlete = request.user.role == User.ATHLETE
-    if is_athlete is False and sport_association is not None and \
-            course.sport_association.sport_association_id != sport_association.sport_association_id:  # pragma: no cover
+    if is_athlete is False and (sport_association is None or
+                                course.sport_association_id != sport_association.sport_association_id):  # pragma: no cover
         raise PermissionDenied("User not allowed.")
 
     if is_athlete and sub.user.user_id != request.user.user_id:  # pragma: no cover
