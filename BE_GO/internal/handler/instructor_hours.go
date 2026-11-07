@@ -19,7 +19,7 @@ type InstructorHoursService interface {
 	Update(ctx context.Context, identity domain.ResolvedIdentity, instructor, hours string, load service.InstructorHoursBody, group string,
 		audit domain.LoginAuditContext) error
 	Delete(ctx context.Context, identity domain.ResolvedIdentity, instructor, hours string, audit domain.LoginAuditContext) error
-	Calculate(ctx context.Context, raw string, load service.InstructorHoursBody, group string) (map[string]any, error)
+	Calculate(ctx context.Context, identity domain.ResolvedIdentity, raw string, load service.InstructorHoursBody, group string) (map[string]any, error)
 }
 
 type InstructorHoursHandler struct {
@@ -186,7 +186,7 @@ func (h *InstructorHoursHandler) Delete(c echo.Context) error {
 
 func (h *InstructorHoursHandler) Calculate(c echo.Context) error {
 	return h.serve(c, http.MethodPost, "instructor_hours_calculate", "Instructor Hours Calculate", func(ctx context.Context, r *instructorHoursRequest) error {
-		body, err := h.hours.Calculate(ctx, c.Param("uid"), r.Body, c.Request().Header.Get("X-Group-Id"))
+		body, err := h.hours.Calculate(ctx, r.identity, c.Param("uid"), r.Body, c.Request().Header.Get("X-Group-Id"))
 		if err != nil {
 			return err
 		}

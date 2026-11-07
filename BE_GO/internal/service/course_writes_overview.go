@@ -242,11 +242,15 @@ func (s *CourseWrites) OverviewUpdate(ctx context.Context, identity domain.Resol
 		return domain.ErrCourseWritesServer
 	}
 	athlete := identity.ScopeUser.Role == domain.RoleAthlete
-	if !athlete && association != nil {
-		if course == nil || course.AssociationID == nil {
+	if !athlete {
+		if association == nil {
+			return domain.ErrCourseWritesForeign
+		}
+		if course == nil {
+			// course.sport_association_id of None.
 			return domain.ErrCourseWritesServer
 		}
-		if *course.AssociationID != *association {
+		if course.AssociationID == nil || *course.AssociationID != *association {
 			return domain.ErrCourseWritesForeign
 		}
 	}

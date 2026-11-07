@@ -35,10 +35,12 @@ before method dispatch (OPTIONS included).
    registry.
 3. `[event['event_id'] ...]` and the `event_id__in` UUID lookup: a non-object event, a missing or
    invalid id is a 500 before any write.
-4. Reminders, event by event (a fresh lookup each time): create when `reminder_enabled` is truthy
-   and none exists (`send_at = parse_datetime(start) - int(amount) * unit`, text
-   `"<amount> <minuti|ore|giorni>"`, instructor from `extendedProps.instructor.instructor_id` or
-   None, owner and association), delete when it is falsy, otherwise recompute the existing one.
+4. Reminders of the association, event by event (a fresh lookup each time; another association's
+   reminder for the same event id is not seen): create when `reminder_enabled` is truthy and none
+   exists (`send_at = parse_datetime(start) - int(amount) * unit`, text
+   `"<amount> <minuti|ore|giorni>"`, instructor from `extendedProps.instructor.instructor_id` among
+   `request.user`'s instructors or None, owner and association), delete when it is falsy, otherwise
+   recompute the existing one.
 5. No registry: create it (`status` stored as an integer; auditlog logs its repr, so `2.0` adds an
    update entry `['2', '2.0']` on the view's second `save()`), and when published one
    `AttendanceDay` per event. A draft registry: replace events and status (days when published).
@@ -131,6 +133,11 @@ bound to their generated keys on first sight; responses may reference them).
   invalid start in the listing) passed Django and then Go. For the final 159 cases, Django passes
   159/159 and Go answers 404 with the four routes unregistered (`native-r9`).
 - GREEN: 159/159 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with exact effects.
+- Association reminder and instructor lookups in the course POST (160 cases, adding
+  `update-other-association-reminder-kept`): RED `red-sync1` (Django 160/160, Go updates the other
+  association's reminder), GREEN `versioned-sync1` (160/160 on the four transports), mutation
+  `mutation-sync1` (dropping the association filter from the course POST's reminder lookup fails
+  that case, CAUGHT).
 - Mutation: making the POST atomic (rolling back instead of committing the work saved before an
   exception) fails Go on `update-partial-failure-keeps-day`.
 - `BE_GO/internal/dto/course_calendar_test.go` pins `parse_datetime` (aware/naive, ValueError vs

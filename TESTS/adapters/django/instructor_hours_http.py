@@ -6,8 +6,10 @@ installments and instructor hours (audit disabled). Each case is checked
 against the complete model state: only the authored hours and documents
 change (created hours are matched as the one new key, or the authored key;
 a copied row equals its source but for the authored columns), and every new
-auditlog entry matches an authored event with its index row (the actor's
-association, none when the actor has none). Rows the run creates are removed
+auditlog entry matches an authored event with its index row: an hour stored
+when its entry is written resolves through its instructor's owner's
+association; otherwise (and when that owner has none) the actor's association,
+none when the actor has none. Rows the run creates are removed
 before the fixture cleanup compares the model state.
 """
 import ipaddress
@@ -79,7 +81,7 @@ def seed_rows(source, created):
         insert(Subscription, Subscription(subscription_id=row['id'], sport_association_id=ids['own_association'], user_id=ids['athlete'],
                                           associate_id=source['associates'][row['associate']]['id'], status_flag=Subscription.ACCEPTED))
     for row in source['courses'].values():
-        insert(Course, Course(course_id=row['id'], sport_association_id=ids['own_association'], title=row['title'], course_type=row['type'],
+        insert(Course, Course(course_id=row['id'], sport_association_id=row['association'], title=row['title'], course_type=row['type'],
                               multi_payments=row['multi'], deleted=row['deleted'], group_id=ids[row['group']] if row['group'] else None,
                               fee=Decimal('50.00'), status_flag=Course.ACTIVE))
     payments = source['payments']
@@ -208,7 +210,7 @@ def check_documents(before, after, effect, source):
     contract.require(set(new) == set(old) - removed and all(new[k] == old[k] for k in new), 'state.documents')
 
 
-def check_event(case, event, indexes, *, before, ids, spec, key, changes, context):
+def check_event(case, event, indexes, *, before, after, ids, spec, key, changes, context):
     app = 'docmanager' if spec['model'] == 'Document' else 'application'
     types = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
     users = keyed(before['application.User'], 'user_id')
@@ -220,15 +222,27 @@ def check_event(case, event, indexes, *, before, ids, spec, key, changes, contex
     contract.require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
     ipaddress.ip_address(event['remote_addr'])
     contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
-    # No resolver resolves an hour or a document, and neither diff names a sport_association: the actor's association.
-    owned = sorted(str(row['sport_association_id']) for row in keyed(before['application.SportAssociation'], 'sport_association_id').values()
-                   if str(row['user_id']) == actor and not row['deleted'])
+    associations = keyed(before['application.SportAssociation'], 'sport_association_id').values()
+    owned_by = lambda user: sorted(str(row['sport_association_id']) for row in associations if str(row['user_id']) == user and not row['deleted'])
+    expected = None
+    if spec['model'] == 'InstructorHours' and spec['action'] in (0, 1):
+        # instructor_hours_resolver reads the stored hour when the entry is written: auditlog's
+        # update entry precedes the save (the previous row), its create entry follows it.
+        stored = rows_of(before if spec['action'] == 1 else after, HOURS, 'instructor_hours_id').get(key)
+        if stored is not None:
+            instructors = rows_of(before, 'application.Instructor', 'instructor_id')
+            owner_associations = owned_by(str(instructors[str(stored['instructor_id'])]['user_id']))
+            if owner_associations:
+                expected = (owner_associations[0], 'instructor.user.sport_association')
+    if expected is None:
+        # Neither diff names a sport_association: the actor's association.
+        owned = owned_by(actor)
+        expected = (owned[0], 'actor.sport_association') if owned else None
     index = indexes.get(str(event['id']))
-    if not owned:
+    if expected is None:
         contract.require(index is None, 'index.absent')
     else:
-        contract.require(index is not None and index['sport_association_id'] == owned[0] and index['resolution_path'] == 'actor.sport_association',
-                         'index.fields')
+        contract.require(index is not None and (index['sport_association_id'], index['resolution_path']) == expected, 'index.fields')
 
 
 def assert_effect(case, before, after, source, context):
@@ -264,7 +278,7 @@ def assert_effect(case, before, after, source, context):
             changes = created_changes(row, overrides)
         else:
             changes = spec['changes']
-        check_event(case, event, indexes, before=before, ids=source['ids'], spec=spec, key=key, changes=changes, context=context)
+        check_event(case, event, indexes, before=before, after=after, ids=source['ids'], spec=spec, key=key, changes=changes, context=context)
 
 
 fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(lambda: models()[0],))

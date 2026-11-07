@@ -267,9 +267,17 @@ func (t *courseWritesTransaction) DeleteCourse(ctx context.Context, course domai
 
 // --- update ---------------------------------------------------------------------
 
-func (t *courseWritesTransaction) LocationExists(ctx context.Context, id string) (bool, error) {
+func (t *courseWritesTransaction) LinkedLocations(ctx context.Context, course string) ([]string, error) {
+	ids := []string{}
+	err := t.tx.SelectContext(ctx, &ids, `SELECT courselocation_id FROM application_course_locations WHERE course_id=$1::uuid
+ ORDER BY courselocation_id`, course)
+	return ids, err
+}
+
+func (t *courseWritesTransaction) LocationLinkable(ctx context.Context, id, association string, linked []string) (bool, error) {
 	var exists bool
-	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_courselocation WHERE course_location_id=$1::uuid)`, id)
+	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_courselocation WHERE course_location_id=$1::uuid
+ AND (sport_association_id=$2::uuid OR course_location_id=ANY($3::uuid[])))`, id, association, uuidArray(linked))
 	return exists, err
 }
 
@@ -312,12 +320,13 @@ func (t *courseWritesTransaction) SaveCourse(ctx context.Context, save domain.Co
 	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("course", "Course", row.ID, "", 1, save.Changes, association, path, audit))
 }
 
-func (t *courseWritesTransaction) TitlePayments(ctx context.Context, title string, group *string) ([]domain.CourseWriteTitlePayment, error) {
+func (t *courseWritesTransaction) TitlePayments(ctx context.Context, title, association string, group *string) ([]domain.CourseWriteTitlePayment, error) {
 	pattern := "%" + strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(title) + "%"
 	rows := []domain.CourseWriteTitlePayment{}
 	err := t.tx.SelectContext(ctx, &rows, `SELECT payment_id, meta::text AS meta, description FROM application_payment
- WHERE NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid) AND (UPPER(meta::text) LIKE UPPER($1) OR UPPER(description::text) LIKE UPPER($1))
- ORDER BY payment_id FOR UPDATE`, pattern, group)
+ WHERE NOT deleted AND sport_association_id=$3::uuid AND ($2::uuid IS NULL OR group_id=$2::uuid)
+ AND (UPPER(meta::text) LIKE UPPER($1) OR UPPER(description::text) LIKE UPPER($1))
+ ORDER BY payment_id FOR UPDATE`, pattern, group, association)
 	return rows, err
 }
 

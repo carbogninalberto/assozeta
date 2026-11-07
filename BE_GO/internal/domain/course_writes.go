@@ -139,13 +139,17 @@ type CourseWritesTransaction interface {
 	// DeleteCourse is course.delete(): the collector with its signals.
 	DeleteCourse(ctx context.Context, course CourseWriteRow, audit CourseSubscriptionAudit) error
 
-	LocationExists(ctx context.Context, id string) (bool, error)
+	// LinkedLocations are the location keys linked to the course.
+	LinkedLocations(ctx context.Context, course string) ([]string, error)
+	// LocationLinkable is CourseLocation.objects.filter(Q(sport_association=association) |
+	// Q(course_location_id__in=linked), course_location_id=id).exists().
+	LocationLinkable(ctx context.Context, id, association string, linked []string) (bool, error)
 	ClearLocations(ctx context.Context, course string) error
 	AddLocation(ctx context.Context, course, location string) error
 	SaveCourse(ctx context.Context, save CourseWriteCourseSave, audit CourseSubscriptionAudit) error
-	// TitlePayments are the live group-aware payments whose meta text or
-	// description contains title case-insensitively.
-	TitlePayments(ctx context.Context, title string, group *string) ([]CourseWriteTitlePayment, error)
+	// TitlePayments are the association's live group-aware payments whose meta
+	// text or description contains title case-insensitively.
+	TitlePayments(ctx context.Context, title, association string, group *string) ([]CourseWriteTitlePayment, error)
 	RewritePayment(ctx context.Context, id string, meta *string, description *string) error
 
 	// CreateCourse inserts the course and its create entry; overrides are

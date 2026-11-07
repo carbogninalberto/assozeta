@@ -13,17 +13,20 @@ Pinned Django semantics, in the views' order:
   extendedProps it renders get_extended_prop_for_attendance_day, whose
   subscription map is keyed by UUID and looked up by str (attendee names and
   its expected_absences never resolve) and which links an unlinked day,
-  saving the names the view added to expected_absences.
+  saving the names the view added to expected_absences; instructor labels
+  come from the instructors of the course association's owner.
 - attendees_update gives back the carnet lesson of each removed attendee (the
   newest carnet whose lesson matches course and date; lessons without
   attendance_day_id gain a null one) and consumes the carnet with the fewest
-  lessons left for each new attendee. It is not atomic: a 412 or an exception
-  keeps the carnets saved before it.
+  lessons left for each new attendee, among the carnets of subscriptions of
+  the association. It is not atomic: a 412 or an exception keeps the carnets
+  saved before it.
 - subscription_attendance lists the days whose attendees name one of the
   subscription's course subscriptions (deleted ones included), once per
-  matching attendee.
-- attendance_mark checks a subscription in on today's day (Europe/Rome date,
-  matched against the UTC date), consuming a carnet when it has one.
+  matching attendee; a subscription the caller cannot see has no history.
+- attendance_mark checks a subscription of the caller's association in on
+  today's day (Europe/Rome date, matched against the UTC date) of a course of
+  the association, consuming a carnet when it has one.
 '{today}' is the Europe/Rome date when the fixture is seeded and the request
 is made. Run with ``python3 -I``.
 """
@@ -44,6 +47,7 @@ def new():
 
 
 INSTRUCTOR = {'id': new(), 'first': 'Ivo', 'last': 'Insegnante'}
+OTHER_INSTRUCTOR = {'id': new(), 'first': 'Olga', 'last': 'Altrove', 'owner': 'foreign_owner'}
 UNPAID, PAID = new(), new()
 PAYMENTS = {'unpaid': {'id': UNPAID, 'paid': False}, 'paid': {'id': PAID, 'paid': True}}
 CARNET = new()
@@ -77,7 +81,7 @@ CS_ROWS = [('a_anna', 'a', 'anna', False), ('a_bruno', 'a', 'bruno', False), ('a
            ('c_dario', 'c', 'dario', False), ('m_anna', 'm', 'anna', False), ('n_anna', 'n', 'anna', False),
            ('n_elena', 'n', 'elena', False), ('m_gina', 'm', 'gina', False), ('m_hugo', 'm', 'hugo', False),
            ('m_ivan', 'm', 'ivan', False), ('m_lia', 'm', 'lia', False), ('f_franco', 'f', 'franco', False),
-           ('orphan', 'f', None, False)]
+           ('orphan', 'f', None, False), ('f_lia', 'f', 'lia', False), ('c_franco', 'c', 'franco', False)]
 COURSE_SUBSCRIPTIONS = {label: {'id': new(), 'course': course, 'subscription': sub, 'deleted': deleted}
                         for label, course, sub, deleted in CS_ROWS}
 CS = {label: row['id'] for label, row in COURSE_SUBSCRIPTIONS.items()}
@@ -88,7 +92,8 @@ EVENTS = {
            'extendedProps': {'instructor': {'instructor_id': INSTRUCTOR['id'], 'label': 'vecchio'}, 'description': 'Prima'}},
           {'event_id': E['E2'], 'title': 'Libera', 'start': '2020-03-09T17:00:00.000Z', 'end': '2020-03-09T18:00:00.000Z', 'allDay': True},
           {'event_id': E['E3'], 'title': 'Gruppo', 'start': '2020-03-16T17:30:00.000Z', 'end': '2020-03-16T18:30:00.000Z',
-           'extendedProps': {'instructor': [{'instructor_id': INSTRUCTOR['id']}, {'name': 'esterno'}]}}],
+           'extendedProps': {'instructor': [{'instructor_id': INSTRUCTOR['id']}, {'name': 'esterno'},
+                                            {'instructor_id': OTHER_INSTRUCTOR['id']}]}}],
     'b': [{'event_id': E['F1'], 'title': 'Yoga', 'start': '2020-04-06T18:00:00.000Z', 'end': '2020-04-06T19:00:00.000Z', 'allDay': False,
            'extendedProps': {'description': 'Respiro'}},
           {'event_id': E['F2'], 'title': 'Yoga due', 'start': '2020-04-13T18:00:00.000Z', 'end': '2020-04-13T19:00:00.000Z'}],
@@ -146,6 +151,8 @@ HOLDINGS = {
     'elena': {'id': new(), 'subscription': 'elena', 'cs': ['n_elena'], 'created': '2026-01-05T10:00:00Z', 'payment': 'paid', 'meta': meta(3, [])},
     'gina': {'id': new(), 'subscription': 'gina', 'cs': [], 'created': '2026-01-06T10:00:00Z', 'payment': 'unpaid', 'meta': meta(4, [])},
     'hugo': {'id': new(), 'subscription': 'hugo', 'cs': [], 'created': '2026-01-07T10:00:00Z', 'payment': None, 'meta': meta(0, [])},
+    'franco': {'id': new(), 'subscription': 'franco', 'cs': ['c_franco'], 'created': '2026-01-08T10:00:00Z', 'payment': None,
+               'meta': meta(3, [])},
 }
 H = {label: row['id'] for label, row in HOLDINGS.items()}
 
@@ -244,17 +251,18 @@ def history(courses, days, recent):
 
 
 ANNA_HISTORY = history(['a', 'b', 'c', 'm', 'n'], ['a6', 'a6', 'c2', 'b1', 'a1'], 2)
-ORPHAN_HISTORY = history(['f'], ['f_old'], 0)
+# A subscription the caller cannot see has no course subscriptions (not those without a subscription).
+NO_HISTORY = history([], [], 0)
 add('history-owner', 'owner', sub_path('anna'), 200, ANNA_HISTORY)
 add('history-full-collaborator', 'full_collaborator', sub_path('anna'), 200, ANNA_HISTORY)
 add('history-course-filter', 'owner', sub_path('anna', f'?course={C["c"]}'), 200, history(['c'], ['c2'], 0))
 add('history-course-filter-other', 'owner', sub_path('anna', f'?course={C["f"]}'), 200, history([], [], 0))
 add('history-course-filter-malformed', 'owner', sub_path('anna', '?course=nope'), 500, SERVER)
 add('history-athlete-own', 'athlete', sub_path('dario'), 200, history(['c'], [], 0))
-add('history-athlete-not-own', 'athlete', sub_path('anna'), 200, ORPHAN_HISTORY)
-add('history-owner-other-association', 'owner', sub_path('franco'), 200, ORPHAN_HISTORY)
-add('history-owner-unknown', 'owner', sub_path('a1000000-0000-4000-8000-000000959998'), 200, ORPHAN_HISTORY)
-add('history-group-hidden', 'owner', sub_path('anna'), 200, ORPHAN_HISTORY, headers={'X-Group-Id': IDS['own_group']})
+add('history-athlete-not-own', 'athlete', sub_path('anna'), 200, NO_HISTORY)
+add('history-owner-other-association', 'owner', sub_path('franco'), 200, NO_HISTORY)
+add('history-owner-unknown', 'owner', sub_path('a1000000-0000-4000-8000-000000959998'), 200, NO_HISTORY)
+add('history-group-hidden', 'owner', sub_path('anna'), 200, NO_HISTORY, headers={'X-Group-Id': IDS['own_group']})
 add('history-group-malformed-ignored', 'owner', sub_path('anna', f'?course={C["c"]}'), 200, history(['c'], ['c2'], 0),
     headers={'X-Group-Id': 'nope'})
 add('history-scoped-athlete-own', 'owner', sub_path('dario'), 200, history(['c'], [], 0), headers=SCOPED)
@@ -276,7 +284,9 @@ add('history-options', 'owner', sub_path('anna'), 200, {'name': 'Subscription At
 list_path = lambda label: f'/course/{C.get(label, label)}/attendees'
 A_POTENTIAL = potential('a_anna', 'a_bruno')
 A1_PROPS = {'instructor': {'instructor_id': INSTRUCTOR['id'], 'label': INSTRUCTOR_NAME}, 'description': 'Prima'}
-A3_PROPS = {'instructor': [{'instructor_id': INSTRUCTOR['id'], 'label': INSTRUCTOR_NAME}, {'name': 'esterno'}]}
+# Another owner's instructor gets no label.
+A3_PROPS = {'instructor': [{'instructor_id': INSTRUCTOR['id'], 'label': INSTRUCTOR_NAME}, {'name': 'esterno'},
+                           {'instructor_id': OTHER_INSTRUCTOR['id']}]}
 COURSE_A = {'data': {'events': [
     listed('a1', event='E1', ext=extended('a1', event='E1', props=A1_PROPS, potentials=A_POTENTIAL, absences_total=2),
            absences=[name('bruno'), '<rimosso>']),
@@ -358,6 +368,11 @@ add('update-removes-legacy-lesson', 'owner', update_path('c', 'c2'), 200, UPDATE
 UNKNOWN = [{'course_subscription_id': 'a1000000-0000-4000-8000-000000959997'}]
 add('update-unknown-subscription-kept', 'owner', update_path('c', 'c4'), 200, UPDATED, method='POST', body={'attendees': UNKNOWN},
     effect=effect(days={'c4': {'attendees': UNKNOWN}}, audit=[change('attendanceday', 'c4', {'attendees': ['null', dumps(UNKNOWN)]})]))
+# Only carnets of subscriptions of the association: Franco's carnet stays untouched.
+UNKNOWN_FRANCO = UNKNOWN + entry('c_franco')
+add('update-other-association-carnet-unused', 'owner', update_path('c', 'c4'), 200, UPDATED, method='POST',
+    body={'attendees': UNKNOWN_FRANCO},
+    effect=effect(days={'c4': {'attendees': UNKNOWN_FRANCO}}, audit=[change('attendanceday', 'c4', {'attendees': [dumps(UNKNOWN), dumps(UNKNOWN_FRANCO)]})]))
 add('update-removed-unknown-subscription', 'owner', update_path('c', 'c3'), 500, SERVER, method='POST', body={'attendees': []})
 add('update-attendee-not-object', 'owner', update_path('c', 'c1'), 500, SERVER, method='POST', body={'attendees': ['x']})
 add('update-attendee-malformed-id', 'owner', update_path('c', 'c1'), 500, SERVER, method='POST',
@@ -405,6 +420,7 @@ IVAN = entry('m_ivan')
 add('mark-selected-day', 'owner', mark_path('ivan'), 200, checked('ivan'), method='POST', body={'attendance_day_id': D['m_today']},
     effect=effect(days={'m_today': {'attendees': IVAN}}, audit=[change('attendanceday', 'm_today', {'attendees': ['[]', dumps(IVAN)]})]))
 IVAN_LIA = entry('m_ivan', 'm_lia')
+# Lia's course subscription to another association's course (f_lia, a day today) is not offered.
 add('mark-today', 'full_collaborator', mark_path('lia'), 200, checked('lia'), method='POST', body={},
     effect=effect(days={'m_today': {'attendees': IVAN_LIA}},
                   audit=[change('attendanceday', 'm_today', {'attendees': [dumps(IVAN), dumps(IVAN_LIA)]}, actor='full_collaborator')]))
@@ -427,18 +443,23 @@ add('mark-unpaid-carnet', 'owner', mark_path('gina'), 412, {'msg': f'Caro {name(
     method='POST', body={})
 add('mark-finished-carnet', 'owner', mark_path('hugo'), 412, {'msg': f'Caro {name("hugo")}, hai finito il carnet.'}, method='POST', body={})
 FRANCO = entry('f_franco')
-add('mark-franco', 'owner', mark_path('franco'), 200, checked('franco'), method='POST', body={},
+add('mark-other-association-subscription', 'owner', mark_path('franco'), 404, {'msg': 'Iscrizione non trovata.'}, method='POST', body={})
+add('mark-selected-day-other-association', 'owner', mark_path('dario'), 404, {'msg': 'Giorno di presenza non trovato.'}, method='POST',
+    body={'attendance_day_id': D['f_today']})
+# The owner of Franco's association checks him in on its course (c_franco is of another association's course).
+add('mark-franco-own-association', 'foreign_owner', mark_path('franco'), 200, checked('franco'), method='POST', body={},
     effect=effect(days={'f_today': {'attendees': FRANCO}},
-                  audit=[change('attendanceday', 'f_today', {'attendees': ['null', dumps(FRANCO)]}, association='foreign_association')]))
+                  audit=[change('attendanceday', 'f_today', {'attendees': ['null', dumps(FRANCO)]}, actor='foreign_owner',
+                                association='foreign_association')]))
 add('mark-selected-day-without-course-subscription', 'owner', mark_path('dario'), 500, SERVER, method='POST',
     body={'attendance_day_id': D['o_today']})
 add('mark-selected-day-unknown', 'owner', mark_path('dario'), 404, {'msg': 'Giorno di presenza non trovato.'}, method='POST',
     body={'attendance_day_id': 'a1000000-0000-4000-8000-000000959998'})
 add('mark-selected-day-malformed', 'owner', mark_path('dario'), 500, SERVER, method='POST', body={'attendance_day_id': 'nope'})
 add('mark-list-body', 'owner', mark_path('dario'), 500, SERVER, method='POST', body=[])
-add('mark-athlete', 'athlete', mark_path('dario'), 404, {'msg': f'Ciao {name("dario")}, non hai corsi oggi.'}, method='POST', body={})
-add('mark-owner-without-association', 'owner_without_association', mark_path('dario'), 404,
-    {'msg': f'Ciao {name("dario")}, non hai corsi oggi.'}, method='POST', body={})
+add('mark-athlete', 'athlete', mark_path('dario'), 404, {'msg': 'Iscrizione non trovata.'}, method='POST', body={})
+add('mark-owner-without-association', 'owner_without_association', mark_path('dario'), 404, {'msg': 'Iscrizione non trovata.'},
+    method='POST', body={})
 add('mark-scoped-athlete', 'owner', mark_path('dario'), 403, SCOPED_DENIED, method='POST', body={}, headers=SCOPED)
 add('mark-scoped-full-foreign-day', 'owner', mark_path('dario'), 403, RESOURCE_DENIED, method='POST',
     body={'attendance_day_id': D['f_today']}, headers=FULL_SCOPED)
@@ -453,7 +474,7 @@ add('mark-options', 'owner', mark_path('dario'), 200, {'name': 'Attendance Mark'
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'Course attendance listing, update, subscription history and check-in with carnet and audit effects',
-    'ids': IDS, 'instructor': INSTRUCTOR, 'payments': PAYMENTS, 'carnet': CARNET, 'medical': MEDICAL, 'associates': ASSOCIATES,
+    'ids': IDS, 'instructor': INSTRUCTOR, 'other_instructor': OTHER_INSTRUCTOR, 'payments': PAYMENTS, 'carnet': CARNET, 'medical': MEDICAL, 'associates': ASSOCIATES,
     'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBSCRIPTIONS, 'registries': REGISTRIES,
     'days': DAYS, 'holdings': HOLDINGS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

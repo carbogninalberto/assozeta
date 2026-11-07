@@ -44,25 +44,31 @@
   "first": "Ivo",
   "last": "Insegnante"
  },
+ "other_instructor": {
+  "id": "a1000000-0000-4000-8000-000000950002",
+  "first": "Olga",
+  "last": "Altrove",
+  "owner": "foreign_owner"
+ },
  "payments": {
   "unpaid": {
-   "id": "a1000000-0000-4000-8000-000000950002",
+   "id": "a1000000-0000-4000-8000-000000950003",
    "paid": false
   },
   "paid": {
-   "id": "a1000000-0000-4000-8000-000000950003",
+   "id": "a1000000-0000-4000-8000-000000950004",
    "paid": true
   }
  },
- "carnet": "a1000000-0000-4000-8000-000000950004",
+ "carnet": "a1000000-0000-4000-8000-000000950005",
  "medical": {
-  "id": "a1000000-0000-4000-8000-000000950005",
+  "id": "a1000000-0000-4000-8000-000000950006",
   "expiration": "2030-12-31",
   "competitive": true
  },
  "associates": {
   "anna": {
-   "id": "a1000000-0000-4000-8000-000000950006",
+   "id": "a1000000-0000-4000-8000-000000950007",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Anna",
    "last": "Rossi",
@@ -70,7 +76,7 @@
    "tax": "TAX0000000000000"
   },
   "bruno": {
-   "id": "a1000000-0000-4000-8000-000000950007",
+   "id": "a1000000-0000-4000-8000-000000950008",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Bruno",
    "last": "Verdi",
@@ -78,7 +84,7 @@
    "tax": "TAX0000000000001"
   },
   "dario": {
-   "id": "a1000000-0000-4000-8000-000000950008",
+   "id": "a1000000-0000-4000-8000-000000950009",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Dario",
    "last": "Neri",
@@ -86,7 +92,7 @@
    "tax": "TAX0000000000002"
   },
   "elena": {
-   "id": "a1000000-0000-4000-8000-000000950009",
+   "id": "a1000000-0000-4000-8000-000000950010",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Elena",
    "last": "Grigi",
@@ -94,7 +100,7 @@
    "tax": "TAX0000000000003"
   },
   "gina": {
-   "id": "a1000000-0000-4000-8000-000000950010",
+   "id": "a1000000-0000-4000-8000-000000950011",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Gina",
    "last": "Gialli",
@@ -102,7 +108,7 @@
    "tax": "TAX0000000000004"
   },
   "hugo": {
-   "id": "a1000000-0000-4000-8000-000000950011",
+   "id": "a1000000-0000-4000-8000-000000950012",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Hugo",
    "last": "Blu",
@@ -110,7 +116,7 @@
    "tax": "TAX0000000000005"
   },
   "ivan": {
-   "id": "a1000000-0000-4000-8000-000000950012",
+   "id": "a1000000-0000-4000-8000-000000950013",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Ivan",
    "last": "Viola",
@@ -118,7 +124,7 @@
    "tax": "TAX0000000000006"
   },
   "lia": {
-   "id": "a1000000-0000-4000-8000-000000950013",
+   "id": "a1000000-0000-4000-8000-000000950014",
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Lia",
    "last": "Rosa",
@@ -126,7 +132,7 @@
    "tax": "TAX0000000000007"
   },
   "franco": {
-   "id": "a1000000-0000-4000-8000-000000950014",
+   "id": "a1000000-0000-4000-8000-000000950015",
    "association": "a1000000-0000-4000-8000-000000701002",
    "first": "Franco",
    "last": "Esteri",
@@ -136,7 +142,7 @@
  },
  "subscriptions": {
   "anna": {
-   "id": "a1000000-0000-4000-8000-000000950015",
+   "id": "a1000000-0000-4000-8000-000000950016",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "anna",
    "user": "owner",
@@ -144,15 +150,15 @@
    "created": "2026-01-10T10:00:00Z"
   },
   "bruno": {
-   "id": "a1000000-0000-4000-8000-000000950016",
+   "id": "a1000000-0000-4000-8000-000000950017",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "bruno",
    "user": "owner",
-   "medical": "a1000000-0000-4000-8000-000000950005",
+   "medical": "a1000000-0000-4000-8000-000000950006",
    "created": "2026-01-10T10:00:00Z"
   },
   "dario": {
-   "id": "a1000000-0000-4000-8000-000000950017",
+   "id": "a1000000-0000-4000-8000-000000950018",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "dario",
    "user": "athlete",
@@ -160,7 +166,7 @@
    "created": "2026-01-10T10:00:00Z"
   },
   "elena": {
-   "id": "a1000000-0000-4000-8000-000000950018",
+   "id": "a1000000-0000-4000-8000-000000950019",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "elena",
    "user": "owner",
@@ -168,7 +174,7 @@
    "created": "2026-01-10T10:00:00Z"
   },
   "gina": {
-   "id": "a1000000-0000-4000-8000-000000950019",
+   "id": "a1000000-0000-4000-8000-000000950020",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "gina",
    "user": "owner",
@@ -176,7 +182,7 @@
    "created": "2026-01-10T10:00:00Z"
   },
   "hugo": {
-   "id": "a1000000-0000-4000-8000-000000950020",
+   "id": "a1000000-0000-4000-8000-000000950021",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "hugo",
    "user": "owner",
@@ -184,7 +190,7 @@
    "created": "2026-01-10T10:00:00Z"
   },
   "ivan": {
-   "id": "a1000000-0000-4000-8000-000000950021",
+   "id": "a1000000-0000-4000-8000-000000950022",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "ivan",
    "user": "owner",
@@ -192,7 +198,7 @@
    "created": "2026-01-10T10:00:00Z"
   },
   "lia": {
-   "id": "a1000000-0000-4000-8000-000000950022",
+   "id": "a1000000-0000-4000-8000-000000950023",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "lia",
    "user": "owner",
@@ -200,7 +206,7 @@
    "created": "2026-01-10T10:00:00Z"
   },
   "franco": {
-   "id": "a1000000-0000-4000-8000-000000950023",
+   "id": "a1000000-0000-4000-8000-000000950024",
    "association": "a1000000-0000-4000-8000-000000701002",
    "associate": "franco",
    "user": "foreign_owner",
@@ -210,55 +216,55 @@
  },
  "courses": {
   "a": {
-   "id": "a1000000-0000-4000-8000-000000950024",
+   "id": "a1000000-0000-4000-8000-000000950025",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Nuoto",
    "deleted": false
   },
   "b": {
-   "id": "a1000000-0000-4000-8000-000000950025",
+   "id": "a1000000-0000-4000-8000-000000950026",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Yoga",
    "deleted": false
   },
   "c": {
-   "id": "a1000000-0000-4000-8000-000000950026",
+   "id": "a1000000-0000-4000-8000-000000950027",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Pilates",
    "deleted": false
   },
   "m": {
-   "id": "a1000000-0000-4000-8000-000000950027",
+   "id": "a1000000-0000-4000-8000-000000950028",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Corsa",
    "deleted": false
   },
   "n": {
-   "id": "a1000000-0000-4000-8000-000000950028",
+   "id": "a1000000-0000-4000-8000-000000950029",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Danza",
    "deleted": false
   },
   "o": {
-   "id": "a1000000-0000-4000-8000-000000950029",
+   "id": "a1000000-0000-4000-8000-000000950030",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Tennis",
    "deleted": false
   },
   "empty": {
-   "id": "a1000000-0000-4000-8000-000000950030",
+   "id": "a1000000-0000-4000-8000-000000950031",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Senza registro",
    "deleted": false
   },
   "deleted": {
-   "id": "a1000000-0000-4000-8000-000000950031",
+   "id": "a1000000-0000-4000-8000-000000950032",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Eliminato",
    "deleted": true
   },
   "f": {
-   "id": "a1000000-0000-4000-8000-000000950032",
+   "id": "a1000000-0000-4000-8000-000000950033",
    "association": "a1000000-0000-4000-8000-000000701002",
    "title": "Estero",
    "deleted": false
@@ -266,109 +272,121 @@
  },
  "course_subscriptions": {
   "a_anna": {
-   "id": "a1000000-0000-4000-8000-000000950033",
+   "id": "a1000000-0000-4000-8000-000000950034",
    "course": "a",
    "subscription": "anna",
    "deleted": false
   },
   "a_bruno": {
-   "id": "a1000000-0000-4000-8000-000000950034",
+   "id": "a1000000-0000-4000-8000-000000950035",
    "course": "a",
    "subscription": "bruno",
    "deleted": false
   },
   "a_gone": {
-   "id": "a1000000-0000-4000-8000-000000950035",
+   "id": "a1000000-0000-4000-8000-000000950036",
    "course": "a",
    "subscription": "bruno",
    "deleted": true
   },
   "b_anna": {
-   "id": "a1000000-0000-4000-8000-000000950036",
+   "id": "a1000000-0000-4000-8000-000000950037",
    "course": "b",
    "subscription": "anna",
    "deleted": false
   },
   "c_anna": {
-   "id": "a1000000-0000-4000-8000-000000950037",
+   "id": "a1000000-0000-4000-8000-000000950038",
    "course": "c",
    "subscription": "anna",
    "deleted": false
   },
   "c_bruno": {
-   "id": "a1000000-0000-4000-8000-000000950038",
+   "id": "a1000000-0000-4000-8000-000000950039",
    "course": "c",
    "subscription": "bruno",
    "deleted": false
   },
   "c_dario": {
-   "id": "a1000000-0000-4000-8000-000000950039",
+   "id": "a1000000-0000-4000-8000-000000950040",
    "course": "c",
    "subscription": "dario",
    "deleted": false
   },
   "m_anna": {
-   "id": "a1000000-0000-4000-8000-000000950040",
+   "id": "a1000000-0000-4000-8000-000000950041",
    "course": "m",
    "subscription": "anna",
    "deleted": false
   },
   "n_anna": {
-   "id": "a1000000-0000-4000-8000-000000950041",
+   "id": "a1000000-0000-4000-8000-000000950042",
    "course": "n",
    "subscription": "anna",
    "deleted": false
   },
   "n_elena": {
-   "id": "a1000000-0000-4000-8000-000000950042",
+   "id": "a1000000-0000-4000-8000-000000950043",
    "course": "n",
    "subscription": "elena",
    "deleted": false
   },
   "m_gina": {
-   "id": "a1000000-0000-4000-8000-000000950043",
+   "id": "a1000000-0000-4000-8000-000000950044",
    "course": "m",
    "subscription": "gina",
    "deleted": false
   },
   "m_hugo": {
-   "id": "a1000000-0000-4000-8000-000000950044",
+   "id": "a1000000-0000-4000-8000-000000950045",
    "course": "m",
    "subscription": "hugo",
    "deleted": false
   },
   "m_ivan": {
-   "id": "a1000000-0000-4000-8000-000000950045",
+   "id": "a1000000-0000-4000-8000-000000950046",
    "course": "m",
    "subscription": "ivan",
    "deleted": false
   },
   "m_lia": {
-   "id": "a1000000-0000-4000-8000-000000950046",
+   "id": "a1000000-0000-4000-8000-000000950047",
    "course": "m",
    "subscription": "lia",
    "deleted": false
   },
   "f_franco": {
-   "id": "a1000000-0000-4000-8000-000000950047",
+   "id": "a1000000-0000-4000-8000-000000950048",
    "course": "f",
    "subscription": "franco",
    "deleted": false
   },
   "orphan": {
-   "id": "a1000000-0000-4000-8000-000000950048",
+   "id": "a1000000-0000-4000-8000-000000950049",
    "course": "f",
    "subscription": null,
+   "deleted": false
+  },
+  "f_lia": {
+   "id": "a1000000-0000-4000-8000-000000950050",
+   "course": "f",
+   "subscription": "lia",
+   "deleted": false
+  },
+  "c_franco": {
+   "id": "a1000000-0000-4000-8000-000000950051",
+   "course": "c",
+   "subscription": "franco",
    "deleted": false
   }
  },
  "registries": {
   "a": {
-   "id": "a1000000-0000-4000-8000-000000950054",
+   "id": "a1000000-0000-4000-8000-000000950057",
    "course": "a",
    "events": [
     {
-     "event_id": "a1000000-0000-4000-8000-000000950049",
+     "event_id": "a1000000-0000-4000-8000-000000950052",
      "title": "Lezione",
      "start": "2020-03-02T17:00:00.000Z",
      "end": "2020-03-02T18:00:00.000Z",
@@ -382,14 +400,14 @@
      }
     },
     {
-     "event_id": "a1000000-0000-4000-8000-000000950050",
+     "event_id": "a1000000-0000-4000-8000-000000950053",
      "title": "Libera",
      "start": "2020-03-09T17:00:00.000Z",
      "end": "2020-03-09T18:00:00.000Z",
      "allDay": true
     },
     {
-     "event_id": "a1000000-0000-4000-8000-000000950051",
+     "event_id": "a1000000-0000-4000-8000-000000950054",
      "title": "Gruppo",
      "start": "2020-03-16T17:30:00.000Z",
      "end": "2020-03-16T18:30:00.000Z",
@@ -400,6 +418,9 @@
        },
        {
         "name": "esterno"
+       },
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000950002"
        }
       ]
      }
@@ -407,11 +428,11 @@
    ]
   },
   "b": {
-   "id": "a1000000-0000-4000-8000-000000950055",
+   "id": "a1000000-0000-4000-8000-000000950058",
    "course": "b",
    "events": [
     {
-     "event_id": "a1000000-0000-4000-8000-000000950052",
+     "event_id": "a1000000-0000-4000-8000-000000950055",
      "title": "Yoga",
      "start": "2020-04-06T18:00:00.000Z",
      "end": "2020-04-06T19:00:00.000Z",
@@ -421,7 +442,7 @@
      }
     },
     {
-     "event_id": "a1000000-0000-4000-8000-000000950053",
+     "event_id": "a1000000-0000-4000-8000-000000950056",
      "title": "Yoga due",
      "start": "2020-04-13T18:00:00.000Z",
      "end": "2020-04-13T19:00:00.000Z"
@@ -429,132 +450,132 @@
    ]
   },
   "c": {
-   "id": "a1000000-0000-4000-8000-000000950056",
+   "id": "a1000000-0000-4000-8000-000000950059",
    "course": "c",
    "events": []
   },
   "m": {
-   "id": "a1000000-0000-4000-8000-000000950057",
+   "id": "a1000000-0000-4000-8000-000000950060",
    "course": "m",
    "events": []
   },
   "n": {
-   "id": "a1000000-0000-4000-8000-000000950058",
+   "id": "a1000000-0000-4000-8000-000000950061",
    "course": "n",
    "events": []
   },
   "o": {
-   "id": "a1000000-0000-4000-8000-000000950059",
+   "id": "a1000000-0000-4000-8000-000000950062",
    "course": "o",
    "events": []
   },
   "f": {
-   "id": "a1000000-0000-4000-8000-000000950060",
+   "id": "a1000000-0000-4000-8000-000000950063",
    "course": "f",
    "events": []
   }
  },
  "days": {
   "a1": {
-   "id": "a1000000-0000-4000-8000-000000950061",
+   "id": "a1000000-0000-4000-8000-000000950064",
    "registry": "a",
    "title": "Lezione",
    "date": "2020-03-02T17:00:00Z",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
     }
    ],
    "expected_absences": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950035"
     },
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950035"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
     }
    ],
-   "associated_event": "a1000000-0000-4000-8000-000000950049"
+   "associated_event": "a1000000-0000-4000-8000-000000950052"
   },
   "a2": {
-   "id": "a1000000-0000-4000-8000-000000950062",
+   "id": "a1000000-0000-4000-8000-000000950065",
    "registry": "a",
    "title": "Libera",
    "date": "2020-03-09T17:00:00Z",
    "attendees": null,
    "expected_absences": null,
-   "associated_event": "a1000000-0000-4000-8000-000000950050"
+   "associated_event": "a1000000-0000-4000-8000-000000950053"
   },
   "a3": {
-   "id": "a1000000-0000-4000-8000-000000950063",
+   "id": "a1000000-0000-4000-8000-000000950066",
    "registry": "a",
    "title": "Gruppo",
    "date": "2020-03-16T17:00:00Z",
    "attendees": [],
    "expected_absences": [],
-   "associated_event": "a1000000-0000-4000-8000-000000950051"
+   "associated_event": "a1000000-0000-4000-8000-000000950054"
   },
   "a4": {
-   "id": "a1000000-0000-4000-8000-000000950064",
+   "id": "a1000000-0000-4000-8000-000000950067",
    "registry": "a",
    "title": "Spostata",
    "date": "2020-03-25T10:00:00Z",
    "attendees": null,
    "expected_absences": null,
-   "associated_event": "a1000000-0000-4000-8000-000000950051"
+   "associated_event": "a1000000-0000-4000-8000-000000950054"
   },
   "a5": {
-   "id": "a1000000-0000-4000-8000-000000950065",
+   "id": "a1000000-0000-4000-8000-000000950068",
    "registry": "a",
    "title": "Doppia",
    "date": "2020-03-02T17:45:00Z",
    "attendees": null,
    "expected_absences": null,
-   "associated_event": "a1000000-0000-4000-8000-000000950050"
+   "associated_event": "a1000000-0000-4000-8000-000000950053"
   },
   "a6": {
-   "id": "a1000000-0000-4000-8000-000000950066",
+   "id": "a1000000-0000-4000-8000-000000950069",
    "registry": "a",
    "title": "Futura",
    "date": "2031-01-10T10:00:00Z",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
     },
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
     }
    ],
    "expected_absences": null,
-   "associated_event": "a1000000-0000-4000-8000-000000950050"
+   "associated_event": "a1000000-0000-4000-8000-000000950053"
   },
   "b0": {
-   "id": "a1000000-0000-4000-8000-000000950067",
+   "id": "a1000000-0000-4000-8000-000000950070",
    "registry": "b",
    "title": "Yoga bis",
    "date": "2020-04-06T18:20:00Z",
    "attendees": null,
    "expected_absences": null,
-   "associated_event": "a1000000-0000-4000-8000-000000950052"
+   "associated_event": "a1000000-0000-4000-8000-000000950055"
   },
   "b1": {
-   "id": "a1000000-0000-4000-8000-000000950068",
+   "id": "a1000000-0000-4000-8000-000000950071",
    "registry": "b",
    "title": "Yoga",
    "date": "2020-04-06T18:00:00Z",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
     }
    ],
    "expected_absences": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
     }
    ],
    "associated_event": null
   },
   "b2": {
-   "id": "a1000000-0000-4000-8000-000000950069",
+   "id": "a1000000-0000-4000-8000-000000950072",
    "registry": "b",
    "title": "Yoga due",
    "date": "2020-04-13T18:00:00Z",
@@ -563,7 +584,7 @@
    "associated_event": null
   },
   "c1": {
-   "id": "a1000000-0000-4000-8000-000000950070",
+   "id": "a1000000-0000-4000-8000-000000950073",
    "registry": "c",
    "title": "Pilates base",
    "date": "2020-05-04T09:00:00Z",
@@ -572,20 +593,20 @@
    "associated_event": null
   },
   "c2": {
-   "id": "a1000000-0000-4000-8000-000000950071",
+   "id": "a1000000-0000-4000-8000-000000950074",
    "registry": "c",
    "title": "Pilates due",
    "date": "2020-05-11T09:00:00Z",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
     }
    ],
    "expected_absences": null,
    "associated_event": null
   },
   "c3": {
-   "id": "a1000000-0000-4000-8000-000000950072",
+   "id": "a1000000-0000-4000-8000-000000950075",
    "registry": "c",
    "title": "Pilates tre",
    "date": "2020-05-18T09:00:00Z",
@@ -598,7 +619,7 @@
    "associated_event": null
   },
   "c4": {
-   "id": "a1000000-0000-4000-8000-000000950073",
+   "id": "a1000000-0000-4000-8000-000000950076",
    "registry": "c",
    "title": "Pilates quattro",
    "date": "2020-05-25T09:00:00Z",
@@ -607,7 +628,7 @@
    "associated_event": null
   },
   "m_today": {
-   "id": "a1000000-0000-4000-8000-000000950074",
+   "id": "a1000000-0000-4000-8000-000000950077",
    "registry": "m",
    "title": "Corsa oggi",
    "date": "{today}T12:00:00Z",
@@ -616,7 +637,7 @@
    "associated_event": null
   },
   "n_today": {
-   "id": "a1000000-0000-4000-8000-000000950075",
+   "id": "a1000000-0000-4000-8000-000000950078",
    "registry": "n",
    "title": "Danza oggi",
    "date": "{today}T15:00:00Z",
@@ -625,7 +646,7 @@
    "associated_event": null
   },
   "o_today": {
-   "id": "a1000000-0000-4000-8000-000000950076",
+   "id": "a1000000-0000-4000-8000-000000950079",
    "registry": "o",
    "title": "Tennis oggi",
    "date": "{today}T08:00:00Z",
@@ -634,7 +655,7 @@
    "associated_event": null
   },
   "f_today": {
-   "id": "a1000000-0000-4000-8000-000000950077",
+   "id": "a1000000-0000-4000-8000-000000950080",
    "registry": "f",
    "title": "Estero oggi",
    "date": "{today}T08:00:00Z",
@@ -643,13 +664,13 @@
    "associated_event": null
   },
   "f_old": {
-   "id": "a1000000-0000-4000-8000-000000950078",
+   "id": "a1000000-0000-4000-8000-000000950081",
    "registry": "f",
    "title": "Estero vecchio",
    "date": "2020-02-01T08:00:00Z",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000950048"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950049"
     }
    ],
    "expected_absences": null,
@@ -658,7 +679,7 @@
  },
  "holdings": {
   "anna_1": {
-   "id": "a1000000-0000-4000-8000-000000950079",
+   "id": "a1000000-0000-4000-8000-000000950082",
    "subscription": "anna",
    "cs": [
     "c_anna"
@@ -672,7 +693,7 @@
    }
   },
   "anna_2": {
-   "id": "a1000000-0000-4000-8000-000000950080",
+   "id": "a1000000-0000-4000-8000-000000950083",
    "subscription": "anna",
    "cs": [],
    "created": "2026-01-01T10:00:00Z",
@@ -684,7 +705,7 @@
      {
       "date": "2020-04-01 09:00:00+00:00",
       "course": {
-       "id": "a1000000-0000-4000-8000-000000950026",
+       "id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       },
       "title": "vecchia"
@@ -692,7 +713,7 @@
      {
       "date": "2020-05-11 09:00:00+00:00",
       "course": {
-       "id": "a1000000-0000-4000-8000-000000950026",
+       "id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       },
       "title": "Pilates due"
@@ -701,7 +722,7 @@
    }
   },
   "bruno": {
-   "id": "a1000000-0000-4000-8000-000000950081",
+   "id": "a1000000-0000-4000-8000-000000950084",
    "subscription": "bruno",
    "cs": [
     "c_bruno"
@@ -715,7 +736,7 @@
    }
   },
   "dario": {
-   "id": "a1000000-0000-4000-8000-000000950082",
+   "id": "a1000000-0000-4000-8000-000000950085",
    "subscription": "dario",
    "cs": [
     "c_dario"
@@ -729,7 +750,7 @@
    }
   },
   "elena": {
-   "id": "a1000000-0000-4000-8000-000000950083",
+   "id": "a1000000-0000-4000-8000-000000950086",
    "subscription": "elena",
    "cs": [
     "n_elena"
@@ -743,7 +764,7 @@
    }
   },
   "gina": {
-   "id": "a1000000-0000-4000-8000-000000950084",
+   "id": "a1000000-0000-4000-8000-000000950087",
    "subscription": "gina",
    "cs": [],
    "created": "2026-01-06T10:00:00Z",
@@ -755,7 +776,7 @@
    }
   },
   "hugo": {
-   "id": "a1000000-0000-4000-8000-000000950085",
+   "id": "a1000000-0000-4000-8000-000000950088",
    "subscription": "hugo",
    "cs": [],
    "created": "2026-01-07T10:00:00Z",
@@ -765,6 +786,20 @@
     "lessons_left": 0,
     "lessons_registry": []
    }
+  },
+  "franco": {
+   "id": "a1000000-0000-4000-8000-000000950089",
+   "subscription": "franco",
+   "cs": [
+    "c_franco"
+   ],
+   "created": "2026-01-08T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 3,
+    "lessons_registry": []
+   }
   }
  },
  "cases": [
@@ -772,7 +807,7 @@
    "name": "course-attendance-history-owner",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 200,
    "response": {
@@ -780,50 +815,50 @@
      "attendance_days": [
       {
        "title": "Futura",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "title": "Nuoto"
        },
        "date": "2031-01-10T10:00:00Z"
       },
       {
        "title": "Futura",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "title": "Nuoto"
        },
        "date": "2031-01-10T10:00:00Z"
       },
       {
        "title": "Pilates due",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950056",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "course_id": "a1000000-0000-4000-8000-000000950027",
         "title": "Pilates"
        },
        "date": "2020-05-11T09:00:00Z"
       },
       {
        "title": "Yoga",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
         "title": "Yoga"
        },
        "date": "2020-04-06T18:00:00Z"
       },
       {
        "title": "Lezione",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950061",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "title": "Nuoto"
        },
        "date": "2020-03-02T17:00:00Z"
@@ -831,23 +866,23 @@
      ],
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000950024",
+       "course_id": "a1000000-0000-4000-8000-000000950025",
        "title": "Nuoto"
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000950025",
+       "course_id": "a1000000-0000-4000-8000-000000950026",
        "title": "Yoga"
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "course_id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "course_id": "a1000000-0000-4000-8000-000000950028",
        "title": "Corsa"
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000950028",
+       "course_id": "a1000000-0000-4000-8000-000000950029",
        "title": "Danza"
       }
      ],
@@ -865,7 +900,7 @@
    "name": "course-attendance-history-full-collaborator",
    "actor": "full_collaborator",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 200,
    "response": {
@@ -873,50 +908,50 @@
      "attendance_days": [
       {
        "title": "Futura",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "title": "Nuoto"
        },
        "date": "2031-01-10T10:00:00Z"
       },
       {
        "title": "Futura",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "title": "Nuoto"
        },
        "date": "2031-01-10T10:00:00Z"
       },
       {
        "title": "Pilates due",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950056",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "course_id": "a1000000-0000-4000-8000-000000950027",
         "title": "Pilates"
        },
        "date": "2020-05-11T09:00:00Z"
       },
       {
        "title": "Yoga",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
         "title": "Yoga"
        },
        "date": "2020-04-06T18:00:00Z"
       },
       {
        "title": "Lezione",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950061",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "title": "Nuoto"
        },
        "date": "2020-03-02T17:00:00Z"
@@ -924,23 +959,23 @@
      ],
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000950024",
+       "course_id": "a1000000-0000-4000-8000-000000950025",
        "title": "Nuoto"
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000950025",
+       "course_id": "a1000000-0000-4000-8000-000000950026",
        "title": "Yoga"
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "course_id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "course_id": "a1000000-0000-4000-8000-000000950028",
        "title": "Corsa"
       },
       {
-       "course_id": "a1000000-0000-4000-8000-000000950028",
+       "course_id": "a1000000-0000-4000-8000-000000950029",
        "title": "Danza"
       }
      ],
@@ -958,7 +993,7 @@
    "name": "course-attendance-history-course-filter",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance?course=a1000000-0000-4000-8000-000000950026",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=a1000000-0000-4000-8000-000000950027",
    "headers": {},
    "status": 200,
    "response": {
@@ -966,10 +1001,10 @@
      "attendance_days": [
       {
        "title": "Pilates due",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950056",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "course_id": "a1000000-0000-4000-8000-000000950027",
         "title": "Pilates"
        },
        "date": "2020-05-11T09:00:00Z"
@@ -977,7 +1012,7 @@
      ],
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "course_id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       }
      ],
@@ -995,7 +1030,7 @@
    "name": "course-attendance-history-course-filter-other",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance?course=a1000000-0000-4000-8000-000000950032",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=a1000000-0000-4000-8000-000000950033",
    "headers": {},
    "status": 200,
    "response": {
@@ -1016,7 +1051,7 @@
    "name": "course-attendance-history-course-filter-malformed",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance?course=nope",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=nope",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1026,7 +1061,7 @@
    "name": "course-attendance-history-athlete-own",
    "actor": "athlete",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950017/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950018/attendance",
    "headers": {},
    "status": 200,
    "response": {
@@ -1034,7 +1069,7 @@
      "attendance_days": [],
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "course_id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       }
      ],
@@ -1052,33 +1087,17 @@
    "name": "course-attendance-history-athlete-not-own",
    "actor": "athlete",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
-     "attendance_days": [
-      {
-       "title": "Estero vecchio",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950078",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950060",
-       "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950032",
-        "title": "Estero"
-       },
-       "date": "2020-02-01T08:00:00Z"
-      }
-     ],
-     "courses": [
-      {
-       "course_id": "a1000000-0000-4000-8000-000000950032",
-       "title": "Estero"
-      }
-     ],
+     "attendance_days": [],
+     "courses": [],
      "stats": {
       "total_attendance_last_30_days": 0,
       "total_absences_last_30_days": 0,
-      "total_attendance": 1,
+      "total_attendance": 0,
       "total_absences": 0
      }
     }
@@ -1089,33 +1108,17 @@
    "name": "course-attendance-history-owner-other-association",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950023/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950024/attendance",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
-     "attendance_days": [
-      {
-       "title": "Estero vecchio",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950078",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950060",
-       "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950032",
-        "title": "Estero"
-       },
-       "date": "2020-02-01T08:00:00Z"
-      }
-     ],
-     "courses": [
-      {
-       "course_id": "a1000000-0000-4000-8000-000000950032",
-       "title": "Estero"
-      }
-     ],
+     "attendance_days": [],
+     "courses": [],
      "stats": {
       "total_attendance_last_30_days": 0,
       "total_absences_last_30_days": 0,
-      "total_attendance": 1,
+      "total_attendance": 0,
       "total_absences": 0
      }
     }
@@ -1131,28 +1134,12 @@
    "status": 200,
    "response": {
     "data": {
-     "attendance_days": [
-      {
-       "title": "Estero vecchio",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950078",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950060",
-       "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950032",
-        "title": "Estero"
-       },
-       "date": "2020-02-01T08:00:00Z"
-      }
-     ],
-     "courses": [
-      {
-       "course_id": "a1000000-0000-4000-8000-000000950032",
-       "title": "Estero"
-      }
-     ],
+     "attendance_days": [],
+     "courses": [],
      "stats": {
       "total_attendance_last_30_days": 0,
       "total_absences_last_30_days": 0,
-      "total_attendance": 1,
+      "total_attendance": 0,
       "total_absences": 0
      }
     }
@@ -1163,35 +1150,19 @@
    "name": "course-attendance-history-group-hidden",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
    "status": 200,
    "response": {
     "data": {
-     "attendance_days": [
-      {
-       "title": "Estero vecchio",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950078",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950060",
-       "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950032",
-        "title": "Estero"
-       },
-       "date": "2020-02-01T08:00:00Z"
-      }
-     ],
-     "courses": [
-      {
-       "course_id": "a1000000-0000-4000-8000-000000950032",
-       "title": "Estero"
-      }
-     ],
+     "attendance_days": [],
+     "courses": [],
      "stats": {
       "total_attendance_last_30_days": 0,
       "total_absences_last_30_days": 0,
-      "total_attendance": 1,
+      "total_attendance": 0,
       "total_absences": 0
      }
     }
@@ -1202,7 +1173,7 @@
    "name": "course-attendance-history-group-malformed-ignored",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance?course=a1000000-0000-4000-8000-000000950026",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=a1000000-0000-4000-8000-000000950027",
    "headers": {
     "X-Group-Id": "nope"
    },
@@ -1212,10 +1183,10 @@
      "attendance_days": [
       {
        "title": "Pilates due",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950056",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "course_id": "a1000000-0000-4000-8000-000000950027",
         "title": "Pilates"
        },
        "date": "2020-05-11T09:00:00Z"
@@ -1223,7 +1194,7 @@
      ],
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "course_id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       }
      ],
@@ -1241,7 +1212,7 @@
    "name": "course-attendance-history-scoped-athlete-own",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950017/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950018/attendance",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -1252,7 +1223,7 @@
      "attendance_days": [],
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "course_id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       }
      ],
@@ -1270,7 +1241,7 @@
    "name": "course-attendance-history-scoped-athlete-other",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -1285,7 +1256,7 @@
    "name": "course-attendance-history-scoped-full",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance?course=a1000000-0000-4000-8000-000000950026",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=a1000000-0000-4000-8000-000000950027",
    "headers": {
     "X-Impersonation-Id": "$session:owner_full",
     "User-Id": "a1000000-0000-4000-8000-000000700002"
@@ -1296,10 +1267,10 @@
      "attendance_days": [
       {
        "title": "Pilates due",
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950056",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
        "course": {
-        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "course_id": "a1000000-0000-4000-8000-000000950027",
         "title": "Pilates"
        },
        "date": "2020-05-11T09:00:00Z"
@@ -1307,7 +1278,7 @@
      ],
      "courses": [
       {
-       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "course_id": "a1000000-0000-4000-8000-000000950027",
        "title": "Pilates"
       }
      ],
@@ -1337,7 +1308,7 @@
    "name": "course-attendance-history-owner-without-association",
    "actor": "owner_without_association",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1347,7 +1318,7 @@
    "name": "course-attendance-history-restricted",
    "actor": "restricted_collaborator",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 403,
    "response": {
@@ -1359,7 +1330,7 @@
    "name": "course-attendance-history-anonymous",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 401,
    "response": {
@@ -1371,7 +1342,7 @@
    "name": "course-attendance-history-admin-without-session",
    "actor": "admin",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 403,
    "response": {
@@ -1383,7 +1354,7 @@
    "name": "course-attendance-history-wrong-method",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 405,
    "response": {
@@ -1396,7 +1367,7 @@
    "name": "course-attendance-history-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/subscription/a1000000-0000-4000-8000-000000950015/attendance",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
    "headers": {},
    "status": 200,
    "response": {
@@ -1417,7 +1388,7 @@
    "name": "course-attendance-attendees-owner",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 200,
    "response": {
@@ -1436,17 +1407,17 @@
          },
          "description": "Prima"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950061",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
         "date": "2020-03-02T17:00:00Z",
         "start": "2020-03-02T17:00:00.000Z",
         "end": "2020-03-02T18:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "total_attendees": 1,
         "total_expected_absences": 2,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -1457,7 +1428,7 @@
           }
          },
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
           "subscription": {
            "associate": {
             "first_name": "Bruno",
@@ -1471,19 +1442,19 @@
         "total_expected_total": 0,
         "attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
          }
         ],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950061",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-02T17:00:00Z",
        "start": "2020-03-02T17:00:00.000Z",
        "end": "2020-03-02T18:00:00.000Z",
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         }
        ],
        "expected_absences": [
@@ -1495,8 +1466,8 @@
        "title": "Doppia",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-02T17:45:00Z",
        "start": null,
        "end": null,
@@ -1507,8 +1478,8 @@
        "title": "Libera",
        "allDay": true,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950062",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-09T17:00:00Z",
        "start": "2020-03-09T17:00:00.000Z",
        "end": "2020-03-09T18:00:00.000Z",
@@ -1529,20 +1500,23 @@
           },
           {
            "name": "esterno"
+          },
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950002"
           }
          ]
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950063",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
         "date": "2020-03-16T17:00:00Z",
         "start": "2020-03-16T17:30:00.000Z",
         "end": "2020-03-16T18:30:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "total_attendees": 0,
         "total_expected_absences": 0,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -1553,7 +1527,7 @@
           }
          },
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
           "subscription": {
            "associate": {
             "first_name": "Bruno",
@@ -1568,8 +1542,8 @@
         "attendees": [],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950063",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-16T17:00:00Z",
        "start": "2020-03-16T17:30:00.000Z",
        "end": "2020-03-16T18:30:00.000Z",
@@ -1580,8 +1554,8 @@
        "title": "Spostata",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-25T10:00:00Z",
        "start": null,
        "end": null,
@@ -1592,17 +1566,17 @@
        "title": "Futura",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2031-01-10T10:00:00Z",
        "start": null,
        "end": null,
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         },
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         }
        ],
        "expected_absences": []
@@ -1616,7 +1590,7 @@
    "name": "course-attendance-attendees-full-collaborator",
    "actor": "full_collaborator",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 200,
    "response": {
@@ -1635,17 +1609,17 @@
          },
          "description": "Prima"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950061",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
         "date": "2020-03-02T17:00:00Z",
         "start": "2020-03-02T17:00:00.000Z",
         "end": "2020-03-02T18:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "total_attendees": 1,
         "total_expected_absences": 2,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -1656,7 +1630,7 @@
           }
          },
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
           "subscription": {
            "associate": {
             "first_name": "Bruno",
@@ -1670,19 +1644,19 @@
         "total_expected_total": 0,
         "attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
          }
         ],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950061",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-02T17:00:00Z",
        "start": "2020-03-02T17:00:00.000Z",
        "end": "2020-03-02T18:00:00.000Z",
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         }
        ],
        "expected_absences": [
@@ -1694,8 +1668,8 @@
        "title": "Doppia",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-02T17:45:00Z",
        "start": null,
        "end": null,
@@ -1706,8 +1680,8 @@
        "title": "Libera",
        "allDay": true,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950062",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-09T17:00:00Z",
        "start": "2020-03-09T17:00:00.000Z",
        "end": "2020-03-09T18:00:00.000Z",
@@ -1728,20 +1702,23 @@
           },
           {
            "name": "esterno"
+          },
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950002"
           }
          ]
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950063",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
         "date": "2020-03-16T17:00:00Z",
         "start": "2020-03-16T17:30:00.000Z",
         "end": "2020-03-16T18:30:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "total_attendees": 0,
         "total_expected_absences": 0,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -1752,7 +1729,7 @@
           }
          },
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
           "subscription": {
            "associate": {
             "first_name": "Bruno",
@@ -1767,8 +1744,8 @@
         "attendees": [],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950063",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-16T17:00:00Z",
        "start": "2020-03-16T17:30:00.000Z",
        "end": "2020-03-16T18:30:00.000Z",
@@ -1779,8 +1756,8 @@
        "title": "Spostata",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-25T10:00:00Z",
        "start": null,
        "end": null,
@@ -1791,17 +1768,17 @@
        "title": "Futura",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2031-01-10T10:00:00Z",
        "start": null,
        "end": null,
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         },
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         }
        ],
        "expected_absences": []
@@ -1815,7 +1792,7 @@
    "name": "course-attendance-attendees-scoped-full",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {
     "X-Impersonation-Id": "$session:owner_full",
     "User-Id": "a1000000-0000-4000-8000-000000700002"
@@ -1837,17 +1814,17 @@
          },
          "description": "Prima"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950061",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
         "date": "2020-03-02T17:00:00Z",
         "start": "2020-03-02T17:00:00.000Z",
         "end": "2020-03-02T18:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "total_attendees": 1,
         "total_expected_absences": 2,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -1858,7 +1835,7 @@
           }
          },
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
           "subscription": {
            "associate": {
             "first_name": "Bruno",
@@ -1872,19 +1849,19 @@
         "total_expected_total": 0,
         "attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
          }
         ],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950061",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-02T17:00:00Z",
        "start": "2020-03-02T17:00:00.000Z",
        "end": "2020-03-02T18:00:00.000Z",
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         }
        ],
        "expected_absences": [
@@ -1896,8 +1873,8 @@
        "title": "Doppia",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-02T17:45:00Z",
        "start": null,
        "end": null,
@@ -1908,8 +1885,8 @@
        "title": "Libera",
        "allDay": true,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950062",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-09T17:00:00Z",
        "start": "2020-03-09T17:00:00.000Z",
        "end": "2020-03-09T18:00:00.000Z",
@@ -1930,20 +1907,23 @@
           },
           {
            "name": "esterno"
+          },
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950002"
           }
          ]
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950063",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
         "date": "2020-03-16T17:00:00Z",
         "start": "2020-03-16T17:30:00.000Z",
         "end": "2020-03-16T18:30:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950024",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
         "total_attendees": 0,
         "total_expected_absences": 0,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950033",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -1954,7 +1934,7 @@
           }
          },
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
           "subscription": {
            "associate": {
             "first_name": "Bruno",
@@ -1969,8 +1949,8 @@
         "attendees": [],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950063",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-16T17:00:00Z",
        "start": "2020-03-16T17:30:00.000Z",
        "end": "2020-03-16T18:30:00.000Z",
@@ -1981,8 +1961,8 @@
        "title": "Spostata",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2020-03-25T10:00:00Z",
        "start": null,
        "end": null,
@@ -1993,17 +1973,17 @@
        "title": "Futura",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950054",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
        "date": "2031-01-10T10:00:00Z",
        "start": null,
        "end": null,
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         },
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950033"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
         }
        ],
        "expected_absences": []
@@ -2017,7 +1997,7 @@
    "name": "course-attendance-attendees-links-through-extended-props",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees",
    "headers": {},
    "status": 200,
    "response": {
@@ -2032,17 +2012,17 @@
         "extended_props": {
          "description": "Respiro"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
         "date": "2020-04-06T18:00:00Z",
         "start": "2020-04-06T18:00:00.000Z",
         "end": "2020-04-06T19:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
         "total_attendees": 1,
         "total_expected_absences": 1,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -2056,19 +2036,19 @@
         "total_expected_total": 0,
         "attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
          }
         ],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-06T18:00:00Z",
        "start": "2020-04-06T18:00:00.000Z",
        "end": "2020-04-06T19:00:00.000Z",
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
         }
        ],
        "expected_absences": [
@@ -2084,17 +2064,17 @@
         "extended_props": {
          "description": "Respiro"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
         "date": "2020-04-06T18:20:00Z",
         "start": "2020-04-06T18:00:00.000Z",
         "end": "2020-04-06T19:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
         "total_attendees": 0,
         "total_expected_absences": 0,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -2109,8 +2089,8 @@
         "attendees": [],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-06T18:20:00Z",
        "start": "2020-04-06T18:00:00.000Z",
        "end": "2020-04-06T19:00:00.000Z",
@@ -2121,8 +2101,8 @@
        "title": "Yoga due",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950072",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-13T18:00:00Z",
        "start": "2020-04-13T18:00:00.000Z",
        "end": "2020-04-13T19:00:00.000Z",
@@ -2135,10 +2115,10 @@
    "effect": {
     "days": {
      "b1": {
-      "associated_event": "a1000000-0000-4000-8000-000000950052",
+      "associated_event": "a1000000-0000-4000-8000-000000950055",
       "expected_absences": [
        {
-        "course_subscription_id": "a1000000-0000-4000-8000-000000950036",
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
         "associate_name": "Anna Rossi"
        }
       ]
@@ -2152,11 +2132,11 @@
       "changes": {
        "associated_event": [
         "None",
-        "a1000000-0000-4000-8000-000000950052"
+        "a1000000-0000-4000-8000-000000950055"
        ],
        "expected_absences": [
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950036\"}]",
-        "[{\"associate_name\": \"Anna Rossi\", \"course_subscription_id\": \"a1000000-0000-4000-8000-000000950036\"}]"
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950037\"}]",
+        "[{\"associate_name\": \"Anna Rossi\", \"course_subscription_id\": \"a1000000-0000-4000-8000-000000950037\"}]"
        ]
       },
       "actor": "owner",
@@ -2173,7 +2153,7 @@
    "name": "course-attendance-attendees-maps-unlinked",
    "actor": "full_collaborator",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees",
    "headers": {},
    "status": 200,
    "response": {
@@ -2188,17 +2168,17 @@
         "extended_props": {
          "description": "Respiro"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
         "date": "2020-04-06T18:00:00Z",
         "start": "2020-04-06T18:00:00.000Z",
         "end": "2020-04-06T19:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
         "total_attendees": 1,
         "total_expected_absences": 1,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -2212,19 +2192,19 @@
         "total_expected_total": 0,
         "attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
          }
         ],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-06T18:00:00Z",
        "start": "2020-04-06T18:00:00.000Z",
        "end": "2020-04-06T19:00:00.000Z",
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
         }
        ],
        "expected_absences": [
@@ -2240,17 +2220,17 @@
         "extended_props": {
          "description": "Respiro"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
         "date": "2020-04-06T18:20:00Z",
         "start": "2020-04-06T18:00:00.000Z",
         "end": "2020-04-06T19:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
         "total_attendees": 0,
         "total_expected_absences": 0,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -2265,8 +2245,8 @@
         "attendees": [],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-06T18:20:00Z",
        "start": "2020-04-06T18:00:00.000Z",
        "end": "2020-04-06T19:00:00.000Z",
@@ -2277,8 +2257,8 @@
        "title": "Yoga due",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950072",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-13T18:00:00Z",
        "start": "2020-04-13T18:00:00.000Z",
        "end": "2020-04-13T19:00:00.000Z",
@@ -2291,7 +2271,7 @@
    "effect": {
     "days": {
      "b2": {
-      "associated_event": "a1000000-0000-4000-8000-000000950053"
+      "associated_event": "a1000000-0000-4000-8000-000000950056"
      }
     },
     "holdings": {},
@@ -2302,7 +2282,7 @@
       "changes": {
        "associated_event": [
         "None",
-        "a1000000-0000-4000-8000-000000950053"
+        "a1000000-0000-4000-8000-000000950056"
        ]
       },
       "actor": "full_collaborator",
@@ -2319,7 +2299,7 @@
    "name": "course-attendance-attendees-linked-no-writes",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees",
    "headers": {},
    "status": 200,
    "response": {
@@ -2334,17 +2314,17 @@
         "extended_props": {
          "description": "Respiro"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
         "date": "2020-04-06T18:00:00Z",
         "start": "2020-04-06T18:00:00.000Z",
         "end": "2020-04-06T19:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
         "total_attendees": 1,
         "total_expected_absences": 1,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -2358,19 +2338,19 @@
         "total_expected_total": 0,
         "attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
          }
         ],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-06T18:00:00Z",
        "start": "2020-04-06T18:00:00.000Z",
        "end": "2020-04-06T19:00:00.000Z",
        "attendees": [
         {
-         "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
         }
        ],
        "expected_absences": [
@@ -2386,17 +2366,17 @@
         "extended_props": {
          "description": "Respiro"
         },
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
-        "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
         "date": "2020-04-06T18:20:00Z",
         "start": "2020-04-06T18:00:00.000Z",
         "end": "2020-04-06T19:00:00.000Z",
-        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
         "total_attendees": 0,
         "total_expected_absences": 0,
         "potential_attendees": [
          {
-          "course_subscription_id": "a1000000-0000-4000-8000-000000950036",
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
           "subscription": {
            "associate": {
             "first_name": "Anna",
@@ -2411,8 +2391,8 @@
         "attendees": [],
         "expected_absences": []
        },
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-06T18:20:00Z",
        "start": "2020-04-06T18:00:00.000Z",
        "end": "2020-04-06T19:00:00.000Z",
@@ -2423,8 +2403,8 @@
        "title": "Yoga due",
        "allDay": false,
        "extended_props": {},
-       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
-       "attendance_registry": "a1000000-0000-4000-8000-000000950055",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950072",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
        "date": "2020-04-13T18:00:00Z",
        "start": "2020-04-13T18:00:00.000Z",
        "end": "2020-04-13T19:00:00.000Z",
@@ -2440,7 +2420,7 @@
    "name": "course-attendance-attendees-without-registry",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950030/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950031/attendees",
    "headers": {},
    "status": 200,
    "response": {
@@ -2454,7 +2434,7 @@
    "name": "course-attendance-attendees-deleted-course",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950031/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950032/attendees",
    "headers": {},
    "status": 404,
    "response": {
@@ -2466,7 +2446,7 @@
    "name": "course-attendance-attendees-foreign-course",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950032/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950033/attendees",
    "headers": {},
    "status": 404,
    "response": {
@@ -2490,7 +2470,7 @@
    "name": "course-attendance-attendees-group-hidden",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -2516,7 +2496,7 @@
    "name": "course-attendance-attendees-athlete",
    "actor": "athlete",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 403,
    "response": {
@@ -2528,7 +2508,7 @@
    "name": "course-attendance-attendees-owner-without-association",
    "actor": "owner_without_association",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2538,7 +2518,7 @@
    "name": "course-attendance-attendees-restricted",
    "actor": "restricted_collaborator",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 403,
    "response": {
@@ -2550,7 +2530,7 @@
    "name": "course-attendance-attendees-anonymous",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 401,
    "response": {
@@ -2562,7 +2542,7 @@
    "name": "course-attendance-attendees-admin-without-session",
    "actor": "admin",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 403,
    "response": {
@@ -2574,7 +2554,7 @@
    "name": "course-attendance-attendees-wrong-method",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 405,
    "response": {
@@ -2587,7 +2567,7 @@
    "name": "course-attendance-attendees-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/course/a1000000-0000-4000-8000-000000950024/attendees",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
    "headers": {},
    "status": 200,
    "response": {
@@ -2608,7 +2588,7 @@
    "name": "course-attendance-update-adds-attendee-consumes-carnet",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2619,7 +2599,7 @@
      "c1": {
       "attendees": [
        {
-        "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
        }
       ]
      }
@@ -2631,9 +2611,9 @@
       "lessons_registry": [
        {
         "date": "2020-05-04 09:00:00+00:00",
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950073",
         "course": {
-         "id": "a1000000-0000-4000-8000-000000950026",
+         "id": "a1000000-0000-4000-8000-000000950027",
          "title": "Pilates"
         },
         "title": "Pilates base"
@@ -2648,7 +2628,7 @@
       "changes": {
        "meta": [
         "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}",
-        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950070\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950026\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}"
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950073\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}"
        ]
       },
       "actor": "owner",
@@ -2663,7 +2643,7 @@
       "changes": {
        "attendees": [
         "[]",
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950037\"}]"
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950038\"}]"
        ]
       },
       "actor": "owner",
@@ -2678,7 +2658,7 @@
    "body": {
     "attendees": [
      {
-      "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
      }
     ]
    }
@@ -2687,7 +2667,7 @@
    "name": "course-attendance-update-same-attendees-no-change",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2697,7 +2677,7 @@
    "body": {
     "attendees": [
      {
-      "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
      }
     ]
    }
@@ -2706,7 +2686,7 @@
    "name": "course-attendance-update-removes-attendee-returns-lesson",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2731,7 +2711,7 @@
       "label": "anna_1",
       "changes": {
        "meta": [
-        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950070\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950026\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950073\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}",
         "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}"
        ]
       },
@@ -2746,7 +2726,7 @@
       "label": "c1",
       "changes": {
        "attendees": [
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950037\"}]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950038\"}]",
         "[]"
        ]
       },
@@ -2767,31 +2747,11 @@
    "name": "course-attendance-update-unpaid-carnet",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 412,
    "response": {
     "msg": "Il carnet non è ancora stato pagato."
-   },
-   "effect": null,
-   "body": {
-    "attendees": [
-     {
-      "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
-     }
-    ]
-   }
-  },
-  {
-   "name": "course-attendance-update-finished-carnet",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
-   "headers": {},
-   "status": 412,
-   "response": {
-    "message": "Carnet is already finished.",
-    "associate_name": "Dario Neri"
    },
    "effect": null,
    "body": {
@@ -2803,10 +2763,30 @@
    }
   },
   {
+   "name": "course-attendance-update-finished-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "message": "Carnet is already finished.",
+    "associate_name": "Dario Neri"
+   },
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950040"
+     }
+    ]
+   }
+  },
+  {
    "name": "course-attendance-update-partial-keeps-carnet",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 412,
    "response": {
@@ -2821,9 +2801,9 @@
       "lessons_registry": [
        {
         "date": "2020-05-04 09:00:00+00:00",
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950073",
         "course": {
-         "id": "a1000000-0000-4000-8000-000000950026",
+         "id": "a1000000-0000-4000-8000-000000950027",
          "title": "Pilates"
         },
         "title": "Pilates base"
@@ -2838,7 +2818,7 @@
       "changes": {
        "meta": [
         "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}",
-        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950070\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950026\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}"
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950073\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}"
        ]
       },
       "actor": "owner",
@@ -2853,10 +2833,10 @@
    "body": {
     "attendees": [
      {
-      "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
      },
      {
-      "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950039"
      }
     ]
    }
@@ -2865,7 +2845,7 @@
    "name": "course-attendance-update-removes-legacy-lesson",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950071/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950074/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2885,7 +2865,7 @@
        {
         "date": "2020-04-01 09:00:00+00:00",
         "course": {
-         "id": "a1000000-0000-4000-8000-000000950026",
+         "id": "a1000000-0000-4000-8000-000000950027",
          "title": "Pilates"
         },
         "title": "vecchia",
@@ -2900,8 +2880,8 @@
       "label": "anna_2",
       "changes": {
        "meta": [
-        "{\"lessons_counter\": 10, \"lessons_left\": 5, \"lessons_registry\": [{\"course\": {\"id\": \"a1000000-0000-4000-8000-000000950026\", \"title\": \"Pilates\"}, \"date\": \"2020-04-01 09:00:00+00:00\", \"title\": \"vecchia\"}, {\"course\": {\"id\": \"a1000000-0000-4000-8000-000000950026\", \"title\": \"Pilates\"}, \"date\": \"2020-05-11 09:00:00+00:00\", \"title\": \"Pilates due\"}]}",
-        "{\"lessons_counter\": 10, \"lessons_left\": 6, \"lessons_registry\": [{\"attendance_day_id\": null, \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950026\", \"title\": \"Pilates\"}, \"date\": \"2020-04-01 09:00:00+00:00\", \"title\": \"vecchia\"}]}"
+        "{\"lessons_counter\": 10, \"lessons_left\": 5, \"lessons_registry\": [{\"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-04-01 09:00:00+00:00\", \"title\": \"vecchia\"}, {\"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-05-11 09:00:00+00:00\", \"title\": \"Pilates due\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 6, \"lessons_registry\": [{\"attendance_day_id\": null, \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-04-01 09:00:00+00:00\", \"title\": \"vecchia\"}]}"
        ]
       },
       "actor": "owner",
@@ -2915,7 +2895,7 @@
       "label": "c2",
       "changes": {
        "attendees": [
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950037\"}]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950038\"}]",
         "[]"
        ]
       },
@@ -2936,7 +2916,7 @@
    "name": "course-attendance-update-unknown-subscription-kept",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950076/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2981,10 +2961,64 @@
    }
   },
   {
+   "name": "course-attendance-update-other-association-carnet-unused",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950076/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "c4": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000959997"
+       },
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950051"
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "c4",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000959997\"}]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000959997\"}, {\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950051\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000959997"
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950051"
+     }
+    ]
+   }
+  },
+  {
    "name": "course-attendance-update-removed-unknown-subscription",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950072/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950075/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2997,7 +3031,7 @@
    "name": "course-attendance-update-attendee-not-object",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3012,7 +3046,7 @@
    "name": "course-attendance-update-attendee-malformed-id",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3029,7 +3063,7 @@
    "name": "course-attendance-update-attendee-without-id",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3044,7 +3078,7 @@
    "name": "course-attendance-update-attendees-null",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950071/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950074/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3057,7 +3091,7 @@
    "name": "course-attendance-update-empty-body",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 400,
    "response": [
@@ -3070,7 +3104,7 @@
    "name": "course-attendance-update-extra-key",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 400,
    "response": [
@@ -3086,7 +3120,7 @@
    "name": "course-attendance-update-list-body",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3097,7 +3131,7 @@
    "name": "course-attendance-update-malformed-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/nope/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/nope/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 400,
    "response": [
@@ -3110,7 +3144,7 @@
    "name": "course-attendance-update-malformed-day",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/nope/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/nope/update",
    "headers": {},
    "status": 400,
    "response": [
@@ -3123,7 +3157,7 @@
    "name": "course-attendance-update-unknown-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000959998/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000959998/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 404,
    "response": {
@@ -3138,7 +3172,7 @@
    "name": "course-attendance-update-foreign-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950032/attendees/a1000000-0000-4000-8000-000000950078/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950033/attendees/a1000000-0000-4000-8000-000000950081/update",
    "headers": {},
    "status": 404,
    "response": {
@@ -3153,7 +3187,7 @@
    "name": "course-attendance-update-without-registry",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950030/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950031/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 404,
    "response": {
@@ -3168,7 +3202,7 @@
    "name": "course-attendance-update-day-of-other-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950061/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950064/update",
    "headers": {},
    "status": 404,
    "response": {
@@ -3183,7 +3217,7 @@
    "name": "course-attendance-update-scoped-full-foreign-subscription",
    "actor": "owner",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {
     "X-Impersonation-Id": "$session:owner_full",
     "User-Id": "a1000000-0000-4000-8000-000000700002"
@@ -3196,7 +3230,7 @@
    "body": {
     "attendees": [
      {
-      "course_subscription_id": "a1000000-0000-4000-8000-000000950047"
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950048"
      }
     ]
    }
@@ -3205,7 +3239,7 @@
    "name": "course-attendance-update-athlete",
    "actor": "athlete",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -3220,7 +3254,7 @@
    "name": "course-attendance-update-owner-without-association",
    "actor": "owner_without_association",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3233,7 +3267,7 @@
    "name": "course-attendance-update-restricted",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -3248,7 +3282,7 @@
    "name": "course-attendance-update-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 401,
    "response": {
@@ -3263,7 +3297,7 @@
    "name": "course-attendance-update-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -3278,7 +3312,7 @@
    "name": "course-attendance-update-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 405,
    "response": {
@@ -3290,7 +3324,7 @@
    "name": "course-attendance-update-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees/a1000000-0000-4000-8000-000000950070/update",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -3337,7 +3371,7 @@
    "name": "course-attendance-mark-group-hidden",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -3352,7 +3386,7 @@
    "name": "course-attendance-mark-selected-day",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950021/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950022/mark",
    "headers": {},
    "status": 200,
    "response": {
@@ -3362,53 +3396,6 @@
     "days": {
      "m_today": {
       "attendees": [
-       {
-        "course_subscription_id": "a1000000-0000-4000-8000-000000950045"
-       }
-      ]
-     }
-    },
-    "holdings": {},
-    "audit": [
-     {
-      "model": "attendanceday",
-      "label": "m_today",
-      "changes": {
-       "attendees": [
-        "[]",
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950045\"}]"
-       ]
-      },
-      "actor": "owner",
-      "index": [
-       "own_association",
-       "attendance_registry.course.sport_association"
-      ]
-     }
-    ],
-    "impersonation": null
-   },
-   "body": {
-    "attendance_day_id": "a1000000-0000-4000-8000-000000950074"
-   }
-  },
-  {
-   "name": "course-attendance-mark-today",
-   "actor": "full_collaborator",
-   "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950022/mark",
-   "headers": {},
-   "status": 200,
-   "response": {
-    "msg": "Check-in effettuato! Ciao Lia Rosa."
-   },
-   "effect": {
-    "days": {
-     "m_today": {
-      "attendees": [
-       {
-        "course_subscription_id": "a1000000-0000-4000-8000-000000950045"
-       },
        {
         "course_subscription_id": "a1000000-0000-4000-8000-000000950046"
        }
@@ -3422,8 +3409,55 @@
       "label": "m_today",
       "changes": {
        "attendees": [
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950045\"}]",
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950045\"}, {\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950046\"}]"
+        "[]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950046\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950077"
+   }
+  },
+  {
+   "name": "course-attendance-mark-today",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950023/mark",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Check-in effettuato! Ciao Lia Rosa."
+   },
+   "effect": {
+    "days": {
+     "m_today": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950046"
+       },
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950047"
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "m_today",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950046\"}]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950046\"}, {\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950047\"}]"
        ]
       },
       "actor": "full_collaborator",
@@ -3441,7 +3475,7 @@
    "name": "course-attendance-mark-already-checked-in",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950022/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950023/mark",
    "headers": {},
    "status": 200,
    "response": {
@@ -3454,7 +3488,7 @@
    "name": "course-attendance-mark-no-course-today",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 404,
    "response": {
@@ -3467,25 +3501,25 @@
    "name": "course-attendance-mark-choose-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950015/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950016/mark",
    "headers": {},
    "status": 207,
    "response": {
     "msg": "Seleziona il corso per il check-in.",
     "data": [
      {
-      "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+      "attendance_day_id": "a1000000-0000-4000-8000-000000950077",
       "date": "{today}T12:00:00Z",
       "course": {
-       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "course_id": "a1000000-0000-4000-8000-000000950028",
        "title": "Corsa"
       }
      },
      {
-      "attendance_day_id": "a1000000-0000-4000-8000-000000950075",
+      "attendance_day_id": "a1000000-0000-4000-8000-000000950078",
       "date": "{today}T15:00:00Z",
       "course": {
-       "course_id": "a1000000-0000-4000-8000-000000950028",
+       "course_id": "a1000000-0000-4000-8000-000000950029",
        "title": "Danza"
       }
      }
@@ -3498,20 +3532,20 @@
    "name": "course-attendance-mark-selected-day-with-attendees",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950015/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950016/mark",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
    "body": {
-    "attendance_day_id": "a1000000-0000-4000-8000-000000950074"
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950077"
    }
   },
   {
    "name": "course-attendance-mark-consumes-carnet",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950019/mark",
    "headers": {},
    "status": 200,
    "response": {
@@ -3522,7 +3556,7 @@
      "n_today": {
       "attendees": [
        {
-        "course_subscription_id": "a1000000-0000-4000-8000-000000950042"
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950043"
        }
       ]
      }
@@ -3534,9 +3568,9 @@
       "lessons_registry": [
        {
         "date": "{today} 15:00:00+00:00",
-        "attendance_day_id": "a1000000-0000-4000-8000-000000950075",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950078",
         "course": {
-         "id": "a1000000-0000-4000-8000-000000950028",
+         "id": "a1000000-0000-4000-8000-000000950029",
          "title": "Danza"
         },
         "title": "Danza oggi"
@@ -3551,7 +3585,7 @@
       "changes": {
        "meta": [
         "{\"lessons_counter\": 10, \"lessons_left\": 3, \"lessons_registry\": []}",
-        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950075\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950028\", \"title\": \"Danza\"}, \"date\": \"{today} 15:00:00+00:00\", \"title\": \"Danza oggi\"}]}"
+        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950078\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950029\", \"title\": \"Danza\"}, \"date\": \"{today} 15:00:00+00:00\", \"title\": \"Danza oggi\"}]}"
        ]
       },
       "actor": "owner",
@@ -3566,7 +3600,7 @@
       "changes": {
        "attendees": [
         "null",
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950042\"}]"
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950043\"}]"
        ]
       },
       "actor": "owner",
@@ -3586,7 +3620,7 @@
    "name": "course-attendance-mark-unpaid-carnet",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950019/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950020/mark",
    "headers": {},
    "status": 412,
    "response": {
@@ -3599,7 +3633,7 @@
    "name": "course-attendance-mark-finished-carnet",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950020/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950021/mark",
    "headers": {},
    "status": 412,
    "response": {
@@ -3609,10 +3643,38 @@
    "body": {}
   },
   {
-   "name": "course-attendance-mark-franco",
+   "name": "course-attendance-mark-other-association-subscription",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950023/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950024/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Iscrizione non trovata."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-selected-day-other-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Giorno di presenza non trovato."
+   },
+   "effect": null,
+   "body": {
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950080"
+   }
+  },
+  {
+   "name": "course-attendance-mark-franco-own-association",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950024/mark",
    "headers": {},
    "status": 200,
    "response": {
@@ -3623,7 +3685,7 @@
      "f_today": {
       "attendees": [
        {
-        "course_subscription_id": "a1000000-0000-4000-8000-000000950047"
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950048"
        }
       ]
      }
@@ -3636,10 +3698,10 @@
       "changes": {
        "attendees": [
         "null",
-        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950047\"}]"
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950048\"}]"
        ]
       },
-      "actor": "owner",
+      "actor": "foreign_owner",
       "index": [
        "foreign_association",
        "attendance_registry.course.sport_association"
@@ -3654,20 +3716,20 @@
    "name": "course-attendance-mark-selected-day-without-course-subscription",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null,
    "body": {
-    "attendance_day_id": "a1000000-0000-4000-8000-000000950076"
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950079"
    }
   },
   {
    "name": "course-attendance-mark-selected-day-unknown",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 404,
    "response": {
@@ -3682,7 +3744,7 @@
    "name": "course-attendance-mark-selected-day-malformed",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3695,7 +3757,7 @@
    "name": "course-attendance-mark-list-body",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3706,11 +3768,11 @@
    "name": "course-attendance-mark-athlete",
    "actor": "athlete",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 404,
    "response": {
-    "msg": "Ciao Dario Neri, non hai corsi oggi."
+    "msg": "Iscrizione non trovata."
    },
    "effect": null,
    "body": {}
@@ -3719,11 +3781,11 @@
    "name": "course-attendance-mark-owner-without-association",
    "actor": "owner_without_association",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 404,
    "response": {
-    "msg": "Ciao Dario Neri, non hai corsi oggi."
+    "msg": "Iscrizione non trovata."
    },
    "effect": null,
    "body": {}
@@ -3732,7 +3794,7 @@
    "name": "course-attendance-mark-scoped-athlete",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -3748,7 +3810,7 @@
    "name": "course-attendance-mark-scoped-full-foreign-day",
    "actor": "owner",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {
     "X-Impersonation-Id": "$session:owner_full",
     "User-Id": "a1000000-0000-4000-8000-000000700002"
@@ -3759,14 +3821,14 @@
    },
    "effect": null,
    "body": {
-    "attendance_day_id": "a1000000-0000-4000-8000-000000950077"
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950080"
    }
   },
   {
    "name": "course-attendance-mark-restricted",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 403,
    "response": {
@@ -3779,7 +3841,7 @@
    "name": "course-attendance-mark-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 401,
    "response": {
@@ -3792,7 +3854,7 @@
    "name": "course-attendance-mark-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 403,
    "response": {
@@ -3805,7 +3867,7 @@
    "name": "course-attendance-mark-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 405,
    "response": {
@@ -3817,7 +3879,7 @@
    "name": "course-attendance-mark-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/attendance/a1000000-0000-4000-8000-000000950017/mark",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
    "headers": {},
    "status": 200,
    "response": {

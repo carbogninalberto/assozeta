@@ -93,11 +93,12 @@ func (t *courseAttendanceTransaction) RegistryDays(ctx context.Context, registry
 	return days, err
 }
 
-func (t *courseAttendanceTransaction) Day(ctx context.Context, id string, registry *string, scope *string) (*domain.AttendanceDayRow, error) {
+func (t *courseAttendanceTransaction) Day(ctx context.Context, id string, registry, owner *string, scope *string) (*domain.AttendanceDayRow, error) {
 	var day domain.AttendanceDayRow
 	err := t.tx.GetContext(ctx, &day, `SELECT `+attendanceDayColumns+`
  WHERE d.attendance_day_id=$1::uuid AND `+attendanceDayScope+` AND ($3::uuid IS NULL OR d.attendance_registry_id=$3::uuid)
- ORDER BY d.attendance_day_id LIMIT 1`, id, scope, registry)
+ AND `+ownedAssociation("c.sport_association_id", "4")+`
+ ORDER BY d.attendance_day_id LIMIT 1`, id, scope, registry, owner)
 	return attendanceNoRows(&day, err)
 }
 
@@ -125,6 +126,13 @@ const attendanceFamily = `(SELECT fs.subscription_id FROM application_subscripti
   WHERE fa.sport_association_id=$A::uuid AND NOT fa.deleted AND (fa.user_id=$P::uuid OR fa.tax_code IN (
    SELECT ta.tax_code FROM application_subscription ts JOIN application_associate ta ON ta.associate_id=ts.associate_id
    WHERE ts.user_id=$P::uuid AND ts.sport_association_id=$A::uuid AND ta.tax_code IS NOT NULL AND ta.tax_code<>'')))))`
+
+// ownedAssociation is <relation>__sport_association__user=owner at parameter
+// $n (a join through the association, deleted or not), or no filter.
+func ownedAssociation(column, n string) string {
+	return `($` + n + `::uuid IS NULL OR ` + column + ` IN (SELECT sport_association_id FROM application_sportassociation
+  WHERE user_id=$` + n + `::uuid))`
+}
 
 func attendanceFamilyOf(association, person string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(attendanceFamily, "$A", association), "$P", person)
@@ -156,11 +164,13 @@ func (t *courseAttendanceTransaction) CourseSubscriptionFor(ctx context.Context,
 	return attendanceNoRows(&row, err)
 }
 
-func (t *courseAttendanceTransaction) SubscriptionCourses(ctx context.Context, subscription, course *string, all bool, scope domain.AttendanceScope) ([]domain.AttendanceCourseSubscription, error) {
+func (t *courseAttendanceTransaction) SubscriptionCourses(ctx context.Context, subscription, course, owner *string, all bool,
+	scope domain.AttendanceScope) ([]domain.AttendanceCourseSubscription, error) {
 	rows := []domain.AttendanceCourseSubscription{}
 	err := t.tx.SelectContext(ctx, &rows, `SELECT `+attendanceCourseSubscriptionColumns+`
  WHERE ($1::uuid IS NULL AND cs.subscription_id IS NULL OR cs.subscription_id=$1::uuid) AND ($2::uuid IS NULL OR cs.course_id=$2::uuid)
- AND ($3 OR NOT cs.deleted) AND `+courseSubscriptionScope("4", "5"), subscription, course, all, scope.Association, scope.Athlete)
+ AND ($3 OR NOT cs.deleted) AND `+courseSubscriptionScope("4", "5")+` AND `+ownedAssociation("c.sport_association_id", "6"),
+		subscription, course, all, scope.Association, scope.Athlete, owner)
 	return rows, err
 }
 
@@ -201,26 +211,29 @@ func (t *courseAttendanceTransaction) Person(ctx context.Context, subscription s
 	return person, nil
 }
 
-func (t *courseAttendanceTransaction) Subscription(ctx context.Context, id string, association, user, group *string, scope domain.AttendanceScope) (*string, error) {
+func (t *courseAttendanceTransaction) Subscription(ctx context.Context, id string, association, owner, user, group *string,
+	scope domain.AttendanceScope) (*string, error) {
 	var found string
 	err := t.tx.GetContext(ctx, &found, `SELECT s.subscription_id FROM application_subscription s
  WHERE s.subscription_id=$1::uuid AND ($2::uuid IS NULL OR s.sport_association_id=$2::uuid) AND ($3::uuid IS NULL OR s.user_id=$3::uuid)
  AND ($4::uuid IS NULL OR s.group_id=$4::uuid) AND ($5::uuid IS NULL OR (s.sport_association_id=$5::uuid
   AND ($6::uuid IS NULL OR s.subscription_id IN `+attendanceFamilyOf("$5", "$6")+`)))
- ORDER BY s.subscription_id LIMIT 1`, id, association, user, group, scope.Association, scope.Athlete)
+ AND `+ownedAssociation("s.sport_association_id", "7")+`
+ ORDER BY s.subscription_id LIMIT 1`, id, association, user, group, scope.Association, scope.Athlete, owner)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	return &found, err
 }
 
-func (t *courseAttendanceTransaction) InstructorName(ctx context.Context, id string) (*domain.AttendancePerson, error) {
+func (t *courseAttendanceTransaction) InstructorName(ctx context.Context, id string, courseAssociation *string) (*domain.AttendancePerson, error) {
 	var row struct {
 		FirstName *string `db:"first_name"`
 		LastName  *string `db:"last_name"`
 	}
 	err := t.tx.GetContext(ctx, &row, `SELECT first_name, last_name FROM application_instructor WHERE instructor_id=$1::uuid
- ORDER BY instructor_id LIMIT 1`, id)
+ AND user_id=(SELECT user_id FROM application_sportassociation WHERE sport_association_id=$2::uuid)
+ ORDER BY instructor_id LIMIT 1`, id, courseAssociation)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -233,7 +246,8 @@ func (t *courseAttendanceTransaction) InstructorName(ctx context.Context, id str
 // Holdings mirrors CarnetSubscription.objects.filter(Q(course_subscription=cs) |
 // Q(course_subscription__isnull=True), subscription=..., disabled=False)
 // .order_by('-creation_date') (a LEFT JOIN of the through table), scoped.
-func (t *courseAttendanceTransaction) Holdings(ctx context.Context, courseSubscription string, subscription *string, scope *string) ([]domain.AttendanceHolding, error) {
+func (t *courseAttendanceTransaction) Holdings(ctx context.Context, courseSubscription string, subscription, association *string,
+	scope *string) ([]domain.AttendanceHolding, error) {
 	rows := []domain.AttendanceHolding{}
 	err := t.tx.SelectContext(ctx, &rows, `SELECT h.carnet_subscription_id, h.meta::text AS meta, h.payment_id, p.paid AS payment_paid,
  s.sport_association_id AS subscription_association_id
@@ -245,7 +259,8 @@ func (t *courseAttendanceTransaction) Holdings(ctx context.Context, courseSubscr
  AND ($2::uuid IS NULL AND h.subscription_id IS NULL OR h.subscription_id=$2::uuid)
  AND ($3::uuid IS NULL OR (s.sport_association_id=$3::uuid AND h.carnet_id_id IN
   (SELECT carnet_id FROM application_carnet WHERE sport_association_id=$3::uuid)))
- ORDER BY h.creation_date DESC`, courseSubscription, subscription, scope)
+ AND ($4::uuid IS NULL OR s.sport_association_id=$4::uuid)
+ ORDER BY h.creation_date DESC`, courseSubscription, subscription, scope, association)
 	return rows, err
 }
 

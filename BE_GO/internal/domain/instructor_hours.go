@@ -84,6 +84,9 @@ type InstructorHoursAudit struct {
 	Key     string
 	Action  int
 	Changes map[string][2]string
+	// Instructor, for an hour stored when its entry is written, indexes the
+	// entry through the instructor's owner's association (else the actor's).
+	Instructor *string
 }
 
 var (
@@ -93,7 +96,9 @@ var (
 )
 
 type InstructorHoursTransaction interface {
-	InstructorExists(ctx context.Context, id string) (bool, error)
+	// InstructorAssociation is the instructor (found) and its owner's
+	// association (instructor_resolver), for the serializer's tenant scope.
+	InstructorAssociation(ctx context.Context, id string) (found bool, association *string, err error)
 	// OwnedHour is the hour of the user's instructor (nil when either is missing).
 	OwnedHour(ctx context.Context, owner, instructor, id string) (*InstructorHour, error)
 	CountHours(ctx context.Context, query InstructorHoursQuery) (int64, error)
@@ -123,8 +128,10 @@ type InstructorHoursTransaction interface {
 
 type InstructorHoursStore interface {
 	BeginInstructorHours(ctx context.Context) (InstructorHoursTransaction, error)
-	InstructorExists(ctx context.Context, id string) (bool, error)
-	Courses(ctx context.Context, ids []string, group *string) ([]InstructorHoursCourse, error)
+	// OwnedInstructorExists is Instructor.objects.filter(instructor_id=id, user=owner).exists().
+	OwnedInstructorExists(ctx context.Context, id, owner string) (bool, error)
+	// Courses are the live group-aware courses of the owner's associations.
+	Courses(ctx context.Context, ids []string, owner string, group *string) ([]InstructorHoursCourse, error)
 	CourseSubscriptions(ctx context.Context, course string) ([]InstructorHoursSubscription, error)
 	MembershipPayments(ctx context.Context, subscription string, from, to time.Time, group *string) ([]InstructorHoursPaid, error)
 	InstallmentPayments(ctx context.Context, subscription string, from, to time.Time, group *string) ([]InstructorHoursPaid, error)

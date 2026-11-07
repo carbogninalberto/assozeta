@@ -28,16 +28,37 @@ func (r *InstructorHours) BeginInstructorHours(ctx context.Context) (domain.Inst
 	return &instructorHoursTransaction{ownedTransaction: tx}, nil
 }
 
-func (r *InstructorHours) InstructorExists(ctx context.Context, id string) (bool, error) {
+func (r *InstructorHours) OwnedInstructorExists(ctx context.Context, id, owner string) (bool, error) {
 	var found bool
-	err := r.db.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_instructor WHERE instructor_id=$1)`, id)
+	err := r.db.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_instructor WHERE instructor_id=$1 AND user_id=$2)`, id, owner)
 	return found, err
 }
 
-func (t *instructorHoursTransaction) InstructorExists(ctx context.Context, id string) (bool, error) {
+// instructorOwnerAssociation is user_resolver(instructor.user):
+// SportAssociation.objects.filter(user=owner).first().
+const instructorOwnerAssociation = `SELECT sa.sport_association_id FROM application_sportassociation sa
+ JOIN application_instructor i ON i.user_id=sa.user_id WHERE i.instructor_id=$1::uuid AND NOT sa.deleted
+ ORDER BY sa.sport_association_id LIMIT 1`
+
+func (t *instructorHoursTransaction) InstructorAssociation(ctx context.Context, id string) (bool, *string, error) {
 	var found bool
-	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_instructor WHERE instructor_id=$1)`, id)
-	return found, err
+	if err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_instructor WHERE instructor_id=$1)`, id); err != nil || !found {
+		return false, nil, err
+	}
+	association, err := t.ownerAssociation(ctx, id)
+	return true, association, err
+}
+
+func (t *instructorHoursTransaction) ownerAssociation(ctx context.Context, instructor string) (*string, error) {
+	var association string
+	err := t.tx.GetContext(ctx, &association, instructorOwnerAssociation, instructor)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &association, nil
 }
 
 const instructorHourColumns = `h.instructor_hours_id, h.instructor_id, h.creation_date, h.date::text AS date, h.compensation_type,
@@ -233,6 +254,18 @@ func (t *instructorHoursTransaction) AppendAudit(ctx context.Context, event doma
 	audit domain.LoginAuditContext, at time.Time) error {
 	entry := modelAuditEntry{Model: lowerASCII(event.Model), Key: event.Key, Representation: event.Model + " object (" + event.Key + ")",
 		Action: event.Action, Changes: event.Changes, Context: audit, At: at}
+	if event.Instructor != nil {
+		// instructor_hours_resolver: the instructor's owner's association.
+		owned, err := t.ownerAssociation(ctx, *event.Instructor)
+		if err != nil {
+			return err
+		}
+		if owned != nil {
+			path := "instructor.user.sport_association"
+			entry.AssociationID, entry.ResolutionPath = owned, &path
+			return appendModelAuditForApp(ctx, t.tx, "application", entry)
+		}
+	}
 	if association != nil {
 		path := "actor.sport_association"
 		entry.AssociationID, entry.ResolutionPath = association, &path
@@ -244,10 +277,12 @@ func (t *instructorHoursTransaction) AppendAudit(ctx context.Context, event doma
 	return appendModelAuditForApp(ctx, t.tx, app, entry)
 }
 
-func (r *InstructorHours) Courses(ctx context.Context, ids []string, group *string) ([]domain.InstructorHoursCourse, error) {
+func (r *InstructorHours) Courses(ctx context.Context, ids []string, owner string, group *string) ([]domain.InstructorHoursCourse, error) {
 	rows := []domain.InstructorHoursCourse{}
 	err := r.db.SelectContext(ctx, &rows, `SELECT course_id, title, course_type, multi_payments FROM application_course
- WHERE course_id=ANY($1::uuid[]) AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid) ORDER BY course_id`, ids, group)
+ WHERE course_id=ANY($1::uuid[]) AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid)
+ AND sport_association_id IN (SELECT sport_association_id FROM application_sportassociation WHERE user_id=$3::uuid)
+ ORDER BY course_id`, ids, group, owner)
 	return rows, err
 }
 
