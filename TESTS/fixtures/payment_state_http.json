@@ -1,0 +1,4634 @@
+{
+ "matrix_version": 1,
+ "scope": "Payment approve, cancel, delete and bulk archive/delete authored sequence with payment, installment, supplier invoice, reference and audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "category": "a1000000-0000-4000-8000-000000985001",
+ "category_name": "Pagamenti fixture",
+ "document": {
+  "id": "a1000000-0000-4000-8000-000000985002",
+  "token": "a1000000-0000-4000-8000-000000985003",
+  "filename": "ricevuta è.pdf",
+  "filepath": "docs/ricevuta.pdf",
+  "size": 4096,
+  "created": "2026-02-03T08:00:00Z"
+ },
+ "associate": {
+  "id": "a1000000-0000-4000-8000-000000985004",
+  "first": "Mario",
+  "last": "Rossi",
+  "sex": "M",
+  "tax": "RSSMRA90E10H501Z",
+  "born": "1990-05-10",
+  "email": "mario@example.test"
+ },
+ "subscription": {
+  "id": "a1000000-0000-4000-8000-000000985005",
+  "created": "2026-08-01T10:00:00Z"
+ },
+ "instructor": {
+  "id": "a1000000-0000-4000-8000-000000985006",
+  "first_name": "Anna è",
+  "last_name": "Bianchi",
+  "email": "anna@example.test",
+  "tax_code": "BNCNNA80A41H501X",
+  "default_hourly_billing": "12.50"
+ },
+ "supplier": {
+  "id": "a1000000-0000-4000-8000-000000985007",
+  "name": "Fornitore è",
+  "vat_number": "01234567890",
+  "email": "fornitore@example.test"
+ },
+ "course": {
+  "id": "a1000000-0000-4000-8000-000000985008",
+  "title": "Corso pagamenti"
+ },
+ "carnet": {
+  "id": "a1000000-0000-4000-8000-000000985009",
+  "title": "Carnet pagamenti"
+ },
+ "payments": {
+  "ap_plain": {
+   "id": "a1000000-0000-4000-8000-000000985010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ap_dated": {
+   "id": "a1000000-0000-4000-8000-000000985011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "12.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": {
+    "note": "è"
+   },
+   "attachment": false
+  },
+  "ap_stored": {
+   "id": "a1000000-0000-4000-8000-000000985012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-05-06T07:08:09.123456Z",
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ap_defaults": {
+   "id": "a1000000-0000-4000-8000-000000985013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 1,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": null,
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": null,
+   "meta": null,
+   "attachment": false
+  },
+  "ap_supplier": {
+   "id": "a1000000-0000-4000-8000-000000985014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "30.00",
+   "paid": false,
+   "expense": true,
+   "associate": false,
+   "user": true,
+   "supplier": true,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Fattura fornitore",
+   "meta": null,
+   "attachment": false
+  },
+  "ap_instructor": {
+   "id": "a1000000-0000-4000-8000-000000985015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "40.00",
+   "paid": false,
+   "expense": true,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": true,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Compenso",
+   "meta": null,
+   "attachment": false
+  },
+  "ap_paid": {
+   "id": "a1000000-0000-4000-8000-000000985016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "25.00",
+   "paid": true,
+   "expense": false,
+   "associate": true,
+   "user": true,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-04-01T00:00:00Z",
+   "description": "Quota",
+   "meta": null,
+   "attachment": true
+  },
+  "ap_collab": {
+   "id": "a1000000-0000-4000-8000-000000985017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ap_admin": {
+   "id": "a1000000-0000-4000-8000-000000985018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ap_group": {
+   "id": "a1000000-0000-4000-8000-000000985019",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": "own_group",
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ap_form": {
+   "id": "a1000000-0000-4000-8000-000000985020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ap_transfer": {
+   "id": "a1000000-0000-4000-8000-000000985021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 3,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": null,
+   "meta": null,
+   "attachment": false
+  },
+  "ap_removed": {
+   "id": "a1000000-0000-4000-8000-000000985022",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": true,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ca_plain": {
+   "id": "a1000000-0000-4000-8000-000000985023",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-03-01T09:00:00Z",
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ca_uncategorized": {
+   "id": "a1000000-0000-4000-8000-000000985024",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": null,
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-03-02T09:00:00Z",
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ca_instructor": {
+   "id": "a1000000-0000-4000-8000-000000985025",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "40.00",
+   "paid": true,
+   "expense": true,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": true,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-03-03T09:00:00Z",
+   "description": "Compenso",
+   "meta": null,
+   "attachment": false
+  },
+  "ca_supplier": {
+   "id": "a1000000-0000-4000-8000-000000985026",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "30.00",
+   "paid": true,
+   "expense": true,
+   "associate": false,
+   "user": false,
+   "supplier": true,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-03-04T09:00:00Z",
+   "description": "Spesa",
+   "meta": null,
+   "attachment": false
+  },
+  "ca_unpaid": {
+   "id": "a1000000-0000-4000-8000-000000985027",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ca_collab": {
+   "id": "a1000000-0000-4000-8000-000000985028",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-03-05T09:00:00Z",
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ca_admin": {
+   "id": "a1000000-0000-4000-8000-000000985029",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-03-06T09:00:00Z",
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ca_transfer": {
+   "id": "a1000000-0000-4000-8000-000000985030",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 3,
+   "amount": "10.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": null,
+   "meta": null,
+   "attachment": false
+  },
+  "ca_removed": {
+   "id": "a1000000-0000-4000-8000-000000985031",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": true,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "de_plain": {
+   "id": "a1000000-0000-4000-8000-000000985032",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": true
+  },
+  "de_installments": {
+   "id": "a1000000-0000-4000-8000-000000985033",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "60.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "de_paid": {
+   "id": "a1000000-0000-4000-8000-000000985034",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "20.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-02-01T00:00:00Z",
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "de_group": {
+   "id": "a1000000-0000-4000-8000-000000985035",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": "own_group",
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "de_collab": {
+   "id": "a1000000-0000-4000-8000-000000985036",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "de_admin": {
+   "id": "a1000000-0000-4000-8000-000000985037",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "de_removed": {
+   "id": "a1000000-0000-4000-8000-000000985038",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": true,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ba_a": {
+   "id": "a1000000-0000-4000-8000-000000985039",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ba_b": {
+   "id": "a1000000-0000-4000-8000-000000985040",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ba_stored": {
+   "id": "a1000000-0000-4000-8000-000000985041",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": true,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ba_group": {
+   "id": "a1000000-0000-4000-8000-000000985042",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": "own_group",
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ba_plain": {
+   "id": "a1000000-0000-4000-8000-000000985043",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ba_collab": {
+   "id": "a1000000-0000-4000-8000-000000985044",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "ba_removed": {
+   "id": "a1000000-0000-4000-8000-000000985045",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": true,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "bd_a": {
+   "id": "a1000000-0000-4000-8000-000000985046",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "bd_installment": {
+   "id": "a1000000-0000-4000-8000-000000985047",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "bd_group": {
+   "id": "a1000000-0000-4000-8000-000000985048",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": "own_group",
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "bd_plain": {
+   "id": "a1000000-0000-4000-8000-000000985049",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "bd_collab": {
+   "id": "a1000000-0000-4000-8000-000000985050",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "bd_admin": {
+   "id": "a1000000-0000-4000-8000-000000985051",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000985052",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": true,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-01-01T00:00:00Z",
+   "description": "Quota",
+   "meta": null,
+   "attachment": false
+  }
+ },
+ "supplier_invoices": {
+  "si_approve": {
+   "id": "a1000000-0000-4000-8000-000000985053",
+   "payment": "ap_supplier",
+   "identifier": "FT-1",
+   "amount": "30.00"
+  },
+  "si_linked": {
+   "id": "a1000000-0000-4000-8000-000000985054",
+   "payment": "de_plain",
+   "identifier": "FT-2",
+   "amount": "10.00"
+  }
+ },
+ "course_subscriptions": {
+  "cs_linked": {
+   "id": "a1000000-0000-4000-8000-000000985055",
+   "payment": "de_plain",
+   "memberships": [
+    "de_plain"
+   ]
+  },
+  "cs_installments": {
+   "id": "a1000000-0000-4000-8000-000000985056",
+   "payment": null,
+   "memberships": []
+  }
+ },
+ "installments": {
+  "i1": {
+   "id": "a1000000-0000-4000-8000-000000985057",
+   "payment": "de_installments",
+   "deleted": false,
+   "group": null,
+   "cs": "cs_installments",
+   "number": 1
+  },
+  "i2": {
+   "id": "a1000000-0000-4000-8000-000000985058",
+   "payment": "de_installments",
+   "deleted": false,
+   "group": null,
+   "cs": "cs_installments",
+   "number": 2
+  },
+  "i_deleted": {
+   "id": "a1000000-0000-4000-8000-000000985059",
+   "payment": "de_installments",
+   "deleted": true,
+   "group": null,
+   "cs": "cs_installments",
+   "number": 3
+  },
+  "i_paid": {
+   "id": "a1000000-0000-4000-8000-000000985060",
+   "payment": "de_paid",
+   "deleted": false,
+   "group": null,
+   "cs": "cs_installments",
+   "number": 4
+  },
+  "ig_in": {
+   "id": "a1000000-0000-4000-8000-000000985061",
+   "payment": "de_group",
+   "deleted": false,
+   "group": "own_group",
+   "cs": "cs_installments",
+   "number": 5
+  },
+  "ig_out": {
+   "id": "a1000000-0000-4000-8000-000000985062",
+   "payment": "de_group",
+   "deleted": false,
+   "group": null,
+   "cs": "cs_installments",
+   "number": 6
+  },
+  "i_bulk": {
+   "id": "a1000000-0000-4000-8000-000000985063",
+   "payment": "bd_installment",
+   "deleted": false,
+   "group": null,
+   "cs": "cs_installments",
+   "number": 7
+  }
+ },
+ "holdings": {
+  "h_linked": {
+   "id": "a1000000-0000-4000-8000-000000985064",
+   "payment": "de_plain"
+  }
+ },
+ "cases": [
+  {
+   "name": "payment-state-approve-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Approve",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/abc/approve",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "payment_date"
+   ]
+  },
+  {
+   "name": "payment-state-approve-bad-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_date": "05/01/2026"
+   }
+  },
+  {
+   "name": "payment-state-approve-blank-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_date": ""
+   }
+  },
+  {
+   "name": "payment-state-approve-number-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_date": 20260105
+   }
+  },
+  {
+   "name": "payment-state-approve-missing-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000720009/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-deleted-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985022/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-other-group-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985019/approve",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-foreign-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985052/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-scoped-session-foreign-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985052/approve",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-transfer-without-description-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985021/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-unpaid-now",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985010",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_plain": {
+      "paid": true,
+      "payment_date": "$now"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_plain",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-answers-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985010/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985010",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_date": "2020-01-01"
+   }
+  },
+  {
+   "name": "payment-state-approve-sent-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985011/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985011",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "12.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-04T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "note": "è"
+      },
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_dated": {
+      "paid": true,
+      "payment_date": "2026-03-04T00:00:00Z"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_dated",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-04 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "payment_date": "2026-03-04",
+    "generate_invoice": true,
+    "send_receipt_email": true
+   }
+  },
+  {
+   "name": "payment-state-approve-keeps-stored-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985012/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985012",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-05-06T07:08:09.123456Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_stored": {
+      "paid": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_stored",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "payment_date": null
+   }
+  },
+  {
+   "name": "payment-state-approve-save-defaults",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985013/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985013",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "$default_category_name",
+      "type": "default",
+      "subject": 1,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-07-08T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Iscrizione",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "$default_category",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_defaults": {
+      "paid": true,
+      "payment_date": "2026-07-08T00:00:00Z",
+      "category": "$default_category",
+      "description": "Iscrizione"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_defaults",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-07-08 00:00:00"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "payment_date": "2026-7-8"
+   }
+  },
+  {
+   "name": "payment-state-approve-expense-pays-supplier-invoice",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985014/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985014",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": {
+       "supplier_id": "a1000000-0000-4000-8000-000000985007",
+       "name": "Fornitore è",
+       "address": null,
+       "tax_code": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "vat_number": "01234567890",
+       "type": "supplier",
+       "email": "fornitore@example.test",
+       "phone_number": null,
+       "city": null,
+       "cap": null,
+       "state": null,
+       "country": "Italia",
+       "nationality": "Italiana",
+       "note": null,
+       "group": null,
+       "deleted": false
+      },
+      "supplier_id": "a1000000-0000-4000-8000-000000985007",
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "30.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-05T00:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "Fattura fornitore",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_supplier": {
+      "paid": true,
+      "payment_date": "2026-03-05T00:00:00Z"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {
+     "si_approve": {
+      "paid": true,
+      "payment_date": "2026-03-05T00:00:00Z"
+     }
+    },
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_supplier",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-05 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoicesuppliers",
+      "label": "si_approve",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-05 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "payment_date": "2026-03-05"
+   }
+  },
+  {
+   "name": "payment-state-approve-expense-instructor-now",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985015/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985015",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000985006",
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000985006",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Anna è",
+       "last_name": "Bianchi",
+       "email": "anna@example.test",
+       "born_date": null,
+       "born_city": null,
+       "born_province": null,
+       "tax_code": "BNCNNA80A41H501X",
+       "address_city": null,
+       "address": null,
+       "address_province": null,
+       "civic_number": null,
+       "study_title": null,
+       "role": "Istruttore",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": false,
+       "associated_user_id": null,
+       "is_volunteer": false,
+       "stipulated_contract_in": null,
+       "default_hourly_billing": "12.50",
+       "default_percentage_billing": "0.00",
+       "documents": []
+      },
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "40.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": true,
+      "description": "Compenso",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_instructor": {
+      "paid": true,
+      "payment_date": "$now"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_instructor",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-with-party",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985016/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985016",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000985002",
+        "creation_date": "2026-02-03T08:00:00Z",
+        "filepath": "docs/ricevuta.pdf",
+        "filename": "ricevuta è.pdf",
+        "file_size_bytes": 4096,
+        "token": "a1000000-0000-4000-8000-000000985003"
+       }
+      ],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "25.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-04-01T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-state-approve-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985017/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985017",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-06T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "payments_changed": {
+     "ap_collab": {
+      "paid": true,
+      "payment_date": "2026-03-06T00:00:00Z"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_collab",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-06 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "payment_date": "2026-03-06"
+   }
+  },
+  {
+   "name": "payment-state-approve-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985018/approve",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985018",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-07T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "admin",
+    "payments_changed": {
+     "ap_admin": {
+      "paid": true,
+      "payment_date": "2026-03-07T00:00:00Z"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_admin",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-07 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "payment_date": "2026-03-07"
+   }
+  },
+  {
+   "name": "payment-state-approve-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985019/approve",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985019",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-08T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_group": {
+      "paid": true,
+      "payment_date": "2026-03-08T00:00:00Z"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_group",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-08 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "payment_date": "2026-03-08"
+   }
+  },
+  {
+   "name": "payment-state-approve-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985020/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985020",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-09T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_form": {
+      "paid": true,
+      "payment_date": "2026-03-09T00:00:00Z"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_form",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-09 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "raw_body": "payment_date=2026-03-09&generate_invoice=false",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "payment-state-cancel-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Cancel",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-malformed-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/abc/cancel",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-missing-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000720009/cancel",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-deleted-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985031/cancel",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-foreign-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985052/cancel",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-scoped-session-foreign-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985052/cancel",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-unpaid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985027/cancel",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Payment not paid."
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-state-cancel-transfer-without-description-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985030/cancel",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-cancel-paid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment cancelled.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985023",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-01T09:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ca_plain": {
+      "paid": false
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ca_plain",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-cancel-again-unpaid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985023/cancel",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Payment not paid."
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-state-cancel-fills-category-after-serializing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985024/cancel",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment cancelled.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985024",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": null,
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-02T09:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ca_uncategorized": {
+      "paid": false,
+      "category": "$default_category"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ca_uncategorized",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "False"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-cancel-expense-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985025/cancel",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment cancelled.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985025",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000985006",
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000985006",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Anna è",
+       "last_name": "Bianchi",
+       "email": "anna@example.test",
+       "born_date": null,
+       "born_city": null,
+       "born_province": null,
+       "tax_code": "BNCNNA80A41H501X",
+       "address_city": null,
+       "address": null,
+       "address_province": null,
+       "civic_number": null,
+       "study_title": null,
+       "role": "Istruttore",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": false,
+       "associated_user_id": null,
+       "is_volunteer": false,
+       "stipulated_contract_in": null,
+       "default_hourly_billing": "12.50",
+       "default_percentage_billing": "0.00",
+       "documents": []
+      },
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "40.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-03T09:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "Compenso",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ca_instructor": {
+      "paid": false
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ca_instructor",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-cancel-expense-supplier",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985026/cancel",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment cancelled.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985026",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": {
+       "supplier_id": "a1000000-0000-4000-8000-000000985007",
+       "name": "Fornitore è",
+       "address": null,
+       "tax_code": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "vat_number": "01234567890",
+       "type": "supplier",
+       "email": "fornitore@example.test",
+       "phone_number": null,
+       "city": null,
+       "cap": null,
+       "state": null,
+       "country": "Italia",
+       "nationality": "Italiana",
+       "note": null,
+       "group": null,
+       "deleted": false
+      },
+      "supplier_id": "a1000000-0000-4000-8000-000000985007",
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "30.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-04T09:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "Spesa",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ca_supplier": {
+      "paid": false
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ca_supplier",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-cancel-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985028/cancel",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment cancelled.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985028",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-05T09:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "payments_changed": {
+     "ca_collab": {
+      "paid": false
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ca_collab",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-cancel-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985029/cancel",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment cancelled.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985029",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "10.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-06T09:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "admin",
+    "payments_changed": {
+     "ca_admin": {
+      "paid": false
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ca_admin",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-cancel-after-approve",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985011/cancel",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment cancelled.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985011",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "12.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-04T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "note": "è"
+      },
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ap_dated": {
+      "paid": false
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ap_dated",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Delete",
+    "description": "API endpoint to add a new payment",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-missing-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000720009/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Payment not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985052/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Payment not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-deleted-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985038/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Payment not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-other-group-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "msg": "Payment not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-delete-clears-references",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [
+     "de_plain"
+    ],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "de_plain",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-delete-unpaid-installments",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985033/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [
+     "de_installments"
+    ],
+    "installments_deleted": [
+     "i1",
+     "i2"
+    ],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "de_installments",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "i2",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "i1",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "de_installments",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-delete-paid-installment",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985034/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [
+     "de_paid"
+    ],
+    "installments_deleted": [
+     "i_paid"
+    ],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "i_paid",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "de_paid",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-delete-group-installments",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985035/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment deleted."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [
+     "de_group"
+    ],
+    "installments_deleted": [
+     "ig_in"
+    ],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "de_group",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "ig_in",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "de_group",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-delete-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985036/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment deleted."
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "payments_changed": {},
+    "payments_deleted": [
+     "de_collab"
+    ],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "de_collab",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-delete-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985037/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment deleted."
+    }
+   },
+   "effect": {
+    "actor": "admin",
+    "payments_changed": {},
+    "payments_deleted": [
+     "de_admin"
+    ],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "de_admin",
+      "action": 2,
+      "changes": null,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-state-delete-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/payment/a1000000-0000-4000-8000-000000985032/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Payment not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-hard-deleted-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985034/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-archive-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-archive-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.archive.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-archive-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-archive-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-archive-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-archive-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Bulk Archive",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-archive-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": []
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": []
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-missing-key-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "payment-state-bulk-archive-no-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-archive-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "payment_ids"
+   ]
+  },
+  {
+   "name": "payment-state-bulk-archive-null-ids-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": null
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-number-ids-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": 7
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-malformed-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985039",
+     "abc"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-float-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": [
+     1.5
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-negative-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": [
+     -1
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-nested-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": [
+     [
+      "a1000000-0000-4000-8000-000000985052"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-string-ids-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": "a1000000-0000-4000-8000-000000985052"
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-form-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "payment_ids=a1000000-0000-4000-8000-000000985052",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "payment-state-bulk-archive-empty-string",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments archived"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": ""
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-integer-ids",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments archived"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     1,
+     0,
+     true,
+     null
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-dict-ids",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments archived"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": {}
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments archived"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ba_a": {
+      "archived": true
+     },
+     "ba_b": {
+      "archived": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985039",
+     "A1000000-0000-4000-8000-000000985040",
+     "a1000000-0000-4000-8000-000000985041",
+     "a1000000-0000-4000-8000-000000985052",
+     "a1000000-0000-4000-8000-000000985045",
+     "a1000000-0000-4000-8000-000000720009",
+     null,
+     "a1000000-0000-4000-8000-000000985039"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "message": "All payments archived"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "ba_group": {
+      "archived": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985042",
+     "a1000000-0000-4000-8000-000000985043"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-foreign-ignored-in-scoped-session",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "message": "All payments archived"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985052"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments archived"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "payments_changed": {
+     "ba_collab": {
+      "archived": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985044"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-archive-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment-bulk/archive",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "message": "All payments archived"
+   },
+   "effect": {
+    "actor": "admin",
+    "payments_changed": {
+     "ba_plain": {
+      "archived": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985043"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-delete-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-delete-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-delete-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Bulk Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-delete-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": []
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": []
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-missing-key-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "payment-state-bulk-delete-no-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-bulk-delete-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "payment_ids"
+   ]
+  },
+  {
+   "name": "payment-state-bulk-delete-null-ids-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": null
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-number-ids-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": 7
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-malformed-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985046",
+     "abc"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-float-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": [
+     1.5
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-negative-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": [
+     -1
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-nested-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": [
+     [
+      "a1000000-0000-4000-8000-000000985052"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-string-ids-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "payment_ids": "a1000000-0000-4000-8000-000000985052"
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-form-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "payment_ids=a1000000-0000-4000-8000-000000985052",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "payment-state-bulk-delete-empty-string",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments deleted"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": ""
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-integer-ids",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments deleted"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     1,
+     0,
+     true,
+     null
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-dict-ids",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments deleted"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": {}
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments deleted"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "bd_a": {
+      "deleted": true
+     },
+     "bd_installment": {
+      "deleted": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985046",
+     "a1000000-0000-4000-8000-000000985047",
+     "a1000000-0000-4000-8000-000000985052",
+     "a1000000-0000-4000-8000-000000985038",
+     "a1000000-0000-4000-8000-000000720009"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "message": "All payments deleted"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "bd_group": {
+      "deleted": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985048",
+     "a1000000-0000-4000-8000-000000985049"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments deleted"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "payments_changed": {
+     "bd_collab": {
+      "deleted": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985050"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "message": "All payments deleted"
+   },
+   "effect": {
+    "actor": "admin",
+    "payments_changed": {
+     "bd_admin": {
+      "deleted": true
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985051"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-bulk-delete-again-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment-bulk/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All payments deleted"
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {},
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_ids": [
+     "a1000000-0000-4000-8000-000000985046"
+    ]
+   }
+  },
+  {
+   "name": "payment-state-approve-bulk-deleted-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985046/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  }
+ ]
+}
