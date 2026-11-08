@@ -1,0 +1,4068 @@
+{
+ "matrix_version": 1,
+ "scope": "profile/associates/course, profile/associates/sport-association, profile/image and onboarding/update authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "associates": {
+  "a1": {
+   "id": "a1000000-0000-4000-8000-000000978001",
+   "user": "athlete",
+   "association": "own",
+   "first": "Mario",
+   "last": "Rossi",
+   "minor": false,
+   "tax": "RSSMRA80A01H501U"
+  },
+  "a2": {
+   "id": "a1000000-0000-4000-8000-000000978002",
+   "user": "athlete",
+   "association": "own",
+   "first": null,
+   "last": "Bianchi",
+   "minor": true,
+   "tax": null
+  },
+  "a3": {
+   "id": "a1000000-0000-4000-8000-000000978003",
+   "user": "athlete",
+   "association": "foreign",
+   "first": "Luca",
+   "last": "Verdi",
+   "minor": false,
+   "tax": "VRDLCU80A01H501U"
+  },
+  "a4": {
+   "id": "a1000000-0000-4000-8000-000000978004",
+   "user": "athlete",
+   "association": "own",
+   "first": "Cancellato",
+   "last": "Socio",
+   "minor": false,
+   "tax": null,
+   "deleted": true
+  },
+  "a5": {
+   "id": "a1000000-0000-4000-8000-000000978005",
+   "user": "owner",
+   "association": "own",
+   "first": "Paolo",
+   "last": "Neri",
+   "minor": false,
+   "tax": "NREPLA80A01H501U"
+  },
+  "a6": {
+   "id": "a1000000-0000-4000-8000-000000978006",
+   "user": "athlete",
+   "association": "own",
+   "first": "Anna",
+   "last": "Gialli",
+   "minor": false,
+   "tax": null,
+   "group": "own_group"
+  },
+  "a7": {
+   "id": "a1000000-0000-4000-8000-000000978007",
+   "user": "athlete",
+   "association": "own",
+   "first": "Disabilitato",
+   "last": "Socio",
+   "minor": false,
+   "tax": null,
+   "disabled": true
+  }
+ },
+ "subscriptions": {
+  "s1b": {
+   "id": "a1000000-0000-4000-8000-000000978020",
+   "associate": "a1",
+   "user": "athlete",
+   "association": "own",
+   "created": "inside"
+  },
+  "s1": {
+   "id": "a1000000-0000-4000-8000-000000978021",
+   "associate": "a1",
+   "user": "athlete",
+   "association": "own",
+   "created": "inside"
+  },
+  "s2": {
+   "id": "a1000000-0000-4000-8000-000000978022",
+   "associate": "a2",
+   "user": "athlete",
+   "association": "own",
+   "created": "inside"
+  },
+  "s3": {
+   "id": "a1000000-0000-4000-8000-000000978023",
+   "associate": "a3",
+   "user": "athlete",
+   "association": "foreign",
+   "created": "inside"
+  },
+  "s4": {
+   "id": "a1000000-0000-4000-8000-000000978024",
+   "associate": "a4",
+   "user": "athlete",
+   "association": "own",
+   "created": "inside"
+  },
+  "s5": {
+   "id": "a1000000-0000-4000-8000-000000978025",
+   "associate": "a5",
+   "user": "owner",
+   "association": "own",
+   "created": "inside"
+  },
+  "s6": {
+   "id": "a1000000-0000-4000-8000-000000978026",
+   "associate": "a6",
+   "user": "athlete",
+   "association": "own",
+   "created": "before",
+   "group": "own_group"
+  },
+  "s7": {
+   "id": "a1000000-0000-4000-8000-000000978027",
+   "associate": "a7",
+   "user": "athlete",
+   "association": "own",
+   "created": "inside"
+  }
+ },
+ "courses": {
+  "c1": {
+   "id": "a1000000-0000-4000-8000-000000978040",
+   "association": "own",
+   "title": "Corso base"
+  },
+  "c2": {
+   "id": "a1000000-0000-4000-8000-000000978041",
+   "association": "own",
+   "title": "Corso cancellato",
+   "deleted": true
+  },
+  "c3": {
+   "id": "a1000000-0000-4000-8000-000000978042",
+   "association": "foreign",
+   "title": "Corso estero"
+  },
+  "c4": {
+   "id": "a1000000-0000-4000-8000-000000978043",
+   "association": "own",
+   "title": "Corso di gruppo",
+   "group": "own_group"
+  }
+ },
+ "course_subscriptions": {
+  "cs1": {
+   "id": "a1000000-0000-4000-8000-000000978060",
+   "course": "c1",
+   "subscription": "s1"
+  },
+  "cs2": {
+   "id": "a1000000-0000-4000-8000-000000978061",
+   "course": "c1",
+   "subscription": "s2",
+   "deleted": true
+  },
+  "cs5": {
+   "id": "a1000000-0000-4000-8000-000000978062",
+   "course": "c1",
+   "subscription": "s5"
+  },
+  "cs3": {
+   "id": "a1000000-0000-4000-8000-000000978063",
+   "course": "c3",
+   "subscription": "s3"
+  }
+ },
+ "onboarding_id": "a1000000-0000-4000-8000-000000978080",
+ "instance": {
+  "id": 978090,
+  "domain": "profile-misc.example.test",
+  "name": "Profile misc",
+  "self_hosted": true,
+  "setup_provenance": "fresh",
+  "primary_association": "foreign_association"
+ },
+ "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAE=",
+ "no_association_balance": {
+  "balance_sheet_start_day": 30,
+  "balance_sheet_start_month": 2
+ },
+ "cases": [
+  {
+   "name": "profile-misc-course-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.users.connectedathletes.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-restricted-post-permission-first",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.users.connectedathletes.read"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-misc-course-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-misc-course-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Profile Associates Course",
+    "description": "Select all the associates that are subscribed on the course and are connected to the user,\nplus return a list of possible subscriptions",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-malformed-uid",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/course/not-a-uuid",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-unknown-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978099",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-deleted-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978041",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-other-group-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978001",
+      "full_name": "Mario Rossi",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978005",
+      "full_name": "Paolo Neri",
+      "is_minor": false
+     }
+    ],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978002",
+      "full_name": "None Bianchi",
+      "is_minor": true,
+      "subscription_id": "a1000000-0000-4000-8000-000000978022"
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978026"
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978007",
+      "full_name": "Disabilitato Socio",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978027"
+     }
+    ],
+    "full": false
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-athlete-uppercase-uid",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/course/A1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978001",
+      "full_name": "Mario Rossi",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978005",
+      "full_name": "Paolo Neri",
+      "is_minor": false
+     }
+    ],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978002",
+      "full_name": "None Bianchi",
+      "is_minor": true,
+      "subscription_id": "a1000000-0000-4000-8000-000000978022"
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978026"
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978007",
+      "full_name": "Disabilitato Socio",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978027"
+     }
+    ],
+    "full": false
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-athlete-foreign-course",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978042",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978003",
+      "full_name": "Luca Verdi",
+      "is_minor": false
+     }
+    ],
+    "associates_unsubscribed": [],
+    "full": true
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-athlete-group",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978043",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "associates_subscribed": [],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978026"
+     }
+    ],
+    "full": false
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978005",
+      "full_name": "Paolo Neri",
+      "is_minor": false
+     }
+    ],
+    "associates_unsubscribed": [],
+    "full": true
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978005",
+      "full_name": "Paolo Neri",
+      "is_minor": false
+     }
+    ],
+    "associates_unsubscribed": [],
+    "full": true
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978005",
+      "full_name": "Paolo Neri",
+      "is_minor": false
+     }
+    ],
+    "associates_unsubscribed": [],
+    "full": true
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-owner-foreign-course",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978042",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [],
+    "associates_unsubscribed": [],
+    "full": true
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978005",
+      "full_name": "Paolo Neri",
+      "is_minor": false
+     }
+    ],
+    "associates_unsubscribed": [],
+    "full": true
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978040",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978001",
+      "full_name": "Mario Rossi",
+      "is_minor": false
+     }
+    ],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978002",
+      "full_name": "None Bianchi",
+      "is_minor": true,
+      "subscription_id": "a1000000-0000-4000-8000-000000978022"
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978026"
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978007",
+      "full_name": "Disabilitato Socio",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978027"
+     }
+    ],
+    "full": false
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-scoped-foreign-course-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/course/a1000000-0000-4000-8000-000000978042",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-course-scoped-malformed-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/course/not-a-uuid",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.users.connectedathletes.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-wrong-method",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-misc-sport-options",
+   "actor": "athlete",
+   "method": "OPTIONS",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Profile Associates Sport Association",
+    "description": "Select all the associates that are subscribed on a sport association and are connected to the user,\nplus return a list of possible subscriptions",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-malformed-uid",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/abc",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-athlete-own",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978001",
+      "full_name": "Mario Rossi",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978020"
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978002",
+      "full_name": "None Bianchi",
+      "is_minor": true,
+      "subscription_id": "a1000000-0000-4000-8000-000000978022"
+     }
+    ],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000700101",
+      "full_name": "Athlete Fixture",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978003",
+      "full_name": "Luca Verdi",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-athlete-foreign",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701002",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978003",
+      "full_name": "Luca Verdi",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978023"
+     }
+    ],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000700101",
+      "full_name": "Athlete Fixture",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978001",
+      "full_name": "Mario Rossi",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978002",
+      "full_name": "None Bianchi",
+      "is_minor": true
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-athlete-unknown-association",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000978099",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000700101",
+      "full_name": "Athlete Fixture",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978001",
+      "full_name": "Mario Rossi",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978002",
+      "full_name": "None Bianchi",
+      "is_minor": true
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978003",
+      "full_name": "Luca Verdi",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-athlete-group",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "associates_subscribed": [],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978005",
+      "full_name": "Paolo Neri",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978025"
+     }
+    ],
+    "associates_unsubscribed": []
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-full-collaborator-foreign",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701002",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associates_subscribed": [],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978005",
+      "full_name": "Paolo Neri",
+      "is_minor": false
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-impossible-start-date-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701001",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "associates_subscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000978001",
+      "full_name": "Mario Rossi",
+      "is_minor": false,
+      "subscription_id": "a1000000-0000-4000-8000-000000978020"
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978002",
+      "full_name": "None Bianchi",
+      "is_minor": true,
+      "subscription_id": "a1000000-0000-4000-8000-000000978022"
+     }
+    ],
+    "associates_unsubscribed": [
+     {
+      "id": "a1000000-0000-4000-8000-000000700101",
+      "full_name": "Athlete Fixture",
+      "is_minor": false
+     },
+     {
+      "id": "a1000000-0000-4000-8000-000000978006",
+      "full_name": "Anna Gialli",
+      "is_minor": false
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-scoped-foreign-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/a1000000-0000-4000-8000-000000701002",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-sport-scoped-username-bad-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/associates/sport-association/message-reads-700001",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-anonymous-owner",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700001",
+   "headers": {},
+   "status": 200,
+   "response": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAE=",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-anonymous-without-avatar",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700004",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-anonymous-uppercase",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/profile/image/A1000000-0000-4000-8000-000000700001",
+   "headers": {},
+   "status": 200,
+   "response": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAE=",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-unknown-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000978099",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-malformed-uid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/profile/image/xyz",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-athlete-reads-owner",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700001",
+   "headers": {},
+   "status": 200,
+   "response": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAE=",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700004",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700001",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700001",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700001",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-image-wrong-method",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700001",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-misc-image-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/profile/image/a1000000-0000-4000-8000-000000700001",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Profile Image",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-onboarding-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-misc-onboarding-admin-without-session",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-misc-onboarding-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.update"
+   },
+   "effect": null,
+   "body": {
+    "lead_data": {}
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-misc-onboarding-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-onboarding-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Onboarding Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-misc-onboarding-athlete-denied",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "You are not a sport association."
+   },
+   "effect": null,
+   "body": {
+    "lead_data": {}
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-empty-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {}
+  },
+  {
+   "name": "profile-misc-onboarding-list-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": [
+    "membership"
+   ]
+  },
+  {
+   "name": "profile-misc-onboarding-string-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "string indices must be integers, not 'str'"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "raw_body": "\"has sport_association inside\"",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-misc-onboarding-number-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "raw_body": "5",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-misc-onboarding-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "User has no sportassociation."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": {
+     "sport": "Calcio"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-association-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'denomination': [ErrorDetail(string='This field may not be blank.', code='blank')], 'tax_code': [ErrorDetail(string='Ensure this field has no more than 11 characters.', code='max_length')], 'logo': [ErrorDetail(string='Not a valid string.', code='invalid')], 'subscription_fee': [ErrorDetail(string='A valid number is required.', code='invalid')], 'membership_fee': [ErrorDetail(string='Ensure that there are no more than 9 digits in total.', code='max_digits')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "sport_association": {
+     "denomination": "   ",
+     "tax_code": "xxxxxxxxxxxx",
+     "logo": true,
+     "sport": null,
+     "subscription_fee": "abc",
+     "membership_fee": "1234567.123"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-association-more-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'denomination': [ErrorDetail(string='This field may not be null.', code='null')], 'sport': [ErrorDetail(string='Ensure this field has no more than 100 characters.', code='max_length')], 'subscription_fee': [ErrorDetail(string='Ensure that there are no more than 2 decimal places.', code='max_decimal_places')], 'membership_fee': [ErrorDetail(string='Ensure that there are no more than 7 digits before the decimal point.', code='max_whole_digits')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "sport_association": {
+     "denomination": null,
+     "sport": "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+     "subscription_fee": 1.234,
+     "membership_fee": 12345678
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-association-not-dict",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got str.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "sport_association": "Calcio"
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-association-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='No data provided', code='null')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "sport_association": null
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-association-form-not-dict",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got str.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "raw_body": "sport_association=Calcio",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-misc-onboarding-association-saved",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "denomination": [
+        "Message reads own",
+        "Nuova ASD"
+       ],
+       "tax_code": [
+        "70000000001",
+        "12345678901"
+       ],
+       "logo": [
+        "None",
+        "data:image/png;base64,AAAA"
+       ],
+       "sport": [
+        "None",
+        "Calcio"
+       ],
+       "subscription_fee": [
+        "0.00",
+        "12.50"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": "data:image/png;base64,AAAA",
+      "sport": "Calcio",
+      "subscription_fee": "12.50",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "sport_association": {
+     "denomination": "  Nuova ASD ",
+     "tax_code": "12345678901",
+     "logo": "data:image/png;base64,AAAA",
+     "sport": "Calcio",
+     "subscription_fee": "12.5",
+     "membership_fee": null,
+     "regulation": "ignored"
+    },
+    "lead_data": {
+     "lead_sport_association_role": "not reached"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-association-collaborator",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "full_collaborator",
+      "changes": {
+       "sport": [
+        "Calcio",
+        "7"
+       ],
+       "logo": [
+        "data:image/png;base64,AAAA",
+        "None"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "12.50",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "sport_association": {
+     "sport": 7,
+     "logo": null
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-association-unchanged",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "12.50",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "sport_association": {
+     "sport": "7",
+     "subscription_fee": "12.50"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'subscription_fee': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "12.50",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "subscription_fee": null,
+     "season": {
+      "day": 1,
+      "month": 9
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-not-dict",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got list.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "12.50",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": []
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-key-error-rolls-back",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'day'"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "12.50",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "subscription_fee": "30",
+     "season": {
+      "month": 3
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-bad-day-rolls-back",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Field 'subscription_start_day' expected a number but got 'abc'."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "12.50",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "membership_fee": "5",
+     "season": {
+      "day": "abc",
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-saved",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "subscription_fee": [
+        "12.50",
+        "20.00"
+       ],
+       "membership_fee": [
+        "None",
+        "7.50"
+       ]
+      }
+     },
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "owner",
+      "changes": {
+       "subscription_fee": [
+        "20.00",
+        "20.0"
+       ],
+       "membership_fee": [
+        "7.50",
+        "7.5"
+       ]
+      }
+     },
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "balance_sheet_year": [
+        "1",
+        "4"
+       ],
+       "subscription_start_month": [
+        "1",
+        "9"
+       ],
+       "balance_sheet_start_month": [
+        "1",
+        "9"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": "7.50"
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "subscription_fee": "20",
+     "membership_fee": "7.5",
+     "season": {
+      "day": 1,
+      "month": 9
+     },
+     "fiscal": {
+      "day": "1",
+      "month": "9"
+     },
+     "other": true
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-null-fee",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "own",
+      "actor": "full_collaborator",
+      "changes": {
+       "membership_fee": [
+        "7.50",
+        "None"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "membership_fee": null
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-collaborator-fiscal",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "full_collaborator",
+      "changes": {
+       "balance_sheet_start_day": [
+        "1",
+        "15"
+       ],
+       "balance_sheet_start_month": [
+        "9",
+        "3"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "fiscal": {
+      "day": 15,
+      "month": "3"
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-fresh-invalid",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Fresh self-host onboarding requires a complete membership payload.",
+    "details": {
+     "season.day": "This field must be between 1 and 31.",
+     "season.month": "This field must be between 1 and 12.",
+     "fiscal.day": "This field must be a whole number.",
+     "fiscal.month": "This field must be a valid number.",
+     "subscription_fee": "This field is required.",
+     "membership_fee": "This field must be a valid amount."
+    }
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 0,
+      "month": "13"
+     },
+     "fiscal": {
+      "day": 1.5,
+      "month": "x"
+     },
+     "subscription_fee": "",
+     "membership_fee": "abc"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-fresh-missing-sections",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Fresh self-host onboarding requires a complete membership payload.",
+    "details": {
+     "season": "This section is required.",
+     "fiscal.day": "This field is required.",
+     "fiscal.month": "This field is required.",
+     "subscription_fee": "This field is required.",
+     "membership_fee": "This field is required."
+    }
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": "x",
+     "fiscal": {
+      "day": null,
+      "month": ""
+     },
+     "membership_fee": null
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-fresh-not-object",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Fresh self-host onboarding requires a complete membership payload.",
+    "details": {
+     "membership_data": "This field must be an object."
+    }
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": "x"
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-fresh-comma-fee-serializer",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'subscription_fee': [ErrorDetail(string='A valid number is required.', code='invalid')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 1,
+      "month": 9
+     },
+     "fiscal": {
+      "day": "1.0",
+      "month": 9
+     },
+     "subscription_fee": "15,5",
+     "membership_fee": "10"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-fresh-complete",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "sportassociation",
+      "key": "foreign",
+      "actor": "foreign_owner",
+      "changes": {
+       "subscription_fee": [
+        "0.00",
+        "25.00"
+       ],
+       "membership_fee": [
+        "None",
+        "10.00"
+       ]
+      }
+     },
+     {
+      "model": "sportassociation",
+      "key": "foreign",
+      "actor": "foreign_owner",
+      "changes": {
+       "subscription_fee": [
+        "25.00",
+        "25.0"
+       ],
+       "membership_fee": [
+        "10.00",
+        "10.0"
+       ]
+      }
+     },
+     {
+      "model": "user",
+      "key": "foreign_owner",
+      "actor": "foreign_owner",
+      "changes": {
+       "balance_sheet_year": [
+        "1",
+        "4"
+       ],
+       "subscription_start_month": [
+        "1",
+        "9"
+       ],
+       "balance_sheet_start_month": [
+        "1",
+        "9"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 1,
+      "month": 9
+     },
+     "fiscal": {
+      "day": 1,
+      "month": 9
+     },
+     "subscription_fee": 25,
+     "membership_fee": "10"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-fresh-completed-skips-validation",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {}
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-lead-saved",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "lead_sport_association_role": [
+        "None",
+        "Presidente"
+       ],
+       "lead_sport_association_size": [
+        "None",
+        "50-100"
+       ],
+       "lead_sport_market_channel": [
+        "None",
+        "Google"
+       ],
+       "phone": [
+        "None",
+        "+39 333 0000000"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "Presidente",
+      "lead_sport_association_size": "50-100",
+      "lead_sport_market_channel": "Google",
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": "Presidente",
+     "lead_sport_association_size": "50-100",
+     "lead_sport_market_channel": "Google",
+     "phone": "+39 333 0000000"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-lead-scalars",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "full_collaborator",
+      "changes": {
+       "lead_sport_association_role": [
+        "Presidente",
+        "5"
+       ],
+       "lead_sport_association_size": [
+        "50-100",
+        "True"
+       ],
+       "lead_sport_market_channel": [
+        "Google",
+        "None"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": 5,
+     "lead_sport_association_size": true,
+     "lead_sport_market_channel": null
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-lead-missing-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'lead_sport_association_size'"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_role": "x"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-lead-string",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "string indices must be integers, not 'str'"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": "x"
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-lead-list",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "list indices must be integers or slices, not str"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": []
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-lead-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'NoneType' object is not subscriptable"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": null
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-flags-saved",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "usersonboarding",
+      "key": "onboarding",
+      "actor": "owner",
+      "changes": {
+       "create_membership": [
+        "False",
+        "True"
+       ],
+       "view_settings": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "onboarding_data": {
+     "create_membership": true,
+     "view_settings": "yes",
+     "show": 1,
+     "unknown": "x"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-flags-collaborator",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "usersonboarding",
+      "key": "onboarding",
+      "actor": "full_collaborator",
+      "changes": {
+       "show": [
+        "True",
+        "False"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": false,
+     "create_membership": true,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "onboarding_data": {
+     "show": "false"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-flags-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'show': [ErrorDetail(string='Must be a valid boolean.', code='invalid')], 'approve_payment': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": false,
+     "create_membership": true,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "onboarding_data": {
+     "approve_payment": null,
+     "show": "maybe"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-flags-missing-row",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "UsersOnboarding matching query does not exist."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "5",
+      "lead_sport_association_size": "True",
+      "lead_sport_market_channel": null,
+      "phone": "+39 333 0000000"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": false,
+     "create_membership": true,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "onboarding_data": {
+     "show": true
+    }
+   }
+  }
+ ]
+}
