@@ -396,6 +396,13 @@ func run() (runErr error) {
 	e.Any("/modules/list", modulesReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/check-link", modulesReadsHandler.CheckLink, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/overview", modulesReadsHandler.Overview, middleware.DjangoSessionAudit(sessionAuthentication))
+	modulesWritesHandler := handler.NewModulesWritesHandler(service.NewModulesWrites(repository.NewModulesWrites(db),
+		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/modules/add", modulesWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/modules/:module_id/update", modulesWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/modules/:module_id/duplicate", modulesWritesHandler.Duplicate, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/modules/:module_id/delete", modulesWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	instructorHoursHandler := handler.NewInstructorHoursHandler(service.NewInstructorHoursService(repository.NewInstructorHours(db), time.Now,
 		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
