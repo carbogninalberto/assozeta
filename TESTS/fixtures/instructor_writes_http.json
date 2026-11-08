@@ -1,0 +1,4069 @@
+{
+ "matrix_version": 1,
+ "scope": "Instructor writes and lesson hours authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "d1": "a1000000-0000-4000-8000-000000967001",
+  "d2": "a1000000-0000-4000-8000-000000967002"
+ },
+ "instructors": {
+  "full": {
+   "id": "a1000000-0000-4000-8000-000000967003",
+   "owner": "owner",
+   "documents": [
+    "d1",
+    "d2"
+   ],
+   "first_name": "Anna è",
+   "last_name": "Rossi",
+   "email": "anna@example.test",
+   "born_date": "1985-04-03",
+   "born_city": "Roma",
+   "born_province": null,
+   "tax_code": "RSSNNA85D43H501X",
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": "ISEF",
+   "role": null,
+   "phone": "+39 1",
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": "a1000000-0000-4000-8000-000000700002",
+   "is_volunteer": true,
+   "stipulated_contract_in": "2026-01-15",
+   "default_hourly_billing": "25.50",
+   "default_percentage_billing": null
+  },
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000967004",
+   "owner": "owner",
+   "documents": [],
+   "first_name": "Paolo",
+   "last_name": "Neri",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "30.00",
+   "default_percentage_billing": "10.00"
+  },
+  "draft": {
+   "id": "a1000000-0000-4000-8000-000000967005",
+   "owner": "owner",
+   "documents": [],
+   "first_name": "Bruno",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": true,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  },
+  "tied": {
+   "id": "a1000000-0000-4000-8000-000000967006",
+   "owner": "owner",
+   "documents": [],
+   "first_name": "Tina",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": "a1000000-0000-4000-8000-000000700004",
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  },
+  "removable": {
+   "id": "a1000000-0000-4000-8000-000000967007",
+   "owner": "owner",
+   "documents": [
+    "d1"
+   ],
+   "first_name": "Remo",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  },
+  "bare": {
+   "id": "a1000000-0000-4000-8000-000000967008",
+   "owner": "owner",
+   "documents": [],
+   "first_name": "Bea",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  },
+  "comp": {
+   "id": "a1000000-0000-4000-8000-000000967009",
+   "owner": "owner",
+   "documents": [],
+   "first_name": "Carlo",
+   "last_name": "Verdi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000967010",
+   "owner": "foreign_owner",
+   "documents": [],
+   "first_name": "Carla",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  },
+  "orphan": {
+   "id": "a1000000-0000-4000-8000-000000967011",
+   "owner": "owner_without_association",
+   "documents": [],
+   "first_name": "Olga",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  }
+ },
+ "hours": {
+  "c_hourly": {
+   "id": "a1000000-0000-4000-8000-000000967014",
+   "instructor": "comp",
+   "date": "2026-09-10",
+   "hours": "1.50",
+   "amount": "15.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": []
+  },
+  "c_percent": {
+   "id": "a1000000-0000-4000-8000-000000967015",
+   "instructor": "comp",
+   "date": "2026-09-12",
+   "hours": "1.00",
+   "amount": "10.50",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "50.00",
+   "paid": false,
+   "payment": null,
+   "notes": "Lezione è",
+   "calculation_data": [
+    {
+     "amount": 10.5,
+     "full_athlete_name": "Maria Bianchi",
+     "course": "Corso è"
+    },
+    {
+     "amount": 21,
+     "full_athlete_name": null,
+     "course": [
+      "x",
+      1
+     ]
+    },
+    {
+     "amount": "1e-7",
+     "full_athlete_name": "Luca",
+     "course": "Basket"
+    }
+   ]
+  },
+  "c_paid": {
+   "id": "a1000000-0000-4000-8000-000000967016",
+   "instructor": "comp",
+   "date": "2026-09-13",
+   "hours": "1.00",
+   "amount": "3.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": true,
+   "payment": null,
+   "notes": null,
+   "calculation_data": []
+  },
+  "c_linked": {
+   "id": "a1000000-0000-4000-8000-000000967017",
+   "instructor": "comp",
+   "date": "2026-09-13",
+   "hours": "1.00",
+   "amount": "9.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": "linked",
+   "notes": null,
+   "calculation_data": []
+  },
+  "c_group": {
+   "id": "a1000000-0000-4000-8000-000000967018",
+   "instructor": "comp",
+   "date": "2026-09-14",
+   "hours": "2.00",
+   "amount": "20.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": []
+  },
+  "c_zero_pct": {
+   "id": "a1000000-0000-4000-8000-000000967019",
+   "instructor": "comp",
+   "date": "2026-09-15",
+   "hours": "1.00",
+   "amount": "7.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [
+    {
+     "amount": "7",
+     "full_athlete_name": "Sara",
+     "course": "Corso A"
+    }
+   ]
+  },
+  "c_bad": {
+   "id": "a1000000-0000-4000-8000-000000967020",
+   "instructor": "comp",
+   "date": "2026-09-16",
+   "hours": "1.00",
+   "amount": "5.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": null
+  },
+  "r_a": {
+   "id": "a1000000-0000-4000-8000-000000967021",
+   "instructor": "removable",
+   "date": "2026-09-01",
+   "hours": "1.00",
+   "amount": "1.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": []
+  },
+  "r_b": {
+   "id": "a1000000-0000-4000-8000-000000967022",
+   "instructor": "removable",
+   "date": "2026-09-02",
+   "hours": "2.00",
+   "amount": "2.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": "due",
+   "calculation_data": []
+  },
+  "abroad_h": {
+   "id": "a1000000-0000-4000-8000-000000967023",
+   "instructor": "abroad",
+   "date": "2026-09-03",
+   "hours": "1.00",
+   "amount": "1.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": []
+  }
+ },
+ "payments": {
+  "linked": {
+   "id": "a1000000-0000-4000-8000-000000967012",
+   "instructor": "comp",
+   "amount": "9.00"
+  },
+  "remo": {
+   "id": "a1000000-0000-4000-8000-000000967013",
+   "instructor": "removable",
+   "amount": "4.00"
+  }
+ },
+ "reminders": {
+  "m_a": {
+   "id": "a1000000-0000-4000-8000-000000967024",
+   "instructor": "removable",
+   "title": "Promemoria",
+   "send_at": "2026-09-20T08:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "m_b": {
+   "id": "a1000000-0000-4000-8000-000000967025",
+   "instructor": "removable",
+   "title": "Secondo",
+   "send_at": "2026-09-21T08:00:00Z",
+   "association": null
+  }
+ },
+ "subscriptions": {
+  "s_remo": {
+   "id": "a1000000-0000-4000-8000-000000967026",
+   "instructor": "removable"
+  }
+ },
+ "courses": {
+  "ca": {
+   "id": "a1000000-0000-4000-8000-000000967027",
+   "title": "Corso A",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "cb": {
+   "id": "a1000000-0000-4000-8000-000000967028",
+   "title": "Basket",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "cf": {
+   "id": "a1000000-0000-4000-8000-000000967029",
+   "title": "Estero",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "registries": {
+  "reg_a": {
+   "id": "a1000000-0000-4000-8000-000000967030",
+   "course": "ca",
+   "status": 2,
+   "events": [
+    {
+     "start": "2026-09-15T08:30:00Z",
+     "end": "2026-09-15T10:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "e1",
+     "title": "Lezione 1"
+    },
+    {
+     "start": "2026-09-16T10:00:00+02:00",
+     "end": "2026-09-16T11:15:00+02:00",
+     "extendedProps": {
+      "instructor": [
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000967004"
+       },
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000967003"
+       }
+      ]
+     },
+     "id": 7
+    },
+    {
+     "start": "2026-09-17",
+     "end": "2026-09-18",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "e3",
+     "allDay": true
+    },
+    {
+     "start": "2026-10-01T18:00:00",
+     "end": "2026-10-01T19:00:00.500000",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "e4",
+     "title": ""
+    },
+    {
+     "start": "domani",
+     "end": "dopodomani",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "e5"
+    },
+    {
+     "end": "2026-09-15T10:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     }
+    },
+    {
+     "start": 123,
+     "end": 456,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "e7"
+    },
+    "testo",
+    {
+     "event_id": "e9",
+     "start": "2026-09-15T08:30:00Z",
+     "end": "2026-09-15T10:00:00Z"
+    },
+    {
+     "start": "2026-09-15T08:30:00Z",
+     "end": "2026-09-15T10:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": 5
+      }
+     },
+     "event_id": "e10"
+    },
+    {
+     "start": "2026-08-31T21:00:00Z",
+     "end": "2026-08-31T23:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "e11",
+     "title": "Confine"
+    },
+    {
+     "start": "2026-09-20T10:00:00Z",
+     "end": "2026-09-20T09:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "e12"
+    },
+    {
+     "start": "2026-09-21T10:00:00Z",
+     "end": "2026-09-21T11:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "e13",
+     "allDay": "false"
+    },
+    {
+     "start": "2026-09-18T16:00:00.250000Z",
+     "end": "2026-09-18T17:20:00Z",
+     "extendedProps": {
+      "instructor": [
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000967006"
+       },
+       "x"
+      ]
+     },
+     "event_id": "e14",
+     "title": "Tina"
+    },
+    {
+     "start": "2026-09-15T08:30:00Z",
+     "end": "2026-09-15T10:00:00Z",
+     "extendedProps": {
+      "instructor": "a1000000-0000-4000-8000-000000967003"
+     },
+     "event_id": "e15"
+    },
+    {
+     "event_id": "e16",
+     "start": "2026-09-15T08:30:00Z",
+     "end": "2026-09-15T10:00:00Z",
+     "extendedProps": "x"
+    },
+    {
+     "start": "2026-09-15T08:30:00Z",
+     "end": "2026-09-15T09:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "a0"
+    },
+    {
+     "start": "2026-09-19T07:00:00+00:00",
+     "end": "2026-09-19T08:00:00+00:00",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": 0,
+     "id": "z9",
+     "title": 42
+    }
+   ]
+  },
+  "reg_b": {
+   "id": "a1000000-0000-4000-8000-000000967031",
+   "course": "cb",
+   "status": 2,
+   "events": [
+    {
+     "start": "2026-09-15T15:00:00Z",
+     "end": "2026-09-15T17:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "b1",
+     "title": "Basket"
+    },
+    {
+     "start": "2026-09-15T15:00:00Z",
+     "end": "2026-09-15T16:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967005"
+      }
+     },
+     "event_id": "b2"
+    },
+    {
+     "start": "2026-11-02T09:00:00+01:00",
+     "end": "2026-11-02T10:30:00+01:00",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967004"
+      }
+     },
+     "event_id": "b3"
+    }
+   ]
+  },
+  "reg_draft": {
+   "id": "a1000000-0000-4000-8000-000000967032",
+   "course": "ca",
+   "status": 1,
+   "events": [
+    {
+     "start": "2026-09-15T12:00:00Z",
+     "end": "2026-09-15T13:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "d1"
+    }
+   ]
+  },
+  "reg_dict": {
+   "id": "a1000000-0000-4000-8000-000000967033",
+   "course": "cb",
+   "status": 2,
+   "events": {
+    "k": 1
+   }
+  },
+  "reg_foreign": {
+   "id": "a1000000-0000-4000-8000-000000967034",
+   "course": "cf",
+   "status": 2,
+   "events": [
+    {
+     "start": "2026-09-15T08:00:00Z",
+     "end": "2026-09-15T09:30:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967010"
+      }
+     },
+     "event_id": "f1"
+    },
+    {
+     "start": "2026-09-15T08:00:00Z",
+     "end": "2026-09-15T09:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "f2"
+    }
+   ]
+  }
+ },
+ "cases": [
+  {
+   "name": "instructor-writes-lessons-owner-list",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "$unordered": [
+      {
+       "total_hours": 9.25,
+       "lessons_count": 7,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_title": "Basket",
+         "lessons_count": 1,
+         "hours": 2.0
+        },
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 6,
+         "hours": 7.25
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967003",
+       "first_name": "Anna è",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 2.75,
+       "lessons_count": 2,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_title": "Basket",
+         "lessons_count": 1,
+         "hours": 1.5
+        },
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 1,
+         "hours": 1.25
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967004",
+       "first_name": "Paolo",
+       "last_name": "Neri"
+      },
+      {
+       "total_hours": 1.33,
+       "lessons_count": 1,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 1,
+         "hours": 1.33
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967006",
+       "first_name": "Tina",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967007",
+       "first_name": "Remo",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967008",
+       "first_name": "Bea",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "first_name": "Carlo",
+       "last_name": "Verdi"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-list-period",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours?start_date=01/09/2026&end_date=30/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "$unordered": [
+      {
+       "total_hours": 7.25,
+       "lessons_count": 6,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_title": "Basket",
+         "lessons_count": 1,
+         "hours": 2.0
+        },
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 5,
+         "hours": 5.25
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967003",
+       "first_name": "Anna è",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 1.25,
+       "lessons_count": 1,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 1,
+         "hours": 1.25
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967004",
+       "first_name": "Paolo",
+       "last_name": "Neri"
+      },
+      {
+       "total_hours": 1.33,
+       "lessons_count": 1,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 1,
+         "hours": 1.33
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967006",
+       "first_name": "Tina",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967007",
+       "first_name": "Remo",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967008",
+       "first_name": "Bea",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "first_name": "Carlo",
+       "last_name": "Verdi"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-list-unpadded-start",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours?start_date=1/9/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "$unordered": [
+      {
+       "total_hours": 8.25,
+       "lessons_count": 7,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_title": "Basket",
+         "lessons_count": 1,
+         "hours": 2.0
+        },
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 6,
+         "hours": 6.25
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967003",
+       "first_name": "Anna è",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 2.75,
+       "lessons_count": 2,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_title": "Basket",
+         "lessons_count": 1,
+         "hours": 1.5
+        },
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 1,
+         "hours": 1.25
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967004",
+       "first_name": "Paolo",
+       "last_name": "Neri"
+      },
+      {
+       "total_hours": 1.33,
+       "lessons_count": 1,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 1,
+         "hours": 1.33
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967006",
+       "first_name": "Tina",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967007",
+       "first_name": "Remo",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967008",
+       "first_name": "Bea",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "first_name": "Carlo",
+       "last_name": "Verdi"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-list-include-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours?include_lessons=true&end_date=15/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "$unordered": [
+      {
+       "total_hours": 6.0,
+       "lessons_count": 4,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_title": "Basket",
+         "lessons_count": 1,
+         "hours": 2.0
+        },
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 3,
+         "hours": 4.0
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967003",
+       "first_name": "Anna è",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967004",
+       "first_name": "Paolo",
+       "last_name": "Neri"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967006",
+       "first_name": "Tina",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967007",
+       "first_name": "Remo",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967008",
+       "first_name": "Bea",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "first_name": "Carlo",
+       "last_name": "Verdi"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "$unordered": [
+      {
+       "total_hours": 9.25,
+       "lessons_count": 7,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_title": "Basket",
+         "lessons_count": 1,
+         "hours": 2.0
+        },
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 6,
+         "hours": 7.25
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967003",
+       "first_name": "Anna è",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 2.75,
+       "lessons_count": 2,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967028",
+         "course_title": "Basket",
+         "lessons_count": 1,
+         "hours": 1.5
+        },
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 1,
+         "hours": 1.25
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967004",
+       "first_name": "Paolo",
+       "last_name": "Neri"
+      },
+      {
+       "total_hours": 1.33,
+       "lessons_count": 1,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967027",
+         "course_title": "Corso A",
+         "lessons_count": 1,
+         "hours": 1.33
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967006",
+       "first_name": "Tina",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967007",
+       "first_name": "Remo",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967008",
+       "first_name": "Bea",
+       "last_name": "Rossi"
+      },
+      {
+       "total_hours": 0.0,
+       "lessons_count": 0,
+       "courses": [],
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "first_name": "Carlo",
+       "last_name": "Verdi"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-foreign-owner-list",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "$unordered": [
+      {
+       "total_hours": 1.5,
+       "lessons_count": 1,
+       "courses": [
+        {
+         "course_id": "a1000000-0000-4000-8000-000000967029",
+         "course_title": "Estero",
+         "lessons_count": 1,
+         "hours": 1.5
+        }
+       ],
+       "instructor_id": "a1000000-0000-4000-8000-000000967010",
+       "first_name": "Carla",
+       "last_name": "Rossi"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-one-with-lessons",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967003/lessons-hours?include_lessons=true",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 9.25,
+     "lessons_count": 7,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_title": "Basket",
+       "lessons_count": 1,
+       "lessons": [
+        {
+         "event_id": "b1",
+         "title": "Basket",
+         "start": "2026-09-15T15:00:00+00:00",
+         "end": "2026-09-15T17:00:00+00:00",
+         "hours": 2.0
+        }
+       ],
+       "hours": 2.0
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 6,
+       "lessons": [
+        {
+         "event_id": "e11",
+         "title": "Confine",
+         "start": "2026-08-31T21:00:00+00:00",
+         "end": "2026-08-31T23:00:00+00:00",
+         "hours": 2.0
+        },
+        {
+         "event_id": "a0",
+         "title": "Lezione",
+         "start": "2026-09-15T08:30:00+00:00",
+         "end": "2026-09-15T09:00:00+00:00",
+         "hours": 0.5
+        },
+        {
+         "event_id": "e1",
+         "title": "Lezione 1",
+         "start": "2026-09-15T08:30:00+00:00",
+         "end": "2026-09-15T10:00:00+00:00",
+         "hours": 1.5
+        },
+        {
+         "event_id": "7",
+         "title": "Lezione",
+         "start": "2026-09-16T08:00:00+00:00",
+         "end": "2026-09-16T09:15:00+00:00",
+         "hours": 1.25
+        },
+        {
+         "event_id": "z9",
+         "title": 42,
+         "start": "2026-09-19T07:00:00+00:00",
+         "end": "2026-09-19T08:00:00+00:00",
+         "hours": 1.0
+        },
+        {
+         "event_id": "e4",
+         "title": "Lezione",
+         "start": "2026-10-01T18:00:00+00:00",
+         "end": "2026-10-01T19:00:00.500000+00:00",
+         "hours": 1.0
+        }
+       ],
+       "hours": 7.25
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967003",
+     "first_name": "Anna è",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-one-period-with-lessons",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967003/lessons-hours?include_lessons=true&start_date=01/09/2026&end_date=16/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 6.25,
+     "lessons_count": 5,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_title": "Basket",
+       "lessons_count": 1,
+       "lessons": [
+        {
+         "event_id": "b1",
+         "title": "Basket",
+         "start": "2026-09-15T15:00:00+00:00",
+         "end": "2026-09-15T17:00:00+00:00",
+         "hours": 2.0
+        }
+       ],
+       "hours": 2.0
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 4,
+       "lessons": [
+        {
+         "event_id": "e11",
+         "title": "Confine",
+         "start": "2026-08-31T21:00:00+00:00",
+         "end": "2026-08-31T23:00:00+00:00",
+         "hours": 1.0
+        },
+        {
+         "event_id": "a0",
+         "title": "Lezione",
+         "start": "2026-09-15T08:30:00+00:00",
+         "end": "2026-09-15T09:00:00+00:00",
+         "hours": 0.5
+        },
+        {
+         "event_id": "e1",
+         "title": "Lezione 1",
+         "start": "2026-09-15T08:30:00+00:00",
+         "end": "2026-09-15T10:00:00+00:00",
+         "hours": 1.5
+        },
+        {
+         "event_id": "7",
+         "title": "Lezione",
+         "start": "2026-09-16T08:00:00+00:00",
+         "end": "2026-09-16T09:15:00+00:00",
+         "hours": 1.25
+        }
+       ],
+       "hours": 4.25
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967003",
+     "first_name": "Anna è",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-one-include-not-true",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967004/lessons-hours?include_lessons=True",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 2.75,
+     "lessons_count": 2,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_title": "Basket",
+       "lessons_count": 1,
+       "hours": 1.5
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 1,
+       "hours": 1.25
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967004",
+     "first_name": "Paolo",
+     "last_name": "Neri"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-one-draft",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967005/lessons-hours",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 1.0,
+     "lessons_count": 1,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_title": "Basket",
+       "lessons_count": 1,
+       "hours": 1.0
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967005",
+     "first_name": "Bruno",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-one-foreign-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967010/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-one-orphan-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967011/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-one-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967999/lessons-hours",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-one-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/abc/lessons-hours",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-malformed-after-dates",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/abc/lessons-hours?start_date=31/02/2026",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid start_date"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-invalid-end",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours?end_date=2026-09-30",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid end_date"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-start-overflow",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours?start_date=01/01/0001",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid start_date"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-end-overflow",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours?end_date=31/12/9999",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid end_date"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-range-inverted",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours?start_date=10/09/2026&end_date=09/09/2026",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid date range"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-same-day",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967003/lessons-hours?start_date=15/09/2026&end_date=15/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 4.0,
+     "lessons_count": 3,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_title": "Basket",
+       "lessons_count": 1,
+       "hours": 2.0
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 2,
+       "hours": 2.0
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967003",
+     "first_name": "Anna è",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-empty-dates-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967006/lessons-hours?start_date=&end_date=",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 1.33,
+     "lessons_count": 1,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 1,
+       "hours": 1.33
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967006",
+     "first_name": "Tina",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-collaborator-own-instructor",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 9.25,
+     "lessons_count": 7,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_title": "Basket",
+       "lessons_count": 1,
+       "hours": 2.0
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 6,
+       "hours": 7.25
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967003",
+     "first_name": "Anna è",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-collaborator-own-one",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967003/lessons-hours?include_lessons=true",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 9.25,
+     "lessons_count": 7,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967028",
+       "course_title": "Basket",
+       "lessons_count": 1,
+       "lessons": [
+        {
+         "event_id": "b1",
+         "title": "Basket",
+         "start": "2026-09-15T15:00:00+00:00",
+         "end": "2026-09-15T17:00:00+00:00",
+         "hours": 2.0
+        }
+       ],
+       "hours": 2.0
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 6,
+       "lessons": [
+        {
+         "event_id": "e11",
+         "title": "Confine",
+         "start": "2026-08-31T21:00:00+00:00",
+         "end": "2026-08-31T23:00:00+00:00",
+         "hours": 2.0
+        },
+        {
+         "event_id": "a0",
+         "title": "Lezione",
+         "start": "2026-09-15T08:30:00+00:00",
+         "end": "2026-09-15T09:00:00+00:00",
+         "hours": 0.5
+        },
+        {
+         "event_id": "e1",
+         "title": "Lezione 1",
+         "start": "2026-09-15T08:30:00+00:00",
+         "end": "2026-09-15T10:00:00+00:00",
+         "hours": 1.5
+        },
+        {
+         "event_id": "7",
+         "title": "Lezione",
+         "start": "2026-09-16T08:00:00+00:00",
+         "end": "2026-09-16T09:15:00+00:00",
+         "hours": 1.25
+        },
+        {
+         "event_id": "z9",
+         "title": 42,
+         "start": "2026-09-19T07:00:00+00:00",
+         "end": "2026-09-19T08:00:00+00:00",
+         "hours": 1.0
+        },
+        {
+         "event_id": "e4",
+         "title": "Lezione",
+         "start": "2026-10-01T18:00:00+00:00",
+         "end": "2026-10-01T19:00:00.500000+00:00",
+         "hours": 1.0
+        }
+       ],
+       "hours": 7.25
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967003",
+     "first_name": "Anna è",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-collaborator-other-not-allowed",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967004/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-athlete-own-instructor",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 1.33,
+     "lessons_count": 1,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 1,
+       "hours": 1.33
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967006",
+     "first_name": "Tina",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-athlete-own-one",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967006/lessons-hours?include_lessons=true",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "total_hours": 1.33,
+     "lessons_count": 1,
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000967027",
+       "course_title": "Corso A",
+       "lessons_count": 1,
+       "lessons": [
+        {
+         "event_id": "e14",
+         "title": "Tina",
+         "start": "2026-09-18T16:00:00.250000+00:00",
+         "end": "2026-09-18T17:20:00+00:00",
+         "hours": 1.33
+        }
+       ],
+       "hours": 1.33
+      }
+     ],
+     "instructor_id": "a1000000-0000-4000-8000-000000967006",
+     "first_name": "Tina",
+     "last_name": "Rossi"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-athlete-other-not-allowed",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967003/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-without-association-not-allowed",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-without-association-one-not-allowed",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967011/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/lessons-hours",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-lessons-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/lessons-hours",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Lessons Hours",
+    "description": "Lesson hours computed from the course calendar for one instructor (uid)\nor for all instructors of the current association (no uid).\n\nAuthorization:\n    - association admins and collaborators may query any instructor\n      of their association or the whole list\n    - a user tied to an instructor profile (Instructor.associated_user_id)\n      may only query their own hours\n\nQuery params:\n    start_date, end_date: optional Europe/Rome DD/MM/YYYY period filter\n    include_lessons: true adds event details in single-instructor mode",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-one-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967003/lessons-hours",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-lessons-one-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967003/lessons-hours",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Lessons Hours",
+    "description": "Lesson hours computed from the course calendar for one instructor (uid)\nor for all instructors of the current association (no uid).\n\nAuthorization:\n    - association admins and collaborators may query any instructor\n      of their association or the whole list\n    - a user tied to an instructor profile (Instructor.associated_user_id)\n      may only query their own hours\n\nQuery params:\n    start_date, end_date: optional Europe/Rome DD/MM/YYYY period filter\n    include_lessons: true adds event details in single-instructor mode",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-add-minimal",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor created"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Instructor": {
+      "$new": {
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Nuovo",
+       "last_name": "Istruttore",
+       "email": null,
+       "born_date": null,
+       "born_city": null,
+       "born_province": null,
+       "tax_code": null,
+       "address_city": null,
+       "address": null,
+       "address_province": null,
+       "civic_number": null,
+       "study_title": null,
+       "role": "Istruttore",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": false,
+       "associated_user_id": null,
+       "is_volunteer": false,
+       "stipulated_contract_in": null,
+       "default_hourly_billing": "0.00",
+       "default_percentage_billing": "0.00"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      },
+      "overrides": {
+       "default_hourly_billing": "0.0",
+       "default_percentage_billing": "0.0"
+      }
+     }
+    ]
+   },
+   "body": {
+    "first_name": "Nuovo",
+    "last_name": "Istruttore",
+    "user": "a1000000-0000-4000-8000-000000700007",
+    "ignored": true
+   }
+  },
+  {
+   "name": "instructor-writes-add-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor created"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "Instructor": {
+      "a1000000-0000-4000-8000-000000967035": {
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Giulia",
+       "last_name": "Bianchi",
+       "email": "",
+       "born_date": "1985-04-03",
+       "born_city": null,
+       "born_province": null,
+       "tax_code": "BNCGLI85D43H501X",
+       "address_city": null,
+       "address": "Via Roma 1",
+       "address_province": null,
+       "civic_number": "10",
+       "study_title": null,
+       "role": "Allenatrice",
+       "phone": "393331234567",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": true,
+       "associated_user_id": null,
+       "is_volunteer": true,
+       "stipulated_contract_in": "2026-02-01",
+       "default_hourly_billing": "12.50",
+       "default_percentage_billing": "7.00"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967035",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      },
+      "overrides": {}
+     }
+    ]
+   },
+   "body": {
+    "instructor_id": "A1000000-0000-4000-8000-000000967035",
+    "first_name": " Giulia ",
+    "last_name": "Bianchi",
+    "email": "",
+    "born_date": "03/04/1985",
+    "born_city": null,
+    "tax_code": "BNCGLI85D43H501X",
+    "address": "Via Roma 1",
+    "civic_number": "10",
+    "role": "Allenatrice",
+    "phone": 393331234567,
+    "draft": "true",
+    "associated_user_id": "",
+    "is_volunteer": 1,
+    "stipulated_contract_in": "1/2/2026",
+    "default_hourly_billing": "12.5",
+    "default_percentage_billing": 7
+   }
+  },
+  {
+   "name": "instructor-writes-add-validation",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "first_name": [
+     "This field may not be blank."
+    ],
+    "last_name": [
+     "This field is required."
+    ],
+    "email": [
+     "Enter a valid email address."
+    ],
+    "born_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ],
+    "associated_user_id": [
+     "Must be a valid UUID."
+    ],
+    "draft": [
+     "Must be a valid boolean."
+    ],
+    "default_hourly_billing": [
+     "A valid number is required."
+    ],
+    "default_percentage_billing": [
+     "Ensure that there are no more than 4 digits in total."
+    ],
+    "role": [
+     "This field may not be blank."
+    ],
+    "tax_code": [
+     "Ensure this field has no more than 25 characters."
+    ],
+    "documents": [
+     "Expected a list of items but got type \"str\"."
+    ],
+    "is_volunteer": [
+     "This field may not be null."
+    ],
+    "phone": [
+     "Not a valid string."
+    ],
+    "stipulated_contract_in": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "first_name": "",
+    "email": "nope",
+    "born_date": "1985-04-03",
+    "associated_user_id": "zzz",
+    "draft": "forse",
+    "default_hourly_billing": "abc",
+    "default_percentage_billing": "100.00",
+    "role": "",
+    "tax_code": "XXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "documents": "d1",
+    "is_volunteer": null,
+    "stipulated_contract_in": 20260101,
+    "phone": true
+   }
+  },
+  {
+   "name": "instructor-writes-add-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "first_name": [
+     "This field is required."
+    ],
+    "last_name": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-add-related-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000967999\" - object does not exist."
+    ],
+    "instructor_id": [
+     "instructor with this instructor id already exists."
+    ],
+    "default_hourly_billing": [
+     "Ensure that there are no more than 2 decimal places."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "first_name": "A",
+    "last_name": "B",
+    "documents": [
+     "a1000000-0000-4000-8000-000000967001",
+     "a1000000-0000-4000-8000-000000967999"
+    ],
+    "instructor_id": "a1000000-0000-4000-8000-000000967003",
+    "default_hourly_billing": "1.234"
+   }
+  },
+  {
+   "name": "instructor-writes-add-document-invalid-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents": [
+     "“nope” is not a valid UUID."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "first_name": "A",
+    "last_name": "B",
+    "documents": [
+     "nope"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-add-documents-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "first_name": "A",
+    "last_name": "B",
+    "documents": []
+   }
+  },
+  {
+   "name": "instructor-writes-add-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "first_name": "A",
+    "last_name": "B"
+   }
+  },
+  {
+   "name": "instructor-writes-add-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-writes-add-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting value: line 1 column 1 (char 0)"
+   },
+   "effect": null,
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-writes-add-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    {
+     "first_name": "A"
+    }
+   ]
+  },
+  {
+   "name": "instructor-writes-add-null-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-writes-add-form-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "first_name=A&last_name=B",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-writes-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.create"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-update-plain-owner",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967004/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Instructor": {
+      "plain": {
+       "last_name": "Neri Bianchi",
+       "email": "paolo@example.test",
+       "born_date": "1990-03-02",
+       "default_percentage_billing": null,
+       "is_volunteer": true,
+       "phone": "333"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967004",
+      "action": 1,
+      "changes": {
+       "last_name": [
+        "Neri",
+        "Neri Bianchi"
+       ],
+       "email": [
+        "None",
+        "paolo@example.test"
+       ],
+       "born_date": [
+        "None",
+        "1990-03-02"
+       ],
+       "default_percentage_billing": [
+        "10.00",
+        "None"
+       ],
+       "is_volunteer": [
+        "False",
+        "True"
+       ],
+       "phone": [
+        "None",
+        "333"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "first_name": "Paolo",
+    "last_name": "Neri Bianchi",
+    "email": "paolo@example.test",
+    "born_date": "02/03/1990",
+    "default_hourly_billing": "30",
+    "default_percentage_billing": null,
+    "is_volunteer": true,
+    "phone": " 333 ",
+    "user": "a1000000-0000-4000-8000-000000700007",
+    "unknown": 1
+   }
+  },
+  {
+   "name": "instructor-writes-update-unchanged-no-audit",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967004/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor updated"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {},
+    "documents": {},
+    "audit": []
+   },
+   "body": {
+    "first_name": "Paolo",
+    "last_name": "Neri Bianchi",
+    "default_hourly_billing": 30
+   }
+  },
+  {
+   "name": "instructor-writes-update-documents-replaced",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967003/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "documents": {
+     "full": [
+      "d2"
+     ]
+    },
+    "audit": []
+   },
+   "body": {
+    "first_name": "Anna è",
+    "last_name": "Rossi",
+    "documents": [
+     "a1000000-0000-4000-8000-000000967002"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-update-documents-duplicates-admin",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967006/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "instructor updated"
+   },
+   "effect": {
+    "actor": "admin",
+    "rows": {
+     "Instructor": {
+      "tied": {
+       "last_name": "Gialli"
+      }
+     }
+    },
+    "documents": {
+     "tied": [
+      "d1"
+     ]
+    },
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967006",
+      "action": 1,
+      "changes": {
+       "last_name": [
+        "Rossi",
+        "Gialli"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "first_name": "Tina",
+    "last_name": "Gialli",
+    "documents": [
+     "a1000000-0000-4000-8000-000000967001",
+     "a1000000-0000-4000-8000-000000967001"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-update-copy-new-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967004/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Instructor": {
+      "a1000000-0000-4000-8000-000000967036": {
+       "$copy": "plain",
+       "last_name": "Copia"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967036",
+      "action": 1,
+      "changes": "$created",
+      "overrides": {},
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "actor.sport_association"
+      }
+     },
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967036",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {},
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "instructor_id": "a1000000-0000-4000-8000-000000967036",
+    "first_name": "Paolo",
+    "last_name": "Copia"
+   }
+  },
+  {
+   "name": "instructor-writes-update-orphan-no-index",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967011/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor updated"
+   },
+   "effect": {
+    "actor": "owner_without_association",
+    "rows": {
+     "Instructor": {
+      "orphan": {
+       "last_name": "Nuova",
+       "associated_user_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967011",
+      "action": 1,
+      "changes": {
+       "last_name": [
+        "Rossi",
+        "Nuova"
+       ],
+       "associated_user_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": null
+     }
+    ]
+   },
+   "body": {
+    "first_name": "Olga",
+    "last_name": "Nuova",
+    "associated_user_id": "A1000000-0000-4000-8000-000000700001"
+   }
+  },
+  {
+   "name": "instructor-writes-update-taken-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "instructor_id": [
+     "instructor with this instructor id already exists."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "instructor_id": "a1000000-0000-4000-8000-000000967009",
+    "first_name": "Bea",
+    "last_name": "Rossi"
+   }
+  },
+  {
+   "name": "instructor-writes-update-own-key-accepted",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "documents": {},
+    "audit": []
+   },
+   "body": {
+    "instructor_id": "a1000000-0000-4000-8000-000000967008",
+    "first_name": "Bea",
+    "last_name": "Rossi"
+   }
+  },
+  {
+   "name": "instructor-writes-update-validation",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "first_name": [
+     "This field may not be blank."
+    ],
+    "last_name": [
+     "This field is required."
+    ],
+    "email": [
+     "Enter a valid email address."
+    ],
+    "born_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ],
+    "associated_user_id": [
+     "Must be a valid UUID."
+    ],
+    "draft": [
+     "Must be a valid boolean."
+    ],
+    "default_hourly_billing": [
+     "A valid number is required."
+    ],
+    "default_percentage_billing": [
+     "Ensure that there are no more than 4 digits in total."
+    ],
+    "role": [
+     "This field may not be blank."
+    ],
+    "tax_code": [
+     "Ensure this field has no more than 25 characters."
+    ],
+    "documents": [
+     "Expected a list of items but got type \"str\"."
+    ],
+    "is_volunteer": [
+     "This field may not be null."
+    ],
+    "phone": [
+     "Not a valid string."
+    ],
+    "stipulated_contract_in": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "first_name": "",
+    "email": "nope",
+    "born_date": "1985-04-03",
+    "associated_user_id": "zzz",
+    "draft": "forse",
+    "default_hourly_billing": "abc",
+    "default_percentage_billing": "100.00",
+    "role": "",
+    "tax_code": "XXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "documents": "d1",
+    "is_volunteer": null,
+    "stipulated_contract_in": 20260101,
+    "phone": true
+   }
+  },
+  {
+   "name": "instructor-writes-update-full-required",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "last_name": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "first_name": "Bea"
+   }
+  },
+  {
+   "name": "instructor-writes-update-associated-user-blank",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "associated_user_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "first_name": "Bea",
+    "last_name": "Rossi",
+    "associated_user_id": ""
+   }
+  },
+  {
+   "name": "instructor-writes-update-unknown",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967999/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-writes-update-foreign",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967010/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "body": {
+    "first_name": "X",
+    "last_name": "Y"
+   }
+  },
+  {
+   "name": "instructor-writes-update-athlete",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967006/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "body": {
+    "first_name": "X",
+    "last_name": "Y"
+   }
+  },
+  {
+   "name": "instructor-writes-update-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-update-malformed-json",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting value: line 1 column 1 (char 0)"
+   },
+   "effect": null,
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-writes-update-list-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "instructor-writes-update-null-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-writes-update-form-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "first_name=A&last_name=B",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-writes-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-update-admin-without-session",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-update-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-update-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-comp-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/abc/hours/add/compensation",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-writes-comp-hours-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967999/hours/add/compensation",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "body": {
+    "payment_date": "x"
+   }
+  },
+  {
+   "name": "instructor-writes-comp-empty-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "instructor-writes-comp-form-without-hours",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "raw_body": "payment_date=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-writes-comp-null-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-writes-comp-list-with-hours-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "hours"
+   ]
+  },
+  {
+   "name": "instructor-writes-comp-form-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "hours=a1000000-0000-4000-8000-000000967014",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-writes-comp-unknown-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967999/hours/add/compensation",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967014"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-foreign-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967010/hours/add/compensation",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967023"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "body": {
+    "hours": []
+   }
+  },
+  {
+   "name": "instructor-writes-comp-hours-string-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "hours": "abc"
+   }
+  },
+  {
+   "name": "instructor-writes-comp-hours-invalid-id-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967014",
+     "nope"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967011/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "hours": []
+   }
+  },
+  {
+   "name": "instructor-writes-comp-owner-selected-hours",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "compensation created."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "25.50",
+       "payment_date": "2026-09-30T10:00:00.250000Z",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": "Compenso per il giorno 2026-09-10, ore 1.50 con importo totale di 15.00€\n\n ---------------- \n\nCompenso per il giorno 2026-09-12, importo di 10.50€\nNote: Lezione è\nNel dettaglio:\n\n1° Pagamento\nAtleta: Maria Bianchi \nCorso: Corso è\nImporto: 10.5 € * 50.00 % = 5.250 €\n\n2° Pagamento\nAtleta: None \nCorso: ['x', 1]\nImporto: 21 € * 50.00 % = 10.50 €\n\n3° Pagamento\nAtleta: Luca \nCorso: Basket\nImporto: 1E-7 € * 50.00 % = 5.0E-8 €\n\n",
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_hourly": {
+       "payment_id": "$new"
+      },
+      "c_percent": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967014",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967015",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        "Compenso per il giorno 2026-09-10, ore 1.50 con importo totale di 15.00€\n\n ---------------- \n\nCompenso per il giorno 2026-09-12, importo di 10.50€\nNote: Lezione è\nNel dettaglio:\n\n1° Pagamento\nAtleta: Maria Bianchi \nCorso: Corso è\nImporto: 10.5 € * 50.00 % = 5.250 €\n\n2° Pagamento\nAtleta: None \nCorso: ['x', 1]\nImporto: 21 € * 50.00 % = 10.50 €\n\n3° Pagamento\nAtleta: Luca \nCorso: Basket\nImporto: 1E-7 € * 50.00 % = 5.0E-8 €\n\n"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967014",
+     "a1000000-0000-4000-8000-000000967015",
+     "a1000000-0000-4000-8000-000000967016",
+     "a1000000-0000-4000-8000-000000967017",
+     "a1000000-0000-4000-8000-000000967999",
+     "a1000000-0000-4000-8000-000000967023"
+    ],
+    "payment_date": "2026-09-30T10:00:00.25+02:00"
+   }
+  },
+  {
+   "name": "instructor-writes-comp-empty-hours-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "compensation created."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "0.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": "",
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null,
+       "amount": "0"
+      }
+     },
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        ""
+       ],
+       "amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [],
+    "payment_date": "ieri"
+   }
+  },
+  {
+   "name": "instructor-writes-comp-group-now",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "compensation created."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "27.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": "Compenso per il giorno 2026-09-14, ore 2.00 con importo totale di 20.00€\n\n ---------------- \n\nCompenso per il giorno 2026-09-15, importo di 7.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: Sara \nCorso: Corso A\nImporto: 7 € * 0.00 % = 7 €\n\n",
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": "a1000000-0000-4000-8000-000000714001",
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_group": {
+       "payment_id": "$new"
+      },
+      "c_zero_pct": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967018",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967019",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     },
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "None",
+        "Compenso per il giorno 2026-09-14, ore 2.00 con importo totale di 20.00€\n\n ---------------- \n\nCompenso per il giorno 2026-09-15, importo di 7.00€\nNote: -\nNel dettaglio:\n\n1° Pagamento\nAtleta: Sara \nCorso: Corso A\nImporto: 7 € * 0.00 % = 7 €\n\n"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967019",
+     "a1000000-0000-4000-8000-000000967018"
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-comp-bad-calculation-keeps-saved-work",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Payment": {
+      "$new": {
+       "type": "default",
+       "subject": 0,
+       "amount": "5.00",
+       "payment_date": "$now",
+       "paid": false,
+       "expense": true,
+       "description": "Compensi e Rimborsi Spese per Carlo Verdi",
+       "payment_category_id": "$compensation-category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": null,
+       "supplier_id": null,
+       "instructor_id": "a1000000-0000-4000-8000-000000967009",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": null,
+       "notes": null,
+       "custom_accounts_id": "$default-bank-account",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": null,
+       "course": null
+      }
+     },
+     "InstructorHours": {
+      "c_bad": {
+       "payment_id": "$new"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "direct"
+      },
+      "overrides": {
+       "notes": null
+      }
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967020",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$new"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "hours": [
+     "a1000000-0000-4000-8000-000000967020"
+    ],
+    "payment_date": 123
+   }
+  },
+  {
+   "name": "instructor-writes-comp-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-comp-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-comp-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.hours.create"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-comp-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-comp-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-comp-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967009/hours/add/compensation",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Hours Add Compensation",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967999/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-delete-foreign",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967010/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-delete-athlete",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967006/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-delete-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.delete"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-delete-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-delete-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-delete-removable-cascade-collaborator",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967007/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor deleted"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "Instructor": {
+      "removable": null
+     },
+     "InstructorHours": {
+      "r_a": null,
+      "r_b": null
+     },
+     "Reminders": {
+      "m_a": null,
+      "m_b": null
+     },
+     "Payment": {
+      "remo": {
+       "instructor_id": null
+      }
+     },
+     "Subscription": {
+      "s_remo": {
+       "instructor_id": null
+      }
+     }
+    },
+    "documents": {
+     "removable": []
+    },
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967022",
+      "action": 2,
+      "changes": "$deleted",
+      "index": null
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000967021",
+      "action": 2,
+      "changes": "$deleted",
+      "index": null
+     },
+     {
+      "model": "Reminders",
+      "key": "a1000000-0000-4000-8000-000000967025",
+      "action": 2,
+      "changes": "$deleted",
+      "index": null
+     },
+     {
+      "model": "Reminders",
+      "key": "a1000000-0000-4000-8000-000000967024",
+      "action": 2,
+      "changes": "$deleted",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "changes_json.sport_association"
+      }
+     },
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967007",
+      "action": 2,
+      "changes": "$deleted",
+      "index": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-delete-bare-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor deleted"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Instructor": {
+      "bare": null
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967008",
+      "action": 2,
+      "changes": "$deleted",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "actor.sport_association"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-writes-delete-orphan-no-index",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967011/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor deleted"
+   },
+   "effect": {
+    "actor": "owner_without_association",
+    "rows": {
+     "Instructor": {
+      "orphan": null
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967011",
+      "action": 2,
+      "changes": "$deleted",
+      "index": null
+     }
+    ]
+   }
+  }
+ ]
+}
