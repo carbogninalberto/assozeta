@@ -249,3 +249,15 @@ func (r *Personas) CurrentSubscriptions(ctx context.Context, association string,
 		association, group, today.Format("2006-01-02"))
 	return rows, err
 }
+
+func (r *Personas) PersonaByID(ctx context.Context, id string) (*domain.PersonaListed, error) {
+	rows := []domain.PersonaListed{}
+	if err := r.db.SelectContext(ctx, &rows, "SELECT "+personaColumns("a")+", "+personaIsTutor+` AS is_tutor_annotated
+ FROM application_associate a WHERE a.associate_id=$1`, id); err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	return &rows[0], nil
+}

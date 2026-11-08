@@ -192,7 +192,8 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities)
 	auditLogHandler := handler.NewAuditLogHandler(service.NewAuditLogs(repository.NewAuditLogs(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	auditSummaryHandler := handler.NewAuditSummaryHandler(service.NewAuditSummaries(repository.NewAuditSummaries(db)), service.NewActorAuthentication(accounts, tokens), identities)
-	personasHandler := handler.NewPersonasHandler(service.NewPersonas(repository.NewPersonas(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
+	personasService := service.NewPersonas(repository.NewPersonas(db), time.Now)
+	personasHandler := handler.NewPersonasHandler(personasService, service.NewActorAuthentication(accounts, tokens), identities)
 	suppliersHandler := handler.NewSuppliersHandler(service.NewSuppliers(repository.NewSuppliers(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	carnetListHandler := handler.NewCarnetListHandler(service.NewCarnetLists(repository.NewCarnetList(db), time.Now), service.NewCarnetInfos(repository.NewCarnetList(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	inconsistenciesHandler := handler.NewInconsistenciesHandler(service.NewInconsistencies(repository.NewInconsistencies(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
@@ -441,6 +442,17 @@ func run() (runErr error) {
 	e.Any("/personas/all-tutors", personasHandler.AllTutors, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/personas/all-with-subscriptions", personasHandler.AllWithSubscriptions, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/personas/:pk/info", personasHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	personasWritesHandler := handler.NewPersonasWritesHandler(personasService,
+		service.NewPersonaWrites(repository.NewPersonaWrites(db), personasService, time.Now, uuid.NewString),
+		service.NewPersonaSubscriptions(repository.NewPersonaSubscriptions(db), personasService),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	personasHandler.WithWrites(personasWritesHandler)
+	e.Any("/personas/add", personasWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/personas/bulk-delete", personasWritesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/personas/:pk/update", personasWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/personas/:pk/delete", personasWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/personas/:pk/recover", personasWritesHandler.Recover, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/personas-subscriptions/:pk/list", personasWritesHandler.Subscriptions, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/supplier/list", suppliersHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/supplier/:uid/info", suppliersHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	supplierWritesHandler := handler.NewSupplierWritesHandler(service.NewSupplierWrites(repository.NewSupplierWrites(db), time.Now, uuid.NewString),

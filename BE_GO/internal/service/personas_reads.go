@@ -353,6 +353,23 @@ func (s *Personas) Info(ctx context.Context, identity domain.ResolvedIdentity, r
 	if err != nil {
 		return nil, err
 	}
+	return s.render(ctx, row, filter.GroupID)
+}
+
+// Render is AssociateSerializer over an instance read by primary key (no
+// queryset filters); the nested managers use the X-Group-Id filter.
+func (s *Personas) Render(ctx context.Context, id string, groupHeader string) (any, error) {
+	row, err := s.store.PersonaByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if row == nil {
+		return nil, domain.ErrPersonaNotFound
+	}
+	return s.render(ctx, *row, supplierGroup(groupHeader))
+}
+
+func (s *Personas) render(ctx context.Context, row domain.PersonaListed, group *string) (any, error) {
 	relations, err := s.store.Relations(ctx, []string{row.ID})
 	if err != nil {
 		return nil, err
@@ -362,7 +379,7 @@ func (s *Personas) Info(ctx context.Context, identity domain.ResolvedIdentity, r
 		tutors[i] = relation.ID
 	}
 	// BasicAssociateSerializer(tutor).tutors and BasicTutorsSerializer(...).tutors use the M2M manager.
-	second, err := s.store.Tutors(ctx, tutors, filter.GroupID)
+	second, err := s.store.Tutors(ctx, tutors, group)
 	if err != nil {
 		return nil, err
 	}
@@ -370,13 +387,13 @@ func (s *Personas) Info(ctx context.Context, identity domain.ResolvedIdentity, r
 	for i, relation := range second {
 		nested[i] = relation.ID
 	}
-	third, err := s.store.Tutors(ctx, nested, filter.GroupID)
+	third, err := s.store.Tutors(ctx, nested, group)
 	if err != nil {
 		return nil, err
 	}
 	family := []string{}
 	if row.FamilyID != nil {
-		if family, err = s.store.FamilyMembers(ctx, *row.FamilyID, row.ID, filter.GroupID); err != nil {
+		if family, err = s.store.FamilyMembers(ctx, *row.FamilyID, row.ID, group); err != nil {
 			return nil, err
 		}
 	}

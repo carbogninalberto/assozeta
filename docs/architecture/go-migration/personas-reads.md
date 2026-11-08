@@ -84,9 +84,8 @@ Django remains the production execution owner.
 
 ## Not ported (refused with the 500 page, never a guessed body)
 
-- DELETE on `personas/<pk>/info` once the row is found: Go runs the same
-  queryset and lookup (their 403/404/500 answers match Django) and refuses the
-  soft delete before any write.
+- (DELETE on `personas/<pk>/info` once the row is found is the soft delete
+  ported with the personas-writes family, `personas-writes.md`.)
 - `query[generalSearch]` terms containing a character at or above U+0250 or
   U+0130 (Python's `str.lower`/`\w` are not ported for them; every rune below
   is checked against CPython's mapping) or malformed UTF-8.
