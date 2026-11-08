@@ -19166,25 +19166,69 @@
         "target": "subscription_edit",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_writes.go",
+        "BE_GO/internal/dto/subscription_writes.go",
+        "BE_GO/internal/repository/subscription_writes.go",
+        "BE_GO/internal/service/subscription_writes.go",
+        "BE_GO/internal/handler/subscription_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "subscription-lifecycle",
+        "subscription-medical"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/edit",
+          "/api/v2/subscription/<uid>/edit",
+          "/api/subscription/<uid>/edit"
+        ],
+        "request": "Path uid (UUID, checked before the body); JSON body {associate_tutor_data: AssociateSerializer fields, born_date DD/MM/YYYY}; X-Group-Id optional.",
+        "response": "200 {'data': {'msg': 'subscription associate edited.'}}",
+        "errors": "400 [badly formed hexadecimal UUID string]; 400 JSON parse error; 400 [Cannot edit associate tutor data for associate over 18 years old]; 400 [Cannot edit associate tutor data for associate tutor under 18 years old]; 400 serializer.errors; 403 User not allowed.; 403 generic tenant_scope denial; 500 page for a missing associate, a missing born date, a missing or non-dict tutor payload, form bodies, an unparsable tutor born date and a hidden tax-code index conflict.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update; athletes allowed (their own associates); association-scoped sessions check the uid as a subscription.",
+        "resource_scope": "Live, group-aware Associate lookup by id (association-limited during association impersonation); allowed when associate.user is request.user; tutor sport_association through tenant_scope.",
+        "side_effects": "Creates or updates the tutor Associate (tax-code get_or_create, group-aware), promotes the first tutor relation when none is primary, deletes the main tutor with its relations, sets is_minor=True; auditlog entries with AuditLogIndex rows.",
+        "transaction": "Django is not atomic; Go runs the request in one transaction after all refusal checks.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_writes_http.json",
+        "TESTS/fixtures/generate_subscription_writes_http.py",
+        "TESTS/contracts/test_subscription_writes_http.py",
+        "TESTS/adapters/django/subscription_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 53/53; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-writes-http-native-r3/results.json",
+          "receipt_sha256": "49a0d2bc93c3637027431e133e7622e5fb0d847cee97c9241e8b8c58cf9e8aea"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 53/53 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "a44587df1d995022e828dfc3943a8548c9df95b824cf961009967fe022b35e27"
+        },
+        {
+          "revision": "committing change with the X-Group-Id filter of the tax-code match ignored",
+          "result": "Mutation control: fails Go on subscription-writes-tax-code-match-outside-group-server-error (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-writes-http-mutation-r2/results.json",
+          "receipt_sha256": "c068e8e913b8f2ea60062621abb0d04b1e70727cd8bcccffdf73c367f834cecd"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/<uid>/edit only; subscription/add, renew, <uid>/update and <uid>/transfer stay on Django (Celery document task, notifications, e-mail on every success path). Refused with a 500 before any write: a non-empty associate_id, non-ASCII born_date digits or tax code, tied latest tax-code matches, a match or main tutor that is the edited associate, a main tutor referenced outside tutor relations, a non-UUID or unknown X-Group-Id on the create path."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/info -> subscription_info",
