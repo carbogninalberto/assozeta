@@ -11539,25 +11539,72 @@
         "target": "invoice_bulk_archive",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_core.go",
+        "BE_GO/internal/dto/invoice_core.go",
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go",
+        "BE_GO/internal/handler/invoice_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-bulk/archive",
+          "/api/v2/invoice-bulk/archive",
+          "/api/invoice-bulk/archive"
+        ],
+        "request": "JSON or form body with invoice_ids (list, dict keys or string iterated; None dropped; UUIDField.to_python).",
+        "response": "200 {'message': 'All Invoices archived'}.",
+        "errors": "401; 403 registry / admin without session / scoped session; 500 missing key, non-object body, no association, rejected id.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.invoices.archive.update.",
+        "resource_scope": "The scoped live association's live, group-aware invoices among invoice_ids.",
+        "side_effects": "bulk_update archived=True; no auditlog entry.",
+        "transaction": "Single update.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_core_http.json",
+        "TESTS/fixtures/generate_invoice_core_http.py",
+        "TESTS/contracts/test_invoice_core_http.py",
+        "TESTS/adapters/django/invoice_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-red-r1/results.json",
+          "receipt_sha256": "af079107f3cdb331275c2d9be2734f57c8397d3e162d408720977a315f77c3a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-versioned-r2/results.json",
+          "receipt_sha256": "a52d413ca8ed1c2ee27dff5d53cdbe2b4ead5a2a4d8d26cce4962008e2f94e24"
+        },
+        {
+          "revision": "committing change with every invoice list made distinct (payment-join rows collapsed)",
+          "result": "Mutation control: fails Go on invoice-core-list-owner-default",
+          "artifact": "quality-reports/go-migration/invoice-core-http-mutation-r2/results.json",
+          "receipt_sha256": "2d866f292edd9a518647d4ec2f06a0438395fc7709cc9e8b39bcc708e004ea3d"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-bulk/delete -> invoice_bulk_delete",
@@ -11574,25 +11621,72 @@
         "target": "invoice_bulk_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_core.go",
+        "BE_GO/internal/dto/invoice_core.go",
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go",
+        "BE_GO/internal/handler/invoice_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-bulk/delete",
+          "/api/v2/invoice-bulk/delete",
+          "/api/invoice-bulk/delete"
+        ],
+        "request": "JSON or form body with invoice_ids (as invoice-bulk/archive).",
+        "response": "200 {'message': 'All Invoices deleted'}.",
+        "errors": "401; 403 registry / admin without session / scoped session; 500 missing key, non-object body, no association, rejected id.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.invoices.delete.",
+        "resource_scope": "The scoped live association's live, group-aware invoices among invoice_ids.",
+        "side_effects": "Deletes attached-document links, unlinks every payment of the invoices (no entry), deletes invoice rows then invoices in descending key order with auditlog delete entries (invoices indexed through changes_json, rows through the actor's association).",
+        "transaction": "Atomic collector delete.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_core_http.json",
+        "TESTS/fixtures/generate_invoice_core_http.py",
+        "TESTS/contracts/test_invoice_core_http.py",
+        "TESTS/adapters/django/invoice_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-red-r1/results.json",
+          "receipt_sha256": "af079107f3cdb331275c2d9be2734f57c8397d3e162d408720977a315f77c3a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-versioned-r2/results.json",
+          "receipt_sha256": "a52d413ca8ed1c2ee27dff5d53cdbe2b4ead5a2a4d8d26cce4962008e2f94e24"
+        },
+        {
+          "revision": "committing change with every invoice list made distinct (payment-join rows collapsed)",
+          "result": "Mutation control: fails Go on invoice-core-list-owner-default",
+          "artifact": "quality-reports/go-migration/invoice-core-http-mutation-r2/results.json",
+          "receipt_sha256": "2d866f292edd9a518647d4ec2f06a0438395fc7709cc9e8b39bcc708e004ea3d"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-customers/<str:uid>/delete -> invoice_customers_delete",
@@ -12393,25 +12487,72 @@
         "target": "invoice_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_core.go",
+        "BE_GO/internal/dto/invoice_core.go",
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go",
+        "BE_GO/internal/handler/invoice_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice/<uid>/delete",
+          "/api/v2/invoice/<uid>/delete",
+          "/api/invoice/<uid>/delete"
+        ],
+        "request": "No body read; path uid; X-Group-Id.",
+        "response": "200 {'message': 'Invoice deleted'}.",
+        "errors": "400 ['badly formed hexadecimal UUID string']; 401; 403 registry / admin without session / scoped session; 500 no association, invoice missing, soft-deleted, foreign or hidden by the group.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.invoices.delete.",
+        "resource_scope": "The scoped live association's live, group-aware invoice.",
+        "side_effects": "The first live payment by key gets invoice=None, paid=False and Payment.save() defaults (update entry, direct index); then the collector delete of invoice-bulk/delete.",
+        "transaction": "Payment save (autocommit) then the atomic collector delete; one transaction in Go.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_core_http.json",
+        "TESTS/fixtures/generate_invoice_core_http.py",
+        "TESTS/contracts/test_invoice_core_http.py",
+        "TESTS/adapters/django/invoice_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-red-r1/results.json",
+          "receipt_sha256": "af079107f3cdb331275c2d9be2734f57c8397d3e162d408720977a315f77c3a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-versioned-r2/results.json",
+          "receipt_sha256": "a52d413ca8ed1c2ee27dff5d53cdbe2b4ead5a2a4d8d26cce4962008e2f94e24"
+        },
+        {
+          "revision": "committing change with every invoice list made distinct (payment-join rows collapsed)",
+          "result": "Mutation control: fails Go on invoice-core-list-owner-default",
+          "artifact": "quality-reports/go-migration/invoice-core-http-mutation-r2/results.json",
+          "receipt_sha256": "2d866f292edd9a518647d4ec2f06a0438395fc7709cc9e8b39bcc708e004ea3d"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice/<str:uid>/send -> invoice_send",
@@ -12498,25 +12639,72 @@
         "target": "invoice_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_core.go",
+        "BE_GO/internal/dto/invoice_core.go",
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go",
+        "BE_GO/internal/handler/invoice_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice/list",
+          "/api/v2/invoice/list",
+          "/api/invoice/list"
+        ],
+        "request": "Query: query[invoice_id], query[archived], query[current_year], query[generalSearch], sort[field], sort[sort], pagination[page], pagination[perpage]; X-Group-Id.",
+        "response": "200 {'data': {'invoice': InvoiceSerializer}} for query[invoice_id]; else {'data': {index: InvoiceSerializer + payment (PaymentInvoiceSerializer or meta) + no_payment}, 'meta': {total, page, pages, perpage, rowIds}}.",
+        "errors": "401; 403 registry / admin without session / scoped session; 404 {'error': 'Invoice not found'}, 404 Invalid page.; 500 no association (athletes), rejected archived flag, malformed invoice_id, NaN search, unknown sort field.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.invoices.read.",
+        "resource_scope": "query[invoice_id] resolves the live, group-aware invoice by id; otherwise request.user.sportassociation's live, group-aware invoices with a payment link or a meta, one row per linked payment.",
+        "side_effects": "None (pages with an invoice without a PDF are refused).",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_core_http.json",
+        "TESTS/fixtures/generate_invoice_core_http.py",
+        "TESTS/contracts/test_invoice_core_http.py",
+        "TESTS/adapters/django/invoice_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-red-r1/results.json",
+          "receipt_sha256": "af079107f3cdb331275c2d9be2734f57c8397d3e162d408720977a315f77c3a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-versioned-r2/results.json",
+          "receipt_sha256": "a52d413ca8ed1c2ee27dff5d53cdbe2b4ead5a2a4d8d26cce4962008e2f94e24"
+        },
+        {
+          "revision": "committing change with every invoice list made distinct (payment-join rows collapsed)",
+          "result": "Mutation control: fails Go on invoice-core-list-owner-default",
+          "artifact": "quality-reports/go-migration/invoice-core-http-mutation-r2/results.json",
+          "receipt_sha256": "2d866f292edd9a518647d4ec2f06a0438395fc7709cc9e8b39bcc708e004ea3d"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice/list/archived -> invoice_list_archived",
@@ -12533,25 +12721,72 @@
         "target": "invoice_list_archived",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_core.go",
+        "BE_GO/internal/dto/invoice_core.go",
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/service/invoice_core.go",
+        "BE_GO/internal/handler/invoice_core.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "payment-reads InvoiceSerializer and smart-search ports, course-subscriptions PaymentSerializer loader, personas-reads tutor relations",
+        "payment-archive Payment.save() defaults and deleteModelWithAudit",
+        "application_invoice, application_invoice_attached_documents, application_invoicerows, application_payment",
+        "application_associate, application_associatetutorrelation, application_supplierandcustomers, application_instructor, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice/list/archived",
+          "/api/v2/invoice/list/archived",
+          "/api/invoice/list/archived"
+        ],
+        "request": "No body; X-Group-Id.",
+        "response": "200 {'data': [InvoiceSerializer + payment (PaymentSerializer of the first live payment by key, when present)]} by -creation_date.",
+        "errors": "401; 403 registry / admin without session / scoped session / athletes (IsAssociationUser); 500 no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.invoices.archive.read; IsAssociationUser.",
+        "resource_scope": "The scoped live association's live, group-aware archived invoices.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_core_http.json",
+        "TESTS/fixtures/generate_invoice_core_http.py",
+        "TESTS/contracts/test_invoice_core_http.py",
+        "TESTS/adapters/django/invoice_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 102/102; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-red-r1/results.json",
+          "receipt_sha256": "af079107f3cdb331275c2d9be2734f57c8397d3e162d408720977a315f77c3a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 102/102 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-versioned-r2/results.json",
+          "receipt_sha256": "a52d413ca8ed1c2ee27dff5d53cdbe2b4ead5a2a4d8d26cce4962008e2f94e24"
+        },
+        {
+          "revision": "committing change with every invoice list made distinct (payment-join rows collapsed)",
+          "result": "Mutation control: fails Go on invoice-core-list-owner-default",
+          "artifact": "quality-reports/go-migration/invoice-core-http-mutation-r2/results.json",
+          "receipt_sha256": "2d866f292edd9a518647d4ec2f06a0438395fc7709cc9e8b39bcc708e004ea3d"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): invoice/list pages with an invoice without a PDF (print_document_invoice.delay), random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/<uid>/update stays uncharacterized: every successful update runs print_document_invoice.apply (synchronous PDF). invoice-customers/add stays with invoice-parties (a valid add generates XML and PDF)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice/list/export -> invoice_list_export",
