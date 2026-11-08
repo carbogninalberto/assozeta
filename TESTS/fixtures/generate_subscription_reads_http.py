@@ -127,6 +127,8 @@ ASSOCIATES = {
                      born_date='2016-03-15', is_minor=True, email='', phone=None, address_city='Padova'),
     'lucia': person('2023-08-04T08:00:00Z', first_name='Lucia', last_name='Bianchi', sex='F', born_date='1965-02-14',
                     email='lucia@example.test', phone='3405556666', id_number='CA12345'),
+    # No tax code (the archived renewal lookup), a last name of its own: last-name orderings have no ties.
+    'nadia': person('2023-08-10T08:00:00Z', first_name='Nadia', last_name='Conti', sex='F', born_date='1975-04-04'),
     'baby': person('2023-08-05T08:00:00Z', first_name='Bimbo', last_name='Neri', sex='M', tax_code='NREBMB23H01L781Y',
                    born_date='2023-06-01', is_minor=True),
     'nobirth': person('2023-08-06T08:00:00Z', first_name='Senza', last_name='Data', tax_code='SNZDTA00A01L781Z',
@@ -192,7 +194,7 @@ SUBSCRIPTIONS = {
     'arch_lucia': sub('2021-01-10T08:00:00Z', associate='lucia', start='2021-01-01', end='2021-12-31', archived=True, medical='expired'),
     'arch_late': sub('2024-12-31T15:00:00Z', associate='twin', start='2024-01-01', end='2024-12-31', archived=True, status=5),
     'arch_none': sub('2020-03-01T08:00:00Z', start='2020-01-01', end='2020-12-31', archived=True),
-    'arch_group': sub('2021-02-01T08:00:00Z', associate='lucia', start='2021-02-01', end='2021-06-30', archived=True, group=OWN_GROUP),
+    'arch_group': sub('2021-02-01T08:00:00Z', associate='nadia', start='2021-02-01', end='2021-06-30', archived=True, group=OWN_GROUP),
     'abroad': sub('2025-09-11T08:00:00Z', association=FOREIGN, user=FOREIGN_OWNER, associate='abroad', document='pdf_foreign',
                   tags=['estero']),
     'foreign_none': sub('2025-09-12T08:00:00Z', association=FOREIGN, user=FOREIGN_OWNER),
