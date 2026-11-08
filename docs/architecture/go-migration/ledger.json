@@ -10742,25 +10742,83 @@
         "target": "instructor_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes_test.go",
+        "BE_GO/internal/repository/instructor_writes.go",
+        "BE_GO/internal/service/instructor_writes.go",
+        "BE_GO/internal/service/instructor_lessons.go",
+        "BE_GO/internal/handler/instructor_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/instructor_views.py",
+        "BE/application/utils/instructors_utils.py",
+        "BE/application/serializers/user_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/application/models/balance_sheet_models.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/impersonation.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/delete",
+          "/api/v2/instructor/<uid>/delete",
+          "/api/instructor/<uid>/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {\"msg\": \"instructor deleted\"}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 404 {\"error\": \"instructor not found\"}; 401/403/405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (registry association.instructor.delete).",
+        "resource_scope": "Instructor with instructor_id = uid and user = request.user.",
+        "side_effects": "Collector: document links deleted, payments and subscriptions set instructor NULL, hours and reminders deleted (audited in reverse key order), then the instructor (audited).",
+        "transaction": "The collector delete is atomic in Django; Go: one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_writes_http.json",
+        "TESTS/fixtures/generate_instructor_writes_http.py",
+        "TESTS/contracts/test_instructor_writes_http.py",
+        "TESTS/adapters/django/instructor_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 117/117; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-red-1/results.json",
+          "receipt_sha256": "b0625d247df305d199658f674836ef5d6a1fc5b726efd419085e2a6474334602"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 117/117 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact instructor, hour, payment, subscription, reminder, document-link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-versioned-1/results.json",
+          "receipt_sha256": "599e782ed74827c932a1777f9a438d156b8ec48cd9028233f30d891b192e6821"
+        },
+        {
+          "revision": "committing change with NOT paid dropped from the compensation hour selection",
+          "result": "Mutation control: fails Go on instructor-writes-comp-owner-selected-hours (state.Payment.created-row).",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "6081343995328705fc24d2519be971144d81feae7ccd8fc7f177417669568c27"
+        }
+      ],
+      "notes": [
+        "Implementing: instructor/report is not ported: every success path builds an XLSX export (pandas/xlsxwriter). Refused with a 500 before any write: a non-canonical X-Group-Id spelling on the compensation, calculation amounts that are Decimal infinities/NaNs, exponents beyond 100000 or products beyond the 28-digit context."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/hours/<str:instructor_hours_id>/delete -> instructor_hours_delete",
@@ -11041,25 +11099,83 @@
         "target": "instructor_hours_add_compensation",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes_test.go",
+        "BE_GO/internal/repository/instructor_writes.go",
+        "BE_GO/internal/service/instructor_writes.go",
+        "BE_GO/internal/service/instructor_lessons.go",
+        "BE_GO/internal/handler/instructor_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/instructor_views.py",
+        "BE/application/utils/instructors_utils.py",
+        "BE/application/serializers/user_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/application/models/balance_sheet_models.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/impersonation.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/hours/add/compensation",
+          "/api/v2/instructor/<uid>/hours/add/compensation",
+          "/api/instructor/<uid>/hours/add/compensation"
+        ],
+        "request": "JSON object: hours (iterable of hour ids), optional payment_date (strptime of the part before '+', else now).",
+        "response": "200 {\"msg\": \"compensation created.\"}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 400 {\"error\": \"hours not found\"}; 400 JSON parse error; 404 {\"error\": \"instructor not found\"}; 401/403/405; 500 for null, form, list or str bodies with hours, ids UUIDField rejects, an owner without association, invalid or unknown X-Group-Id (no write), and after the payment and linked hours when a calculation entry raises.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (registry association.instructor.hours.create).",
+        "resource_scope": "Instructor with instructor_id = uid and user = request.user; its unpaid hours without payment among the ids.",
+        "side_effects": "Creates the expense Payment (create entry), links each hour (update entries), saves the notes (update entry); no document is printed.",
+        "transaction": "Not atomic in Django: work before an exception stays; Go commits that work and answers 500.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_writes_http.json",
+        "TESTS/fixtures/generate_instructor_writes_http.py",
+        "TESTS/contracts/test_instructor_writes_http.py",
+        "TESTS/adapters/django/instructor_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 117/117; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-red-1/results.json",
+          "receipt_sha256": "b0625d247df305d199658f674836ef5d6a1fc5b726efd419085e2a6474334602"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 117/117 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact instructor, hour, payment, subscription, reminder, document-link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-versioned-1/results.json",
+          "receipt_sha256": "599e782ed74827c932a1777f9a438d156b8ec48cd9028233f30d891b192e6821"
+        },
+        {
+          "revision": "committing change with NOT paid dropped from the compensation hour selection",
+          "result": "Mutation control: fails Go on instructor-writes-comp-owner-selected-hours (state.Payment.created-row).",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "6081343995328705fc24d2519be971144d81feae7ccd8fc7f177417669568c27"
+        }
+      ],
+      "notes": [
+        "Implementing: instructor/report is not ported: every success path builds an XLSX export (pandas/xlsxwriter). Refused with a 500 before any write: a non-canonical X-Group-Id spelling on the compensation, calculation amounts that are Decimal infinities/NaNs, exponents beyond 100000 or products beyond the 28-digit context."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/hours/calculate -> instructor_hours_calculate",
@@ -11333,25 +11449,83 @@
         "target": "instructor_lessons_hours",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes_test.go",
+        "BE_GO/internal/repository/instructor_writes.go",
+        "BE_GO/internal/service/instructor_writes.go",
+        "BE_GO/internal/service/instructor_lessons.go",
+        "BE_GO/internal/handler/instructor_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/instructor_views.py",
+        "BE/application/utils/instructors_utils.py",
+        "BE/application/serializers/user_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/application/models/balance_sheet_models.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/impersonation.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/lessons-hours",
+          "/api/v2/instructor/<uid>/lessons-hours",
+          "/api/instructor/<uid>/lessons-hours"
+        ],
+        "request": "Query: start_date, end_date, include_lessons=true.",
+        "response": "200 {\"data\": {total_hours, lessons_count, courses, instructor_id, first_name, last_name}}",
+        "errors": "400 date errors, then [\"badly formed hexadecimal UUID string\"]; 404 {\"error\": \"instructor not found\"}; 403 {\"error\": \"not allowed\"}; 401/403/405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated and check_collaborator_permission (association.instructor.read).",
+        "resource_scope": "An instructor of the scope user's association, or only the acting user's own instructor.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_writes_http.json",
+        "TESTS/fixtures/generate_instructor_writes_http.py",
+        "TESTS/contracts/test_instructor_writes_http.py",
+        "TESTS/adapters/django/instructor_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 117/117; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-red-1/results.json",
+          "receipt_sha256": "b0625d247df305d199658f674836ef5d6a1fc5b726efd419085e2a6474334602"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 117/117 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact instructor, hour, payment, subscription, reminder, document-link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-versioned-1/results.json",
+          "receipt_sha256": "599e782ed74827c932a1777f9a438d156b8ec48cd9028233f30d891b192e6821"
+        },
+        {
+          "revision": "committing change with NOT paid dropped from the compensation hour selection",
+          "result": "Mutation control: fails Go on instructor-writes-comp-owner-selected-hours (state.Payment.created-row).",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "6081343995328705fc24d2519be971144d81feae7ccd8fc7f177417669568c27"
+        }
+      ],
+      "notes": [
+        "Implementing: instructor/report is not ported: every success path builds an XLSX export (pandas/xlsxwriter). Refused with a 500 before any write: a non-canonical X-Group-Id spelling on the compensation, calculation amounts that are Decimal infinities/NaNs, exponents beyond 100000 or products beyond the 28-digit context."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/update -> instructor_update",
@@ -11368,25 +11542,83 @@
         "target": "instructor_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes_test.go",
+        "BE_GO/internal/repository/instructor_writes.go",
+        "BE_GO/internal/service/instructor_writes.go",
+        "BE_GO/internal/service/instructor_lessons.go",
+        "BE_GO/internal/handler/instructor_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/instructor_views.py",
+        "BE/application/utils/instructors_utils.py",
+        "BE/application/serializers/user_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/application/models/balance_sheet_models.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/impersonation.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/update",
+          "/api/v2/instructor/<uid>/update",
+          "/api/instructor/<uid>/update"
+        ],
+        "request": "JSON object for the full (non-partial) InstructorSerializer; user is forced to request.user.",
+        "response": "200 {\"msg\": \"instructor updated\"}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 404 {\"error\": \"instructor not found\"} (before the body); 400 JSON parse error; 400 field errors; 401/403/405 as add; 500 for a list, null or form body.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (registry association.instructor.update).",
+        "resource_scope": "Instructor with instructor_id = uid and user = request.user.",
+        "side_effects": "Saves the instructor (an update entry with the changed fields) and sets documents; a new instructor_id inserts a copy (update entry indexed through the actor, then the create entry).",
+        "transaction": "Not atomic in Django; Go: one transaction with the instructor row locked.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_writes_http.json",
+        "TESTS/fixtures/generate_instructor_writes_http.py",
+        "TESTS/contracts/test_instructor_writes_http.py",
+        "TESTS/adapters/django/instructor_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 117/117; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-red-1/results.json",
+          "receipt_sha256": "b0625d247df305d199658f674836ef5d6a1fc5b726efd419085e2a6474334602"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 117/117 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact instructor, hour, payment, subscription, reminder, document-link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-versioned-1/results.json",
+          "receipt_sha256": "599e782ed74827c932a1777f9a438d156b8ec48cd9028233f30d891b192e6821"
+        },
+        {
+          "revision": "committing change with NOT paid dropped from the compensation hour selection",
+          "result": "Mutation control: fails Go on instructor-writes-comp-owner-selected-hours (state.Payment.created-row).",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "6081343995328705fc24d2519be971144d81feae7ccd8fc7f177417669568c27"
+        }
+      ],
+      "notes": [
+        "Implementing: instructor/report is not ported: every success path builds an XLSX export (pandas/xlsxwriter). Refused with a 500 before any write: a non-canonical X-Group-Id spelling on the compensation, calculation amounts that are Decimal infinities/NaNs, exponents beyond 100000 or products beyond the 28-digit context."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/add -> instructor_add",
@@ -11403,25 +11635,83 @@
         "target": "instructor_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes_test.go",
+        "BE_GO/internal/repository/instructor_writes.go",
+        "BE_GO/internal/service/instructor_writes.go",
+        "BE_GO/internal/service/instructor_lessons.go",
+        "BE_GO/internal/handler/instructor_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/instructor_views.py",
+        "BE/application/utils/instructors_utils.py",
+        "BE/application/serializers/user_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/application/models/balance_sheet_models.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/impersonation.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/add",
+          "/api/v2/instructor/add",
+          "/api/instructor/add"
+        ],
+        "request": "JSON object for InstructorSerializer (fields __all__); user is set to request.user, associated_user_id '' becomes None.",
+        "response": "200 {\"msg\": \"instructor created\"}",
+        "errors": "400 JSON parse error; 400 serializer field errors; 401 anonymous; 403 admin without session, registry, owner scoped to an athlete; 405; 500 without an association (before the body), for a list, null or form body and for a documents key.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (identity, impersonation and registry association.instructor.create).",
+        "resource_scope": "The new instructor belongs to request.user (the owner for collaborators).",
+        "side_effects": "Inserts the instructor; one auditlog create entry (in-memory float 0.0 defaults), indexed through the owner's association.",
+        "transaction": "Not atomic in Django; Go: one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_writes_http.json",
+        "TESTS/fixtures/generate_instructor_writes_http.py",
+        "TESTS/contracts/test_instructor_writes_http.py",
+        "TESTS/adapters/django/instructor_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 117/117; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-red-1/results.json",
+          "receipt_sha256": "b0625d247df305d199658f674836ef5d6a1fc5b726efd419085e2a6474334602"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 117/117 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact instructor, hour, payment, subscription, reminder, document-link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-versioned-1/results.json",
+          "receipt_sha256": "599e782ed74827c932a1777f9a438d156b8ec48cd9028233f30d891b192e6821"
+        },
+        {
+          "revision": "committing change with NOT paid dropped from the compensation hour selection",
+          "result": "Mutation control: fails Go on instructor-writes-comp-owner-selected-hours (state.Payment.created-row).",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "6081343995328705fc24d2519be971144d81feae7ccd8fc7f177417669568c27"
+        }
+      ],
+      "notes": [
+        "Implementing: instructor/report is not ported: every success path builds an XLSX export (pandas/xlsxwriter). Refused with a 500 before any write: a non-canonical X-Group-Id spelling on the compensation, calculation amounts that are Decimal infinities/NaNs, exponents beyond 100000 or products beyond the 28-digit context."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/lessons-hours -> instructor_lessons_hours",
@@ -11438,25 +11728,83 @@
         "target": "instructor_lessons_hours",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes.go",
+        "BE_GO/internal/dto/instructor_writes_test.go",
+        "BE_GO/internal/repository/instructor_writes.go",
+        "BE_GO/internal/service/instructor_writes.go",
+        "BE_GO/internal/service/instructor_lessons.go",
+        "BE_GO/internal/handler/instructor_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/instructor_views.py",
+        "BE/application/utils/instructors_utils.py",
+        "BE/application/serializers/user_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/attendee_models.py",
+        "BE/application/models/balance_sheet_models.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/impersonation.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/lessons-hours",
+          "/api/v2/instructor/lessons-hours",
+          "/api/instructor/lessons-hours"
+        ],
+        "request": "Query: start_date, end_date (Europe/Rome DD/MM/YYYY).",
+        "response": "200 {\"data\": [lesson hours per non-draft instructor]} for owners and collaborators without an own instructor, else {\"data\": {own instructor}}.",
+        "errors": "400 {\"error\": \"Invalid start_date\"|\"Invalid end_date\"|\"Invalid date range\"}; 403 {\"error\": \"not allowed\"}; 401/403 identity and registry association.instructor.read; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated and check_collaborator_permission (association.instructor.read).",
+        "resource_scope": "The scope user's association, or the acting user's own instructor and its owner's association.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_writes_http.json",
+        "TESTS/fixtures/generate_instructor_writes_http.py",
+        "TESTS/contracts/test_instructor_writes_http.py",
+        "TESTS/adapters/django/instructor_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 117/117; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-red-1/results.json",
+          "receipt_sha256": "b0625d247df305d199658f674836ef5d6a1fc5b726efd419085e2a6474334602"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 117/117 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact instructor, hour, payment, subscription, reminder, document-link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-versioned-1/results.json",
+          "receipt_sha256": "599e782ed74827c932a1777f9a438d156b8ec48cd9028233f30d891b192e6821"
+        },
+        {
+          "revision": "committing change with NOT paid dropped from the compensation hour selection",
+          "result": "Mutation control: fails Go on instructor-writes-comp-owner-selected-hours (state.Payment.created-row).",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "6081343995328705fc24d2519be971144d81feae7ccd8fc7f177417669568c27"
+        }
+      ],
+      "notes": [
+        "Implementing: instructor/report is not ported: every success path builds an XLSX export (pandas/xlsxwriter). Refused with a 500 before any write: a non-canonical X-Group-Id spelling on the compensation, calculation amounts that are Decimal infinities/NaNs, exponents beyond 100000 or products beyond the 28-digit context."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/list -> instructor_list",
