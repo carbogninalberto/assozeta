@@ -18975,25 +18975,70 @@
         "target": "subscription_calendar",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/internal/repository/subscription_reads.go",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/handler/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "CourseSubscriptionOverviewSerializer (course-subscriptions), CourseSerializer (course-overview) and personas AssociateSerializer, tutor and family reads (personas-reads) ports; personas-reads search preparation and payment-reads KTDatatable pages",
+        "application_subscription, application_subscription_tags, application_tags, application_associate, application_associatetutorrelation, application_payment, application_medicalcertificate, application_sportassociation, application_sportassociationmembershipcardconfiguration, application_course, application_course_tags, application_course_locations, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_attendanceregistry, application_subscriptionfile, bakney_user, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/calendar",
+          "/api/v2/subscription/<uid>/calendar",
+          "/api/subscription/<uid>/calendar"
+        ],
+        "request": "Path uid; optional X-Group-Id.",
+        "response": "200 {\"data\": {\"events\": [{title, start, end, allDay}]}}.",
+        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 400 malformed uid; 500 owner without live association or a malformed registry event.",
+        "authentication": "DRF IsAuthenticated (JWT/session) plus IsAssociationUser | IsAthleteUser.",
+        "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
+        "resource_scope": "The athlete's own or the scoped association's group-aware subscription; the registries of its live course subscriptions' courses.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_reads_http.json",
+        "TESTS/fixtures/generate_subscription_reads_http.py",
+        "TESTS/contracts/test_subscription_reads_http.py",
+        "TESTS/adapters/django/subscription_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 253/253; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-red-r3/results.json",
+          "receipt_sha256": "8943e83ab5f3730f82c0cbcf64bddfdaf8fe92effe03525c4c4b1c3b3b1924a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 253/253 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-versioned-r2/results.json",
+          "receipt_sha256": "60d5151b6373e0559655ae38053c0fb3a18e290fa3768cf528c2eafb8151850b"
+        },
+        {
+          "revision": "dropping the group filter from the null-tax-code renewal lookup",
+          "result": "Mutation control: fails Go on subscription-reads-archived-group (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-mutation-r2/results.json",
+          "receipt_sha256": "a7190e5b1b3f8df5882721a0fa4af1e32792f6bac239b8a9748300c19b81a242"
+        }
+      ],
+      "notes": [
+        "Implementing: Subscription list (field mode, filtered and searched pages, alternate mode), list/all (including preregistration), list/archived, info and calendar with HTTP parity; association-scoped athlete sessions, the athlete branch of subscription/list, the PDF/Excel export, info for subscriptions without document_pdf (Celery print task), info membership payments with an instructor or invoice, row-compiled orderings and non-Latin search terms are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/card -> subscription_card",
@@ -19245,25 +19290,70 @@
         "target": "subscription_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/internal/repository/subscription_reads.go",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/handler/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "CourseSubscriptionOverviewSerializer (course-subscriptions), CourseSerializer (course-overview) and personas AssociateSerializer, tutor and family reads (personas-reads) ports; personas-reads search preparation and payment-reads KTDatatable pages",
+        "application_subscription, application_subscription_tags, application_tags, application_associate, application_associatetutorrelation, application_payment, application_medicalcertificate, application_sportassociation, application_sportassociationmembershipcardconfiguration, application_course, application_course_tags, application_course_locations, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_attendanceregistry, application_subscriptionfile, bakney_user, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/info",
+          "/api/v2/subscription/<uid>/info",
+          "/api/subscription/<uid>/info"
+        ],
+        "request": "Path uid; optional X-Group-Id.",
+        "response": "200 {\"data\": {\"info\": SubscriptionInfoSerializer, \"courses\": [CourseDetailSerializer + course_subscription (+ installments)], \"payments\": []}}.",
+        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 400 malformed uid; 403 'Subscription not found.' / 'Sport association not found.' (athletes) or 'User not allowed.'; 404 {'msg': 'Subscription not found.'}; 500 owner without live association, subscription without associate, without document_pdf (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
+        "resource_scope": "The group-aware subscription of the scoped association (athletes: their own and same tax code subscriptions).",
+        "side_effects": "None in the ported paths (the Celery print task path is refused).",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_reads_http.json",
+        "TESTS/fixtures/generate_subscription_reads_http.py",
+        "TESTS/contracts/test_subscription_reads_http.py",
+        "TESTS/adapters/django/subscription_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 253/253; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-red-r3/results.json",
+          "receipt_sha256": "8943e83ab5f3730f82c0cbcf64bddfdaf8fe92effe03525c4c4b1c3b3b1924a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 253/253 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-versioned-r2/results.json",
+          "receipt_sha256": "60d5151b6373e0559655ae38053c0fb3a18e290fa3768cf528c2eafb8151850b"
+        },
+        {
+          "revision": "dropping the group filter from the null-tax-code renewal lookup",
+          "result": "Mutation control: fails Go on subscription-reads-archived-group (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-mutation-r2/results.json",
+          "receipt_sha256": "a7190e5b1b3f8df5882721a0fa4af1e32792f6bac239b8a9748300c19b81a242"
+        }
+      ],
+      "notes": [
+        "Implementing: Subscription list (field mode, filtered and searched pages, alternate mode), list/all (including preregistration), list/archived, info and calendar with HTTP parity; association-scoped athlete sessions, the athlete branch of subscription/list, the PDF/Excel export, info for subscriptions without document_pdf (Celery print task), info membership payments with an instructor or invoice, row-compiled orderings and non-Latin search terms are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/medical-appointments/<str:medical_appointments_id>/delete -> subscription_medical_appointments_delete",
@@ -20653,25 +20743,71 @@
         "target": "subscription_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/internal/repository/subscription_reads.go",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/handler/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "CourseSubscriptionOverviewSerializer (course-subscriptions), CourseSerializer (course-overview) and personas AssociateSerializer, tutor and family reads (personas-reads) ports; personas-reads search preparation and payment-reads KTDatatable pages",
+        "application_subscription, application_subscription_tags, application_tags, application_associate, application_associatetutorrelation, application_payment, application_medicalcertificate, application_sportassociation, application_sportassociationmembershipcardconfiguration, application_course, application_course_tags, application_course_locations, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_attendanceregistry, application_subscriptionfile, bakney_user, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/list",
+          "/api/v2/subscription/list",
+          "/api/subscription/list"
+        ],
+        "request": "Query: field; m, filter; query[tags], query[tags_and], query[from_age], query[to_age], query[hide_associate_and_members], query[hide_members], query[status_flag], query[current_year], query[period_start], query[period_end], query[generalSearch], query[prefix], query[type_of_associate], query[certificate_missing_flag], query[certificate_expired_flag], query[subscription_not_paid_flag], type, query[sort_lastname_asc_flag], query[sort_lastname_desc_flag], sort[field], sort[sort], pagination[page], pagination[perpage]; POST body format; optional X-Group-Id.",
+        "response": "200 field mode {\"data\": [values]}; GET {\"data\": {index: SubscriptionFastOptimizedSerializer}, \"meta\": {total, page, pages, perpage, rowIds}} by -creation_date; with m {\"data\": {index: SubscriptionFastBasicSerializer}, \"meta\": {}}.",
+        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without live association, unknown field or ordering, malformed tag id, invalid int() values, POST export; 404 Invalid page.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read (GET and POST); athlete view for association-scoped sessions.",
+        "resource_scope": "Group-aware subscriptions of the scoped live association (unarchived), soft-deleted rows included; the field mode by the user's association.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_reads_http.json",
+        "TESTS/fixtures/generate_subscription_reads_http.py",
+        "TESTS/contracts/test_subscription_reads_http.py",
+        "TESTS/adapters/django/subscription_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 253/253; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-red-r3/results.json",
+          "receipt_sha256": "8943e83ab5f3730f82c0cbcf64bddfdaf8fe92effe03525c4c4b1c3b3b1924a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 253/253 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-versioned-r2/results.json",
+          "receipt_sha256": "60d5151b6373e0559655ae38053c0fb3a18e290fa3768cf528c2eafb8151850b"
+        },
+        {
+          "revision": "dropping the group filter from the null-tax-code renewal lookup",
+          "result": "Mutation control: fails Go on subscription-reads-archived-group (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-mutation-r2/results.json",
+          "receipt_sha256": "a7190e5b1b3f8df5882721a0fa4af1e32792f6bac239b8a9748300c19b81a242"
+        }
+      ],
+      "notes": [
+        "Implementing: Subscription list (field mode, filtered and searched pages, alternate mode), list/all (including preregistration), list/archived, info and calendar with HTTP parity; association-scoped athlete sessions, the athlete branch of subscription/list, the PDF/Excel export, info for subscriptions without document_pdf (Celery print task), info membership payments with an instructor or invoice, row-compiled orderings and non-Latin search terms are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/list/all -> subscription_list_all",
@@ -20688,25 +20824,70 @@
         "target": "subscription_list_all",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/internal/repository/subscription_reads.go",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/handler/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "CourseSubscriptionOverviewSerializer (course-subscriptions), CourseSerializer (course-overview) and personas AssociateSerializer, tutor and family reads (personas-reads) ports; personas-reads search preparation and payment-reads KTDatatable pages",
+        "application_subscription, application_subscription_tags, application_tags, application_associate, application_associatetutorrelation, application_payment, application_medicalcertificate, application_sportassociation, application_sportassociationmembershipcardconfiguration, application_course, application_course_tags, application_course_locations, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_attendanceregistry, application_subscriptionfile, bakney_user, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/list/all",
+          "/api/v2/subscription/list/all",
+          "/api/subscription/list/all"
+        ],
+        "request": "Query: preregistration, sport_association, current_year, type, course_id; optional X-Group-Id.",
+        "response": "200 {\"data\": {index: {associate, subscription_id, current_year, season}}, \"meta\": {}}; preregistration {\"data\": {index: {associate, subscription_id, current_year}}}.",
+        "errors": "401; 403 administrator without impersonation or registry permission; 403 {'msg': 'not allowed'} athletes without sport_association; 405 other methods; 500 owner without live association, malformed UUID parameters, a row without associate.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
+        "resource_scope": "Athletes: their group-aware subscriptions in sport_association; others: the scoped association's unarchived group-aware subscriptions.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_reads_http.json",
+        "TESTS/fixtures/generate_subscription_reads_http.py",
+        "TESTS/contracts/test_subscription_reads_http.py",
+        "TESTS/adapters/django/subscription_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 253/253; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-red-r3/results.json",
+          "receipt_sha256": "8943e83ab5f3730f82c0cbcf64bddfdaf8fe92effe03525c4c4b1c3b3b1924a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 253/253 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-versioned-r2/results.json",
+          "receipt_sha256": "60d5151b6373e0559655ae38053c0fb3a18e290fa3768cf528c2eafb8151850b"
+        },
+        {
+          "revision": "dropping the group filter from the null-tax-code renewal lookup",
+          "result": "Mutation control: fails Go on subscription-reads-archived-group (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-mutation-r2/results.json",
+          "receipt_sha256": "a7190e5b1b3f8df5882721a0fa4af1e32792f6bac239b8a9748300c19b81a242"
+        }
+      ],
+      "notes": [
+        "Implementing: Subscription list (field mode, filtered and searched pages, alternate mode), list/all (including preregistration), list/archived, info and calendar with HTTP parity; association-scoped athlete sessions, the athlete branch of subscription/list, the PDF/Excel export, info for subscriptions without document_pdf (Celery print task), info membership payments with an instructor or invoice, row-compiled orderings and non-Latin search terms are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/list/archived -> subscription_list_archived",
@@ -20723,25 +20904,70 @@
         "target": "subscription_list_archived",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/internal/repository/subscription_reads.go",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/handler/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "CourseSubscriptionOverviewSerializer (course-subscriptions), CourseSerializer (course-overview) and personas AssociateSerializer, tutor and family reads (personas-reads) ports; personas-reads search preparation and payment-reads KTDatatable pages",
+        "application_subscription, application_subscription_tags, application_tags, application_associate, application_associatetutorrelation, application_payment, application_medicalcertificate, application_sportassociation, application_sportassociationmembershipcardconfiguration, application_course, application_course_tags, application_course_locations, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_attendanceregistry, application_subscriptionfile, bakney_user, docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/list/archived",
+          "/api/v2/subscription/list/archived",
+          "/api/subscription/list/archived"
+        ],
+        "request": "Query: query[generalSearch], query[sort_lastname_asc_flag], query[sort_lastname_desc_flag], sort[field], sort[sort], pagination[page], pagination[perpage]; optional X-Group-Id.",
+        "response": "200 {\"data\": {index: SubscriptionSerializer + current_year, next_years, renewal_available, medical_document}, \"meta\": {total, page, pages, perpage, rowIds}} by -creation_date.",
+        "errors": "401; 401 athletes (empty body); 403 administrator without impersonation, registry permission or scoped athlete session; 405 other methods; 500 owner without live association or unknown ordering; 404 Invalid page.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.archive.read; not an athlete view.",
+        "resource_scope": "Archived group-aware subscriptions of the scoped live association.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_reads_http.json",
+        "TESTS/fixtures/generate_subscription_reads_http.py",
+        "TESTS/contracts/test_subscription_reads_http.py",
+        "TESTS/adapters/django/subscription_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 253/253; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-red-r3/results.json",
+          "receipt_sha256": "8943e83ab5f3730f82c0cbcf64bddfdaf8fe92effe03525c4c4b1c3b3b1924a7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 253/253 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-versioned-r2/results.json",
+          "receipt_sha256": "60d5151b6373e0559655ae38053c0fb3a18e290fa3768cf528c2eafb8151850b"
+        },
+        {
+          "revision": "dropping the group filter from the null-tax-code renewal lookup",
+          "result": "Mutation control: fails Go on subscription-reads-archived-group (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-reads-http-mutation-r2/results.json",
+          "receipt_sha256": "a7190e5b1b3f8df5882721a0fa4af1e32792f6bac239b8a9748300c19b81a242"
+        }
+      ],
+      "notes": [
+        "Implementing: Subscription list (field mode, filtered and searched pages, alternate mode), list/all (including preregistration), list/archived, info and calendar with HTTP parity; association-scoped athlete sessions, the athlete branch of subscription/list, the PDF/Excel export, info for subscriptions without document_pdf (Celery print task), info membership payments with an instructor or invoice, row-compiled orderings and non-Latin search terms are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/list/export -> subscription_list_export",
