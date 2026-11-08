@@ -15134,25 +15134,73 @@
         "target": "onboarding_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/profile_misc.go",
+        "BE_GO/internal/dto/profile_misc.go",
+        "BE_GO/internal/repository/profile_misc.go",
+        "BE_GO/internal/service/profile_misc.go",
+        "BE_GO/internal/handler/profile_misc.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Shared identity/impersonation/registry resolution (messageMutationsIdentity, messageMutationsIdentityFor)",
+        "Scoped request guard (service/scoped_request.go)",
+        "BalanceSheetRange",
+        "DRF validation helpers (modelTextValue, DRFDecimal, parsePaymentCategoryBoolean)",
+        "appendModelAudit / beginOwnedTransaction",
+        "admitRESTWrite"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/onboarding/update",
+          "/api/v2/onboarding/update",
+          "/api/onboarding/update"
+        ],
+        "request": "JSON/form body with one of sport_association, membership_data, lead_data, onboarding_data (first present wins).",
+        "response": "200 {message: 'Updated successfully'}.",
+        "errors": "403 {error: 'You are not a sport association.'}; 400 {error: str(ValidationError)}; 400 fresh self-host {error, details}; 500 {error: str(exception)}; 500 page for number/null bodies and not-ported inputs; 401/403; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry other.settings.update; not an athlete view.",
+        "resource_scope": "request.user's association, user row, UsersOnboarding row and the fresh InstanceConfiguration whose primary association it is.",
+        "side_effects": "SportAssociation onboarding fields (audited, self), user balance/season/lead fields (audited, user.sport_association), UsersOnboarding flags (audited, actor.sport_association), InstanceConfiguration onboarding_completed_at.",
+        "transaction": "membership_data in one atomic block (rolls back on later exceptions); other branches autocommit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/profile_misc_http.json",
+        "TESTS/fixtures/generate_profile_misc_http.py",
+        "TESTS/contracts/test_profile_misc_http.py",
+        "TESTS/adapters/django/profile_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/profile-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 93/93; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-native-r1/results.json",
+          "receipt_sha256": "48c93e29a523bb34ff45cb3dffd267f68670b814b0003a48c9b3cfa38f673407"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association, user, onboarding, instance, audit and index effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "b99a3f204191fee91b1c1cab14a5a48fd580acfde8b22e36ec21a575ecec70c4"
+        },
+        {
+          "revision": "committing change with deleted course subscriptions counted as subscribed (NOT cs.deleted dropped in CourseSubscribed)",
+          "result": "Mutation control: fails Go on profile-misc-course-athlete (associates_subscribed length)",
+          "artifact": "quality-reports/go-migration/profile-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "af2b9b1040050dc78c69b7e713ab0b21480a93e618cb2a1204f576b849dac39e"
+        }
+      ],
+      "notes": [
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment-bulk/archive -> payment_bulk_archive",
@@ -17801,25 +17849,73 @@
         "target": "profile_associates_course",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/profile_misc.go",
+        "BE_GO/internal/dto/profile_misc.go",
+        "BE_GO/internal/repository/profile_misc.go",
+        "BE_GO/internal/service/profile_misc.go",
+        "BE_GO/internal/handler/profile_misc.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Shared identity/impersonation/registry resolution (messageMutationsIdentity, messageMutationsIdentityFor)",
+        "Scoped request guard (service/scoped_request.go)",
+        "BalanceSheetRange",
+        "DRF validation helpers (modelTextValue, DRFDecimal, parsePaymentCategoryBoolean)",
+        "appendModelAudit / beginOwnedTransaction",
+        "admitRESTWrite"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/profile/associates/course/<uid>",
+          "/api/v2/profile/associates/course/<uid>",
+          "/api/profile/associates/course/<uid>"
+        ],
+        "request": "Path uid (is_valid_uuid); optional X-Group-Id.",
+        "response": "200 {associates_subscribed: [{id, full_name, is_minor}], associates_unsubscribed: [{id, full_name, is_minor, subscription_id}], full}; lists unordered.",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 500 page for a missing/deleted/other-group course or a course without association; 401/403 identity and registry; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry other.users.connectedathletes.read; athlete view (scoped sessions check the course).",
+        "resource_scope": "Associates of request.user or the course association's owner; subscriptions of request.user in the course association; impersonation scope and family boundary when scoped.",
+        "side_effects": "None.",
+        "transaction": "Read-only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/profile_misc_http.json",
+        "TESTS/fixtures/generate_profile_misc_http.py",
+        "TESTS/contracts/test_profile_misc_http.py",
+        "TESTS/adapters/django/profile_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/profile-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 93/93; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-native-r1/results.json",
+          "receipt_sha256": "48c93e29a523bb34ff45cb3dffd267f68670b814b0003a48c9b3cfa38f673407"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association, user, onboarding, instance, audit and index effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "b99a3f204191fee91b1c1cab14a5a48fd580acfde8b22e36ec21a575ecec70c4"
+        },
+        {
+          "revision": "committing change with deleted course subscriptions counted as subscribed (NOT cs.deleted dropped in CourseSubscribed)",
+          "result": "Mutation control: fails Go on profile-misc-course-athlete (associates_subscribed length)",
+          "artifact": "quality-reports/go-migration/profile-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "af2b9b1040050dc78c69b7e713ab0b21480a93e618cb2a1204f576b849dac39e"
+        }
+      ],
+      "notes": [
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/associates/sport-association/<str:uid> -> profile_associates_sport_association",
@@ -17836,25 +17932,73 @@
         "target": "profile_associates_sport_association",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/profile_misc.go",
+        "BE_GO/internal/dto/profile_misc.go",
+        "BE_GO/internal/repository/profile_misc.go",
+        "BE_GO/internal/service/profile_misc.go",
+        "BE_GO/internal/handler/profile_misc.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Shared identity/impersonation/registry resolution (messageMutationsIdentity, messageMutationsIdentityFor)",
+        "Scoped request guard (service/scoped_request.go)",
+        "BalanceSheetRange",
+        "DRF validation helpers (modelTextValue, DRFDecimal, parsePaymentCategoryBoolean)",
+        "appendModelAudit / beginOwnedTransaction",
+        "admitRESTWrite"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/profile/associates/sport-association/<uid>",
+          "/api/v2/profile/associates/sport-association/<uid>",
+          "/api/profile/associates/sport-association/<uid>"
+        ],
+        "request": "Path uid (is_valid_uuid); optional X-Group-Id.",
+        "response": "200 {associates_subscribed: [{id, full_name, is_minor, subscription_id (lowest)}], associates_unsubscribed: [{id, full_name, is_minor}]}; lists unordered.",
+        "errors": "400 bad UUID; 500 page for an impossible balance start date; 401/403; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry other.users.connectedathletes.read; athlete view (scoped sessions check the association id or owner username).",
+        "resource_scope": "request.user's enabled associates; subscriptions of association uid created in request.user's current balance year.",
+        "side_effects": "None.",
+        "transaction": "Read-only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/profile_misc_http.json",
+        "TESTS/fixtures/generate_profile_misc_http.py",
+        "TESTS/contracts/test_profile_misc_http.py",
+        "TESTS/adapters/django/profile_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/profile-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 93/93; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-native-r1/results.json",
+          "receipt_sha256": "48c93e29a523bb34ff45cb3dffd267f68670b814b0003a48c9b3cfa38f673407"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association, user, onboarding, instance, audit and index effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "b99a3f204191fee91b1c1cab14a5a48fd580acfde8b22e36ec21a575ecec70c4"
+        },
+        {
+          "revision": "committing change with deleted course subscriptions counted as subscribed (NOT cs.deleted dropped in CourseSubscribed)",
+          "result": "Mutation control: fails Go on profile-misc-course-athlete (associates_subscribed length)",
+          "artifact": "quality-reports/go-migration/profile-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "af2b9b1040050dc78c69b7e713ab0b21480a93e618cb2a1204f576b849dac39e"
+        }
+      ],
+      "notes": [
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/image/<str:uid> -> profile_image",
@@ -17871,25 +18015,73 @@
         "target": "profile_image",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/profile_misc.go",
+        "BE_GO/internal/dto/profile_misc.go",
+        "BE_GO/internal/repository/profile_misc.go",
+        "BE_GO/internal/service/profile_misc.go",
+        "BE_GO/internal/handler/profile_misc.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Shared identity/impersonation/registry resolution (messageMutationsIdentity, messageMutationsIdentityFor)",
+        "Scoped request guard (service/scoped_request.go)",
+        "BalanceSheetRange",
+        "DRF validation helpers (modelTextValue, DRFDecimal, parsePaymentCategoryBoolean)",
+        "appendModelAudit / beginOwnedTransaction",
+        "admitRESTWrite"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/profile/image/<uid>",
+          "/api/v2/profile/image/<uid>",
+          "/api/profile/image/<uid>"
+        ],
+        "request": "Path uid (is_valid_uuid).",
+        "response": "200 the stored avatar_image string; empty 200 body when null.",
+        "errors": "400 bad UUID; 500 page for a missing or deleted user; 403 identity/registry for supplied tokens; 405.",
+        "authentication": "DRF default AllowAny with default authentication (a supplied token is resolved).",
+        "permissions": "AllowAny; registry other.settings.update for authenticated collaborators; not an athlete view.",
+        "resource_scope": "User row by id.",
+        "side_effects": "None.",
+        "transaction": "Read-only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/profile_misc_http.json",
+        "TESTS/fixtures/generate_profile_misc_http.py",
+        "TESTS/contracts/test_profile_misc_http.py",
+        "TESTS/adapters/django/profile_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/profile-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 93/93; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-native-r1/results.json",
+          "receipt_sha256": "48c93e29a523bb34ff45cb3dffd267f68670b814b0003a48c9b3cfa38f673407"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 93/93 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association, user, onboarding, instance, audit and index effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "b99a3f204191fee91b1c1cab14a5a48fd580acfde8b22e36ec21a575ecec70c4"
+        },
+        {
+          "revision": "committing change with deleted course subscriptions counted as subscribed (NOT cs.deleted dropped in CourseSubscribed)",
+          "result": "Mutation control: fails Go on profile-misc-course-athlete (associates_subscribed length)",
+          "artifact": "quality-reports/go-migration/profile-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "af2b9b1040050dc78c69b7e713ab0b21480a93e618cb2a1204f576b849dac39e"
+        }
+      ],
+      "notes": [
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/info -> profile_info",
