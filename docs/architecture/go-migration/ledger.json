@@ -25882,25 +25882,79 @@
         "target": "InstanceAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/domain/instance_admin.go",
+        "BE_GO/internal/dto/instance_admin.go",
+        "BE_GO/internal/repository/instance_admin.go",
+        "BE_GO/internal/service/instance_admin.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "application_sportassociation",
+        "bakney_user",
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "PUT",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin",
+          "/api/v2/instance/admin",
+          "/api/instance/admin"
+        ],
+        "request": "PUT: JSON body whose only key is 'oem' ({name, abbreviation, primaryColor, supportEmail}, partial).",
+        "response": "GET 200 {'config': InstanceConfigSerializer, 'running_version', 'configured_version', 'mode'}; PUT 200 {'config': ...}.",
+        "errors": "401; 403 'Only the instance owner or an administrator can administer this installation.', 'Esci dall’impersonificazione per accedere all’amministrazione.'; 405; 400 ['Only instance branding can be edited here.'] and nested oem field errors; 500 number/null/unhashable body.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsInstanceOwner: active, non-deleted superuser or primary-association owner of a self-hosted configuration (the authenticated actor).",
+        "resource_scope": "The singleton InstanceConfiguration.",
+        "side_effects": "PUT saves the edited OEM columns and updated_at (no audit).",
+        "transaction": "Single save(update_fields=...).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_admin_http.json",
+        "TESTS/fixtures/generate_instance_admin_http.py",
+        "TESTS/contracts/test_instance_admin_http.py",
+        "TESTS/adapters/django/instance_admin_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-native-r1/results.json",
+          "receipt_sha256": "745359d522a48cd4665e3834ea00e01d2ce41bb26a95912fc3c2ab46f1b84b90"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-versioned-r1/results.json",
+          "receipt_sha256": "ea39d1ae4a17dbe993aeb667e761cc367584ae9d20185e939f60c79928e272a7"
+        },
+        {
+          "revision": "committing change with the email save dropping the 'smtp' diagnostic check instead of 'email'",
+          "result": "Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-mutation-r1/results.json",
+          "receipt_sha256": "52b9ce6dffd2761ba16553a4e34330957121c5a974d36823d7357d3922b34bc6"
+        }
+      ],
+      "notes": [
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/bakney-pairing -> PairingAdminView.as_view()",
@@ -26092,25 +26146,79 @@
         "target": "DiagnosticsView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/domain/instance_admin.go",
+        "BE_GO/internal/dto/instance_admin.go",
+        "BE_GO/internal/repository/instance_admin.go",
+        "BE_GO/internal/service/instance_admin.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "application_sportassociation",
+        "bakney_user",
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/diagnostics",
+          "/api/v2/instance/admin/diagnostics",
+          "/api/instance/admin/diagnostics"
+        ],
+        "request": "POST: no body read.",
+        "response": "GET 200 snapshot(config) with Cache-Control: no-store; POST 429 with Retry-After: 45 while a lease is active.",
+        "errors": "401; 403; 405; 500 (Go) when a lease could be claimed (outbound probes not ported).",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsInstanceOwner (authenticated actor).",
+        "resource_scope": "The singleton InstanceConfiguration.",
+        "side_effects": "None in Go (Django's lease write and probe results are not ported).",
+        "transaction": "Lease read with select_for_update(nowait=True).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_admin_http.json",
+        "TESTS/fixtures/generate_instance_admin_http.py",
+        "TESTS/contracts/test_instance_admin_http.py",
+        "TESTS/adapters/django/instance_admin_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-native-r1/results.json",
+          "receipt_sha256": "745359d522a48cd4665e3834ea00e01d2ce41bb26a95912fc3c2ab46f1b84b90"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-versioned-r1/results.json",
+          "receipt_sha256": "ea39d1ae4a17dbe993aeb667e761cc367584ae9d20185e939f60c79928e272a7"
+        },
+        {
+          "revision": "committing change with the email save dropping the 'smtp' diagnostic check instead of 'email'",
+          "result": "Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-mutation-r1/results.json",
+          "receipt_sha256": "52b9ce6dffd2761ba16553a4e34330957121c5a974d36823d7357d3922b34bc6"
+        }
+      ],
+      "notes": [
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/email -> EmailSettingsView.as_view()",
@@ -26127,25 +26235,80 @@
         "target": "EmailSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/domain/instance_admin.go",
+        "BE_GO/internal/dto/instance_admin.go",
+        "BE_GO/internal/repository/instance_admin.go",
+        "BE_GO/internal/service/instance_admin.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "application_sportassociation",
+        "bakney_user",
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "PUT",
+          "DELETE",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/email",
+          "/api/v2/instance/admin/email",
+          "/api/instance/admin/email"
+        ],
+        "request": "PUT: EmailSettingsSerializer (revision, host, port, security, username, password?, clear_password, from_email, sender_name); DELETE: {'revision'}.",
+        "response": "public_email(config) (+ last_test on GET); Cache-Control: no-store on every response.",
+        "errors": "401; 403; 405; 400 field/non-field errors, ['This field may not be null.'] without revision, {'error'} unreadable retained password or password without TLS; 409 stale revision; 500 non-dict DELETE body.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsInstanceOwner (authenticated actor).",
+        "resource_scope": "The singleton InstanceConfiguration (select_for_update).",
+        "side_effects": "Stores email_settings, the Fernet-encrypted password, email_revision + 1, diagnostic_results without the email check and email_test, updated_at.",
+        "transaction": "transaction.atomic around validation, lock and save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_admin_http.json",
+        "TESTS/fixtures/generate_instance_admin_http.py",
+        "TESTS/contracts/test_instance_admin_http.py",
+        "TESTS/adapters/django/instance_admin_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-native-r1/results.json",
+          "receipt_sha256": "745359d522a48cd4665e3834ea00e01d2ce41bb26a95912fc3c2ab46f1b84b90"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-versioned-r1/results.json",
+          "receipt_sha256": "ea39d1ae4a17dbe993aeb667e761cc367584ae9d20185e939f60c79928e272a7"
+        },
+        {
+          "revision": "committing change with the email save dropping the 'smtp' diagnostic check instead of 'email'",
+          "result": "Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-mutation-r1/results.json",
+          "receipt_sha256": "52b9ce6dffd2761ba16553a4e34330957121c5a974d36823d7357d3922b34bc6"
+        }
+      ],
+      "notes": [
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/email/test -> EmailTestView.as_view()",
@@ -26197,25 +26360,80 @@
         "target": "IntegrationSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/domain/instance_admin.go",
+        "BE_GO/internal/dto/instance_admin.go",
+        "BE_GO/internal/repository/instance_admin.go",
+        "BE_GO/internal/service/instance_admin.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "application_sportassociation",
+        "bakney_user",
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "PUT",
+          "DELETE",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/integrations/<provider>",
+          "/api/v2/instance/admin/integrations/<provider>",
+          "/api/instance/admin/integrations/<provider>"
+        ],
+        "request": "provider in ai, stripe, google, apple; PUT: the provider serializer (revision, enabled, provider fields, clear_secrets); DELETE: {'revision'}.",
+        "response": "public_integration(provider, config); Cache-Control: no-store on every response.",
+        "errors": "401; 403; 405; 404 unknown provider (after permission and dispatch); 400 field, non-field, retained-secret and enable errors; 409 stale revision.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsInstanceOwner (authenticated actor).",
+        "resource_scope": "The singleton InstanceConfiguration (select_for_update).",
+        "side_effects": "integration_settings[provider] = {'revision': revision + 1, 'settings': value with Fernet-encrypted secrets | None}, updated_at.",
+        "transaction": "transaction.atomic around validation, lock and save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_admin_http.json",
+        "TESTS/fixtures/generate_instance_admin_http.py",
+        "TESTS/contracts/test_instance_admin_http.py",
+        "TESTS/adapters/django/instance_admin_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-native-r1/results.json",
+          "receipt_sha256": "745359d522a48cd4665e3834ea00e01d2ce41bb26a95912fc3c2ab46f1b84b90"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-versioned-r1/results.json",
+          "receipt_sha256": "ea39d1ae4a17dbe993aeb667e761cc367584ae9d20185e939f60c79928e272a7"
+        },
+        {
+          "revision": "committing change with the email save dropping the 'smtp' diagnostic check instead of 'email'",
+          "result": "Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-mutation-r1/results.json",
+          "receipt_sha256": "52b9ce6dffd2761ba16553a4e34330957121c5a974d36823d7357d3922b34bc6"
+        }
+      ],
+      "notes": [
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/integrations/<str:provider>/test -> IntegrationTestView.as_view()",
@@ -26337,25 +26555,77 @@
         "target": "InstanceRestartsView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/domain/instance_admin.go",
+        "BE_GO/internal/dto/instance_admin.go",
+        "BE_GO/internal/repository/instance_admin.go",
+        "BE_GO/internal/service/instance_admin.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "application_sportassociation",
+        "bakney_user",
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/restarts",
+          "/api/v2/instance/admin/restarts",
+          "/api/instance/admin/restarts"
+        ],
+        "request": "POST: exactly {'request_id': UUID}.",
+        "response": "Development mode: 409 {'error': 'Il riavvio dei container è disabilitato in sviluppo.'}.",
+        "errors": "401; 403; 405; 400 ['È richiesto soltanto l’identificativo della richiesta.'] or UUID errors; 500 (Go) in production mode.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsInstanceOwner (authenticated actor).",
+        "resource_scope": "None (update runner).",
+        "side_effects": "None.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_admin_http.json",
+        "TESTS/fixtures/generate_instance_admin_http.py",
+        "TESTS/contracts/test_instance_admin_http.py",
+        "TESTS/adapters/django/instance_admin_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-native-r1/results.json",
+          "receipt_sha256": "745359d522a48cd4665e3834ea00e01d2ce41bb26a95912fc3c2ab46f1b84b90"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-versioned-r1/results.json",
+          "receipt_sha256": "ea39d1ae4a17dbe993aeb667e761cc367584ae9d20185e939f60c79928e272a7"
+        },
+        {
+          "revision": "committing change with the email save dropping the 'smtp' diagnostic check instead of 'email'",
+          "result": "Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-mutation-r1/results.json",
+          "receipt_sha256": "52b9ce6dffd2761ba16553a4e34330957121c5a974d36823d7357d3922b34bc6"
+        }
+      ],
+      "notes": [
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/updates -> InstanceUpdatesView.as_view()",
@@ -26372,25 +26642,79 @@
         "target": "InstanceUpdatesView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/domain/instance_admin.go",
+        "BE_GO/internal/dto/instance_admin.go",
+        "BE_GO/internal/repository/instance_admin.go",
+        "BE_GO/internal/service/instance_admin.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "application_sportassociation",
+        "bakney_user",
+        "core.settings: SECRET_KEY, APP_URL/APP_HOST, ASSOZETA_VERSION, ASSOZETA_DEPLOYMENT_MODE, EMAIL_*, WHITELABEL_NAME, AI_*, MCP_AGENT_*, STRIPE_*, SOCIAL_AUTH_GOOGLE_OAUTH2_KEY, SOCIAL_AUTH_APPLE_ID_CLIENT"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/updates",
+          "/api/v2/instance/admin/updates",
+          "/api/instance/admin/updates"
+        ],
+        "request": "POST: UpdateRequestSerializer (release_id >= 1, tag <= 64, request_id UUID).",
+        "response": "Development mode: GET 200 {'available': False, 'reason', 'active': None, 'history': []}; POST 409 {'error'} after validation.",
+        "errors": "401; 403; 405; 400 serializer errors; 500 (Go) in production mode (update runner not ported).",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsInstanceOwner (authenticated actor).",
+        "resource_scope": "None (update runner).",
+        "side_effects": "None.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_admin_http.json",
+        "TESTS/fixtures/generate_instance_admin_http.py",
+        "TESTS/contracts/test_instance_admin_http.py",
+        "TESTS/adapters/django/instance_admin_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-admin.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-admin-http-native-r1/results.json",
+          "receipt_sha256": "745359d522a48cd4665e3834ea00e01d2ce41bb26a95912fc3c2ab46f1b84b90"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact InstanceConfiguration effects (stored secrets checked by decryption).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-versioned-r1/results.json",
+          "receipt_sha256": "ea39d1ae4a17dbe993aeb667e761cc367584ae9d20185e939f60c79928e272a7"
+        },
+        {
+          "revision": "committing change with the email save dropping the 'smtp' diagnostic check instead of 'email'",
+          "result": "Mutation control: fails Go on instance-admin-email-put-replace-password (state.diagnostic_results).",
+          "artifact": "quality-reports/go-migration/instance-admin-http-mutation-r1/results.json",
+          "receipt_sha256": "52b9ce6dffd2761ba16553a4e34330957121c5a974d36823d7357d3922b34bc6"
+        }
+      ],
+      "notes": [
+        "Implementing: IsInstanceOwner on the authenticated actor before method dispatch, branding-only PUT, email and integration settings with revision checks, Fernet-encrypted secrets retained or cleared, diagnostics snapshot and leased POST, development-mode updates and restarts, Cache-Control no-store on email/integration responses, on four transports; diagnostics runs once a lease can be claimed, updates/restarts in production mode, form or multipart bodies, non-ASCII AI base URLs and unsupported stored JSON shapes are refused before any write; admin/releases, admin/logo and the email/integration test routes stay on Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:config -> InstanceConfigView.as_view()",
