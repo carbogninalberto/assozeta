@@ -12810,25 +12810,72 @@
         "target": "modules_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_writes.go",
+        "BE_GO/internal/dto/modules_writes.go",
+        "BE_GO/internal/repository/modules_writes.go",
+        "BE_GO/internal/service/modules_writes.go",
+        "BE_GO/internal/handler/modules_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/<module_id>/delete",
+          "/api/v2/modules/<module_id>/delete",
+          "/api/modules/<module_id>/delete"
+        ],
+        "request": "Path module_id (no UUID check).",
+        "response": "200 {'msg': 'module deleted'}.",
+        "errors": "401; 403 registry / scoped session / athletes; 404 {'error': 'module not found'}; 500 malformed id, no active association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.modules.delete.",
+        "resource_scope": "The module within request.user.sport_association.",
+        "side_effects": "Deletes the module, its responses and their attachment links (documents stay); delete entries for each response (actor.sport_association index, if any) and the module (changes_json.sport_association).",
+        "transaction": "Collector delete (atomic).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_writes_http.json",
+        "TESTS/fixtures/generate_modules_writes_http.py",
+        "TESTS/contracts/test_modules_writes_http.py",
+        "TESTS/adapters/django/modules_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 98/98; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
+          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "362eccfd2394a73f33ea85f611ca7dc6b6f9891f7c13d3bec9e74dadde7d942e"
+        },
+        {
+          "revision": "committing change without the association filter in the Go module lookup",
+          "result": "Mutation control: fails Go on duplicate-foreign-module",
+          "artifact": "quality-reports/go-migration/modules-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "3252ec29ec9308ac2a73026422a4cac169929ad2fd2b16dad8f330cdbea0111f"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): an update changing module_id (Model.save inserts a copy), a nested sport_association dict with keys, and modules_update's {'error': str(e)} texts of database exceptions. templates/<pk>/update belongs to the module-templates family."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/<str:module_id>/duplicate -> modules_duplicate",
@@ -12845,25 +12892,72 @@
         "target": "modules_duplicate",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_writes.go",
+        "BE_GO/internal/dto/modules_writes.go",
+        "BE_GO/internal/repository/modules_writes.go",
+        "BE_GO/internal/service/modules_writes.go",
+        "BE_GO/internal/handler/modules_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/<module_id>/duplicate",
+          "/api/v2/modules/<module_id>/duplicate",
+          "/api/modules/<module_id>/duplicate"
+        ],
+        "request": "Path module_id; the body is ignored.",
+        "response": "201 {'data': ModulesSerializer(clone)}.",
+        "errors": "400 ['badly formed hexadecimal UUID string']; 401; 403 unmapped registry path / scoped session / athletes; 404 {'error': 'module not found'}; 500 no active association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "No registry key: restricted collaborators get the no-mapping denial.",
+        "resource_scope": "The module within request.user.sport_association.",
+        "side_effects": "Creates the clone ('<title> (copia)', new custom_link uuid4().hex[:12], creation_date now; responses not copied) with a create entry.",
+        "transaction": "Single insert.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_writes_http.json",
+        "TESTS/fixtures/generate_modules_writes_http.py",
+        "TESTS/contracts/test_modules_writes_http.py",
+        "TESTS/adapters/django/modules_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 98/98; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
+          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "362eccfd2394a73f33ea85f611ca7dc6b6f9891f7c13d3bec9e74dadde7d942e"
+        },
+        {
+          "revision": "committing change without the association filter in the Go module lookup",
+          "result": "Mutation control: fails Go on duplicate-foreign-module",
+          "artifact": "quality-reports/go-migration/modules-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "3252ec29ec9308ac2a73026422a4cac169929ad2fd2b16dad8f330cdbea0111f"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): an update changing module_id (Model.save inserts a copy), a nested sport_association dict with keys, and modules_update's {'error': str(e)} texts of database exceptions. templates/<pk>/update belongs to the module-templates family."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/<str:module_id>/export -> modules_response_export",
@@ -13030,25 +13124,72 @@
         "target": "modules_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_writes.go",
+        "BE_GO/internal/dto/modules_writes.go",
+        "BE_GO/internal/repository/modules_writes.go",
+        "BE_GO/internal/service/modules_writes.go",
+        "BE_GO/internal/handler/modules_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/<module_id>/update",
+          "/api/v2/modules/<module_id>/update",
+          "/api/modules/<module_id>/update"
+        ],
+        "request": "JSON or form partial ModulesSerializer fields; the nested sport_association.",
+        "response": "200 {'message': 'Camp or retreat updated successfully', 'camp_and_retreat': ModulesSerializer(module)}.",
+        "errors": "400 ['badly formed hexadecimal UUID string'] and {'error': str(ValidationError)}; 401; 403 registry / scoped session / athletes / another association; 404 {'error': 'Camp or retreat not found'}; 500 {'error': ...} for a module without association, an owner without association and the nested-write assertion.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.modules.update.",
+        "resource_scope": "Module.objects.get by id, then compared with request.user.sport_association.",
+        "side_effects": "Saves every field; update entry with the changed fields only (none when unchanged).",
+        "transaction": "Single update.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_writes_http.json",
+        "TESTS/fixtures/generate_modules_writes_http.py",
+        "TESTS/contracts/test_modules_writes_http.py",
+        "TESTS/adapters/django/modules_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 98/98; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
+          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "362eccfd2394a73f33ea85f611ca7dc6b6f9891f7c13d3bec9e74dadde7d942e"
+        },
+        {
+          "revision": "committing change without the association filter in the Go module lookup",
+          "result": "Mutation control: fails Go on duplicate-foreign-module",
+          "artifact": "quality-reports/go-migration/modules-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "3252ec29ec9308ac2a73026422a4cac169929ad2fd2b16dad8f330cdbea0111f"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): an update changing module_id (Model.save inserts a copy), a nested sport_association dict with keys, and modules_update's {'error': str(e)} texts of database exceptions. templates/<pk>/update belongs to the module-templates family."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/add -> modules_add",
@@ -13065,25 +13206,72 @@
         "target": "modules_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_writes.go",
+        "BE_GO/internal/dto/modules_writes.go",
+        "BE_GO/internal/repository/modules_writes.go",
+        "BE_GO/internal/service/modules_writes.go",
+        "BE_GO/internal/handler/modules_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/add",
+          "/api/v2/modules/add",
+          "/api/modules/add"
+        ],
+        "request": "JSON ModulesAddSerializer fields (module_id, custom_link, creation_date, title, require_approval, start_date, end_date, always_active, max_responses, queue_mode, only_users, payment_required, payment_data, response_message, allow_attachments, elements); sport_association is overwritten with the owner's.",
+        "response": "200 {'msg': 'module created'}.",
+        "errors": "400 DRF field errors; 401; 403 registry / scoped session / athletes; 500 no active association, list, scalar or form body.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.modules.create.",
+        "resource_scope": "Created in request.user.sport_association; module_id and custom_link are unique keys.",
+        "side_effects": "Creates the module (create entry, direct index).",
+        "transaction": "Single insert.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_writes_http.json",
+        "TESTS/fixtures/generate_modules_writes_http.py",
+        "TESTS/contracts/test_modules_writes_http.py",
+        "TESTS/adapters/django/modules_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 98/98; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-native-r2/results.json",
+          "receipt_sha256": "22ea292178bd7594a79e3647d9b6496b28aeccf24d05d7d483428f2fa0bc25f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/modules-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "362eccfd2394a73f33ea85f611ca7dc6b6f9891f7c13d3bec9e74dadde7d942e"
+        },
+        {
+          "revision": "committing change without the association filter in the Go module lookup",
+          "result": "Mutation control: fails Go on duplicate-foreign-module",
+          "artifact": "quality-reports/go-migration/modules-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "3252ec29ec9308ac2a73026422a4cac169929ad2fd2b16dad8f330cdbea0111f"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the 500 page before any write): an update changing module_id (Model.save inserts a copy), a nested sport_association dict with keys, and modules_update's {'error': str(e)} texts of database exceptions. templates/<pk>/update belongs to the module-templates family."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/check-link -> modules_check_link",
