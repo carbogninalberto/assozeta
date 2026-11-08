@@ -482,6 +482,13 @@ func run() (runErr error) {
 	e.Any("/invoice-suppliers/list", invoicePartiesHandler.SupplierList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/add", invoicePartiesHandler.SupplierAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/:uid/update", invoicePartiesHandler.SupplierUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
+	invoiceCoreHandler := handler.NewInvoiceCoreHandler(service.NewInvoiceCore(repository.NewInvoiceCore(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/invoice/list", invoiceCoreHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/invoice/list/archived", invoiceCoreHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/invoice/:uid/delete", invoiceCoreHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/invoice-bulk/archive", invoiceCoreHandler.BulkArchive, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/invoice-bulk/delete", invoiceCoreHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/sport-associations/:uid/admin-update", associationAdminHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/templates/list", moduleTemplatesHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/templates/add", moduleTemplatesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
