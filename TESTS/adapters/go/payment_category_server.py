@@ -4,11 +4,19 @@ Image rehearsals supply the same context-manager interface with their packaged
 server. The response and persistence contracts stay owned by the neutral oracle.
 """
 from contextlib import contextmanager
+import os
 import socket
 import subprocess
 
 from TESTS.adapters.go.server import build_server
 from TESTS.http_client import Client, poll
+
+
+INSTANCE_ADMIN_ENVIRONMENT = (
+    'APP_URL', 'APP_HOST', 'ASSOZETA_VERSION', 'ASSOZETA_DEPLOYMENT_MODE', 'WHITELABEL_NAME', 'EMAIL_HOST', 'EMAIL_PORT',
+    'EMAIL_HOST_USER', 'EMAIL_HOST_PASSWORD', 'EMAIL_USE_TLS', 'EMAIL_USE_SSL', 'AI_MODEL', 'AI_CHEAP_MODEL', 'AI_BASE_URL',
+    'MCP_AGENT_MAX_ITERATIONS', 'MCP_AGENT_MAX_RESULTS', 'MCP_AGENT_QUERY_TIMEOUT', 'MCP_AGENT_WS_RATE_LIMIT',
+    'MCP_AGENT_WS_TIMEOUT', 'MCP_AGENT_HISTORY_CAP')
 
 
 @contextmanager
@@ -38,6 +46,9 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
             'AWS_S3_REGION_NAME', 'AWS_S3_ENDPOINT_URL', 'AWS_LOCATION',
             'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', 'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', 'SENJA_WEBHOOK_SECRET',
         )},
+        # The process environment Django read for instance administration
+        # (core.settings reads these with env.str/env.bool/os.environ.get).
+        **{name: os.environ[name] for name in INSTANCE_ADMIN_ENVIRONMENT if name in os.environ},
     }
     command = [str(executable)]
     observation_path = work / "query-observations.jsonl" if query_observation else None
