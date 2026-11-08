@@ -216,6 +216,7 @@ func run() (runErr error) {
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	collaboratorListHandler := handler.NewCollaboratorListHandler(service.NewCollaboratorList(repository.NewCollaboratorList(db)), service.NewActorAuthentication(accounts, tokens), identities)
+	collaboratorWritesHandler := handler.NewCollaboratorWritesHandler(service.NewCollaboratorUpdates(repository.NewCollaboratorUpdates(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	impersonationHandler := handler.NewImpersonationManagementHandler(service.NewImpersonationManagement(accounts, repository.NewImpersonationManagement(db), sessions, time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext)
 	instanceService := service.NewInstanceBootstrap(repository.NewInstanceBootstrap(db), manualSource, service.InstanceBootstrapOptions{
 		Version: cfg.Version, AIEnabled: cfg.AIEnabled, StripeEnabled: cfg.StripeEnabled, StripePublicKey: cfg.StripePublicKey,
@@ -237,6 +238,7 @@ func run() (runErr error) {
 	e.Pre(middleware.QueryObservation(queryObserver), handler.InstanceBootstrapLocale(), middleware.DjangoCORS(cfg.CORSAllowAll, cfg.CORSAllowedOrigins), middleware.DjangoRestoreAdmission(restoreAdmission), middleware.DjangoSecurityHeaders())
 	// Caddy strips the external API prefix; register only upstream paths here.
 	e.Any("/collaborators/list", collaboratorListHandler.Read, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/collaborators/:uid/update", collaboratorWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/list", messageReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/:message_id/detail", messageReadsHandler.Detail, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/add", messageMutationsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))

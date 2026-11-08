@@ -1,0 +1,1143 @@
+{
+ "matrix_version": 1,
+ "scope": "Collaborator role and permission update authored sequence with User audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011",
+  "owning_association": "a1000000-0000-4000-8000-000000796007"
+ },
+ "users": {
+  "target": {
+   "id": "a1000000-0000-4000-8000-000000796001",
+   "first": "Bersaglio",
+   "role": 3,
+   "connected": "owner",
+   "collaborator_role": 1,
+   "permissions": null,
+   "deleted": false
+  },
+  "second": {
+   "id": "a1000000-0000-4000-8000-000000796002",
+   "first": "Secondo",
+   "role": 3,
+   "connected": "owner",
+   "collaborator_role": 3,
+   "permissions": [
+    "association.calendar.read"
+   ],
+   "deleted": false
+  },
+  "owning": {
+   "id": "a1000000-0000-4000-8000-000000796003",
+   "first": "Titolare",
+   "role": 1,
+   "connected": "owner",
+   "collaborator_role": 1,
+   "permissions": null,
+   "deleted": false
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000796004",
+   "first": "Estero",
+   "role": 3,
+   "connected": "foreign_owner",
+   "collaborator_role": 1,
+   "permissions": null,
+   "deleted": false
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000796005",
+   "first": "Cancellato",
+   "role": 3,
+   "connected": "owner",
+   "collaborator_role": 1,
+   "permissions": null,
+   "deleted": true
+  },
+  "loose": {
+   "id": "a1000000-0000-4000-8000-000000796006",
+   "first": "Sciolto",
+   "role": 3,
+   "connected": null,
+   "collaborator_role": 1,
+   "permissions": null,
+   "deleted": false
+  }
+ },
+ "cases": [
+  {
+   "name": "collaborators-writes-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborators-writes-admin-without-session",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborators-writes-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.users.collaborators.update"
+   },
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-restricted-collaborator-wrong-method",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.users.collaborators.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborators-writes-athlete",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-athlete-wrong-method",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborators-writes-owner-scoped-to-athlete",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborators-writes-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Collaborators Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborators-writes-malformed-json-before-uuid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/not-a-uuid/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{",
+   "content_type": "application/json"
+  },
+  {
+   "name": "collaborators-writes-invalid-uuid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/not-a-uuid/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-unknown-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796999/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-foreign-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796004/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-deleted-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796005/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-unconnected-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796006/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-self-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000700001/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-collaborator-of-other-scope-not-found",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000700003/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-without-association-not-found",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-list-body-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796999/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null,
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "collaborators-writes-list-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "collaborators-writes-string-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": "collaborator_role"
+  },
+  {
+   "name": "collaborators-writes-role-letters-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "collaborator_role": "abc",
+    "collaborator_permissions": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-role-null-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "collaborator_role": null,
+    "collaborator_permissions": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-role-list-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "collaborator_role": [],
+    "collaborator_permissions": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-role-dict-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "collaborator_role": {},
+    "collaborator_permissions": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-role-decimal-string-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "collaborator_role": "2.0",
+    "collaborator_permissions": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-role-empty-string-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "collaborator_role": "",
+    "collaborator_permissions": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-accounting-drops-permissions",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 2,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "1",
+       "2"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": 2,
+    "collaborator_permissions": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-default-custom-role",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 3,
+    "permissions": [
+     "b",
+     "a"
+    ],
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "2",
+       "3"
+      ],
+      "collaborator_permissions": [
+       "null",
+       "[\"b\", \"a\"]"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_permissions": [
+     "b",
+     "a"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-same-values-not-audited",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 3,
+    "permissions": [
+     "b",
+     "a"
+    ],
+    "audit": null
+   },
+   "body": {
+    "collaborator_role": 3,
+    "collaborator_permissions": [
+     "b",
+     "a"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-string-role-dict-permissions",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 3,
+    "permissions": {
+     "z": 1,
+     "é": 100000.0,
+     "n": null,
+     "big": 10000000000000000000000000
+    },
+    "audit": {
+     "changes": {
+      "collaborator_permissions": [
+       "[\"b\", \"a\"]",
+       "{\"big\": 10000000000000000000000000, \"n\": null, \"z\": 1, \"\\u00e9\": 100000.0}"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": " 3 ",
+    "collaborator_permissions": {
+     "z": 1,
+     "é": 100000.0,
+     "n": null,
+     "big": 10000000000000000000000000
+    }
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-out-of-range-role-is-full",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 1,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "3",
+       "1"
+      ],
+      "collaborator_permissions": [
+       "{\"big\": 10000000000000000000000000, \"n\": null, \"z\": 1, \"\\u00e9\": 100000.0}",
+       "null"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": 99,
+    "collaborator_permissions": [
+     "q"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-boolean-role-unchanged",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 1,
+    "permissions": null,
+    "audit": null
+   },
+   "body": {
+    "collaborator_role": true,
+    "collaborator_permissions": [
+     "q"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-float-role-truncated",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 2,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "1",
+       "2"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": 2.9
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-negative-role-is-full",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 1,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "2",
+       "1"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": "-3"
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-underscore-role",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 2,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "1",
+       "2"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": "0_2"
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-form-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 3,
+    "permissions": "bè",
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "2",
+       "3"
+      ],
+      "collaborator_permissions": [
+       "null",
+       "\"b\\u00e8\""
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "raw_body": "collaborator_role=1&collaborator_role=3&collaborator_permissions=a&collaborator_permissions=b%C3%A8",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "collaborators-writes-owner-explicit-null-permissions",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 3,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_permissions": [
+       "\"b\\u00e8\"",
+       "null"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": 3,
+    "collaborator_permissions": null
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-empty-body-default-role",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 3,
+    "permissions": null,
+    "audit": null
+   },
+   "body": {}
+  },
+  {
+   "name": "collaborators-writes-owner-nested-permissions",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "target",
+    "role": 3,
+    "permissions": [
+     {
+      "k": [
+       1,
+       2.5,
+       true
+      ]
+     },
+     "ü 😀"
+    ],
+    "audit": {
+     "changes": {
+      "collaborator_permissions": [
+       "null",
+       "[{\"k\": [1, 2.5, true]}, \"\\u00fc \\ud83d\\ude00\"]"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_permissions": [
+     {
+      "k": [
+       1,
+       2.5,
+       true
+      ]
+     },
+     "ü 😀"
+    ]
+   }
+  },
+  {
+   "name": "collaborators-writes-nul-permissions-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": "target",
+    "role": 3,
+    "permissions": [
+     {
+      "k": [
+       1,
+       2.5,
+       true
+      ]
+     },
+     "ü 😀"
+    ],
+    "audit": {
+     "changes": {
+      "collaborator_permissions": [
+       "[{\"k\": [1, 2.5, true]}, \"\\u00fc \\ud83d\\ude00\"]",
+       "[\"\\u0000\"]"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "raw_body": "{\"collaborator_role\": 3, \"collaborator_permissions\": [\"\\u0000\"]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "collaborators-writes-full-collaborator-updates",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "second",
+    "role": 2,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "3",
+       "2"
+      ],
+      "collaborator_permissions": [
+       "[\"association.calendar.read\"]",
+       "null"
+      ]
+     },
+     "actor": "full_collaborator",
+     "impersonation": null,
+     "index": null
+    }
+   },
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796002/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "second",
+    "role": 3,
+    "permissions": {
+     "k": "v"
+    },
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "2",
+       "3"
+      ],
+      "collaborator_permissions": [
+       "null",
+       "{\"k\": \"v\"}"
+      ]
+     },
+     "actor": "admin",
+     "impersonation": "admin_owner",
+     "index": {
+      "association": "admin_association",
+      "path": "actor.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": 3,
+    "collaborator_permissions": {
+     "k": "v"
+    }
+   }
+  },
+  {
+   "name": "collaborators-writes-owner-updates-association-user",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796003/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "owning",
+    "role": 2,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "1",
+       "2"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "owning_association",
+      "path": "user.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": 2
+   }
+  },
+  {
+   "name": "collaborators-writes-group-header-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000796003/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "collaborator updated."
+   },
+   "effect": {
+    "user": "owning",
+    "role": 1,
+    "permissions": null,
+    "audit": {
+     "changes": {
+      "collaborator_role": [
+       "2",
+       "1"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "owning_association",
+      "path": "user.sport_association"
+     }
+    }
+   },
+   "body": {
+    "collaborator_role": 1
+   }
+  }
+ ]
+}
