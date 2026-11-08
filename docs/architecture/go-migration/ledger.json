@@ -2792,10 +2792,10 @@
         ],
         "request": "Optional {'attendance_day_id': ...}.",
         "response": "200 {'msg': 'Check-in effettuato! Ciao <name>.'} / already checked in; 207 {'msg': 'Seleziona il corso per il check-in.', 'data': [...]}.",
-        "errors": "400 malformed id; 401; 403 registry / scoped session; 404 {'msg': ...} subscription, day or no course today; 412 unpaid or finished carnet; 500 non-dict body, malformed day id, selected day with attendees, no course subscription for the selected day, not-ported inputs.",
+        "errors": "400 malformed id; 401; 403 registry / scoped session; 404 {'msg': ...} subscription (unknown, another association's, athletes, owners without an association), day (unknown or another association's) or no course today; 412 unpaid or finished carnet; 500 non-dict body, malformed day id, selected day with attendees, no course subscription for the selected day, not-ported inputs.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.courses.attendance.update; IsAuthenticated.",
-        "resource_scope": "Scoped, group-aware subscription by key; scoped live course subscriptions, registries and days; today's day by its UTC date against the Europe/Rome date.",
+        "resource_scope": "Scoped, group-aware subscription by key of request.user's association; scoped live course subscriptions of courses of that association, registries, and days of that association's courses; today's day by its UTC date against the Europe/Rome date.",
         "side_effects": "Carnet consumed (meta save) and the course subscription appended to the day's attendees; audited updates.",
         "transaction": "Not atomic in Django; Go commits the work done before an exception or answer.",
         "execution_owner": "django"
@@ -2810,25 +2810,25 @@
         "docs/architecture/go-migration/course-attendance.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-native-r1/results.json",
-          "receipt_sha256": "66bfbddb97f3234a7ba1b8c1ec77d12c7107ae4fb0128e1a52fce00f72942f98"
+          "result": "RED: Django 99/99; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-red-sync1/results.json",
+          "receipt_sha256": "b4417a17480852ed3f151080cec6ef2108f2bbf19e29a5c22b28133460ef5ecb"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-r1/results.json",
-          "receipt_sha256": "a68c112e2679c6df44a4240d172e3a06a78a1ba130597597339895eaf8d7845c"
+          "result": "GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-sync1/results.json",
+          "receipt_sha256": "680718dbee92839829a4f6fef981d029113dab78fb5fe349f13ff8d6d52f5142"
         },
         {
-          "revision": "committing change rolling back instead of committing on a 412 answer",
-          "result": "Mutation control: fails Go on course-attendance-update-partial-keeps-carnet.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-r1/results.json",
-          "receipt_sha256": "6ce01d5ef34f3e41c9d7b2b526d18defcee578314e08218f3f00f873ece66954"
+          "revision": "committing change without the request.user association filter in the check-in lookups",
+          "result": "Mutation control: fails Go on course-attendance-mark-today (207 instead of 200).",
+          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-sync1/results.json",
+          "receipt_sha256": "774f8ddabc60804f93ff15c397dcbc65f67e8390b047511642104d9183b66f84"
         }
       ],
       "notes": [
-        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons given back and consumed, not atomic), subscription_attendance and attendance_mark (today's check-in with carnet) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
+        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons of the association's subscriptions given back and consumed, not atomic), subscription_attendance (empty for a subscription the caller cannot see) and attendance_mark (today's check-in with carnet, within request.user's association) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
       ]
     },
     {
@@ -4141,25 +4141,25 @@
         "docs/architecture/go-migration/course-calendar.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-native-r9/results.json",
-          "receipt_sha256": "a05d6cdc5afa5771a1bd90531027a45ce77b737dc29b8103a9f08a83ec36ee9f"
+          "result": "RED: Django 160/160; Go fails state.reminders-new-row on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-red-sync1/results.json",
+          "receipt_sha256": "6440e5d402bdc45c69bb0eb2e5ff27c9d11a982af1e0281a84d9a004f0fee4fc"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-r3/results.json",
-          "receipt_sha256": "d6a6221cef5eaf25ec1b75d94c52d3a55b2b4c965fe0ad4303eaecaba1ab5c39"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-sync1/results.json",
+          "receipt_sha256": "14207f002924b170f684546772fe3118e53c6445afd28ef144e929a5492dff35"
         },
         {
-          "revision": "committing change with the calendar update POST made atomic (rollback instead of commit on an exception)",
-          "result": "Mutation control: fails Go on update-partial-failure-keeps-day.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-r2/results.json",
-          "receipt_sha256": "4a2cf74ca8903001761ffcf353ecd985c9af94f0a4302496df221f8e86588731"
+          "revision": "committing change without the association filter in the course POST's reminder lookup",
+          "result": "Mutation control: fails Go on course-calendar-update-other-association-reminder-kept (state.reminders-new-row).",
+          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-sync1/results.json",
+          "receipt_sha256": "09db25aab02b9ee854cb2435a365dfea5ad0fb8e0121339083c45b63d83ba2d7"
         }
       ],
       "notes": [
-        "Implementing: course calendar read, calendar update POST (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
+        "Implementing: course calendar read, calendar update POST (the association's reminders and request.user's instructors) (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
       ]
     },
     {
@@ -4263,25 +4263,25 @@
         "docs/architecture/go-migration/course-calendar.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-native-r9/results.json",
-          "receipt_sha256": "a05d6cdc5afa5771a1bd90531027a45ce77b737dc29b8103a9f08a83ec36ee9f"
+          "result": "RED: Django 160/160; Go fails state.reminders-new-row on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-red-sync1/results.json",
+          "receipt_sha256": "6440e5d402bdc45c69bb0eb2e5ff27c9d11a982af1e0281a84d9a004f0fee4fc"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-r3/results.json",
-          "receipt_sha256": "d6a6221cef5eaf25ec1b75d94c52d3a55b2b4c965fe0ad4303eaecaba1ab5c39"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-sync1/results.json",
+          "receipt_sha256": "14207f002924b170f684546772fe3118e53c6445afd28ef144e929a5492dff35"
         },
         {
-          "revision": "committing change with the calendar update POST made atomic (rollback instead of commit on an exception)",
-          "result": "Mutation control: fails Go on update-partial-failure-keeps-day.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-r2/results.json",
-          "receipt_sha256": "4a2cf74ca8903001761ffcf353ecd985c9af94f0a4302496df221f8e86588731"
+          "revision": "committing change without the association filter in the course POST's reminder lookup",
+          "result": "Mutation control: fails Go on course-calendar-update-other-association-reminder-kept (state.reminders-new-row).",
+          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-sync1/results.json",
+          "receipt_sha256": "09db25aab02b9ee854cb2435a365dfea5ad0fb8e0121339083c45b63d83ba2d7"
         }
       ],
       "notes": [
-        "Implementing: course calendar read, calendar update POST (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
+        "Implementing: course calendar read, calendar update POST (the association's reminders and request.user's instructors) (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
       ]
     },
     {
@@ -7643,7 +7643,7 @@
         "errors": "400 malformed id; 401; 403 registry / IsAssociationUser / scoped session; 404 {'detail': 'Course not found.'}; 500 no association, malformed stored events or attendee lists, not-ported inputs.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.courses.attendance.read; IsAssociationUser.",
-        "resource_scope": "The owner's live association; its live, group-aware course; scoped registries, days and course subscriptions.",
+        "resource_scope": "The owner's live association; its live, group-aware course; scoped registries, days and course subscriptions; instructor labels from the course association owner's instructors.",
         "side_effects": "Links unlinked days to their events (map_unlinked_attendance, and the extended-props link that also saves the in-memory expected_absences names); audited AttendanceDay updates.",
         "transaction": "Not atomic in Django; Go commits the work done before an exception.",
         "execution_owner": "django"
@@ -7658,25 +7658,25 @@
         "docs/architecture/go-migration/course-attendance.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-native-r1/results.json",
-          "receipt_sha256": "66bfbddb97f3234a7ba1b8c1ec77d12c7107ae4fb0128e1a52fce00f72942f98"
+          "result": "RED: Django 99/99; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-red-sync1/results.json",
+          "receipt_sha256": "b4417a17480852ed3f151080cec6ef2108f2bbf19e29a5c22b28133460ef5ecb"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-r1/results.json",
-          "receipt_sha256": "a68c112e2679c6df44a4240d172e3a06a78a1ba130597597339895eaf8d7845c"
+          "result": "GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-sync1/results.json",
+          "receipt_sha256": "680718dbee92839829a4f6fef981d029113dab78fb5fe349f13ff8d6d52f5142"
         },
         {
-          "revision": "committing change rolling back instead of committing on a 412 answer",
-          "result": "Mutation control: fails Go on course-attendance-update-partial-keeps-carnet.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-r1/results.json",
-          "receipt_sha256": "6ce01d5ef34f3e41c9d7b2b526d18defcee578314e08218f3f00f873ece66954"
+          "revision": "committing change without the request.user association filter in the check-in lookups",
+          "result": "Mutation control: fails Go on course-attendance-mark-today (207 instead of 200).",
+          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-sync1/results.json",
+          "receipt_sha256": "774f8ddabc60804f93ff15c397dcbc65f67e8390b047511642104d9183b66f84"
         }
       ],
       "notes": [
-        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons given back and consumed, not atomic), subscription_attendance and attendance_mark (today's check-in with carnet) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
+        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons of the association's subscriptions given back and consumed, not atomic), subscription_attendance (empty for a subscription the caller cannot see) and attendance_mark (today's check-in with carnet, within request.user's association) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
       ]
     },
     {
@@ -7734,7 +7734,7 @@
         "errors": "400 malformed ids / ['Missing or wrong events data.']; 401; 403 registry / IsAssociationUser / scoped session; 404 course, registry or day; 412 unpaid or finished carnet; 500 no association, non-dict body, malformed attendees, removed attendee without course subscription, not-ported inputs.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.courses.attendance.update; IsAssociationUser.",
-        "resource_scope": "The owner's live association, its live group-aware course, the course's first registry and that registry's day; scoped course subscriptions and carnet holdings.",
+        "resource_scope": "The owner's live association, its live group-aware course, the course's first registry and that registry's day; scoped course subscriptions and carnet holdings of subscriptions of the association.",
         "side_effects": "Carnet holdings: lessons given back for removed attendees and consumed for new ones (meta saves); the day's attendees saved; audited updates.",
         "transaction": "Not atomic in Django: holdings saved before a 412 or an exception stay; Go commits at the same point.",
         "execution_owner": "django"
@@ -7749,25 +7749,25 @@
         "docs/architecture/go-migration/course-attendance.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-native-r1/results.json",
-          "receipt_sha256": "66bfbddb97f3234a7ba1b8c1ec77d12c7107ae4fb0128e1a52fce00f72942f98"
+          "result": "RED: Django 99/99; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-red-sync1/results.json",
+          "receipt_sha256": "b4417a17480852ed3f151080cec6ef2108f2bbf19e29a5c22b28133460ef5ecb"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-r1/results.json",
-          "receipt_sha256": "a68c112e2679c6df44a4240d172e3a06a78a1ba130597597339895eaf8d7845c"
+          "result": "GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-sync1/results.json",
+          "receipt_sha256": "680718dbee92839829a4f6fef981d029113dab78fb5fe349f13ff8d6d52f5142"
         },
         {
-          "revision": "committing change rolling back instead of committing on a 412 answer",
-          "result": "Mutation control: fails Go on course-attendance-update-partial-keeps-carnet.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-r1/results.json",
-          "receipt_sha256": "6ce01d5ef34f3e41c9d7b2b526d18defcee578314e08218f3f00f873ece66954"
+          "revision": "committing change without the request.user association filter in the check-in lookups",
+          "result": "Mutation control: fails Go on course-attendance-mark-today (207 instead of 200).",
+          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-sync1/results.json",
+          "receipt_sha256": "774f8ddabc60804f93ff15c397dcbc65f67e8390b047511642104d9183b66f84"
         }
       ],
       "notes": [
-        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons given back and consumed, not atomic), subscription_attendance and attendance_mark (today's check-in with carnet) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
+        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons of the association's subscriptions given back and consumed, not atomic), subscription_attendance (empty for a subscription the caller cannot see) and attendance_mark (today's check-in with carnet, within request.user's association) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
       ]
     },
     {
@@ -7836,25 +7836,25 @@
         "docs/architecture/go-migration/course-calendar.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-native-r9/results.json",
-          "receipt_sha256": "a05d6cdc5afa5771a1bd90531027a45ce77b737dc29b8103a9f08a83ec36ee9f"
+          "result": "RED: Django 160/160; Go fails state.reminders-new-row on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-red-sync1/results.json",
+          "receipt_sha256": "6440e5d402bdc45c69bb0eb2e5ff27c9d11a982af1e0281a84d9a004f0fee4fc"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-r3/results.json",
-          "receipt_sha256": "d6a6221cef5eaf25ec1b75d94c52d3a55b2b4c965fe0ad4303eaecaba1ab5c39"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-sync1/results.json",
+          "receipt_sha256": "14207f002924b170f684546772fe3118e53c6445afd28ef144e929a5492dff35"
         },
         {
-          "revision": "committing change with the calendar update POST made atomic (rollback instead of commit on an exception)",
-          "result": "Mutation control: fails Go on update-partial-failure-keeps-day.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-r2/results.json",
-          "receipt_sha256": "4a2cf74ca8903001761ffcf353ecd985c9af94f0a4302496df221f8e86588731"
+          "revision": "committing change without the association filter in the course POST's reminder lookup",
+          "result": "Mutation control: fails Go on course-calendar-update-other-association-reminder-kept (state.reminders-new-row).",
+          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-sync1/results.json",
+          "receipt_sha256": "09db25aab02b9ee854cb2435a365dfea5ad0fb8e0121339083c45b63d83ba2d7"
         }
       ],
       "notes": [
-        "Implementing: course calendar read, calendar update POST (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
+        "Implementing: course calendar read, calendar update POST (the association's reminders and request.user's instructors) (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
       ]
     },
     {
@@ -7909,7 +7909,7 @@
         "errors": "400 malformed uid / Missing or wrong events data / Status not valid / JSON parse / {'msg': 'cannot delete a draft.'}; 401; 403 registry / IsAssociationUser / scoped session; 404 Course not found; 405; 500 no association, malformed events, exceptions (POST keeps earlier writes).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.courses.update; IsAssociationUser.",
-        "resource_scope": "The owner's live, group-aware courses; days scoped to the impersonation boundary.",
+        "resource_scope": "The owner's live, group-aware courses; reminders of the association and instructors of request.user; days scoped to the impersonation boundary.",
         "side_effects": "Creates, updates or deletes AttendanceRegistry, AttendanceDay and Reminders rows with auditlog entries and index rows.",
         "transaction": "POST: none (autocommit; partial writes kept). DELETE: atomic with the registry locked.",
         "execution_owner": "django"
@@ -7924,25 +7924,25 @@
         "docs/architecture/go-migration/course-calendar.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 159/159; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-native-r9/results.json",
-          "receipt_sha256": "a05d6cdc5afa5771a1bd90531027a45ce77b737dc29b8103a9f08a83ec36ee9f"
+          "result": "RED: Django 160/160; Go fails state.reminders-new-row on the first case.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-red-sync1/results.json",
+          "receipt_sha256": "6440e5d402bdc45c69bb0eb2e5ff27c9d11a982af1e0281a84d9a004f0fee4fc"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-r3/results.json",
-          "receipt_sha256": "d6a6221cef5eaf25ec1b75d94c52d3a55b2b4c965fe0ad4303eaecaba1ab5c39"
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-calendar-http-versioned-sync1/results.json",
+          "receipt_sha256": "14207f002924b170f684546772fe3118e53c6445afd28ef144e929a5492dff35"
         },
         {
-          "revision": "committing change with the calendar update POST made atomic (rollback instead of commit on an exception)",
-          "result": "Mutation control: fails Go on update-partial-failure-keeps-day.",
-          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-r2/results.json",
-          "receipt_sha256": "4a2cf74ca8903001761ffcf353ecd985c9af94f0a4302496df221f8e86588731"
+          "revision": "committing change without the association filter in the course POST's reminder lookup",
+          "result": "Mutation control: fails Go on course-calendar-update-other-association-reminder-kept (state.reminders-new-row).",
+          "artifact": "quality-reports/go-migration/course-calendar-http-mutation-sync1/results.json",
+          "receipt_sha256": "09db25aab02b9ee854cb2435a365dfea5ad0fb8e0121339083c45b63d83ba2d7"
         }
       ],
       "notes": [
-        "Implementing: course calendar read, calendar update POST (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
+        "Implementing: course calendar read, calendar update POST (the association's reminders and request.user's instructors) (not atomic, partial writes kept) and DELETE (atomic), the full events listing (get_lesson=false) with the global calendar created on first read, and global calendar actions with reminders, auditlog entries and index rows on four transports. Not ported, refused with the 500 page before any write: lesson details (get_lesson true with a matching attendance day), POST payloads with non-string event ids, list/string extendedProps or non-string starts, non-list stored events, datetimes outside UTC years 1..9999; calendar/events/export has no Go route."
       ]
     },
     {
@@ -8011,25 +8011,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
-          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
-          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+          "result": "GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-sync1/results.json",
+          "receipt_sha256": "1634a1c4338adb0467aa726a8fdf2a23a19e893a72686497b1903c16652cd61b"
         },
         {
-          "revision": "committing change without the soft-delete filter in the live course lookup",
-          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
-          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
-          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+          "revision": "committing change without the association filter in the title rewrite payment lookup",
+          "result": "Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-sync1/results.json",
+          "receipt_sha256": "84700865eafb5161b4e2240656f17686a3682de5e2aa3eb3d738af6bb2f176b3"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association."
       ]
     },
     {
@@ -8369,25 +8369,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
-          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
-          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+          "result": "GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-sync1/results.json",
+          "receipt_sha256": "1634a1c4338adb0467aa726a8fdf2a23a19e893a72686497b1903c16652cd61b"
         },
         {
-          "revision": "committing change without the soft-delete filter in the live course lookup",
-          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
-          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
-          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+          "revision": "committing change without the association filter in the title rewrite payment lookup",
+          "result": "Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-sync1/results.json",
+          "receipt_sha256": "84700865eafb5161b4e2240656f17686a3682de5e2aa3eb3d738af6bb2f176b3"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association."
       ]
     },
     {
@@ -8438,7 +8438,7 @@
         ],
         "request": "object with 'multi_payments' / 'one_fee_payment' (truthy) and 'all' (exactly true forces past events)",
         "response": "200 {'data': {'msg': 'course subscription update.'}}",
-        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry); 405 other methods; 400 uuid error lists; 403 User not allowed. (owner of another course, athlete of another subscription); 500 without the live course subscription, and (after the writes) a past event without 'all'",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry); 405 other methods; 400 uuid error lists; 403 User not allowed. (owner without an association, owner of another course, athlete of another subscription); 500 without the live course subscription, and (after the writes) a past event without 'all'",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "association.courses.update",
         "resource_scope": "CourseSubscription.objects (live) by course and subscription; the owner's association or, for athletes, the subscription's",
@@ -8456,25 +8456,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
-          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
-          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+          "result": "GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-sync1/results.json",
+          "receipt_sha256": "1634a1c4338adb0467aa726a8fdf2a23a19e893a72686497b1903c16652cd61b"
         },
         {
-          "revision": "committing change without the soft-delete filter in the live course lookup",
-          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
-          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
-          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+          "revision": "committing change without the association filter in the title rewrite payment lookup",
+          "result": "Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-sync1/results.json",
+          "receipt_sha256": "84700865eafb5161b4e2240656f17686a3682de5e2aa3eb3d738af6bb2f176b3"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association."
       ]
     },
     {
@@ -8603,11 +8603,11 @@
         ],
         "request": "JSON or form object of raw course values (title, description, one_fee, fee, locations, multiple_quotes, events, billing fields, start_date, end_date)",
         "response": "200 {'status': 'success'}",
-        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 400 ['badly formed hexadecimal UUID string']; 400 {'msg:': 'course not found.'}; 400 CourseEventsSerializer errors (after the locations were replaced); 500 for a non-object body, non-text title/description, malformed locations (after the clear) and calendar-invalid dates",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 400 ['badly formed hexadecimal UUID string']; 400 {'msg:': 'course not found.'}; 403 User not allowed. (athletes, owners without an association, another association's course); 400 CourseEventsSerializer errors (after the locations were replaced); 500 for a non-object body, non-text title/description, malformed locations (after the clear) and calendar-invalid dates",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "association.courses.update",
-        "resource_scope": "Course.objects.filter(course_id=uid).first() (live, group-aware)",
-        "side_effects": "replaces the location links, saves the course (auditlog diff of str() values, indexed directly); a changed title rewrites matching live group-aware payments' meta strings and description (bulk_update, no audit)",
+        "resource_scope": "Course.objects.filter(course_id=uid).first() (live, group-aware) of the caller's association; locations of the association or already linked; the association's payments for the title rewrite",
+        "side_effects": "replaces the location links (only the association's or already linked locations), saves the course (auditlog diff of str() values, indexed directly); a changed title rewrites the course association's matching live group-aware payments' meta strings and description (bulk_update, no audit)",
         "transaction": "not atomic: location changes stay when a later step fails",
         "execution_owner": "django"
       },
@@ -8621,25 +8621,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
-          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
-          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+          "result": "GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-sync1/results.json",
+          "receipt_sha256": "1634a1c4338adb0467aa726a8fdf2a23a19e893a72686497b1903c16652cd61b"
         },
         {
-          "revision": "committing change without the soft-delete filter in the live course lookup",
-          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
-          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
-          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+          "revision": "committing change without the association filter in the title rewrite payment lookup",
+          "result": "Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-sync1/results.json",
+          "receipt_sha256": "84700865eafb5161b4e2240656f17686a3682de5e2aa3eb3d738af6bb2f176b3"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association."
       ]
     },
     {
@@ -8690,10 +8690,10 @@
         ],
         "request": "JSON {'new_course': CourseAddSerializer fields (+ optional 'locations' [{'course_location_id'}]), 'subscriptions': [subscription ids]}; exactly these two keys",
         "response": "200 {'status': 'success'}",
-        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 400 {'msg': 'validation errors.'} for other keys; 400 serializer field errors / {'msg:': 'not valid course information.', 'details': {'events': [...]}} / CourseEventsSerializer errors; 500 for athletes and owners without an association, a missing or null title/description, a list body, and (after the course exists) an unknown subscription or malformed location",
+        "errors": "401 anonymous; 403 admin without session / restricted collaborator (registry) / owner scoped to an athlete; 405 other methods; 400 {'msg': 'validation errors.'} for other keys; 400 serializer field errors / {'msg:': 'not valid course information.', 'details': {'events': [...]}} / CourseEventsSerializer errors; 500 for athletes and owners without an association, a missing or null title/description, a list body, and (after the course exists) an unknown or other association's subscription or malformed location",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "association.courses.create",
-        "resource_scope": "SportAssociation.objects.get(user=request.user); Subscription.objects (group-aware); CourseLocation.objects",
+        "resource_scope": "SportAssociation.objects.get(user=request.user); Subscription.objects (group-aware) within the association; CourseLocation.objects of the association",
         "side_effects": "creates the course (create entry indexed through the actor, association save indexed through its changes), its location links, and per subscription a course subscription with a course-fee payment or one payment and installment per payable event; every create and save is audited",
         "transaction": "not atomic (no ATOMIC_REQUESTS): work saved before a late error stays",
         "execution_owner": "django"
@@ -8708,25 +8708,25 @@
         "docs/architecture/go-migration/course-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-writes-http-red-r1/results.json",
-          "receipt_sha256": "2f81e498c43cb437adc8c90b93bd9ace2fdf2368a416528cd0ddffb942289c27"
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
-          "artifact": "quality-reports/go-migration/course-writes-http-versioned-r2/results.json",
-          "receipt_sha256": "f07764e80aa7c7f5b6fb8f8c85cacb758e1c455bf4f68ea731f350b633477b0e"
+          "result": "GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course, course subscription, installment, payment, attendance registry and day, link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-writes-http-versioned-sync1/results.json",
+          "receipt_sha256": "1634a1c4338adb0467aa726a8fdf2a23a19e893a72686497b1903c16652cd61b"
         },
         {
-          "revision": "committing change without the soft-delete filter in the live course lookup",
-          "result": "Mutation control: fails Go on delete-deleted (200 instead of 404); a second control running delete_related_course_payment's installment delete for rows with a payment (mutation-r2) fails delete-full-cascade (audit.count).",
-          "artifact": "quality-reports/go-migration/course-writes-http-mutation-r1/results.json",
-          "receipt_sha256": "5e59febedb5e9e10884c7fac1e5d4a22356a5be300956b8fb4e63bacda85f26d"
+          "revision": "committing change without the association filter in the title rewrite payment lookup",
+          "result": "Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-sync1/results.json",
+          "receipt_sha256": "84700865eafb5161b4e2240656f17686a3682de5e2aa3eb3d738af6bb2f176b3"
         }
       ],
       "notes": [
-        "Implementing: course add/update/delete and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and overview updates without a payment association."
+        "Implementing: course add/update/delete (update only for the caller's association's course, locations of the association or already linked, subscriptions within the association, title rewrite of the association's payments) and course-overview update/delete (course_views.py) with CourseAddSerializer/CourseEventsSerializer, Course.save()'s update_metadata_courses signal, the course delete collector with the installment, course subscription and payment pre_delete signals, and CourseSubscription's soft delete. Not ported: course/<uid>/overview/<uid_subscription>/add (not routed); 500 before any write for association-scoped impersonation sessions, non-canonical X-Group-Id on creates, float event amounts not exact to the cent, course_update values outside the ported types (see the doc), events carrying course_subscription_installment_id, non-object overview bodies and athlete overview updates whose subscription has no association."
       ]
     },
     {
@@ -10780,25 +10780,25 @@
         "docs/architecture/go-migration/instructor-hours.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 127/127; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
-          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+          "result": "RED: Django 132/132; Go fails index.fields on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-red-sync1/results.json",
+          "receipt_sha256": "88dc604a5a427c4eb88de2d0d2bc74c6159bf0752bc5a00aa3190547d221851b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
-          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json",
+          "receipt_sha256": "b3d31e12555fb1c630e9b36e2d3b1eec9018738dbe65f71b8af480e438e54cc0"
         },
         {
-          "revision": "committing change without the deleted filter on the related payment lookup",
-          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
-          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+          "revision": "committing change without the user filter in the instructor lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json",
+          "receipt_sha256": "2f12385399b9f3f3910d7293dadb2771b1ab63dbdfa7195a0ab7c7ded31a4663"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -10850,11 +10850,11 @@
         ],
         "request": "Partial InstructorHoursSerializer fields (JSON or form).",
         "response": "200 {'success': True}.",
-        "errors": "400 malformed ids, JSON parse error, field / non_field errors; 401; 403 registry / foreign payment; 404 {'error': 'hours not found'}.",
+        "errors": "400 malformed ids, JSON parse error, field / non_field errors; 401; 403 registry / foreign payment / another association's instructor; 404 {'error': 'hours not found'}.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.instructor.hours.update.",
         "resource_scope": "The hour of the uid instructor owned by request.user.",
-        "side_effects": "Saves every field and audits the changed ones; a new instructor_hours_id inserts a copy (audited as update then create).",
+        "side_effects": "Saves every field and audits the changed ones; a new instructor_hours_id inserts a copy (audited as update then create); hour entries indexed through the instructor owner's association when the hour is stored, else the actor's.",
         "transaction": "Single save.",
         "execution_owner": "django"
       },
@@ -10868,25 +10868,25 @@
         "docs/architecture/go-migration/instructor-hours.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 127/127; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
-          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+          "result": "RED: Django 132/132; Go fails index.fields on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-red-sync1/results.json",
+          "receipt_sha256": "88dc604a5a427c4eb88de2d0d2bc74c6159bf0752bc5a00aa3190547d221851b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
-          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json",
+          "receipt_sha256": "b3d31e12555fb1c630e9b36e2d3b1eec9018738dbe65f71b8af480e438e54cc0"
         },
         {
-          "revision": "committing change without the deleted filter on the related payment lookup",
-          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
-          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+          "revision": "committing change without the user filter in the instructor lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json",
+          "receipt_sha256": "2f12385399b9f3f3910d7293dadb2771b1ab63dbdfa7195a0ab7c7ded31a4663"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -10938,11 +10938,11 @@
         ],
         "request": "JSON InstructorHoursSerializer fields; instructor is always the uid.",
         "response": "200 {'msg': 'hours added.'}.",
-        "errors": "400 malformed uid, JSON parse error, field errors; 401; 403 registry / scoped session / foreign payment; 404 {'error': 'instructor not found'}; 500 form, list or null body.",
+        "errors": "400 malformed uid, JSON parse error, field errors; 401; 403 registry / scoped session / foreign payment; 404 {'error': 'instructor not found'} (unknown, another owner's, athletes); 500 form, list or null body.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.instructor.hours.create.",
-        "resource_scope": "The uid instructor (looked up by id); payment is tenant-scoped and group-aware.",
-        "side_effects": "Creates one InstructorHours row (audited, in-memory defaults).",
+        "resource_scope": "The uid instructor of request.user (looked up by id and user); payment is tenant-scoped and group-aware.",
+        "side_effects": "Creates one InstructorHours row (audited, in-memory defaults); hour entries indexed through the instructor owner's association when the hour is stored, else the actor's.",
         "transaction": "Single insert.",
         "execution_owner": "django"
       },
@@ -10956,25 +10956,25 @@
         "docs/architecture/go-migration/instructor-hours.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 127/127; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
-          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+          "result": "RED: Django 132/132; Go fails index.fields on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-red-sync1/results.json",
+          "receipt_sha256": "88dc604a5a427c4eb88de2d0d2bc74c6159bf0752bc5a00aa3190547d221851b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
-          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json",
+          "receipt_sha256": "b3d31e12555fb1c630e9b36e2d3b1eec9018738dbe65f71b8af480e438e54cc0"
         },
         {
-          "revision": "committing change without the deleted filter on the related payment lookup",
-          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
-          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+          "revision": "committing change without the user filter in the instructor lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json",
+          "receipt_sha256": "2f12385399b9f3f3910d7293dadb2771b1ab63dbdfa7195a0ab7c7ded31a4663"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -11064,7 +11064,7 @@
         "errors": "400 courses required / invalid courses / period / date / percentage, malformed uid, JSON parse error; 401; 403 registry / scoped session; 404 instructor not found; 500 malformed course id, non-string period, mixed date formats, NaN percentage, non-dict body.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.instructor.hours.read.",
-        "resource_scope": "The listed courses (live, group-aware) and their live course subscriptions.",
+        "resource_scope": "The uid instructor of request.user; the listed courses (live, group-aware) of request.user's association and their live course subscriptions.",
         "side_effects": "None.",
         "transaction": "Read only.",
         "execution_owner": "django"
@@ -11079,25 +11079,25 @@
         "docs/architecture/go-migration/instructor-hours.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 127/127; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
-          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+          "result": "RED: Django 132/132; Go fails index.fields on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-red-sync1/results.json",
+          "receipt_sha256": "88dc604a5a427c4eb88de2d0d2bc74c6159bf0752bc5a00aa3190547d221851b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
-          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json",
+          "receipt_sha256": "b3d31e12555fb1c630e9b36e2d3b1eec9018738dbe65f71b8af480e438e54cc0"
         },
         {
-          "revision": "committing change without the deleted filter on the related payment lookup",
-          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
-          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+          "revision": "committing change without the user filter in the instructor lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json",
+          "receipt_sha256": "2f12385399b9f3f3910d7293dadb2771b1ab63dbdfa7195a0ab7c7ded31a4663"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -11153,7 +11153,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.instructor.hours.read.",
         "resource_scope": "Hours of the uid instructor owned by request.user.",
-        "side_effects": "Page rows with a paid payment are marked paid (audited); page rows with a document and no payment delete the document (audited, SET_NULL references nulled).",
+        "side_effects": "Page rows with a paid payment are marked paid (audited); page rows with a document and no payment delete the document (audited, SET_NULL references nulled); hour entries indexed through the instructor owner's association when the hour is stored, else the actor's.",
         "transaction": "Django: per-row saves, not atomic; Go: one transaction.",
         "execution_owner": "django"
       },
@@ -11167,25 +11167,25 @@
         "docs/architecture/go-migration/instructor-hours.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 127/127; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-native-r5/results.json",
-          "receipt_sha256": "bf419a740758117131c6c78bfe1a62b615986b0b0e79d171905fa4512cc3a349"
+          "result": "RED: Django 132/132; Go fails index.fields on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-red-sync1/results.json",
+          "receipt_sha256": "88dc604a5a427c4eb88de2d0d2bc74c6159bf0752bc5a00aa3190547d221851b"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-r2/results.json",
-          "receipt_sha256": "334b2ae9d6995fb2023f58777af09fdad45a9992108155cfd3130c3a782119c5"
+          "result": "GREEN: 132/132 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-versioned-sync1/results.json",
+          "receipt_sha256": "b3d31e12555fb1c630e9b36e2d3b1eec9018738dbe65f71b8af480e438e54cc0"
         },
         {
-          "revision": "committing change without the deleted filter on the related payment lookup",
-          "result": "Mutation control: fails Go on instructor-hours-add-removed-payment.",
-          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-r1/results.json",
-          "receipt_sha256": "a3706466b0071a1249120f9b55337a4e9389048489c7512ce5bcd294d701c694"
+          "revision": "committing change without the user filter in the instructor lookup",
+          "result": "Mutation control: fails Go on instructor-hours-add-other-association-instructor (403 instead of 404).",
+          "artifact": "quality-reports/go-migration/instructor-hours-http-mutation-sync2/results.json",
+          "receipt_sha256": "2f12385399b9f3f3910d7293dadb2771b1ab63dbdfa7195a0ab7c7ded31a4663"
         }
       ],
       "notes": [
-        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete with in-memory auditlog diffs and primary-key copies, and the calculate sums on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
+        "Implementing: KTDatatable list with date range/search, the page loop's paid sync and orphan document deletes, InstructorHoursSerializer validation (DD/MM/YYYY dates, decimals, JSON fields, tenant-scoped group-aware payment), add/update/delete (instructors of request.user, the instructor relation resolved through its owner, entries indexed through the instructor's owner) with in-memory auditlog diffs and primary-key copies, and the calculate sums over the association's courses on four transports; list rows that would print a compensation document, cascading document deletes and non-finite HTML JSON are refused (500) before any write."
       ]
     },
     {
@@ -14991,25 +14991,79 @@
         "target": "payment_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_writes.go",
+        "BE_GO/internal/dto/payment_writes.go",
+        "BE_GO/internal/repository/payment_writes.go",
+        "BE_GO/internal/service/payment_writes.go",
+        "BE_GO/internal/handler/payment_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
+        "payment-archive save defaults and payment-state / course-subscriptions payment rendering",
+        "application_payment",
+        "application_paymentcategory",
+        "application_customaccounts",
+        "application_sportassociation",
+        "application_associate",
+        "application_subscription",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_group",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/<uid>/update",
+          "/api/v2/payment/<uid>/update",
+          "/api/payment/<uid>/update"
+        ],
+        "request": "JSON object of PaymentEntrySerializer fields (partial; blank dates dropped), complex_item and subscription_id.",
+        "response": "200 {'data': {'payment': PaymentSerializer of the in-memory payment}}.",
+        "errors": "400 malformed uuid list; 400 serializer.errors; 400 {'exception': 'document key not present'} after the save; 401; 403 registry / scoped session / {'detail': 'User not allowed.'} for another association's payment / tenant scope of a related field; 500 athletes, no association, missing/deleted/other-group/unassociated payment, non-dict body, failing party or subscription lookup, save hook errors, failing Payment.save(), database rejections; invoiced payments and form bodies (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.update.",
+        "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association.",
+        "side_effects": "Instructor, supplier and payment_intent_id cleared, the party set, validated fields applied with Payment.save() defaults; audited full-row save (changed fields) indexed directly.",
+        "transaction": "Not atomic in Django (a single save before the attachment hook); one transaction in Go.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_writes_http.json",
+        "TESTS/fixtures/generate_payment_writes_http.py",
+        "TESTS/contracts/test_payment_writes_http.py",
+        "TESTS/adapters/django/payment_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 120/120; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-red-r1/results.json",
+          "receipt_sha256": "cee774d1d15246681ecb4e727b8d93bf00f55b9714ec5e2414e51b61d1f79d09"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 120/120 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "047a44f93f47404043f792d5bf50a3feb704e02100fc0958f92608156ade53a9"
+        },
+        {
+          "revision": "committing change keeping the instructor and supplier on update",
+          "result": "Mutation control: fails Go on payment-writes-update-empty-body-clears-parties.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "04fb5c637f457b81e572b765583e81695463fee36f069c199ebd88e5cde4fe51"
+        }
+      ],
+      "notes": [
+        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/add -> payment_add",
@@ -15026,25 +15080,79 @@
         "target": "payment_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_writes.go",
+        "BE_GO/internal/dto/payment_writes.go",
+        "BE_GO/internal/repository/payment_writes.go",
+        "BE_GO/internal/service/payment_writes.go",
+        "BE_GO/internal/handler/payment_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
+        "payment-archive save defaults and payment-state / course-subscriptions payment rendering",
+        "application_payment",
+        "application_paymentcategory",
+        "application_customaccounts",
+        "application_sportassociation",
+        "application_associate",
+        "application_subscription",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_group",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/add",
+          "/api/v2/payment/add",
+          "/api/payment/add"
+        ],
+        "request": "JSON object with creation_date and payment_date keys (None/blank creation date: now; blank payment date: None; strptime('%Y-%m-%d') tried first) and PaymentEntrySerializer fields; complex_item key read after the create.",
+        "response": "201 PaymentSerializer of the in-memory payment (a float amount quantized half-even).",
+        "errors": "400 {'msg': 'validation errors: <repr of serializer.errors>'}; 400 {'exception': 'document key not present'} after the create; 401; 403 registry / scoped session / athletes (no body) / tenant scope of a related field; 500 no association, form or non-dict body, missing date keys, meta amounts that are not floats, failing Payment.save(), rejected or unknown X-Group-Id, database rejections, and after the create a missing complex_item or failing party lookup; auto_paid_payment users (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.create.",
+        "resource_scope": "The owner's live association (scoped_queryset(SportAssociation.objects).get(user=request.user)); payments through Payment.objects (live, X-Group-Id aware) and, in association-scoped sessions, the session's association. Parties: Instructor.objects, SupplierAndCustomers.objects (live, group aware), scoped Subscription.objects and Associate.objects.",
+        "side_effects": "Payment created (raw X-Group-Id, Payment.save() defaults; create entry indexed through the actor's association unless the body set one), then saved with user, association and party (update entry indexed through the changes' sport_association).",
+        "transaction": "Not atomic in Django (the create is kept when a later step fails); one transaction in Go, committed at the same points.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_writes_http.json",
+        "TESTS/fixtures/generate_payment_writes_http.py",
+        "TESTS/contracts/test_payment_writes_http.py",
+        "TESTS/adapters/django/payment_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 120/120; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-red-r1/results.json",
+          "receipt_sha256": "cee774d1d15246681ecb4e727b8d93bf00f55b9714ec5e2414e51b61d1f79d09"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 120/120 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "047a44f93f47404043f792d5bf50a3feb704e02100fc0958f92608156ade53a9"
+        },
+        {
+          "revision": "committing change keeping the instructor and supplier on update",
+          "result": "Mutation control: fails Go on payment-writes-update-empty-body-clears-parties.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "04fb5c637f457b81e572b765583e81695463fee36f069c199ebd88e5cde4fe51"
+        }
+      ],
+      "notes": [
+        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/bulk-add -> payment_bulk_add",
@@ -15061,25 +15169,79 @@
         "target": "payment_bulk_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_writes.go",
+        "BE_GO/internal/dto/payment_writes.go",
+        "BE_GO/internal/repository/payment_writes.go",
+        "BE_GO/internal/service/payment_writes.go",
+        "BE_GO/internal/handler/payment_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, scoped-request guard, tenant scope and audit index",
+        "payment-archive save defaults and payment-state / course-subscriptions payment rendering",
+        "application_payment",
+        "application_paymentcategory",
+        "application_customaccounts",
+        "application_sportassociation",
+        "application_associate",
+        "application_subscription",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_group",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/bulk-add",
+          "/api/v2/payment/bulk-add",
+          "/api/payment/bulk-add"
+        ],
+        "request": "JSON object: associate_ids (1..10000), amount, type, subject, paid, expense, creation_date, payment_date, payment_category, custom_accounts, description, notes, meta_payment_categories.",
+        "response": "201 {'data': {'created_count', 'total_requested', 'invalid_associate_ids'}}; 200 with created_count 0 when no associate is valid.",
+        "errors": "400 {'msg': ...} for the view's checks; 401; 403 registry (no mapping) / scoped session / athletes (no body); 500 no association, non-dict body, unhashable or malformed ids, invalid booleans, Infinity, overflowing amounts, invalid payment dates, database rejections.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "No registry entry (restricted collaborators denied by the registry); otherwise IsAuthenticated.",
+        "resource_scope": "The owner's live association; associates through Associate.objects (live, X-Group-Id aware) of the association and the session's association; accounts of the association.",
+        "side_effects": "bulk_create of one payment per valid associate: no save(), no signals, no audit, no group.",
+        "transaction": "Atomic (bulk_create batches in transaction.atomic).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_writes_http.json",
+        "TESTS/fixtures/generate_payment_writes_http.py",
+        "TESTS/contracts/test_payment_writes_http.py",
+        "TESTS/adapters/django/payment_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 120/120; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-red-r1/results.json",
+          "receipt_sha256": "cee774d1d15246681ecb4e727b8d93bf00f55b9714ec5e2414e51b61d1f79d09"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 120/120 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "047a44f93f47404043f792d5bf50a3feb704e02100fc0958f92608156ade53a9"
+        },
+        {
+          "revision": "committing change keeping the instructor and supplier on update",
+          "result": "Mutation control: fails Go on payment-writes-update-empty-body-clears-parties.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "04fb5c637f457b81e572b765583e81695463fee36f069c199ebd88e5cde4fe51"
+        }
+      ],
+      "notes": [
+        "Implementing: add (serializer create, Payment.save() defaults, the view's second audited save with user, association and party; failures after the create keep it), update (partial serializer, parties, save hook, audited full-row save) and bulk add (the view's checks and defaults, atomic bulk_create without audit) on four transports. Refused with a 500 before any write: add for users with auto_paid_payment (invoice and PDF), update of invoiced payments (PDF), attachments with document content (storage), payment_id or user in the body, update form bodies and add multipart bodies with files, non-ASCII digits in strptime dates and non-canonical X-Group-Id spellings on add."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/category/<str:uid>/delete -> payment_category_delete",
@@ -15551,25 +15713,71 @@
         "target": "payment_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_reads.go",
+        "BE_GO/internal/dto/payment_reads.go",
+        "BE_GO/internal/dto/payment_reads_test.go",
+        "BE_GO/internal/repository/payment_reads.go",
+        "BE_GO/internal/service/payment_reads.go",
+        "BE_GO/internal/handler/payment_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
+        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/list",
+          "/api/v2/payment/list",
+          "/api/payment/list"
+        ],
+        "request": "Query: mode=compressed, course_subscription_id, associate_id, query[archived], query[payment_range], query[subject], query[type], query[paid], query[expense], query[payment_categories], query[account], query[generalSearch], sort[field], sort[sort], pagination[page], pagination[perpage]; optional X-Group-Id.",
+        "response": "200 {\"data\": [PaymentOptimizedSerializer + instructor_document(_token)], \"meta\": {total, page, pages, perpage, rowIds}} by -payment_date, -creation_date; compressed: {\"data\": [values()]} by -creation_date.",
+        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without association; 400 malformed course_subscription_id; 404 Invalid page.; 500 invalid archived/subject/UUID filters or unknown ordering; athletes outside the compressed mode refused (500).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.read; athlete view for association-scoped sessions.",
+        "resource_scope": "Live, group-aware payments of request.user.sportassociation (base manager) and the scoped session's association.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_reads_http.json",
+        "TESTS/fixtures/generate_payment_reads_http.py",
+        "TESTS/contracts/test_payment_reads_http.py",
+        "TESTS/adapters/django/payment_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 239/239; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-red-r2/results.json",
+          "receipt_sha256": "ac39434e570b21528c8e25c860fca3abbafc97e42e51dbd375f32f398a8ee8c9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-versioned-r3/results.json",
+          "receipt_sha256": "8865a6af5b910bb7f4d5c6558d4dab071f4120948298048df037a47ff4328c19"
+        },
+        {
+          "revision": "counting each matching payment once in the stats account balances",
+          "result": "Mutation control: fails Go on payment-reads-stats-search-rossi (CAUGHT).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "024db9df1111034b93d8f12c5a5356d7bfdea58fca463b52955753644eb43fc9"
+        }
+      ],
+      "notes": [
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/list/export -> payment_list_export",
@@ -15726,25 +15934,71 @@
         "target": "payment_stats",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_reads.go",
+        "BE_GO/internal/dto/payment_reads.go",
+        "BE_GO/internal/dto/payment_reads_test.go",
+        "BE_GO/internal/repository/payment_reads.go",
+        "BE_GO/internal/service/payment_reads.go",
+        "BE_GO/internal/handler/payment_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
+        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/stats",
+          "/api/v2/payment/stats",
+          "/api/payment/stats"
+        ],
+        "request": "Query: query[payment_range], query[subject], query[type], query[paid], query[expense], query[payment_categories], query[account], query[generalSearch]; optional X-Group-Id.",
+        "response": "200 {\"data\": {stripe_charges, monthly_income, monthly_expenses, monthly_to_pay, monthly_to_cash_in, current_income, current_expenses, accounts {cash, bank, other}, total_transactions, net_balance}}.",
+        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without association, athlete or soft-deleted association; 403 association-scoped athlete session; 500 range without two dates, invalid subject or UUID filters; Stripe-configured instances refused (500).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.read.",
+        "resource_scope": "Live, unarchived, group-aware payments of the scoped live association within the date window.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_reads_http.json",
+        "TESTS/fixtures/generate_payment_reads_http.py",
+        "TESTS/contracts/test_payment_reads_http.py",
+        "TESTS/adapters/django/payment_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 239/239; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-red-r2/results.json",
+          "receipt_sha256": "ac39434e570b21528c8e25c860fca3abbafc97e42e51dbd375f32f398a8ee8c9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-versioned-r3/results.json",
+          "receipt_sha256": "8865a6af5b910bb7f4d5c6558d4dab071f4120948298048df037a47ff4328c19"
+        },
+        {
+          "revision": "counting each matching payment once in the stats account balances",
+          "result": "Mutation control: fails Go on payment-reads-stats-search-rossi (CAUGHT).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "024db9df1111034b93d8f12c5a5356d7bfdea58fca463b52955753644eb43fc9"
+        }
+      ],
+      "notes": [
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas-subscriptions/<str:pk>/list -> AssociateSubscriptionViewSet.as_view({'get': 'list'})",
@@ -18482,7 +18736,7 @@
         "errors": "400 malformed id; 401; 403 registry / role / scoped session; 500 no association for non-athletes, malformed course filter or stored attendees.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.members.read; IsAssociationUser | IsAthleteUser.",
-        "resource_scope": "Athletes: their scoped group-aware subscription; others: the owner's association's; course subscriptions through all_objects() filtered by that subscription; scoped registries and days.",
+        "resource_scope": "Athletes: their scoped group-aware subscription; others: the owner's association's; course subscriptions through all_objects() filtered by that subscription (none for a subscription the caller cannot see); scoped registries and days.",
         "side_effects": "None.",
         "transaction": "Read only.",
         "execution_owner": "django"
@@ -18497,25 +18751,25 @@
         "docs/architecture/go-migration/course-attendance.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 96/96; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-native-r1/results.json",
-          "receipt_sha256": "66bfbddb97f3234a7ba1b8c1ec77d12c7107ae4fb0128e1a52fce00f72942f98"
+          "result": "RED: Django 99/99; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-red-sync1/results.json",
+          "receipt_sha256": "b4417a17480852ed3f151080cec6ef2108f2bbf19e29a5c22b28133460ef5ecb"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 96/96 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-r1/results.json",
-          "receipt_sha256": "a68c112e2679c6df44a4240d172e3a06a78a1ba130597597339895eaf8d7845c"
+          "result": "GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-attendance-http-versioned-sync1/results.json",
+          "receipt_sha256": "680718dbee92839829a4f6fef981d029113dab78fb5fe349f13ff8d6d52f5142"
         },
         {
-          "revision": "committing change rolling back instead of committing on a 412 answer",
-          "result": "Mutation control: fails Go on course-attendance-update-partial-keeps-carnet.",
-          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-r1/results.json",
-          "receipt_sha256": "6ce01d5ef34f3e41c9d7b2b526d18defcee578314e08218f3f00f873ece66954"
+          "revision": "committing change without the request.user association filter in the check-in lookups",
+          "result": "Mutation control: fails Go on course-attendance-mark-today (207 instead of 200).",
+          "artifact": "quality-reports/go-migration/course-attendance-http-mutation-sync1/results.json",
+          "receipt_sha256": "774f8ddabc60804f93ff15c397dcbc65f67e8390b047511642104d9183b66f84"
         }
       ],
       "notes": [
-        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons given back and consumed, not atomic), subscription_attendance and attendance_mark (today's check-in with carnet) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
+        "Implementing: attendees (with map_unlinked_attendance and get_extended_prop_for_attendance_day links), attendees_update (carnet lessons of the association's subscriptions given back and consumed, not atomic), subscription_attendance (empty for a subscription the caller cannot see) and attendance_mark (today's check-in with carnet, within request.user's association) on four transports; integer UUID lookups, float/boolean lessons_left, Python-only fromisoformat forms, non-UUID event ids in the extended-props link and non-dict extendedProps/instructor shapes are refused with a 500 before any write."
       ]
     },
     {
@@ -18794,25 +19048,74 @@
         "target": "subscription_medical_appointments_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_medical.go",
+        "BE_GO/internal/repository/subscription_medical.go",
+        "BE_GO/internal/service/subscription_medical.go",
+        "BE_GO/internal/handler/subscription_medical.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_medicalappointments",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "docmanager_document",
+        "application_sportassociation",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/medical-appointments/<medical_appointments_id>/delete",
+          "/api/v2/subscription/<uid>/medical-appointments/<medical_appointments_id>/delete",
+          "/api/subscription/<uid>/medical-appointments/<medical_appointments_id>/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {'data': 'medical appointment created.'}.",
+        "errors": "400 malformed ids; 401; 403 registry or athlete; 404 {'data': 'no medical appointment found.'}; 500 no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The appointment of the uid subscription of request.user.sport_association (no manager filters).",
+        "side_effects": "Deletes the appointment (audited, indexed to the actor's association).",
+        "transaction": "Django: one delete; Go: one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_medical_http.json",
+        "TESTS/fixtures/generate_subscription_medical_http.py",
+        "TESTS/contracts/test_subscription_medical_http.py",
+        "TESTS/adapters/django/subscription_medical_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-medical.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-native-r10/results.json",
+          "receipt_sha256": "e9dad6747f55422e298f2f34b202a1cbb98224c73876aa1f433ca9b414c6b1c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact appointment, certificate, subscription, draft, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-versioned-r1/results.json",
+          "receipt_sha256": "db8d11fda26e4ba3ac9a2ac1c975435a41fb4347557d8a9dadb99f22fde45831"
+        },
+        {
+          "revision": "committing change deleting the certificate during an association-scoped session",
+          "result": "Mutation control: fails Go on subscription-medical-expire-null-scoped-session-detaches-only (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-mutation-r1/results.json",
+          "receipt_sha256": "f5e7aa9a2e938f422a35cf0e1213d79f115a4345d0ff3d0c591f846a37394fee"
+        }
+      ],
+      "notes": [
+        "Implementing: medical appointments list (group-aware scoped subscription, -date order, REGIONS labels) and delete (subscription join, actor-indexed audit), certificate edit (notes str(), boolean flag, Python `in` on non-dict bodies) and set-certificate-expiration (dates, null removal with Subscription.save() date fill, collector SET_NULL and unreferenced document delete, draft certificates), with copies of certificates other associations reference and non-atomic failures, on four transports; list rows that would print their document and a subscription without a certificate (placeholder image upload) are refused (500) before any write; add, upload and send-email-reminder stay on Django."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/medical-appointments/add -> subscription_medical_appointments_add",
@@ -18864,25 +19167,74 @@
         "target": "subscription_medical_appointments_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_medical.go",
+        "BE_GO/internal/repository/subscription_medical.go",
+        "BE_GO/internal/service/subscription_medical.go",
+        "BE_GO/internal/handler/subscription_medical.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_medicalappointments",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "docmanager_document",
+        "application_sportassociation",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/medical-appointments/list",
+          "/api/v2/subscription/<uid>/medical-appointments/list",
+          "/api/subscription/<uid>/medical-appointments/list"
+        ],
+        "request": "No body; optional X-Group-Id.",
+        "response": "200 {'data': {'<idx>': MedicalAppointmentsSerializer}} ordered by -date.",
+        "errors": "400 malformed uid; 401; 403 registry or athlete; 404 {'data': 'no subscription found.'}; 500 no association, unknown region, or a row without a document (not ported: printing).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read.",
+        "resource_scope": "A subscription of request.user.sport_association (group-aware, deleted included; impersonation-scoped).",
+        "side_effects": "None (rows without a document are refused before printing).",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_medical_http.json",
+        "TESTS/fixtures/generate_subscription_medical_http.py",
+        "TESTS/contracts/test_subscription_medical_http.py",
+        "TESTS/adapters/django/subscription_medical_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-medical.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-native-r10/results.json",
+          "receipt_sha256": "e9dad6747f55422e298f2f34b202a1cbb98224c73876aa1f433ca9b414c6b1c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact appointment, certificate, subscription, draft, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-versioned-r1/results.json",
+          "receipt_sha256": "db8d11fda26e4ba3ac9a2ac1c975435a41fb4347557d8a9dadb99f22fde45831"
+        },
+        {
+          "revision": "committing change deleting the certificate during an association-scoped session",
+          "result": "Mutation control: fails Go on subscription-medical-expire-null-scoped-session-detaches-only (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-mutation-r1/results.json",
+          "receipt_sha256": "f5e7aa9a2e938f422a35cf0e1213d79f115a4345d0ff3d0c591f846a37394fee"
+        }
+      ],
+      "notes": [
+        "Implementing: medical appointments list (group-aware scoped subscription, -date order, REGIONS labels) and delete (subscription join, actor-indexed audit), certificate edit (notes str(), boolean flag, Python `in` on non-dict bodies) and set-certificate-expiration (dates, null removal with Subscription.save() date fill, collector SET_NULL and unreferenced document delete, draft certificates), with copies of certificates other associations reference and non-atomic failures, on four transports; list rows that would print their document and a subscription without a certificate (placeholder image upload) are refused (500) before any write; add, upload and send-email-reminder stay on Django."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/medical-certificate/edit -> subscription_medical_certificate_edit",
@@ -18899,25 +19251,74 @@
         "target": "subscription_medical_certificate_edit",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_medical.go",
+        "BE_GO/internal/repository/subscription_medical.go",
+        "BE_GO/internal/service/subscription_medical.go",
+        "BE_GO/internal/handler/subscription_medical.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_medicalappointments",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "docmanager_document",
+        "application_sportassociation",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/medical-certificate/edit",
+          "/api/v2/subscription/<uid>/medical-certificate/edit",
+          "/api/subscription/<uid>/medical-certificate/edit"
+        ],
+        "request": "JSON or form: notes (any value, stored as str()), competitive_medical_certificate (boolean only).",
+        "response": "200 {'msg': 'Medical certificate updated'}.",
+        "errors": "400 malformed uid or body; 401; 403 registry; 404 {'exception': 'Subscription not found'} / {'exception': 'Medical certificate not found'}; 500 non-dict bodies that Python's `in` rejects, NUL notes.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "_medical_certificate_targets: impersonated association, the athlete's own subscriptions or the owner's active associations (group-aware).",
+        "side_effects": "Copies a certificate other associations reference (create + subscription medical update), then saves the certificate (audited changed fields).",
+        "transaction": "Django: not atomic (a failure keeps the copy); Go: one transaction committed before the 500.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_medical_http.json",
+        "TESTS/fixtures/generate_subscription_medical_http.py",
+        "TESTS/contracts/test_subscription_medical_http.py",
+        "TESTS/adapters/django/subscription_medical_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-medical.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-native-r10/results.json",
+          "receipt_sha256": "e9dad6747f55422e298f2f34b202a1cbb98224c73876aa1f433ca9b414c6b1c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact appointment, certificate, subscription, draft, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-versioned-r1/results.json",
+          "receipt_sha256": "db8d11fda26e4ba3ac9a2ac1c975435a41fb4347557d8a9dadb99f22fde45831"
+        },
+        {
+          "revision": "committing change deleting the certificate during an association-scoped session",
+          "result": "Mutation control: fails Go on subscription-medical-expire-null-scoped-session-detaches-only (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-mutation-r1/results.json",
+          "receipt_sha256": "f5e7aa9a2e938f422a35cf0e1213d79f115a4345d0ff3d0c591f846a37394fee"
+        }
+      ],
+      "notes": [
+        "Implementing: medical appointments list (group-aware scoped subscription, -date order, REGIONS labels) and delete (subscription join, actor-indexed audit), certificate edit (notes str(), boolean flag, Python `in` on non-dict bodies) and set-certificate-expiration (dates, null removal with Subscription.save() date fill, collector SET_NULL and unreferenced document delete, draft certificates), with copies of certificates other associations reference and non-atomic failures, on four transports; list rows that would print their document and a subscription without a certificate (placeholder image upload) are refused (500) before any write; add, upload and send-email-reminder stay on Django."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/medical-certificate/send-email-reminder -> subscription_medical_certificate_send_email_reminder",
@@ -18969,25 +19370,74 @@
         "target": "subscription_medical_certificate_set_certificate_expiration",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_medical.go",
+        "BE_GO/internal/repository/subscription_medical.go",
+        "BE_GO/internal/service/subscription_medical.go",
+        "BE_GO/internal/handler/subscription_medical.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, tenant scope and audit index",
+        "application_medicalappointments",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "docmanager_document",
+        "application_sportassociation",
+        "bakney_user"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/medical-certificate/set-certificate-expiration",
+          "/api/v2/subscription/<uid>/medical-certificate/set-certificate-expiration",
+          "/api/subscription/<uid>/medical-certificate/set-certificate-expiration"
+        ],
+        "request": "JSON or form: certificate_expiring_date ('%d/%m/%Y' or null).",
+        "response": "200 {'msg': 'Medical certificate update with date YYYY-MM-DD 00:00:00+00:00'} or {'msg': 'Medical certificate removed'}.",
+        "errors": "400 malformed uid or body (after the lookup); 401; 403 registry; 404 {'exception': 'Subscription not found'}; 500 missing key, non-dict body, unparsable date, malformed draft data, a subscription without a certificate (not ported: placeholder image upload).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "_medical_certificate_targets subscriptions, then drafts (none for athletes).",
+        "side_effects": "Certificate copy, expiration update or removal (subscription save with date fill, certificate and unreferenced document deletes, collector SET_NULL); for drafts the certificate entry, certificate create/copy and draft saves; all audited.",
+        "transaction": "Django: not atomic; Go: one transaction committed before any 500 after a write.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_medical_http.json",
+        "TESTS/fixtures/generate_subscription_medical_http.py",
+        "TESTS/contracts/test_subscription_medical_http.py",
+        "TESTS/adapters/django/subscription_medical_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-medical.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 127/127; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-native-r10/results.json",
+          "receipt_sha256": "e9dad6747f55422e298f2f34b202a1cbb98224c73876aa1f433ca9b414c6b1c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 127/127 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact appointment, certificate, subscription, draft, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-versioned-r1/results.json",
+          "receipt_sha256": "db8d11fda26e4ba3ac9a2ac1c975435a41fb4347557d8a9dadb99f22fde45831"
+        },
+        {
+          "revision": "committing change deleting the certificate during an association-scoped session",
+          "result": "Mutation control: fails Go on subscription-medical-expire-null-scoped-session-detaches-only (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-medical-http-mutation-r1/results.json",
+          "receipt_sha256": "f5e7aa9a2e938f422a35cf0e1213d79f115a4345d0ff3d0c591f846a37394fee"
+        }
+      ],
+      "notes": [
+        "Implementing: medical appointments list (group-aware scoped subscription, -date order, REGIONS labels) and delete (subscription join, actor-indexed audit), certificate edit (notes str(), boolean flag, Python `in` on non-dict bodies) and set-certificate-expiration (dates, null removal with Subscription.save() date fill, collector SET_NULL and unreferenced document delete, draft certificates), with copies of certificates other associations reference and non-atomic failures, on four transports; list rows that would print their document and a subscription without a certificate (placeholder image upload) are refused (500) before any write; add, upload and send-email-reminder stay on Django."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/medical-certificate/upload -> subscription_medical_certificate_upload",
@@ -19039,25 +19489,71 @@
         "target": "subscription_payments",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_reads.go",
+        "BE_GO/internal/dto/payment_reads.go",
+        "BE_GO/internal/dto/payment_reads_test.go",
+        "BE_GO/internal/repository/payment_reads.go",
+        "BE_GO/internal/service/payment_reads.go",
+        "BE_GO/internal/handler/payment_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request checks and permission registry",
+        "PaymentSerializer, InstructorSerializer, SupplierSerializer and BasicAssociateSerializer ports; personas-reads search preparation and pagination",
+        "application_payment, application_associate, application_associatetutorrelation, application_subscription, application_coursesubscription, application_coursesubscriptioninstallment, application_carnetsubscription, application_course, application_carnet, application_invoice, application_instructorhours, application_customaccounts, application_paymentcategory, application_supplierandcustomers, application_instructor, docmanager_document, instance_instanceconfiguration"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/payments",
+          "/api/v2/subscription/<uid>/payments",
+          "/api/subscription/<uid>/payments"
+        ],
+        "request": "Path uid; query: query[subject], query[type], query[paid], query[expense], query[generalSearch], sort[field], sort[sort], pagination[page], pagination[perpage]; optional X-Group-Id.",
+        "response": "200 {\"data\": [PaymentOptimizedSerializer + is_carnet, course_subscriptions | carnet], \"meta\": {total, page, pages, perpage, rowIds}} by -creation_date.",
+        "errors": "401; 403 administrator without impersonation or registry permission; 405 other methods; 500 owner without association; 401 athletes (empty body); 400 malformed uid; 403 'User not allowed.' or a scoped-session reference; 404 Invalid page.; 500 missing subscription, subscription without associate, invalid subject or unknown ordering.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read; athlete view for association-scoped sessions.",
+        "resource_scope": "Live, group-aware payments of the scoped association for the subscription's associate or an associate with the same tax code (iexact).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_reads_http.json",
+        "TESTS/fixtures/generate_payment_reads_http.py",
+        "TESTS/contracts/test_payment_reads_http.py",
+        "TESTS/adapters/django/payment_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 239/239; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-red-r2/results.json",
+          "receipt_sha256": "ac39434e570b21528c8e25c860fca3abbafc97e42e51dbd375f32f398a8ee8c9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 239/239 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/payment-reads-http-versioned-r3/results.json",
+          "receipt_sha256": "8865a6af5b910bb7f4d5c6558d4dab071f4120948298048df037a47ff4328c19"
+        },
+        {
+          "revision": "counting each matching payment once in the stats account balances",
+          "result": "Mutation control: fails Go on payment-reads-stats-search-rossi (CAUGHT).",
+          "artifact": "quality-reports/go-migration/payment-reads-http-mutation-r1/results.json",
+          "receipt_sha256": "024db9df1111034b93d8f12c5a5356d7bfdea58fca463b52955753644eb43fc9"
+        }
+      ],
+      "notes": [
+        "Implementing: Payment list (owner/collaborator listing and compressed mode), payment stats and subscription payments with HTTP parity; the athlete branch of payment/list, instructor payments without a compensation document, Stripe-configured stats, compile-time orderings and infinite search terms are refused (500)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/reject -> subscription_reject",
