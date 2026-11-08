@@ -16835,25 +16835,78 @@
         "target": "AssociateSubscriptionViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_writes.go",
+        "BE_GO/internal/dto/personas_writes.go",
+        "BE_GO/internal/repository/personas_writes.go",
+        "BE_GO/internal/service/personas_writes.go",
+        "BE_GO/internal/handler/personas_writes.go",
+        "BE_GO/internal/domain/personas_subscriptions.go",
+        "BE_GO/internal/dto/personas_subscriptions.go",
+        "BE_GO/internal/repository/personas_subscriptions.go",
+        "BE_GO/internal/service/personas_subscriptions.go",
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "personas-reads"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas-subscriptions/<pk>/list",
+          "/api/v2/personas-subscriptions/<pk>/list",
+          "/api/personas-subscriptions/<pk>/list"
+        ],
+        "request": "Path pk (associate id); pagination[perpage], pagination[page]; X-Group-Id.",
+        "response": "200 {data: AssociateSubscriptionSerializer[], meta: {total, page, pages, perpage, rowIds}}.",
+        "errors": "404 Invalid page.; 403 User is not a sport association; 500 page for a pk the UUID field rejects; DELETE: 404 Not found. / No Subscription matches the given query., 500 refusal once found (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.read.",
+        "resource_scope": "Subscription.objects (group-aware) of the association, not deleted, filtered by associate_id.",
+        "side_effects": "None for GET; DELETE soft delete not ported.",
+        "transaction": "Read-only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_writes_http.json",
+        "TESTS/fixtures/generate_personas_writes_http.py",
+        "TESTS/contracts/test_personas_writes_http.py",
+        "TESTS/adapters/django/personas_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 168/168; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-native-red/results.json",
+          "receipt_sha256": "960858dd705763c2b77527202b17c30af773a12d87196673121135055678c49d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "e7ad9e5ca78351d9a1a5656b7001c948e82e510448906033f0194b918531b286"
+        },
+        {
+          "revision": "committing change with recover treating a soft-deleted row as found by auditlog's old-row lookup",
+          "result": "Mutation control: fails Go on personas-writes-recover-owner (CAUGHT).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "0ee2700f7c00c11910987c5880fc8efa4c532d56732225cbebe1d9cfc005436a"
+        }
+      ],
+      "notes": [
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/<str:pk>/delete -> AssociateViewSet.as_view({'delete': 'delete'})",
@@ -16870,25 +16923,76 @@
         "target": "AssociateViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_writes.go",
+        "BE_GO/internal/dto/personas_writes.go",
+        "BE_GO/internal/repository/personas_writes.go",
+        "BE_GO/internal/service/personas_writes.go",
+        "BE_GO/internal/handler/personas_writes.go",
+        "BE_GO/internal/domain/personas_subscriptions.go",
+        "BE_GO/internal/dto/personas_subscriptions.go",
+        "BE_GO/internal/repository/personas_subscriptions.go",
+        "BE_GO/internal/service/personas_subscriptions.go",
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "personas-reads"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/<pk>/delete",
+          "/api/v2/personas/<pk>/delete",
+          "/api/personas/<pk>/delete"
+        ],
+        "request": "Path pk; X-Group-Id and get_queryset query parameters.",
+        "response": "204 without a body.",
+        "errors": "404 Not found. / No Associate matches the given query.; 403 User is not a sport association; 500 page for invalid query filters or a missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.delete.",
+        "resource_scope": "get_queryset: the association's live, group-aware associates with the query filters.",
+        "side_effects": "deleted=True and save(): auditlog update entry {'deleted': ['False', 'True']} indexed direct.",
+        "transaction": "Single save; Go runs one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_writes_http.json",
+        "TESTS/fixtures/generate_personas_writes_http.py",
+        "TESTS/contracts/test_personas_writes_http.py",
+        "TESTS/adapters/django/personas_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 168/168; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-native-red/results.json",
+          "receipt_sha256": "960858dd705763c2b77527202b17c30af773a12d87196673121135055678c49d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "e7ad9e5ca78351d9a1a5656b7001c948e82e510448906033f0194b918531b286"
+        },
+        {
+          "revision": "committing change with recover treating a soft-deleted row as found by auditlog's old-row lookup",
+          "result": "Mutation control: fails Go on personas-writes-recover-owner (CAUGHT).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "0ee2700f7c00c11910987c5880fc8efa4c532d56732225cbebe1d9cfc005436a"
+        }
+      ],
+      "notes": [
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/<str:pk>/info -> AssociateViewSet.as_view({'get': 'info'})",
@@ -16987,25 +17091,77 @@
         "target": "AssociateViewSet.as_view({'post': 'recover'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_writes.go",
+        "BE_GO/internal/dto/personas_writes.go",
+        "BE_GO/internal/repository/personas_writes.go",
+        "BE_GO/internal/service/personas_writes.go",
+        "BE_GO/internal/handler/personas_writes.go",
+        "BE_GO/internal/domain/personas_subscriptions.go",
+        "BE_GO/internal/dto/personas_subscriptions.go",
+        "BE_GO/internal/repository/personas_subscriptions.go",
+        "BE_GO/internal/service/personas_subscriptions.go",
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "personas-reads"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/<pk>/recover",
+          "/api/v2/personas/<pk>/recover",
+          "/api/personas/<pk>/recover"
+        ],
+        "request": "Path pk; X-Group-Id.",
+        "response": "200 {'mgs': 'Ripristinata con successo'}; DELETE 204 (soft delete); OPTIONS with actions.POST metadata.",
+        "errors": "404 without a body for a missing row; 403 User not allowed.; 403 User is not a sport association; 500 page for a pk the UUID field rejects or a row without an association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.update.",
+        "resource_scope": "Associate.objects.all_objects() by pk, then the row's association compared with request.user.sport_association.",
+        "side_effects": "deleted=False and save(): auditlog update entry with every field when the soft-delete, group-aware manager does not find the old row, none when nothing changed.",
+        "transaction": "Single save; Go runs one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_writes_http.json",
+        "TESTS/fixtures/generate_personas_writes_http.py",
+        "TESTS/contracts/test_personas_writes_http.py",
+        "TESTS/adapters/django/personas_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 168/168; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-native-red/results.json",
+          "receipt_sha256": "960858dd705763c2b77527202b17c30af773a12d87196673121135055678c49d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "e7ad9e5ca78351d9a1a5656b7001c948e82e510448906033f0194b918531b286"
+        },
+        {
+          "revision": "committing change with recover treating a soft-deleted row as found by auditlog's old-row lookup",
+          "result": "Mutation control: fails Go on personas-writes-recover-owner (CAUGHT).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "0ee2700f7c00c11910987c5880fc8efa4c532d56732225cbebe1d9cfc005436a"
+        }
+      ],
+      "notes": [
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/<str:pk>/update -> AssociateViewSet.as_view({'patch': 'update'})",
@@ -17022,25 +17178,77 @@
         "target": "AssociateViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_writes.go",
+        "BE_GO/internal/dto/personas_writes.go",
+        "BE_GO/internal/repository/personas_writes.go",
+        "BE_GO/internal/service/personas_writes.go",
+        "BE_GO/internal/handler/personas_writes.go",
+        "BE_GO/internal/domain/personas_subscriptions.go",
+        "BE_GO/internal/dto/personas_subscriptions.go",
+        "BE_GO/internal/repository/personas_subscriptions.go",
+        "BE_GO/internal/service/personas_subscriptions.go",
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "personas-reads"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/<pk>/update",
+          "/api/v2/personas/<pk>/update",
+          "/api/personas/<pk>/update"
+        ],
+        "request": "Path pk; JSON or form body with partial AssociateSerializer fields and optional tutors_data (a missing one deletes every relation); X-Group-Id and get_queryset query parameters.",
+        "response": "200 AssociateSerializer of the row re-read through get_object(); DELETE 204 (soft delete).",
+        "errors": "404 Not found. / No Associate matches the given query. (before the body; and after the writes when the row left the filters); 400 JSON parse error; 400 serializer.errors; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for non-dict bodies, a duplicate live tax code (its audit entry stays), malformed tutors_data and a second primary relation after the save.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.update.",
+        "resource_scope": "get_queryset: the association's live, group-aware associates with the query filters.",
+        "side_effects": "Saves every field of the associate (auditlog entry with the changed fields), tutor writes as for add.",
+        "transaction": "Django is not atomic; Go commits saved writes before answering a later exception.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_writes_http.json",
+        "TESTS/fixtures/generate_personas_writes_http.py",
+        "TESTS/contracts/test_personas_writes_http.py",
+        "TESTS/adapters/django/personas_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 168/168; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-native-red/results.json",
+          "receipt_sha256": "960858dd705763c2b77527202b17c30af773a12d87196673121135055678c49d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "e7ad9e5ca78351d9a1a5656b7001c948e82e510448906033f0194b918531b286"
+        },
+        {
+          "revision": "committing change with recover treating a soft-deleted row as found by auditlog's old-row lookup",
+          "result": "Mutation control: fails Go on personas-writes-recover-owner (CAUGHT).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "0ee2700f7c00c11910987c5880fc8efa4c532d56732225cbebe1d9cfc005436a"
+        }
+      ],
+      "notes": [
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/add -> AssociateViewSet.as_view({'post': 'add'})",
@@ -17057,25 +17265,77 @@
         "target": "AssociateViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_writes.go",
+        "BE_GO/internal/dto/personas_writes.go",
+        "BE_GO/internal/repository/personas_writes.go",
+        "BE_GO/internal/service/personas_writes.go",
+        "BE_GO/internal/handler/personas_writes.go",
+        "BE_GO/internal/domain/personas_subscriptions.go",
+        "BE_GO/internal/dto/personas_subscriptions.go",
+        "BE_GO/internal/repository/personas_subscriptions.go",
+        "BE_GO/internal/service/personas_subscriptions.go",
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "personas-reads"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/add",
+          "/api/v2/personas/add",
+          "/api/personas/add"
+        ],
+        "request": "JSON object body: AssociateSerializer fields (born_date DD/MM/YYYY, user/sport_association/group/family primary keys) and optional tutors_data list of {tutor: BasicAssociateSerializer fields, is_primary}; X-Group-Id optional.",
+        "response": "201 AssociateSerializer of the created associate; OPTIONS with actions.POST metadata.",
+        "errors": "400 JSON parse error (after the association check); 400 serializer.errors (also a tutor's errors after the associate was saved); 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for form or non-dict bodies, a duplicate live tax code, malformed tutors_data after the save, a second primary relation; DELETE: 500 (no pk), athletes 403.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.create.",
+        "resource_scope": "request.user.sport_association; related fields through tenant_scope; existing tutors by id through Associate.objects (live, group-aware).",
+        "side_effects": "Creates the Associate (user=request.user, the association, raw X-Group-Id), creates or partially updates tutors, creates/updates/deletes tutor relations, promotes the first relation without a primary; auditlog entries with AuditLogIndex rows.",
+        "transaction": "Django is not atomic (writes before a later exception stay); Go runs one transaction and commits saved writes before answering a later exception.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_writes_http.json",
+        "TESTS/fixtures/generate_personas_writes_http.py",
+        "TESTS/contracts/test_personas_writes_http.py",
+        "TESTS/adapters/django/personas_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 168/168; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-native-red/results.json",
+          "receipt_sha256": "960858dd705763c2b77527202b17c30af773a12d87196673121135055678c49d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "e7ad9e5ca78351d9a1a5656b7001c948e82e510448906033f0194b918531b286"
+        },
+        {
+          "revision": "committing change with recover treating a soft-deleted row as found by auditlog's old-row lookup",
+          "result": "Mutation control: fails Go on personas-writes-recover-owner (CAUGHT).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "0ee2700f7c00c11910987c5880fc8efa4c532d56732225cbebe1d9cfc005436a"
+        }
+      ],
+      "notes": [
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/all -> AssociateViewSet.as_view({'get': 'all'})",
@@ -17338,25 +17598,76 @@
         "target": "AssociateViewSet.as_view({'delete': 'bulk_delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/personas_writes.go",
+        "BE_GO/internal/dto/personas_writes.go",
+        "BE_GO/internal/repository/personas_writes.go",
+        "BE_GO/internal/service/personas_writes.go",
+        "BE_GO/internal/handler/personas_writes.go",
+        "BE_GO/internal/domain/personas_subscriptions.go",
+        "BE_GO/internal/dto/personas_subscriptions.go",
+        "BE_GO/internal/repository/personas_subscriptions.go",
+        "BE_GO/internal/service/personas_subscriptions.go",
+        "BE_GO/internal/domain/personas_reads.go",
+        "BE_GO/internal/handler/personas_reads.go",
+        "BE_GO/internal/repository/personas_reads.go",
+        "BE_GO/internal/service/personas_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "personas-reads"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/personas/bulk-delete",
+          "/api/v2/personas/bulk-delete",
+          "/api/personas/bulk-delete"
+        ],
+        "request": "JSON or form body {associate_ids: [...]}; X-Group-Id.",
+        "response": "204 without a body.",
+        "errors": "403 User is not a sport association; 500 page for list bodies, non-sized ids, ids the UUID field rejects, a missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.personas.delete.",
+        "resource_scope": "Associate.objects (live, group-aware) of request.user.sport_association.",
+        "side_effects": "QuerySet.update(deleted=True): no auditlog entries.",
+        "transaction": "Single UPDATE.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/personas_writes_http.json",
+        "TESTS/fixtures/generate_personas_writes_http.py",
+        "TESTS/contracts/test_personas_writes_http.py",
+        "TESTS/adapters/django/personas_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/personas-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 168/168; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-native-red/results.json",
+          "receipt_sha256": "960858dd705763c2b77527202b17c30af773a12d87196673121135055678c49d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 168/168 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit and index effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "e7ad9e5ca78351d9a1a5656b7001c948e82e510448906033f0194b918531b286"
+        },
+        {
+          "revision": "committing change with recover treating a soft-deleted row as found by auditlog's old-row lookup",
+          "result": "Mutation control: fails Go on personas-writes-recover-owner (CAUGHT).",
+          "artifact": "quality-reports/go-migration/personas-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "0ee2700f7c00c11910987c5880fc8efa4c532d56732225cbebe1d9cfc005436a"
+        }
+      ],
+      "notes": [
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. Refused with a 500 before any write: picture_path values containing base64 (object storage upload), non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:personas/list -> AssociateViewSet.as_view({'get': 'list'})",
