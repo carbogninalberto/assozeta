@@ -352,6 +352,13 @@ func run() (runErr error) {
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/stats", paymentReadsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/payments", paymentReadsHandler.SubscriptionPayments, middleware.DjangoSessionAudit(sessionAuthentication))
+	subscriptionReadsHandler := handler.NewSubscriptionReadsHandler(service.NewSubscriptionReads(repository.NewSubscriptionReads(db),
+		repository.NewCourseSubscriptions(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
+	e.Any("/subscription/list", subscriptionReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/list/all", subscriptionReadsHandler.ListAll, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/list/archived", subscriptionReadsHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/info", subscriptionReadsHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/calendar", subscriptionReadsHandler.Calendar, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/archive", paymentStatesHandler.BulkArchive, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment-bulk/delete", paymentStatesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	paymentWritesHandler := handler.NewPaymentWritesHandler(service.NewPaymentWrites(repository.NewPaymentWrites(repository.NewPaymentStates(db)),
