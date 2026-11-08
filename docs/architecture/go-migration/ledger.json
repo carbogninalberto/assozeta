@@ -6988,25 +6988,74 @@
         "target": "collaborators_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/collaborators_writes.go",
+        "BE_GO/internal/dto/collaborators_writes.go",
+        "BE_GO/internal/repository/collaborators_writes.go",
+        "BE_GO/internal/service/collaborators_writes.go",
+        "BE_GO/internal/handler/collaborators_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/collaborator_views.py",
+        "BE/application/models/user_models.py",
+        "BE/application/permissions.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/collaborators/<uid>/update",
+          "/api/v2/collaborators/<uid>/update",
+          "/api/collaborators/<uid>/update"
+        ],
+        "request": "JSON or form body: collaborator_role (int() of the value, default 3; outside 1-3 becomes 1), collaborator_permissions (kept for role 3 only). The body is parsed before the uid is validated.",
+        "response": "200 {\"msg\": \"collaborator updated.\"}",
+        "errors": "400 JSON parse error; 400 [\"badly formed hexadecimal UUID string\"]; 400 [\"Collaborator not found\"]; 401 anonymous; 403 admin without session, registry, athletes (IsAssociationUser), owner scoped to an athlete; 405; 500 for a non-dict body or a role int() rejects (no write) and for a jsonb value PostgreSQL rejects (audit entry kept).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (identity, impersonation and registry other.users.collaborators.update) and IsAssociationUser.",
+        "resource_scope": "Live user with connected_user = request.user (the owner for collaborators) and user_id = uid.",
+        "side_effects": "Saves collaborator_role and collaborator_permissions; one auditlog User update entry when either changed (User resolver, then the actor's association for the index).",
+        "transaction": "Not atomic in Django: the pre_save audit entry commits before a rejected save. Go: one transaction, target row lock, update in a savepoint.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/collaborators_writes_http.json",
+        "TESTS/fixtures/generate_collaborators_writes_http.py",
+        "TESTS/contracts/test_collaborators_writes_http.py",
+        "TESTS/adapters/django/collaborators_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/collaborators-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 45/45; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/collaborators-writes-http-native-r1/results.json",
+          "receipt_sha256": "efa513cd432aebb3a4132efb23160481b1207ca432a2b1bd7feadb964c629572"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 45/45 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, audit and index effects.",
+          "artifact": "quality-reports/go-migration/collaborators-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "972a9260450da3b7fea47dc0bbb56c76d82a1c69c3b91843e1b9c180529fcaa5"
+        },
+        {
+          "revision": "committing change with collaborator_permissions kept for every role",
+          "result": "Mutation control: fails Go on collaborators-writes-owner-accounting-drops-permissions (state.permissions).",
+          "artifact": "quality-reports/go-migration/collaborators-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "ce8c67bdac74c319260166f0ae0901335c53236c285fd3b7b37ee2c9f340ff28"
+        }
+      ],
+      "notes": [
+        "Implementing: collaborators/add is not ported: every success path dispatches the invitation e-mail (send_mail_async Celery task). collaborators/<uid>/delete stays needs_review (User cascade graph, accepted-invitation email link and lock protocol outside this fixture)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:collaborators/add -> collaborators_add",
