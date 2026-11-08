@@ -15,6 +15,8 @@ type PersonasHandler struct {
 	personas   *service.Personas
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
+	// writes serves the soft delete of DELETE on personas/<pk>/info.
+	writes *PersonasWritesHandler
 }
 
 func NewPersonasHandler(personas *service.Personas, actors *service.ActorAuthentication, identities *service.IdentityResolver) *PersonasHandler {
@@ -39,6 +41,9 @@ func (h *PersonasHandler) serve(c echo.Context, pk *string, read func(domain.Res
 	case http.MethodGet, http.MethodHead:
 		body, err = read(*identity, query, group)
 	case http.MethodDelete:
+		if pk != nil && h.writes != nil {
+			return h.writes.softDelete(c, *identity, *pk)
+		}
 		err = h.personas.Delete(request.Context(), *identity, pk, query, group)
 	default:
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})

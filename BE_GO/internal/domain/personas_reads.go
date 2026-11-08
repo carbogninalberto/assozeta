@@ -126,6 +126,9 @@ type PersonasStore interface {
 	FamilyMembers(ctx context.Context, family, self string, group *string) ([]string, error)
 	PersonaNames(ctx context.Context, association string, group *string) ([]PersonaName, error)
 	CurrentSubscriptions(ctx context.Context, association string, group *string, today time.Time) ([]PersonaSubscription, error)
+	// PersonaByID reads one row with its is_tutor annotation in any state (an
+	// instance the serializer renders without a queryset); nil when absent.
+	PersonaByID(ctx context.Context, id string) (*PersonaListed, error)
 }
 
 // PersonaOrderFields are the single names order_by() resolves on this queryset
