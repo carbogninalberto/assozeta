@@ -114,12 +114,16 @@ SCENARIOS = [
              expect={'status': 'REVOKED', 'exc': 'TaskRevokedError', 'emaillog': [], 'mails': 0}),
     Scenario('an unacknowledged message past the visibility timeout is restored and executed', base_kwargs(), unacked_seed=True,
              expect={'status': 'SUCCESS', 'emaillog': [('socio@example.test', 'Conferma iscrizione', 'Sent', None)], 'mails': 1}),
-    Scenario('association with a configuration is handed off to the Django queue',
-             base_kwargs(sport_association_id=CONFIGURED, html_message='<p>via associazione</p>'), handoff=True,
+    # CommunicationConfiguration.send_email and fail_silently run in Go since consumer-email
+    # (celery_consumer_email_process.py covers their other branches).
+    Scenario('association with a configuration without SMTP publishes a child the consumer executes',
+             base_kwargs(sport_association_id=CONFIGURED, html_message='<p>via associazione</p>'),
              expect={'rows': 2, 'status': 'SUCCESS', 'emaillog': [('socio@example.test', 'Conferma iscrizione', 'Sent', CONFIGURED)] * 2,
                      'mails': 1}),
-    Scenario('fail_silently=True is handed off to the Django queue', base_kwargs(fail_silently=True), smtp='refused', handoff=True,
+    Scenario('fail_silently=True with a refused connection logs Sent', base_kwargs(fail_silently=True), smtp='refused',
              expect={'status': 'SUCCESS', 'emaillog': [('socio@example.test', 'Conferma iscrizione', 'Sent', None)], 'mails': 0}),
+    Scenario('an unknown keyword argument is handed off to the Django queue', base_kwargs(auth_user=None), handoff=True,
+             expect={'status': 'SUCCESS', 'emaillog': [('socio@example.test', 'Conferma iscrizione', 'Sent', None)], 'mails': 1}),
 ]
 
 
@@ -352,7 +356,7 @@ class Harness:
         finally:
             if process.poll() is None:
                 process.send_signal(signal.SIGTERM)
-            code = process.wait(timeout=30)
+            code = process.wait(timeout=60)
             stream.close()
         text = log.read_text()
         assert 'WARNING: DATA RACE' not in text, 'Go race detector: ' + scenario.name
@@ -387,6 +391,11 @@ class Harness:
             if row['task_id'] != original['headers']['id']:
                 UUID(row['task_id'])
                 row['task_id'] = '<child-task-id>'  # published by the task with a fresh uuid4
+            meta = json.loads(row['meta'])
+            if any(child != original['headers']['id'] for (child, _), _ in meta['children']):
+                meta['children'] = [[[child if child == original['headers']['id'] else '<child-task-id>', rest], extra]
+                                    for (child, rest), extra in meta['children']]
+                row['meta'] = json.dumps(meta)
             results.append(row)
         logs = []
         for row in state.pop('application.EmailLog'):

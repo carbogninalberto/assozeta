@@ -171,7 +171,7 @@ func (s *EmailTasks) partialRegistration(ctx context.Context, job domain.Job, pa
 		return err
 	}
 	defer tx.Rollback()
-	if _, err = s.publisher.Publish(ctx, celery.Task{Name: "send_mail_async", Kwargs: celery.Dict{
+	if _, err = s.publisher.Publish(ctx, celery.Task{Name: SendMailAsyncTask, Kwargs: celery.Dict{
 		{Key: "subject", Value: "Completa la tua registrazione per attivare la prova gratuita di " + s.settings.WhitelabelName},
 		{Key: "message", Value: message}, {Key: "from_email", Value: s.settings.DefaultTeamEmail},
 		{Key: "recipient_list", Value: []any{pythonLower(partial.Email)}}, {Key: "html_message", Value: message},
@@ -353,7 +353,7 @@ func (s *EmailTasks) certificate(ctx context.Context, job domain.Job, task certi
 	if send.configuration != nil {
 		return s.configurationSend(ctx, &job, *send.configuration, send.subject, send.message, []*string{&send.recipient}, replyTo)
 	}
-	if _, err = s.publisher.Publish(ctx, celery.Task{Name: "send_mail_async", Kwargs: celery.Dict{
+	if _, err = s.publisher.Publish(ctx, celery.Task{Name: SendMailAsyncTask, Kwargs: celery.Dict{
 		{Key: "subject", Value: send.subject}, {Key: "message", Value: send.message}, {Key: "from_email", Value: s.settings.DefaultTeamEmail},
 		{Key: "recipient_list", Value: []any{send.recipient}}, {Key: "html_message", Value: send.message},
 		{Key: "fail_silently", Value: false}, {Key: "sport_association_id", Value: subscription.AssociationID},
@@ -476,7 +476,7 @@ func (s *EmailTasks) configurationSend(ctx context.Context, job *domain.Job, con
 	for i, address := range replyTo {
 		reply[i] = address
 	}
-	if _, err = s.publisher.Publish(ctx, celery.Task{Name: "send_mail_async", Kwargs: celery.Dict{
+	if _, err = s.publisher.Publish(ctx, celery.Task{Name: SendMailAsyncTask, Kwargs: celery.Dict{
 		{Key: "subject", Value: subject}, {Key: "message", Value: nil},
 		{Key: "from_email", Value: strings.ReplaceAll(s.settings.DefaultFromEmail, s.settings.WhitelabelName, *denomination)},
 		{Key: "recipient_list", Value: list}, {Key: "fail_silently", Value: false}, {Key: "html_message", Value: html},
@@ -617,7 +617,7 @@ func (s *EmailTasks) SendEmailHTML(ctx context.Context, job domain.Job, associat
 	for i, address := range replyTo {
 		reply[i] = address
 	}
-	if _, err = s.publisher.Publish(ctx, celery.Task{Name: "send_mail_async", Kwargs: celery.Dict{
+	if _, err = s.publisher.Publish(ctx, celery.Task{Name: SendMailAsyncTask, Kwargs: celery.Dict{
 		{Key: "subject", Value: subject}, {Key: "message", Value: message}, {Key: "from_email", Value: s.settings.DefaultFromEmail},
 		{Key: "recipient_list", Value: list}, {Key: "html_message", Value: message}, {Key: "fail_silently", Value: false},
 		{Key: "sport_association_id", Value: association}, {Key: "reply_to", Value: reply},
