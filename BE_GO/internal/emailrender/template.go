@@ -36,9 +36,12 @@ func unsupported(format string, args ...any) error {
 
 // Templates rendered by the ported views.
 const (
-	CollaboratorInvite = "email/account/email_welcome_collaborator_message.html"
-	PaymentPending     = "email/payment/pending.html"
-	PaymentReceipt     = "email/payment/payment_receipt.html"
+	CollaboratorInvite  = "email/account/email_welcome_collaborator_message.html"
+	PaymentPending      = "email/payment/pending.html"
+	PaymentReceipt      = "email/payment/payment_receipt.html"
+	AccountWelcome      = "email/account/email_welcome_message.html"
+	AccountReset        = "email/account/email_reset_message.html"
+	AccountResetConfirm = "email/account/email_confirm_reset_message.html"
 )
 
 type node interface{}
@@ -374,7 +377,7 @@ var (
 )
 
 // Names lists the embedded templates.
-var names = []string{"email/_base.html", CollaboratorInvite, PaymentPending, PaymentReceipt}
+var names = []string{"email/_base.html", CollaboratorInvite, PaymentPending, PaymentReceipt, AccountWelcome, AccountReset, AccountResetConfirm}
 
 func templates() (map[string]*template, error) {
 	loadOnce.Do(func() {

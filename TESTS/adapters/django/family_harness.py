@@ -67,8 +67,9 @@ def fixture_context_for(contract, seed, *, purge=()):
                 with disable_auditlog():
                     LogEntry.objects.exclude(pk__in=original_audit).delete()
                     if fixture is not None:
-                        seeded = [pk for _, pk in fixture['created']]
                         for model, keep in original.items():
+                            # Only this model's seeded keys: pk types differ between models.
+                            seeded = [pk for created, pk in fixture['created'] if created is model]
                             model._base_manager.exclude(pk__in=[*keep, *seeded]).delete()
                         shared.delete_created(fixture)
                 carnets.state_unchanged(before, scopes.snapshot_state(apps))

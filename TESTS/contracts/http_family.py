@@ -45,7 +45,7 @@ def _sorted(value, path, field):
     return {**value, path[0]: _sorted(value[path[0]], path[1:], field)}
 
 
-def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), unordered=(), normalize=None):
+def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), unordered=(), normalize=None, challenged=None):
     """Check one authored case.
 
     allowed(case) -> the exact Allow method set (OPTIONS included by the caller).
@@ -54,6 +54,9 @@ def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), uno
     unordered: (path tuple, identity field) pairs of unordered lists.
     normalize(case, expected, actual) -> (expected, actual): optional family
     hook applied before the unordered sort (for example verified signed tokens).
+    challenged(case, status) -> whether the response carries the Bearer
+    challenge; by default every 401 (DRF's NotAuthenticated) does, while a
+    view's own Response(status=401) does not.
     """
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'],
                **substitute(case['headers'], sessions)}
@@ -74,7 +77,8 @@ def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), uno
         return status
     check(set(received.get('Allow', '').replace(' ', '').split(',')) == set(allowed(case)), 'response.allow')
     check(received.get('Content-Language') == 'en' and received.get('Set-Cookie') is None, 'response.headers')
-    check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if status == 401 else None), 'response.authentication')
+    challenge = challenged(case, status) if challenged is not None else status == 401
+    check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if challenge else None), 'response.authentication')
     if case['response'] == '<empty>':
         check(raw == b'', 'response.empty')
         return status
