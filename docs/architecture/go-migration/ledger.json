@@ -18,26 +18,61 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/backfill-audit-log-index/main.go",
+        "BE_GO/internal/service/audit_index_backfill.go",
+        "BE_GO/internal/repository/audit_index_backfill.go",
+        "BE_GO/internal/repository/audit_index.go",
+        "BE_GO/internal/dto/audit_index.go"
+      ],
+      "dependencies": [
+        "BE/application/signals.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/models/audit_models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
+        "request": "CLI --batch-size N (500), --dry-run, --content-type app_label.model, --limit N (0 = none); --name value or --name=value.",
+        "response": "Same stdout lines as Django; invalid content type is a message with exit 0; negative --limit exit 1 before Found; --batch-size 0 exit 1 after Found; argparse errors exit 2.",
         "errors": null,
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "side_effects": "Creates AuditLogIndex rows for pending LogEntries (no request context); each batch re-evaluates the pending query at its offset after the previous inserts.",
+        "transaction": "One transaction per batch, ON CONFLICT DO NOTHING.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/audit_index.py",
+        "BE_GO/internal/repository/audit_index_integration_test.go",
+        "BE_GO/internal/dto/audit_index_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/audit-index.md",
+        {
+          "revision": "RED receipt, Go resolver and command files removed",
+          "result": "RED: Django 438 resolver + 23 command cases against authored expectations; Go driver and command absent.",
+          "artifact": "quality-reports/go-migration/audit-index-red/results.json",
+          "receipt_sha256": "9252426d9665e1663db131483eef115a42e8fd69a4d23c8cee1c134ad7c027e8"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 438/438 Django post_save index rows vs Go IndexAuditLogEntry (76 audited content types, with/without X-Group-Id) and 23/23 manage.py backfill_audit_log_index vs race-built Go binary (exit, stdout, index table).",
+          "artifact": "quality-reports/go-migration/audit-index/results.json",
+          "receipt_sha256": "1e3739f40d955de337a6d2bd29807d5d03d1c874f5ec7028b15e969445b2064a"
+        },
+        {
+          "revision": "committing change with every backfill batch read from offset 0",
+          "result": "Mutation control: fails Go on \"small batches re-evaluate the pending query\".",
+          "artifact": "quality-reports/go-migration/audit-index-mutation-backfill/results.json",
+          "receipt_sha256": "74f58c404de2f4b60aa5ec346034db3e0e706c8ef6a185442a627b26168f7f84"
+        }
+      ],
       "notes": [
-        "ledger-structural review: Needs the generic audit index resolver, which Go does not have (see create_audit_log_index and ledger-structural.md)."
+        "ledger-structural review: Needs the generic audit index resolver, which Go does not have (see create_audit_log_index and ledger-structural.md).",
+        "Not ported: Django global management options and argparse prefix abbreviations (exit 2), integer options beyond 64 bits, per-entry error lines (Go exits 1 on database errors without a traceback), terminal colours. Binary not yet added to the Go image."
       ]
     },
     {
@@ -39251,7 +39286,7 @@
       "declaration": {
         "call": "post_save.connect(create_audit_log_index, sender=LogEntry)"
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/service/login_preparation.go",
         "BE_GO/internal/repository/login_preparation.go",
@@ -39262,7 +39297,9 @@
         "BE_GO/internal/repository/model_audit.go",
         "BE_GO/internal/domain/login_finalization.go",
         "BE_GO/internal/service/login_finalization.go",
-        "BE_GO/internal/repository/login_finalization.go"
+        "BE_GO/internal/repository/login_finalization.go",
+        "BE_GO/internal/repository/audit_index.go",
+        "BE_GO/internal/dto/audit_index.go"
       ],
       "dependencies": [
         "BE/application/signals.py",
@@ -39278,8 +39315,8 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": "For username and final-login delete_on user-update audits, create one existing AuditLogIndex for the target directly owned non-deleted association, otherwise the actor directly owned association; no collaborator-owner traversal. Membership-card create audits now create one index for the configuration association with resolution_path direct.",
-        "transaction": "Username, final-login deletion cancellation and membership-card configuration event/index invariants are atomic in Go with at most three deadlock/serialization retries. Other audit workflows remain open; Django autocommit failure differences are recorded.",
+        "side_effects": "One AuditLogIndex per new LogEntry when none exists and resolution succeeds: registered resolver on the default manager (soft-delete, X-Group-Id), then changes sport_association (old, new), then the actor live association; otherwise none.",
+        "transaction": "Go runs inside the caller write transaction; index or resolution database errors roll it back (Django strict mode). Django best-effort suppression outside atomic_audit_mutation is not reproduced.",
         "execution_owner": "django"
       },
       "tests": [
@@ -39294,7 +39331,10 @@
         "BE/application/tests/test_atomic_profile_audit.py",
         "TESTS/adapters/go/server_fence.py",
         "TESTS/adapters/go/restore_drain_pooler.py",
-        "TESTS/adapters/django/restore_server_barrier.py"
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "TESTS/adapters/go/audit_index.py",
+        "BE_GO/internal/repository/audit_index_integration_test.go",
+        "BE_GO/internal/dto/audit_index_test.go"
       ],
       "evidence": [
         "20 actual Django login/audit-middleware versus composed Go password/preparation/OTP cases; exact username/event/index fields and Django readback, with all managed tables unchanged after fixture restoration. Real PostgreSQL checks prove atomic failure rollback, five queries for indexed normalization, one for unchanged names, 32 concurrent calls without duplicate events, and retry after a forced cross-actor deadlock.",
@@ -39302,7 +39342,26 @@
         "17 explicit actual Django password-login versus Go finalization cases cover UTC deletion-date boundaries, exact last_login and audit/index readback. Two/four/five-statement paths, 32 concurrent Go calls in 67 statements, real permission/FK failures, injected failures and cancellation verify atomicity and pool release. Django partial autocommit and stale-save overwrites are characterized separately; all managed tables match after restoration.",
         "The complete current accounts adapter passes on production Python 3.13.2 with restore/CORS/security composition, all existing account/scope/login/image/audit checks and managed-state readback. Evidence: quality-reports/go-migration/restore-admission/full-accounts-production.log and full-accounts-results.json. Bidirectional credentials, permissions, provider protocols, cache/rate/security adapters, Go race/vet, health/recovery and the non-root Linux image rehearsal also pass. Current-model fixtures do not prove historical migrations, browser switching or complete backend parity.",
         "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
-        "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md."
+        "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md.",
+        "docs/architecture/go-migration/audit-index.md",
+        {
+          "revision": "RED receipt, Go resolver and command files removed",
+          "result": "RED: Django 438 resolver + 23 command cases against authored expectations; Go driver and command absent.",
+          "artifact": "quality-reports/go-migration/audit-index-red/results.json",
+          "receipt_sha256": "9252426d9665e1663db131483eef115a42e8fd69a4d23c8cee1c134ad7c027e8"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 438/438 Django post_save index rows vs Go IndexAuditLogEntry (76 audited content types, with/without X-Group-Id) and 23/23 manage.py backfill_audit_log_index vs race-built Go binary (exit, stdout, index table).",
+          "artifact": "quality-reports/go-migration/audit-index/results.json",
+          "receipt_sha256": "1e3739f40d955de337a6d2bd29807d5d03d1c874f5ec7028b15e969445b2064a"
+        },
+        {
+          "revision": "committing change with the resolver ignoring the default manager soft-delete filter",
+          "result": "Mutation control: fails Go on \"application.associate soft-deleted row hidden by the default manager\".",
+          "artifact": "quality-reports/go-migration/audit-index-mutation/results.json",
+          "receipt_sha256": "db25618183050cf7c3b1ee282b0b479937daed5e97025d9da50eef08d5cec7df"
+        }
       ],
       "notes": [
         "Username-normalization, final-login deletion-cancellation and membership-card default-creation audits are currently implemented in Go. Other registered models, changes-JSON fallbacks, deletion and audit lifecycle operations remain open.",
@@ -39310,7 +39369,8 @@
         "Django concurrent missing configuration lookups can create two rows; denied audit/index inserts retain partial autocommit effects. Go serializes participating Go writers and atomically rolls back the invariant. These differences are explicit; the Go parent lock does not coordinate unmodified Django writers. Cross-runtime concurrent creation remains unimplemented/unverified before activation.",
         "Final-login writes are a separate, unwired service: last_login and qualifying delete_on cancellation with atomic audit/index. Django full-model saves overwrite concurrent password/name/active changes; Go preserves them. End-to-end revocation admission and mixed-runtime audit races remain open. See BE_GO/internal/service/login_finalization.md.",
         "Main-alignment audit review exposed pre-SQL index failures swallowed by Django despite transaction.atomic. Scoped atomic_audit_mutation now propagates index errors for profile, table preferences and 2FA only; unrelated legacy signal callers retain behavior. Six real-PostgreSQL regressions and JWT/fresh-connection fault readback pass; SQL-trigger coverage alone had not established this failure mode. See main-alignment.md and ignored audit-index-exceptions/green-results.json.",
-        "ledger-structural review: a generic Go resolver is not provably equivalent yet. model_class.objects is the default manager, which for group-aware models filters by the request thread-local X-Group-Id, so resolution depends on request context; about 60 registered content types each need their manager and traversal characterised; Django swallows index errors outside the scoped atomic mutations. Families keep their inline index writes; status stays needs_review."
+        "ledger-structural review: a generic Go resolver is not provably equivalent yet. model_class.objects is the default manager, which for group-aware models filters by the request thread-local X-Group-Id, so resolution depends on request context; about 60 registered content types each need their manager and traversal characterised; Django swallows index errors outside the scoped atomic mutations. Families keep their inline index writes; status stays needs_review.",
+        "Generic resolver: repository.ResolveAuditLogIndex/IndexAuditLogEntry reproduce resolve_sport_association_for_log_entry for all 76 audited content types (73 registered resolvers, 3 unregistered) plus stale/unaudited content types, with X-Group-Id passed explicitly. Differences kept explicit: Go returns database errors (caller transaction rolls back) where Django logs and continues outside atomic_audit_mutation; Go reads stored changes JSON, Django the in-memory value (equal for all jsonb round-tripping values). Existing Go families still write index rows inline; they are not rewired to the generic resolver."
       ]
     },
     {
