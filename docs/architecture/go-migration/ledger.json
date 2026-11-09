@@ -1682,8 +1682,11 @@
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/repository/instance_setup.go",
+        "BE_GO/internal/service/instance_setup.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -1694,13 +1697,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "Create: a configuration existing already raises the singleton ValueError (inside the setup transaction, answered 500); empty display_settings are replaced with DEFAULT_DISPLAY_SETTINGS before saving.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_setup_http.json",
+        "TESTS/fixtures/generate_instance_setup_http.py",
+        "TESTS/contracts/test_instance_setup_http.py",
+        "TESTS/adapters/django/instance_setup_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-setup.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-native-r1/results.json",
+          "receipt_sha256": "603e56c5f5bca272ba2d9e277cadac21db2e6b5bf8a6bb436ef9c9da88e8e810"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and S3 object effects; exercised by instance-setup-configure-fresh, instance-setup-configure-import-pending-task, instance-setup-reconfigure-setup-owner, instance-setup-reconfigure-admin.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-versioned-r1/results.json",
+          "receipt_sha256": "ffe4437792cd1b74a0474c169c4381bb490b94b7b4b7cd3057c6fa845d84a1f6"
+        },
+        {
+          "revision": "committing change with InstanceConfiguration.save's empty display_settings default dropped (stored as given)",
+          "result": "Mutation control: fails Go on instance-setup-reconfigure-setup-owner (state.display_settings).",
+          "artifact": "quality-reports/go-migration/instance-setup-http-mutation-r1/results.json",
+          "receipt_sha256": "7190d79a361e5648037df65201c67f2239d03058eb4d2a1eac97cf2d452e0e1f"
+        }
+      ],
+      "notes": [
+        "Implementing via instance-setup: the fresh setup's create (singleton check, defaults stored) and reconfigure saves (an empty display_settings stored as the defaults)."
+      ]
     },
     {
       "id": "mount:BE/application/urls.py: -> include(router.urls)",
@@ -29568,25 +29598,81 @@
         "target": "OwnerLogoView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_setup.go",
+        "BE_GO/internal/dto/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup_defaults.go",
+        "BE_GO/internal/service/instance_setup.go",
+        "BE_GO/internal/handler/instance_setup.go",
+        "BE_GO/cmd/server/instance_setup.go",
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "bakney_user",
+        "application_sportassociation",
+        "application_customaccounts",
+        "application_usersonboarding",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "django_celery_results_taskresult",
+        "Default storage (S3): AWS_* settings, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "core.settings: INSTANCE_SETUP_TOKEN; default PBKDF2-SHA256 password hasher"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/admin/logo",
+          "/api/v2/admin/logo",
+          "/api/admin/logo"
+        ],
+        "request": "As instance/logo.",
+        "response": "As instance/logo.",
+        "errors": "401; 403 'Only the instance owner or an administrator can administer this installation.', impersonation 403; 405; 415; 400 as instance/logo; 500 'Failed to save logo'.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsInstanceOwner: active, non-deleted superuser or primary-association owner of a self-hosted configuration (the authenticated actor).",
+        "resource_scope": "As instance/logo.",
+        "side_effects": "As instance/logo.",
+        "transaction": "None (storage then a single save).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_setup_http.json",
+        "TESTS/fixtures/generate_instance_setup_http.py",
+        "TESTS/contracts/test_instance_setup_http.py",
+        "TESTS/adapters/django/instance_setup_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-setup.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-native-r1/results.json",
+          "receipt_sha256": "603e56c5f5bca272ba2d9e277cadac21db2e6b5bf8a6bb436ef9c9da88e8e810"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and S3 object effects.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-versioned-r1/results.json",
+          "receipt_sha256": "ffe4437792cd1b74a0474c169c4381bb490b94b7b4b7cd3057c6fa845d84a1f6"
+        },
+        {
+          "revision": "committing change with InstanceConfiguration.save's empty display_settings default dropped (stored as given)",
+          "result": "Mutation control: fails Go on instance-setup-reconfigure-setup-owner (state.display_settings).",
+          "artifact": "quality-reports/go-migration/instance-setup-http-mutation-r1/results.json",
+          "receipt_sha256": "7190d79a361e5648037df65201c67f2239d03058eb4d2a1eac97cf2d452e0e1f"
+        }
+      ],
+      "notes": [
+        "Implementing: First-run setup (fresh), reconfigure, setup-token validation and logo uploads. Refused with the server error page before any write: an import whose task has a ready result, owner/support emails over 254 characters, non-ASCII domain or owner email domain, URL values needing the IDNA fallback, a logo name taken again after the deletes, other exceptions inside the setup transaction."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/releases -> InstanceReleasesView.as_view()",
@@ -29887,25 +29973,81 @@
         "target": "InstanceSetupView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_setup.go",
+        "BE_GO/internal/dto/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup_defaults.go",
+        "BE_GO/internal/service/instance_setup.go",
+        "BE_GO/internal/handler/instance_setup.go",
+        "BE_GO/cmd/server/instance_setup.go",
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "bakney_user",
+        "application_sportassociation",
+        "application_customaccounts",
+        "application_usersonboarding",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "django_celery_results_taskresult",
+        "Default storage (S3): AWS_* settings, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "core.settings: INSTANCE_SETUP_TOKEN; default PBKDF2-SHA256 password hasher"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/configure",
+          "/api/v2/configure",
+          "/api/configure"
+        ],
+        "request": "JSON only: {domain, oem{name, abbreviation, primaryColor, supportEmail, logo}, oauth{googleClientId, appleClientId}, stripe{...}, initialization{type fresh|import, associationName, ownerEmail, ownerPassword, importTaskId}}.",
+        "response": "200 {'success': True, 'message': 'Istanza configurata con successo', 'association_id', 'redirect': '/login'}.",
+        "errors": "401; 403 setup token; 405; 400 {'success': False, 'error': 'Instance already configured. ...'} (before parsing); 415; 400 {'success': False, 'errors': serializer errors}; 500 {'success': False, 'error': 'Import task is still in progress. Please wait for completion.'} and the singleton message.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "SetupTokenOrAuthenticated: with a configuration, a superuser or the primary association's user (request.user); without one, X-Setup-Token equal to INSTANCE_SETUP_TOKEN (constant time, empty setting denies). Denial: 401 without an authenticated account, else 403 'Setup token missing or invalid.'. Checked before OPTIONS and method dispatch.",
+        "resource_scope": "The singleton InstanceConfiguration (none may exist).",
+        "side_effects": "Fresh: InstanceConfiguration, the owner User (PBKDF2 hash), SportAssociation, CustomAccounts cassa/banca, UsersOnboarding, then config.save() with the primary association; auditlog create entries for the user, association, accounts and onboarding with index rows self/direct.",
+        "transaction": "transaction.atomic around all creates; an import task without a ready result rolls back.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_setup_http.json",
+        "TESTS/fixtures/generate_instance_setup_http.py",
+        "TESTS/contracts/test_instance_setup_http.py",
+        "TESTS/adapters/django/instance_setup_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-setup.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-native-r1/results.json",
+          "receipt_sha256": "603e56c5f5bca272ba2d9e277cadac21db2e6b5bf8a6bb436ef9c9da88e8e810"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and S3 object effects.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-versioned-r1/results.json",
+          "receipt_sha256": "ffe4437792cd1b74a0474c169c4381bb490b94b7b4b7cd3057c6fa845d84a1f6"
+        },
+        {
+          "revision": "committing change with InstanceConfiguration.save's empty display_settings default dropped (stored as given)",
+          "result": "Mutation control: fails Go on instance-setup-reconfigure-setup-owner (state.display_settings).",
+          "artifact": "quality-reports/go-migration/instance-setup-http-mutation-r1/results.json",
+          "receipt_sha256": "7190d79a361e5648037df65201c67f2239d03058eb4d2a1eac97cf2d452e0e1f"
+        }
+      ],
+      "notes": [
+        "Implementing: First-run setup (fresh), reconfigure, setup-token validation and logo uploads. Refused with the server error page before any write: an import whose task has a ready result, owner/support emails over 254 characters, non-ASCII domain or owner email domain, URL values needing the IDNA fallback, a logo name taken again after the deletes, other exceptions inside the setup transaction."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:logo -> InstanceLogoUploadView.as_view()",
@@ -29922,25 +30064,81 @@
         "target": "InstanceLogoUploadView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_setup.go",
+        "BE_GO/internal/dto/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup_defaults.go",
+        "BE_GO/internal/service/instance_setup.go",
+        "BE_GO/internal/handler/instance_setup.go",
+        "BE_GO/cmd/server/instance_setup.go",
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "bakney_user",
+        "application_sportassociation",
+        "application_customaccounts",
+        "application_usersonboarding",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "django_celery_results_taskresult",
+        "Default storage (S3): AWS_* settings, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "core.settings: INSTANCE_SETUP_TOKEN; default PBKDF2-SHA256 password hasher"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/logo",
+          "/api/v2/logo",
+          "/api/logo"
+        ],
+        "request": "multipart/form-data 'file' (PNG, JPEG or WebP, at most 5 MiB); a form body has no file.",
+        "response": "200 {'success': True, 'logo_url': '/api/instance/logo.png' (versioned with ?v=<updated_at> when configured)}.",
+        "errors": "401; 403 setup token; 405; 415; 400 {'success': False, 'error': 'No file provided' | 'Invalid file type. Use PNG, JPG, or WebP.' | 'File too large. Maximum size is 5MB.'}; 500 {'success': False, 'error': 'Failed to save logo'}.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "SetupTokenOrAuthenticated: with a configuration, a superuser or the primary association's user (request.user); without one, X-Setup-Token equal to INSTANCE_SETUP_TOKEN (constant time, empty setting denies). Denial: 401 without an authenticated account, else 403 'Setup token missing or invalid.'. Checked before OPTIONS and method dispatch.",
+        "resource_scope": "The default storage instance/logo.* objects and the first InstanceConfiguration.",
+        "side_effects": "Deletes instance/logo.{png,jpg,svg,webp}, saves instance/logo.<ext> (content type, Cache-Control max-age=86400); with a configuration, save(update_fields=['logo_path', 'updated_at']).",
+        "transaction": "None (storage then a single save).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_setup_http.json",
+        "TESTS/fixtures/generate_instance_setup_http.py",
+        "TESTS/contracts/test_instance_setup_http.py",
+        "TESTS/adapters/django/instance_setup_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-setup.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-native-r1/results.json",
+          "receipt_sha256": "603e56c5f5bca272ba2d9e277cadac21db2e6b5bf8a6bb436ef9c9da88e8e810"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and S3 object effects.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-versioned-r1/results.json",
+          "receipt_sha256": "ffe4437792cd1b74a0474c169c4381bb490b94b7b4b7cd3057c6fa845d84a1f6"
+        },
+        {
+          "revision": "committing change with InstanceConfiguration.save's empty display_settings default dropped (stored as given)",
+          "result": "Mutation control: fails Go on instance-setup-reconfigure-setup-owner (state.display_settings).",
+          "artifact": "quality-reports/go-migration/instance-setup-http-mutation-r1/results.json",
+          "receipt_sha256": "7190d79a361e5648037df65201c67f2239d03058eb4d2a1eac97cf2d452e0e1f"
+        }
+      ],
+      "notes": [
+        "Implementing: First-run setup (fresh), reconfigure, setup-token validation and logo uploads. Refused with the server error page before any write: an import whose task has a ready result, owner/support emails over 254 characters, non-ASCII domain or owner email domain, URL values needing the IDNA fallback, a logo name taken again after the deletes, other exceptions inside the setup transaction."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:logo.png -> InstanceLogoServeView.as_view()",
@@ -30199,25 +30397,81 @@
         "target": "InstanceReconfigureView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_setup.go",
+        "BE_GO/internal/dto/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup_defaults.go",
+        "BE_GO/internal/service/instance_setup.go",
+        "BE_GO/internal/handler/instance_setup.go",
+        "BE_GO/cmd/server/instance_setup.go",
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "bakney_user",
+        "application_sportassociation",
+        "application_customaccounts",
+        "application_usersonboarding",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "django_celery_results_taskresult",
+        "Default storage (S3): AWS_* settings, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "core.settings: INSTANCE_SETUP_TOKEN; default PBKDF2-SHA256 password hasher"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PUT",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/reconfigure",
+          "/api/v2/reconfigure",
+          "/api/reconfigure"
+        ],
+        "request": "JSON only, partial: oem{...}, oauth{googleClientId, appleClientId}, stripe{...} (validated, not stored), display_settings, meta_title, meta_description, show_course_athletes, show_minor_exemption, show_tutorial.",
+        "response": "200 {'success': True, 'message': 'Configurazione aggiornata'}.",
+        "errors": "401; 405; 404 {'success': False, 'error': 'Instance not configured'}; 403 {'success': False, 'error': 'Only the instance owner can reconfigure'}; 415; 400 {'success': False, 'errors': ...}.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "IsAuthenticated, then the view: a superuser or the primary association's user (request.user).",
+        "resource_scope": "The first InstanceConfiguration.",
+        "side_effects": "save(update_fields=[edited columns..., 'updated_at']); falsy display_settings stored as the defaults (no audit).",
+        "transaction": "Single save(update_fields=...).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_setup_http.json",
+        "TESTS/fixtures/generate_instance_setup_http.py",
+        "TESTS/contracts/test_instance_setup_http.py",
+        "TESTS/adapters/django/instance_setup_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-setup.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-native-r1/results.json",
+          "receipt_sha256": "603e56c5f5bca272ba2d9e277cadac21db2e6b5bf8a6bb436ef9c9da88e8e810"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and S3 object effects.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-versioned-r1/results.json",
+          "receipt_sha256": "ffe4437792cd1b74a0474c169c4381bb490b94b7b4b7cd3057c6fa845d84a1f6"
+        },
+        {
+          "revision": "committing change with InstanceConfiguration.save's empty display_settings default dropped (stored as given)",
+          "result": "Mutation control: fails Go on instance-setup-reconfigure-setup-owner (state.display_settings).",
+          "artifact": "quality-reports/go-migration/instance-setup-http-mutation-r1/results.json",
+          "receipt_sha256": "7190d79a361e5648037df65201c67f2239d03058eb4d2a1eac97cf2d452e0e1f"
+        }
+      ],
+      "notes": [
+        "Implementing: First-run setup (fresh), reconfigure, setup-token validation and logo uploads. Refused with the server error page before any write: an import whose task has a ready result, owner/support emails over 254 characters, non-ASCII domain or owner email domain, URL values needing the IDNA fallback, a logo name taken again after the deletes, other exceptions inside the setup transaction."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:setup-token/validate -> InstanceSetupTokenValidateView.as_view()",
@@ -30234,25 +30488,81 @@
         "target": "InstanceSetupTokenValidateView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_setup.go",
+        "BE_GO/internal/dto/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup.go",
+        "BE_GO/internal/repository/instance_setup_defaults.go",
+        "BE_GO/internal/service/instance_setup.go",
+        "BE_GO/internal/handler/instance_setup.go",
+        "BE_GO/cmd/server/instance_setup.go",
+        "BE_GO/pkg/storage/instancelogo/write.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administration paths never impersonate) and the instance bootstrap service (InstanceConfigSerializer, is_instance_administrator)",
+        "instance_instanceconfiguration",
+        "bakney_user",
+        "application_sportassociation",
+        "application_customaccounts",
+        "application_usersonboarding",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "django_celery_results_taskresult",
+        "Default storage (S3): AWS_* settings, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "core.settings: INSTANCE_SETUP_TOKEN; default PBKDF2-SHA256 password hasher"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/setup-token/validate",
+          "/api/v2/setup-token/validate",
+          "/api/setup-token/validate"
+        ],
+        "request": "No body read.",
+        "response": "POST 200 {'valid': True}.",
+        "errors": "401; 403 'Setup token missing or invalid.', 'Esci dall’impersonificazione per accedere all’amministrazione.'; 405.",
+        "authentication": "DRF authentication (JWT/session); administration path, no impersonation.",
+        "permissions": "SetupTokenOrAuthenticated: with a configuration, a superuser or the primary association's user (request.user); without one, X-Setup-Token equal to INSTANCE_SETUP_TOKEN (constant time, empty setting denies). Denial: 401 without an authenticated account, else 403 'Setup token missing or invalid.'. Checked before OPTIONS and method dispatch.",
+        "resource_scope": "The first InstanceConfiguration.",
+        "side_effects": "None.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_setup_http.json",
+        "TESTS/fixtures/generate_instance_setup_http.py",
+        "TESTS/contracts/test_instance_setup_http.py",
+        "TESTS/adapters/django/instance_setup_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-setup.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 86/86; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-native-r1/results.json",
+          "receipt_sha256": "603e56c5f5bca272ba2d9e277cadac21db2e6b5bf8a6bb436ef9c9da88e8e810"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 86/86 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and S3 object effects.",
+          "artifact": "quality-reports/go-migration/instance-setup-http-versioned-r1/results.json",
+          "receipt_sha256": "ffe4437792cd1b74a0474c169c4381bb490b94b7b4b7cd3057c6fa845d84a1f6"
+        },
+        {
+          "revision": "committing change with InstanceConfiguration.save's empty display_settings default dropped (stored as given)",
+          "result": "Mutation control: fails Go on instance-setup-reconfigure-setup-owner (state.display_settings).",
+          "artifact": "quality-reports/go-migration/instance-setup-http-mutation-r1/results.json",
+          "receipt_sha256": "7190d79a361e5648037df65201c67f2239d03058eb4d2a1eac97cf2d452e0e1f"
+        }
+      ],
+      "notes": [
+        "Implementing: First-run setup (fresh), reconfigure, setup-token validation and logo uploads. Refused with the server error page before any write: an import whose task has a ready result, owner/support emails over 254 characters, non-ASCII domain or owner email domain, URL values needing the IDNA fallback, a logo name taken again after the deletes, other exceptions inside the setup transaction."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:status -> InstanceStatusView.as_view()",
