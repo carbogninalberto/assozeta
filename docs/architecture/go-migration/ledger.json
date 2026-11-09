@@ -17631,6 +17631,12 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
         "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -17648,7 +17654,14 @@
         "application_supplierandcustomers",
         "application_associate",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -17680,25 +17693,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 130/130; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
-          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
-          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
-          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
-          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
-          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -17723,6 +17736,12 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
         "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -17740,7 +17759,14 @@
         "application_supplierandcustomers",
         "application_associate",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -17772,25 +17798,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 130/130; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
-          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
-          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
-          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
-          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
-          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -17810,32 +17836,42 @@
       },
       "status": "implementing",
       "go": [
-        "BE_GO/internal/domain/payment_misc.go",
-        "BE_GO/internal/dto/payment_misc.go",
-        "BE_GO/internal/repository/payment_misc.go",
-        "BE_GO/internal/service/payment_misc.go",
-        "BE_GO/internal/handler/payment_misc.go",
         "BE_GO/internal/domain/payment_state.go",
         "BE_GO/internal/dto/payment_state.go",
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
-        "BE/application/views/payment_views.py",
-        "BE/application/utils/payments_utils.py",
-        "BE/application/tasks.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/serializers/payment_serializers.py",
-        "BE/application/serializers/subscriptions_serializers.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/invoices_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/user_models.py",
-        "BE/application/mixin.py",
-        "BE/application/impersonation_scope.py",
-        "BE/application/audit_resolvers.py",
-        "BE/application/permissions_registry.py"
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "payment-archive save defaults and course-subscriptions payment rendering and delete cascade",
+        "application_payment",
+        "application_payment_attachments",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_coursesubscription",
+        "application_carnetsubscription",
+        "application_invoicesuppliers",
+        "application_paymentcategory",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_associate",
+        "application_subscription",
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -17847,45 +17883,45 @@
           "/api/v2/payment/<uid>/approve",
           "/api/payment/<uid>/approve"
         ],
-        "request": "Body payment_date, generate_invoice, send_receipt_email.",
-        "response": "{'data': {'payment': ...}} or {'data': {'msg': 'payment mark as payed.', 'payment': ...}} with the invoice rendered.",
-        "errors": "400 UUID; 403 'User not allowed.'; 500 refusals for the invoice task and unpaid income payments with a party.",
+        "request": "Body payment_date ('%Y-%m-%d'), generate_invoice (default True), send_receipt_email (default False); JSON, form or multipart.",
+        "response": "200 {'data': {'payment': ...}} for unpaid expenses and party-less payments; {'data': {'msg': 'payment mark as payed.', 'payment': ...}} for paid payments and the paid flow, with the invoice rendered and invoice_generating when the task is dispatched.",
+        "errors": "400 malformed uuid list; 401; 403 registry / scoped session / {'detail': 'User not allowed.'}; 500 non-dict body, bad payment_date, missing/deleted/other-group payment, athletes, no association, failing Payment.save(), non-numeric meta category amounts, carnet subscriptions without a carnet (rolled back).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "bookeeping.payments.update",
-        "resource_scope": "Association of request.user; payment group-aware.",
-        "side_effects": "Marks unpaid expenses and party-less payments paid (supplier invoice for expenses), audited.",
-        "transaction": "Atomic payment update.",
+        "permissions": "Registry bookeeping.payments.update.",
+        "resource_scope": "The owner's live association; the payment through Payment.objects (live, X-Group-Id aware, session association); course subscriptions, installments and carnet subscriptions of the payment (impersonation adds the session's subscription and course/carnet association).",
+        "side_effects": "Payment paid with the date; expenses pay their first supplier invoice; the paid flow numbers and creates an invoice (associate or supplier), re-saves it, pays the first supplier invoice now, marks course subscriptions paid, writes validate_broadcast's rows and notifies request.user (Redis list, Channels push); print_document_invoice on commit when there is an invoice and generate_invoice is truthy. Audited.",
+        "transaction": "Atomic; the notification's Redis list and push and the task follow the commit in Go.",
         "execution_owner": "django"
       },
       "tests": [
-        "TESTS/fixtures/payment_misc_http.json",
-        "TESTS/fixtures/generate_payment_misc_http.py",
-        "TESTS/contracts/test_payment_misc_http.py",
-        "TESTS/adapters/django/payment_misc_http.py"
+        "TESTS/fixtures/payment_state_http.json",
+        "TESTS/fixtures/generate_payment_state_http.py",
+        "TESTS/contracts/test_payment_state_http.py",
+        "TESTS/adapters/django/payment_state_http.py"
       ],
       "evidence": [
-        "docs/architecture/go-migration/payment-misc.md",
+        "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 85/85; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-red-r4/results.json",
-          "receipt_sha256": "e0c6fda47fdda59641211cb861a3a8bb2cfdc0607720dace26c6fb7ca6956555"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-versioned-r1/results.json",
-          "receipt_sha256": "f430aa1150d76c334e433f7acf8a0648bac773974d4d767cd07604cf209078dc"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change without NOT s.archived in the simulation subscription selection",
-          "result": "Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length).",
-          "artifact": "quality-reports/go-migration/payment-misc-http-mutation-r1/results.json",
-          "receipt_sha256": "b82fb3037fe54d82b4a97d80d5e0931eba74c883dab0ffa1efe4309a2a00a593"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -17990,6 +18026,12 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
         "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -18007,7 +18049,14 @@
         "application_supplierandcustomers",
         "application_associate",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -18039,25 +18088,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 130/130; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
-          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
-          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
-          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
-          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
-          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -18082,6 +18131,12 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
         "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -18099,7 +18154,14 @@
         "application_supplierandcustomers",
         "application_associate",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -18131,25 +18193,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 130/130; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
-          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
-          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
-          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
-          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
-          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -22579,6 +22641,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22588,7 +22656,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22620,25 +22696,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -22664,6 +22740,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22673,7 +22755,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22705,25 +22795,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -22749,6 +22839,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22758,7 +22854,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22773,10 +22877,10 @@
         "request": "Body {'payments': [payment ids] | [objects with payment_id and sport_association]}.",
         "response": "200 {'data': {'client_secret': ..., 'info': {'checkout_info': ...}}, 'payments': <serialized or as sent>}",
         "errors": "400 {'data': {'msg': 'no payments provided.'}}; 409 offline; 500 page for non-dict bodies, payments without len, strings/dicts, unknown or malformed ids, missing keys, missing associates, Stripe errors; DRF parse errors.",
-        "authentication": "DRF AllowAny with ScopedJWTAuthentication (anonymous allowed; a supplied credential is authenticated and impersonation resolved).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "permission registry EXCLUDED_ENDPOINTS (no registry key); association-scoped sessions run enforce_scoped_request.",
         "resource_scope": "scoped_queryset(Payment.objects) and scoped SportAssociation.objects (live); first association group only.",
-        "side_effects": "Stripe retrieves and one PaymentIntent create (metadata payment_id -> amount); payment_intent_id saves (audited); supplier invoices of succeeded invoiced payments marked paid.",
+        "side_effects": "Stripe retrieves and one PaymentIntent create (metadata payment_id -> amount); payment_intent_id saves (audited); stored intents that succeeded are marked first. mark_payment_as_paid: first supplier invoice paid now; an unpaid payment without an invoice gets an invoice (Max number of the balance year's invoices + 1), is saved paid, marks its course subscription or installment paid, publishes print_document_invoice (request Authorization, or DOCUMENT_BYPASS_TOKEN from the webhook) and notifies payment.user (audited).",
         "transaction": "Not atomic.",
         "execution_owner": "django"
       },
@@ -22790,25 +22894,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -22834,6 +22938,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22843,7 +22953,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22875,25 +22993,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -22919,6 +23037,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22928,7 +23052,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22943,10 +23075,10 @@
         "request": "Path payment_id (is_valid_uuid); query payment_intent_id (last value); body not read.",
         "response": "200 {'data': {'client_secret': ...}} | {'data': {'msg': 'payment mark as payed.', 'status': 'paid'}} | {'data': {'msg': 'payment already paid.'}}",
         "errors": "400 ['badly formed hexadecimal UUID string']; 404 {'detail': 'payment not found'}; 409 {'error': 'Online payments are not configured.'}; 500 page for Stripe errors other than a caught retrieve InvalidRequestError, missing associate/user, payments without a user after a mark, bad metadata keys; scoped-session 403s; 405.",
-        "authentication": "DRF AllowAny with ScopedJWTAuthentication (anonymous allowed; a supplied credential is authenticated and impersonation resolved).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "permission registry EXCLUDED_ENDPOINTS (no registry key); association-scoped sessions run enforce_scoped_request.",
         "resource_scope": "scoped_queryset(Payment.objects) (live, X-Group-Id, session association); mark_payment_as_paid locks without the session scope.",
-        "side_effects": "Stripe PaymentIntent retrieve/create; payment_intent_id saves (Payment.save() defaults, audited); first supplier invoice marked paid (audited).",
+        "side_effects": "Stripe PaymentIntent retrieve/create; payment_intent_id saves (Payment.save() defaults, audited); mark_payment_as_paid: first supplier invoice paid now; an unpaid payment without an invoice gets an invoice (Max number of the balance year's invoices + 1), is saved paid, marks its course subscription or installment paid, publishes print_document_invoice (request Authorization, or DOCUMENT_BYPASS_TOKEN from the webhook) and notifies payment.user (audited).",
         "transaction": "Not atomic: each save commits; mark_payment_as_paid is atomic.",
         "execution_owner": "django"
       },
@@ -22960,25 +23092,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -23004,6 +23136,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -23013,7 +23151,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -23028,11 +23174,11 @@
         "request": "Raw body and Stripe-Signature header (stripe.Webhook.construct_event, 300 s tolerance).",
         "response": "Empty 200 for handled and unhandled event types.",
         "errors": "503 {'error': 'Stripe webhook is not configured.'}; empty 400 for payload/signature errors and charge.succeeded without payments; 500 page for a missing type, non-object events, non-ASCII signatures.",
-        "authentication": "DRF AllowAny with ScopedJWTAuthentication (anonymous allowed; a supplied credential is authenticated and impersonation resolved).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "permission registry EXCLUDED_ENDPOINTS (no registry key); association-scoped sessions run enforce_scoped_request.",
         "resource_scope": "scoped_queryset(Payment.objects) by payment_intent_id (X-Group-Id).",
-        "side_effects": "charge.succeeded: first supplier invoice of each unpaid invoiced payment marked paid (audited, actor none).",
-        "transaction": "Each mark atomic; exceptions in charge.succeeded are swallowed (200).",
+        "side_effects": "charge.succeeded: each unpaid payment of the intent marked (mark_payment_as_paid: first supplier invoice paid now; an unpaid payment without an invoice gets an invoice (Max number of the balance year's invoices + 1), is saved paid, marks its course subscription or installment paid, publishes print_document_invoice (request Authorization, or DOCUMENT_BYPASS_TOKEN from the webhook) and notifies payment.user (audited).)",
+        "transaction": "Each mark atomic (the task is published inside it); exceptions in charge.succeeded are swallowed (200) and stop the loop.",
         "execution_owner": "django"
       },
       "tests": [
@@ -23045,25 +23191,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
