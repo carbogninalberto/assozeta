@@ -4705,25 +4705,81 @@
         "target": "full_events_calendar_export",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/misc_routes.go",
+        "BE_GO/internal/repository/misc_routes.go",
+        "BE_GO/internal/service/calendar_export.go",
+        "BE_GO/internal/service/calendar_export_test.go",
+        "BE_GO/internal/service/communications_post.go",
+        "BE_GO/internal/service/subscription_card.go",
+        "BE_GO/internal/handler/misc_routes.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request checks",
+        "course-calendar store (CourseIDs, Registries)",
+        "application_course",
+        "application_attendanceregistry",
+        "communications_message",
+        "communications_messagetransaction",
+        "application_subscription",
+        "application_subscriptiontoken",
+        "application_sportassociationmembershipcardconfiguration",
+        "instance_bakneypairing",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/calendar/events/export",
+          "/api/v2/calendar/events/export",
+          "/api/calendar/events/export"
+        ],
+        "request": "Optional ?course_id=<uuid>; X-Group-Id.",
+        "response": "200 text/calendar VCALENDAR (attachment events.ics): one VEVENT per registry event with SUMMARY, DTSTART, DTEND, DTSTAMP, UID and the instructor DESCRIPTION.",
+        "errors": "400 is_valid_uuid list; 401; 403 admin without session, registry, IsAssociationUser for athletes, association-scoped session; 405; 500 missing association, malformed events or dates; 500 (Go) for non-zero offsets and other refused inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated + IsAssociationUser; registry association.calendar.read.",
+        "resource_scope": "request.user.sport_association; its live X-Group-Id-aware courses (narrowed to course_id) and their scoped registries in database order.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/misc_routes_http.json",
+        "TESTS/fixtures/generate_misc_routes_http.py",
+        "TESTS/contracts/test_misc_routes_http.py",
+        "TESTS/adapters/django/misc_routes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/misc-routes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-native-r9/results.json",
+          "receipt_sha256": "4485101bc908428216ccdcdf07a60d69837ea31565cdad953a430637fb984c26"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact Message, MessageTransaction, card configuration, SubscriptionToken, auditlog and index effects.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-versioned-r2/results.json",
+          "receipt_sha256": "0152b2e967ab4181594b4402b2cc9bdf8d6f6027ba71ee387547e997881411c0"
+        },
+        {
+          "revision": "committing change with the iCalendar line fold one octet later (size > 75)",
+          "result": "Mutation control: fails Go on misc-routes-export-owner (response.body[17]).",
+          "artifact": "quality-reports/go-migration/misc-routes-http-mutation-r1/results.json",
+          "receipt_sha256": "2d9a32840bdc7f99231ed891edd1075eda50c344decc5dd506a9314472182dbb"
+        }
+      ],
+      "notes": [
+        "Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and unknown canonical card tokens while a self-hosted pairing is active. See docs/architecture/go-migration/misc-routes.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:calendar/events/update -> full_events_calendar_update",
@@ -14157,25 +14213,65 @@
         "target": "invoice_list_export",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/misc_exports.go",
+        "BE_GO/internal/repository/misc_exports.go",
+        "BE_GO/internal/service/misc_exports.go",
+        "BE_GO/internal/handler/misc_exports.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice/list/export",
+          "/api/v2/invoice/list/export",
+          "/api/invoice/list/export"
+        ],
+        "request": "GET ?m=csv|files|<other>&archived= (m=xlsx not ported).",
+        "response": "csv: {data: {file: base64 CSV, type: csv, filename: '[<today>] RICEVUTE a <denomination>.csv'}}; files: {data: {file: '', message}}; other: {data: {file: ''}}.",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, invalid archived, broker failure; 500 m=xlsx (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry bookeeping.documents.invoices.read.",
+        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's live X-Group-Id-aware invoices by creation_date; each invoice's first live group-aware payment by key.",
+        "side_effects": "m=files publishes export_invoices_to_zip.delay([document ids], association UUID) to the default Celery queue.",
+        "transaction": "Read only; the publish follows the reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/misc_exports_http.json",
+        "TESTS/fixtures/generate_misc_exports_http.py",
+        "TESTS/contracts/test_misc_exports_http.py",
+        "TESTS/adapters/django/misc_exports_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/misc-exports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 57/57; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-native-r1/results.json",
+          "receipt_sha256": "1ee3b57a71200d51b63467c53dfd2461f90698fd5ba968722763c06023fdc23f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 57/57 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-versioned-r2/results.json",
+          "receipt_sha256": "b79ba58ecdf16cdce8e58e792da531732d5f6e0ecb2b35be596af7e0cb455435"
+        },
+        {
+          "revision": "taking each invoice's payment with the highest primary key instead of the lowest (payment_set.first())",
+          "result": "Mutation control: fails Go on misc-exports-inv-owner (CSV body differs).",
+          "artifact": "quality-reports/go-migration/misc-exports-http-mutation-r1/results.json",
+          "receipt_sha256": "68d6da7871b1f934ea054c8b83e13e84f7563001d51e5b1cd152e3c6fe887fa8"
+        }
+      ],
+      "notes": [
+        "Implementing: CSV exports and the invoice zip dispatch (export_invoices_to_zip.delay through the Celery producer); subscription filetype containing xls and invoice m=xlsx (spreadsheet workbooks) are refused with a 500 before any lookup. See docs/architecture/go-migration/misc-exports.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:manuale/assets/<path:asset_path> -> manual_asset",
@@ -21917,25 +22013,82 @@
         "target": "subscription_card",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/misc_routes.go",
+        "BE_GO/internal/repository/misc_routes.go",
+        "BE_GO/internal/service/calendar_export.go",
+        "BE_GO/internal/service/calendar_export_test.go",
+        "BE_GO/internal/service/communications_post.go",
+        "BE_GO/internal/service/subscription_card.go",
+        "BE_GO/internal/handler/misc_routes.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request checks",
+        "course-calendar store (CourseIDs, Registries)",
+        "application_course",
+        "application_attendanceregistry",
+        "communications_message",
+        "communications_messagetransaction",
+        "application_subscription",
+        "application_subscriptiontoken",
+        "application_sportassociationmembershipcardconfiguration",
+        "instance_bakneypairing",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/card",
+          "/api/v2/subscription/<uid>/card",
+          "/api/subscription/<uid>/card"
+        ],
+        "request": "GET ?token=<uuid>; POST no body.",
+        "response": "GET 200 {member: {subscription_number, subscription_type, subscription_end_date, associate, sport_association{denomination, user.avatar_image, membership_card_configuration}}}; POST 200 {token}.",
+        "errors": "400 is_valid_uuid list, {'msg': 'il token è scaduto'} (missing, unknown or expired token); 403 registry (per method), admin without session, scoped-request resource check, POST {'msg': 'User not allowed.'}; 404 POST {'msg': 'Subscription not found.'}; 405; 500 rejected token value, no visible subscription, subscription without associate, missing association; 500 (Go) unknown canonical token while a self-hosted pairing is active.",
+        "authentication": "Optional DRF JWT (AllowAny).",
+        "permissions": "AllowAny (anonymous GET/POST reach the view); registry GET association.members.read, POST association.members.update.",
+        "resource_scope": "GET: the token's subscription through scoped, group-aware Subscription.objects; POST: the scoped, group-aware subscription of request.user.sport_association.",
+        "side_effects": "GET: expired token deleted (auditlog delete, actor-association index); missing card configuration created (auditlog create, direct index). POST: SubscriptionToken created (auditlog create indexed through subscription.sport_association).",
+        "transaction": "Autocommit writes (Go: one transaction per request, committed before the response is built).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/misc_routes_http.json",
+        "TESTS/fixtures/generate_misc_routes_http.py",
+        "TESTS/contracts/test_misc_routes_http.py",
+        "TESTS/adapters/django/misc_routes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/misc-routes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-native-r9/results.json",
+          "receipt_sha256": "4485101bc908428216ccdcdf07a60d69837ea31565cdad953a430637fb984c26"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact Message, MessageTransaction, card configuration, SubscriptionToken, auditlog and index effects.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-versioned-r2/results.json",
+          "receipt_sha256": "0152b2e967ab4181594b4402b2cc9bdf8d6f6027ba71ee387547e997881411c0"
+        },
+        {
+          "revision": "committing change with the iCalendar line fold one octet later (size > 75)",
+          "result": "Mutation control: fails Go on misc-routes-export-owner (response.body[17]).",
+          "artifact": "quality-reports/go-migration/misc-routes-http-mutation-r1/results.json",
+          "receipt_sha256": "2d9a32840bdc7f99231ed891edd1075eda50c344decc5dd506a9314472182dbb"
+        }
+      ],
+      "notes": [
+        "Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and unknown canonical card tokens while a self-hosted pairing is active. See docs/architecture/go-migration/misc-routes.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/delete -> subscription_delete",
@@ -24392,25 +24545,66 @@
         "target": "subscription_list_export",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/misc_exports.go",
+        "BE_GO/internal/repository/misc_exports.go",
+        "BE_GO/internal/service/misc_exports.go",
+        "BE_GO/internal/handler/misc_exports.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/list/export",
+          "/api/v2/subscription/list/export",
+          "/api/subscription/list/export"
+        ],
+        "request": "GET or POST ?filetype=csv|simplified|<other> (xls variants not ported).",
+        "response": "{data: {filename: '[<today>] ISCRIZIONI a <denomination>.csv', type: csv, file: base64 CSV}} (full or simplified columns).",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, subscription without associate, zero rows (pandas), unknown status flag; 500 filetype containing xls (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.read.",
+        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's X-Group-Id-aware unarchived subscriptions (Subscription.objects keeps deleted rows) by -creation_date.",
+        "side_effects": "Full exports: Associate.main_tutor promotes the first tutor relation when none is primary (audited update, indexed through associate.sport_association), autocommitted per row.",
+        "transaction": "Not atomic: promotions before a failing row are kept.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/misc_exports_http.json",
+        "TESTS/fixtures/generate_misc_exports_http.py",
+        "TESTS/contracts/test_misc_exports_http.py",
+        "TESTS/adapters/django/misc_exports_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/misc-exports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 57/57; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-native-r1/results.json",
+          "receipt_sha256": "1ee3b57a71200d51b63467c53dfd2461f90698fd5ba968722763c06023fdc23f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 57/57 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-versioned-r2/results.json",
+          "receipt_sha256": "b79ba58ecdf16cdce8e58e792da531732d5f6e0ecb2b35be596af7e0cb455435"
+        },
+        {
+          "revision": "taking each invoice's payment with the highest primary key instead of the lowest (payment_set.first())",
+          "result": "Mutation control: fails Go on misc-exports-inv-owner (CSV body differs).",
+          "artifact": "quality-reports/go-migration/misc-exports-http-mutation-r1/results.json",
+          "receipt_sha256": "68d6da7871b1f934ea054c8b83e13e84f7563001d51e5b1cd152e3c6fe887fa8"
+        }
+      ],
+      "notes": [
+        "Implementing: CSV exports and the invoice zip dispatch (export_invoices_to_zip.delay through the Celery producer); subscription filetype containing xls and invoice m=xlsx (spreadsheet workbooks) are refused with a 500 before any lookup. See docs/architecture/go-migration/misc-exports.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/memberships/<str:pk>/delete -> SubscriptionMembershipViewSet.as_view({'delete': 'delete'})",
@@ -27558,25 +27752,81 @@
         "target": "configuration_send_post",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/misc_routes.go",
+        "BE_GO/internal/repository/misc_routes.go",
+        "BE_GO/internal/service/calendar_export.go",
+        "BE_GO/internal/service/calendar_export_test.go",
+        "BE_GO/internal/service/communications_post.go",
+        "BE_GO/internal/service/subscription_card.go",
+        "BE_GO/internal/handler/misc_routes.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request checks",
+        "course-calendar store (CourseIDs, Registries)",
+        "application_course",
+        "application_attendanceregistry",
+        "communications_message",
+        "communications_messagetransaction",
+        "application_subscription",
+        "application_subscriptiontoken",
+        "application_sportassociationmembershipcardconfiguration",
+        "instance_bakneypairing",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/send/post",
+          "/api/v2/communications/send/post",
+          "/api/communications/send/post"
+        ],
+        "request": "JSON or form {message}.",
+        "response": "200 {'msg': 'post sent.'}.",
+        "errors": "400 ['Message is required'] or {'message': [...]} (blank, not a string, length, null characters), DRF parse errors; 401; 403 admin without session, unmapped route for restricted collaborators, association-scoped session, 'User is not a sport association'; 405; 500 non-dict body, missing association; 500 (Go) float message.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; unmapped in permissions_registry (FULL collaborators only).",
+        "resource_scope": "request.user.sport_association.",
+        "side_effects": "Message (INSIDE_APP) with an auditlog create indexed directly; MessageTransaction with the association id as recipient.",
+        "transaction": "Autocommit creates (Go: one transaction).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/misc_routes_http.json",
+        "TESTS/fixtures/generate_misc_routes_http.py",
+        "TESTS/contracts/test_misc_routes_http.py",
+        "TESTS/adapters/django/misc_routes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/misc-routes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-native-r9/results.json",
+          "receipt_sha256": "4485101bc908428216ccdcdf07a60d69837ea31565cdad953a430637fb984c26"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact Message, MessageTransaction, card configuration, SubscriptionToken, auditlog and index effects.",
+          "artifact": "quality-reports/go-migration/misc-routes-http-versioned-r2/results.json",
+          "receipt_sha256": "0152b2e967ab4181594b4402b2cc9bdf8d6f6027ba71ee387547e997881411c0"
+        },
+        {
+          "revision": "committing change with the iCalendar line fold one octet later (size > 75)",
+          "result": "Mutation control: fails Go on misc-routes-export-owner (response.body[17]).",
+          "artifact": "quality-reports/go-migration/misc-routes-http-mutation-r1/results.json",
+          "receipt_sha256": "2d9a32840bdc7f99231ed891edd1075eda50c344decc5dd506a9314472182dbb"
+        }
+      ],
+      "notes": [
+        "Implementing: calendar/events/export renders the association's registries as icalendar 6.1.1 does (byte parity, request-time DTSTAMP); communications/send/post creates the audited INSIDE_APP Message and its MessageTransaction; subscription/<uid>/card reads the member card by token (expired tokens deleted with audit, default card configuration created with audit) and mints three-day tokens. Refused with 500 before any write: non-zero UTC offsets and fromisoformat forms outside the ported subset, float/list/object event texts, float post messages, and unknown canonical card tokens while a self-hosted pairing is active. See docs/architecture/go-migration/misc-routes.md."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/settings/smtp/info -> configuration_smtp_info",
