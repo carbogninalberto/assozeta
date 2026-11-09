@@ -664,6 +664,50 @@ func (r *consumerImportRun) loadIdentity() (domain.RequestObject, domain.Request
 // starts, so content the port cannot read is handed off before any write.
 func (r *consumerImportRun) preflight() error {
 	r.parsed = map[string][]any{}
+	// Records of an audited model whose __str__ is not reproduced are handed
+	// off here, before any write consumes sequence values.
+	files := map[string][]string{}
+	for _, entry := range r.s.plan.Order {
+		files[entry.Model] = append(files[entry.Model], "data/"+entry.File)
+	}
+	if data, err := r.archive.read("manifest.json"); err == nil {
+		if decoded, err := consumerImportJSON(data); err == nil {
+			if manifest, ok := decoded.(domain.RequestObject); ok {
+				specs, _ := importGet(manifest, "models_exported")
+				list, _ := specs.([]any)
+				for _, raw := range list {
+					spec, ok := raw.(domain.RequestObject)
+					if !ok {
+						continue
+					}
+					name, _ := importGet(spec, "name")
+					file, _ := importGet(spec, "file")
+					nameText, ok1 := name.(string)
+					fileText, ok2 := file.(string)
+					if ok1 && ok2 {
+						files[nameText] = append(files[nameText], "data/"+fileText[strings.LastIndex(fileText, "/")+1:])
+					}
+				}
+			}
+		}
+	}
+	for _, model := range r.s.plan.Models {
+		if model.Audit == nil || model.Str == "default" || model.Str == "user" {
+			continue
+		}
+		for _, name := range files[model.Name] {
+			if !r.archive.has(name) {
+				continue
+			}
+			records, err := r.records(name)
+			if err != nil {
+				return err
+			}
+			if len(records) > 0 {
+				return errConsumerImportUnsupported
+			}
+		}
+	}
 	for _, name := range r.archive.names {
 		switch {
 		case strings.HasPrefix(name, "data/") && strings.HasSuffix(name, ".json"):

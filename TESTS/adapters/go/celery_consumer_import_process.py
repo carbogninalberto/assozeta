@@ -579,6 +579,8 @@ class Harness:
             return '<ts>'
 
         def text(value):
+            # CourseSubscription.__str__ is str(self.__dict__): its ModelState address differs per process.
+            value = re.sub(r'object at 0x[0-9a-f]+>', 'object at <address>>', value)
             value = STAMP.sub(stamp, value)
             if STAGED.search(value):
                 value = STAGED.sub('<staged>', value)

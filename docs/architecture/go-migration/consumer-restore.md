@@ -255,7 +255,9 @@ that are not UTF-8 JSON arrays Go decodes as Python does, a manifest that is not
 returns `ErrUnsupported`; a media name `default_storage.save` would change (existing object, suspicious names); any
 database error. Plan stages the archive, validates it, reads every data file and media member, and then performs the
 database part of `import_all()` (passes 1–3, the constraint check and the database writes of pass 4) in one open
-transaction; any of the above rolls it back and hands the message off. Run (after admission) uploads the media in
+transaction; any of the above rolls it back and hands the message off. Records of an audited model whose `__str__` is
+not reproduced (CourseSubscription) are found by the read pass and handed off before the transaction starts. The harness
+normalizes the `ModelState object at 0x...` address inside that repr, which differs between two Django processes. Run (after admission) uploads the media in
 Django's order, commits, deletes the staged object and returns the result; a deferral (pending restore) rolls back.
 
 ### Documented differences
@@ -288,7 +290,14 @@ imports (circular folders, an existing tag key); handoffs (undecodable data file
 constraint check rejects, a wrong media CRC, a missing staged object, an unknown keyword); a pending restore deferring
 the import.
 
-RECEIPTS
+- Oracle: Django alone 17/17 (`consumer-import-oracle`).
+- RED: consumer with the task unregistered; Django passed, Go timed out on the first scenario
+  (`consumer-import-process-red`).
+- GREEN: 17/17 (`consumer-import-process/results.json`).
+- Mutation (CAUGHT): `Payment.save` without the `quota corso` → `meta['description']` replacement; the payment row and
+  its audit entry differed (`consumer-import-process-mutation`).
+- Re-run after the shared change (`cmd/celery-consumer/consumer_restore.go` registration): export 8/8, capabilities
+  13/13, `celery_consumer_process.py` 15/15 (receipts `consumer-import-rerun-*`).
 
 - Unit tests: `go test ./internal/importeffects` (CPython set order goldens, audit rendering, plan, season ranges).
 
