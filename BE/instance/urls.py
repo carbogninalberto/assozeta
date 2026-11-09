@@ -5,7 +5,7 @@ from django.urls import path
 from .sso.views import PairingAdminView
 from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView, InstanceReleasesView, InstanceUpdatesView, InstanceRestartsView
 
-from .backups import BackupDownloadTokenView, BackupDownloadView, BackupOverviewView
+from .backups import BackupDownloadTokenView, BackupDownloadView, BackupItemView, BackupOverviewView, BackupScheduleView
 from .diagnostics import DiagnosticsView
 from .operations import EmailSettingsView, EmailTestView
 from .integrations import IntegrationSettingsView, IntegrationTestView
@@ -34,6 +34,8 @@ urlpatterns = [
     path('admin/backups', BackupOverviewView.as_view(), name='instance-backups'),
     path('admin/backups/download-token', BackupDownloadTokenView.as_view(), name='instance-backup-download-token'),
     path('admin/backups/<str:name>/download', BackupDownloadView.as_view(), name='instance-backup-download'),
+    path('admin/backups/schedule', BackupScheduleView.as_view(), name='instance-backup-schedule'),
+    path('admin/backups/<str:name>', BackupItemView.as_view(), name='instance-backup-item'),
     path('admin/diagnostics', DiagnosticsView.as_view(), name='instance-diagnostics'),
     path('admin/email', EmailSettingsView.as_view(), name='instance-email-settings'),
     path('admin/email/test', EmailTestView.as_view(), name='instance-email-test'),

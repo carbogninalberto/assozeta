@@ -1,9 +1,11 @@
-"""Owner page "Backup e ripristino": read-only list of the server backups.
+"""Owner page "Backup": the server backups, their actions and the schedule.
 
-The independent runner owns the backup directory; the API only measures the
-data that the next backup will contain and relays archive downloads. Each
-download needs the owner's password again and is recorded in the audit log.
+The independent runner owns the backup directory and runs every backup; the
+API measures the data that the next backup will contain, relays the owner's
+actions and archive downloads, and records each action in the audit log. A
+download needs the owner's password again.
 """
+import json
 import logging
 import re
 from uuid import uuid4
@@ -110,7 +112,84 @@ class BackupOverviewView(APIView):
             'retention': inventory.get('retention', {}),
             'disk': {**disk, **sizes},
             'next_backup': next_backup(sizes, disk.get('free'), inventory.get('space_margin_mb')),
+            # Older runners have neither: the page then stays read-only.
+            'schedule': inventory.get('schedule'),
+            'actions': inventory.get('actions', {}),
         })
+
+    def post(self, request):
+        """Start a manual backup; the runner stops the app while it copies the data."""
+        actor = actor_of(request)
+        response = relay('POST', '/backups', {'request_id': str(uuid4()), 'actor_id': str(actor.pk)}, success=202)
+        if response.status_code == 202:
+            audit(actor, 'backup_create', response.data['operation'].get('id', ''))
+        return response
+
+
+def relay(method, path, payload, success=200):
+    """Forward an owner action to the runner, keeping its Italian message on refusal."""
+    try:
+        return Response(call_runner(method, path, payload), status=success)
+    except UpdaterUnavailable as exc:
+        return Response({'error': str(exc)}, status=503)
+    except UpdaterRejected as exc:
+        if exc.status == 404 and path in ('/backups', '/backups/schedule'):
+            return Response({'error': 'Il servizio di aggiornamento richiede una versione più recente.'}, status=409)
+        return Response({'error': str(exc)}, status=exc.status if 400 <= exc.status < 500 else 503)
+
+
+def audit(actor, action, value, **extra):
+    LogEntry.objects.log_create(
+        InstanceConfiguration.get_config(), action=LogEntry.Action.UPDATE, actor=actor,
+        changes={action: ['', str(value)]}, additional_data={'actor_id': str(actor.pk), **extra}, force_log=True)
+
+
+class BackupItemView(APIView):
+    """Keep (exclude from rotation) or delete one archive."""
+    permission_classes = [IsInstanceOwner]
+
+    def patch(self, request, name):
+        if not ARCHIVE.fullmatch(name):
+            return Response({'error': 'Backup non trovato.'}, status=404)
+        keep = request.data.get('keep') if isinstance(request.data, dict) else None
+        if not isinstance(keep, bool):
+            return Response({'error': 'Richiesta non valida.'}, status=400)
+        response = relay('PATCH', f'/backups/{name}', {'keep': keep})
+        if response.status_code == 200:
+            audit(actor_of(request), 'backup_keep' if keep else 'backup_unkeep', name, backup=name)
+        return response
+
+    def delete(self, request, name):
+        if not ARCHIVE.fullmatch(name):
+            return Response({'error': 'Backup non trovato.'}, status=404)
+        confirm = request.data.get('confirm', False) if isinstance(request.data, dict) else False
+        if not isinstance(confirm, bool):
+            return Response({'error': 'Richiesta non valida.'}, status=400)
+        response = relay('DELETE', f'/backups/{name}', {'confirm': confirm})
+        if response.status_code == 200:
+            audit(actor_of(request), 'backup_delete', name, backup=name)
+        return response
+
+
+class ScheduleSerializer(serializers.Serializer):
+    enabled = serializers.BooleanField()
+    frequency = serializers.ChoiceField(choices=['daily', 'weekly'])
+    time = serializers.RegexField(r'\A([01]\d|2[0-3]):[0-5]\d\Z')
+    weekday = serializers.IntegerField(min_value=0, max_value=6, default=6)
+    keep = serializers.IntegerField(min_value=1, max_value=30)
+
+
+class BackupScheduleView(APIView):
+    permission_classes = [IsInstanceOwner]
+
+    def put(self, request):
+        serializer = ScheduleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        value = dict(serializer.validated_data)
+        response = relay('PUT', '/backups/schedule', value)
+        if response.status_code == 200:
+            audit(actor_of(request), 'backup_schedule', json.dumps(value, sort_keys=True))
+        return response
 
 
 class DownloadTokenSerializer(serializers.Serializer):
@@ -176,3 +255,59 @@ class BackupDownloadView(APIView):
         response['Referrer-Policy'] = 'no-referrer'
         response.disable_gzip = True
         return response
+
+
+FAILURE_NOTIFIED = 'instance:backup-failure-notified:{}'
+FAILURE_WINDOW_HOURS = 48
+
+
+def _failures(status, inventory):
+    """Failed backups of the last two days, as (key, when, reason)."""
+    from datetime import timedelta
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
+    cutoff = timezone.now() - timedelta(hours=FAILURE_WINDOW_HOURS)
+    for operation in status.get('history', []):
+        when = parse_datetime(operation.get('updated_at') or operation.get('created_at') or '')
+        if operation.get('kind') == 'backup' and operation.get('status') == 'failed' and when and when >= cutoff:
+            yield operation['id'], when, operation.get('error') or ''
+    last = (inventory.get('schedule') or {}).get('last_run') or {}
+    when = parse_datetime(last.get('at') or '')
+    # A scheduled run that could not start has no operation of its own.
+    if last.get('status') == 'failed' and not last.get('operation') and when and when >= cutoff:
+        yield f'schedule:{last["at"]}', when, last.get('error') or ''
+
+
+def notify_failures():
+    """Email the owner once about each failed backup."""
+    from django.core.mail import send_mail
+    from django.utils import timezone
+    from .updater_client import deployment_mode
+    if deployment_mode() != 'production':
+        return 0
+    try:
+        status = call_runner('GET', '/status')
+        inventory = call_runner('GET', '/backups')
+    except (UpdaterUnavailable, UpdaterRejected):
+        return 0
+    config = InstanceConfiguration.objects.select_related('primary_association__user').first()
+    owner = getattr(getattr(config, 'primary_association', None), 'user', None)
+    if not owner or not owner.email:
+        return 0
+    sent = 0
+    for key, when, reason in _failures(status, inventory):
+        if not cache.add(FAILURE_NOTIFIED.format(key), True, timeout=7 * 86400):
+            continue
+        local = timezone.localtime(when).strftime('%d/%m/%Y %H:%M')
+        link = f'https://{config.domain}/#/profile?page=self-instance&tab=backups' if config.domain else ''
+        body = f'Il backup del {local} non è riuscito.\n\n'
+        if reason:
+            body += f'Motivo: {reason}\n\n'
+        body += f'Controlla in Istanza > Backup{": " + link if link else ""}.\n'
+        try:
+            send_mail('Backup non riuscito', body, None, [owner.email])
+            sent += 1
+        except Exception:
+            cache.delete(FAILURE_NOTIFIED.format(key))
+            logger.warning('Could not send the backup failure email', exc_info=True)
+    return sent

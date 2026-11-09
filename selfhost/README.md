@@ -173,8 +173,12 @@ object mirror is staged uncompressed next to the archive, so it requires the
 database plus object-storage size twice (once with GNU tar, which deletes staged
 files as they are archived) plus `ASSOZETA_BACKUP_SPACE_MARGIN_MB` (default
 1024). An upgrade also reserves `ASSOZETA_UPGRADE_IMAGE_SPACE_MB` (default 2048)
-for the new images. When space is short, the command stops without touching the
-services and the update page shows the required and available space.
+for the new images. When space is short in `selfhost/backups/`, the command
+first makes room, oldest first: local copies already uploaded off-site, then
+automatic archives (scheduled and pre-upgrade). It never removes the newest
+archive or the protected ones listed below. If that is still not enough, it
+stops without touching the services, and the owner page shows the required and
+available space.
 
 Each archive in `selfhost/backups/` has a small `<archive>.meta` file that
 records its origin: `manual` (`assozeta backup`), `pre-upgrade`, `scheduled`
@@ -193,15 +197,28 @@ disables rotation). It never removes:
 Other destinations are not rotated. Copy archives off-host before they are
 rotated out, and remove manual archives yourself when no longer needed.
 
-The instance owner sees these archives in **Self Instance → Backup e
-ripristino**. The page shows the disk that holds `selfhost/backups/` (database,
-documents and files, backups, other use and free space), a marker for the
-estimated size of the next backup, and a warning when the space the backup needs
-is not free. Each archive lists its date, size, version, origin and location.
-The page is read-only: archives are created, kept and deleted on the server.
-Downloading an archive asks for the owner's password again and is recorded in
-the audit log. The download is the unencrypted server archive, including its
-secrets, so store it as safely as the server itself.
+The instance owner manages these archives in **Istanza → Backup**:
+
+- the disk that holds `selfhost/backups/` (data, backups, other use and free
+  space), with a marker for the estimated size of the next backup and a warning
+  when it will not fit;
+- each archive's date, size, version and origin;
+- **Crea backup** runs `assozeta backup` through the update runner, with
+  progress on the page; the app is offline for the few minutes it takes;
+- **Conserva** keeps an archive out of rotation, **Elimina** deletes it (kept
+  archives and the last successful upgrade's ask for confirmation; a pending
+  upgrade's cannot be deleted);
+- **Backup automatici**: off by default, daily or weekly at a chosen time, and
+  how many automatic archives to keep (written to `ASSOZETA_BACKUP_KEEP`).
+  Times use `ASSOZETA_TIMEZONE` (default `Europe/Rome`). A run missed while the
+  server was down happens once when it is back. A scheduled run waits for any
+  other operation to finish.
+
+Every action is recorded in the audit log, and the owner gets an email when a
+backup fails. Downloading an archive asks for the owner's password again. The
+download is the unencrypted server archive, including its secrets, so store it
+as safely as the server itself. From the command line, `assozeta backup
+--scheduled` takes an automatic (rotated) archive instead of a manual one.
 
 Backup stops the API, worker, and scheduler services while PostgreSQL and MinIO
 are snapshotted, then restarts them only if any were running beforehand. Caddy

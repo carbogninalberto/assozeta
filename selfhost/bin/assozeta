@@ -49,7 +49,7 @@ Production commands:
   status
   logs [SERVICE]
   sync-manual               Install the published manual for the configured release.
-  backup [DIRECTORY]
+  backup [--scheduled] [DIRECTORY]
   restore ARCHIVE [--yes]
   recover-upgrade ARCHIVE [--yes]
   reconcile-updates
@@ -1306,22 +1306,89 @@ backup_require_space() {
     copies=2
     backup_tar_removes_files && copies=1
     required_kib=$(( estimated_kib * copies + (margin_mb + ${backup_extra_space_mb:-0}) * 1024 ))
-    available_kib=$(df -Pk "$destination" | awk 'NR == 2 { print $4 }')
+    available_kib=$(backup_available_kib)
     case "$available_kib" in
         ""|*[!0-9]*) die "could not determine free disk space in $destination" ;;
     esac
     if [ "$available_kib" -lt "$required_kib" ]; then
+        backup_free_space "$required_kib"
+        available_kib=$(backup_available_kib)
+        case "$available_kib" in
+            ""|*[!0-9]*) die "could not determine free disk space in $destination" ;;
+        esac
+    fi
+    if [ "$available_kib" -lt "$required_kib" ]; then
         required_mb=$(( required_kib / 1024 ))
         available_mb=$(( available_kib / 1024 ))
-        report_failure "Spazio su disco insufficiente per il backup: servono circa $required_mb MB, disponibili $available_mb MB. Libera spazio sul server (per esempio spostando altrove i backup meno recenti) e riprova."
+        report_failure "Spazio su disco insufficiente per il backup: servono circa $required_mb MB, disponibili $available_mb MB anche dopo aver eliminato i backup automatici più vecchi. Libera spazio sul server e riprova."
         die "insufficient disk space for the backup in $destination: about $required_mb MB required, $available_mb MB available; copy older archives off-host and remove them"
     fi
     log "backup needs about $(( required_kib / 1024 )) MB; $(( available_kib / 1024 )) MB available"
 }
 
+backup_available_kib() {
+    df -Pk "$destination" | awk 'NR == 2 { print $4 }'
+}
+
+backup_archive_names() {
+    ls "$destination" | grep -E '^assozeta-[0-9]{8}T[0-9]{6}Z(-[0-9]+)?\.tar\.gz$'
+}
+
+# Make room for a new backup in the default directory, oldest first: first the
+# local copies already uploaded off-site, then automatic archives. Never the
+# newest archive, a kept one, the last successful upgrade's or a pending
+# upgrade's: if that is not enough, the caller fails and reports the space.
+backup_free_space() {
+    free_needed_kib=$1
+    [ "$destination" = "$SELFHOST_DIR/backups" ] || return 0
+    free_archives=$(backup_archive_names | sort)
+    [ -n "$free_archives" ] || return 0
+    free_newest=$(printf '%s\n' "$free_archives" | tail -n 1)
+    free_last_upgrade=
+    for candidate in $(printf '%s\n' "$free_archives" | sort -r); do
+        if [ "$(backup_meta_value upgrade "$destination/$candidate")" = completed ]; then
+            free_last_upgrade=$candidate
+            break
+        fi
+    done
+    free_transaction="$SELFHOST_DIR/.updater/pending-distribution/transaction.json"
+    for free_pass in uploaded automatic; do
+        for candidate in $free_archives; do
+            [ -f "$destination/$candidate" ] || continue
+            free_available=$(backup_available_kib)
+            case "$free_available" in ""|*[!0-9]*) return 0 ;; esac
+            [ "$free_available" -lt "$free_needed_kib" ] || return 0
+            [ "$candidate" != "$free_newest" ] || continue
+            [ "$candidate" != "$free_last_upgrade" ] || continue
+            [ "$(backup_meta_value keep "$destination/$candidate")" != true ] || continue
+            if [ -f "$free_transaction" ] && grep -qF "$candidate" "$free_transaction"; then
+                continue
+            fi
+            case "$free_pass" in
+                uploaded) [ "$(backup_meta_value remote "$destination/$candidate")" = uploaded ] || continue ;;
+                automatic)
+                    case "$(backup_meta_value origin "$destination/$candidate")" in
+                        scheduled|pre-upgrade) ;;
+                        *) continue ;;
+                    esac
+                    ;;
+            esac
+            rm -f "$destination/$candidate" "$destination/$candidate.meta"
+            log "removed $candidate to make room for the new backup"
+        done
+    done
+}
+
+# Lifecycle stages for the update runner when it runs a backup on its own.
+backup_stage() {
+    [ "${ASSOZETA_BACKUP_STAGES:-}" = 1 ] || return 0
+    printf '@@ASSOZETA_STAGE %s\n' "$1"
+}
+
 # Each archive has a sidecar "<archive>.meta" of key=value lines:
 #   origin   manual | scheduled | pre-upgrade | pre-restore
 #   keep     true when the owner asked to keep it ("Conserva")
+#   remote   uploaded once an encrypted copy is stored off-site
 #   upgrade  completed once the upgrade that took it succeeded
 # Archives without a sidecar predate this format and are treated as manual.
 backup_meta_value() {
@@ -1392,6 +1459,16 @@ backup_prune() {
 }
 
 backup_prod() {
+    backup_origin=${backup_origin:-manual}
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --scheduled) backup_origin=scheduled ;;
+            --) shift; break ;;
+            -*) die "unknown backup option: $1" ;;
+            *) break ;;
+        esac
+        shift
+    done
     preflight
     [ -f "$PROD_ENV" ] || die "run configure first"
     ensure_configuration_values "$PROD_ENV"
@@ -1434,6 +1511,7 @@ backup_prod() {
 
     backup_require_space
 
+    backup_stage backup
     log "stopping application services for consistent backup"
     backup_app_stopped=true
     stop_prod_data_services
@@ -1463,12 +1541,14 @@ EOF
         tar -C "$working" -czf "$archive" .
     fi
     chmod 600 "$archive"
+    backup_stage restarting
     cleanup_status=0
     backup_cleanup 0 || cleanup_status=$?
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
     log "backup created: $archive"
-    backup_write_meta "$archive" "${backup_origin:-manual}"
-    backup_prune
+    backup_write_meta "$archive" "$backup_origin"
+    # A pre-upgrade backup rotates only once the upgrade succeeds.
+    [ "$backup_origin" = pre-upgrade ] || backup_prune
     log "the archive contains secrets; copy it off-host and protect it"
 }
 

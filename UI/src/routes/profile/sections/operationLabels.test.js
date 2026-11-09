@@ -9,6 +9,8 @@ test('titles name the operation in plain words', () => {
     assert.equal(operationTitle({kind: 'restart'}), 'Riavvio dell’applicazione');
     assert.equal(historyTitle({source_version: '1.0.32', target_version: '1.0.33'}), '1.0.32 → 1.0.33');
     assert.equal(historyTitle({kind: 'restart', target_version: '1.0.33'}), 'Riavvio');
+    assert.equal(historyTitle({kind: 'backup', origin: 'scheduled'}), 'Backup automatico');
+    assert.equal(historyTitle({kind: 'backup', origin: 'manual'}), 'Backup manuale');
 });
 
 test('progress counts the steps of each kind of operation', () => {

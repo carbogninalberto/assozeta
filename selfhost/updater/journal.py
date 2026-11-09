@@ -81,7 +81,12 @@ class Journal:
 
     def interrupt_running(self):
         for record in self.records():
-            if record['status'] == 'running' and record.get('kind') != 'restart':
+            if record['status'] == 'running' and record.get('kind') == 'backup':
+                # A backup changes no data: report it as failed, not as a recovery.
+                self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
+                            error='Il backup è stato interrotto.',
+                            recovery='Se l’app non torna disponibile, avviala dal server con ./bin/assozeta start.')
+            elif record['status'] == 'running' and record.get('kind') != 'restart':
                 self.update(record['id'], status='recovery_required', stage='recovery_required',
                             interrupted_at=now(), failed_stage=record['stage'],
                             error='Il servizio di aggiornamento è stato interrotto.',

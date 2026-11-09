@@ -9,10 +9,14 @@ import signal
 from socketserver import ThreadingMixIn, UnixStreamServer
 import sys
 import threading
+import time
+import traceback
 from uuid import UUID
 
 from backups import BackupNotFound, inventory, open_archive
 from diagnostics import backup_readiness
+from backup_jobs import (BackupRejected, create_backup, delete_archive, run_backup, schedule_payload,
+                         schedule_tick, set_keep, update_schedule)
 from engine import Engine
 from journal import Journal, Conflict
 from release_catalog import version_tuple
@@ -147,7 +151,8 @@ def serve(root, env_file, engine_class=Engine):
                 return
             if self.path == '/backups':
                 try:
-                    self.respond(200, inventory(root, env_file))
+                    self.respond(200, {**inventory(root, env_file), 'schedule': schedule_payload(root, env_file),
+                                       'actions': {'create': True, 'keep': True, 'delete': True}})
                 except OSError:
                     self.respond(503, {'error': 'La cartella dei backup non è leggibile. Verifica i permessi sul server.'})
                 return
@@ -159,7 +164,57 @@ def serve(root, env_file, engine_class=Engine):
                 return
             self.respond(200, status_payload())
 
+        def read_body(self, limit=4096):
+            length = int(self.headers.get('Content-Length', '0'))
+            if not 0 < length < limit or stop.is_set():
+                raise ValueError('Request cannot be accepted.')
+            return json.loads(self.rfile.read(length))
+
+        def backup_action(self, action):
+            """Owner backup actions; the API has already checked the owner."""
+            if not self.authorized():
+                return
+            try:
+                status, value = action(self.read_body())
+                self.respond(status, value)
+                wake.set()
+            except BackupRejected as exc:
+                self.respond(exc.status, {'error': str(exc)})
+            except Conflict as exc:
+                self.respond(409, {'error': str(exc)})
+            except (ValueError, TypeError, KeyError):
+                self.respond(400, {'error': 'Richiesta non valida.'})
+            except OSError:
+                self.respond(503, {'error': 'La cartella dei backup non è accessibile. Verifica i permessi sul server.'})
+
+        def archive_name(self):
+            return self.path[len('/backups/'):] if self.path.startswith('/backups/') and self.path != '/backups/schedule' else None
+
+        def do_PATCH(self):
+            name = self.archive_name()
+            if name is None:
+                self.respond(404, {'error': 'Unknown endpoint.'})
+                return
+            self.backup_action(lambda body: (200, set_keep(root, env_file, journal, name, body)))
+
+        def do_DELETE(self):
+            name = self.archive_name()
+            if name is None:
+                self.respond(404, {'error': 'Unknown endpoint.'})
+                return
+            self.backup_action(lambda body: (200, delete_archive(root, env_file, journal, name, body)))
+
+        def do_PUT(self):
+            if self.path != '/backups/schedule':
+                self.respond(404, {'error': 'Unknown endpoint.'})
+                return
+            self.backup_action(lambda body: (200, {'schedule': update_schedule(root, env_file, body),
+                                                    'retention': inventory(root, env_file)['retention']}))
+
         def do_POST(self):
+            if self.path == '/backups':
+                self.backup_action(lambda body: (202, {'operation': create_backup(root, env_file, journal, body)}))
+                return
             if not self.authorized():
                 return
             if self.path not in ('/updates', '/restarts'):
@@ -187,6 +242,9 @@ def serve(root, env_file, engine_class=Engine):
         def do_GET(self):
             self.respond(405, {'error': 'Method not allowed.'})
 
+        # The status socket is world-writable: it serves only the owner status.
+        do_PUT = do_PATCH = do_DELETE = do_GET
+
         def do_POST(self):
             if self.path != '/instance-update-status':
                 self.respond(404, {'error': 'Unknown endpoint.'})
@@ -210,12 +268,22 @@ def serve(root, env_file, engine_class=Engine):
                 self.respond(503, {'error': 'La verifica del proprietario non è momentaneamente disponibile.'})
 
     def work():
+        last_schedule_check = 0.0
         while not stop.is_set():
             reconcile_restarts(journal)
+            if time.monotonic() - last_schedule_check >= 30:
+                last_schedule_check = time.monotonic()
+                try:
+                    schedule_tick(root, env_file, journal)
+                except Exception:
+                    # A broken schedule file must never stop updates or restarts.
+                    traceback.print_exc()
             pending = next((item for item in journal.records() if item['status'] == 'queued'), None)
             if pending:
                 if pending.get('kind') == 'restart':
                     launch_restart(root, env_file, journal, pending)
+                elif pending.get('kind') == 'backup':
+                    run_backup(root, env_file, journal, pending)
                 else:
                     engine.execute(pending)
             else:

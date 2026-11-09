@@ -37,7 +37,7 @@ export function operationProgress(operation) {
 export function historyTitle(operation) {
     const kind = kindOf(operation);
     if (kind === 'restart') return 'Riavvio';
-    if (kind === 'backup') return 'Backup manuale';
+    if (kind === 'backup') return operation.origin === 'scheduled' ? 'Backup automatico' : 'Backup manuale';
     if (kind === 'restore') return 'Ripristino';
     return operation.source_version ? `${operation.source_version} → ${operation.target_version}` : `Aggiornamento a ${operation.target_version}`;
 }
