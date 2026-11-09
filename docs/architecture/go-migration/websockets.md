@@ -7,7 +7,7 @@ Django serves four Channels routes from `BE/core/asgi.py`: `JWTAuthMiddleware`
 runs them under gunicorn's `UvicornWorker` (uvicorn 0.35, websockets 14.1 legacy
 protocol). Go now serves the first three with the same handshake, middleware,
 frames and messages, and receives Django-originated group messages. `ws/agent/`
-is not ported. Django remains the execution owner: Caddy still sends `/ws/*` to
+is ported separately ([ws-agent](ws-agent.md)). Django remains the execution owner: Caddy still sends `/ws/*` to
 Django; Go is reachable at `/api/v2/ws/...` and natively.
 
 ## Behaviour (characterized and pinned)
@@ -130,15 +130,9 @@ directions exist:
 
 ## Not ported or not characterized
 
-- `ws/agent/` (`AgentConsumer`): its `user_message` path runs the agent loop,
-  which calls the configured LLM provider whenever AI is enabled; the other
-  paths (welcome, ping, saved reports, manual-only answers, cancel) sit on the
-  same agent core, manual search, throttle, concurrency guard and AI
-  integration configuration, none of which is ported, so a partial consumer
-  would be a silent partial port. Go answers `ws/agent/` like any unrouted path
-  (500 before accept, after the middleware, including its 4003 agent-path rule
-  for scoped athletes and restricted collaborators). Caddy must keep routing it
-  to Django.
+- `ws/agent/` (`AgentConsumer`) is served by Go since [ws-agent](ws-agent.md)
+  (`websocket_agent.go`); sends are serialized per connection because its
+  request task sends while the receive loop runs.
 - NotificationManager's per-process bootstrap (creating the `all_notifications`
   broadcast row, audited, and its Redis key when missing) is not performed by
   Go; any Django process does it on first notification use.
