@@ -16823,25 +16823,88 @@
         "target": "payment_generate_invoice",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_generate.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/handler/invoice_generate.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/services/invoice_service.py",
+        "BE/application/printing_tasks.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/serializers/invoice_serializers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py",
+        "BE/core/celery.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/<uid>/generate-invoice",
+          "/api/v2/payment/<uid>/generate-invoice",
+          "/api/payment/<uid>/generate-invoice"
+        ],
+        "request": "JSON or form body: only_print (Python truthiness), subscription_id (is_valid_uuid).",
+        "response": "200 {\"data\": {\"msg\": \"generated invoice.\", \"payment\": PaymentSerializer + invoice_generating: true}}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"] (path or subscription_id, also the AttributeError text for non-strings); 400 {\"error\": \"Seleziona l'associato.\"}; 401 anonymous; 403 User not allowed. / registry / admin without session / owner scoped to an athlete; 405; 500 athletes and owners without association, list body, missing/deleted/group-hidden payment, payment without invoice on only_print, missing subscription, subject without template, invalid meta categories, NULL payment date with payment_date_equal_invoice_date, broker failure after the commit.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (identity, impersonation and registry bookeeping.documents.invoices.create).",
+        "resource_scope": "The scoped live association; the payment by id (live, X-Group-Id aware) checked against it for generation, by id for only_print; the subscription by id (X-Group-Id aware, scoped_queryset).",
+        "side_effects": "Generation: Invoice create (raw X-Group-Id group) with its create entry, optional creation-date save with an update entry, payment save (paid, associate, invoice, save defaults) with its update entry, all indexed direct; then print_document_invoice. only_print: print_document_invoice only.",
+        "transaction": "transaction.atomic() with select_for_update and pg_advisory_xact_lock; the task is published after the commit (a broker failure is a 500 with the invoice kept). Go: one transaction, commit, publish.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_generate_http.json",
+        "TESTS/fixtures/generate_invoice_generate_http.py",
+        "TESTS/contracts/test_invoice_generate_http.py",
+        "TESTS/adapters/django/invoice_generate_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-generate.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 50/50; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-generate-http-red-r2/results.json",
+          "receipt_sha256": "6239e90ac154df493454ff27222d33551c424625cc097bf3f941eeeee7a0c036"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 50/50 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, audit, index and Celery broker effects.",
+          "artifact": "quality-reports/go-migration/invoice-generate-http-versioned-r1/results.json",
+          "receipt_sha256": "c029fbbd6c825f18fb95525ba6c76a4f4bb3df01f4a024648dd712a92db5459b"
+        },
+        {
+          "revision": "committing change with NULLS LAST added to the balance-year invoice number ordering",
+          "result": "Mutation control: fails Go on invoice-generate-flag-payment-date-invoice-date (response body).",
+          "artifact": "quality-reports/go-migration/invoice-generate-http-mutation-r1/results.json",
+          "receipt_sha256": "cee22dea31e1544429af9fa3245e3df77ebb65124b080839e954887b19efb28a"
+        }
+      ],
+      "notes": [
+        "Implementing: generate-invoice: numbering under pg_advisory_xact_lock with Django's md5 key, generate_invoice_description, audited Invoice create (float fees rendered with str()), optional creation-date save, payment save, then print_document_invoice.apply_async(args=[str(invoice_id), Authorization]) after the commit (list args: Task.ArgsList). approve (payment-misc/payment-state code): a paid invoiced payment with a truthy generate_invoice now publishes print_document_invoice [id, Authorization, send_receipt_email] after the commit (robust). Refused before any write: non-canonical X-Group-Id on generation, float fees at an exact 2-place tie or non-finite, meta subscription_data names other than str/bool/int, approve send_receipt_email other than None/bool/str/int64. Reviewed and not ported: invoice/<uid>/update (print_document_invoice.apply, synchronous), invoice-customers/add (in-process a38 XML and print_document_customer_invoice.apply), approve of unpaid income payments with a party (NotificationService Redis/WebSocket). The payment/<uid>/approve invoiced-dispatch branch is also evidenced by this family (cases under invoice-generate-approve-*); its ledger entry stays with payment-misc."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/<str:uid>/info -> payment_info",
