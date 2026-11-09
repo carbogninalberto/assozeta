@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -39,6 +40,9 @@ type Tool struct {
 	Name        string         `json:"name"`
 	Description string         `json:"description"`
 	InputSchema map[string]any `json:"inputSchema"`
+	// RawInputSchema, when set, is the schema's exact JSON for OrderedJSON
+	// output (a Go map cannot keep the declaration's key order).
+	RawInputSchema json.RawMessage `json:"-"`
 }
 
 // Options configures a stdio server. Zero values use the compatibility defaults.
@@ -48,6 +52,13 @@ type Options struct {
 	MaxConcurrent   int
 	MaxMessageBytes int
 	ValidateJSON    func(string, json.RawMessage) error
+	// OrderedJSON writes messages with the Python SDK's (pydantic) field
+	// order instead of sorted map keys.
+	OrderedJSON bool
+	// ExecuteRaw, when set, runs every tool call (known reports whether the
+	// name is declared) on the raw JSON arguments and returns the exact
+	// text content; an error is the transport's "Tool execution failed".
+	ExecuteRaw func(ctx context.Context, name string, arguments json.RawMessage, known bool) (string, error)
 }
 
 // Server serves JSON-RPC requests over a newline-delimited stream.
@@ -57,6 +68,8 @@ type Server struct {
 	execute      func(context.Context, string, map[string]any) (any, error)
 	validate     func(string, map[string]any) error
 	validateJSON func(string, json.RawMessage) error
+	ordered      bool
+	executeRaw   func(context.Context, string, json.RawMessage, bool) (string, error)
 	serverName   string
 	version      string
 	maxActive    int
@@ -72,7 +85,7 @@ func New(
 	validate func(string, map[string]any) error,
 	opts Options,
 ) (*Server, error) {
-	if execute == nil {
+	if execute == nil && opts.ExecuteRaw == nil {
 		return nil, errors.New("mcpstdio: executor is required")
 	}
 	if strings.TrimSpace(opts.ServerVersion) == "" {
@@ -100,6 +113,8 @@ func New(
 		execute:      execute,
 		validate:     validate,
 		validateJSON: opts.ValidateJSON,
+		ordered:      opts.OrderedJSON,
+		executeRaw:   opts.ExecuteRaw,
 		serverName:   opts.ServerName,
 		version:      opts.ServerVersion,
 		maxActive:    opts.MaxConcurrent,
@@ -115,6 +130,7 @@ func New(
 		}
 		server.toolNames[tool.Name] = struct{}{}
 		tool.InputSchema = cloneMap(tool.InputSchema)
+		tool.RawInputSchema = append(json.RawMessage(nil), tool.RawInputSchema...)
 		server.tools = append(server.tools, tool)
 	}
 	return server, nil
@@ -388,6 +404,18 @@ func (s *serveSession) handleControl(_ context.Context, current *inflight, req r
 				}
 			}
 		}
+		if s.server.ordered {
+			tools := make([]any, 0, len(s.server.tools))
+			for _, tool := range s.server.tools {
+				var schema any = tool.InputSchema
+				if tool.RawInputSchema != nil {
+					schema = tool.RawInputSchema
+				}
+				tools = append(tools, map[string]any{"name": tool.Name, "description": tool.Description, "inputSchema": schema})
+			}
+			s.finishResult(current, map[string]any{"tools": tools})
+			return
+		}
 		s.finishResult(current, map[string]any{"tools": s.server.tools})
 	case "initialize":
 		s.handleInitialize(current, params)
@@ -457,7 +485,12 @@ func (s *serveSession) handleTool(ctx context.Context, current *inflight, rawPar
 		}
 	}
 
-	if _, exists := s.server.toolNames[name]; !exists {
+	_, exists := s.server.toolNames[name]
+	if !exists && s.server.executeRaw != nil {
+		s.runRaw(ctx, current, name, rawParams, false)
+		return
+	}
+	if !exists {
 		body, err := marshalJSON(map[string]any{"error": "Unknown tool: " + name})
 		if err != nil {
 			s.finishToolError(current, "Tool execution failed")
@@ -486,6 +519,10 @@ func (s *serveSession) handleTool(ctx context.Context, current *inflight, rawPar
 	if err := ctx.Err(); err != nil {
 		return
 	}
+	if s.server.executeRaw != nil {
+		s.runRaw(ctx, current, name, rawParams, true)
+		return
+	}
 
 	result, err := s.server.execute(ctx, name, arguments)
 	if err != nil {
@@ -498,6 +535,24 @@ func (s *serveSession) handleTool(ctx context.Context, current *inflight, rawPar
 		return
 	}
 	s.finishToolText(current, string(body), false)
+}
+
+// runRaw answers a tool call with ExecuteRaw's text content.
+func (s *serveSession) runRaw(ctx context.Context, current *inflight, name string, rawParams json.RawMessage, known bool) {
+	rawArguments, valid := toolArgumentsJSON(rawParams)
+	if !valid {
+		s.finishInvalidParams(current)
+		return
+	}
+	text, err := s.server.executeRaw(ctx, name, rawArguments, known)
+	if ctx.Err() != nil {
+		return
+	}
+	if err != nil {
+		s.finishToolError(current, "Tool execution failed")
+		return
+	}
+	s.finishToolText(current, text, false)
 }
 
 func (s *serveSession) handleCancellation(rawParams json.RawMessage) {
@@ -594,6 +649,9 @@ func (s *serveSession) sendErrorNotification() {
 
 func (s *serveSession) write(message any) {
 	data, err := marshalJSON(message)
+	if s.server.ordered {
+		data, err = marshalOrdered(message)
+	}
 	if err != nil {
 		s.fail(fmt.Errorf("mcpstdio: marshal response: %w", err))
 		return
@@ -957,4 +1015,106 @@ func cloneValue(value any) any {
 	default:
 		return value
 	}
+}
+
+// pydanticOrder ranks the message keys the transport writes in the Python
+// SDK's model field order (JSONRPCResponse/Error/Notification, Initialize-
+// Result, ServerCapabilities, Implementation, Tool, CallToolResult,
+// TextContent, ErrorData, LoggingMessageNotificationParams).
+var pydanticOrder = map[string]int{"jsonrpc": 0, "id": 1, "method": 2, "params": 3, "result": 4, "error": 5, "code": 6,
+	"message": 7, "level": 8, "logger": 9, "data": 10, "protocolVersion": 11, "capabilities": 12, "serverInfo": 13,
+	"experimental": 14, "tools": 15, "listChanged": 16, "name": 17, "description": 18, "inputSchema": 19, "version": 20,
+	"content": 21, "isError": 22, "type": 23, "text": 24}
+
+// marshalOrdered is marshalJSON with pydantic's key order; raw JSON is
+// written unchanged.
+func marshalOrdered(value any) ([]byte, error) {
+	var output bytes.Buffer
+	// JSONRPCNotification declares jsonrpc after its inherited method/params.
+	if message, ok := value.(map[string]any); ok && message["method"] != nil && message["id"] == nil {
+		rest := make(map[string]any, len(message))
+		for key, item := range message {
+			if key != "jsonrpc" {
+				rest[key] = item
+			}
+		}
+		if err := writeOrdered(&output, rest); err != nil {
+			return nil, err
+		}
+		jsonrpc, err := marshalJSON(message["jsonrpc"])
+		if err != nil {
+			return nil, err
+		}
+		data := output.Bytes()
+		return append(append(data[:len(data)-1], []byte(`,"jsonrpc":`)...), append(jsonrpc, '}')...), nil
+	}
+	if err := writeOrdered(&output, value); err != nil {
+		return nil, err
+	}
+	return output.Bytes(), nil
+}
+
+func writeOrdered(output *bytes.Buffer, value any) error {
+	switch typed := value.(type) {
+	case json.RawMessage:
+		output.Write(typed)
+		return nil
+	case map[string]any:
+		keys := make([]string, 0, len(typed))
+		for key := range typed {
+			keys = append(keys, key)
+		}
+		sort.Slice(keys, func(i, j int) bool {
+			left, leftKnown := pydanticOrder[keys[i]]
+			right, rightKnown := pydanticOrder[keys[j]]
+			if leftKnown != rightKnown {
+				return leftKnown
+			}
+			if leftKnown {
+				return left < right
+			}
+			return keys[i] < keys[j]
+		})
+		output.WriteByte('{')
+		for index, key := range keys {
+			if index > 0 {
+				output.WriteByte(',')
+			}
+			encoded, err := marshalJSON(key)
+			if err != nil {
+				return err
+			}
+			output.Write(encoded)
+			output.WriteByte(':')
+			if err := writeOrdered(output, typed[key]); err != nil {
+				return err
+			}
+		}
+		output.WriteByte('}')
+		return nil
+	case []map[string]any:
+		items := make([]any, len(typed))
+		for index, item := range typed {
+			items[index] = item
+		}
+		return writeOrdered(output, items)
+	case []any:
+		output.WriteByte('[')
+		for index, item := range typed {
+			if index > 0 {
+				output.WriteByte(',')
+			}
+			if err := writeOrdered(output, item); err != nil {
+				return err
+			}
+		}
+		output.WriteByte(']')
+		return nil
+	}
+	encoded, err := marshalJSON(value)
+	if err != nil {
+		return err
+	}
+	output.Write(encoded)
+	return nil
 }

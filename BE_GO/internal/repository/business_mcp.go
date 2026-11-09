@@ -40,3 +40,13 @@ func (r *BusinessMCPTools) AssociationExists(ctx context.Context, id string) (bo
 	err := r.db.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1)`, id)
 	return exists, err
 }
+
+// ReportIntegration and RunReportStatements are QueryBuilder's settings
+// read and its read-only statements (the saved report run's runner).
+func (r *BusinessMCPTools) ReportIntegration(ctx context.Context) (bool, *string, error) {
+	return r.reports.ReportIntegration(ctx)
+}
+
+func (r *BusinessMCPTools) RunReportStatements(ctx context.Context, timeoutMS int64, statements []domain.ReportStatement) ([][][]*string, error) {
+	return r.reports.RunReportStatements(ctx, timeoutMS, statements)
+}

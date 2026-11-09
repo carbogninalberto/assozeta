@@ -227,6 +227,9 @@ func (s *SavedReports) Run(ctx context.Context, identity domain.ResolvedIdentity
 	if plan.Immediate != nil {
 		return nil, plan.Immediate
 	}
+	if plan.Value != nil {
+		return plan.Value, nil
+	}
 	results, err := s.store.RunReportStatements(ctx, timeout, plan.Statements)
 	var failed *domain.ReportQueryError
 	if errors.As(err, &failed) {
@@ -241,7 +244,16 @@ func (s *SavedReports) Run(ctx context.Context, identity domain.ResolvedIdentity
 // reportSettings is effective_integration('ai', decrypt=False): a
 // self-hosted instance's stored AI settings, otherwise the environment.
 func (s *SavedReports) reportSettings(ctx context.Context) (dto.ReportSettings, error) {
-	selfHosted, text, err := s.store.ReportIntegration(ctx)
+	return loadReportSettings(ctx, s.store)
+}
+
+// reportIntegrationStore reads the instance's stored integration settings.
+type reportIntegrationStore interface {
+	ReportIntegration(ctx context.Context) (bool, *string, error)
+}
+
+func loadReportSettings(ctx context.Context, store reportIntegrationStore) (dto.ReportSettings, error) {
+	selfHosted, text, err := store.ReportIntegration(ctx)
 	if err != nil {
 		return dto.ReportSettings{}, err
 	}
