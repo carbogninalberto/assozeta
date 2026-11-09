@@ -34,12 +34,20 @@ foreign_owner = not), athletes linked by member row, by subscription, by a delet
 association's subscription and not at all, an inactive and a deleted athlete, and a collaborator of the foreign owner.
 Read family: every case leaves the complete state unchanged.
 
-- RED (`red-try2`): Django 28/28; Go fails `impersonation-users-instance-owner-every-athlete` (users length).
-- GREEN (`versioned-g1`): 28/28 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
-- Mutation: splitting into eleven words instead of ten is CAUGHT (`impersonation-users-search-eleventh-word-ignored`).
+- RED (`payments-impersonation-reverify-impersonation-users-red`): Django 28/28; Go fails
+  `impersonation-users-instance-owner-every-athlete` (users length).
+- GREEN (`payments-impersonation-reverify-impersonation-users-green`, after merging codex/go-backend-parity 54165962):
+  28/28 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`...-impersonation-users-mutation`): keeping eleven words instead of ten fails Go on
+  `impersonation-users-search-eleventh-word-ignored` (CAUGHT).
 - Identity (`TESTS/adapters/django/identity.py`, run by `accounts.py`): the instance owner resolves a session on an
   unlinked athlete; another owner resolves a subscriber and not an unlinked athlete or a deleted subscription; member
-  row, subscription and `self_hosted` transitions revoke the session. Go replays the cases in
-  `internal/service/identity_integration_test.go`.
+  row, subscription and `self_hosted` transitions revoke the session. Go replays the cases and transitions in
+  `internal/service/identity_integration_test.go`. RED (`...-identity-red`, before the 50th case was added): Django 49 cases and 10 transitions pass, Go
+  fails `instance-owner-unlinked-athlete` and `owner-impersonates-subscriber`. GREEN
+  (`...-identity-impersonation-management-green`): the identity replay plus impersonation-management's 264-case
+  workloads on native Django, native Go, Caddy `/api/v1` and `/api/v2` (`TESTS_IMPERSONATION_MANAGEMENT_GO=1
+  TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python
+  TESTS/adapters/django/accounts.py --only impersonation-management`).
 
 Receipts: `quality-reports/go-migration/payments-impersonation-reverify-*`.

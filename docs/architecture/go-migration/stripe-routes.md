@@ -160,9 +160,14 @@ a zero-amount intent), the pay metadata loop and the webhook are saved paid; a p
 payment and a payment without category/description (defaults read by the invoice description) are added; the rolled-back
 mark publishes nothing. `CommitObserver` reads, when each Celery message reaches the broker (Redis keyspace
 notifications), the committed invoice and its payments' `paid`/`type` on its own connection: every print message must
-find `(True, 'stripe')`.
+find `(True, 'stripe')`. The observer is timing-based: it cannot fail a publication made after the commit, and a
+publication made before it is caught when the read lands before the commit (the precommit mutation below).
 
-- RED (`reverify-red-try4`): Django 100/100; Go fails `stripe-routes-pay-succeeded-marks-supplier-invoice`
-  (`state.payment-date-now`: the invoiced payment was not saved).
-- GREEN (`reverify-versioned-*`): 101/101 on the four transports.
-- Mutation: gating `stripeMarkPaid` on payments without an invoice (the previous behaviour) is CAUGHT.
+- RED (`payments-impersonation-reverify-stripe-routes-red`): Django 100/100; Go fails
+  `stripe-routes-pay-succeeded-marks-supplier-invoice` (`state.payment-date-now`: the invoiced payment was not saved).
+- GREEN (`payments-impersonation-reverify-stripe-routes-green`, after merging codex/go-backend-parity 54165962):
+  101/101 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutations: gating `stripeMarkPaid` on payments without an invoice (the previous behaviour) fails Go on
+  `stripe-routes-pay-succeeded-marks-supplier-invoice` (CAUGHT, `...-stripe-routes-mutation`); publishing the print task
+  inside the transaction (manual two-edit mutation, restored by hash) fails Go on
+  `stripe-routes-webhook-charge-subscription-without-categories` with `celery.committed` (`...-mutation-precommit`).
