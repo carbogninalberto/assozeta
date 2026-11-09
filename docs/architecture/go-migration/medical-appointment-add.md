@@ -53,6 +53,7 @@ print requests (path, headers as a set, Authorization, no body), including a fai
 restore.
 
 - RED (`native-r1`): Django 37/37; Go 404 on the first case.
-- GREEN: see the family spec (`native-r2` 37/37 on both; `--versioned` after merging the base).
+- GREEN (`versioned-r1`, after merging the base): 37/37 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`mutation-r1`): applying the eager completed-restore cutoff to the direct call fails Go on
   `medical-appointment-add-completed-restore-still-prints`.
+- Re-run green: invoice-sync-print (`native-r1`, 70/70; new method on `InvoiceSyncPrint`).

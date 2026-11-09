@@ -54,5 +54,6 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
   complete model state, the Document's audit entry and index row, and the stored object (key, bytes, ContentType,
   CacheControl), which is then removed.
 - RED (`native-r5`): Django 29/29; Go 404 on the first case.
-- GREEN: see the family spec (`native-r6` 29/29 on both; `--versioned` after merging the base).
+- GREEN (`versioned-r1`, after merging the base): 29/29 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`mutation-r1`): resetting the map per request fails Go on `subscription-import-upload-csv-keeps-earlier-map`.
+- Re-run green: documents-writes (`native-r1`, 119/119; new method on `DocumentUploads`).

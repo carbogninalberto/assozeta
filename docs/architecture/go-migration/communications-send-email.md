@@ -56,5 +56,6 @@ auditlog entries and index rows), the Celery messages (exact envelope and body) 
 (commands, AUTH, SIZE equal to the message length, the full MIME text with the boundary normalized).
 
 - RED (`native-r4`): Django 55/55; Go 404 on the first case.
-- GREEN: see the family spec (`native-r5` 55/55 on both; `--versioned` after merging the base).
+- GREEN (`versioned-r1`, after merging the base): 55/55 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`mutation-r1`): the daily limit compared with `>` fails Go on `communications-send-email-limit-reached`.
+- Re-run green: communications-smtp (`native-r1`, 73/73; embedded repository transaction).
