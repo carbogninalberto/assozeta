@@ -30,6 +30,9 @@ type InstanceAdminSettings struct {
 	AIIntegers                                      [6]int64
 	AIIntegersInvalid                               bool
 	StripePublicKey, StripeKey, StripeWebhookSecret string `json:"-"`
+	// SetupToken is INSTANCE_SETUP_TOKEN (env.str, default ''), read by
+	// SetupTokenOrAuthenticated before the instance is configured.
+	SetupToken string `json:"-"`
 }
 
 func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error) {
@@ -94,6 +97,9 @@ func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error)
 			s.AIIntegers[index] = number
 			s.AIIntegersInvalid = s.AIIntegersInvalid || !valid
 		}
+	}
+	if s.SetupToken, err = environmentString(values, "INSTANCE_SETUP_TOKEN", "", false); err != nil {
+		return s, err
 	}
 	return s, nil
 }
