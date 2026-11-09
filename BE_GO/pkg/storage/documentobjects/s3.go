@@ -1,8 +1,9 @@
 // Package documentobjects reads stored documents from the S3 default storage
 // the way PrintingService does: default_storage.exists (HeadObject, 404 means
 // absent) and a direct GetObject stream, and stores uploads the way
-// S3Storage._save does (one PutObject). Delete is S3Storage.delete, used only
-// by the export cleanup task.
+// S3Storage._save does (one PutObject). Delete is S3Storage.delete (the
+// export cleanup task and the data-restore cleanup); List is one
+// S3Storage.listdir listing.
 package documentobjects
 
 import (
@@ -178,6 +179,42 @@ func (s *S3) Delete(ctx context.Context, key string) error {
 		return nil
 	}
 	return err
+}
+
+// List is one listing of S3Storage.listdir: the list_objects paginator
+// (Marker = NextMarker, or the last key) with Delimiter, returning the
+// CommonPrefixes and the object keys under prefix, in the provider's order.
+func (s *S3) List(ctx context.Context, prefix, delimiter string) ([]string, []string, error) {
+	client, err := s.client(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	var prefixes, keys []string
+	var marker *string
+	for {
+		output, err := client.ListObjects(ctx, &s3.ListObjectsInput{Bucket: aws.String(s.options.Bucket), Prefix: aws.String(prefix),
+			Delimiter: aws.String(delimiter), Marker: marker})
+		if err != nil {
+			return nil, nil, err
+		}
+		for _, common := range output.CommonPrefixes {
+			prefixes = append(prefixes, aws.ToString(common.Prefix))
+		}
+		for _, object := range output.Contents {
+			keys = append(keys, aws.ToString(object.Key))
+		}
+		if !aws.ToBool(output.IsTruncated) {
+			return prefixes, keys, nil
+		}
+		next := output.NextMarker
+		if next == nil && len(output.Contents) > 0 {
+			next = output.Contents[len(output.Contents)-1].Key
+		}
+		if next == nil {
+			return prefixes, keys, nil
+		}
+		marker = next
+	}
 }
 
 // identityTransport keeps stored bytes unchanged (botocore never asks for a
