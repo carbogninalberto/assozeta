@@ -40,6 +40,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+`internal/djangoauth/common-passwords.txt.gz` is Django 5.2.18's
+`django/contrib/auth/common-passwords.txt.gz` (SHA-256
+`3c1baed62596de36860824eb3f436d5932d37ca8b06e59df78f5a44ec175afe4`), vendored
+unchanged for `CommonPasswordValidator` parity under the Django license above.
+
 ## Django REST Framework 3.17.2
 
 License expression from the installed distribution metadata: `BSD-3-Clause`.
