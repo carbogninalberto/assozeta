@@ -1,6 +1,7 @@
 // Isolated UI regression checks. API fixtures never contact a deployed installation.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {chromium, expect} from '@playwright/test';
@@ -11,8 +12,15 @@ const {createServer} = await import(pathToFileURL(path.join(ui, 'node_modules/vi
 const {svelte} = await import(pathToFileURL(path.join(ui, 'node_modules/@sveltejs/vite-plugin-svelte/src/index.js')));
 const output = process.env.ASSOZETA_BROWSER_OUTPUT || path.join(root, 'quality-reports/operations-ui');
 await fs.mkdir(output, {recursive: true});
+// Scan every profile component up front: a dependency discovered mid-test makes
+// Vite reload the page. A private cache and port keep concurrent runs apart.
+const port = Number(process.env.ASSOZETA_OPERATIONS_PORT || 5198);
+const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'assozeta-operations-vite-'));
 const server = await createServer({
-    root: ui, configFile: false, logLevel: 'error', server: {host: '127.0.0.1', port: 5198, strictPort: true},
+    root: ui, configFile: false, logLevel: process.env.ASSOZETA_VITE_LOG || 'error', server: {host: '127.0.0.1', port, strictPort: true, hmr: false, watch: null},
+    cacheDir, optimizeDeps: {entries: ['src/routes/profile/**/*.svelte'],
+        // Reached through imports the scan cannot follow (app aliases are not configured here).
+        include: ['lucide', 'moment', 'sweetalert2', 'fetch-intercept', 'svelte-spa-router', 'svelte-spa-router/wrap', 'svelte-portal', 'lucide-svelte', '@capacitor/core']},
     resolve: {alias: {utils: `${ui}/src/utils`, store: `${ui}/src/store`}},
     plugins: [{name: 'operations-fixture', enforce: 'pre',
         resolveId(id) {
@@ -179,7 +187,7 @@ try {
         // Trasferisci dati closes the Backup tab: Bakney ZIP export list and import drawer.
         await page.route('**/api/association/export/list', route => route.fulfill({json: {exports: [{document_id: 'fixture-export', filename: 'export_fixture.zip', file_size_bytes: 48 * 1024 ** 2, download_token: 'fixture', created_at: hoursAgo(30)}]}}));
         await page.route('**/api/instance/admin/data-restore', route => route.fulfill({json: {available: true, max_upload_bytes: 5 * GIB, active: null, history: [], backups: [], backups_next: null}}));
-        await page.goto('http://127.0.0.1:5198/#/profile?page=self-instance&tab=backups');
+        await page.goto(`http://127.0.0.1:${port}/#/profile?page=self-instance&tab=backups`);
         const transfer = page.getByRole('region', {name: 'Trasferisci dati'});
         await expect(transfer.getByRole('list', {name: 'Export'}).getByRole('listitem')).toHaveCount(1);
         await transfer.getByRole('button', {name: 'Importa da Bakney'}).click();
@@ -200,7 +208,7 @@ try {
         const shot = async name => { const dialog = await page.locator('dialog[open]').count(); if (dialog) await page.waitForTimeout(400); await page.screenshot({path: path.join(output, `${name}-${viewport.width}.png`), fullPage: !dialog}); };
 
         // Panoramica: three status tiles and one next step.
-        await page.goto('http://127.0.0.1:5198/');
+        await page.goto(`http://127.0.0.1:${port}/`);
         await expect(page.getByRole('heading', {name: 'Istanza', exact: true})).toBeVisible();
         await expect(tabs.getByRole('tab', {name: 'Panoramica'})).toHaveAttribute('aria-selected', 'true');
         await expect(page.getByText('Non ancora verificati')).toBeVisible();
@@ -643,4 +651,5 @@ try {
 } finally {
     await browser?.close();
     await server.close();
+    await fs.rm(cacheDir, {recursive: true, force: true});
 }
