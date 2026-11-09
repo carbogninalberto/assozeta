@@ -100,6 +100,11 @@ COURSES = {
     'o_stale': course('Karate', multi=True),
     'o_text': course('Boxe'),
     'o_upd': course('Pilates', one_fee='30.00', one_fee_payment=True, events=OV_EVENTS),
+    # update_metadata_courses_callback returns early for an empty old title.
+    'u_blank': course(''),
+    'u_null': {**course('Senza titolo'), 'title': None},
+    'u_clear': course('Ginnastica'),
+    'd_member': course('Sala pesi', course_type=3),
 }
 COURSE_LOCATIONS = [('u_main', 'old'), ('d_full', 'own'), ('u_linked', 'far')]
 COURSE_TAGS = [('d_full', 'own')]
@@ -122,6 +127,12 @@ PAYMENTS = {
     'pm_case': payment(description='quota NUOTO', meta={'x': 'nuoto'}),
     'pm_nested': payment(meta={'info': {'t': 'Nuoto'}}),
     'pm_gone': payment(description='Nuoto', deleted=True),
+    # title rewrite to an empty title
+    'pm_clear': payment(description='Iscrizione Ginnastica 2026', meta={'course_title': 'Ginnastica', 'n': 1}),
+    # membership payments of a payment-less membership row (course delete)
+    'd_mu': payment('25.00'),
+    'd_mp': payment('25.00', paid=True),
+    'd_mdel': payment('25.00', deleted=True),
 }
 for label, values in (('d_pa', {}), ('d_pb', {'paid': True}), ('d_pm', {}), ('d_pg', {'group': OWN_GROUP}), ('d_ph', {}),
                       ('o1_pa', {}), ('o1_pb', {'paid': True}), ('o2_pd', {}), ('o2_pe', {}), ('o3_p', {}),
@@ -152,7 +163,9 @@ CS = {
     'u4': cs('o_upd', 'group', payment_label='u4_p'),
     'u5': cs('u_multi', 'luisa'),
     'u_far': cs('u_far', 'hans'),
+    'd_cs_m': {**cs('d_member', 'luisa'), 'type': 3},
 }
+MEMBERSHIP_PAYMENTS = [('d_cs_m', 'd_mu'), ('d_cs_m', 'd_mp'), ('d_cs_m', 'd_mdel')]
 
 
 def installment(cs_label, number, *, payment_label=None, paid=False, group=None, amount='10.00'):
@@ -189,13 +202,15 @@ SEED = {'associates': copy.deepcopy(ASSOCIATES), 'subscriptions': copy.deepcopy(
         'tags': copy.deepcopy(TAGS), 'courses': copy.deepcopy(COURSES), 'payments': copy.deepcopy(PAYMENTS), 'course_subscriptions': copy.deepcopy(CS),
         'installments': copy.deepcopy(INSTALLMENTS), 'registries': copy.deepcopy(REGISTRIES), 'days': copy.deepcopy(DAYS),
         'course_locations': [[COURSES[c]['course_id'], LOCATIONS[l]['course_location_id']] for c, l in COURSE_LOCATIONS],
-        'course_tags': [[COURSES[c]['course_id'], TAGS[t]['tag_id']] for c, t in COURSE_TAGS]}
+        'course_tags': [[COURSES[c]['course_id'], TAGS[t]['tag_id']] for c, t in COURSE_TAGS],
+        'membership_payments': [[CS[c]['course_subscription_id'], PAYMENTS[p]['payment_id']] for c, p in MEMBERSHIP_PAYMENTS]}
 
 # --- expectation helpers ----------------------------------------------------------
 
 COURSE, CSM, CSI, PAYMENT = 'application.Course', 'application.CourseSubscription', 'application.CourseSubscriptionInstallment', 'application.Payment'
 AR, AD = 'application.AttendanceRegistry', 'application.AttendanceDay'
 LOCATION_LINK, TAG_LINK = 'application.Course_locations', 'application.Course_tags'
+MEMBERSHIP_LINK = 'application.CourseSubscription_membership_payments'
 MODEL_NAMES = {COURSE: 'course', CSM: 'coursesubscription', CSI: 'coursesubscriptioninstallment', PAYMENT: 'payment', AR: 'attendanceregistry',
                AD: 'attendanceday'}
 DIRECT, ACTOR_INDEX = 'direct', 'actor.sport_association'
@@ -379,6 +394,14 @@ add('delete-grouped-cascade', actor, f'/course/{cid("d_group")}/delete', 200, DE
     audit=[deleted(PAYMENT, 'd_pg', actor), deleted(CSI, 'd_ig', actor), deleted(PAYMENT, 'd_pg', actor), deleted(PAYMENT, 'd_ph', actor),
            deleted(CSI, 'd_ih', actor), deleted(CSI, 'd_ig', actor), deleted(CSM, 'd_cs_g', actor), deleted(COURSE, 'd_group', actor)]))
 
+# A payment-less membership row: delete_related_course_payment deletes its live unpaid
+# membership payments (the paid and the soft-deleted ones stay); the links go with the row.
+add('delete-membership-cascade', actor, f'/course/{cid("d_member")}/delete', 200, DELETE_OK, result=effect(
+    actor,
+    rows={COURSE: {cid('d_member'): None}, CSM: {csid('d_cs_m'): None}, PAYMENT: {pid('d_mu'): None}},
+    links={MEMBERSHIP_LINK: {'remove': [[csid('d_cs_m'), pid(p)] for c, p in MEMBERSHIP_PAYMENTS]}},
+    audit=[deleted(PAYMENT, 'd_mu', actor), deleted(CSM, 'd_cs_m', actor), deleted(COURSE, 'd_member', actor)]))
+
 # --- course/<uid>/update ----------------------------------------------------------
 
 UPDATED = {'status': 'success'}
@@ -481,6 +504,19 @@ rows, audit = updated('u_group', 'owner', {'title': ['Gruppo', 'Gruppo 2'], 'end
                       end_date='2026-12-31T10:00:00Z')
 add('update-grouped', 'owner', f'/course/{cid("u_group")}/update', 200, UPDATED, method='PATCH', headers=GROUP('own_group'),
     body={'title': 'Gruppo 2', 'end_date': '2026-12-31T10:00:00Z', 'start_date': None}, result=effect('owner', rows=rows, audit=audit))
+# Course.save() dispatches update_metadata_courses for any title change; the callback
+# returns before reading payments when the old title is empty or null.
+rows, audit = updated('u_blank', 'owner', {'title': ['', 'Nuovo corso']}, title='Nuovo corso')
+add('update-title-from-blank', 'owner', f'/course/{cid("u_blank")}/update', 200, UPDATED, method='PATCH', body={'title': 'Nuovo corso'},
+    result=effect('owner', rows=rows, audit=audit))
+rows, audit = updated('u_null', 'owner', {'title': ['None', 'Nuovo corso']}, title='Nuovo corso')
+add('update-title-from-null', 'owner', f'/course/{cid("u_null")}/update', 200, UPDATED, method='PATCH', body={'title': 'Nuovo corso'},
+    result=effect('owner', rows=rows, audit=audit))
+# A new empty title removes the old one from the matching payments.
+rows, audit = updated('u_clear', 'owner', {'title': ['Ginnastica', '']}, title='')
+rows[PAYMENT] = {pid('pm_clear'): change_row(PAYMENT, 'pm_clear', description='Iscrizione  2026', meta={'course_title': '', 'n': 1})}
+add('update-title-to-empty', 'owner', f'/course/{cid("u_clear")}/update', 200, UPDATED, method='PATCH', body={'title': ''},
+    result=effect('owner', rows=rows, audit=audit))
 
 # --- course/<uid>/overview/<uid_subscription>/delete ----------------------------------
 

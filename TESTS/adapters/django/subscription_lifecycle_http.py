@@ -1,8 +1,8 @@
 """Parent-only subscription/<uid>/reject, archive and delete HTTP runner; imports are inert.
 
 Seeds associates, a course, tags, payments, subscriptions (with tag links),
-course subscriptions and installments (audit disabled) and verifies each case
-against the complete model state: exactly the authored subscription, payment,
+course subscriptions (with membership payment links) and installments (audit
+disabled) and verifies each case against the complete model state: exactly the authored subscription, payment,
 course subscription and installment rows change or disappear, many-to-many
 rows of deleted rows go, SET_NULL payment references of deleted payments are
 cleared, and the authored auditlog entries are appended in order (delete
@@ -99,6 +99,8 @@ def seed_rows(source, created):
             billed_frequency=row['billed_frequency'], billed_from=moment(row['billed_from']), billed_until=moment(row['billed_until']),
             billed_from_day_of_month=row['billed_from_day_of_month'], membership_active=row['membership_active'],
             membership_fee=Decimal(row['membership_fee']), auto_renewal=row['auto_renewal'], deleted=row['deleted']))
+        CourseSubscription.membership_payments.through.objects.bulk_create([CourseSubscription.membership_payments.through(
+            coursesubscription_id=row['id'], payment_id=source['payments'][p]['id']) for p in row.get('membership_payments', [])])
     for row in source['installments'].values():
         insert(CourseSubscriptionInstallment, CourseSubscriptionInstallment(
             course_subscription_installment_id=row['id'], course_subscription_id=source['course_subscriptions'][row['cs']]['id'], id=row['number'],

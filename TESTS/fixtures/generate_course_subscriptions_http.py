@@ -136,6 +136,7 @@ PAYMENTS = {
     'bd_mu': payment(amount='25.00', meta=period('2026-02-01', '2026-03-01')),
     'bd_mp': payment(amount='25.00', paid=True, meta=period('2026-01-01', '2026-02-01')),
     'abroad_pay': payment(association=FOREIGN),
+    'bd4_pa': payment(amount='20.00'),
 }
 
 
@@ -177,6 +178,7 @@ CS = {
     'cs_bd2': subscription_row('palestra', 'sub_luisa', membership_payments=['bd_mu', 'bd_mp'], **MEMBER),
     'cs_bd3': subscription_row('yoga', None),
     'cs_abroad': subscription_row('estero', 'sub_abroad'),
+    'cs_bd4': subscription_row('gruppo', None),
 }
 
 
@@ -201,6 +203,10 @@ INSTALLMENTS = {
     'bdb': installment('cs_bd1', 1, '20.00', 'bd_pb'),
     'bddel': installment('cs_bd1', 2, '20.00', deleted=True),
     'bdg': installment('cs_bd1', 3, '20.00', group='own_group'),
+    'bd4a': installment('cs_bd4', 0, '20.00', 'bd4_pa'),
+    'bd4b': installment('cs_bd4', 1, '20.00'),
+    'bd4del': installment('cs_bd4', 2, '20.00', deleted=True),
+    'bd4g': installment('cs_bd4', 3, '20.00', group='own_group'),
 }
 CARNETS = {'dieci': {'id': next(ids), 'title': 'Dieci ingressi', 'lessons': 10},
            'zero': {'id': next(ids), 'title': 'Libero', 'lessons': 0}}
@@ -846,21 +852,31 @@ add('bulk-scoped-without-subscription-ignored', 'owner', BULK, 204, '<empty>', m
 
 def bulk(actor, labels):
     """QuerySet.delete(): pre_delete for the installments (base manager, pk
-    order) then the course subscriptions; deletes in reversed pk order."""
+    order) then the course subscriptions (delete_related_course_payment: for a
+    payment-less row a membership's unpaid live payments, then its remaining
+    live installments); deletes in reversed pk order."""
     rows = sorted(labels, key=lambda k: STATE['cs'][k]['id'])
-    gone = sorted((k for k, i in STATE['installments'].items() if i['cs'] in rows), key=lambda k: STATE['installments'][k]['id'])
-    audit, payments = [], []
+    by_id = lambda k: STATE['installments'][k]['id']
+    gone = sorted((k for k, i in STATE['installments'].items() if i['cs'] in rows), key=by_id)
+    audit, payments, removed = [], [], set()
     for key in gone:
         entries = unpaid_installment(key, actor)
         audit += entries
         payments += [e['label'] for e in entries if e['model'] == 'payment'][:1]
+        if entries:
+            # Payment's pre_delete deleted the installment with its payment.
+            removed.add(key)
     for label in rows:
         row = STATE['cs'][label]
-        if row['payment'] is None and row['type'] == 3:
+        if row['payment'] is not None:
+            continue
+        if row['type'] == 3:
             unpaid = sorted((p for p in row['membership_payments'] if not STATE['payments'][p]['paid'] and not STATE['payments'][p]['deleted']),
                             key=lambda p: STATE['payments'][p]['id'])
             audit += [deleted('payment', p, PAYMENT_INDEX) for p in reversed(unpaid)]
             payments += unpaid
+        live = [k for k in gone if STATE['installments'][k]['cs'] == label and not STATE['installments'][k]['deleted'] and k not in removed]
+        audit += [deleted('coursesubscriptioninstallment', key, actor_index(actor)) for key in reversed(live)]
     audit += [deleted('coursesubscriptioninstallment', key, actor_index(actor)) for key in reversed(gone)]
     audit += [deleted('coursesubscription', label, actor_index(actor)) for label in reversed(rows)]
     for key in gone:
@@ -874,6 +890,11 @@ def bulk(actor, labels):
 add('bulk-owner', 'owner', BULK, 204, '<empty>', method='DELETE',
     body={'course_subscription_ids': [CS['cs_bd2']['id'], CS['cs_bd1']['id'].upper(), CS['cs_abroad']['id'], CS['cs_deleted']['id']]},
     effect=bulk('owner', ['cs_bd1', 'cs_bd2']))
+# A payment-less row: the signal deletes its live installments (payment-less and grouped
+# ones) after the collected installment with an unpaid payment went with that payment;
+# the collector then deletes every collected installment again.
+add('bulk-row-without-payment-installments', 'owner', BULK, 204, '<empty>', method='DELETE',
+    body={'course_subscription_ids': [CS['cs_bd4']['id']]}, effect=bulk('owner', ['cs_bd4']))
 add('list-after-writes', 'owner', f'{LIST}?include_deleted=true&course_id={C("yoga")}', 200,
     listing(*[k for k in own_rows(True) if STATE['cs'][k]['course'] == 'yoga']))
 add('list-after-membership-writes', 'owner', f'{LIST}?subscription_id={S("sub_luisa")}&course_id={C("palestra")}', 200,

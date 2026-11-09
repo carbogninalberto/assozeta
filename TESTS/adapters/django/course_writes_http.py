@@ -1,8 +1,9 @@
 """Parent-only course add, update and delete and course-overview update and delete HTTP runner; imports are inert.
 
 Seeds associates, subscriptions, locations, a tag, courses with their
-location and tag links, payments, course subscriptions, installments and an
-attendance registry with one day (audit disabled), and verifies each case
+location and tag links, payments, course subscriptions with their membership
+payment links, installments and an attendance registry with one day (audit
+disabled), and verifies each case
 against the complete model state:
 - seeded rows of the courses, course subscriptions, installments, payments,
   registries and days change exactly by the authored columns or disappear;
@@ -76,6 +77,8 @@ def seed_rows(source, created):
     Course.tags.through.objects.bulk_create([Course.tags.through(course_id=c, coursetags_id=t) for c, t in source['course_tags']])
     insert(Payment, source['payments'].values())
     insert(CourseSubscription, source['course_subscriptions'].values())
+    CourseSubscription.membership_payments.through.objects.bulk_create([
+        CourseSubscription.membership_payments.through(coursesubscription_id=c, payment_id=p) for c, p in source.get('membership_payments', [])])
     insert(CourseSubscriptionInstallment, source['installments'].values())
     insert(AttendanceRegistry, source['registries'].values())
     insert(AttendanceDay, source['days'].values())
