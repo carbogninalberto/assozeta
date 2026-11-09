@@ -3083,26 +3083,66 @@
         "target": "include('instance.urls')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/django_not_found.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/middleware/session_audit.go"
+      ],
+      "dependencies": [
+        "BE/instance/urls.py",
+        "BE/core/urls.py",
+        "BE/core/middleware.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
         "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
+        "external_paths": [
+          "/instance/"
+        ],
+        "request": "Any path under the include; children are their own ledger routes.",
+        "response": "Children: see their families. Unmatched paths: page_not_found 404 HTML page (every method), or the APPEND_SLASH 301 when path+\"/\" resolves; /api/ with a Bearer token: 500 page.",
+        "errors": "No 405 for unmatched paths (method checks belong to the child views).",
+        "authentication": "None for unmatched paths (no view runs).",
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "None for unmatched paths; an empty supplied session cookie is deleted.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/unknown_paths_http.json",
+        "TESTS/fixtures/generate_unknown_paths_http.py",
+        "TESTS/contracts/test_unknown_paths_http.py",
+        "TESTS/adapters/django/unknown_paths_http.py",
+        "BE_GO/internal/handler/django_not_found_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/unknown-paths.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 58/58; Go fails on unknown-paths-root-get (Echo JSON 404, Vary origin).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-red4/results.json",
+          "receipt_sha256": "50131dd7971ce6e3ef1e024097b6cff6eaf9e8b50af338f4ed088d6572f72dcc"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN: 58/58 on native Django, native Go, Caddy /api/v1 and /api/v2 (404 page, APPEND_SLASH 301, headers, unchanged state).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-versioned3/results.json",
+          "receipt_sha256": "a1405528baeedcd9de19614b29b3aac5d5f7576c76b21f03a30bb46accd5430d"
+        },
+        {
+          "revision": "committing change with the router detail pattern accepting '.' in the pk",
+          "result": "Mutation control: fails Go on unknown-paths-router-detail-dot (301 instead of 404).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-mutation1/results.json",
+          "receipt_sha256": "6ff04f2a1dcc525feaaf0e6932c8b8eac57ecd57822846f91d8882ac1cbb3aba"
+        },
+        "All 27 child routes of BE/instance/urls.py are implementing in the ledger (the 27 patterns of the URLconf, including admin/backups, admin/backups/download-token and admin/backups/<str:name>/download after the instance-backups merge); their families: 86 source-authored cases pass against actual Django ASGI and Go, with real JWT/PostgreSQL/Redis, unchanged managed data and declared cache cleanup. Missing route, malformed-CORS locale and private pair-array projection RED retained before fixes. Four actual PostgreSQL groups prove secret projection and one-row/one-query plans at100/1000/10000 rows; shared buffer hits4/6/6. See docs/architecture/go-migration/instance-bootstrap.md., docs/architecture/go-migration/data-restore.md, docs/architecture/go-migration/instance-admin.md, docs/architecture/go-migration/instance-backups.md, docs/architecture/go-migration/instance-logo.md, docs/architecture/go-migration/instance-manifest.md, docs/architecture/go-migration/instance-outbound.md, docs/architecture/go-migration/instance-setup.md, docs/architecture/go-migration/sso-pairing.md."
+      ],
       "notes": [
-        "Not satisfied (ledger-closure): Django's instance.urls has 27 routes; the ledger has 24 (all implementing). admin/backups, admin/backups/download-token and admin/backups/<str:name>/download (BackupOverviewView, BackupDownloadTokenView, BackupDownloadView, added on main) have no ledger route entry and no Go route. Unmatched paths under instance/ match Django (family unknown-paths)."
+        "Implementing: every child route is implementing; unmatched paths under instance/ match Django (family unknown-paths)."
       ]
     },
     {
