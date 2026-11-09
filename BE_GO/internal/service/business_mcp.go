@@ -58,7 +58,7 @@ func (t *BusinessMCPTools) Execute(ctx context.Context, name string, arguments d
 	case "save_report":
 		return t.saveReport(ctx, arguments)
 	case "get_schema":
-		return t.schema(arguments)
+		return t.schema(ctx, arguments)
 	case "query_data":
 		return t.query(ctx, name, mcpKwargs(arguments, mcpQueryArguments...))
 	case "count_data":
@@ -238,6 +238,7 @@ func (t *BusinessMCPTools) listReports(ctx context.Context, arguments domain.Req
 		return nil, err
 	}
 	if message != "" {
+		markMCPRaised(ctx) // UUIDField.to_python raises in the query
 		return mcpErrorResult(message), nil
 	}
 	rows, err := t.store.SavedReports(ctx, t.association, user)
@@ -278,6 +279,7 @@ func (t *BusinessMCPTools) saveReport(ctx context.Context, arguments domain.Requ
 		return nil, err
 	}
 	if message != "" {
+		markMCPRaised(ctx) // UUIDField.to_python raises in the query
 		return mcpErrorResult(message), nil
 	}
 	exists, err := t.store.ActiveUserExists(ctx, user)

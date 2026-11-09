@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -17,13 +18,21 @@ import (
 
 // WebSocketHandler serves Django's Channels WebSocket routes (core.asgi):
 // JWTAuthMiddleware, then URLRouter with ws/updates/, ws/health/ and
-// ws/notifications/. ws/agent/ (the AI agent) is not served here: like any
-// unrouted path it gets the router's exception (HTTP 500 before accept).
+// ws/notifications/, and ws/agent/ (application.chat.routing) when the agent
+// runtime is configured (WithAgent); otherwise ws/agent/ gets the router's
+// exception like any unrouted path (HTTP 500 before accept).
 type WebSocketHandler struct {
 	identities    *service.WebSocketIdentities
 	notifications *service.NotificationManager
 	hub           *service.RealtimeHub
 	version       string
+	agent         *AgentWebSocket
+}
+
+// WithAgent serves ws/agent/ (AgentConsumer) with the given runtime.
+func (h *WebSocketHandler) WithAgent(agent *AgentWebSocket) *WebSocketHandler {
+	h.agent = agent
+	return h
 }
 
 func NewWebSocketHandler(identities *service.WebSocketIdentities, notifications *service.NotificationManager, hub *service.RealtimeHub, version string) *WebSocketHandler {
@@ -169,6 +178,9 @@ type session struct {
 	member        *service.RealtimeMember
 	closed        bool // the middleware's `closed` flag
 	consumer      consumer
+	// sendMu serializes sends: the agent consumer sends from its request task
+	// while the receive loop keeps handling frames.
+	sendMu sync.Mutex
 }
 
 type consumer interface {
@@ -222,6 +234,12 @@ func (h *WebSocketHandler) serve(w http.ResponseWriter, r *http.Request) {
 		s.consumer = healthConsumer{}
 	case "/ws/notifications/":
 		s.consumer = &notificationConsumer{}
+	case "/ws/agent/":
+		if h.agent == nil {
+			crashBeforeAccept(w)
+			return
+		}
+		s.consumer = newAgentConsumer(h.agent)
 	default:
 		// URLRouter: "No route found for path".
 		crashBeforeAccept(w)
@@ -272,6 +290,8 @@ func (s *session) send(value domain.RequestObject) error {
 }
 
 func (s *session) sendText(data []byte) error {
+	s.sendMu.Lock()
+	defer s.sendMu.Unlock()
 	if s.closed {
 		return nil
 	}
@@ -301,11 +321,13 @@ func (s *session) run() {
 				if s.impersonating {
 					// checked_receive: a revoked session closes with 4003 and the
 					// consumer receives a disconnect instead of the message.
+					s.sendMu.Lock()
 					ok, err := false, error(nil)
 					if !s.closed {
 						ok, err = s.checked()
 					}
 					if err != nil {
+						s.sendMu.Unlock()
 						s.crash(err)
 						return
 					}
@@ -314,9 +336,11 @@ func (s *session) run() {
 							s.conn.Close(4003, "")
 						}
 						s.closed = true
+						s.sendMu.Unlock()
 						s.consumer.disconnect(s)
 						return
 					}
+					s.sendMu.Unlock()
 				}
 				if err := s.consumer.receive(s, value); err != nil {
 					s.crash(err)

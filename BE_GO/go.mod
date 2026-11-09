@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.4
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.4
 	github.com/aws/smithy-go v1.28.5
+	github.com/dlclark/regexp2 v1.11.5
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
