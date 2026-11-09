@@ -19,7 +19,10 @@
 //     original exception fails the task;
 //   - django-db results: one TaskResult row per task id (status, kombu-JSON
 //     result, meta {"children": [...]}; task name, args, worker and
-//     traceback stay NULL as result_extended is off).
+//     traceback stay NULL as result_extended is off);
+//   - prefork tasks (prefork.go): a child process per execution with
+//     acks_late, reject_on_worker_lost and soft/hard time limits applied
+//     as billiard's AsynPool applies them.
 //
 // Messages the Go side does not run (an unregistered name, a payload or
 // option outside the decoded subset, or an input the task's Plan refuses)
@@ -32,8 +35,11 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"os/exec"
 	"strconv"
+	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
@@ -96,6 +102,23 @@ type Task struct {
 	// Run is the task body. It returns the task's return value, a *Retry,
 	// an *Exception, or another error (stored as a database failure).
 	Run func(context.Context, *Request) (any, error)
+
+	// Cleanup, when set, runs after the message was handled (handed off,
+	// deferred, failed or completed) to release what Plan prepared.
+	Cleanup func(*Request)
+
+	// Prefork runs the task in a child process, as Celery's prefork pool
+	// does, which is what time limits and worker-loss handling need (see
+	// prefork.go). The options below require it.
+	Prefork bool
+	// AcksLate acknowledges the message after the outcome is stored.
+	AcksLate bool
+	// RejectOnWorkerLost requeues an acks_late message whose child died.
+	RejectOnWorkerLost bool
+	// TimeLimit and SoftTimeLimit are the task's time_limit and
+	// soft_time_limit in seconds ("" for None); the message's timelimit
+	// header wins when truthy.
+	TimeLimit, SoftTimeLimit celery.Number
 }
 
 // Results stores TaskResult rows (DatabaseBackend._store_result).
@@ -121,6 +144,9 @@ type Options struct {
 	DrainTimeout time.Duration
 	// Coordinated mirrors a configured DATA_RESTORE_LOCK_PATH.
 	Coordinated bool
+	// Child builds the command of a prefork child (ChildCommand); required
+	// when a task is Prefork.
+	Child func() *exec.Cmd
 }
 
 // Worker consumes one queue.
@@ -137,6 +163,8 @@ type Worker struct {
 	mu    sync.Mutex
 	held  map[string]*heldMessage
 	ready []*Delivery
+	// jobs is billiard's job counter: every task sent to the pool.
+	jobs atomic.Int64
 }
 
 type heldMessage struct {
@@ -153,6 +181,14 @@ func New(transport *celery.Transport, tasks map[string]Task, results Results, ad
 	}
 	if options.DrainTimeout <= 0 {
 		options.DrainTimeout = 30 * time.Second
+	}
+	for _, task := range tasks {
+		if !task.Prefork && (task.AcksLate || task.RejectOnWorkerLost || task.TimeLimit != "" || task.SoftTimeLimit != "") {
+			return nil, errors.New("celeryworker: acks_late, reject_on_worker_lost and time limits need a prefork task")
+		}
+		if task.Prefork && options.Child == nil {
+			return nil, errors.New("celeryworker: prefork tasks need a child launcher")
+		}
 	}
 	return &Worker{transport: transport, tasks: tasks, results: results, admission: admission, options: options,
 		logger: logger, now: time.Now, newID: uuid.NewString, held: map[string]*heldMessage{}}, nil
@@ -251,7 +287,8 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 		w.handoff(ctx, d, "undecodable")
 		return false
 	}
-	if _, ok := w.tasks[m.Task]; !ok {
+	task, ok := w.tasks[m.Task]
+	if !ok {
 		w.handoff(ctx, d, "unregistered")
 		return false
 	}
@@ -259,7 +296,7 @@ func (w *Worker) receive(ctx context.Context, d *Delivery) bool {
 		w.revoke(ctx, d)
 		return false
 	}
-	if !m.Plain() {
+	if !m.PlainWith(task.Prefork) || (task.Prefork && !validTimeLimits(m.TimeLimit)) {
 		w.handoff(ctx, d, "options")
 		return false
 	}
@@ -371,7 +408,15 @@ var (
 func (w *Worker) execute(ctx context.Context, d *Delivery) {
 	m := d.Message
 	task := w.tasks[m.Task]
+	job := w.jobs.Add(1) - 1
+	if task.Prefork {
+		w.executePrefork(ctx, d, task, job)
+		return
+	}
 	request := &Request{Message: m, Hostname: w.options.Hostname}
+	if task.Cleanup != nil {
+		defer task.Cleanup(request)
+	}
 	if task.Plan != nil {
 		if err := task.Plan(ctx, request); errors.Is(err, ErrHandoff) {
 			w.handoff(ctx, d, "input")
@@ -381,7 +426,24 @@ func (w *Worker) execute(ctx context.Context, d *Delivery) {
 	// Request.execute_using_pool: acks_late is off, the message is
 	// acknowledged when the task is accepted.
 	w.ack(ctx, d)
-	if w.options.Coordinated {
+	w.perform(ctx, ctx, request, task, false)
+}
+
+// coordinated is CoordinatedTask.__call__'s condition: a configured lock
+// path, and a task name outside instance.restore.* (restore tasks hold the
+// exclusive lock themselves).
+func (w *Worker) coordinated(name string) bool {
+	return w.options.Coordinated && !strings.HasPrefix(name, "instance.restore.")
+}
+
+// perform is CoordinatedTask admission, the task body and the stored
+// outcome; the body runs with taskCtx (cancelled by a soft time limit in a
+// prefork child). In a prefork child (child true) a retry also records its own
+// message among the request's children, as the Django prefork worker stores
+// it.
+func (w *Worker) perform(ctx, taskCtx context.Context, request *Request, task Task, child bool) {
+	m := request.Message
+	if w.coordinated(m.Task) {
 		lease, completed, err := w.admission.Acquire(ctx)
 		switch {
 		case errors.Is(err, domain.ErrRestorePending):
@@ -406,7 +468,14 @@ func (w *Worker) execute(ctx context.Context, d *Delivery) {
 			}
 		}
 	}
-	value, err := task.Run(ctx, request)
+	value, err := task.Run(taskCtx, request)
+	if err != nil && child && errors.Is(context.Cause(taskCtx), ErrSoftTimeLimit) {
+		var retry *Retry
+		var exc *Exception
+		if !errors.As(err, &retry) && !errors.As(err, &exc) {
+			err = softTimeLimitExceeded
+		}
+	}
 	var retry *Retry
 	var exc *Exception
 	switch {
@@ -419,6 +488,9 @@ func (w *Worker) execute(ctx context.Context, d *Delivery) {
 		}
 		if !w.republish(ctx, request, m.Retries+1, retry.Countdown, false) {
 			return // Reject(requeue=False): no result is stored
+		}
+		if child {
+			request.AddChild(m.ID)
 		}
 		w.store(ctx, m.ID, "RETRY", retry.Exc, request.children)
 	case errors.As(err, &exc):

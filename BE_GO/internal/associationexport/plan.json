@@ -1,0 +1,6398 @@
+{
+ "format": 1,
+ "excluded": {
+  "User": [
+   "password",
+   "two_fa_secret",
+   "stripe_account_id",
+   "integration_google_credentials"
+  ],
+  "Payment": [
+   "payment_intent_id"
+  ],
+  "CommunicationConfiguration": [
+   "smtp_password"
+  ]
+ },
+ "models": [
+  {
+   "model": "SportAssociation",
+   "file": "data/01_sport_association.json",
+   "fields": [
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "denomination",
+     "column": "denomination",
+     "kind": "text"
+    },
+    {
+     "key": "address_city",
+     "column": "address_city",
+     "kind": "text"
+    },
+    {
+     "key": "address",
+     "column": "address",
+     "kind": "text"
+    },
+    {
+     "key": "address_cap",
+     "column": "address_cap",
+     "kind": "text"
+    },
+    {
+     "key": "tax_code",
+     "column": "tax_code",
+     "kind": "text"
+    },
+    {
+     "key": "email",
+     "column": "email",
+     "kind": "text"
+    },
+    {
+     "key": "phone",
+     "column": "phone",
+     "kind": "text"
+    },
+    {
+     "key": "regulation",
+     "column": "regulation",
+     "kind": "text"
+    },
+    {
+     "key": "demand",
+     "column": "demand",
+     "kind": "text"
+    },
+    {
+     "key": "additional_sections",
+     "column": "additional_sections",
+     "kind": "json"
+    },
+    {
+     "key": "logo",
+     "column": "logo",
+     "kind": "text"
+    },
+    {
+     "key": "subscription_fee",
+     "column": "subscription_fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "multiple_subscription_fee",
+     "column": "multiple_subscription_fee",
+     "kind": "bool"
+    },
+    {
+     "key": "subscription_fee_plans",
+     "column": "subscription_fee_plans",
+     "kind": "json"
+    },
+    {
+     "key": "membership_fee",
+     "column": "membership_fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "multiple_membership_fee",
+     "column": "multiple_membership_fee",
+     "kind": "bool"
+    },
+    {
+     "key": "membership_fee_plans",
+     "column": "membership_fee_plans",
+     "kind": "json"
+    },
+    {
+     "key": "custom_subscription_form_data",
+     "column": "custom_subscription_form_data",
+     "kind": "json"
+    },
+    {
+     "key": "document_header",
+     "column": "document_header",
+     "kind": "text"
+    },
+    {
+     "key": "invoice_footer",
+     "column": "invoice_footer",
+     "kind": "text"
+    },
+    {
+     "key": "enable_quotes_management",
+     "column": "enable_quotes_management",
+     "kind": "bool"
+    },
+    {
+     "key": "configuration",
+     "column": "configuration",
+     "kind": "json"
+    },
+    {
+     "key": "reviewed",
+     "column": "reviewed",
+     "kind": "bool"
+    },
+    {
+     "key": "affiliate_code",
+     "column": "affiliate_code",
+     "kind": "text"
+    },
+    {
+     "key": "affiliate_code_stripe",
+     "column": "affiliate_code_stripe",
+     "kind": "text"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    },
+    {
+     "key": "review_url",
+     "column": "review_url",
+     "kind": "text"
+    },
+    {
+     "key": "review_url_enabled",
+     "column": "review_url_enabled",
+     "kind": "bool"
+    },
+    {
+     "key": "crm_user_id",
+     "column": "crm_user_id",
+     "kind": "text"
+    },
+    {
+     "key": "crm_contact_id",
+     "column": "crm_contact_id",
+     "kind": "text"
+    },
+    {
+     "key": "president_signature",
+     "column": "president_signature",
+     "kind": "text"
+    },
+    {
+     "key": "stamp",
+     "column": "stamp",
+     "kind": "text"
+    },
+    {
+     "key": "president_first_name",
+     "column": "president_first_name",
+     "kind": "text"
+    },
+    {
+     "key": "president_last_name",
+     "column": "president_last_name",
+     "kind": "text"
+    },
+    {
+     "key": "enroll_number",
+     "column": "enroll_number",
+     "kind": "text"
+    },
+    {
+     "key": "federation",
+     "column": "federation",
+     "kind": "text"
+    },
+    {
+     "key": "sport",
+     "column": "sport",
+     "kind": "text"
+    },
+    {
+     "key": "enabled_for",
+     "column": "enabled_for",
+     "kind": "json"
+    },
+    {
+     "key": "checkout_info",
+     "column": "checkout_info",
+     "kind": "text"
+    },
+    {
+     "key": "additional_fields",
+     "column": "additional_fields",
+     "kind": "json"
+    },
+    {
+     "key": "stripe_available_methods",
+     "column": "stripe_available_methods",
+     "kind": "json"
+    },
+    {
+     "key": "iban",
+     "column": "iban",
+     "kind": "text"
+    },
+    {
+     "key": "website",
+     "column": "website",
+     "kind": "text"
+    },
+    {
+     "key": "abbreviated",
+     "column": "abbreviated",
+     "kind": "text"
+    },
+    {
+     "key": "vat_number",
+     "column": "vat_number",
+     "kind": "text"
+    },
+    {
+     "key": "whatsapp",
+     "column": "whatsapp",
+     "kind": "text"
+    },
+    {
+     "key": "imported_from_associami",
+     "column": "imported_from_associami",
+     "kind": "bool"
+    },
+    {
+     "key": "extra_text_invoices",
+     "column": "extra_text_invoices",
+     "kind": "text"
+    },
+    {
+     "key": "show_regulation_to_members",
+     "column": "show_regulation_to_members",
+     "kind": "bool"
+    },
+    {
+     "key": "show_regulation_to_both",
+     "column": "show_regulation_to_both",
+     "kind": "bool"
+    },
+    {
+     "key": "show_regulation_to_athletes",
+     "column": "show_regulation_to_athletes",
+     "kind": "bool"
+    },
+    {
+     "key": "show_demand_to_members",
+     "column": "show_demand_to_members",
+     "kind": "bool"
+    },
+    {
+     "key": "show_demand_to_both",
+     "column": "show_demand_to_both",
+     "kind": "bool"
+    },
+    {
+     "key": "show_demand_to_athletes",
+     "column": "show_demand_to_athletes",
+     "kind": "bool"
+    },
+    {
+     "key": "invoice_template",
+     "column": "invoice_template",
+     "kind": "text"
+    },
+    {
+     "key": "subscription_template",
+     "column": "subscription_template",
+     "kind": "text"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    }
+   ],
+   "table": "application_sportassociation",
+   "pk": "sport_association_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_sportassociation\".\"sport_association_id\", \"application_sportassociation\".\"user_id\", \"application_sportassociation\".\"denomination\", \"application_sportassociation\".\"address_city\", \"application_sportassociation\".\"address\", \"application_sportassociation\".\"address_cap\", \"application_sportassociation\".\"tax_code\", \"application_sportassociation\".\"email\", \"application_sportassociation\".\"phone\", \"application_sportassociation\".\"regulation\", \"application_sportassociation\".\"demand\", \"application_sportassociation\".\"additional_sections\", \"application_sportassociation\".\"logo\", \"application_sportassociation\".\"subscription_fee\", \"application_sportassociation\".\"multiple_subscription_fee\", \"application_sportassociation\".\"subscription_fee_plans\", \"application_sportassociation\".\"membership_fee\", \"application_sportassociation\".\"multiple_membership_fee\", \"application_sportassociation\".\"membership_fee_plans\", \"application_sportassociation\".\"custom_subscription_form_data\", \"application_sportassociation\".\"document_header\", \"application_sportassociation\".\"invoice_footer\", \"application_sportassociation\".\"enable_quotes_management\", \"application_sportassociation\".\"configuration\", \"application_sportassociation\".\"reviewed\", \"application_sportassociation\".\"affiliate_code\", \"application_sportassociation\".\"affiliate_code_stripe\", \"application_sportassociation\".\"deleted\", \"application_sportassociation\".\"review_url\", \"application_sportassociation\".\"review_url_enabled\", \"application_sportassociation\".\"crm_user_id\", \"application_sportassociation\".\"crm_contact_id\", \"application_sportassociation\".\"president_signature\", \"application_sportassociation\".\"stamp\", \"application_sportassociation\".\"president_first_name\", \"application_sportassociation\".\"president_last_name\", \"application_sportassociation\".\"enroll_number\", \"application_sportassociation\".\"federation\", \"application_sportassociation\".\"sport\", \"application_sportassociation\".\"enabled_for\", \"application_sportassociation\".\"checkout_info\", \"application_sportassociation\".\"additional_fields\", \"application_sportassociation\".\"stripe_available_methods\", \"application_sportassociation\".\"iban\", \"application_sportassociation\".\"website\", \"application_sportassociation\".\"abbreviated\", \"application_sportassociation\".\"vat_number\", \"application_sportassociation\".\"whatsapp\", \"application_sportassociation\".\"imported_from_associami\", \"application_sportassociation\".\"extra_text_invoices\", \"application_sportassociation\".\"show_regulation_to_members\", \"application_sportassociation\".\"show_regulation_to_both\", \"application_sportassociation\".\"show_regulation_to_athletes\", \"application_sportassociation\".\"show_demand_to_members\", \"application_sportassociation\".\"show_demand_to_both\", \"application_sportassociation\".\"show_demand_to_athletes\", \"application_sportassociation\".\"invoice_template\", \"application_sportassociation\".\"subscription_template\", \"application_sportassociation\".\"notes\" FROM \"application_sportassociation\" INNER JOIN \"bakney_user\" ON (\"application_sportassociation\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_sportassociation\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "params": [
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "owner"
+     }
+    ]
+   },
+   "columns": [
+    "sport_association_id",
+    "user_id",
+    "denomination",
+    "address_city",
+    "address",
+    "address_cap",
+    "tax_code",
+    "email",
+    "phone",
+    "regulation",
+    "demand",
+    "additional_sections",
+    "logo",
+    "subscription_fee",
+    "multiple_subscription_fee",
+    "subscription_fee_plans",
+    "membership_fee",
+    "multiple_membership_fee",
+    "membership_fee_plans",
+    "custom_subscription_form_data",
+    "document_header",
+    "invoice_footer",
+    "enable_quotes_management",
+    "configuration",
+    "reviewed",
+    "affiliate_code",
+    "affiliate_code_stripe",
+    "deleted",
+    "review_url",
+    "review_url_enabled",
+    "crm_user_id",
+    "crm_contact_id",
+    "president_signature",
+    "stamp",
+    "president_first_name",
+    "president_last_name",
+    "enroll_number",
+    "federation",
+    "sport",
+    "enabled_for",
+    "checkout_info",
+    "additional_fields",
+    "stripe_available_methods",
+    "iban",
+    "website",
+    "abbreviated",
+    "vat_number",
+    "whatsapp",
+    "imported_from_associami",
+    "extra_text_invoices",
+    "show_regulation_to_members",
+    "show_regulation_to_both",
+    "show_regulation_to_athletes",
+    "show_demand_to_members",
+    "show_demand_to_both",
+    "show_demand_to_athletes",
+    "invoice_template",
+    "subscription_template",
+    "notes"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "User",
+   "file": "data/02_users.json",
+   "fields": [
+    {
+     "key": "sportassociation_id",
+     "kind": "null"
+    },
+    {
+     "key": "last_login",
+     "column": "last_login",
+     "kind": "datetime"
+    },
+    {
+     "key": "is_superuser",
+     "column": "is_superuser",
+     "kind": "bool"
+    },
+    {
+     "key": "username",
+     "column": "username",
+     "kind": "text"
+    },
+    {
+     "key": "first_name",
+     "column": "first_name",
+     "kind": "text"
+    },
+    {
+     "key": "last_name",
+     "column": "last_name",
+     "kind": "text"
+    },
+    {
+     "key": "email",
+     "column": "email",
+     "kind": "text"
+    },
+    {
+     "key": "is_staff",
+     "column": "is_staff",
+     "kind": "bool"
+    },
+    {
+     "key": "is_active",
+     "column": "is_active",
+     "kind": "bool"
+    },
+    {
+     "key": "date_joined",
+     "column": "date_joined",
+     "kind": "datetime"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "role",
+     "column": "role",
+     "kind": "int"
+    },
+    {
+     "key": "avatar_image",
+     "column": "avatar_image",
+     "kind": "text"
+    },
+    {
+     "key": "phone",
+     "column": "phone",
+     "kind": "text"
+    },
+    {
+     "key": "two_fa",
+     "column": "two_fa",
+     "kind": "bool"
+    },
+    {
+     "key": "stripe_on_boarding_completed",
+     "column": "stripe_on_boarding_completed",
+     "kind": "bool"
+    },
+    {
+     "key": "enumerate_invoices",
+     "column": "enumerate_invoices",
+     "kind": "bool"
+    },
+    {
+     "key": "online_payments",
+     "column": "online_payments",
+     "kind": "bool"
+    },
+    {
+     "key": "balance_sheet_year",
+     "column": "balance_sheet_year",
+     "kind": "int"
+    },
+    {
+     "key": "balance_sheet_start_day",
+     "column": "balance_sheet_start_day",
+     "kind": "int"
+    },
+    {
+     "key": "balance_sheet_start_month",
+     "column": "balance_sheet_start_month",
+     "kind": "int"
+    },
+    {
+     "key": "temporary_invoice_deletion",
+     "column": "temporary_invoice_deletion",
+     "kind": "bool"
+    },
+    {
+     "key": "auto_archive",
+     "column": "auto_archive",
+     "kind": "bool"
+    },
+    {
+     "key": "auto_mark_attendance",
+     "column": "auto_mark_attendance",
+     "kind": "bool"
+    },
+    {
+     "key": "full_installments_plan",
+     "column": "full_installments_plan",
+     "kind": "bool"
+    },
+    {
+     "key": "payment_date_equal_invoice_date",
+     "column": "payment_date_equal_invoice_date",
+     "kind": "bool"
+    },
+    {
+     "key": "starting_number_invoices",
+     "column": "starting_number_invoices",
+     "kind": "int"
+    },
+    {
+     "key": "connected_user_id",
+     "column": "connected_user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "auto_paid_payment",
+     "column": "auto_paid_payment",
+     "kind": "bool"
+    },
+    {
+     "key": "tables_settings",
+     "column": "tables_settings",
+     "kind": "json"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    },
+    {
+     "key": "delete_on",
+     "column": "delete_on",
+     "kind": "date"
+    },
+    {
+     "key": "collaborator_role",
+     "column": "collaborator_role",
+     "kind": "int"
+    },
+    {
+     "key": "collaborator_permissions",
+     "column": "collaborator_permissions",
+     "kind": "json"
+    },
+    {
+     "key": "dark_mode",
+     "column": "dark_mode",
+     "kind": "bool"
+    },
+    {
+     "key": "integration_google_state",
+     "column": "integration_google_state",
+     "kind": "text"
+    },
+    {
+     "key": "integration_google_auto_sync",
+     "column": "integration_google_auto_sync",
+     "kind": "bool"
+    },
+    {
+     "key": "dashboard_layout",
+     "column": "dashboard_layout",
+     "kind": "json"
+    },
+    {
+     "key": "subscription_duration_equal_sport_year",
+     "column": "subscription_duration_equal_sport_year",
+     "kind": "bool"
+    },
+    {
+     "key": "subscription_duration",
+     "column": "subscription_duration",
+     "kind": "int"
+    },
+    {
+     "key": "membership_duration",
+     "column": "membership_duration",
+     "kind": "int"
+    },
+    {
+     "key": "subscription_start_day",
+     "column": "subscription_start_day",
+     "kind": "int"
+    },
+    {
+     "key": "subscription_start_month",
+     "column": "subscription_start_month",
+     "kind": "int"
+    },
+    {
+     "key": "custom_end_date",
+     "column": "custom_end_date",
+     "kind": "bool"
+    },
+    {
+     "key": "subscription_end_day",
+     "column": "subscription_end_day",
+     "kind": "int"
+    },
+    {
+     "key": "subscription_end_month",
+     "column": "subscription_end_month",
+     "kind": "int"
+    },
+    {
+     "key": "membership_starting_number",
+     "column": "membership_starting_number",
+     "kind": "int"
+    },
+    {
+     "key": "default_membership_type",
+     "column": "default_membership_type",
+     "kind": "text"
+    },
+    {
+     "key": "lead_sport_association_role",
+     "column": "lead_sport_association_role",
+     "kind": "text"
+    },
+    {
+     "key": "lead_sport_association_size",
+     "column": "lead_sport_association_size",
+     "kind": "text"
+    },
+    {
+     "key": "lead_sport_market_channel",
+     "column": "lead_sport_market_channel",
+     "kind": "text"
+    },
+    {
+     "key": "disable_account_creation",
+     "column": "disable_account_creation",
+     "kind": "bool"
+    },
+    {
+     "key": "force_account_creation",
+     "column": "force_account_creation",
+     "kind": "bool"
+    },
+    {
+     "key": "medical_certificate_notifications",
+     "column": "medical_certificate_notifications",
+     "kind": "bool"
+    },
+    {
+     "key": "hide_category_name",
+     "column": "hide_category_name",
+     "kind": "bool"
+    },
+    {
+     "key": "show_zero_payments",
+     "column": "show_zero_payments",
+     "kind": "bool"
+    },
+    {
+     "key": "imported_from_associami",
+     "column": "imported_from_associami",
+     "kind": "bool"
+    },
+    {
+     "key": "default_payment_category_id",
+     "column": "default_payment_category_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "default_payment_category_courses_id",
+     "column": "default_payment_category_courses_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "bakney_user",
+   "pk": "user_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"bakney_user\".\"password\", \"bakney_user\".\"last_login\", \"bakney_user\".\"is_superuser\", \"bakney_user\".\"username\", \"bakney_user\".\"first_name\", \"bakney_user\".\"last_name\", \"bakney_user\".\"email\", \"bakney_user\".\"is_staff\", \"bakney_user\".\"is_active\", \"bakney_user\".\"date_joined\", \"bakney_user\".\"user_id\", \"bakney_user\".\"role\", \"bakney_user\".\"avatar_image\", \"bakney_user\".\"phone\", \"bakney_user\".\"two_fa\", \"bakney_user\".\"two_fa_secret\", \"bakney_user\".\"stripe_account_id\", \"bakney_user\".\"stripe_on_boarding_completed\", \"bakney_user\".\"enumerate_invoices\", \"bakney_user\".\"online_payments\", \"bakney_user\".\"balance_sheet_year\", \"bakney_user\".\"balance_sheet_start_day\", \"bakney_user\".\"balance_sheet_start_month\", \"bakney_user\".\"temporary_invoice_deletion\", \"bakney_user\".\"auto_archive\", \"bakney_user\".\"auto_mark_attendance\", \"bakney_user\".\"full_installments_plan\", \"bakney_user\".\"payment_date_equal_invoice_date\", \"bakney_user\".\"starting_number_invoices\", \"bakney_user\".\"connected_user_id\", \"bakney_user\".\"auto_paid_payment\", \"bakney_user\".\"tables_settings\", \"bakney_user\".\"deleted\", \"bakney_user\".\"delete_on\", \"bakney_user\".\"collaborator_role\", \"bakney_user\".\"collaborator_permissions\", \"bakney_user\".\"dark_mode\", \"bakney_user\".\"integration_google_state\", \"bakney_user\".\"integration_google_credentials\", \"bakney_user\".\"integration_google_auto_sync\", \"bakney_user\".\"dashboard_layout\", \"bakney_user\".\"subscription_duration_equal_sport_year\", \"bakney_user\".\"subscription_duration\", \"bakney_user\".\"membership_duration\", \"bakney_user\".\"subscription_start_day\", \"bakney_user\".\"subscription_start_month\", \"bakney_user\".\"custom_end_date\", \"bakney_user\".\"subscription_end_day\", \"bakney_user\".\"subscription_end_month\", \"bakney_user\".\"membership_starting_number\", \"bakney_user\".\"default_membership_type\", \"bakney_user\".\"lead_sport_association_role\", \"bakney_user\".\"lead_sport_association_size\", \"bakney_user\".\"lead_sport_market_channel\", \"bakney_user\".\"disable_account_creation\", \"bakney_user\".\"force_account_creation\", \"bakney_user\".\"medical_certificate_notifications\", \"bakney_user\".\"hide_category_name\", \"bakney_user\".\"show_zero_payments\", \"bakney_user\".\"imported_from_associami\", \"bakney_user\".\"default_payment_category_id\", \"bakney_user\".\"default_payment_category_courses_id\" FROM \"bakney_user\" WHERE (\"bakney_user\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s) OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT V0.\"user_id\" AS \"user_id\" FROM \"application_signature\" V0 INNER JOIN \"bakney_user\" V1 ON (V0.\"user_id\" = V1.\"user_id\") WHERE (V0.\"user_id\" = %s OR V1.\"connected_user_id\" = %s OR V0.\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s))) OR \"bakney_user\".\"user_id\" IN (SELECT DISTINCT V0.\"user_id\" AS \"user_id\" FROM \"application_medicalcertificate\" V0 WHERE (V0.\"medical_id\" IN (SELECT DISTINCT U0.\"medical_id\" AS \"medical_id\" FROM \"application_subscription\" U0 WHERE (U0.\"medical_id\" IS NOT NULL AND U0.\"sport_association_id\" = %s)) AND V0.\"user_id\" IS NOT NULL)))",
+    "params": [
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "association"
+     },
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "association"
+     },
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "password",
+    "last_login",
+    "is_superuser",
+    "username",
+    "first_name",
+    "last_name",
+    "email",
+    "is_staff",
+    "is_active",
+    "date_joined",
+    "user_id",
+    "role",
+    "avatar_image",
+    "phone",
+    "two_fa",
+    "two_fa_secret",
+    "stripe_account_id",
+    "stripe_on_boarding_completed",
+    "enumerate_invoices",
+    "online_payments",
+    "balance_sheet_year",
+    "balance_sheet_start_day",
+    "balance_sheet_start_month",
+    "temporary_invoice_deletion",
+    "auto_archive",
+    "auto_mark_attendance",
+    "full_installments_plan",
+    "payment_date_equal_invoice_date",
+    "starting_number_invoices",
+    "connected_user_id",
+    "auto_paid_payment",
+    "tables_settings",
+    "deleted",
+    "delete_on",
+    "collaborator_role",
+    "collaborator_permissions",
+    "dark_mode",
+    "integration_google_state",
+    "integration_google_credentials",
+    "integration_google_auto_sync",
+    "dashboard_layout",
+    "subscription_duration_equal_sport_year",
+    "subscription_duration",
+    "membership_duration",
+    "subscription_start_day",
+    "subscription_start_month",
+    "custom_end_date",
+    "subscription_end_day",
+    "subscription_end_month",
+    "membership_starting_number",
+    "default_membership_type",
+    "lead_sport_association_role",
+    "lead_sport_association_size",
+    "lead_sport_market_channel",
+    "disable_account_creation",
+    "force_account_creation",
+    "medical_certificate_notifications",
+    "hide_category_name",
+    "show_zero_payments",
+    "imported_from_associami",
+    "default_payment_category_id",
+    "default_payment_category_courses_id"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Group",
+   "file": "data/03_groups.json",
+   "fields": [
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_group",
+   "pk": "group_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_group\".\"group_id\", \"application_group\".\"name\", \"application_group\".\"description\", \"application_group\".\"sport_association_id\" FROM \"application_group\" WHERE \"application_group\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "group_id",
+    "name",
+    "description",
+    "sport_association_id"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "UsersOnboarding",
+   "file": "data/04_users_onboarding.json",
+   "fields": [
+    {
+     "key": "users_onboarding_id",
+     "column": "users_onboarding_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "show",
+     "column": "show",
+     "kind": "bool"
+    },
+    {
+     "key": "create_membership",
+     "column": "create_membership",
+     "kind": "bool"
+    },
+    {
+     "key": "view_membership",
+     "column": "view_membership",
+     "kind": "bool"
+    },
+    {
+     "key": "approve_payment",
+     "column": "approve_payment",
+     "kind": "bool"
+    },
+    {
+     "key": "download_invoice",
+     "column": "download_invoice",
+     "kind": "bool"
+    },
+    {
+     "key": "view_collaborators",
+     "column": "view_collaborators",
+     "kind": "bool"
+    },
+    {
+     "key": "view_settings",
+     "column": "view_settings",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_usersonboarding",
+   "pk": "users_onboarding_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_usersonboarding\".\"users_onboarding_id\", \"application_usersonboarding\".\"user_id\", \"application_usersonboarding\".\"show\", \"application_usersonboarding\".\"create_membership\", \"application_usersonboarding\".\"view_membership\", \"application_usersonboarding\".\"approve_payment\", \"application_usersonboarding\".\"download_invoice\", \"application_usersonboarding\".\"view_collaborators\", \"application_usersonboarding\".\"view_settings\" FROM \"application_usersonboarding\" INNER JOIN \"bakney_user\" ON (\"application_usersonboarding\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_usersonboarding\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "params": [
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "owner"
+     }
+    ]
+   },
+   "columns": [
+    "users_onboarding_id",
+    "user_id",
+    "show",
+    "create_membership",
+    "view_membership",
+    "approve_payment",
+    "download_invoice",
+    "view_collaborators",
+    "view_settings"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CollaborationInvites",
+   "file": "data/05_collaboration_invites.json",
+   "fields": [
+    {
+     "key": "collaboration_invite_id",
+     "column": "collaboration_invite_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "email",
+     "column": "email",
+     "kind": "text"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "accepted",
+     "column": "accepted",
+     "kind": "bool"
+    },
+    {
+     "key": "expiration_date",
+     "column": "expiration_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "token",
+     "column": "token",
+     "kind": "text"
+    },
+    {
+     "key": "collaborator_role",
+     "column": "collaborator_role",
+     "kind": "int"
+    },
+    {
+     "key": "collaborator_permissions",
+     "column": "collaborator_permissions",
+     "kind": "json"
+    }
+   ],
+   "table": "application_collaborationinvites",
+   "pk": "collaboration_invite_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_collaborationinvites\".\"collaboration_invite_id\", \"application_collaborationinvites\".\"user_id\", \"application_collaborationinvites\".\"email\", \"application_collaborationinvites\".\"creation_date\", \"application_collaborationinvites\".\"accepted\", \"application_collaborationinvites\".\"expiration_date\", \"application_collaborationinvites\".\"token\", \"application_collaborationinvites\".\"collaborator_role\", \"application_collaborationinvites\".\"collaborator_permissions\" FROM \"application_collaborationinvites\" INNER JOIN \"bakney_user\" ON (\"application_collaborationinvites\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_collaborationinvites\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "params": [
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "owner"
+     }
+    ]
+   },
+   "columns": [
+    "collaboration_invite_id",
+    "user_id",
+    "email",
+    "creation_date",
+    "accepted",
+    "expiration_date",
+    "token",
+    "collaborator_role",
+    "collaborator_permissions"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Family",
+   "file": "data/06_families.json",
+   "fields": [
+    {
+     "key": "family_id",
+     "column": "family_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "text"
+    }
+   ],
+   "table": "application_family",
+   "pk": "family_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_family\".\"family_id\", \"application_family\".\"type\" FROM \"application_family\" WHERE \"application_family\".\"family_id\" IN (SELECT DISTINCT U0.\"family_id\" AS \"family_id\" FROM \"application_associate\" U0 WHERE (NOT U0.\"deleted\" AND U0.\"family_id\" IS NOT NULL AND U0.\"sport_association_id\" = %s))",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "family_id",
+    "type"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Associate",
+   "file": "data/07_associates.json",
+   "fields": [
+    {
+     "key": "associate_id",
+     "column": "associate_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "picture_path",
+     "column": "picture_path",
+     "kind": "text"
+    },
+    {
+     "key": "first_name",
+     "column": "first_name",
+     "kind": "text"
+    },
+    {
+     "key": "last_name",
+     "column": "last_name",
+     "kind": "text"
+    },
+    {
+     "key": "sex",
+     "column": "sex",
+     "kind": "text"
+    },
+    {
+     "key": "tax_code",
+     "column": "tax_code",
+     "kind": "text"
+    },
+    {
+     "key": "born_date",
+     "column": "born_date",
+     "kind": "date"
+    },
+    {
+     "key": "born_city",
+     "column": "born_city",
+     "kind": "text"
+    },
+    {
+     "key": "address_city",
+     "column": "address_city",
+     "kind": "text"
+    },
+    {
+     "key": "address",
+     "column": "address",
+     "kind": "text"
+    },
+    {
+     "key": "address_cap",
+     "column": "address_cap",
+     "kind": "text"
+    },
+    {
+     "key": "nationality",
+     "column": "nationality",
+     "kind": "text"
+    },
+    {
+     "key": "nationality_residence",
+     "column": "nationality_residence",
+     "kind": "text"
+    },
+    {
+     "key": "email",
+     "column": "email",
+     "kind": "text"
+    },
+    {
+     "key": "phone",
+     "column": "phone",
+     "kind": "text"
+    },
+    {
+     "key": "phone_2",
+     "column": "phone_2",
+     "kind": "text"
+    },
+    {
+     "key": "phone_3",
+     "column": "phone_3",
+     "kind": "text"
+    },
+    {
+     "key": "phone_4",
+     "column": "phone_4",
+     "kind": "text"
+    },
+    {
+     "key": "phone_label",
+     "column": "phone_label",
+     "kind": "text"
+    },
+    {
+     "key": "phone_2_label",
+     "column": "phone_2_label",
+     "kind": "text"
+    },
+    {
+     "key": "phone_3_label",
+     "column": "phone_3_label",
+     "kind": "text"
+    },
+    {
+     "key": "phone_4_label",
+     "column": "phone_4_label",
+     "kind": "text"
+    },
+    {
+     "key": "is_minor",
+     "column": "is_minor",
+     "kind": "bool"
+    },
+    {
+     "key": "disabled",
+     "column": "disabled",
+     "kind": "bool"
+    },
+    {
+     "key": "draft",
+     "column": "draft",
+     "kind": "bool"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    },
+    {
+     "key": "family_id",
+     "column": "family_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "family_role",
+     "column": "family_role",
+     "kind": "text"
+    },
+    {
+     "key": "id_number",
+     "column": "id_number",
+     "kind": "text"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "migrated",
+     "column": "migrated",
+     "kind": "bool"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    }
+   ],
+   "table": "application_associate",
+   "pk": "associate_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_associate\".\"associate_id\", \"application_associate\".\"user_id\", \"application_associate\".\"sport_association_id\", \"application_associate\".\"picture_path\", \"application_associate\".\"first_name\", \"application_associate\".\"last_name\", \"application_associate\".\"sex\", \"application_associate\".\"tax_code\", \"application_associate\".\"born_date\", \"application_associate\".\"born_city\", \"application_associate\".\"address_city\", \"application_associate\".\"address\", \"application_associate\".\"address_cap\", \"application_associate\".\"nationality\", \"application_associate\".\"nationality_residence\", \"application_associate\".\"email\", \"application_associate\".\"phone\", \"application_associate\".\"phone_2\", \"application_associate\".\"phone_3\", \"application_associate\".\"phone_4\", \"application_associate\".\"phone_label\", \"application_associate\".\"phone_2_label\", \"application_associate\".\"phone_3_label\", \"application_associate\".\"phone_4_label\", \"application_associate\".\"is_minor\", \"application_associate\".\"disabled\", \"application_associate\".\"draft\", \"application_associate\".\"group_id\", \"application_associate\".\"deleted\", \"application_associate\".\"family_id\", \"application_associate\".\"family_role\", \"application_associate\".\"id_number\", \"application_associate\".\"creation_date\", \"application_associate\".\"migrated\", \"application_associate\".\"notes\" FROM \"application_associate\" WHERE \"application_associate\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "associate_id",
+    "user_id",
+    "sport_association_id",
+    "picture_path",
+    "first_name",
+    "last_name",
+    "sex",
+    "tax_code",
+    "born_date",
+    "born_city",
+    "address_city",
+    "address",
+    "address_cap",
+    "nationality",
+    "nationality_residence",
+    "email",
+    "phone",
+    "phone_2",
+    "phone_3",
+    "phone_4",
+    "phone_label",
+    "phone_2_label",
+    "phone_3_label",
+    "phone_4_label",
+    "is_minor",
+    "disabled",
+    "draft",
+    "group_id",
+    "deleted",
+    "family_id",
+    "family_role",
+    "id_number",
+    "creation_date",
+    "migrated",
+    "notes"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "AssociateTutorRelation",
+   "file": "data/08_associate_tutor_relations.json",
+   "fields": [
+    {
+     "key": "id",
+     "column": "id",
+     "kind": "int"
+    },
+    {
+     "key": "associate_id",
+     "column": "associate_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "tutor_id",
+     "column": "tutor_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "is_primary",
+     "column": "is_primary",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_associatetutorrelation",
+   "pk": "id",
+   "pk_kind": "int",
+   "query": {
+    "sql": "SELECT \"application_associatetutorrelation\".\"id\", \"application_associatetutorrelation\".\"associate_id\", \"application_associatetutorrelation\".\"tutor_id\", \"application_associatetutorrelation\".\"is_primary\" FROM \"application_associatetutorrelation\" WHERE (\"application_associatetutorrelation\".\"associate_id\" IN (SELECT U0.\"associate_id\" AS \"associate_id\" FROM \"application_associate\" U0 WHERE U0.\"sport_association_id\" = %s) AND \"application_associatetutorrelation\".\"tutor_id\" IN (SELECT U0.\"associate_id\" AS \"associate_id\" FROM \"application_associate\" U0 WHERE U0.\"sport_association_id\" = %s))",
+    "params": [
+     {
+      "symbol": "association"
+     },
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "id",
+    "associate_id",
+    "tutor_id",
+    "is_primary"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "VatManagement",
+   "file": "data/09_vat_management.json",
+   "fields": [
+    {
+     "key": "vat_management_id",
+     "column": "vat_management_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "vat",
+     "column": "vat",
+     "kind": "int"
+    },
+    {
+     "key": "deduction",
+     "column": "deduction",
+     "kind": "int"
+    }
+   ],
+   "table": "application_vatmanagement",
+   "pk": "vat_management_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_vatmanagement\".\"vat_management_id\", \"application_vatmanagement\".\"vat\", \"application_vatmanagement\".\"deduction\" FROM \"application_vatmanagement\" WHERE \"application_vatmanagement\".\"vat_management_id\" IN (SELECT DISTINCT V0.\"vat_management_id\" AS \"vat_management_id\" FROM \"application_paymentcategory\" V0 WHERE ((V0.\"sport_association_id\" = %s OR V0.\"payment_category_id\" IN (SELECT DISTINCT U0.\"payment_category_id\" AS \"payment_category_id\" FROM \"application_payment\" U0 WHERE (U0.\"payment_category_id\" IS NOT NULL AND U0.\"sport_association_id\" = %s))) AND V0.\"vat_management_id\" IS NOT NULL))",
+    "params": [
+     {
+      "symbol": "association"
+     },
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "vat_management_id",
+    "vat",
+    "deduction"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "PaymentCategory",
+   "file": "data/10_payment_categories.json",
+   "fields": [
+    {
+     "key": "payment_category_id",
+     "column": "payment_category_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "expense",
+     "column": "expense",
+     "kind": "bool"
+    },
+    {
+     "key": "tax_deductible",
+     "column": "tax_deductible",
+     "kind": "bool"
+    },
+    {
+     "key": "archived",
+     "column": "archived",
+     "kind": "bool"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "int"
+    },
+    {
+     "key": "vat_management_id",
+     "column": "vat_management_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_paymentcategory",
+   "pk": "payment_category_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_paymentcategory\".\"payment_category_id\", \"application_paymentcategory\".\"name\", \"application_paymentcategory\".\"creation_date\", \"application_paymentcategory\".\"sport_association_id\", \"application_paymentcategory\".\"expense\", \"application_paymentcategory\".\"tax_deductible\", \"application_paymentcategory\".\"archived\", \"application_paymentcategory\".\"type\", \"application_paymentcategory\".\"vat_management_id\", \"application_paymentcategory\".\"deleted\" FROM \"application_paymentcategory\" WHERE (\"application_paymentcategory\".\"sport_association_id\" = %s OR \"application_paymentcategory\".\"payment_category_id\" IN (SELECT DISTINCT U0.\"payment_category_id\" AS \"payment_category_id\" FROM \"application_payment\" U0 WHERE (U0.\"payment_category_id\" IS NOT NULL AND U0.\"sport_association_id\" = %s)))",
+    "params": [
+     {
+      "symbol": "association"
+     },
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "payment_category_id",
+    "name",
+    "creation_date",
+    "sport_association_id",
+    "expense",
+    "tax_deductible",
+    "archived",
+    "type",
+    "vat_management_id",
+    "deleted"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CustomAccounts",
+   "file": "data/11_custom_accounts.json",
+   "fields": [
+    {
+     "key": "custom_account_id",
+     "column": "custom_account_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "enabled",
+     "column": "enabled",
+     "kind": "bool"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "initial_balance",
+     "column": "initial_balance",
+     "kind": "decimal"
+    },
+    {
+     "key": "account_type",
+     "column": "account_type",
+     "kind": "int"
+    },
+    {
+     "key": "account_code",
+     "column": "account_code",
+     "kind": "text"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "editable",
+     "column": "editable",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_customaccounts",
+   "pk": "custom_account_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_customaccounts\".\"custom_account_id\", \"application_customaccounts\".\"enabled\", \"application_customaccounts\".\"name\", \"application_customaccounts\".\"initial_balance\", \"application_customaccounts\".\"account_type\", \"application_customaccounts\".\"account_code\", \"application_customaccounts\".\"sport_association_id\", \"application_customaccounts\".\"editable\" FROM \"application_customaccounts\" WHERE \"application_customaccounts\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "custom_account_id",
+    "enabled",
+    "name",
+    "initial_balance",
+    "account_type",
+    "account_code",
+    "sport_association_id",
+    "editable"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Tags",
+   "file": "data/12_tags.json",
+   "fields": [
+    {
+     "key": "tag_id",
+     "column": "tag_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "tag_name",
+     "column": "tag_name",
+     "kind": "text"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_tags",
+   "pk": "tag_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_tags\".\"tag_id\", \"application_tags\".\"tag_name\", \"application_tags\".\"sport_association_id\", \"application_tags\".\"creation_date\" FROM \"application_tags\" WHERE \"application_tags\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "tag_id",
+    "tag_name",
+    "sport_association_id",
+    "creation_date"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CourseTags",
+   "file": "data/13_course_tags.json",
+   "fields": [
+    {
+     "key": "tag_id",
+     "column": "tag_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "tag_name",
+     "column": "tag_name",
+     "kind": "text"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_coursetags",
+   "pk": "tag_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_coursetags\".\"tag_id\", \"application_coursetags\".\"tag_name\", \"application_coursetags\".\"sport_association_id\", \"application_coursetags\".\"creation_date\" FROM \"application_coursetags\" WHERE \"application_coursetags\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "tag_id",
+    "tag_name",
+    "sport_association_id",
+    "creation_date"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Folder",
+   "file": "data/14_folders.json",
+   "fields": [
+    {
+     "key": "id",
+     "column": "id",
+     "kind": "int"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "parent_id",
+     "column": "parent_id",
+     "kind": "fk",
+     "target": "int"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "created_at",
+     "column": "created_at",
+     "kind": "datetime"
+    },
+    {
+     "key": "lft",
+     "column": "lft",
+     "kind": "int"
+    },
+    {
+     "key": "rght",
+     "column": "rght",
+     "kind": "int"
+    },
+    {
+     "key": "tree_id",
+     "column": "tree_id",
+     "kind": "int"
+    },
+    {
+     "key": "level",
+     "column": "level",
+     "kind": "int"
+    }
+   ],
+   "table": "application_folder",
+   "pk": "id",
+   "pk_kind": "int",
+   "query": {
+    "sql": "SELECT \"application_folder\".\"id\", \"application_folder\".\"name\", \"application_folder\".\"parent_id\", \"application_folder\".\"sport_association_id\", \"application_folder\".\"created_at\", \"application_folder\".\"lft\", \"application_folder\".\"rght\", \"application_folder\".\"tree_id\", \"application_folder\".\"level\" FROM \"application_folder\" WHERE \"application_folder\".\"sport_association_id\" = %s ORDER BY \"application_folder\".\"tree_id\" ASC, \"application_folder\".\"lft\" ASC",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "id",
+    "name",
+    "parent_id",
+    "sport_association_id",
+    "created_at",
+    "lft",
+    "rght",
+    "tree_id",
+    "level"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "SupplierAndCustomers",
+   "file": "data/15_suppliers_and_customers.json",
+   "fields": [
+    {
+     "key": "supplier_id",
+     "column": "supplier_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "address",
+     "column": "address",
+     "kind": "text"
+    },
+    {
+     "key": "tax_code",
+     "column": "tax_code",
+     "kind": "text"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "vat_number",
+     "column": "vat_number",
+     "kind": "text"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "text"
+    },
+    {
+     "key": "email",
+     "column": "email",
+     "kind": "text"
+    },
+    {
+     "key": "phone_number",
+     "column": "phone_number",
+     "kind": "text"
+    },
+    {
+     "key": "city",
+     "column": "city",
+     "kind": "text"
+    },
+    {
+     "key": "cap",
+     "column": "cap",
+     "kind": "text"
+    },
+    {
+     "key": "state",
+     "column": "state",
+     "kind": "text"
+    },
+    {
+     "key": "country",
+     "column": "country",
+     "kind": "text"
+    },
+    {
+     "key": "nationality",
+     "column": "nationality",
+     "kind": "text"
+    },
+    {
+     "key": "note",
+     "column": "note",
+     "kind": "text"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_supplierandcustomers",
+   "pk": "supplier_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_supplierandcustomers\".\"supplier_id\", \"application_supplierandcustomers\".\"name\", \"application_supplierandcustomers\".\"address\", \"application_supplierandcustomers\".\"tax_code\", \"application_supplierandcustomers\".\"sport_association_id\", \"application_supplierandcustomers\".\"vat_number\", \"application_supplierandcustomers\".\"type\", \"application_supplierandcustomers\".\"email\", \"application_supplierandcustomers\".\"phone_number\", \"application_supplierandcustomers\".\"city\", \"application_supplierandcustomers\".\"cap\", \"application_supplierandcustomers\".\"state\", \"application_supplierandcustomers\".\"country\", \"application_supplierandcustomers\".\"nationality\", \"application_supplierandcustomers\".\"note\", \"application_supplierandcustomers\".\"group_id\", \"application_supplierandcustomers\".\"deleted\" FROM \"application_supplierandcustomers\" WHERE \"application_supplierandcustomers\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "supplier_id",
+    "name",
+    "address",
+    "tax_code",
+    "sport_association_id",
+    "vat_number",
+    "type",
+    "email",
+    "phone_number",
+    "city",
+    "cap",
+    "state",
+    "country",
+    "nationality",
+    "note",
+    "group_id",
+    "deleted"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "ProductsAndServices",
+   "file": "data/16_products_and_services.json",
+   "fields": [
+    {
+     "key": "product_id",
+     "column": "product_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "product_sku",
+     "column": "product_sku",
+     "kind": "text"
+    },
+    {
+     "key": "product_name",
+     "column": "product_name",
+     "kind": "text"
+    },
+    {
+     "key": "product_description",
+     "column": "product_description",
+     "kind": "text"
+    },
+    {
+     "key": "product_price",
+     "column": "product_price",
+     "kind": "decimal"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "int"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "sku_in_receipt",
+     "column": "sku_in_receipt",
+     "kind": "bool"
+    },
+    {
+     "key": "name_in_receipt",
+     "column": "name_in_receipt",
+     "kind": "bool"
+    },
+    {
+     "key": "description_in_receipt",
+     "column": "description_in_receipt",
+     "kind": "bool"
+    },
+    {
+     "key": "stock_quantity",
+     "column": "stock_quantity",
+     "kind": "int"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_productsandservices",
+   "pk": "product_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_productsandservices\".\"product_id\", \"application_productsandservices\".\"sport_association_id\", \"application_productsandservices\".\"product_sku\", \"application_productsandservices\".\"product_name\", \"application_productsandservices\".\"product_description\", \"application_productsandservices\".\"product_price\", \"application_productsandservices\".\"type\", \"application_productsandservices\".\"creation_date\", \"application_productsandservices\".\"sku_in_receipt\", \"application_productsandservices\".\"name_in_receipt\", \"application_productsandservices\".\"description_in_receipt\", \"application_productsandservices\".\"stock_quantity\", \"application_productsandservices\".\"group_id\", \"application_productsandservices\".\"deleted\" FROM \"application_productsandservices\" WHERE \"application_productsandservices\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "product_id",
+    "sport_association_id",
+    "product_sku",
+    "product_name",
+    "product_description",
+    "product_price",
+    "type",
+    "creation_date",
+    "sku_in_receipt",
+    "name_in_receipt",
+    "description_in_receipt",
+    "stock_quantity",
+    "group_id",
+    "deleted"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "SportAssociationHeadquarter",
+   "file": "data/17_headquarters.json",
+   "fields": [
+    {
+     "key": "sport_association_headquarter_id",
+     "column": "sport_association_headquarter_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "address_city",
+     "column": "address_city",
+     "kind": "text"
+    },
+    {
+     "key": "address",
+     "column": "address",
+     "kind": "text"
+    },
+    {
+     "key": "address_cap",
+     "column": "address_cap",
+     "kind": "text"
+    },
+    {
+     "key": "phone",
+     "column": "phone",
+     "kind": "text"
+    },
+    {
+     "key": "email",
+     "column": "email",
+     "kind": "text"
+    }
+   ],
+   "table": "application_sportassociationheadquarter",
+   "pk": "sport_association_headquarter_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_sportassociationheadquarter\".\"sport_association_headquarter_id\", \"application_sportassociationheadquarter\".\"sport_association_id\", \"application_sportassociationheadquarter\".\"name\", \"application_sportassociationheadquarter\".\"description\", \"application_sportassociationheadquarter\".\"address_city\", \"application_sportassociationheadquarter\".\"address\", \"application_sportassociationheadquarter\".\"address_cap\", \"application_sportassociationheadquarter\".\"phone\", \"application_sportassociationheadquarter\".\"email\" FROM \"application_sportassociationheadquarter\" WHERE \"application_sportassociationheadquarter\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "sport_association_headquarter_id",
+    "sport_association_id",
+    "name",
+    "description",
+    "address_city",
+    "address",
+    "address_cap",
+    "phone",
+    "email"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "SportAssociationMaterial",
+   "file": "data/18_materials.json",
+   "fields": [
+    {
+     "key": "sport_association_material_id",
+     "column": "sport_association_material_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    }
+   ],
+   "table": "application_sportassociationmaterial",
+   "pk": "sport_association_material_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_sportassociationmaterial\".\"sport_association_material_id\", \"application_sportassociationmaterial\".\"sport_association_id\", \"application_sportassociationmaterial\".\"name\", \"application_sportassociationmaterial\".\"description\" FROM \"application_sportassociationmaterial\" WHERE \"application_sportassociationmaterial\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "sport_association_material_id",
+    "sport_association_id",
+    "name",
+    "description"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "SportAssociationModuleTemplates",
+   "file": "data/19_module_templates.json",
+   "fields": [
+    {
+     "key": "sport_association_module_templates_id",
+     "column": "sport_association_module_templates_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "template",
+     "column": "template",
+     "kind": "text"
+    },
+    {
+     "key": "footer",
+     "column": "footer",
+     "kind": "bool"
+    },
+    {
+     "key": "header",
+     "column": "header",
+     "kind": "bool"
+    },
+    {
+     "key": "custom_footer_header",
+     "column": "custom_footer_header",
+     "kind": "bool"
+    },
+    {
+     "key": "custom_footer",
+     "column": "custom_footer",
+     "kind": "text"
+    },
+    {
+     "key": "custom_header",
+     "column": "custom_header",
+     "kind": "text"
+    }
+   ],
+   "table": "application_sportassociationmoduletemplates",
+   "pk": "sport_association_module_templates_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_sportassociationmoduletemplates\".\"sport_association_module_templates_id\", \"application_sportassociationmoduletemplates\".\"sport_association_id\", \"application_sportassociationmoduletemplates\".\"name\", \"application_sportassociationmoduletemplates\".\"template\", \"application_sportassociationmoduletemplates\".\"footer\", \"application_sportassociationmoduletemplates\".\"header\", \"application_sportassociationmoduletemplates\".\"custom_footer_header\", \"application_sportassociationmoduletemplates\".\"custom_footer\", \"application_sportassociationmoduletemplates\".\"custom_header\" FROM \"application_sportassociationmoduletemplates\" WHERE \"application_sportassociationmoduletemplates\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "sport_association_module_templates_id",
+    "sport_association_id",
+    "name",
+    "template",
+    "footer",
+    "header",
+    "custom_footer_header",
+    "custom_footer",
+    "custom_header"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "SportAssociationMembershipCardConfiguration",
+   "file": "data/20_membership_card_config.json",
+   "fields": [
+    {
+     "key": "sport_association_membership_card_configuration_id",
+     "column": "sport_association_membership_card_configuration_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "emit_only_on_approval",
+     "column": "emit_only_on_approval",
+     "kind": "bool"
+    },
+    {
+     "key": "customized_template",
+     "column": "customized_template",
+     "kind": "json"
+    }
+   ],
+   "table": "application_sportassociationmembershipcardconfiguration",
+   "pk": "sport_association_membership_card_configuration_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_sportassociationmembershipcardconfiguration\".\"sport_association_membership_card_configuration_id\", \"application_sportassociationmembershipcardconfiguration\".\"sport_association_id\", \"application_sportassociationmembershipcardconfiguration\".\"emit_only_on_approval\", \"application_sportassociationmembershipcardconfiguration\".\"customized_template\" FROM \"application_sportassociationmembershipcardconfiguration\" WHERE \"application_sportassociationmembershipcardconfiguration\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "sport_association_membership_card_configuration_id",
+    "sport_association_id",
+    "emit_only_on_approval",
+    "customized_template"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CommunicationConfiguration",
+   "file": "data/21_communication_config.json",
+   "fields": [
+    {
+     "key": "communication_configuration_id",
+     "column": "communication_configuration_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "email_smtp_host",
+     "column": "email_smtp_host",
+     "kind": "text"
+    },
+    {
+     "key": "email_smtp_port",
+     "column": "email_smtp_port",
+     "kind": "int"
+    },
+    {
+     "key": "email_smtp_user",
+     "column": "email_smtp_user",
+     "kind": "text"
+    },
+    {
+     "key": "email_smtp_password",
+     "column": "email_smtp_password",
+     "kind": "text"
+    },
+    {
+     "key": "email_sender_name",
+     "column": "email_sender_name",
+     "kind": "text"
+    },
+    {
+     "key": "email_encryption",
+     "column": "email_encryption",
+     "kind": "text"
+    },
+    {
+     "key": "daily_email_limit",
+     "column": "daily_email_limit",
+     "kind": "int"
+    },
+    {
+     "key": "daily_email_balance",
+     "column": "daily_email_balance",
+     "kind": "int"
+    }
+   ],
+   "table": "communications_communicationconfiguration",
+   "pk": "communication_configuration_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"communications_communicationconfiguration\".\"communication_configuration_id\", \"communications_communicationconfiguration\".\"sport_association_id\", \"communications_communicationconfiguration\".\"email_smtp_host\", \"communications_communicationconfiguration\".\"email_smtp_port\", \"communications_communicationconfiguration\".\"email_smtp_user\", \"communications_communicationconfiguration\".\"email_smtp_password\", \"communications_communicationconfiguration\".\"email_sender_name\", \"communications_communicationconfiguration\".\"email_encryption\", \"communications_communicationconfiguration\".\"daily_email_limit\", \"communications_communicationconfiguration\".\"daily_email_balance\" FROM \"communications_communicationconfiguration\" WHERE \"communications_communicationconfiguration\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "communication_configuration_id",
+    "sport_association_id",
+    "email_smtp_host",
+    "email_smtp_port",
+    "email_smtp_user",
+    "email_smtp_password",
+    "email_sender_name",
+    "email_encryption",
+    "daily_email_limit",
+    "daily_email_balance"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "NotificationTemplates",
+   "file": "data/22_notification_templates.json",
+   "fields": [
+    {
+     "key": "notification_template_id",
+     "column": "notification_template_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "template_name",
+     "column": "template_name",
+     "kind": "text"
+    },
+    {
+     "key": "template",
+     "column": "template",
+     "kind": "text"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "int"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_notificationtemplates",
+   "pk": "notification_template_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_notificationtemplates\".\"notification_template_id\", \"application_notificationtemplates\".\"sport_association_id\", \"application_notificationtemplates\".\"template_name\", \"application_notificationtemplates\".\"template\", \"application_notificationtemplates\".\"type\", \"application_notificationtemplates\".\"creation_date\" FROM \"application_notificationtemplates\" WHERE \"application_notificationtemplates\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "notification_template_id",
+    "sport_association_id",
+    "template_name",
+    "template",
+    "type",
+    "creation_date"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Instructor",
+   "file": "data/23_instructors.json",
+   "fields": [
+    {
+     "key": "instructor_id",
+     "column": "instructor_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "first_name",
+     "column": "first_name",
+     "kind": "text"
+    },
+    {
+     "key": "last_name",
+     "column": "last_name",
+     "kind": "text"
+    },
+    {
+     "key": "email",
+     "column": "email",
+     "kind": "text"
+    },
+    {
+     "key": "born_date",
+     "column": "born_date",
+     "kind": "date"
+    },
+    {
+     "key": "born_city",
+     "column": "born_city",
+     "kind": "text"
+    },
+    {
+     "key": "born_province",
+     "column": "born_province",
+     "kind": "text"
+    },
+    {
+     "key": "tax_code",
+     "column": "tax_code",
+     "kind": "text"
+    },
+    {
+     "key": "address_city",
+     "column": "address_city",
+     "kind": "text"
+    },
+    {
+     "key": "address",
+     "column": "address",
+     "kind": "text"
+    },
+    {
+     "key": "address_province",
+     "column": "address_province",
+     "kind": "text"
+    },
+    {
+     "key": "civic_number",
+     "column": "civic_number",
+     "kind": "text"
+    },
+    {
+     "key": "study_title",
+     "column": "study_title",
+     "kind": "text"
+    },
+    {
+     "key": "role",
+     "column": "role",
+     "kind": "text"
+    },
+    {
+     "key": "phone",
+     "column": "phone",
+     "kind": "text"
+    },
+    {
+     "key": "phone_2",
+     "column": "phone_2",
+     "kind": "text"
+    },
+    {
+     "key": "phone_3",
+     "column": "phone_3",
+     "kind": "text"
+    },
+    {
+     "key": "phone_4",
+     "column": "phone_4",
+     "kind": "text"
+    },
+    {
+     "key": "draft",
+     "column": "draft",
+     "kind": "bool"
+    },
+    {
+     "key": "associated_user_id",
+     "column": "associated_user_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "is_volunteer",
+     "column": "is_volunteer",
+     "kind": "bool"
+    },
+    {
+     "key": "stipulated_contract_in",
+     "column": "stipulated_contract_in",
+     "kind": "date"
+    },
+    {
+     "key": "default_hourly_billing",
+     "column": "default_hourly_billing",
+     "kind": "decimal"
+    },
+    {
+     "key": "default_percentage_billing",
+     "column": "default_percentage_billing",
+     "kind": "decimal"
+    }
+   ],
+   "table": "application_instructor",
+   "pk": "instructor_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_instructor\".\"instructor_id\", \"application_instructor\".\"user_id\", \"application_instructor\".\"first_name\", \"application_instructor\".\"last_name\", \"application_instructor\".\"email\", \"application_instructor\".\"born_date\", \"application_instructor\".\"born_city\", \"application_instructor\".\"born_province\", \"application_instructor\".\"tax_code\", \"application_instructor\".\"address_city\", \"application_instructor\".\"address\", \"application_instructor\".\"address_province\", \"application_instructor\".\"civic_number\", \"application_instructor\".\"study_title\", \"application_instructor\".\"role\", \"application_instructor\".\"phone\", \"application_instructor\".\"phone_2\", \"application_instructor\".\"phone_3\", \"application_instructor\".\"phone_4\", \"application_instructor\".\"draft\", \"application_instructor\".\"associated_user_id\", \"application_instructor\".\"is_volunteer\", \"application_instructor\".\"stipulated_contract_in\", \"application_instructor\".\"default_hourly_billing\", \"application_instructor\".\"default_percentage_billing\" FROM \"application_instructor\" INNER JOIN \"bakney_user\" ON (\"application_instructor\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_instructor\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "params": [
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "owner"
+     }
+    ]
+   },
+   "columns": [
+    "instructor_id",
+    "user_id",
+    "first_name",
+    "last_name",
+    "email",
+    "born_date",
+    "born_city",
+    "born_province",
+    "tax_code",
+    "address_city",
+    "address",
+    "address_province",
+    "civic_number",
+    "study_title",
+    "role",
+    "phone",
+    "phone_2",
+    "phone_3",
+    "phone_4",
+    "draft",
+    "associated_user_id",
+    "is_volunteer",
+    "stipulated_contract_in",
+    "default_hourly_billing",
+    "default_percentage_billing"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_documents",
+     "sql": "SELECT (\"application_instructor_documents\".\"instructor_id\") AS \"_prefetch_related_val_instructor_id\", \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"docmanager_document\" INNER JOIN \"application_instructor_documents\" ON (\"docmanager_document\".\"document_id\" = \"application_instructor_documents\".\"document_id\") WHERE \"application_instructor_documents\".\"instructor_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_instructor_id",
+     "target_pk": "document_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "InstructorHours",
+   "file": "data/24_instructor_hours.json",
+   "fields": [
+    {
+     "key": "instructor_hours_id",
+     "column": "instructor_hours_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "instructor_id",
+     "column": "instructor_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "date",
+     "column": "date",
+     "kind": "date"
+    },
+    {
+     "key": "compensation_type",
+     "column": "compensation_type",
+     "kind": "text"
+    },
+    {
+     "key": "hours",
+     "column": "hours",
+     "kind": "decimal"
+    },
+    {
+     "key": "hourly_billing",
+     "column": "hourly_billing",
+     "kind": "decimal"
+    },
+    {
+     "key": "percentage_billing",
+     "column": "percentage_billing",
+     "kind": "decimal"
+    },
+    {
+     "key": "courses",
+     "column": "courses",
+     "kind": "json"
+    },
+    {
+     "key": "period",
+     "column": "period",
+     "kind": "text"
+    },
+    {
+     "key": "amount",
+     "column": "amount",
+     "kind": "decimal"
+    },
+    {
+     "key": "paid",
+     "column": "paid",
+     "kind": "bool"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    },
+    {
+     "key": "calculation_data",
+     "column": "calculation_data",
+     "kind": "json"
+    },
+    {
+     "key": "document_id",
+     "column": "document_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_instructorhours",
+   "pk": "instructor_hours_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_instructorhours\".\"instructor_hours_id\", \"application_instructorhours\".\"instructor_id\", \"application_instructorhours\".\"creation_date\", \"application_instructorhours\".\"date\", \"application_instructorhours\".\"compensation_type\", \"application_instructorhours\".\"hours\", \"application_instructorhours\".\"hourly_billing\", \"application_instructorhours\".\"percentage_billing\", \"application_instructorhours\".\"courses\", \"application_instructorhours\".\"period\", \"application_instructorhours\".\"amount\", \"application_instructorhours\".\"paid\", \"application_instructorhours\".\"payment_id\", \"application_instructorhours\".\"notes\", \"application_instructorhours\".\"calculation_data\", \"application_instructorhours\".\"document_id\" FROM \"application_instructorhours\" INNER JOIN \"application_instructor\" ON (\"application_instructorhours\".\"instructor_id\" = \"application_instructor\".\"instructor_id\") WHERE \"application_instructor\".\"user_id\" = %s",
+    "params": [
+     {
+      "symbol": "owner"
+     }
+    ]
+   },
+   "columns": [
+    "instructor_hours_id",
+    "instructor_id",
+    "creation_date",
+    "date",
+    "compensation_type",
+    "hours",
+    "hourly_billing",
+    "percentage_billing",
+    "courses",
+    "period",
+    "amount",
+    "paid",
+    "payment_id",
+    "notes",
+    "calculation_data",
+    "document_id"
+   ],
+   "m2m": [],
+   "document_attributes": [
+    "document_id"
+   ]
+  },
+  {
+   "model": "Subscription",
+   "file": "data/25_subscriptions.json",
+   "fields": [
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "associate_id",
+     "column": "associate_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "supplier_id",
+     "column": "supplier_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "instructor_id",
+     "column": "instructor_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "custom_data",
+     "column": "custom_data",
+     "kind": "json"
+    },
+    {
+     "key": "additional_fields",
+     "column": "additional_fields",
+     "kind": "json"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "int"
+    },
+    {
+     "key": "role",
+     "column": "role",
+     "kind": "int"
+    },
+    {
+     "key": "acceptance_date",
+     "column": "acceptance_date",
+     "kind": "date"
+    },
+    {
+     "key": "resignation_date",
+     "column": "resignation_date",
+     "kind": "date"
+    },
+    {
+     "key": "medical_id",
+     "column": "medical_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "status_flag",
+     "column": "status_flag",
+     "kind": "int"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "start_date",
+     "column": "start_date",
+     "kind": "date"
+    },
+    {
+     "key": "end_date",
+     "column": "end_date",
+     "kind": "date"
+    },
+    {
+     "key": "signature_url",
+     "column": "signature_url",
+     "kind": "text"
+    },
+    {
+     "key": "signature_storage_key",
+     "column": "signature_storage_key",
+     "kind": "text"
+    },
+    {
+     "key": "document_pdf_id",
+     "column": "document_pdf_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "archived",
+     "column": "archived",
+     "kind": "bool"
+    },
+    {
+     "key": "draft",
+     "column": "draft",
+     "kind": "bool"
+    },
+    {
+     "key": "trial",
+     "column": "trial",
+     "kind": "bool"
+    },
+    {
+     "key": "meta",
+     "column": "meta",
+     "kind": "json"
+    },
+    {
+     "key": "subscription_number",
+     "column": "subscription_number",
+     "kind": "text"
+    },
+    {
+     "key": "subscription_type",
+     "column": "subscription_type",
+     "kind": "text"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    },
+    {
+     "key": "competitive",
+     "column": "competitive",
+     "kind": "bool"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    }
+   ],
+   "table": "application_subscription",
+   "pk": "subscription_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_subscription\".\"subscription_id\", \"application_subscription\".\"sport_association_id\", \"application_subscription\".\"associate_id\", \"application_subscription\".\"supplier_id\", \"application_subscription\".\"instructor_id\", \"application_subscription\".\"custom_data\", \"application_subscription\".\"additional_fields\", \"application_subscription\".\"user_id\", \"application_subscription\".\"type\", \"application_subscription\".\"role\", \"application_subscription\".\"acceptance_date\", \"application_subscription\".\"resignation_date\", \"application_subscription\".\"medical_id\", \"application_subscription\".\"status_flag\", \"application_subscription\".\"creation_date\", \"application_subscription\".\"start_date\", \"application_subscription\".\"end_date\", \"application_subscription\".\"signature_url\", \"application_subscription\".\"signature_storage_key\", \"application_subscription\".\"document_pdf_id\", \"application_subscription\".\"payment_id\", \"application_subscription\".\"archived\", \"application_subscription\".\"draft\", \"application_subscription\".\"trial\", \"application_subscription\".\"meta\", \"application_subscription\".\"subscription_number\", \"application_subscription\".\"subscription_type\", \"application_subscription\".\"group_id\", \"application_subscription\".\"deleted\", \"application_subscription\".\"competitive\", \"application_subscription\".\"notes\" FROM \"application_subscription\" WHERE \"application_subscription\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "subscription_id",
+    "sport_association_id",
+    "associate_id",
+    "supplier_id",
+    "instructor_id",
+    "custom_data",
+    "additional_fields",
+    "user_id",
+    "type",
+    "role",
+    "acceptance_date",
+    "resignation_date",
+    "medical_id",
+    "status_flag",
+    "creation_date",
+    "start_date",
+    "end_date",
+    "signature_url",
+    "signature_storage_key",
+    "document_pdf_id",
+    "payment_id",
+    "archived",
+    "draft",
+    "trial",
+    "meta",
+    "subscription_number",
+    "subscription_type",
+    "group_id",
+    "deleted",
+    "competitive",
+    "notes"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_tags",
+     "sql": "SELECT (\"application_subscription_tags\".\"subscription_id\") AS \"_prefetch_related_val_subscription_id\", \"application_tags\".\"tag_id\", \"application_tags\".\"tag_name\", \"application_tags\".\"sport_association_id\", \"application_tags\".\"creation_date\" FROM \"application_tags\" INNER JOIN \"application_subscription_tags\" ON (\"application_tags\".\"tag_id\" = \"application_subscription_tags\".\"tags_id\") WHERE \"application_subscription_tags\".\"subscription_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_subscription_id",
+     "target_pk": "tag_id"
+    }
+   ],
+   "document_attributes": [
+    "document_pdf_id"
+   ]
+  },
+  {
+   "model": "SubscriptionMembership",
+   "file": "data/26_subscription_memberships.json",
+   "fields": [
+    {
+     "key": "subscription_membership_id",
+     "column": "subscription_membership_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "start_date",
+     "column": "start_date",
+     "kind": "date"
+    },
+    {
+     "key": "end_date",
+     "column": "end_date",
+     "kind": "date"
+    },
+    {
+     "key": "membership_type",
+     "column": "membership_type",
+     "kind": "text"
+    },
+    {
+     "key": "membership_number",
+     "column": "membership_number",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "price",
+     "column": "price",
+     "kind": "decimal"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "associate_id",
+     "column": "associate_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_subscriptionmembership",
+   "pk": "subscription_membership_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_subscriptionmembership\".\"subscription_membership_id\", \"application_subscriptionmembership\".\"subscription_id\", \"application_subscriptionmembership\".\"sport_association_id\", \"application_subscriptionmembership\".\"creation_date\", \"application_subscriptionmembership\".\"start_date\", \"application_subscriptionmembership\".\"end_date\", \"application_subscriptionmembership\".\"membership_type\", \"application_subscriptionmembership\".\"membership_number\", \"application_subscriptionmembership\".\"description\", \"application_subscriptionmembership\".\"price\", \"application_subscriptionmembership\".\"payment_id\", \"application_subscriptionmembership\".\"associate_id\" FROM \"application_subscriptionmembership\" WHERE \"application_subscriptionmembership\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "subscription_membership_id",
+    "subscription_id",
+    "sport_association_id",
+    "creation_date",
+    "start_date",
+    "end_date",
+    "membership_type",
+    "membership_number",
+    "description",
+    "price",
+    "payment_id",
+    "associate_id"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_attached_membership_documents",
+     "sql": "SELECT (\"application_subscriptionmembership_attached_membership_docu749f\".\"subscriptionmembership_id\") AS \"_prefetch_related_val_subscriptionmembership_id\", \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"docmanager_document\" INNER JOIN \"application_subscriptionmembership_attached_membership_docu749f\" ON (\"docmanager_document\".\"document_id\" = \"application_subscriptionmembership_attached_membership_docu749f\".\"document_id\") WHERE \"application_subscriptionmembership_attached_membership_docu749f\".\"subscriptionmembership_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_subscriptionmembership_id",
+     "target_pk": "document_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "SubscriptionToken",
+   "file": "data/27_subscription_tokens.json",
+   "fields": [
+    {
+     "key": "subscription_token_id",
+     "column": "subscription_token_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "token",
+     "column": "token",
+     "kind": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "expiration_date",
+     "column": "expiration_date",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_subscriptiontoken",
+   "pk": "subscription_token_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_subscriptiontoken\".\"subscription_token_id\", \"application_subscriptiontoken\".\"subscription_id\", \"application_subscriptiontoken\".\"token\", \"application_subscriptiontoken\".\"creation_date\", \"application_subscriptiontoken\".\"expiration_date\" FROM \"application_subscriptiontoken\" INNER JOIN \"application_subscription\" ON (\"application_subscriptiontoken\".\"subscription_id\" = \"application_subscription\".\"subscription_id\") WHERE \"application_subscription\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "subscription_token_id",
+    "subscription_id",
+    "token",
+    "creation_date",
+    "expiration_date"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "SubscriptionFile",
+   "file": "data/28_subscription_files.json",
+   "fields": [
+    {
+     "key": "subscription_file_id",
+     "column": "subscription_file_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "document_id",
+     "column": "document_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_subscriptionfile",
+   "pk": "subscription_file_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_subscriptionfile\".\"subscription_file_id\", \"application_subscriptionfile\".\"subscription_id\", \"application_subscriptionfile\".\"document_id\", \"application_subscriptionfile\".\"creation_date\" FROM \"application_subscriptionfile\" INNER JOIN \"application_subscription\" ON (\"application_subscriptionfile\".\"subscription_id\" = \"application_subscription\".\"subscription_id\") WHERE \"application_subscription\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "subscription_file_id",
+    "subscription_id",
+    "document_id",
+    "creation_date"
+   ],
+   "m2m": [],
+   "document_attributes": [
+    "document_id"
+   ]
+  },
+  {
+   "model": "MedicalCertificate",
+   "file": "data/29_medical_certificates.json",
+   "fields": [
+    {
+     "key": "medical_id",
+     "column": "medical_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "document_id",
+     "column": "document_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "expiration_date",
+     "column": "expiration_date",
+     "kind": "date"
+    },
+    {
+     "key": "competitive_medical_certificate",
+     "column": "competitive_medical_certificate",
+     "kind": "bool"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    }
+   ],
+   "table": "application_medicalcertificate",
+   "pk": "medical_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_medicalcertificate\".\"medical_id\", \"application_medicalcertificate\".\"document_id\", \"application_medicalcertificate\".\"user_id\", \"application_medicalcertificate\".\"creation_date\", \"application_medicalcertificate\".\"expiration_date\", \"application_medicalcertificate\".\"competitive_medical_certificate\", \"application_medicalcertificate\".\"notes\" FROM \"application_medicalcertificate\" WHERE \"application_medicalcertificate\".\"medical_id\" IN (SELECT DISTINCT U0.\"medical_id\" AS \"medical_id\" FROM \"application_subscription\" U0 WHERE (U0.\"medical_id\" IS NOT NULL AND U0.\"sport_association_id\" = %s))",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "medical_id",
+    "document_id",
+    "user_id",
+    "creation_date",
+    "expiration_date",
+    "competitive_medical_certificate",
+    "notes"
+   ],
+   "m2m": [],
+   "document_attributes": [
+    "document_id"
+   ]
+  },
+  {
+   "model": "MedicalAppointments",
+   "file": "data/30_medical_appointments.json",
+   "fields": [
+    {
+     "key": "medical_appointments_id",
+     "column": "medical_appointments_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "region",
+     "column": "region",
+     "kind": "text"
+    },
+    {
+     "key": "document_id",
+     "column": "document_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "date",
+     "column": "date",
+     "kind": "date"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    },
+    {
+     "key": "sport",
+     "column": "sport",
+     "kind": "text"
+    },
+    {
+     "key": "meta",
+     "column": "meta",
+     "kind": "json"
+    },
+    {
+     "key": "address",
+     "column": "address",
+     "kind": "text"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_medicalappointments",
+   "pk": "medical_appointments_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_medicalappointments\".\"medical_appointments_id\", \"application_medicalappointments\".\"subscription_id\", \"application_medicalappointments\".\"region\", \"application_medicalappointments\".\"document_id\", \"application_medicalappointments\".\"date\", \"application_medicalappointments\".\"notes\", \"application_medicalappointments\".\"sport\", \"application_medicalappointments\".\"meta\", \"application_medicalappointments\".\"address\", \"application_medicalappointments\".\"creation_date\" FROM \"application_medicalappointments\" INNER JOIN \"application_subscription\" ON (\"application_medicalappointments\".\"subscription_id\" = \"application_subscription\".\"subscription_id\") WHERE \"application_subscription\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "medical_appointments_id",
+    "subscription_id",
+    "region",
+    "document_id",
+    "date",
+    "notes",
+    "sport",
+    "meta",
+    "address",
+    "creation_date"
+   ],
+   "m2m": [],
+   "document_attributes": [
+    "document_id"
+   ]
+  },
+  {
+   "model": "CourseLocation",
+   "file": "data/31_course_locations.json",
+   "fields": [
+    {
+     "key": "course_location_id",
+     "column": "course_location_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "title",
+     "column": "title",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "address",
+     "column": "address",
+     "kind": "text"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_courselocation",
+   "pk": "course_location_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_courselocation\".\"course_location_id\", \"application_courselocation\".\"title\", \"application_courselocation\".\"description\", \"application_courselocation\".\"address\", \"application_courselocation\".\"sport_association_id\" FROM \"application_courselocation\" WHERE \"application_courselocation\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "course_location_id",
+    "title",
+    "description",
+    "address",
+    "sport_association_id"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_documents",
+     "sql": "SELECT (\"application_courselocation_documents\".\"courselocation_id\") AS \"_prefetch_related_val_courselocation_id\", \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"docmanager_document\" INNER JOIN \"application_courselocation_documents\" ON (\"docmanager_document\".\"document_id\" = \"application_courselocation_documents\".\"document_id\") WHERE \"application_courselocation_documents\".\"courselocation_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_courselocation_id",
+     "target_pk": "document_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "Course",
+   "file": "data/32_courses.json",
+   "fields": [
+    {
+     "key": "course_id",
+     "column": "course_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "status_flag",
+     "column": "status_flag",
+     "kind": "int"
+    },
+    {
+     "key": "course_type",
+     "column": "course_type",
+     "kind": "int"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "title",
+     "column": "title",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "multi_payments",
+     "column": "multi_payments",
+     "kind": "bool"
+    },
+    {
+     "key": "fee",
+     "column": "fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "events",
+     "column": "events",
+     "kind": "json"
+    },
+    {
+     "key": "one_fee_payment",
+     "column": "one_fee_payment",
+     "kind": "bool"
+    },
+    {
+     "key": "one_fee",
+     "column": "one_fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "google_calendar_id",
+     "column": "google_calendar_id",
+     "kind": "text"
+    },
+    {
+     "key": "google_background_color",
+     "column": "google_background_color",
+     "kind": "text"
+    },
+    {
+     "key": "multiple_quotes",
+     "column": "multiple_quotes",
+     "kind": "json"
+    },
+    {
+     "key": "start_date",
+     "column": "start_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "end_date",
+     "column": "end_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "pinned",
+     "column": "pinned",
+     "kind": "bool"
+    },
+    {
+     "key": "billed_duration_is_sport_season",
+     "column": "billed_duration_is_sport_season",
+     "kind": "bool"
+    },
+    {
+     "key": "billed_frequency",
+     "column": "billed_frequency",
+     "kind": "int"
+    },
+    {
+     "key": "billed_from_subscription_date",
+     "column": "billed_from_subscription_date",
+     "kind": "bool"
+    },
+    {
+     "key": "billed_from_day_of_month",
+     "column": "billed_from_day_of_month",
+     "kind": "int"
+    },
+    {
+     "key": "auto_renewal",
+     "column": "auto_renewal",
+     "kind": "bool"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_course",
+   "pk": "course_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_course\".\"course_id\", \"application_course\".\"sport_association_id\", \"application_course\".\"status_flag\", \"application_course\".\"course_type\", \"application_course\".\"creation_date\", \"application_course\".\"title\", \"application_course\".\"description\", \"application_course\".\"multi_payments\", \"application_course\".\"fee\", \"application_course\".\"events\", \"application_course\".\"one_fee_payment\", \"application_course\".\"one_fee\", \"application_course\".\"google_calendar_id\", \"application_course\".\"google_background_color\", \"application_course\".\"multiple_quotes\", \"application_course\".\"start_date\", \"application_course\".\"end_date\", \"application_course\".\"pinned\", \"application_course\".\"billed_duration_is_sport_season\", \"application_course\".\"billed_frequency\", \"application_course\".\"billed_from_subscription_date\", \"application_course\".\"billed_from_day_of_month\", \"application_course\".\"auto_renewal\", \"application_course\".\"deleted\", \"application_course\".\"group_id\" FROM \"application_course\" WHERE \"application_course\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "course_id",
+    "sport_association_id",
+    "status_flag",
+    "course_type",
+    "creation_date",
+    "title",
+    "description",
+    "multi_payments",
+    "fee",
+    "events",
+    "one_fee_payment",
+    "one_fee",
+    "google_calendar_id",
+    "google_background_color",
+    "multiple_quotes",
+    "start_date",
+    "end_date",
+    "pinned",
+    "billed_duration_is_sport_season",
+    "billed_frequency",
+    "billed_from_subscription_date",
+    "billed_from_day_of_month",
+    "auto_renewal",
+    "deleted",
+    "group_id"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_tags",
+     "sql": "SELECT (\"application_course_tags\".\"course_id\") AS \"_prefetch_related_val_course_id\", \"application_coursetags\".\"tag_id\", \"application_coursetags\".\"tag_name\", \"application_coursetags\".\"sport_association_id\", \"application_coursetags\".\"creation_date\" FROM \"application_coursetags\" INNER JOIN \"application_course_tags\" ON (\"application_coursetags\".\"tag_id\" = \"application_course_tags\".\"coursetags_id\") WHERE \"application_course_tags\".\"course_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_course_id",
+     "target_pk": "tag_id"
+    },
+    {
+     "key": "_m2m_locations",
+     "sql": "SELECT (\"application_course_locations\".\"course_id\") AS \"_prefetch_related_val_course_id\", \"application_courselocation\".\"course_location_id\", \"application_courselocation\".\"title\", \"application_courselocation\".\"description\", \"application_courselocation\".\"address\", \"application_courselocation\".\"sport_association_id\" FROM \"application_courselocation\" INNER JOIN \"application_course_locations\" ON (\"application_courselocation\".\"course_location_id\" = \"application_course_locations\".\"courselocation_id\") WHERE \"application_course_locations\".\"course_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_course_id",
+     "target_pk": "course_location_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "CourseSubscription",
+   "file": "data/33_course_subscriptions.json",
+   "fields": [
+    {
+     "key": "course_subscription_id",
+     "column": "course_subscription_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "course_id",
+     "column": "course_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "paid",
+     "column": "paid",
+     "kind": "bool"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "multi_payments",
+     "column": "multi_payments",
+     "kind": "bool"
+    },
+    {
+     "key": "one_fee_payment",
+     "column": "one_fee_payment",
+     "kind": "bool"
+    },
+    {
+     "key": "archived",
+     "column": "archived",
+     "kind": "bool"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "int"
+    },
+    {
+     "key": "multiple_quote",
+     "column": "multiple_quote",
+     "kind": "json"
+    },
+    {
+     "key": "billed_frequency",
+     "column": "billed_frequency",
+     "kind": "int"
+    },
+    {
+     "key": "billed_from",
+     "column": "billed_from",
+     "kind": "datetime"
+    },
+    {
+     "key": "billed_until",
+     "column": "billed_until",
+     "kind": "datetime"
+    },
+    {
+     "key": "billed_from_day_of_month",
+     "column": "billed_from_day_of_month",
+     "kind": "int"
+    },
+    {
+     "key": "membership_active",
+     "column": "membership_active",
+     "kind": "bool"
+    },
+    {
+     "key": "membership_fee",
+     "column": "membership_fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "auto_renewal",
+     "column": "auto_renewal",
+     "kind": "bool"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_coursesubscription",
+   "pk": "course_subscription_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_coursesubscription\".\"course_subscription_id\", \"application_coursesubscription\".\"course_id\", \"application_coursesubscription\".\"paid\", \"application_coursesubscription\".\"creation_date\", \"application_coursesubscription\".\"subscription_id\", \"application_coursesubscription\".\"payment_id\", \"application_coursesubscription\".\"multi_payments\", \"application_coursesubscription\".\"one_fee_payment\", \"application_coursesubscription\".\"archived\", \"application_coursesubscription\".\"type\", \"application_coursesubscription\".\"multiple_quote\", \"application_coursesubscription\".\"billed_frequency\", \"application_coursesubscription\".\"billed_from\", \"application_coursesubscription\".\"billed_until\", \"application_coursesubscription\".\"billed_from_day_of_month\", \"application_coursesubscription\".\"membership_active\", \"application_coursesubscription\".\"membership_fee\", \"application_coursesubscription\".\"auto_renewal\", \"application_coursesubscription\".\"deleted\" FROM \"application_coursesubscription\" INNER JOIN \"application_course\" ON (\"application_coursesubscription\".\"course_id\" = \"application_course\".\"course_id\") WHERE \"application_course\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "course_subscription_id",
+    "course_id",
+    "paid",
+    "creation_date",
+    "subscription_id",
+    "payment_id",
+    "multi_payments",
+    "one_fee_payment",
+    "archived",
+    "type",
+    "multiple_quote",
+    "billed_frequency",
+    "billed_from",
+    "billed_until",
+    "billed_from_day_of_month",
+    "membership_active",
+    "membership_fee",
+    "auto_renewal",
+    "deleted"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_membership_payments",
+     "sql": "SELECT (\"application_coursesubscription_membership_payments\".\"coursesubscription_id\") AS \"_prefetch_related_val_coursesubscription_id\", \"application_payment\".\"payment_id\", \"application_payment\".\"type\", \"application_payment\".\"subject\", \"application_payment\".\"amount\", \"application_payment\".\"creation_date\", \"application_payment\".\"payment_date\", \"application_payment\".\"paid\", \"application_payment\".\"expense\", \"application_payment\".\"description\", \"application_payment\".\"payment_category_id\", \"application_payment\".\"meta_payment_categories\", \"application_payment\".\"invoice_id\", \"application_payment\".\"user_id\", \"application_payment\".\"associate_id\", \"application_payment\".\"supplier_id\", \"application_payment\".\"instructor_id\", \"application_payment\".\"sport_association_id\", \"application_payment\".\"payment_intent_id\", \"application_payment\".\"archived\", \"application_payment\".\"invoice_fiscal_code\", \"application_payment\".\"meta\", \"application_payment\".\"notes\", \"application_payment\".\"custom_accounts_id\", \"application_payment\".\"signature_id\", \"application_payment\".\"deleted\", \"application_payment\".\"group_id\", \"application_payment\".\"course\" FROM \"application_payment\" INNER JOIN \"application_coursesubscription_membership_payments\" ON (\"application_payment\".\"payment_id\" = \"application_coursesubscription_membership_payments\".\"payment_id\") WHERE (NOT \"application_payment\".\"deleted\" AND \"application_coursesubscription_membership_payments\".\"coursesubscription_id\" IN (%s, %s))",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_coursesubscription_id",
+     "target_pk": "payment_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "CourseSubscriptionInstallment",
+   "file": "data/34_course_subscription_installments.json",
+   "fields": [
+    {
+     "key": "course_subscription_installment_id",
+     "column": "course_subscription_installment_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "course_subscription_id",
+     "column": "course_subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "id",
+     "column": "id",
+     "kind": "int"
+    },
+    {
+     "key": "amount",
+     "column": "amount",
+     "kind": "decimal"
+    },
+    {
+     "key": "paid",
+     "column": "paid",
+     "kind": "bool"
+    },
+    {
+     "key": "payment_date",
+     "column": "payment_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "archived",
+     "column": "archived",
+     "kind": "bool"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_coursesubscriptioninstallment",
+   "pk": "course_subscription_installment_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_coursesubscriptioninstallment\".\"course_subscription_installment_id\", \"application_coursesubscriptioninstallment\".\"course_subscription_id\", \"application_coursesubscriptioninstallment\".\"id\", \"application_coursesubscriptioninstallment\".\"amount\", \"application_coursesubscriptioninstallment\".\"paid\", \"application_coursesubscriptioninstallment\".\"payment_date\", \"application_coursesubscriptioninstallment\".\"payment_id\", \"application_coursesubscriptioninstallment\".\"archived\", \"application_coursesubscriptioninstallment\".\"group_id\", \"application_coursesubscriptioninstallment\".\"deleted\" FROM \"application_coursesubscriptioninstallment\" INNER JOIN \"application_coursesubscription\" ON (\"application_coursesubscriptioninstallment\".\"course_subscription_id\" = \"application_coursesubscription\".\"course_subscription_id\") INNER JOIN \"application_course\" ON (\"application_coursesubscription\".\"course_id\" = \"application_course\".\"course_id\") WHERE \"application_course\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "course_subscription_installment_id",
+    "course_subscription_id",
+    "id",
+    "amount",
+    "paid",
+    "payment_date",
+    "payment_id",
+    "archived",
+    "group_id",
+    "deleted"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Carnet",
+   "file": "data/35_carnets.json",
+   "fields": [
+    {
+     "key": "carnet_id",
+     "column": "carnet_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "title",
+     "column": "title",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "user_id_id",
+     "column": "user_id_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "lessons_number",
+     "column": "lessons_number",
+     "kind": "int"
+    },
+    {
+     "key": "fee",
+     "column": "fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "public",
+     "column": "public",
+     "kind": "bool"
+    },
+    {
+     "key": "meta",
+     "column": "meta",
+     "kind": "json"
+    }
+   ],
+   "table": "application_carnet",
+   "pk": "carnet_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_carnet\".\"carnet_id\", \"application_carnet\".\"title\", \"application_carnet\".\"description\", \"application_carnet\".\"user_id_id\", \"application_carnet\".\"sport_association_id\", \"application_carnet\".\"lessons_number\", \"application_carnet\".\"fee\", \"application_carnet\".\"creation_date\", \"application_carnet\".\"public\", \"application_carnet\".\"meta\" FROM \"application_carnet\" WHERE \"application_carnet\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "carnet_id",
+    "title",
+    "description",
+    "user_id_id",
+    "sport_association_id",
+    "lessons_number",
+    "fee",
+    "creation_date",
+    "public",
+    "meta"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CarnetSubscription",
+   "file": "data/36_carnet_subscriptions.json",
+   "fields": [
+    {
+     "key": "carnet_subscription_id",
+     "column": "carnet_subscription_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "user_id_id",
+     "column": "user_id_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "carnet_id_id",
+     "column": "carnet_id_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "disabled",
+     "column": "disabled",
+     "kind": "bool"
+    },
+    {
+     "key": "meta",
+     "column": "meta",
+     "kind": "json"
+    }
+   ],
+   "table": "application_carnetsubscription",
+   "pk": "carnet_subscription_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_carnetsubscription\".\"carnet_subscription_id\", \"application_carnetsubscription\".\"user_id_id\", \"application_carnetsubscription\".\"subscription_id\", \"application_carnetsubscription\".\"carnet_id_id\", \"application_carnetsubscription\".\"creation_date\", \"application_carnetsubscription\".\"payment_id\", \"application_carnetsubscription\".\"disabled\", \"application_carnetsubscription\".\"meta\" FROM \"application_carnetsubscription\" INNER JOIN \"application_carnet\" ON (\"application_carnetsubscription\".\"carnet_id_id\" = \"application_carnet\".\"carnet_id\") WHERE \"application_carnet\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "carnet_subscription_id",
+    "user_id_id",
+    "subscription_id",
+    "carnet_id_id",
+    "creation_date",
+    "payment_id",
+    "disabled",
+    "meta"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_course_subscription",
+     "sql": "SELECT (\"application_carnetsubscription_course_subscription\".\"carnetsubscription_id\") AS \"_prefetch_related_val_carnetsubscription_id\", \"application_coursesubscription\".\"course_subscription_id\", \"application_coursesubscription\".\"course_id\", \"application_coursesubscription\".\"paid\", \"application_coursesubscription\".\"creation_date\", \"application_coursesubscription\".\"subscription_id\", \"application_coursesubscription\".\"payment_id\", \"application_coursesubscription\".\"multi_payments\", \"application_coursesubscription\".\"one_fee_payment\", \"application_coursesubscription\".\"archived\", \"application_coursesubscription\".\"type\", \"application_coursesubscription\".\"multiple_quote\", \"application_coursesubscription\".\"billed_frequency\", \"application_coursesubscription\".\"billed_from\", \"application_coursesubscription\".\"billed_until\", \"application_coursesubscription\".\"billed_from_day_of_month\", \"application_coursesubscription\".\"membership_active\", \"application_coursesubscription\".\"membership_fee\", \"application_coursesubscription\".\"auto_renewal\", \"application_coursesubscription\".\"deleted\" FROM \"application_coursesubscription\" INNER JOIN \"application_carnetsubscription_course_subscription\" ON (\"application_coursesubscription\".\"course_subscription_id\" = \"application_carnetsubscription_course_subscription\".\"coursesubscription_id\") WHERE (NOT \"application_coursesubscription\".\"deleted\" AND \"application_carnetsubscription_course_subscription\".\"carnetsubscription_id\" IN (%s, %s))",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_carnetsubscription_id",
+     "target_pk": "course_subscription_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "CampsAndRetreats",
+   "file": "data/37_camps_and_retreats.json",
+   "fields": [
+    {
+     "key": "camps_and_retreats_id",
+     "column": "camps_and_retreats_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "title",
+     "column": "title",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_campsandretreats",
+   "pk": "camps_and_retreats_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_campsandretreats\".\"camps_and_retreats_id\", \"application_campsandretreats\".\"title\", \"application_campsandretreats\".\"description\", \"application_campsandretreats\".\"sport_association_id\" FROM \"application_campsandretreats\" WHERE \"application_campsandretreats\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "camps_and_retreats_id",
+    "title",
+    "description",
+    "sport_association_id"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CampsAndRetreatsPeriod",
+   "file": "data/38_camps_periods.json",
+   "fields": [
+    {
+     "key": "camps_and_retreats_period_id",
+     "column": "camps_and_retreats_period_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "camps_and_retreats_id",
+     "column": "camps_and_retreats_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "start_date",
+     "column": "start_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "end_date",
+     "column": "end_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "title",
+     "column": "title",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "fee",
+     "column": "fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "max_participants",
+     "column": "max_participants",
+     "kind": "int"
+    },
+    {
+     "key": "created_at",
+     "column": "created_at",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_campsandretreatsperiod",
+   "pk": "camps_and_retreats_period_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_campsandretreatsperiod\".\"camps_and_retreats_period_id\", \"application_campsandretreatsperiod\".\"camps_and_retreats_id\", \"application_campsandretreatsperiod\".\"start_date\", \"application_campsandretreatsperiod\".\"end_date\", \"application_campsandretreatsperiod\".\"title\", \"application_campsandretreatsperiod\".\"description\", \"application_campsandretreatsperiod\".\"fee\", \"application_campsandretreatsperiod\".\"max_participants\", \"application_campsandretreatsperiod\".\"created_at\" FROM \"application_campsandretreatsperiod\" WHERE \"application_campsandretreatsperiod\".\"camps_and_retreats_id\" IN (SELECT U0.\"camps_and_retreats_id\" AS \"camps_and_retreats_id\" FROM \"application_campsandretreats\" U0 WHERE U0.\"sport_association_id\" = %s)",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "camps_and_retreats_period_id",
+    "camps_and_retreats_id",
+    "start_date",
+    "end_date",
+    "title",
+    "description",
+    "fee",
+    "max_participants",
+    "created_at"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_camps_and_Retreats_period_services",
+     "sql": "SELECT (\"application_campsandretreatsperiod_camps_and_Retreats_perio5fcd\".\"campsandretreatsperiod_id\") AS \"_prefetch_related_val_campsandretreatsperiod_id\", \"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_service_id\", \"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_id\", \"application_campsandretreatsperiodsservice\".\"title\", \"application_campsandretreatsperiodsservice\".\"description\", \"application_campsandretreatsperiodsservice\".\"fee\", \"application_campsandretreatsperiodsservice\".\"payment_category_id\", \"application_campsandretreatsperiodsservice\".\"created_at\" FROM \"application_campsandretreatsperiodsservice\" INNER JOIN \"application_campsandretreatsperiod_camps_and_Retreats_perio5fcd\" ON (\"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_service_id\" = \"application_campsandretreatsperiod_camps_and_Retreats_perio5fcd\".\"campsandretreatsperiodsservice_id\") WHERE \"application_campsandretreatsperiod_camps_and_Retreats_perio5fcd\".\"campsandretreatsperiod_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_campsandretreatsperiod_id",
+     "target_pk": "camps_and_retreats_period_service_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "CampsAndRetreatsPeriodsService",
+   "file": "data/39_camps_period_services.json",
+   "fields": [
+    {
+     "key": "camps_and_retreats_period_service_id",
+     "column": "camps_and_retreats_period_service_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "camps_and_retreats_period_id",
+     "column": "camps_and_retreats_period_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "title",
+     "column": "title",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "fee",
+     "column": "fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "payment_category_id",
+     "column": "payment_category_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "created_at",
+     "column": "created_at",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_campsandretreatsperiodsservice",
+   "pk": "camps_and_retreats_period_service_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_service_id\", \"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_id\", \"application_campsandretreatsperiodsservice\".\"title\", \"application_campsandretreatsperiodsservice\".\"description\", \"application_campsandretreatsperiodsservice\".\"fee\", \"application_campsandretreatsperiodsservice\".\"payment_category_id\", \"application_campsandretreatsperiodsservice\".\"created_at\" FROM \"application_campsandretreatsperiodsservice\" WHERE \"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_id\" IN (SELECT U0.\"camps_and_retreats_period_id\" AS \"camps_and_retreats_period_id\" FROM \"application_campsandretreatsperiod\" U0 INNER JOIN \"application_campsandretreats\" U1 ON (U0.\"camps_and_retreats_id\" = U1.\"camps_and_retreats_id\") WHERE U1.\"sport_association_id\" = %s)",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "camps_and_retreats_period_service_id",
+    "camps_and_retreats_period_id",
+    "title",
+    "description",
+    "fee",
+    "payment_category_id",
+    "created_at"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CampsAndRetreatsSubscription",
+   "file": "data/40_camps_subscriptions.json",
+   "fields": [
+    {
+     "key": "camps_and_retreats_subscription_id",
+     "column": "camps_and_retreats_subscription_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "camps_and_retreats_id",
+     "column": "camps_and_retreats_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "status_flag",
+     "column": "status_flag",
+     "kind": "int"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "created_at",
+     "column": "created_at",
+     "kind": "datetime"
+    }
+   ],
+   "table": "application_campsandretreatssubscription",
+   "pk": "camps_and_retreats_subscription_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_campsandretreatssubscription\".\"camps_and_retreats_subscription_id\", \"application_campsandretreatssubscription\".\"camps_and_retreats_id\", \"application_campsandretreatssubscription\".\"status_flag\", \"application_campsandretreatssubscription\".\"subscription_id\", \"application_campsandretreatssubscription\".\"created_at\" FROM \"application_campsandretreatssubscription\" INNER JOIN \"application_campsandretreats\" ON (\"application_campsandretreatssubscription\".\"camps_and_retreats_id\" = \"application_campsandretreats\".\"camps_and_retreats_id\") WHERE \"application_campsandretreats\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "camps_and_retreats_subscription_id",
+    "camps_and_retreats_id",
+    "status_flag",
+    "subscription_id",
+    "created_at"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CampsAndRetreatsSubscriptionPeriod",
+   "file": "data/41_camps_subscription_periods.json",
+   "fields": [
+    {
+     "key": "camps_and_retreats_subscription_period_id",
+     "column": "camps_and_retreats_subscription_period_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "camps_and_retreats_period_id",
+     "column": "camps_and_retreats_period_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "camps_and_retreats_subscription_id",
+     "column": "camps_and_retreats_subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_campsandretreatssubscriptionperiod",
+   "pk": "camps_and_retreats_subscription_period_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_campsandretreatssubscriptionperiod\".\"camps_and_retreats_subscription_period_id\", \"application_campsandretreatssubscriptionperiod\".\"camps_and_retreats_period_id\", \"application_campsandretreatssubscriptionperiod\".\"camps_and_retreats_subscription_id\", \"application_campsandretreatssubscriptionperiod\".\"payment_id\" FROM \"application_campsandretreatssubscriptionperiod\" INNER JOIN \"application_campsandretreatssubscription\" ON (\"application_campsandretreatssubscriptionperiod\".\"camps_and_retreats_subscription_id\" = \"application_campsandretreatssubscription\".\"camps_and_retreats_subscription_id\") INNER JOIN \"application_campsandretreats\" ON (\"application_campsandretreatssubscription\".\"camps_and_retreats_id\" = \"application_campsandretreats\".\"camps_and_retreats_id\") WHERE \"application_campsandretreats\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "camps_and_retreats_subscription_period_id",
+    "camps_and_retreats_period_id",
+    "camps_and_retreats_subscription_id",
+    "payment_id"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_camps_and_retreats_period_services",
+     "sql": "SELECT (\"application_campsandretreatssubscriptionperiod_camps_and_reef94\".\"campsandretreatssubscriptionperiod_id\") AS \"_prefetch_related_val_campsandretreatssubscriptionperiod_id\", \"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_service_id\", \"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_id\", \"application_campsandretreatsperiodsservice\".\"title\", \"application_campsandretreatsperiodsservice\".\"description\", \"application_campsandretreatsperiodsservice\".\"fee\", \"application_campsandretreatsperiodsservice\".\"payment_category_id\", \"application_campsandretreatsperiodsservice\".\"created_at\" FROM \"application_campsandretreatsperiodsservice\" INNER JOIN \"application_campsandretreatssubscriptionperiod_camps_and_reef94\" ON (\"application_campsandretreatsperiodsservice\".\"camps_and_retreats_period_service_id\" = \"application_campsandretreatssubscriptionperiod_camps_and_reef94\".\"campsandretreatsperiodsservice_id\") WHERE \"application_campsandretreatssubscriptionperiod_camps_and_reef94\".\"campsandretreatssubscriptionperiod_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_campsandretreatssubscriptionperiod_id",
+     "target_pk": "camps_and_retreats_period_service_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "Signature",
+   "file": "data/42_signatures.json",
+   "fields": [
+    {
+     "key": "signature_id",
+     "column": "signature_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "signature",
+     "column": "signature",
+     "kind": "text"
+    }
+   ],
+   "table": "application_signature",
+   "pk": "signature_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_signature\".\"signature_id\", \"application_signature\".\"user_id\", \"application_signature\".\"signature\" FROM \"application_signature\" INNER JOIN \"bakney_user\" ON (\"application_signature\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_signature\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s OR \"application_signature\".\"user_id\" IN (SELECT DISTINCT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE U0.\"sport_association_id\" = %s))",
+    "params": [
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "signature_id",
+    "user_id",
+    "signature"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Payment",
+   "file": "data/43_payments.json",
+   "fields": [
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "text"
+    },
+    {
+     "key": "subject",
+     "column": "subject",
+     "kind": "int"
+    },
+    {
+     "key": "amount",
+     "column": "amount",
+     "kind": "decimal"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "payment_date",
+     "column": "payment_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "paid",
+     "column": "paid",
+     "kind": "bool"
+    },
+    {
+     "key": "expense",
+     "column": "expense",
+     "kind": "bool"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "payment_category_id",
+     "column": "payment_category_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "meta_payment_categories",
+     "column": "meta_payment_categories",
+     "kind": "json"
+    },
+    {
+     "key": "invoice_id",
+     "column": "invoice_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "associate_id",
+     "column": "associate_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "supplier_id",
+     "column": "supplier_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "instructor_id",
+     "column": "instructor_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "archived",
+     "column": "archived",
+     "kind": "bool"
+    },
+    {
+     "key": "invoice_fiscal_code",
+     "column": "invoice_fiscal_code",
+     "kind": "text"
+    },
+    {
+     "key": "meta",
+     "column": "meta",
+     "kind": "json"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    },
+    {
+     "key": "custom_accounts_id",
+     "column": "custom_accounts_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "signature_id",
+     "column": "signature_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "course",
+     "column": "course",
+     "kind": "json"
+    }
+   ],
+   "table": "application_payment",
+   "pk": "payment_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_payment\".\"payment_id\", \"application_payment\".\"type\", \"application_payment\".\"subject\", \"application_payment\".\"amount\", \"application_payment\".\"creation_date\", \"application_payment\".\"payment_date\", \"application_payment\".\"paid\", \"application_payment\".\"expense\", \"application_payment\".\"description\", \"application_payment\".\"payment_category_id\", \"application_payment\".\"meta_payment_categories\", \"application_payment\".\"invoice_id\", \"application_payment\".\"user_id\", \"application_payment\".\"associate_id\", \"application_payment\".\"supplier_id\", \"application_payment\".\"instructor_id\", \"application_payment\".\"sport_association_id\", \"application_payment\".\"payment_intent_id\", \"application_payment\".\"archived\", \"application_payment\".\"invoice_fiscal_code\", \"application_payment\".\"meta\", \"application_payment\".\"notes\", \"application_payment\".\"custom_accounts_id\", \"application_payment\".\"signature_id\", \"application_payment\".\"deleted\", \"application_payment\".\"group_id\", \"application_payment\".\"course\" FROM \"application_payment\" WHERE \"application_payment\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "payment_id",
+    "type",
+    "subject",
+    "amount",
+    "creation_date",
+    "payment_date",
+    "paid",
+    "expense",
+    "description",
+    "payment_category_id",
+    "meta_payment_categories",
+    "invoice_id",
+    "user_id",
+    "associate_id",
+    "supplier_id",
+    "instructor_id",
+    "sport_association_id",
+    "payment_intent_id",
+    "archived",
+    "invoice_fiscal_code",
+    "meta",
+    "notes",
+    "custom_accounts_id",
+    "signature_id",
+    "deleted",
+    "group_id",
+    "course"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_attachments",
+     "sql": "SELECT (\"application_payment_attachments\".\"payment_id\") AS \"_prefetch_related_val_payment_id\", \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"docmanager_document\" INNER JOIN \"application_payment_attachments\" ON (\"docmanager_document\".\"document_id\" = \"application_payment_attachments\".\"document_id\") WHERE \"application_payment_attachments\".\"payment_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_payment_id",
+     "target_pk": "document_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "Invoice",
+   "file": "data/44_invoices.json",
+   "fields": [
+    {
+     "key": "invoice_id",
+     "column": "invoice_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "document_pdf_id",
+     "column": "document_pdf_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "membership_fee",
+     "column": "membership_fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "activity_fee",
+     "column": "activity_fee",
+     "kind": "decimal"
+    },
+    {
+     "key": "meta_payment_categories",
+     "column": "meta_payment_categories",
+     "kind": "json"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "number",
+     "column": "number",
+     "kind": "int"
+    },
+    {
+     "key": "archived",
+     "column": "archived",
+     "kind": "bool"
+    },
+    {
+     "key": "cancelled",
+     "column": "cancelled",
+     "kind": "bool"
+    },
+    {
+     "key": "selected_tutor_id",
+     "column": "selected_tutor_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "meta",
+     "column": "meta",
+     "kind": "json"
+    },
+    {
+     "key": "imported_from_associami",
+     "column": "imported_from_associami",
+     "kind": "bool"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_invoice",
+   "pk": "invoice_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_invoice\".\"invoice_id\", \"application_invoice\".\"document_pdf_id\", \"application_invoice\".\"sport_association_id\", \"application_invoice\".\"creation_date\", \"application_invoice\".\"membership_fee\", \"application_invoice\".\"activity_fee\", \"application_invoice\".\"meta_payment_categories\", \"application_invoice\".\"description\", \"application_invoice\".\"number\", \"application_invoice\".\"archived\", \"application_invoice\".\"cancelled\", \"application_invoice\".\"selected_tutor_id\", \"application_invoice\".\"meta\", \"application_invoice\".\"imported_from_associami\", \"application_invoice\".\"group_id\", \"application_invoice\".\"deleted\" FROM \"application_invoice\" WHERE \"application_invoice\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "invoice_id",
+    "document_pdf_id",
+    "sport_association_id",
+    "creation_date",
+    "membership_fee",
+    "activity_fee",
+    "meta_payment_categories",
+    "description",
+    "number",
+    "archived",
+    "cancelled",
+    "selected_tutor_id",
+    "meta",
+    "imported_from_associami",
+    "group_id",
+    "deleted"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_attached_documents",
+     "sql": "SELECT (\"application_invoice_attached_documents\".\"invoice_id\") AS \"_prefetch_related_val_invoice_id\", \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"docmanager_document\" INNER JOIN \"application_invoice_attached_documents\" ON (\"docmanager_document\".\"document_id\" = \"application_invoice_attached_documents\".\"document_id\") WHERE \"application_invoice_attached_documents\".\"invoice_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_invoice_id",
+     "target_pk": "document_id"
+    }
+   ],
+   "document_attributes": [
+    "document_pdf_id"
+   ]
+  },
+  {
+   "model": "InvoiceRows",
+   "file": "data/45_invoice_rows.json",
+   "fields": [
+    {
+     "key": "invoice_row_id",
+     "column": "invoice_row_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "invoice_id",
+     "column": "invoice_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "quantity",
+     "column": "quantity",
+     "kind": "int"
+    },
+    {
+     "key": "unit_price",
+     "column": "unit_price",
+     "kind": "decimal"
+    },
+    {
+     "key": "vat",
+     "column": "vat",
+     "kind": "decimal"
+    },
+    {
+     "key": "unit_of_measure",
+     "column": "unit_of_measure",
+     "kind": "text"
+    },
+    {
+     "key": "meta",
+     "column": "meta",
+     "kind": "json"
+    }
+   ],
+   "table": "application_invoicerows",
+   "pk": "invoice_row_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_invoicerows\".\"invoice_row_id\", \"application_invoicerows\".\"invoice_id\", \"application_invoicerows\".\"description\", \"application_invoicerows\".\"quantity\", \"application_invoicerows\".\"unit_price\", \"application_invoicerows\".\"vat\", \"application_invoicerows\".\"unit_of_measure\", \"application_invoicerows\".\"meta\" FROM \"application_invoicerows\" INNER JOIN \"application_invoice\" ON (\"application_invoicerows\".\"invoice_id\" = \"application_invoice\".\"invoice_id\") WHERE \"application_invoice\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "invoice_row_id",
+    "invoice_id",
+    "description",
+    "quantity",
+    "unit_price",
+    "vat",
+    "unit_of_measure",
+    "meta"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "InvoiceSuppliers",
+   "file": "data/46_invoice_suppliers.json",
+   "fields": [
+    {
+     "key": "invoice_supplier_id",
+     "column": "invoice_supplier_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "invoice_identifier",
+     "column": "invoice_identifier",
+     "kind": "text"
+    },
+    {
+     "key": "amount",
+     "column": "amount",
+     "kind": "decimal"
+    },
+    {
+     "key": "payment_date",
+     "column": "payment_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "expire_date",
+     "column": "expire_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "paid",
+     "column": "paid",
+     "kind": "bool"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    },
+    {
+     "key": "document_pdf_id",
+     "column": "document_pdf_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "supplier_id",
+     "column": "supplier_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_invoicesuppliers",
+   "pk": "invoice_supplier_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_invoicesuppliers\".\"invoice_supplier_id\", \"application_invoicesuppliers\".\"invoice_identifier\", \"application_invoicesuppliers\".\"amount\", \"application_invoicesuppliers\".\"payment_date\", \"application_invoicesuppliers\".\"expire_date\", \"application_invoicesuppliers\".\"sport_association_id\", \"application_invoicesuppliers\".\"payment_id\", \"application_invoicesuppliers\".\"paid\", \"application_invoicesuppliers\".\"notes\", \"application_invoicesuppliers\".\"document_pdf_id\", \"application_invoicesuppliers\".\"supplier_id\" FROM \"application_invoicesuppliers\" WHERE \"application_invoicesuppliers\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "invoice_supplier_id",
+    "invoice_identifier",
+    "amount",
+    "payment_date",
+    "expire_date",
+    "sport_association_id",
+    "payment_id",
+    "paid",
+    "notes",
+    "document_pdf_id",
+    "supplier_id"
+   ],
+   "m2m": [],
+   "document_attributes": [
+    "document_pdf_id"
+   ]
+  },
+  {
+   "model": "CustomerInvoice",
+   "file": "data/47_customer_invoices.json",
+   "fields": [
+    {
+     "key": "customer_invoice_id",
+     "column": "customer_invoice_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "prefix",
+     "column": "prefix",
+     "kind": "text"
+    },
+    {
+     "key": "number",
+     "column": "number",
+     "kind": "int"
+    },
+    {
+     "key": "fiscal_year",
+     "column": "fiscal_year",
+     "kind": "int"
+    },
+    {
+     "key": "assignor_prefix_vat_number",
+     "column": "assignor_prefix_vat_number",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_vat_number",
+     "column": "assignor_vat_number",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_tax_code",
+     "column": "assignor_tax_code",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_denomination",
+     "column": "assignor_denomination",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_fiscal_regime",
+     "column": "assignor_fiscal_regime",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_address",
+     "column": "assignor_address",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_postal_code",
+     "column": "assignor_postal_code",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_city",
+     "column": "assignor_city",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_province",
+     "column": "assignor_province",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_country",
+     "column": "assignor_country",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_contact_email",
+     "column": "assignor_contact_email",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_contact_phone",
+     "column": "assignor_contact_phone",
+     "kind": "text"
+    },
+    {
+     "key": "assignor_fax",
+     "column": "assignor_fax",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_prefix_vat_number",
+     "column": "transferor_prefix_vat_number",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_vat_number",
+     "column": "transferor_vat_number",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_tax_code",
+     "column": "transferor_tax_code",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_denomination",
+     "column": "transferor_denomination",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_fiscal_regime",
+     "column": "transferor_fiscal_regime",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_address",
+     "column": "transferor_address",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_postal_code",
+     "column": "transferor_postal_code",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_city",
+     "column": "transferor_city",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_province",
+     "column": "transferor_province",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_country",
+     "column": "transferor_country",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_contact_email",
+     "column": "transferor_contact_email",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_contact_phone",
+     "column": "transferor_contact_phone",
+     "kind": "text"
+    },
+    {
+     "key": "transferor_fax",
+     "column": "transferor_fax",
+     "kind": "text"
+    },
+    {
+     "key": "e_invoice",
+     "column": "e_invoice",
+     "kind": "bool"
+    },
+    {
+     "key": "country_transmitter_prefix",
+     "column": "country_transmitter_prefix",
+     "kind": "text"
+    },
+    {
+     "key": "id_transmitter",
+     "column": "id_transmitter",
+     "kind": "text"
+    },
+    {
+     "key": "transmitting_format",
+     "column": "transmitting_format",
+     "kind": "text"
+    },
+    {
+     "key": "document_type",
+     "column": "document_type",
+     "kind": "text"
+    },
+    {
+     "key": "currency",
+     "column": "currency",
+     "kind": "text"
+    },
+    {
+     "key": "transmitting_date",
+     "column": "transmitting_date",
+     "kind": "date"
+    },
+    {
+     "key": "causal",
+     "column": "causal",
+     "kind": "text"
+    },
+    {
+     "key": "lines",
+     "column": "lines",
+     "kind": "json"
+    },
+    {
+     "key": "payment_condition",
+     "column": "payment_condition",
+     "kind": "text"
+    },
+    {
+     "key": "payment_modality",
+     "column": "payment_modality",
+     "kind": "text"
+    },
+    {
+     "key": "payment_total_amount",
+     "column": "payment_total_amount",
+     "kind": "decimal"
+    },
+    {
+     "key": "payment_expiry_date",
+     "column": "payment_expiry_date",
+     "kind": "date"
+    },
+    {
+     "key": "xml",
+     "column": "xml",
+     "kind": "text"
+    },
+    {
+     "key": "pdf_id",
+     "column": "pdf_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "json",
+     "column": "json",
+     "kind": "json"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "paid",
+     "column": "paid",
+     "kind": "bool"
+    },
+    {
+     "key": "transmitted",
+     "column": "transmitted",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_customerinvoice",
+   "pk": "customer_invoice_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_customerinvoice\".\"customer_invoice_id\", \"application_customerinvoice\".\"prefix\", \"application_customerinvoice\".\"number\", \"application_customerinvoice\".\"fiscal_year\", \"application_customerinvoice\".\"assignor_prefix_vat_number\", \"application_customerinvoice\".\"assignor_vat_number\", \"application_customerinvoice\".\"assignor_tax_code\", \"application_customerinvoice\".\"assignor_denomination\", \"application_customerinvoice\".\"assignor_fiscal_regime\", \"application_customerinvoice\".\"assignor_address\", \"application_customerinvoice\".\"assignor_postal_code\", \"application_customerinvoice\".\"assignor_city\", \"application_customerinvoice\".\"assignor_province\", \"application_customerinvoice\".\"assignor_country\", \"application_customerinvoice\".\"assignor_contact_email\", \"application_customerinvoice\".\"assignor_contact_phone\", \"application_customerinvoice\".\"assignor_fax\", \"application_customerinvoice\".\"transferor_prefix_vat_number\", \"application_customerinvoice\".\"transferor_vat_number\", \"application_customerinvoice\".\"transferor_tax_code\", \"application_customerinvoice\".\"transferor_denomination\", \"application_customerinvoice\".\"transferor_fiscal_regime\", \"application_customerinvoice\".\"transferor_address\", \"application_customerinvoice\".\"transferor_postal_code\", \"application_customerinvoice\".\"transferor_city\", \"application_customerinvoice\".\"transferor_province\", \"application_customerinvoice\".\"transferor_country\", \"application_customerinvoice\".\"transferor_contact_email\", \"application_customerinvoice\".\"transferor_contact_phone\", \"application_customerinvoice\".\"transferor_fax\", \"application_customerinvoice\".\"e_invoice\", \"application_customerinvoice\".\"country_transmitter_prefix\", \"application_customerinvoice\".\"id_transmitter\", \"application_customerinvoice\".\"transmitting_format\", \"application_customerinvoice\".\"document_type\", \"application_customerinvoice\".\"currency\", \"application_customerinvoice\".\"transmitting_date\", \"application_customerinvoice\".\"causal\", \"application_customerinvoice\".\"lines\", \"application_customerinvoice\".\"payment_condition\", \"application_customerinvoice\".\"payment_modality\", \"application_customerinvoice\".\"payment_total_amount\", \"application_customerinvoice\".\"payment_expiry_date\", \"application_customerinvoice\".\"xml\", \"application_customerinvoice\".\"pdf_id\", \"application_customerinvoice\".\"json\", \"application_customerinvoice\".\"sport_association_id\", \"application_customerinvoice\".\"payment_id\", \"application_customerinvoice\".\"creation_date\", \"application_customerinvoice\".\"paid\", \"application_customerinvoice\".\"transmitted\" FROM \"application_customerinvoice\" WHERE \"application_customerinvoice\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "customer_invoice_id",
+    "prefix",
+    "number",
+    "fiscal_year",
+    "assignor_prefix_vat_number",
+    "assignor_vat_number",
+    "assignor_tax_code",
+    "assignor_denomination",
+    "assignor_fiscal_regime",
+    "assignor_address",
+    "assignor_postal_code",
+    "assignor_city",
+    "assignor_province",
+    "assignor_country",
+    "assignor_contact_email",
+    "assignor_contact_phone",
+    "assignor_fax",
+    "transferor_prefix_vat_number",
+    "transferor_vat_number",
+    "transferor_tax_code",
+    "transferor_denomination",
+    "transferor_fiscal_regime",
+    "transferor_address",
+    "transferor_postal_code",
+    "transferor_city",
+    "transferor_province",
+    "transferor_country",
+    "transferor_contact_email",
+    "transferor_contact_phone",
+    "transferor_fax",
+    "e_invoice",
+    "country_transmitter_prefix",
+    "id_transmitter",
+    "transmitting_format",
+    "document_type",
+    "currency",
+    "transmitting_date",
+    "causal",
+    "lines",
+    "payment_condition",
+    "payment_modality",
+    "payment_total_amount",
+    "payment_expiry_date",
+    "xml",
+    "pdf_id",
+    "json",
+    "sport_association_id",
+    "payment_id",
+    "creation_date",
+    "paid",
+    "transmitted"
+   ],
+   "m2m": [],
+   "document_attributes": [
+    "pdf_id"
+   ]
+  },
+  {
+   "model": "BalanceSheet",
+   "file": "data/49_balance_sheets.json",
+   "fields": [
+    {
+     "key": "balance_sheet_id",
+     "column": "balance_sheet_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "status_flag",
+     "column": "status_flag",
+     "kind": "int"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "year",
+     "column": "year",
+     "kind": "int"
+    },
+    {
+     "key": "data",
+     "column": "data",
+     "kind": "json"
+    },
+    {
+     "key": "archived",
+     "column": "archived",
+     "kind": "bool"
+    }
+   ],
+   "table": "application_balancesheet",
+   "pk": "balance_sheet_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_balancesheet\".\"balance_sheet_id\", \"application_balancesheet\".\"sport_association_id\", \"application_balancesheet\".\"status_flag\", \"application_balancesheet\".\"creation_date\", \"application_balancesheet\".\"year\", \"application_balancesheet\".\"data\", \"application_balancesheet\".\"archived\" FROM \"application_balancesheet\" WHERE \"application_balancesheet\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "balance_sheet_id",
+    "sport_association_id",
+    "status_flag",
+    "creation_date",
+    "year",
+    "data",
+    "archived"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "AttendanceRegistry",
+   "file": "data/50_attendance_registries.json",
+   "fields": [
+    {
+     "key": "attendance_registry_id",
+     "column": "attendance_registry_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "course_id",
+     "column": "course_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "events",
+     "column": "events",
+     "kind": "json"
+    },
+    {
+     "key": "status",
+     "column": "status",
+     "kind": "int"
+    }
+   ],
+   "table": "application_attendanceregistry",
+   "pk": "attendance_registry_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_attendanceregistry\".\"attendance_registry_id\", \"application_attendanceregistry\".\"course_id\", \"application_attendanceregistry\".\"creation_date\", \"application_attendanceregistry\".\"events\", \"application_attendanceregistry\".\"status\" FROM \"application_attendanceregistry\" INNER JOIN \"application_course\" ON (\"application_attendanceregistry\".\"course_id\" = \"application_course\".\"course_id\") WHERE \"application_course\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "attendance_registry_id",
+    "course_id",
+    "creation_date",
+    "events",
+    "status"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "AttendanceDay",
+   "file": "data/51_attendance_days.json",
+   "fields": [
+    {
+     "key": "attendance_day_id",
+     "column": "attendance_day_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "attendance_registry_id",
+     "column": "attendance_registry_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "title",
+     "column": "title",
+     "kind": "text"
+    },
+    {
+     "key": "date",
+     "column": "date",
+     "kind": "datetime"
+    },
+    {
+     "key": "attendees",
+     "column": "attendees",
+     "kind": "json"
+    },
+    {
+     "key": "expected_absences",
+     "column": "expected_absences",
+     "kind": "json"
+    },
+    {
+     "key": "auto_marked",
+     "column": "auto_marked",
+     "kind": "bool"
+    },
+    {
+     "key": "associated_event",
+     "column": "associated_event",
+     "kind": "uuid"
+    }
+   ],
+   "table": "application_attendanceday",
+   "pk": "attendance_day_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_attendanceday\".\"attendance_day_id\", \"application_attendanceday\".\"attendance_registry_id\", \"application_attendanceday\".\"title\", \"application_attendanceday\".\"date\", \"application_attendanceday\".\"attendees\", \"application_attendanceday\".\"expected_absences\", \"application_attendanceday\".\"auto_marked\", \"application_attendanceday\".\"associated_event\" FROM \"application_attendanceday\" INNER JOIN \"application_attendanceregistry\" ON (\"application_attendanceday\".\"attendance_registry_id\" = \"application_attendanceregistry\".\"attendance_registry_id\") INNER JOIN \"application_course\" ON (\"application_attendanceregistry\".\"course_id\" = \"application_course\".\"course_id\") WHERE \"application_course\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "attendance_day_id",
+    "attendance_registry_id",
+    "title",
+    "date",
+    "attendees",
+    "expected_absences",
+    "auto_marked",
+    "associated_event"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Message",
+   "file": "data/52_messages.json",
+   "fields": [
+    {
+     "key": "message_id",
+     "column": "message_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "text"
+    },
+    {
+     "key": "message",
+     "column": "message",
+     "kind": "text"
+    },
+    {
+     "key": "subject",
+     "column": "subject",
+     "kind": "text"
+    },
+    {
+     "key": "created_at",
+     "column": "created_at",
+     "kind": "datetime"
+    }
+   ],
+   "table": "communications_message",
+   "pk": "message_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"communications_message\".\"message_id\", \"communications_message\".\"sport_association_id\", \"communications_message\".\"type\", \"communications_message\".\"message\", \"communications_message\".\"subject\", \"communications_message\".\"created_at\" FROM \"communications_message\" WHERE \"communications_message\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "message_id",
+    "sport_association_id",
+    "type",
+    "message",
+    "subject",
+    "created_at"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "MessageTransaction",
+   "file": "data/53_message_transactions.json",
+   "fields": [
+    {
+     "key": "message_transaction_id",
+     "column": "message_transaction_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "message_id",
+     "column": "message_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "recipient",
+     "column": "recipient",
+     "kind": "text"
+    },
+    {
+     "key": "sent_on",
+     "column": "sent_on",
+     "kind": "datetime"
+    },
+    {
+     "key": "delivered_on",
+     "column": "delivered_on",
+     "kind": "datetime"
+    },
+    {
+     "key": "opened_on",
+     "column": "opened_on",
+     "kind": "datetime"
+    },
+    {
+     "key": "clicked_on",
+     "column": "clicked_on",
+     "kind": "datetime"
+    },
+    {
+     "key": "bounced_on",
+     "column": "bounced_on",
+     "kind": "datetime"
+    },
+    {
+     "key": "bounced_reason",
+     "column": "bounced_reason",
+     "kind": "text"
+    },
+    {
+     "key": "bounced_type",
+     "column": "bounced_type",
+     "kind": "text"
+    },
+    {
+     "key": "bounced_status",
+     "column": "bounced_status",
+     "kind": "text"
+    }
+   ],
+   "table": "communications_messagetransaction",
+   "pk": "message_transaction_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"communications_messagetransaction\".\"message_transaction_id\", \"communications_messagetransaction\".\"message_id\", \"communications_messagetransaction\".\"recipient\", \"communications_messagetransaction\".\"sent_on\", \"communications_messagetransaction\".\"delivered_on\", \"communications_messagetransaction\".\"opened_on\", \"communications_messagetransaction\".\"clicked_on\", \"communications_messagetransaction\".\"bounced_on\", \"communications_messagetransaction\".\"bounced_reason\", \"communications_messagetransaction\".\"bounced_type\", \"communications_messagetransaction\".\"bounced_status\" FROM \"communications_messagetransaction\" INNER JOIN \"communications_message\" ON (\"communications_messagetransaction\".\"message_id\" = \"communications_message\".\"message_id\") WHERE \"communications_message\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "message_transaction_id",
+    "message_id",
+    "recipient",
+    "sent_on",
+    "delivered_on",
+    "opened_on",
+    "clicked_on",
+    "bounced_on",
+    "bounced_reason",
+    "bounced_type",
+    "bounced_status"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "AutomationWorkflow",
+   "file": "data/54_automation_workflows.json",
+   "fields": [
+    {
+     "key": "automation_workflow_id",
+     "column": "automation_workflow_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "automation_tree",
+     "column": "automation_tree",
+     "kind": "json"
+    },
+    {
+     "key": "enabled",
+     "column": "enabled",
+     "kind": "bool"
+    },
+    {
+     "key": "created_at",
+     "column": "created_at",
+     "kind": "datetime"
+    },
+    {
+     "key": "updated_at",
+     "column": "updated_at",
+     "kind": "datetime"
+    }
+   ],
+   "table": "communications_automationworkflow",
+   "pk": "automation_workflow_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"communications_automationworkflow\".\"automation_workflow_id\", \"communications_automationworkflow\".\"sport_association_id\", \"communications_automationworkflow\".\"name\", \"communications_automationworkflow\".\"description\", \"communications_automationworkflow\".\"automation_tree\", \"communications_automationworkflow\".\"enabled\", \"communications_automationworkflow\".\"created_at\", \"communications_automationworkflow\".\"updated_at\" FROM \"communications_automationworkflow\" WHERE \"communications_automationworkflow\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "automation_workflow_id",
+    "sport_association_id",
+    "name",
+    "description",
+    "automation_tree",
+    "enabled",
+    "created_at",
+    "updated_at"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Reminder",
+   "file": "data/55_reminders.json",
+   "fields": [
+    {
+     "key": "reminder_id",
+     "column": "reminder_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "reminder_type",
+     "column": "reminder_type",
+     "kind": "int"
+    },
+    {
+     "key": "frequency",
+     "column": "frequency",
+     "kind": "int"
+    },
+    {
+     "key": "name",
+     "column": "name",
+     "kind": "text"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "next_occurrence",
+     "column": "next_occurrence",
+     "kind": "date"
+    },
+    {
+     "key": "time_occurrence",
+     "column": "time_occurrence",
+     "kind": "time"
+    },
+    {
+     "key": "last_occurrence",
+     "column": "last_occurrence",
+     "kind": "date"
+    },
+    {
+     "key": "enabled",
+     "column": "enabled",
+     "kind": "bool"
+    },
+    {
+     "key": "recipients",
+     "column": "recipients",
+     "kind": "json"
+    },
+    {
+     "key": "template_text",
+     "column": "template_text",
+     "kind": "text"
+    },
+    {
+     "key": "template_html",
+     "column": "template_html",
+     "kind": "text"
+    }
+   ],
+   "table": "application_reminder",
+   "pk": "reminder_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_reminder\".\"reminder_id\", \"application_reminder\".\"sport_association_id\", \"application_reminder\".\"reminder_type\", \"application_reminder\".\"frequency\", \"application_reminder\".\"name\", \"application_reminder\".\"description\", \"application_reminder\".\"next_occurrence\", \"application_reminder\".\"time_occurrence\", \"application_reminder\".\"last_occurrence\", \"application_reminder\".\"enabled\", \"application_reminder\".\"recipients\", \"application_reminder\".\"template_text\", \"application_reminder\".\"template_html\" FROM \"application_reminder\" WHERE \"application_reminder\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "reminder_id",
+    "sport_association_id",
+    "reminder_type",
+    "frequency",
+    "name",
+    "description",
+    "next_occurrence",
+    "time_occurrence",
+    "last_occurrence",
+    "enabled",
+    "recipients",
+    "template_text",
+    "template_html"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "EmailLog",
+   "file": "data/56_email_logs.json",
+   "fields": [
+    {
+     "key": "email_log_id",
+     "column": "email_log_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "recipient",
+     "column": "recipient",
+     "kind": "text"
+    },
+    {
+     "key": "subject",
+     "column": "subject",
+     "kind": "text"
+    },
+    {
+     "key": "result",
+     "column": "result",
+     "kind": "text"
+    },
+    {
+     "key": "sent_at",
+     "column": "sent_at",
+     "kind": "datetime"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_emaillog",
+   "pk": "email_log_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_emaillog\".\"email_log_id\", \"application_emaillog\".\"recipient\", \"application_emaillog\".\"subject\", \"application_emaillog\".\"result\", \"application_emaillog\".\"sent_at\", \"application_emaillog\".\"sport_association_id\" FROM \"application_emaillog\" WHERE \"application_emaillog\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "email_log_id",
+    "recipient",
+    "subject",
+    "result",
+    "sent_at",
+    "sport_association_id"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "GlobalCalendarEvents",
+   "file": "data/57_global_calendar_events.json",
+   "fields": [
+    {
+     "key": "global_calendar_id",
+     "column": "global_calendar_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "events",
+     "column": "events",
+     "kind": "json"
+    }
+   ],
+   "table": "application_globalcalendarevents",
+   "pk": "global_calendar_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_globalcalendarevents\".\"global_calendar_id\", \"application_globalcalendarevents\".\"sport_association_id\", \"application_globalcalendarevents\".\"events\" FROM \"application_globalcalendarevents\" WHERE \"application_globalcalendarevents\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "global_calendar_id",
+    "sport_association_id",
+    "events"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Reminders",
+   "file": "data/58_event_reminders.json",
+   "fields": [
+    {
+     "key": "reminders_id",
+     "column": "reminders_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "event_id",
+     "column": "event_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "event_title",
+     "column": "event_title",
+     "kind": "text"
+    },
+    {
+     "key": "event_description",
+     "column": "event_description",
+     "kind": "text"
+    },
+    {
+     "key": "event_course_title",
+     "column": "event_course_title",
+     "kind": "text"
+    },
+    {
+     "key": "event_reminder_text",
+     "column": "event_reminder_text",
+     "kind": "text"
+    },
+    {
+     "key": "send_at",
+     "column": "send_at",
+     "kind": "datetime"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "instructor_id",
+     "column": "instructor_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "completed",
+     "column": "completed",
+     "kind": "bool"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_reminders",
+   "pk": "reminders_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_reminders\".\"reminders_id\", \"application_reminders\".\"event_id\", \"application_reminders\".\"event_title\", \"application_reminders\".\"event_description\", \"application_reminders\".\"event_course_title\", \"application_reminders\".\"event_reminder_text\", \"application_reminders\".\"send_at\", \"application_reminders\".\"user_id\", \"application_reminders\".\"instructor_id\", \"application_reminders\".\"completed\", \"application_reminders\".\"sport_association_id\" FROM \"application_reminders\" WHERE \"application_reminders\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "reminders_id",
+    "event_id",
+    "event_title",
+    "event_description",
+    "event_course_title",
+    "event_reminder_text",
+    "send_at",
+    "user_id",
+    "instructor_id",
+    "completed",
+    "sport_association_id"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "Module",
+   "file": "data/59_modules.json",
+   "fields": [
+    {
+     "key": "module_id",
+     "column": "module_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "custom_link",
+     "column": "custom_link",
+     "kind": "text"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "title",
+     "column": "title",
+     "kind": "text"
+    },
+    {
+     "key": "require_approval",
+     "column": "require_approval",
+     "kind": "bool"
+    },
+    {
+     "key": "start_date",
+     "column": "start_date",
+     "kind": "date"
+    },
+    {
+     "key": "end_date",
+     "column": "end_date",
+     "kind": "date"
+    },
+    {
+     "key": "always_active",
+     "column": "always_active",
+     "kind": "bool"
+    },
+    {
+     "key": "max_responses",
+     "column": "max_responses",
+     "kind": "int"
+    },
+    {
+     "key": "queue_mode",
+     "column": "queue_mode",
+     "kind": "bool"
+    },
+    {
+     "key": "only_users",
+     "column": "only_users",
+     "kind": "bool"
+    },
+    {
+     "key": "payment_required",
+     "column": "payment_required",
+     "kind": "bool"
+    },
+    {
+     "key": "payment_data",
+     "column": "payment_data",
+     "kind": "json"
+    },
+    {
+     "key": "response_message",
+     "column": "response_message",
+     "kind": "text"
+    },
+    {
+     "key": "allow_attachments",
+     "column": "allow_attachments",
+     "kind": "bool"
+    },
+    {
+     "key": "elements",
+     "column": "elements",
+     "kind": "json"
+    }
+   ],
+   "table": "application_module",
+   "pk": "module_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_module\".\"module_id\", \"application_module\".\"custom_link\", \"application_module\".\"sport_association_id\", \"application_module\".\"creation_date\", \"application_module\".\"title\", \"application_module\".\"require_approval\", \"application_module\".\"start_date\", \"application_module\".\"end_date\", \"application_module\".\"always_active\", \"application_module\".\"max_responses\", \"application_module\".\"queue_mode\", \"application_module\".\"only_users\", \"application_module\".\"payment_required\", \"application_module\".\"payment_data\", \"application_module\".\"response_message\", \"application_module\".\"allow_attachments\", \"application_module\".\"elements\" FROM \"application_module\" WHERE \"application_module\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "module_id",
+    "custom_link",
+    "sport_association_id",
+    "creation_date",
+    "title",
+    "require_approval",
+    "start_date",
+    "end_date",
+    "always_active",
+    "max_responses",
+    "queue_mode",
+    "only_users",
+    "payment_required",
+    "payment_data",
+    "response_message",
+    "allow_attachments",
+    "elements"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "ModuleResponses",
+   "file": "data/60_module_responses.json",
+   "fields": [
+    {
+     "key": "module_response_id",
+     "column": "module_response_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "module_id",
+     "column": "module_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "progressive_response_number",
+     "column": "progressive_response_number",
+     "kind": "int"
+    },
+    {
+     "key": "queue_position",
+     "column": "queue_position",
+     "kind": "int"
+    },
+    {
+     "key": "response",
+     "column": "response",
+     "kind": "json"
+    },
+    {
+     "key": "approved",
+     "column": "approved",
+     "kind": "bool"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_moduleresponses",
+   "pk": "module_response_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_moduleresponses\".\"module_response_id\", \"application_moduleresponses\".\"module_id\", \"application_moduleresponses\".\"creation_date\", \"application_moduleresponses\".\"progressive_response_number\", \"application_moduleresponses\".\"queue_position\", \"application_moduleresponses\".\"response\", \"application_moduleresponses\".\"approved\", \"application_moduleresponses\".\"user_id\", \"application_moduleresponses\".\"payment_id\" FROM \"application_moduleresponses\" INNER JOIN \"bakney_user\" ON (\"application_moduleresponses\".\"user_id\" = \"bakney_user\".\"user_id\") WHERE (\"application_moduleresponses\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s)",
+    "params": [
+     {
+      "symbol": "owner"
+     },
+     {
+      "symbol": "owner"
+     }
+    ]
+   },
+   "columns": [
+    "module_response_id",
+    "module_id",
+    "creation_date",
+    "progressive_response_number",
+    "queue_position",
+    "response",
+    "approved",
+    "user_id",
+    "payment_id"
+   ],
+   "m2m": [
+    {
+     "key": "_m2m_attachments",
+     "sql": "SELECT (\"application_moduleresponses_attachments\".\"moduleresponses_id\") AS \"_prefetch_related_val_moduleresponses_id\", \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"docmanager_document\" INNER JOIN \"application_moduleresponses_attachments\" ON (\"docmanager_document\".\"document_id\" = \"application_moduleresponses_attachments\".\"document_id\") WHERE \"application_moduleresponses_attachments\".\"moduleresponses_id\" IN (%s, %s)",
+     "params": [
+      {
+       "sources": true
+      }
+     ],
+     "source_column": "_prefetch_related_val_moduleresponses_id",
+     "target_pk": "document_id"
+    }
+   ],
+   "document_attributes": []
+  },
+  {
+   "model": "SoldProducts",
+   "file": "data/61_sold_products.json",
+   "fields": [
+    {
+     "key": "sold_product_id",
+     "column": "sold_product_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "supplier_id",
+     "column": "supplier_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "product_id",
+     "column": "product_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "quantity",
+     "column": "quantity",
+     "kind": "int"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "selling_date",
+     "column": "selling_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "fk",
+     "target": "uuid"
+    }
+   ],
+   "table": "application_soldproducts",
+   "pk": "sold_product_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_soldproducts\".\"sold_product_id\", \"application_soldproducts\".\"subscription_id\", \"application_soldproducts\".\"supplier_id\", \"application_soldproducts\".\"product_id\", \"application_soldproducts\".\"quantity\", \"application_soldproducts\".\"creation_date\", \"application_soldproducts\".\"selling_date\", \"application_soldproducts\".\"payment_id\" FROM \"application_soldproducts\" INNER JOIN \"application_subscription\" ON (\"application_soldproducts\".\"subscription_id\" = \"application_subscription\".\"subscription_id\") WHERE \"application_subscription\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "sold_product_id",
+    "subscription_id",
+    "supplier_id",
+    "product_id",
+    "quantity",
+    "creation_date",
+    "selling_date",
+    "payment_id"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "SubscriptionTransfer",
+   "file": "data/62_subscription_transfers.json",
+   "fields": [
+    {
+     "key": "subscription_transfer_id",
+     "column": "subscription_transfer_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "subscription_id",
+     "column": "subscription_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "created_at",
+     "column": "created_at",
+     "kind": "datetime"
+    },
+    {
+     "key": "expires_at",
+     "column": "expires_at",
+     "kind": "datetime"
+    },
+    {
+     "key": "requester_id",
+     "column": "requester_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "recipient_id",
+     "column": "recipient_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "token",
+     "column": "token",
+     "kind": "uuid"
+    },
+    {
+     "key": "status",
+     "column": "status",
+     "kind": "int"
+    }
+   ],
+   "table": "application_subscriptiontransfer",
+   "pk": "subscription_transfer_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_subscriptiontransfer\".\"subscription_transfer_id\", \"application_subscriptiontransfer\".\"subscription_id\", \"application_subscriptiontransfer\".\"created_at\", \"application_subscriptiontransfer\".\"expires_at\", \"application_subscriptiontransfer\".\"requester_id\", \"application_subscriptiontransfer\".\"recipient_id\", \"application_subscriptiontransfer\".\"token\", \"application_subscriptiontransfer\".\"status\" FROM \"application_subscriptiontransfer\" INNER JOIN \"application_subscription\" ON (\"application_subscriptiontransfer\".\"subscription_id\" = \"application_subscription\".\"subscription_id\") WHERE \"application_subscription\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "subscription_transfer_id",
+    "subscription_id",
+    "created_at",
+    "expires_at",
+    "requester_id",
+    "recipient_id",
+    "token",
+    "status"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "CumulativeSubscriptionGymLinks",
+   "file": "data/63_cumulative_gym_links.json",
+   "fields": [
+    {
+     "key": "cumulative_subscription_gym_links_id",
+     "column": "cumulative_subscription_gym_links_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "token",
+     "column": "token",
+     "kind": "text"
+    },
+    {
+     "key": "expires_at",
+     "column": "expires_at",
+     "kind": "datetime"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "gym_name",
+     "column": "gym_name",
+     "kind": "text"
+    }
+   ],
+   "table": "application_cumulativesubscriptiongymlinks",
+   "pk": "cumulative_subscription_gym_links_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_cumulativesubscriptiongymlinks\".\"cumulative_subscription_gym_links_id\", \"application_cumulativesubscriptiongymlinks\".\"token\", \"application_cumulativesubscriptiongymlinks\".\"expires_at\", \"application_cumulativesubscriptiongymlinks\".\"creation_date\", \"application_cumulativesubscriptiongymlinks\".\"sport_association_id\", \"application_cumulativesubscriptiongymlinks\".\"gym_name\" FROM \"application_cumulativesubscriptiongymlinks\" WHERE \"application_cumulativesubscriptiongymlinks\".\"sport_association_id\" = %s",
+    "params": [
+     {
+      "symbol": "association"
+     }
+    ]
+   },
+   "columns": [
+    "cumulative_subscription_gym_links_id",
+    "token",
+    "expires_at",
+    "creation_date",
+    "sport_association_id",
+    "gym_name"
+   ],
+   "m2m": [],
+   "document_attributes": []
+  },
+  {
+   "model": "SportAssociationDocumentsArchive",
+   "file": "data/65_documents_archive.json",
+   "fields": [
+    {
+     "key": "sport_association_documents_archive_id",
+     "column": "sport_association_documents_archive_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "document_id",
+     "column": "document_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "date",
+     "column": "date",
+     "kind": "date"
+    },
+    {
+     "key": "folder_id",
+     "column": "folder_id",
+     "kind": "fk",
+     "target": "int"
+    }
+   ],
+   "table": "application_sportassociationdocumentsarchive",
+   "pk": "sport_association_documents_archive_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"application_sportassociationdocumentsarchive\".\"sport_association_documents_archive_id\", \"application_sportassociationdocumentsarchive\".\"sport_association_id\", \"application_sportassociationdocumentsarchive\".\"document_id\", \"application_sportassociationdocumentsarchive\".\"date\", \"application_sportassociationdocumentsarchive\".\"folder_id\" FROM \"application_sportassociationdocumentsarchive\" INNER JOIN \"docmanager_document\" ON (\"application_sportassociationdocumentsarchive\".\"document_id\" = \"docmanager_document\".\"document_id\") WHERE (\"application_sportassociationdocumentsarchive\".\"sport_association_id\" = %s AND NOT (\"docmanager_document\".\"filename\"::text LIKE %s))",
+    "params": [
+     {
+      "symbol": "association"
+     },
+     {
+      "str": "export\\_%"
+     }
+    ]
+   },
+   "columns": [
+    "sport_association_documents_archive_id",
+    "sport_association_id",
+    "document_id",
+    "date",
+    "folder_id"
+   ],
+   "m2m": [],
+   "document_attributes": [
+    "document_id"
+   ]
+  },
+  {
+   "model": "Document",
+   "file": "data/99_documents.json",
+   "fields": [
+    {
+     "key": "document_id",
+     "column": "document_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "filepath",
+     "column": "filepath",
+     "kind": "text"
+    },
+    {
+     "key": "filename",
+     "column": "filename",
+     "kind": "text"
+    },
+    {
+     "key": "file_size_bytes",
+     "column": "file_size_bytes",
+     "kind": "int"
+    },
+    {
+     "key": "token",
+     "column": "token",
+     "kind": "uuid"
+    }
+   ],
+   "table": "docmanager_document",
+   "pk": "document_id",
+   "pk_kind": "uuid",
+   "query": {
+    "sql": "SELECT \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"docmanager_document\" WHERE \"docmanager_document\".\"document_id\" IN (%s, %s)",
+    "params": [
+     {
+      "documents": true
+     },
+     {
+      "documents": true
+     }
+    ]
+   },
+   "columns": [
+    "document_id",
+    "creation_date",
+    "filepath",
+    "filename",
+    "file_size_bytes",
+    "token"
+   ],
+   "m2m": [],
+   "document_attributes": [
+    "document_id"
+   ]
+  }
+ ],
+ "queries": {
+  "cleanup": {
+   "sql": "SELECT \"application_sportassociationdocumentsarchive\".\"sport_association_documents_archive_id\", \"application_sportassociationdocumentsarchive\".\"sport_association_id\", \"application_sportassociationdocumentsarchive\".\"document_id\", \"application_sportassociationdocumentsarchive\".\"date\", \"application_sportassociationdocumentsarchive\".\"folder_id\", \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"application_sportassociationdocumentsarchive\" INNER JOIN \"docmanager_document\" ON (\"application_sportassociationdocumentsarchive\".\"document_id\" = \"docmanager_document\".\"document_id\") WHERE (\"docmanager_document\".\"filename\"::text LIKE %s AND \"application_sportassociationdocumentsarchive\".\"sport_association_id\" = %s) ORDER BY \"application_sportassociationdocumentsarchive\".\"date\" DESC",
+   "params": [
+    {
+     "str": "export\\_%"
+    },
+    {
+     "symbol": "association"
+    }
+   ]
+  },
+  "cleanup_excess": {
+   "sql": "SELECT \"application_sportassociationdocumentsarchive\".\"sport_association_documents_archive_id\", \"application_sportassociationdocumentsarchive\".\"sport_association_id\", \"application_sportassociationdocumentsarchive\".\"document_id\", \"application_sportassociationdocumentsarchive\".\"date\", \"application_sportassociationdocumentsarchive\".\"folder_id\", \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\" FROM \"application_sportassociationdocumentsarchive\" INNER JOIN \"docmanager_document\" ON (\"application_sportassociationdocumentsarchive\".\"document_id\" = \"docmanager_document\".\"document_id\") WHERE (\"docmanager_document\".\"filename\"::text LIKE %s AND \"application_sportassociationdocumentsarchive\".\"sport_association_id\" = %s) ORDER BY \"application_sportassociationdocumentsarchive\".\"date\" DESC OFFSET 2",
+   "params": [
+    {
+     "str": "export\\_%"
+    },
+    {
+     "symbol": "association"
+    }
+   ]
+  },
+  "cleanup_columns": [
+   "sport_association_documents_archive_id",
+   "sport_association_id",
+   "document_id",
+   "date",
+   "folder_id",
+   "document_id",
+   "creation_date",
+   "filepath",
+   "filename",
+   "file_size_bytes",
+   "token"
+  ],
+  "files": {
+   "sql": "SELECT \"docmanager_document\".\"document_id\", \"docmanager_document\".\"creation_date\", \"docmanager_document\".\"filepath\", \"docmanager_document\".\"filename\", \"docmanager_document\".\"file_size_bytes\", \"docmanager_document\".\"token\", EXISTS(SELECT %s AS \"a\" FROM \"application_medicalcertificate\" U0 WHERE U0.\"document_id\" = (\"docmanager_document\".\"document_id\") LIMIT 1) AS \"export_is_medical_certificate\", EXISTS(SELECT %s AS \"a\" FROM \"application_invoice\" U0 WHERE (NOT U0.\"deleted\" AND U0.\"document_pdf_id\" = (\"docmanager_document\".\"document_id\")) LIMIT 1) AS \"export_is_invoice\", EXISTS(SELECT %s AS \"a\" FROM \"application_subscriptionfile\" U0 WHERE U0.\"document_id\" = (\"docmanager_document\".\"document_id\") LIMIT 1) AS \"export_is_subscription_file\" FROM \"docmanager_document\" WHERE \"docmanager_document\".\"document_id\" IN (%s, %s)",
+   "params": [
+    {
+     "int": 1
+    },
+    {
+     "int": 1
+    },
+    {
+     "int": 1
+    },
+    {
+     "documents": true
+    },
+    {
+     "documents": true
+    }
+   ]
+  },
+  "signatures": {
+   "sql": "SELECT \"application_subscription\".\"subscription_id\", \"application_subscription\".\"sport_association_id\", \"application_subscription\".\"associate_id\", \"application_subscription\".\"supplier_id\", \"application_subscription\".\"instructor_id\", \"application_subscription\".\"custom_data\", \"application_subscription\".\"additional_fields\", \"application_subscription\".\"user_id\", \"application_subscription\".\"type\", \"application_subscription\".\"role\", \"application_subscription\".\"acceptance_date\", \"application_subscription\".\"resignation_date\", \"application_subscription\".\"medical_id\", \"application_subscription\".\"status_flag\", \"application_subscription\".\"creation_date\", \"application_subscription\".\"start_date\", \"application_subscription\".\"end_date\", \"application_subscription\".\"signature_url\", \"application_subscription\".\"signature_storage_key\", \"application_subscription\".\"document_pdf_id\", \"application_subscription\".\"payment_id\", \"application_subscription\".\"archived\", \"application_subscription\".\"draft\", \"application_subscription\".\"trial\", \"application_subscription\".\"meta\", \"application_subscription\".\"subscription_number\", \"application_subscription\".\"subscription_type\", \"application_subscription\".\"group_id\", \"application_subscription\".\"deleted\", \"application_subscription\".\"competitive\", \"application_subscription\".\"notes\" FROM \"application_subscription\" WHERE (\"application_subscription\".\"sport_association_id\" = %s AND NOT (\"application_subscription\".\"signature_storage_key\" IS NULL) AND NOT (\"application_subscription\".\"signature_storage_key\" = %s AND \"application_subscription\".\"signature_storage_key\" IS NOT NULL))",
+   "params": [
+    {
+     "symbol": "association"
+    },
+    {
+     "str": ""
+    }
+   ]
+  },
+  "credentials": {
+   "sql": "SELECT \"bakney_user\".\"user_id\" AS \"pk\" FROM \"bakney_user\" WHERE (NOT \"bakney_user\".\"deleted\" AND (\"bakney_user\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s OR \"bakney_user\".\"user_id\" IN (SELECT U0.\"user_id\" AS \"user_id\" FROM \"application_subscription\" U0 WHERE (U0.\"sport_association_id\" = %s AND U0.\"user_id\" IS NOT NULL))))",
+   "params": [
+    {
+     "symbol": "owner"
+    },
+    {
+     "symbol": "owner"
+    },
+    {
+     "symbol": "association"
+    }
+   ]
+  },
+  "signature_columns": [
+   "subscription_id",
+   "sport_association_id",
+   "associate_id",
+   "supplier_id",
+   "instructor_id",
+   "custom_data",
+   "additional_fields",
+   "user_id",
+   "type",
+   "role",
+   "acceptance_date",
+   "resignation_date",
+   "medical_id",
+   "status_flag",
+   "creation_date",
+   "start_date",
+   "end_date",
+   "signature_url",
+   "signature_storage_key",
+   "document_pdf_id",
+   "payment_id",
+   "archived",
+   "draft",
+   "trial",
+   "meta",
+   "subscription_number",
+   "subscription_type",
+   "group_id",
+   "deleted",
+   "competitive",
+   "notes"
+  ]
+ }
+}

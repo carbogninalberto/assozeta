@@ -136,3 +136,29 @@ func TestParseRefusals(t *testing.T) {
 		t.Fatal("a message with expires is not republished by this package")
 	}
 }
+
+// TestRepublishKeepsTimeLimits: a retry of a message with time limits keeps
+// its timelimit header (Context.as_execution_options); messages without
+// limits still republish [null, null].
+func TestRepublishKeepsTimeLimits(t *testing.T) {
+	raw := goldenCase(t, "task-id-time-limits")
+	m, err := ParseMessage([]byte(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.Plain() || !m.PlainWith(true) || m.Redelivered() {
+		t.Fatal("a time-limited message is plain only with time limits")
+	}
+	payload, err := EncodeRepublish(m, Republish{Retries: 0, ETA: time.Date(2026, 11, 9, 12, 0, 0, 0, time.UTC),
+		DeliveryTag: "00000000-0000-4000-8000-000000000002", Origin: "gen1@x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	again, err := ParseMessage(payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(again.TimeLimit) != 2 || again.TimeLimit[0] != Number("3600") || again.TimeLimit[1] != Number("3300") {
+		t.Fatalf("timelimit %v", again.TimeLimit)
+	}
+}
