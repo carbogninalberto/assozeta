@@ -170,10 +170,11 @@ and a Django worker on `celery` must then reach the Django-only final state; in 
    `ErrHandoff` for anything outside the subset; `Run` performs Django's effects in Django's order and returns the task's
    value, `*celeryworker.Retry` (the task's own `self.retry` policy), or `*celeryworker.Exception` (Python class, module and
    args). Register it in `cmd/celery-consumer/main.go`.
-3. **Messages the task publishes**: use the task's own producer with `root_id = request.RootID or request.ID` and
-   `parent_id = request.ID` (Celery's `send_task` inside a running task), and `Request.AddChild(id)` so `meta.children`
-   matches `apply_async`'s `add_to_parent`. Extend `celery.Task`/`Encode` with those two fields (golden-captured from a
-   task that publishes, e.g. `send_email_text`) before the first such port.
+3. **Messages the task publishes**: use a producer with the routes, `celery.Task.RootID = request.RootID or request.ID`
+   and `ParentID = request.ID` (Celery's `send_task`/`apply_async` inside a running task). Do not call
+   `Request.AddChild`: `CoordinatedTask.__call__` runs the body through `Task.__call__`, which pushes its own request,
+   so body publishes never reach the stored `meta.children` (only the maintenance deferral, raised before the body, does).
+   First used by [consumer-workflow](consumer-workflow.md).
 4. **Run** RED (without the registration), GREEN, a semantic mutation, and re-run the families that share touched code.
 5. **Enable** per name with `GO_TASK_QUEUE_TASKS` only after GREEN.
 
@@ -187,5 +188,5 @@ Per remaining task:
 | `print_document_subscription`, `print_document_invoice` | `requests.get(CURRENT_HOST/document/<kind>/<id>, Authorization=<token>)` with errors swallowed; test against a stub server recording requests. |
 | `save_to_storage` | `default_storage.save` with `AWS_S3_FILE_OVERWRITE=False` (exists checks, random suffix): reproduce the name selection against MinIO. |
 | `export_invoices_to_zip` | ZIP bytes (entry order and timestamps) and the Rome-clock file name; golden archives. |
-| workflow triggers (`check_workflows_trigger`, `workflow_block_execute`) | Each block's effects; `send_task` of `send_email_html`; per-block handoff for blocks not yet ported. |
+| workflow triggers (`check_workflows_trigger`, `check_workflows_trigger_cron`, `workflow_block_execute`) | Ported: [consumer-workflow](consumer-workflow.md). |
 | restore / import / export (`instance.restore.*`, import/export tasks) | `instance.restore.*` bypasses CoordinatedTask admission (name prefix) and holds the exclusive lock itself, with `time_limit`/`soft_time_limit` headers: extend `Plain`/`EncodeRepublish` for time limits first; large S3 and archive work is better kept on Django until the storage layer is characterized. |

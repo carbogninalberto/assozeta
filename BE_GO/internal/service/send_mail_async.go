@@ -3,17 +3,21 @@ package service
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
+	"log/slog"
 	"net"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celeryworker"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 	"github.com/google/uuid"
 )
@@ -24,8 +28,11 @@ const SendMailAsyncTask = "core.tasks.send_mail_async"
 // SendMailAsyncStore is the database side of the task.
 type SendMailAsyncStore interface {
 	ActiveAssociation(ctx context.Context, id uuid.UUID) (bool, error)
-	HasCommunicationConfiguration(ctx context.Context, association uuid.UUID) (bool, error)
-	InstanceEmail(ctx context.Context) (bool, error)
+	FirstCommunicationConfiguration(ctx context.Context, association uuid.UUID) (*domain.CommunicationConfiguration, error)
+	AssociationDenomination(ctx context.Context, association uuid.UUID) (*string, bool, error)
+	SaveCommunicationConfiguration(ctx context.Context, configuration domain.CommunicationConfiguration, at time.Time) error
+	InstanceBrand(ctx context.Context) (domain.EmailRenderInstanceConfig, error)
+	InstanceEmailSettings(ctx context.Context) (*domain.ConsumerEmailInstance, error)
 	InsertEmailLog(ctx context.Context, recipient, subject, result string, association *uuid.UUID) error
 }
 
@@ -45,20 +52,26 @@ type SystemEmail struct {
 	TLSConfig *tls.Config
 }
 
-// SendMailAsync runs core.tasks.send_mail_async for the inputs that take
-// custom_send_mail with the system backend (no association, a deleted or
-// missing one, an association without CommunicationConfiguration, or
-// skip_association_check). The CommunicationConfiguration.send_email path,
-// the instance email source and arguments outside the rendered subset are
-// handed off to the Django worker before any effect.
+// SendMailAsync runs core.tasks.send_mail_async: custom_send_mail through
+// instance.email_configuration.EmailBackend (environment or instance
+// source, fail_silently), or CommunicationConfiguration.send_email for an
+// association with a configuration (WithEmailTasks). Arguments outside the
+// rendered subset are handed off to the Django worker before any effect.
+// It also implements the application.tasks e-mail tasks (consumer_email.go).
 type SendMailAsync struct {
 	store SendMailAsyncStore
 	email SystemEmail
 	now   func() time.Time
+
+	publisher celery.Publisher
+	settings  ConsumerEmailSettings
+	logger    *slog.Logger
+	delay     func() time.Duration
+	timers    sync.WaitGroup
 }
 
 func NewSendMailAsync(store SendMailAsyncStore, email SystemEmail, now func() time.Time) *SendMailAsync {
-	return &SendMailAsync{store: store, email: email, now: now}
+	return &SendMailAsync{store: store, email: email, now: now, logger: slog.New(slog.DiscardHandler)}
 }
 
 // Task registers the implementation: max_retries=3, default_retry_delay 180.
@@ -71,6 +84,23 @@ type sendMailAsyncCall struct {
 	subject, message, from, html string
 	recipients, replyTo          []string
 	association                  *uuid.UUID // the looked-up association (None when missing)
+	silent                       bool       // fail_silently
+	// source is effective_email's value for custom_send_mail.
+	source sendMailAsyncSource
+	// config is the CommunicationConfiguration.send_email call, when taken.
+	config *consumerEmailConfigSend
+}
+
+// sendMailAsyncSource is effective_email(): the environment or, for a
+// self-hosted instance with email settings, the instance's own transport
+// and sender (the message's From replaced by formataddr).
+type sendMailAsyncSource struct {
+	instance                 bool
+	host, username, password string
+	port                     int64
+	security                 string // tls, ssl, none; anything else is ImproperlyConfigured
+	from                     string // the instance From value
+	credentialError          bool   // decrypt_password raised ImproperlyConfigured
 }
 
 var sendMailAsyncPositional = []string{"subject", "message", "from_email", "recipient_list", "sport_association_id"}
@@ -181,7 +211,7 @@ func (s *SendMailAsync) plan(ctx context.Context, request *celeryworker.Request)
 			return celeryworker.ErrHandoff
 		}
 	}
-	if silent, ok := pythonTruth(values["fail_silently"]); !ok || silent {
+	if call.silent, ok = pythonTruth(values["fail_silently"]); !ok {
 		return celeryworker.ErrHandoff
 	}
 	skipValue, skipPresent := values["skip_association_check"]
@@ -205,16 +235,6 @@ func (s *SendMailAsync) plan(ctx context.Context, request *celeryworker.Request)
 	default:
 		return celeryworker.ErrHandoff
 	}
-	if s.email.PortInvalid || s.email.Host == "" {
-		return celeryworker.ErrHandoff
-	}
-	if _, err = smtpsend.DjangoEnvelope(call.from); err != nil {
-		return celeryworker.ErrHandoff
-	}
-	if err = smtpsend.CheckDjangoMessage(smtpsend.DjangoMessage{Subject: call.subject, Body: call.message, HTML: call.html,
-		From: call.from, To: call.recipients, ReplyTo: call.replyTo}); err != nil {
-		return celeryworker.ErrHandoff
-	}
 	// The reads Django performs before sending; a failure here is left to run().
 	if association != nil {
 		found, err := s.store.ActiveAssociation(ctx, *association)
@@ -224,25 +244,141 @@ func (s *SendMailAsync) plan(ctx context.Context, request *celeryworker.Request)
 		if found {
 			call.association = association
 			if !skipPresent || !skip {
-				configured, err := s.store.HasCommunicationConfiguration(ctx, *association)
+				configuration, err := s.store.FirstCommunicationConfiguration(ctx, *association)
 				if err != nil {
 					return err
 				}
-				if configured {
-					return celeryworker.ErrHandoff // CommunicationConfiguration.send_email
+				if configuration != nil {
+					if s.publisher == nil {
+						return celeryworker.ErrHandoff
+					}
+					// config.send_email(subject, body=message, recipient_list,
+					// html_body=kwargs.get('html_message'), reply_to=kwargs.get('reply_to')).
+					var body, html *string
+					if message, present := values["message"]; present && message != nil {
+						body = &call.message
+					}
+					if value, present := values["html_message"]; present && value != nil {
+						html = &call.html
+					}
+					if call.config, err = s.planConfigSend(ctx, *configuration, call.subject, body, html, values["recipient_list"],
+						values["reply_to"]); err != nil {
+						return err
+					}
+					request.State = call
+					return nil
 				}
 			}
 		}
 	}
-	instance, err := s.store.InstanceEmail(ctx)
-	if err != nil {
+	if err = s.planSource(ctx, call); err != nil {
 		return err
 	}
-	if instance {
+	if _, err = smtpsend.DjangoEnvelope(call.envelopeFrom()); err != nil {
+		return celeryworker.ErrHandoff
+	}
+	if err = smtpsend.CheckDjangoMessage(smtpsend.DjangoMessage{Subject: call.subject, Body: call.message, HTML: call.html,
+		From: call.envelopeFrom(), To: call.recipients, ReplyTo: call.replyTo}); err != nil {
 		return celeryworker.ErrHandoff
 	}
 	request.State = call
 	return nil
+}
+
+// envelopeFrom is the From the backend sends: the instance's formataddr
+// value, or the message's from_email.
+func (c *sendMailAsyncCall) envelopeFrom() string {
+	if c.source.instance {
+		return c.source.from
+	}
+	return c.from
+}
+
+var sendMailAsyncInstanceKeys = []string{"host", "port", "username", "security", "from_email", "sender_name"}
+
+// planSource reads effective_email(): the instance settings when the
+// configuration is self-hosted with truthy email settings, else the
+// environment. Instance settings outside the modelled shape are handed off.
+func (s *SendMailAsync) planSource(ctx context.Context, call *sendMailAsyncCall) error {
+	row, err := s.store.InstanceEmailSettings(ctx)
+	if err != nil {
+		return err
+	}
+	var settings any
+	if row != nil {
+		decoder := json.NewDecoder(strings.NewReader(row.EmailSettings))
+		decoder.UseNumber()
+		if decoder.Decode(&settings) != nil {
+			return celeryworker.ErrHandoff
+		}
+	}
+	if row == nil || !row.SelfHosted || !instanceTruthy(settings) {
+		if s.email.PortInvalid || s.email.Host == "" {
+			return celeryworker.ErrHandoff
+		}
+		security := "none"
+		switch {
+		case s.email.UseTLS && s.email.UseSSL:
+			security = "invalid"
+		case s.email.UseTLS:
+			security = "tls"
+		case s.email.UseSSL:
+			security = "ssl"
+		}
+		call.source = sendMailAsyncSource{host: s.email.Host, username: s.email.Username, password: s.email.Password,
+			port: s.email.Port, security: security}
+		return nil
+	}
+	object, ok := settings.(map[string]any)
+	if !ok {
+		return celeryworker.ErrHandoff
+	}
+	text := map[string]string{}
+	for _, key := range sendMailAsyncInstanceKeys {
+		if key == "port" {
+			continue
+		}
+		if text[key], ok = object[key].(string); !ok {
+			return celeryworker.ErrHandoff
+		}
+	}
+	number, ok := object["port"].(json.Number)
+	port, err := strconv.ParseInt(string(number), 10, 64)
+	if !ok || err != nil || port < 1 || port > 65535 || strconv.FormatInt(port, 10) != string(number) || text["host"] == "" {
+		return celeryworker.ErrHandoff
+	}
+	source := sendMailAsyncSource{instance: true, host: text["host"], username: text["username"], port: port, security: text["security"]}
+	if row.PasswordEncrypted != "" {
+		source.credentialError = true
+		for _, secret := range s.settings.SecretKeys {
+			if plain, opened := fernetOpen(row.PasswordEncrypted, instanceAdminFernetKey(instanceEmailCipher, secret)); opened {
+				if !utf8.Valid(plain) {
+					return celeryworker.ErrHandoff
+				}
+				source.password, source.credentialError = string(plain), false
+				break
+			}
+		}
+	}
+	// formataddr((sender_name, from_email)); quoted or encoded names are
+	// outside the subset of the rendered From.
+	if strings.ContainsAny(text["sender_name"], `"\`) || !isASCIIText(text["sender_name"]) {
+		return celeryworker.ErrHandoff
+	}
+	if source.from, err = smtpsend.FormatAddr(text["sender_name"], text["from_email"]); err != nil || strings.Contains(source.from, `"`) {
+		return celeryworker.ErrHandoff
+	}
+	call.source = source
+	return nil
+}
+
+func isASCIIText(text string) bool {
+	for i := 0; i < len(text); i++ {
+		if text[i] >= 0x80 {
+			return false
+		}
+	}
+	return true
 }
 
 // retry is the task's except branch: self.retry(exc=exc,
@@ -259,7 +395,9 @@ func (s *SendMailAsync) run(ctx context.Context, request *celeryworker.Request) 
 		// The plan's reads failed: the task body raises on the same read.
 		return nil, sendMailAsyncRetry(request, errSendMailAsyncDatabase)
 	}
-	if exc := s.send(ctx, call); exc != nil {
+	if call.config != nil {
+		s.configSend(ctx, request, call.config)
+	} else if exc := s.send(ctx, call); exc != nil {
 		return nil, sendMailAsyncRetry(request, exc)
 	}
 	if err := s.store.InsertEmailLog(ctx, call.recipients[0], call.subject, "Sent", call.association); err != nil {
@@ -271,46 +409,74 @@ func (s *SendMailAsync) run(ctx context.Context, request *celeryworker.Request) 
 // send is custom_send_mail through instance.email_configuration.EmailBackend
 // with the environment source: smtp_connection, open(), _send, close().
 func (s *SendMailAsync) send(ctx context.Context, call *sendMailAsyncCall) *celeryworker.Exception {
+	source := call.source
+	if source.credentialError {
+		return &celeryworker.Exception{Type: "ImproperlyConfigured", Module: "django.core.exceptions",
+			Args: []any{"La credenziale email salvata deve essere reinserita."}}
+	}
 	encryption := ""
-	switch {
-	case s.email.UseTLS && s.email.UseSSL:
+	switch source.security {
+	case "tls":
+		encryption = "TLS"
+	case "ssl":
+		encryption = "SSL"
+	case "none":
+	default:
 		return &celeryworker.Exception{Type: "ImproperlyConfigured", Module: "django.core.exceptions",
 			Args: []any{"Scegli una sola modalità di sicurezza SMTP: TLS o SSL."}}
-	case s.email.UseTLS:
-		encryption = "TLS"
-	case s.email.UseSSL:
-		encryption = "SSL"
 	}
-	local := s.email.LocalHostname
-	if local == "" {
-		host, _ := os.Hostname()
-		local = smtpsend.FQDN(host)
-	}
+	local := s.localHostname()
 	config := s.email.TLSConfig
 	if config == nil {
 		// ssl.create_default_context(): certificate and host name verification.
-		config = &tls.Config{ServerName: s.email.Host, MinVersion: tls.VersionTLS12}
+		config = &tls.Config{ServerName: source.host, MinVersion: tls.VersionTLS12}
 	}
-	server := smtpsend.Server{Host: s.email.Host, Port: int(s.email.Port), User: s.email.Username, Password: s.email.Password,
+	server := smtpsend.Server{Host: source.host, Port: int(source.port), User: source.username, Password: source.password,
 		Encryption: encryption, Timeout: 5 * time.Second, LocalHostname: local, Dial: s.email.Dial, TLSConfig: config}
 	now := s.now()
 	message, err := smtpsend.RenderDjangoMessage(smtpsend.DjangoMessage{Subject: call.subject, Body: call.message, HTML: call.html,
-		From: call.from, To: call.recipients, ReplyTo: call.replyTo, Date: now, MessageID: smtpsend.MessageID(now, local),
+		From: call.envelopeFrom(), To: call.recipients, ReplyTo: call.replyTo, Date: now, MessageID: smtpsend.MessageID(now, local),
 		Boundary: smtpsend.NewBoundary()})
 	if err != nil {
 		return &celeryworker.Exception{Type: "ValueError", Module: "builtins", Args: []any{"message outside the rendered subset"}}
 	}
-	from, _ := smtpsend.DjangoEnvelope(call.from)
+	from, _ := smtpsend.DjangoEnvelope(call.envelopeFrom())
 	backend, err := smtpsend.OpenDjangoBackend(ctx, server)
 	if err != nil {
+		// open(): fail_silently swallows OSError (smtplib's errors included).
+		if call.silent && sendMailAsyncOSError(err) {
+			return nil
+		}
 		return pythonSMTPException(err, from)
 	}
 	err = backend.SendMail(from, call.recipients, message)
 	backend.Close()
-	if err != nil {
+	if err != nil && !(call.silent && sendMailAsyncSMTPException(err)) {
 		return pythonSMTPException(err, from)
 	}
 	return nil
+}
+
+// dnsHostname is django.core.mail.utils.DNS_NAME (socket.getfqdn()).
+func dnsHostname() string {
+	host, _ := os.Hostname()
+	return smtpsend.FQDN(host)
+}
+
+// sendMailAsyncOSError reports an error Python raises as an OSError subclass.
+func sendMailAsyncOSError(err error) bool {
+	switch pythonSMTPException(err, "").Type {
+	case "UnicodeEncodeError", "ValueError", "binascii.Error":
+		return false
+	}
+	return true
+}
+
+// sendMailAsyncSMTPException reports an smtplib.SMTPException (what _send
+// swallows with fail_silently); socket-level errors are not.
+func sendMailAsyncSMTPException(err error) bool {
+	exc := pythonSMTPException(err, "")
+	return exc.Module == "smtplib"
 }
 
 // pythonBytes is kombu's JSON form of a bytes exception argument; text that

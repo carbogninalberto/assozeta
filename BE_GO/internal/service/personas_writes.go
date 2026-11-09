@@ -736,3 +736,57 @@ func (s *PersonaWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	}
 	return run.finish(err)
 }
+
+// StockCreate is the router list route's CreateModelMixin.create on
+// AssociateViewSet: request.data is not popped, so AssociateSerializer
+// validates tutors_data as its ListField and a non-dict body is the 400;
+// perform_create then reads request.user.sport_association (athletes 403,
+// owners without an association 500) and save() reaches ModelSerializer.create
+// with tutors_data among the model's keyword arguments (TypeError: 500,
+// nothing written). Without tutors_data it is add with no tutors. HTML form
+// input is not ported (refused before any write).
+func (s *PersonaWrites) StockCreate(ctx context.Context, identity domain.ResolvedIdentity, body any, form bool, header string,
+	audit domain.LoginAuditContext) (string, error) {
+	if form {
+		return "", ErrPersonaNotPorted
+	}
+	if body == nil {
+		body = domain.RequestObject{}
+	}
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		// AssociateSerializer.to_internal_value starts with data.copy(): only a
+		// list (of the non-dict bodies) has one, and then fails the dict check.
+		if _, list := body.([]any); list {
+			return "", &dto.PersonaInvalid{Fields: map[string][]string{"non_field_errors": {"dictionary:list"}}}
+		}
+		return "", ErrPersonaUnhandled
+	}
+	if err := pictureUnported(object); err != nil {
+		return "", err
+	}
+	if value, present := object.Lookup("born_date"); present && dto.PersonaDMYUnported(value) {
+		return "", ErrPersonaNotPorted
+	}
+	run, err := s.begin(ctx, identity, header, audit)
+	if err != nil {
+		return "", err
+	}
+	_, invalid, err := dto.ParsePersonaFields(object, dto.PersonaFieldOptions{TutorsData: true, Omit: []string{"associate_id", "creation_date"}},
+		run.related(ctx))
+	run.tx.Rollback()
+	if err != nil {
+		return "", err
+	}
+	if invalid != nil {
+		return "", invalid
+	}
+	association, err := s.Association(ctx, identity)
+	if err != nil {
+		return "", err
+	}
+	if _, present := object.Lookup("tutors_data"); present {
+		return "", ErrPersonaUnhandled // Associate() got unexpected keyword arguments: 'tutors_data'
+	}
+	return s.Add(ctx, identity, association, object, false, header, audit)
+}

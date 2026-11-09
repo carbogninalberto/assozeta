@@ -1,0 +1,2112 @@
+{
+ "matrix_version": 1,
+ "scope": "DefaultRouter folders routes with MPTT effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "first_id": 990301,
+ "next_id": 990401,
+ "new_ids": [
+  990401,
+  990402,
+  990403,
+  990404,
+  990405
+ ],
+ "folders": [
+  {
+   "label": "a",
+   "id": 990301,
+   "name": "Archivio è",
+   "parent": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created_at": "2026-10-01T08:00:00Z"
+  },
+  {
+   "label": "a1",
+   "id": 990302,
+   "name": "Verbali",
+   "parent": 990301,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created_at": "2026-10-02T08:00:00.250000Z"
+  },
+  {
+   "label": "a1a",
+   "id": 990303,
+   "name": "2026",
+   "parent": 990302,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created_at": "2026-10-03T08:00:00Z"
+  },
+  {
+   "label": "a2",
+   "id": 990304,
+   "name": "Bilanci",
+   "parent": 990301,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created_at": "2026-10-04T08:00:00Z"
+  },
+  {
+   "label": "b",
+   "id": 990305,
+   "name": "Contratti",
+   "parent": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created_at": "2026-10-05T08:00:00Z"
+  },
+  {
+   "label": "b1",
+   "id": 990306,
+   "name": "Verbali",
+   "parent": 990305,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created_at": "2026-10-06T08:00:00Z"
+  },
+  {
+   "label": "c",
+   "id": 990307,
+   "name": "Vuota",
+   "parent": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created_at": "2026-10-07T08:00:00Z"
+  },
+  {
+   "label": "f",
+   "id": 990308,
+   "name": "Estero",
+   "parent": null,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "created_at": "2026-10-08T08:00:00Z"
+  },
+  {
+   "label": "f1",
+   "id": 990309,
+   "name": "Interno",
+   "parent": 990308,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "created_at": "2026-10-09T08:00:00Z"
+  }
+ ],
+ "cases": [
+  {
+   "name": "router-folders-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/folders/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/folders/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/folders/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'folders'. Contact administrator to grant access."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-owner-roots",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "id": 990301,
+      "name": "Archivio è",
+      "parent": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-01T08:00:00Z",
+      "level": 0,
+      "children": [
+       {
+        "id": 990302,
+        "name": "Verbali",
+        "parent": 990301,
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "created_at": "2026-10-02T08:00:00.250000Z",
+        "level": 1,
+        "children": [
+         {
+          "id": 990303,
+          "name": "2026",
+          "parent": 990302,
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "created_at": "2026-10-03T08:00:00Z",
+          "level": 2,
+          "children": []
+         }
+        ]
+       },
+       {
+        "id": 990304,
+        "name": "Bilanci",
+        "parent": 990301,
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "created_at": "2026-10-04T08:00:00Z",
+        "level": 1,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 990305,
+      "name": "Contratti",
+      "parent": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-05T08:00:00Z",
+      "level": 0,
+      "children": [
+       {
+        "id": 990306,
+        "name": "Verbali",
+        "parent": 990305,
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "created_at": "2026-10-06T08:00:00Z",
+        "level": 1,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 990307,
+      "name": "Vuota",
+      "parent": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-07T08:00:00Z",
+      "level": 0,
+      "children": []
+     }
+    ],
+    "path": null
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-children",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/folders/?folder=990301",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "id": 990302,
+      "name": "Verbali",
+      "parent": 990301,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-02T08:00:00.250000Z",
+      "level": 1,
+      "children": [
+       {
+        "id": 990303,
+        "name": "2026",
+        "parent": 990302,
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "created_at": "2026-10-03T08:00:00Z",
+        "level": 2,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 990304,
+      "name": "Bilanci",
+      "parent": 990301,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-04T08:00:00Z",
+      "level": 1,
+      "children": []
+     }
+    ],
+    "path": [
+     {
+      "id": 990301,
+      "name": "Archivio è"
+     }
+    ]
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-foreign-folder-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/?folder=990308",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Cannot access folder from different sport association."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/folders/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "id": 990308,
+      "name": "Estero",
+      "parent": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "created_at": "2026-10-08T08:00:00Z",
+      "level": 0,
+      "children": [
+       {
+        "id": 990309,
+        "name": "Interno",
+        "parent": 990308,
+        "sport_association": "a1000000-0000-4000-8000-000000701002",
+        "created_at": "2026-10-09T08:00:00Z",
+        "level": 1,
+        "children": []
+       }
+      ]
+     }
+    ],
+    "path": null
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/folders/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null
+  },
+  {
+   "name": "router-folders-list-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/folders/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "state": null,
+   "body": {}
+  },
+  {
+   "name": "router-folders-list-delete-without-pk-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null
+  },
+  {
+   "name": "router-folders-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/folders/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Folder List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "POST": {
+      "id": {
+       "type": "integer",
+       "required": false,
+       "read_only": true,
+       "label": "ID"
+      },
+      "name": {
+       "type": "string",
+       "required": true,
+       "read_only": false,
+       "label": "Name",
+       "max_length": 255
+      },
+      "parent": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Parent"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      },
+      "created_at": {
+       "type": "datetime",
+       "required": false,
+       "read_only": false,
+       "label": "Created at"
+      },
+      "level": {
+       "type": "integer",
+       "required": false,
+       "read_only": true,
+       "label": "Level"
+      },
+      "children": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Children"
+      }
+     }
+    }
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-list-format-json-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null
+  },
+  {
+   "name": "router-folders-list-format-unknown-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders.txt/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-create-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "This field is required."
+    ],
+    "sport_association": [
+     "This field is required."
+    ]
+   },
+   "state": null,
+   "body": {}
+  },
+  {
+   "name": "router-folders-create-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "state": null,
+   "body": []
+  },
+  {
+   "name": "router-folders-create-null-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "This field may not be null."
+    ]
+   },
+   "state": null,
+   "body": {
+    "name": "X",
+    "sport_association": null
+   }
+  },
+  {
+   "name": "router-folders-create-unknown-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000989999\" - object does not exist."
+    ]
+   },
+   "state": null,
+   "body": {
+    "name": "X",
+    "sport_association": "a1000000-0000-4000-8000-000000989999"
+   }
+  },
+  {
+   "name": "router-folders-create-foreign-association-forbidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "state": null,
+   "body": {
+    "name": "X",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-folders-create-foreign-parent-forbidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "state": null,
+   "body": {
+    "name": "X",
+    "parent": 990308,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "router-folders-create-duplicate-child-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "The fields name, parent, sport_association must make a unique set."
+    ]
+   },
+   "state": null,
+   "body": {
+    "name": "Verbali",
+    "parent": 990301,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "router-folders-create-athlete-required",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "This field is required."
+    ],
+    "sport_association": [
+     "This field is required."
+    ]
+   },
+   "state": null,
+   "body": {}
+  },
+  {
+   "name": "router-folders-create-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null,
+   "body": {
+    "name": "X",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-folders-create-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null,
+   "body": {
+    "name": "X",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-folders-create-child-last",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "id": 990401,
+    "name": "Statuto",
+    "parent": 990301,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-10T10:00:00Z",
+    "level": 1,
+    "children": []
+   },
+   "state": {
+    "990301": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-01T08:00:00Z",
+     "tree": 1,
+     "lft": 1,
+     "rght": 10,
+     "level": 0
+    },
+    "990302": {
+     "name": "Verbali",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-02T08:00:00.250000Z",
+     "tree": 1,
+     "lft": 2,
+     "rght": 5,
+     "level": 1
+    },
+    "990303": {
+     "name": "2026",
+     "parent": 990302,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-03T08:00:00Z",
+     "tree": 1,
+     "lft": 3,
+     "rght": 4,
+     "level": 2
+    },
+    "990304": {
+     "name": "Bilanci",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-04T08:00:00Z",
+     "tree": 1,
+     "lft": 6,
+     "rght": 7,
+     "level": 1
+    },
+    "990305": {
+     "name": "Contratti",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-05T08:00:00Z",
+     "tree": 2,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990306": {
+     "name": "Verbali",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-06T08:00:00Z",
+     "tree": 2,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990307": {
+     "name": "Vuota",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-07T08:00:00Z",
+     "tree": 3,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    },
+    "990308": {
+     "name": "Estero",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-08T08:00:00Z",
+     "tree": 4,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990309": {
+     "name": "Interno",
+     "parent": 990308,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-09T08:00:00Z",
+     "tree": 4,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990401": {
+     "name": "Statuto",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-10T10:00:00Z",
+     "tree": 1,
+     "lft": 8,
+     "rght": 9,
+     "level": 1
+    }
+   },
+   "body": {
+    "name": " Statuto ",
+    "parent": 990301,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-10T10:00:00Z",
+    "level": 9
+   }
+  },
+  {
+   "name": "router-folders-create-form-body",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "id": 990402,
+    "name": "Da form",
+    "parent": 990305,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-11T10:00:00Z",
+    "level": 1,
+    "children": []
+   },
+   "state": {
+    "990301": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-01T08:00:00Z",
+     "tree": 1,
+     "lft": 1,
+     "rght": 10,
+     "level": 0
+    },
+    "990302": {
+     "name": "Verbali",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-02T08:00:00.250000Z",
+     "tree": 1,
+     "lft": 2,
+     "rght": 5,
+     "level": 1
+    },
+    "990303": {
+     "name": "2026",
+     "parent": 990302,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-03T08:00:00Z",
+     "tree": 1,
+     "lft": 3,
+     "rght": 4,
+     "level": 2
+    },
+    "990304": {
+     "name": "Bilanci",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-04T08:00:00Z",
+     "tree": 1,
+     "lft": 6,
+     "rght": 7,
+     "level": 1
+    },
+    "990305": {
+     "name": "Contratti",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-05T08:00:00Z",
+     "tree": 2,
+     "lft": 1,
+     "rght": 6,
+     "level": 0
+    },
+    "990306": {
+     "name": "Verbali",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-06T08:00:00Z",
+     "tree": 2,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990307": {
+     "name": "Vuota",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-07T08:00:00Z",
+     "tree": 3,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    },
+    "990308": {
+     "name": "Estero",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-08T08:00:00Z",
+     "tree": 4,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990309": {
+     "name": "Interno",
+     "parent": 990308,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-09T08:00:00Z",
+     "tree": 4,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990401": {
+     "name": "Statuto",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-10T10:00:00Z",
+     "tree": 1,
+     "lft": 8,
+     "rght": 9,
+     "level": 1
+    },
+    "990402": {
+     "name": "Da form",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-11T10:00:00Z",
+     "tree": 2,
+     "lft": 4,
+     "rght": 5,
+     "level": 1
+    }
+   },
+   "raw_body": "name=Da+form&parent=990305&sport_association=a1000000-0000-4000-8000-000000701001&created_at=2026-10-11T10:00:00Z",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-folders-create-multipart-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "id": 990403,
+    "name": "Multipart",
+    "parent": 990307,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-12T10:00:00Z",
+    "level": 1,
+    "children": []
+   },
+   "state": {
+    "990301": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-01T08:00:00Z",
+     "tree": 1,
+     "lft": 1,
+     "rght": 10,
+     "level": 0
+    },
+    "990302": {
+     "name": "Verbali",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-02T08:00:00.250000Z",
+     "tree": 1,
+     "lft": 2,
+     "rght": 5,
+     "level": 1
+    },
+    "990303": {
+     "name": "2026",
+     "parent": 990302,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-03T08:00:00Z",
+     "tree": 1,
+     "lft": 3,
+     "rght": 4,
+     "level": 2
+    },
+    "990304": {
+     "name": "Bilanci",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-04T08:00:00Z",
+     "tree": 1,
+     "lft": 6,
+     "rght": 7,
+     "level": 1
+    },
+    "990305": {
+     "name": "Contratti",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-05T08:00:00Z",
+     "tree": 2,
+     "lft": 1,
+     "rght": 6,
+     "level": 0
+    },
+    "990306": {
+     "name": "Verbali",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-06T08:00:00Z",
+     "tree": 2,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990307": {
+     "name": "Vuota",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-07T08:00:00Z",
+     "tree": 3,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990308": {
+     "name": "Estero",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-08T08:00:00Z",
+     "tree": 4,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990309": {
+     "name": "Interno",
+     "parent": 990308,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-09T08:00:00Z",
+     "tree": 4,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990401": {
+     "name": "Statuto",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-10T10:00:00Z",
+     "tree": 1,
+     "lft": 8,
+     "rght": 9,
+     "level": 1
+    },
+    "990402": {
+     "name": "Da form",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-11T10:00:00Z",
+     "tree": 2,
+     "lft": 4,
+     "rght": 5,
+     "level": 1
+    },
+    "990403": {
+     "name": "Multipart",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-12T10:00:00Z",
+     "tree": 3,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    }
+   },
+   "raw_body": "--routerfoldersboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nMultipart\r\n--routerfoldersboundary\r\nContent-Disposition: form-data; name=\"parent\"\r\n\r\n990307\r\n--routerfoldersboundary\r\nContent-Disposition: form-data; name=\"sport_association\"\r\n\r\na1000000-0000-4000-8000-000000701001\r\n--routerfoldersboundary\r\nContent-Disposition: form-data; name=\"created_at\"\r\n\r\n2026-10-12T10:00:00Z\r\n--routerfoldersboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=routerfoldersboundary"
+  },
+  {
+   "name": "router-folders-create-format-json-root-duplicate-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders.json",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "id": 990404,
+    "name": "Archivio è",
+    "parent": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-13T10:00:00Z",
+    "level": 0,
+    "children": []
+   },
+   "state": {
+    "990301": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-01T08:00:00Z",
+     "tree": 1,
+     "lft": 1,
+     "rght": 10,
+     "level": 0
+    },
+    "990302": {
+     "name": "Verbali",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-02T08:00:00.250000Z",
+     "tree": 1,
+     "lft": 2,
+     "rght": 5,
+     "level": 1
+    },
+    "990303": {
+     "name": "2026",
+     "parent": 990302,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-03T08:00:00Z",
+     "tree": 1,
+     "lft": 3,
+     "rght": 4,
+     "level": 2
+    },
+    "990304": {
+     "name": "Bilanci",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-04T08:00:00Z",
+     "tree": 1,
+     "lft": 6,
+     "rght": 7,
+     "level": 1
+    },
+    "990305": {
+     "name": "Contratti",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-05T08:00:00Z",
+     "tree": 2,
+     "lft": 1,
+     "rght": 6,
+     "level": 0
+    },
+    "990306": {
+     "name": "Verbali",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-06T08:00:00Z",
+     "tree": 2,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990307": {
+     "name": "Vuota",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-07T08:00:00Z",
+     "tree": 3,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990308": {
+     "name": "Estero",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-08T08:00:00Z",
+     "tree": 4,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990309": {
+     "name": "Interno",
+     "parent": 990308,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-09T08:00:00Z",
+     "tree": 4,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990401": {
+     "name": "Statuto",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-10T10:00:00Z",
+     "tree": 1,
+     "lft": 8,
+     "rght": 9,
+     "level": 1
+    },
+    "990402": {
+     "name": "Da form",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-11T10:00:00Z",
+     "tree": 2,
+     "lft": 4,
+     "rght": 5,
+     "level": 1
+    },
+    "990403": {
+     "name": "Multipart",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-12T10:00:00Z",
+     "tree": 3,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990404": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-13T10:00:00Z",
+     "tree": 5,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    }
+   },
+   "body": {
+    "name": "Archivio è",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-13T10:00:00Z"
+   }
+  },
+  {
+   "name": "router-folders-create-root-server-time",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "id": 990405,
+    "name": "Adesso",
+    "parent": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "$now",
+    "level": 0,
+    "children": []
+   },
+   "state": {
+    "990301": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-01T08:00:00Z",
+     "tree": 1,
+     "lft": 1,
+     "rght": 10,
+     "level": 0
+    },
+    "990302": {
+     "name": "Verbali",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-02T08:00:00.250000Z",
+     "tree": 1,
+     "lft": 2,
+     "rght": 5,
+     "level": 1
+    },
+    "990303": {
+     "name": "2026",
+     "parent": 990302,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-03T08:00:00Z",
+     "tree": 1,
+     "lft": 3,
+     "rght": 4,
+     "level": 2
+    },
+    "990304": {
+     "name": "Bilanci",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-04T08:00:00Z",
+     "tree": 1,
+     "lft": 6,
+     "rght": 7,
+     "level": 1
+    },
+    "990305": {
+     "name": "Contratti",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-05T08:00:00Z",
+     "tree": 2,
+     "lft": 1,
+     "rght": 6,
+     "level": 0
+    },
+    "990306": {
+     "name": "Verbali",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-06T08:00:00Z",
+     "tree": 2,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990307": {
+     "name": "Vuota",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-07T08:00:00Z",
+     "tree": 3,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990308": {
+     "name": "Estero",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-08T08:00:00Z",
+     "tree": 4,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990309": {
+     "name": "Interno",
+     "parent": 990308,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-09T08:00:00Z",
+     "tree": 4,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990401": {
+     "name": "Statuto",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-10T10:00:00Z",
+     "tree": 1,
+     "lft": 8,
+     "rght": 9,
+     "level": 1
+    },
+    "990402": {
+     "name": "Da form",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-11T10:00:00Z",
+     "tree": 2,
+     "lft": 4,
+     "rght": 5,
+     "level": 1
+    },
+    "990403": {
+     "name": "Multipart",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-12T10:00:00Z",
+     "tree": 3,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990404": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-13T10:00:00Z",
+     "tree": 5,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    },
+    "990405": {
+     "name": "Adesso",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "$now",
+     "tree": 6,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    }
+   },
+   "body": {
+    "name": "Adesso",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "router-folders-detail-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/folders/990301/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-detail-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/folders/990301/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'folders/990301'. Contact administrator to grant access."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-retrieve-owner-nested",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/990301/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "id": 990301,
+    "name": "Archivio è",
+    "parent": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-01T08:00:00Z",
+    "level": 0,
+    "children": [
+     {
+      "id": 990302,
+      "name": "Verbali",
+      "parent": 990301,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-02T08:00:00.250000Z",
+      "level": 1,
+      "children": [
+       {
+        "id": 990303,
+        "name": "2026",
+        "parent": 990302,
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "created_at": "2026-10-03T08:00:00Z",
+        "level": 2,
+        "children": []
+       }
+      ]
+     },
+     {
+      "id": 990304,
+      "name": "Bilanci",
+      "parent": 990301,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-04T08:00:00Z",
+      "level": 1,
+      "children": []
+     },
+     {
+      "id": 990401,
+      "name": "Statuto",
+      "parent": 990301,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-10T10:00:00Z",
+      "level": 1,
+      "children": []
+     }
+    ]
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-retrieve-format-json",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/folders/990302.json",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "id": 990302,
+    "name": "Verbali",
+    "parent": 990301,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-02T08:00:00.250000Z",
+    "level": 1,
+    "children": [
+     {
+      "id": 990303,
+      "name": "2026",
+      "parent": 990302,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "created_at": "2026-10-03T08:00:00Z",
+      "level": 2,
+      "children": []
+     }
+    ]
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-retrieve-malformed-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/abc/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-retrieve-unknown-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/999999/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-retrieve-out-of-range-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/2147483648/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-retrieve-foreign-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/990308/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-retrieve-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/folders/990301/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null
+  },
+  {
+   "name": "router-folders-detail-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/990301/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "state": null,
+   "body": {}
+  },
+  {
+   "name": "router-folders-detail-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/folders/990301/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Folder Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "PUT": {
+      "id": {
+       "type": "integer",
+       "required": false,
+       "read_only": true,
+       "label": "ID"
+      },
+      "name": {
+       "type": "string",
+       "required": true,
+       "read_only": false,
+       "label": "Name",
+       "max_length": 255
+      },
+      "parent": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Parent"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      },
+      "created_at": {
+       "type": "datetime",
+       "required": false,
+       "read_only": false,
+       "label": "Created at"
+      },
+      "level": {
+       "type": "integer",
+       "required": false,
+       "read_only": true,
+       "label": "Level"
+      },
+      "children": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Children"
+      }
+     }
+    }
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-detail-options-foreign-no-actions",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/folders/990308/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Folder Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-partial-update-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/folders/990304/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null,
+   "body": {
+    "name": "Mai"
+   }
+  },
+  {
+   "name": "router-folders-update-format-json-server-error",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/folders/990304.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null,
+   "body": {
+    "name": "Mai"
+   }
+  },
+  {
+   "name": "router-folders-update-foreign-parent-forbidden",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/folders/990304/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "state": null,
+   "body": {
+    "parent": 990309
+   }
+  },
+  {
+   "name": "router-folders-update-rename-duplicate-sibling",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/folders/990304/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "The fields name, parent, sport_association must make a unique set."
+    ]
+   },
+   "state": null,
+   "body": {
+    "name": "Verbali"
+   }
+  },
+  {
+   "name": "router-folders-update-owner-put-is-partial",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/folders/990304/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "id": 990304,
+    "name": "Bilanci 2026",
+    "parent": 990307,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "created_at": "2026-10-04T08:00:00Z",
+    "level": 1,
+    "children": []
+   },
+   "state": {
+    "990301": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-01T08:00:00Z",
+     "tree": 1,
+     "lft": 1,
+     "rght": 8,
+     "level": 0
+    },
+    "990302": {
+     "name": "Verbali",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-02T08:00:00.250000Z",
+     "tree": 1,
+     "lft": 2,
+     "rght": 5,
+     "level": 1
+    },
+    "990303": {
+     "name": "2026",
+     "parent": 990302,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-03T08:00:00Z",
+     "tree": 1,
+     "lft": 3,
+     "rght": 4,
+     "level": 2
+    },
+    "990304": {
+     "name": "Bilanci 2026",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-04T08:00:00Z",
+     "tree": 3,
+     "lft": 4,
+     "rght": 5,
+     "level": 1
+    },
+    "990305": {
+     "name": "Contratti",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-05T08:00:00Z",
+     "tree": 2,
+     "lft": 1,
+     "rght": 6,
+     "level": 0
+    },
+    "990306": {
+     "name": "Verbali",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-06T08:00:00Z",
+     "tree": 2,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990307": {
+     "name": "Vuota",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-07T08:00:00Z",
+     "tree": 3,
+     "lft": 1,
+     "rght": 6,
+     "level": 0
+    },
+    "990308": {
+     "name": "Estero",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-08T08:00:00Z",
+     "tree": 4,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990309": {
+     "name": "Interno",
+     "parent": 990308,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-09T08:00:00Z",
+     "tree": 4,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990401": {
+     "name": "Statuto",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-10T10:00:00Z",
+     "tree": 1,
+     "lft": 6,
+     "rght": 7,
+     "level": 1
+    },
+    "990402": {
+     "name": "Da form",
+     "parent": 990305,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-11T10:00:00Z",
+     "tree": 2,
+     "lft": 4,
+     "rght": 5,
+     "level": 1
+    },
+    "990403": {
+     "name": "Multipart",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-12T10:00:00Z",
+     "tree": 3,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990404": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-13T10:00:00Z",
+     "tree": 5,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    },
+    "990405": {
+     "name": "Adesso",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "$now",
+     "tree": 6,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    }
+   },
+   "body": {
+    "name": "Bilanci 2026",
+    "parent": 990307
+   }
+  },
+  {
+   "name": "router-folders-destroy-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/990308/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-destroy-malformed-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/abc/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-destroy-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/folders/990305/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null
+  },
+  {
+   "name": "router-folders-destroy-owner-subtree",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/990305/",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "state": {
+    "990301": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-01T08:00:00Z",
+     "tree": 1,
+     "lft": 1,
+     "rght": 8,
+     "level": 0
+    },
+    "990302": {
+     "name": "Verbali",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-02T08:00:00.250000Z",
+     "tree": 1,
+     "lft": 2,
+     "rght": 5,
+     "level": 1
+    },
+    "990303": {
+     "name": "2026",
+     "parent": 990302,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-03T08:00:00Z",
+     "tree": 1,
+     "lft": 3,
+     "rght": 4,
+     "level": 2
+    },
+    "990304": {
+     "name": "Bilanci 2026",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-04T08:00:00Z",
+     "tree": 3,
+     "lft": 4,
+     "rght": 5,
+     "level": 1
+    },
+    "990307": {
+     "name": "Vuota",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-07T08:00:00Z",
+     "tree": 3,
+     "lft": 1,
+     "rght": 6,
+     "level": 0
+    },
+    "990308": {
+     "name": "Estero",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-08T08:00:00Z",
+     "tree": 4,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990309": {
+     "name": "Interno",
+     "parent": 990308,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-09T08:00:00Z",
+     "tree": 4,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990401": {
+     "name": "Statuto",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-10T10:00:00Z",
+     "tree": 1,
+     "lft": 6,
+     "rght": 7,
+     "level": 1
+    },
+    "990403": {
+     "name": "Multipart",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-12T10:00:00Z",
+     "tree": 3,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990404": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-13T10:00:00Z",
+     "tree": 5,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    },
+    "990405": {
+     "name": "Adesso",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "$now",
+     "tree": 6,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    }
+   }
+  },
+  {
+   "name": "router-folders-destroy-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/990305/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "state": null
+  },
+  {
+   "name": "router-folders-destroy-format-json",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/folders/990302.json",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "state": {
+    "990301": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-01T08:00:00Z",
+     "tree": 1,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990304": {
+     "name": "Bilanci 2026",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-04T08:00:00Z",
+     "tree": 3,
+     "lft": 4,
+     "rght": 5,
+     "level": 1
+    },
+    "990307": {
+     "name": "Vuota",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-07T08:00:00Z",
+     "tree": 3,
+     "lft": 1,
+     "rght": 6,
+     "level": 0
+    },
+    "990308": {
+     "name": "Estero",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-08T08:00:00Z",
+     "tree": 4,
+     "lft": 1,
+     "rght": 4,
+     "level": 0
+    },
+    "990309": {
+     "name": "Interno",
+     "parent": 990308,
+     "association": "a1000000-0000-4000-8000-000000701002",
+     "created_at": "2026-10-09T08:00:00Z",
+     "tree": 4,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990401": {
+     "name": "Statuto",
+     "parent": 990301,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-10T10:00:00Z",
+     "tree": 1,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990403": {
+     "name": "Multipart",
+     "parent": 990307,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-12T10:00:00Z",
+     "tree": 3,
+     "lft": 2,
+     "rght": 3,
+     "level": 1
+    },
+    "990404": {
+     "name": "Archivio è",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "2026-10-13T10:00:00Z",
+     "tree": 5,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    },
+    "990405": {
+     "name": "Adesso",
+     "parent": null,
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "created_at": "$now",
+     "tree": 6,
+     "lft": 1,
+     "rght": 2,
+     "level": 0
+    }
+   }
+  }
+ ]
+}

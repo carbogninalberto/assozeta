@@ -52,7 +52,7 @@ func run(arguments []string) error {
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			fmt.Println("Go Celery consumer: --env-file PATH, --concurrency N, --drain-timeout D. Consumes the assozeta-go queue " +
-				"(GO_TASK_QUEUE_TASKS routing); runs its registered tasks and hands every other message to the celery queue.")
+				"(GO_TASK_QUEUE_TASKS routing); runs core.tasks.send_mail_async, send_email_text, send_email_template, send_email_html, the automation workflow tasks, the print tasks, save_to_storage and export_invoices_to_zip and hands every other message to the celery queue.")
 			return nil
 		}
 		return errors.New("invalid celery consumer arguments")
@@ -83,6 +83,11 @@ func run(arguments []string) error {
 	mail := service.NewSendMailAsync(repository.NewSendMailAsyncStore(db), service.SystemEmail{Host: admin.EmailHost,
 		Username: admin.EmailUsername, Password: admin.EmailPassword, Port: admin.EmailPort, PortInvalid: admin.EmailPortInvalid,
 		UseTLS: admin.EmailUseTLS, UseSSL: admin.EmailUseSSL, LocalHostname: dnsName()}, time.Now)
+	// Messages the e-mail tasks publish (send_mail_async) follow GO_TASK_QUEUE_TASKS like Django's producer.
+	emailPublisher := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
+	mail.WithEmailTasks(emailPublisher, service.ConsumerEmailSettings{AppURL: admin.AppURL, WhitelabelName: cfg.WhitelabelName,
+		DefaultFromEmail: cfg.DefaultFromEmail, DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel,
+		SecretKeys: []string{cfg.SessionSecret}}, slog.Default())
 	host, _ := os.Hostname()
 	if host == "" {
 		host = "localhost"
@@ -90,7 +95,15 @@ func run(arguments []string) error {
 	transport := &celery.Transport{Client: broker, Queue: celery.GoQueue}
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
-	tasks := map[string]celeryworker.Task{service.SendMailAsyncTask: mail.Task()}
+	tasks := map[string]celeryworker.Task{service.SendMailAsyncTask: mail.Task(),
+		service.SendEmailTextTask: mail.SendEmailTextTask(), service.SendEmailTemplateTask: mail.SendEmailTemplateTask(),
+		service.SendEmailHTMLTask: mail.SendEmailHTMLTask()}
+	// Messages the tasks publish (send_task inside a worker task) use the
+	// same routes as every other producer.
+	producer := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
+	for name, task := range service.NewWorkflowTasks(repository.NewWorkflowTaskStore(db), producer, time.Now).Tasks() {
+		tasks[name] = task
+	}
 	if err = consumerPrintRegister(tasks, cfg, db, *envFile); err != nil {
 		return err
 	}
@@ -112,7 +125,11 @@ func run(arguments []string) error {
 	if err != nil {
 		return errors.New("celery consumer database or broker unavailable")
 	}
-	if err = worker.Run(ctx); err != nil {
+	err = worker.Run(ctx)
+	// The delayed send_email_html sends run to completion, as the worker
+	// process waits for the tasks' non-daemon Timer threads.
+	mail.Wait()
+	if err != nil {
 		return errors.New("celery consumer stopped with an error")
 	}
 	slog.Info("celery consumer stopped")

@@ -2,8 +2,11 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -71,4 +74,72 @@ func (r *SendMailAsyncStore) InsertEmailLog(ctx context.Context, recipient, subj
 	_, err := r.db.ExecContext(ctx, `INSERT INTO application_emaillog (email_log_id, recipient, subject, result, sent_at, sport_association_id)
  VALUES ($1, $2, $3, $4, $5, $6)`, uuid.New(), recipient, subject, result, time.Now().UTC().Truncate(time.Microsecond), association)
 	return err
+}
+
+// FirstCommunicationConfiguration is CommunicationConfiguration.objects.filter(
+// sport_association=association).first() (ordered by primary key).
+func (r *SendMailAsyncStore) FirstCommunicationConfiguration(ctx context.Context, association uuid.UUID) (*domain.CommunicationConfiguration, error) {
+	var row communicationConfigurationRow
+	err := r.db.GetContext(ctx, &row, `SELECT `+emailTaskConfigurationColumns+` FROM communications_communicationconfiguration
+ WHERE sport_association_id=$1 ORDER BY communication_configuration_id ASC LIMIT 1`, association)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	configuration := row.configuration()
+	return &configuration, nil
+}
+
+// AssociationDenomination follows configuration.sport_association (the
+// related object, read by primary key without the deleted filter); found is
+// false when no row exists.
+func (r *SendMailAsyncStore) AssociationDenomination(ctx context.Context, association uuid.UUID) (denomination *string, found bool, err error) {
+	err = r.db.GetContext(ctx, &denomination, `SELECT denomination FROM application_sportassociation WHERE sport_association_id=$1`, association)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, false, nil
+	}
+	return denomination, err == nil, err
+}
+
+// SaveCommunicationConfiguration is configuration.save() of the loaded
+// instance (every column, with its auditlog entry) in its own transaction,
+// as save() autocommits in the worker.
+func (r *SendMailAsyncStore) SaveCommunicationConfiguration(ctx context.Context, configuration domain.CommunicationConfiguration, at time.Time) error {
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if err = (&emailTaskTransaction{ownedTransaction: tx}).SaveCommunicationConfiguration(ctx, configuration, at); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// InstanceBrand is what instance_email_brand reads: InstanceConfiguration.get_config().
+func (r *SendMailAsyncStore) InstanceBrand(ctx context.Context) (domain.EmailRenderInstanceConfig, error) {
+	var config domain.EmailRenderInstanceConfig
+	err := r.db.GetContext(ctx, &config, `SELECT true AS found,self_hosted,primary_color,name,logo_path,updated_at
+ FROM instance_instanceconfiguration ORDER BY id LIMIT 1`)
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.EmailRenderInstanceConfig{}, nil
+	}
+	return config, err
+}
+
+// InstanceEmailSettings is the row effective_email reads
+// (InstanceConfiguration.get_config()); nil when there is none.
+func (r *SendMailAsyncStore) InstanceEmailSettings(ctx context.Context) (*domain.ConsumerEmailInstance, error) {
+	var row domain.ConsumerEmailInstance
+	err := r.db.GetContext(ctx, &row, `SELECT self_hosted, email_settings::text AS email_settings,
+ email_password_encrypted, email_revision FROM instance_instanceconfiguration ORDER BY id LIMIT 1`)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
 }

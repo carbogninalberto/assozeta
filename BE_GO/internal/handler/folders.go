@@ -55,6 +55,11 @@ func (h *FoldersHandler) List(c echo.Context) error {
 	default:
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	return h.list(c, identity)
+}
+
+func (h *FoldersHandler) list(c echo.Context, identity *domain.ResolvedIdentity) error {
+	request := c.Request()
 	values := request.URL.Query()["folder"]
 	folder := ""
 	if len(values) > 0 {
@@ -85,6 +90,13 @@ func (h *FoldersHandler) Delete(c echo.Context) error {
 	if request.Method != http.MethodDelete {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	return h.destroy(c, identity, c.Param("pk"))
+}
+
+// destroy is the viewset's delete() (and the router's stock destroy):
+// get_object() then instance.delete().
+func (h *FoldersHandler) destroy(c echo.Context, identity *domain.ResolvedIdentity, pk string) error {
+	request := c.Request()
 	tracked, err := h.operations.Track(request.Context())
 	if err != nil {
 		return paymentCategoryError(c, err)
@@ -94,7 +106,7 @@ func (h *FoldersHandler) Delete(c echo.Context) error {
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
-	err = h.deletes.Delete(ctx, *identity, c.Param("pk"))
+	err = h.deletes.Delete(ctx, *identity, pk)
 	switch {
 	case errors.Is(err, service.ErrFolderLookup):
 		return restError(c, &restInputError{Status: 404, Detail: restText(request, "notfound")})
@@ -159,18 +171,23 @@ func (h *FoldersHandler) Move(c echo.Context) error {
 
 // folderMoveOptions is SimpleMetadata with FolderSerializer's POST fields.
 func folderMoveOptions(c echo.Context) error {
+	return c.JSON(200, map[string]any{
+		"name": "Folder", "description": "", "renders": []string{"application/json"},
+		"parses":  []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"},
+		"actions": map[string]any{"POST": folderFields()},
+	})
+}
+
+// folderFields is SimpleMetadata's description of FolderSerializer.
+func folderFields() map[string]any {
 	info := func(kind, label string, required, readOnly bool) map[string]any {
 		return map[string]any{"type": kind, "required": required, "read_only": readOnly, "label": label}
 	}
 	name := info("string", "Name", true, false)
 	name["max_length"] = 255
-	return c.JSON(200, map[string]any{
-		"name": "Folder", "description": "", "renders": []string{"application/json"},
-		"parses": []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"},
-		"actions": map[string]any{"POST": map[string]any{
-			"id": info("integer", "ID", false, true), "name": name, "parent": info("field", "Parent", false, false),
-			"sport_association": info("field", "Sport association", true, false), "created_at": info("datetime", "Created at", false, false),
-			"level": info("integer", "Level", false, true), "children": info("field", "Children", false, true),
-		}},
-	})
+	return map[string]any{
+		"id": info("integer", "ID", false, true), "name": name, "parent": info("field", "Parent", false, false),
+		"sport_association": info("field", "Sport association", true, false), "created_at": info("datetime", "Created at", false, false),
+		"level": info("integer", "Level", false, true), "children": info("field", "Children", false, true),
+	}
 }

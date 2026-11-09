@@ -285,3 +285,22 @@ func (s *ModuleTemplates) audit(ctx context.Context, tx domain.ModuleTemplateTra
 	}
 	return nil
 }
+
+// Retrieve is the router detail route's stock retrieve: get_object() over the
+// association's templates.
+func (s *ModuleTemplates) Retrieve(ctx context.Context, identity domain.ResolvedIdentity, raw string) (dto.ModuleTemplateRow, error) {
+	tx, association, err := s.begin(ctx, identity)
+	if err != nil {
+		return dto.ModuleTemplateRow{}, err
+	}
+	defer tx.Rollback()
+	id, err := paymentInfoParseUUID(raw)
+	if err != nil {
+		return dto.ModuleTemplateRow{}, ErrModuleTemplateLookup
+	}
+	row, err := tx.ModuleTemplate(ctx, association, id.String())
+	if err != nil {
+		return dto.ModuleTemplateRow{}, err
+	}
+	return dto.ModuleTemplateRowFrom(row), nil
+}

@@ -206,7 +206,8 @@ func (s *SubscriptionMemberships) validate(ctx context.Context, tx domain.Subscr
 		}
 		if found == nil {
 			invalid[lookup.name] = []string{"related-does-not-exist:" + *lookup.relation.ID}
-		} else if found.AssociationID != nil && *found.AssociationID != association {
+		} else if association != "" && found.AssociationID != nil && *found.AssociationID != association {
+			// An empty association is no current tenant (tenant_scope does not enforce).
 			foreign = true
 		}
 	}
@@ -442,4 +443,69 @@ func (s *SubscriptionMemberships) DeleteWithoutPK(ctx context.Context, identity 
 		return err
 	}
 	return ErrSubscriptionMembershipNoPK
+}
+
+// Create is the router list route's stock CreateModelMixin.create: the
+// serializer validates the client's sport_association (required; the tenant
+// scope applies only with a current association), then perform_create's
+// SportAssociation.objects.get(user=request.user) replaces it.
+func (s *SubscriptionMemberships) Create(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionMembershipRequest, body any,
+	form bool, audit domain.LoginAuditContext) (map[string]any, error) {
+	tx, err := s.store.BeginSubscriptionMembership(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	association, associationErr := tx.OwnerAssociation(ctx, identity.ScopeUser.ID)
+	if associationErr != nil && !errors.Is(associationErr, domain.ErrAssociationNotFound) {
+		return nil, associationErr
+	}
+	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form)
+	if _, ok := body.(domain.RequestObject); ok && !write.Association.Present && invalid["sport_association"] == nil {
+		if invalid == nil {
+			invalid = map[string]any{}
+		}
+		invalid["sport_association"] = []string{dto.PaymentCategoryValidationRequired}
+	}
+	if len(invalid) > 0 && invalid["non_field_errors"] != nil {
+		return nil, &SubscriptionMembershipValidationError{Fields: invalid}
+	}
+	if err = s.validate(ctx, tx, association, write, invalid, nil, supplierGroup(request.GroupHeader)); err != nil {
+		return nil, err
+	}
+	if associationErr != nil {
+		return nil, associationErr
+	}
+	failure, refused := subscriptionMembershipDocuments(write)
+	if refused != nil {
+		return nil, refused
+	}
+	at := s.now().UTC().Truncate(time.Microsecond)
+	zero := "0"
+	row := domain.SubscriptionMembership{ID: s.ids(), CreationDate: at, MembershipNumber: &zero}
+	if write.ID != nil {
+		row.ID = *write.ID
+	}
+	applySubscriptionMembershipWrite(&row, write)
+	row.AssociationID = association
+	if err = tx.CreateMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
+		return nil, err
+	}
+	return s.finish(ctx, tx, row, true, failure)
+}
+
+// Retrieve is the router detail route's stock retrieve: get_object() (with
+// the subscription and associate_id query filters), then the serializer.
+func (s *SubscriptionMemberships) Retrieve(ctx context.Context, identity domain.ResolvedIdentity, raw string,
+	request SubscriptionMembershipRequest) (map[string]any, error) {
+	tx, err := s.store.BeginSubscriptionMembership(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	current, _, err := s.membership(ctx, tx, identity, raw, request.Query)
+	if err != nil {
+		return nil, err
+	}
+	return subscriptionMembershipItem(current.SubscriptionMembership, current.Paid, current.Documents)
 }

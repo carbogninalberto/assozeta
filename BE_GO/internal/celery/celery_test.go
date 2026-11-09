@@ -332,3 +332,21 @@ func TestRoutes(t *testing.T) {
 		t.Fatal("a routed task differs beyond its routing key")
 	}
 }
+
+// TestEncodeChildIDs: a message published from a running task carries the
+// request's root and parent ids; otherwise root_id is the id and parent_id None.
+func TestEncodeChildIDs(t *testing.T) {
+	envelope := Envelope{ID: "c", DeliveryTag: "d", ReplyTo: "r", Origin: "gen1@h", PublishedAt: 1}
+	for _, c := range []struct {
+		task Task
+		want string
+	}{
+		{Task{Name: "t"}, `"root_id": "c", "parent_id": null`},
+		{Task{Name: "t", RootID: "root", ParentID: "parent"}, `"root_id": "root", "parent_id": "parent"`},
+	} {
+		raw, err := Encode(c.task, envelope)
+		if err != nil || !strings.Contains(string(raw), c.want) {
+			t.Fatalf("%s: %v", raw, err)
+		}
+	}
+}
