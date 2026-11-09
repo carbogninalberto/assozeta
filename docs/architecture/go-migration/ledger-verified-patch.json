@@ -1,0 +1,270 @@
+{
+  "about": "Reviewed inputs for tools/go-migration/promote_verified.py: contract fields that were null (filled from the Django source and the entries' family docs, never overwriting a recorded value), source_removed entries dropped because a present entry covers the same declaration, and entries held back from verified with the reason recorded in their own notes.",
+  "contract": {
+    "command:BE/application/management/commands/backfill_audit_log_index.py:backfill_audit_log_index": {
+      "authentication": "None: management command run by an operator with process and database access; no user or token.",
+      "permissions": "None beyond process and database access.",
+      "resource_scope": "Instance-wide: auditlog LogEntry rows without an AuditLogIndex row, optionally narrowed by --content-type and --limit."
+    },
+    "command:BE/application/management/commands/compare_manuale_captures.py:compare_manuale_captures": {
+      "authentication": "None: management command run by an operator with filesystem access; no user or token.",
+      "permissions": "None beyond read access to --run and write access to --output.",
+      "resource_scope": "Files under --run (capture-baseline/*.json, reports, PNGs) and the --output path; no database rows.",
+      "transaction": "None: no database access; OUTPUT is written in one write_text call."
+    },
+    "command:BE/application/management/commands/create_instance_superuser.py:create_instance_superuser": {
+      "authentication": "None: management command run by an operator with process and database access; password from DJANGO_SUPERUSER_PASSWORD or the interactive prompt.",
+      "permissions": "None beyond process and database access.",
+      "resource_scope": "Instance-wide user table: username and email checked case-insensitively against every user row (User.original_objects), then one new superuser."
+    },
+    "command:BE/application/management/commands/evaluate_manuale.py:evaluate_manuale": {
+      "authentication": "None: management command run by an operator; the agent runs with the association owner's user_id.",
+      "permissions": "None beyond process, database and filesystem access; the spawned MCP server applies its own stdio tool rules.",
+      "transaction": "None: read-only autocommit queries; no database writes."
+    },
+    "command:BE/application/management/commands/migrate_subscription_signatures_to_s3.py:migrate_subscription_signatures_to_s3": {
+      "authentication": "None: management command run by an operator with process, database and storage credentials; no user or token.",
+      "permissions": "None beyond process, database and object-storage access."
+    },
+    "command:BE/application/management/commands/sync_manuale_corpus.py:sync_manuale_corpus": {
+      "authentication": "None: management command run by an operator; outbound corpus requests carry no credentials.",
+      "permissions": "None beyond network access to MANUAL_CORPUS_BASE_URL and write access to the manual paths.",
+      "resource_scope": "Instance-wide manual corpus: MANUAL_INDEX_PATH and the content-addressed assets under MANUAL_SOURCE_ROOT; no database rows."
+    },
+    "command:BE/notifications/management/commands/relay_go_realtime.py:relay_go_realtime": {
+      "authentication": "None: long-running management command with database and Redis credentials from the environment; no user or token.",
+      "permissions": "None beyond database and Redis (REDIS_PASSWORD) access."
+    },
+    "mcp_definition:BE/application/mcp_server/server.py:list_reports": {
+      "authentication": "Stdio process scoped by --association-id; user_id is taken from the tool arguments (the in-process agent passes the chat user's id).",
+      "permissions": "None beyond the association scope; a missing user_id returns {\"error\": \"user_id is required to list reports\"}.",
+      "resource_scope": "SavedReport rows of the server association created by the given user_id.",
+      "side_effects": "None (read).",
+      "transaction": "Autocommit read."
+    },
+    "mcp_definition:BE/application/mcp_server/server.py:sanitize_text": {
+      "authentication": "Stdio process scoped by --association-id; the tool takes no identity.",
+      "permissions": "None.",
+      "resource_scope": "None: pure string function on the arguments.",
+      "side_effects": "None.",
+      "transaction": "None: no database access."
+    },
+    "mcp_definition:BE/application/mcp_server/server.py:save_report": {
+      "authentication": "Stdio process scoped by --association-id; user_id is taken from the tool arguments and resolved by id (the in-process agent passes the chat user's id).",
+      "permissions": "None beyond the association scope; a missing user_id or unknown user returns an {\"error\": ...} result without writing.",
+      "resource_scope": "The server association; created_by is the user resolved from user_id.",
+      "side_effects": "One SavedReport create (not audited).",
+      "transaction": "Autocommit: one INSERT."
+    },
+    "model_hook:BE/application/models/courses_models.py:Course.save": {
+      "authentication": "None of its own: runs inside the calling view (course/add, course/update), which authenticates.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The course instance; update_metadata_courses then touches the course association's payments.",
+      "transaction": "No atomic block of its own: the old-title read, the save and the signal run in the caller's transaction or autocommit."
+    },
+    "model_hook:BE/application/models/courses_models.py:CourseSubscription.delete": {
+      "authentication": "None of its own: runs inside the calling view, which authenticates.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The subscription row and its live group-aware installments.",
+      "transaction": "No atomic block of its own: the installment delete (one Collector transaction) and the soft-delete save run in the caller's transaction or autocommit."
+    },
+    "model_hook:BE/application/models/payment_models.py:Payment.save": {
+      "authentication": "None of its own: runs inside the calling view or task, which authenticates.",
+      "permissions": "Inherited from the caller; the hook checks none."
+    },
+    "model_hook:BE/application/models/subscriptions_models.py:Subscription.save": {
+      "authentication": "None of its own: runs inside the calling view or task, which authenticates.",
+      "permissions": "Inherited from the caller; the hook checks none."
+    },
+    "model_hook:BE/instance/models.py:InstanceConfiguration.save": {
+      "authentication": "None of its own: runs inside the instance setup/configuration views, which admit the caller.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The singleton InstanceConfiguration row (existence checked across the table on create).",
+      "transaction": "No atomic block of its own; the setup view's transaction wraps the create."
+    },
+    "mount:BE/core/urls.py: -> include('application.chat.urls')": {
+      "permissions": "None for unmatched paths; matched children apply their own.",
+      "resource_scope": "None for unmatched paths; matched children apply their own.",
+      "transaction": "None for unmatched paths."
+    },
+    "mount:BE/core/urls.py: -> include('application.urls')": {
+      "permissions": "None for unmatched paths; matched children apply their own.",
+      "resource_scope": "None for unmatched paths; matched children apply their own.",
+      "transaction": "None for unmatched paths."
+    },
+    "mount:BE/core/urls.py: -> include('communications.urls')": {
+      "permissions": "None for unmatched paths; matched children apply their own.",
+      "resource_scope": "None for unmatched paths; matched children apply their own.",
+      "transaction": "None for unmatched paths."
+    },
+    "mount:BE/core/urls.py: -> include('docmanager.urls')": {
+      "permissions": "None for unmatched paths; matched children apply their own.",
+      "resource_scope": "None for unmatched paths; matched children apply their own.",
+      "transaction": "None for unmatched paths."
+    },
+    "mount:BE/core/urls.py:instance/ -> include('instance.urls')": {
+      "permissions": "None for unmatched paths; matched children apply their own.",
+      "resource_scope": "None for unmatched paths; matched children apply their own.",
+      "transaction": "None for unmatched paths."
+    },
+    "route:BE/application/urls.py:course/locations/list -> CourseLocationViewSet.as_view({'get': 'list'})": {
+      "authentication": "DRF IsAuthenticated (JWT/session).",
+      "permissions": "Registry association.courses.read.",
+      "resource_scope": "Locations of SportAssociation.objects.get(user=request.user) (a missing association is a 500).",
+      "side_effects": "None (read).",
+      "transaction": "None."
+    },
+    "route:BE/application/urls.py:course/tags/list -> course_tags_list": {
+      "authentication": "DRF IsAuthenticated (JWT/session).",
+      "permissions": "Registry association.courses.read; athletes get 403 'User is not a sport association'.",
+      "resource_scope": "Tags of request.user.sport_association ordered by tag_name.",
+      "side_effects": "None (read).",
+      "transaction": "None."
+    },
+    "route:BE/application/urls.py:manuale/assets/<path:asset_path> -> manual_asset": {
+      "transaction": "None: read-only; a cache refresh promotes the validated corpus by atomic rename."
+    },
+    "route:BE/application/urls.py:manuale/sections -> manual_sections": {
+      "transaction": "None: read-only; a cache refresh promotes the validated corpus by atomic rename."
+    },
+    "route:BE/application/urls.py:oauth2/login -> oauth2_login": {
+      "permissions": "AllowAny; admission is the credential, OTP and social checks plus the IP/account rate limits.",
+      "resource_scope": "The candidate accounts matching the submitted username or social identity; the selected account and its association profile in the response."
+    },
+    "serializer_hook:BE/application/serializers/balance_sheet.py:CustomAccountSerializer.save": {
+      "authentication": "None of its own: runs inside accounts/add and accounts/<uid>/update, which authenticate.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The association passed by the view (save(sport_association=...)) and the account row being updated.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "serializer_hook:BE/application/serializers/balance_sheet.py:CustomAccountTransferSerializer.save": {
+      "authentication": "None of its own: runs inside accounts-transfer/add and accounts-transfer/<uid>/update, which authenticate.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The association passed by the view (save(sport_association=...)) and the transfer row being updated.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsPeriodSerializer.save": {
+      "authentication": "None of its own: runs inside the period add/update views, which authenticate.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The data and instance passed by the view.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsSerializer.save": {
+      "authentication": "None of its own: runs inside the camp add/update views, which authenticate.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The data and instance passed by the view.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsSubscriptionInfoSerializer.save": {
+      "authentication": "None of its own: runs inside camps-and-retreats/<uid>/subscriptions/add, which authenticates.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The data passed by the view.",
+      "transaction": "No atomic block of its own; runs inside the view's atomic block."
+    },
+    "serializer_hook:BE/application/serializers/carnet_serializers.py:CarnetAddSerializer.save": {
+      "authentication": "None of its own: runs inside carnet/add, which authenticates.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The data passed by the view.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "serializer_hook:BE/application/serializers/courses_serializers.py:CourseAddSerializer.save": {
+      "authentication": "None of its own: runs inside course/add, which authenticates.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The data passed by the view.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "serializer_hook:BE/application/serializers/invoice_serializers.py:InvoiceSuppliersSerializer.save": {
+      "authentication": "None of its own: runs inside the supplier-invoice add/update views, which authenticate.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The data and instance passed by the view.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "serializer_hook:BE/application/serializers/payment_serializers.py:PaymentEntrySerializer.save": {
+      "authentication": "None of its own: runs inside the payment add/update views, which authenticate.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The data and instance passed by the view.",
+      "transaction": "No atomic block of its own: the row is saved before _handle_documents, so a document failure keeps it."
+    },
+    "serializer_hook:BE/application/serializers/payment_serializers.py:SupplierSerializer.save": {
+      "authentication": "None of its own: runs inside supplier/add and supplier/<uid>/update, which authenticate.",
+      "permissions": "Inherited from the calling view; the hook checks none.",
+      "resource_scope": "The data and instance passed by the view.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "signal:BE/application/signals.py:delete_installment_of_payment": {
+      "authentication": "None of its own: pre_delete receiver running inside the caller's delete.",
+      "permissions": "Inherited from the caller; the receiver checks none.",
+      "resource_scope": "The installments whose payment is the deleted payment (live group-aware manager).",
+      "transaction": "transaction.atomic (a savepoint inside the caller's transaction) with SELECT ... FOR UPDATE on the installments before deleting them."
+    },
+    "signal:BE/application/signals.py:delete_related_course_payment": {
+      "authentication": "None of its own: pre_delete receiver running inside the caller's delete.",
+      "permissions": "Inherited from the caller; the receiver checks none.",
+      "resource_scope": "The deleted CourseSubscription's payment, unpaid membership payments and live group-aware installments.",
+      "transaction": "No atomic block of its own; runs in the caller's delete transaction, exceptions are logged and suppressed."
+    },
+    "signal:BE/application/signals.py:delete_related_payment": {
+      "authentication": "None of its own: pre_delete receiver running inside the caller's delete.",
+      "permissions": "Inherited from the caller; the receiver checks none.",
+      "resource_scope": "The deleted installment's payment.",
+      "transaction": "No atomic block of its own; runs in the caller's delete transaction, exceptions are logged and suppressed."
+    },
+    "signal:BE/application/signals.py:membership_created_callback": {
+      "authentication": "None of its own: receiver of membership_created sent by the enrolment view.",
+      "permissions": "Inherited from the calling view; the receiver checks none.",
+      "resource_scope": "The CourseSubscription instance; the payment belongs to its course's association and owner.",
+      "transaction": "No atomic block of its own; the caller's transaction or autocommit."
+    },
+    "signal:BE/application/signals.py:new_subscription_callback": {
+      "authentication": "None of its own: receiver of new_subscription sent on commit by subscription creation.",
+      "permissions": "Inherited from the caller; the receiver checks none.",
+      "resource_scope": "The subscription passed in kwargs and its association.",
+      "side_effects": "check_workflows_trigger.delay(trigger_type='new_subscription', sport_association_id=<association UUID>, subscription_id=<subscription UUID>) published to the Redis broker; a missing subscription only logs.",
+      "transaction": "None: sent after commit; only publishes a Celery message."
+    },
+    "signal:BE/application/signals.py:subscription_approved_callback": {
+      "authentication": "None of its own: receiver of subscription_approved sent by the approve view.",
+      "permissions": "Inherited from the calling view; the receiver checks none.",
+      "resource_scope": "The subscription passed in kwargs and its association.",
+      "transaction": "None: only publishes a Celery message."
+    },
+    "signal:BE/application/signals.py:subscription_signed_callback": {
+      "authentication": "None of its own: receiver of subscription_signed sent on commit by the signing view.",
+      "permissions": "Inherited from the calling view; the receiver checks none.",
+      "resource_scope": "The subscription passed in kwargs and its association.",
+      "side_effects": "check_workflows_trigger.delay(trigger_type='subscription_signed', sport_association_id=<association UUID>, subscription_id=<subscription UUID>) published to the Redis broker; a missing subscription only logs.",
+      "transaction": "None: sent after commit; only publishes a Celery message."
+    },
+    "signal:BE/application/signals.py:update_metadata_courses_callback": {
+      "authentication": "None of its own: receiver of update_metadata_courses sent by Course.save().",
+      "permissions": "Inherited from the calling view; the receiver checks none.",
+      "resource_scope": "Payments of the course's association whose meta or description contains the old title.",
+      "transaction": "No atomic block of its own: one bulk_update in the caller's transaction or autocommit."
+    },
+    "signal_connection:BE/application/signals.py:post_save.connect:create_audit_log_index": {
+      "authentication": "None of its own: post_save receiver on auditlog LogEntry, running wherever an entry is saved.",
+      "permissions": "Inherited from the caller; the receiver checks none.",
+      "resource_scope": "The saved LogEntry and the association its resolver (or changes/actor fallback) selects."
+    },
+    "signal_connection:BE/application/signals.py:pre_delete.connect:delete_installment_of_payment": {
+      "authentication": "None of its own: connection of a pre_delete receiver.",
+      "permissions": "Inherited from the caller; the receiver checks none.",
+      "resource_scope": "Payment deletes (sender=Payment).",
+      "transaction": "The receiver's transaction.atomic savepoint inside the caller's delete; disconnect/reconnect is process-global."
+    },
+    "signal_connection:BE/instance/restore/task_base.py:before_task_publish.connect:stamp_published_task": {
+      "authentication": "None: runs in the publishing process before each Celery message is sent.",
+      "permissions": "None."
+    }
+  },
+  "drop_source_removed": {
+    "schedule:BE/core/settings.py:bakney-pairing-maintenance": {
+      "covered_by": "schedule:BE/core/celery.py:bakney-pairing-maintenance",
+      "note": "Replaces schedule:BE/core/settings.py:bakney-pairing-maintenance, dropped from the ledger: main a7afd7ee moved the declaration unchanged (task instance.sso.tasks.maintain_bakney_pairings, schedule 60.0) from settings.py CELERY_BEAT_SCHEDULE to this core/celery.py beat_schedule entry, so this entry carries its tests and evidence."
+    }
+  },
+  "hold": {
+    "model_hook:BE/application/models/payment_models.py:Payment.save": "Its notes record component evidence only (description and background preparation): full save, default-account creation, audits and archive are recorded as not full model-hook parity.",
+    "model_hook:BE/application/models/subscriptions_models.py:Subscription.save": "Its notes say not to mark it verified from calendar-only evidence; general create/update/archive/delete parity is recorded as incomplete."
+  }
+}
