@@ -724,3 +724,61 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 	}
 	return result, nil
 }
+
+// StockCreate is the router list route's CreateModelMixin.create on
+// CourseSubscriptionViewSet: one item (many=False), perform_create with
+// is_athlete=False and no transaction, then get_success_headers(
+// serializer.data), which renders the validated dict: the installments method
+// field filters by the dict and raises (500) after every write is kept. A
+// failure after the first write keeps what was written before it.
+func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.ResolvedIdentity, request CourseEnrolmentRequest) error {
+	if request.Form {
+		return ErrCourseEnrolmentNotPorted
+	}
+	if err := canonicalGroup(request.GroupHeader); err != nil {
+		return err
+	}
+	tx, err := s.begin(ctx, identity)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	body := request.Body
+	if body == nil {
+		body = domain.RequestObject{}
+	}
+	plan, invalid, err := s.validateItem(ctx, tx, identity, body, supplierGroup(request.GroupHeader))
+	if err != nil {
+		return err
+	}
+	if invalid != nil {
+		return &CourseEnrolmentInvalid{Fields: invalid}
+	}
+	audit, err := s.auditContext(ctx, tx, identity, request)
+	if err != nil {
+		return err
+	}
+	// Autocommit: the statements that ran before a failure stay.
+	keep := func(failure error) error {
+		if commitErr := tx.Commit(); commitErr != nil {
+			return errors.Join(failure, commitErr)
+		}
+		return failure
+	}
+	created, err := s.serializerCreate(ctx, tx, *plan, request, audit)
+	if err != nil {
+		return keep(err)
+	}
+	if plan.course.CourseType == courseMembershipType {
+		err = s.membershipCreated(ctx, tx, created, plan.course, request, audit)
+	} else {
+		var association string
+		if association, err = s.associationOf(ctx, tx, identity); err == nil {
+			err = s.addCourseSubscription(ctx, tx, created, *plan, association, request, audit)
+		}
+	}
+	if err != nil {
+		return keep(err)
+	}
+	return keep(courseEnrolmentServer)
+}

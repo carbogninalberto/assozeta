@@ -450,3 +450,29 @@ func courseSubscriptionChanges(old, row domain.CourseSubscriptionRow, write dto.
 	diff("auto_renewal", flag(old.AutoRenewal), flag(row.AutoRenewal))
 	return changes, nil
 }
+
+// Retrieve is the router detail route's stock retrieve through the viewset's
+// get_object(): User.sport_association, the live rows of its courses
+// (django.shortcuts.get_object_or_404: a pk the UUIDField rejects is a 500),
+// then CourseSubscriptionOverviewSerializer.
+func (s *CourseSubscriptions) Retrieve(ctx context.Context, identity domain.ResolvedIdentity, raw string,
+	request CourseSubscriptionRequest) (map[string]any, error) {
+	tx, err := s.begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	row, _, err := s.object(ctx, tx, identity, raw, false)
+	if err != nil {
+		return nil, err
+	}
+	renders, err := s.render(ctx, tx, []domain.CourseSubscriptionRow{row}, supplierGroup(request.GroupHeader))
+	if err != nil {
+		return nil, err
+	}
+	items, err := s.items(renders)
+	if err != nil {
+		return nil, err
+	}
+	return items[0], nil
+}

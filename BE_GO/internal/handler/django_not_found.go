@@ -33,6 +33,14 @@ var djangoSlashPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`^/document/(?:subscription|invoice|einvoice|compensation|template|medical-appointment)/[^/]+/view/$`),
 }
 
+// DjangoFallbackRoutes marks Echo routes whose handler answers paths no
+// Django pattern resolves as unmatched URLs (the router's wildcard routes).
+func DjangoFallbackRoutes(paths []string) {
+	for _, path := range paths {
+		djangoConverterRoutes[path] = true
+	}
+}
+
 func djangoSlashResolves(path string) bool {
 	for _, pattern := range djangoSlashPatterns {
 		if pattern.MatchString(path) {
