@@ -75,9 +75,12 @@ def execute(report, tools, private, log):
             guards = []
             # Optional family-owned services (for example private object storage)
             # that both servers must see from startup: entered before either starts.
+            # An optional family asgi_application() (for example Channels WebSocket
+            # routing) replaces Django's HTTP-only application once they are entered.
             services = getattr(runner, 'service_context', None)
             with _owned(services(report, log) if services else contextlib.nullcontext()), \
-                    _owned(reuse.django_application(report, versioned, None, liveness_observer=guards.append)) as (url, observer, http_port):
+                    _owned(reuse.django_application(report, versioned, None, liveness_observer=guards.append,
+                                                    application=getattr(runner, 'asgi_application', lambda: None)())) as (url, observer, http_port):
                 with _owned(go_service(reuse, report, work, log, tools, port, versioned)) as native:
                     endpoints = [('django-native', 'django', url, guards[0]),
                                  ('go-native', 'go', native['base_url'], native[LIFECYCLE_GUARD])]

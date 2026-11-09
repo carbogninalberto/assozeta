@@ -482,7 +482,8 @@ ASGI_APPLICATION = 'core.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # Also mirrors group messages to Go WebSocket servers (notifications.realtime_layer).
+        "BACKEND": "notifications.realtime_layer.GoMirroredRedisChannelLayer",
         "CONFIG": {
             "hosts": [{"address": f"{REDIS_PROTOCOL}://{REDIS_HOST}:{REDIS_PORT}/0", "password": REDIS_PASSWORD}],
         },

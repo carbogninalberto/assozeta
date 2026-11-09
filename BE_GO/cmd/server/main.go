@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 	"time"
 
@@ -660,7 +661,28 @@ func run() (runErr error) {
 		e.Any("/"+prefix+"/impersonation/users", impersonationHandler.Users, middleware.DjangoSessionAudit(sessionAuthentication))
 		e.Any("/"+prefix+"/impersonation", impersonationHandler.Session, middleware.DjangoSessionAudit(sessionAuthentication))
 	}
-	server := &http.Server{Addr: cfg.ListenAddress, Handler: e, ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
+	// Channels WebSocket routes (core.asgi): Django's notification store is
+	// Redis database 0; group messages arrive through Django's mirrored layer.
+	storeOptions := *redisOptions
+	storeOptions.DB = 0
+	storeOptions.Dialer = redisclient.DialContext(&storeOptions)
+	notificationRedis := redis.NewClient(&storeOptions)
+	defer notificationRedis.Close()
+	notificationStore, err := repository.NewNotificationStore(db, notificationRedis, cache)
+	if err != nil {
+		return err
+	}
+	realtimeHub := service.NewRealtimeHub()
+	pubsubOptions := storeOptions
+	pubsubOptions.ReadTimeout = -1
+	pubsubOptions.Dialer = redisclient.DialContext(&pubsubOptions)
+	realtimeRedis := redis.NewClient(&pubsubOptions)
+	defer realtimeRedis.Close()
+	stopRealtime := runRealtimeSubscription(realtimeRedis, realtimeHub)
+	defer stopRealtime()
+	webSockets := handler.NewWebSocketHandler(service.NewWebSocketIdentities(accounts, tokens, identities),
+		service.NewNotificationManager(notificationStore), realtimeHub, cfg.Version)
+	server := &http.Server{Addr: cfg.ListenAddress, Handler: webSockets.Routes(e), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	stopped := make(chan error, 1)
@@ -676,6 +698,52 @@ func run() (runErr error) {
 		}
 	}
 	return nil
+}
+
+// runRealtimeSubscription subscribes before the server starts (waiting up to
+// five seconds) and keeps resubscribing in the background after failures.
+func runRealtimeSubscription(client *redis.Client, hub *service.RealtimeHub) func() {
+	ctx, cancel := context.WithCancel(context.Background())
+	subscribe := func() *repository.RealtimeSubscription {
+		attempt, cancelAttempt := context.WithTimeout(ctx, 5*time.Second)
+		defer cancelAttempt()
+		subscription, err := repository.SubscribeRealtime(attempt, client)
+		if err != nil {
+			slog.Warn("realtime group messages unavailable", "error", err)
+			return nil
+		}
+		return subscription
+	}
+	var current *repository.RealtimeSubscription
+	var mu sync.Mutex
+	first := subscribe()
+	go func() {
+		subscription := first
+		for ctx.Err() == nil {
+			if subscription == nil {
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(time.Second):
+				}
+				subscription = subscribe()
+				continue
+			}
+			mu.Lock()
+			current = subscription
+			mu.Unlock()
+			subscription.Run(hub.Deliver)
+			subscription = nil
+		}
+	}()
+	return func() {
+		cancel()
+		mu.Lock()
+		defer mu.Unlock()
+		if current != nil {
+			current.Close()
+		}
+	}
 }
 
 func drainHTTPServer(server gracefulHTTPServer, operations admittedOperations) error {
