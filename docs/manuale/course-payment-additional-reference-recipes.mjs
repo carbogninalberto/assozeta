@@ -13,7 +13,7 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
     "UI/src/routes/association/course/overview/modals/AddEditCourseSubscriptionModal.svelte": "cdb4e69ab6a4b231385aecacdd8c427aa0ca03652c79e50bee154ee3626ea7d7",
     "UI/src/routes/association/course/overview/partials/course-subscriptions-list.svelte": "061c496436d114b9ed587e8c9f5c8b83ab94a518a142e5118f0a911f3be6ea93",
-    "BE/application/tasks.py": "869fe4be173a93e015be7166c72e0b08a0d4b1140b00cf8510926e58087aba70",
+    "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
     "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
     "UI/src/components/eventgenerator/EventGenerator.svelte": "ce771bd5b1543d294f59094218cabe6a19ac15571e92de91dd12210eb7738af9",
     "UI/src/components/eventgenerator/RateElement.svelte": "fb5f41fdcd81fa3a2628ba8e5031f895542b21614e7587ada586cf711192f77b",

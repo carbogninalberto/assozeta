@@ -33,6 +33,10 @@ var scheduleSubset = []string{
 	"interval_hourly_wait", "interval_hourly_missed_slots", "interval_hourly_at_slot", "interval_hourly_initial_cursor",
 	"utc_daily_0300_before_slot", "utc_daily_0300_at_slot", "utc_daily_0300_missed_slot",
 	"utc_every_20_minutes_before_slot", "utc_every_20_minutes_at_slot", "utc_every_20_minutes_hour_rollover",
+	"utc_archive_before_slot", "utc_archive_at_slot", "utc_archive_last_listed_day", "utc_archive_missed_slot",
+	"utc_archive_unlisted_month_cursor", "utc_archive_listed_day_after_hour", "utc_archive_initial_cursor",
+	"utc_archive_future_cursor", "utc_archive_start_future", "utc_archive_year_rollover",
+	"utc_daily_0015_before_slot", "utc_daily_0015_at_slot", "utc_daily_0015_missed_slot",
 }
 
 // Timing is task-independent in ModelEntry; each published task must reach
@@ -43,13 +47,16 @@ var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateA
 	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings, domain.JobCleanupOldExports,
 	domain.JobChangeTypeOfStripePayments, domain.JobGenerateCouponIfNotExists, domain.JobRenewMembershipsPayments,
 	domain.JobCleanupDataRestores,
-	domain.JobAssociationQuoteAssign, domain.JobMarkAsPaidPaymentsCheckingStripe, domain.JobAutoDeleteOrphanMedicalCertificate}
+	domain.JobAssociationQuoteAssign, domain.JobMarkAsPaidPaymentsCheckingStripe, domain.JobAutoDeleteOrphanMedicalCertificate,
+	domain.JobClearDeletedSubscription, domain.JobAutoArchiveSubscription}
 
 type dueFixtureInput struct {
 	Kind        string  `json:"kind"`
 	Every       int64   `json:"every"`
 	Minute      string  `json:"minute"`
 	Hour        string  `json:"hour"`
+	DayOfMonth  string  `json:"day_of_month"`
+	MonthOfYear string  `json:"month_of_year"`
 	Last        *string `json:"last"`
 	DateChanged string  `json:"date_changed"`
 	Start       *string `json:"start"`
@@ -152,6 +159,12 @@ func TestScheduleDuePortableContract(t *testing.T) {
 				row.Interval = nil
 				row.Cron = &domain.PeriodicCron{Minute: input.Minute, Hour: input.Hour,
 					DayOfWeek: "*", DayOfMonth: "*", MonthOfYear: "*", Timezone: "UTC"}
+				if input.DayOfMonth != "" {
+					row.Cron.DayOfMonth = input.DayOfMonth
+				}
+				if input.MonthOfYear != "" {
+					row.Cron.MonthOfYear = input.MonthOfYear
+				}
 			}
 			for _, task := range periodicTasks {
 				row.Task = task
@@ -179,8 +192,6 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 	now := time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
 	integer := 0
 	cases := map[string]func(*domain.PeriodicSchedule){
-		"archive task":              func(s *domain.PeriodicSchedule) { s.Task = "auto_archive_subscription" },
-		"deleted subscription task": func(s *domain.PeriodicSchedule) { s.Task = "clear_deleted_subscription" },
 		"workflow cron task":        func(s *domain.PeriodicSchedule) { s.Task = "check_workflows_trigger_cron" },
 		"updated certificate task":  func(s *domain.PeriodicSchedule) { s.Task = "send_updated_certificate_email" },
 		"unregistered alias":        func(s *domain.PeriodicSchedule) { s.Task = "application.tasks.reset_communication_daily_email_balance" },
@@ -242,18 +253,32 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 		"every minute in Rome": func(c *domain.PeriodicCron) {
 			c.Minute, c.Hour, c.Timezone = "*", "*", "Europe/Rome"
 		},
-		"archive calendar": func(c *domain.PeriodicCron) {
-			c.Minute, c.Hour, c.DayOfMonth, c.MonthOfYear = "0", "1", "1-4", "1,6,9"
+		"archive calendar in Rome": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.DayOfMonth, c.MonthOfYear, c.Timezone = "0", "1", "1-4", "1,6,9", "Europe/Rome"
 		},
-		"hour list":       func(c *domain.PeriodicCron) { c.Hour = "0,12" },
-		"minute range":    func(c *domain.PeriodicCron) { c.Minute = "0-10" },
-		"invalid minute":  func(c *domain.PeriodicCron) { c.Minute = "60" },
-		"invalid hour":    func(c *domain.PeriodicCron) { c.Hour = "24" },
-		"signed hour":     func(c *domain.PeriodicCron) { c.Hour = "+1" },
-		"whitespace hour": func(c *domain.PeriodicCron) { c.Hour = " 1" },
-		"weekday":         func(c *domain.PeriodicCron) { c.DayOfWeek = "1" },
-		"monthday":        func(c *domain.PeriodicCron) { c.DayOfMonth = "1" },
-		"month":           func(c *domain.PeriodicCron) { c.MonthOfYear = "1" },
+		"archive calendar on one weekday": func(c *domain.PeriodicCron) {
+			c.DayOfMonth, c.MonthOfYear, c.DayOfWeek = "1-4", "1,6,9", "1"
+		},
+		"monthday any hour":       func(c *domain.PeriodicCron) { c.DayOfMonth, c.Hour = "1-4", "*" },
+		"monthday minute steps":   func(c *domain.PeriodicCron) { c.DayOfMonth, c.Minute, c.Hour = "1", "*/15", "*" },
+		"monthday hour list":      func(c *domain.PeriodicCron) { c.DayOfMonth, c.Hour = "1", "0,12" },
+		"monthday step":           func(c *domain.PeriodicCron) { c.DayOfMonth = "*/2" },
+		"monthday wrapping range": func(c *domain.PeriodicCron) { c.DayOfMonth = "4-1" },
+		"monthday zero":           func(c *domain.PeriodicCron) { c.DayOfMonth = "0" },
+		"monthday too large":      func(c *domain.PeriodicCron) { c.DayOfMonth = "32" },
+		"monthday empty item":     func(c *domain.PeriodicCron) { c.DayOfMonth = "1,,2" },
+		"monthday last":           func(c *domain.PeriodicCron) { c.DayOfMonth = "L" },
+		"month name":              func(c *domain.PeriodicCron) { c.MonthOfYear = "jan" },
+		"month thirteen":          func(c *domain.PeriodicCron) { c.MonthOfYear = "13" },
+		"month step":              func(c *domain.PeriodicCron) { c.MonthOfYear = "1-12/3" },
+		"month signed":            func(c *domain.PeriodicCron) { c.MonthOfYear = "+1" },
+		"hour list":               func(c *domain.PeriodicCron) { c.Hour = "0,12" },
+		"minute range":            func(c *domain.PeriodicCron) { c.Minute = "0-10" },
+		"invalid minute":          func(c *domain.PeriodicCron) { c.Minute = "60" },
+		"invalid hour":            func(c *domain.PeriodicCron) { c.Hour = "24" },
+		"signed hour":             func(c *domain.PeriodicCron) { c.Hour = "+1" },
+		"whitespace hour":         func(c *domain.PeriodicCron) { c.Hour = " 1" },
+		"weekday":                 func(c *domain.PeriodicCron) { c.DayOfWeek = "1" },
 	}
 	for name, mutate := range cronCases {
 		t.Run("cron "+name, func(t *testing.T) {
@@ -337,7 +362,7 @@ func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
 			t.Fatalf("%s mapped to %q %v", task, kind, ok)
 		}
 	}
-	for _, task := range []string{"", "auto_archive_subscription", "clear_deleted_subscription",
+	for _, task := range []string{"", "application.tasks.auto_archive_subscription", "Clear_deleted_subscription",
 		"application.tasks.delete_old_audit_logs", "Delete_old_audit_logs"} {
 		if kind, ok := domain.PeriodicJobKind(task); ok || kind != "" {
 			t.Fatalf("%q unexpectedly mapped to %q", task, kind)
