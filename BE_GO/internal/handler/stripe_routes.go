@@ -112,7 +112,7 @@ func (h *StripeRoutesHandler) admitted(c echo.Context, run func(request service.
 		return paymentCategoryError(c, err)
 	}
 	c.SetRequest(request.WithContext(ctx))
-	return run(service.StripeRequest{GroupHeader: request.Header.Get("X-Group-Id"), Audit: audit})
+	return run(service.StripeRequest{GroupHeader: request.Header.Get("X-Group-Id"), Audit: audit, Authorization: requestAuthorization(request)})
 }
 
 // Pay is stripe_pay (AllowAny).
@@ -156,7 +156,8 @@ func (h *StripeRoutesHandler) MultiplePay(c echo.Context) error {
 	}
 	defer release()
 	result, err := h.stripe.MultiplePay(admitted.Context, *identity,
-		service.StripeRequest{GroupHeader: c.Request().Header.Get("X-Group-Id"), Audit: admitted.Audit}, admitted.Body)
+		service.StripeRequest{GroupHeader: c.Request().Header.Get("X-Group-Id"), Audit: admitted.Audit,
+			Authorization: requestAuthorization(c.Request())}, admitted.Body)
 	if err != nil {
 		return h.failure(c, err)
 	}

@@ -53,7 +53,7 @@ func run(arguments []string) error {
 	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered task deadline")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention, user deletion requests (publishes send_email_text to the Celery broker), attendance auto-marking, partial registration, certificate and reminder e-mails (publish send_mail_async or send through the association SMTP configuration), Bakney pairing maintenance (revocation delivery and authority status synchronization), old export cleanup (deletes export files from the S3 default storage), Stripe payment type and coupon tasks (Stripe API) and membership renewals (Django cache lock, publishes its renew_memberships_payments retry). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
+			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention, user deletion requests (publishes send_email_text to the Celery broker), attendance auto-marking, partial registration, certificate and reminder e-mails (publish send_mail_async or send through the association SMTP configuration), Bakney pairing maintenance (revocation delivery and authority status synchronization), old export cleanup (deletes export files from the S3 default storage), data restore cleanup (instance.restore.cleanup under the exclusive restore lock; deletes temporary restore objects from the S3 default storage), Stripe payment type and coupon tasks (Stripe API) and membership renewals (Django cache lock, publishes its renew_memberships_payments retry). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
 			return nil
 		}
 		return errors.New("invalid worker arguments")
@@ -109,6 +109,9 @@ func run(arguments []string) error {
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
 	jobs := repository.NewJobs(db)
+	executorOptions := service.JobExecutorOptions{Owner: "worker-" + uuid.NewString(), Concurrency: *concurrency,
+		Lease: *lease, RenewInterval: *renew, StoreTimeout: *storeTimeout, PollInterval: *poll,
+		MaintenanceInterval: *maintenance, DrainTimeout: *drain}
 	executor, err := service.NewJobExecutor(jobs, admission,
 		map[string]service.JobDefinition{
 			domain.JobResetDailyEmailBalance:           {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
@@ -127,16 +130,19 @@ func run(arguments []string) error {
 			domain.JobGenerateCouponIfNotExists:        {Version: 1, Timeout: *taskTimeout, Run: stripeTasks.RunGenerateCouponIfNotExists},
 			domain.JobRenewMembershipsPayments:         {Version: 1, Timeout: *taskTimeout, Run: stripeTasks.RunRenewMembershipsPayments},
 		},
-		service.JobExecutorOptions{Owner: "worker-" + uuid.NewString(), Concurrency: *concurrency,
-			Lease: *lease, RenewInterval: *renew, StoreTimeout: *storeTimeout, PollInterval: *poll,
-			MaintenanceInterval: *maintenance, DrainTimeout: *drain})
+		executorOptions)
 	if err != nil {
 		return errors.New("invalid worker execution bounds")
 	}
-	// Each slot may need an effect transaction and an independent heartbeat.
+	restoreCleanup, err := composeDataRestoreCleanup(cfg, db, jobs, logger, *taskTimeout, executorOptions)
+	if err != nil {
+		return errors.New("invalid worker execution bounds")
+	}
+	// Each slot may need an effect transaction and an independent heartbeat;
+	// the restore cleanup executor adds one slot.
 	// Bounds are validated above, before any connection or mutation is attempted.
-	db.SetMaxOpenConns(2*(*concurrency) + 2)
-	db.SetMaxIdleConns(*concurrency + 1)
+	db.SetMaxOpenConns(2*(*concurrency+1) + 2)
+	db.SetMaxIdleConns(*concurrency + 2)
 	db.SetConnMaxLifetime(30 * time.Minute)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -152,7 +158,21 @@ func run(arguments []string) error {
 		return errors.New("worker operational schema unavailable or incompatible")
 	}
 	logger.Info("worker ready", "concurrency", *concurrency)
+	// cleanup_data_restores runs on its own executor (no ordinary admission);
+	// both stop on the same signal and drain within the same deadline.
+	cleanupDone := make(chan error, 1)
+	go func() {
+		err := restoreCleanup.Run(ctx)
+		if err != nil {
+			stop()
+		}
+		cleanupDone <- err
+	}()
 	err = executor.Run(ctx)
+	if err != nil {
+		stop()
+	}
+	err = errors.Join(err, <-cleanupDone)
 	// send_reminders leaves delayed sends running after its completion, as
 	// Django's Timer threads keep the worker process alive until they end.
 	emails.Wait()

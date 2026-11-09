@@ -23,7 +23,7 @@ import (
 // which compares it with the Django tool function on the same private rows.
 func TestBusinessMCPToolCall(t *testing.T) {
 	dsn := os.Getenv("ASSOZETA_BUSINESS_MCP_DSN")
-	if !strings.Contains(dsn, "dbname=assozeta_contract_business_mcp") {
+	if !strings.Contains(dsn, "dbname=assozeta_contract_business_mcp") && !strings.Contains(dsn, "dbname=assozeta_contract_mcp_server") {
 		t.Fatal("private business MCP database required")
 	}
 	db, err := sqlx.Open("pgx", dsn)
@@ -41,15 +41,15 @@ func TestBusinessMCPToolCall(t *testing.T) {
 	}
 	tools := service.NewBusinessMCPTools(repository.NewBusinessMCPTools(db), os.Getenv("ASSOZETA_BUSINESS_MCP_ASSOCIATION"), time.Now)
 	result, err := tools.Execute(context.Background(), os.Getenv("ASSOZETA_BUSINESS_MCP_TOOL"), object)
-	output := map[string]any{"result": result}
+	// The result as call_tool's json.dumps(result, default=str) writes it.
+	var encoded []byte
 	if errors.Is(err, service.ErrBusinessMCPNotPorted) {
-		output = map[string]any{"refused": true}
+		encoded, _ = json.Marshal(map[string]any{"refused": true})
 	} else if err != nil {
 		t.Fatal(err)
-	}
-	encoded, err := json.Marshal(output)
-	if err != nil {
-		t.Fatal(err)
+	} else {
+		dumps := dto.PythonJSONDumps(result)
+		encoded = append(append([]byte(`{"result": `), dumps...), '}')
 	}
 	if err = os.WriteFile(os.Getenv("ASSOZETA_BUSINESS_MCP_OUTPUT"), encoded, 0o600); err != nil {
 		t.Fatal(err)

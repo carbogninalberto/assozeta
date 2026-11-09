@@ -104,7 +104,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_dated": {
    "id": "a1000000-0000-4000-8000-000000985011",
@@ -127,7 +129,9 @@
    "meta": {
     "note": "è"
    },
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_stored": {
    "id": "a1000000-0000-4000-8000-000000985012",
@@ -148,7 +152,9 @@
    "payment_date": "2026-05-06T07:08:09.123456Z",
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_defaults": {
    "id": "a1000000-0000-4000-8000-000000985013",
@@ -169,7 +175,9 @@
    "payment_date": null,
    "description": null,
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_supplier": {
    "id": "a1000000-0000-4000-8000-000000985014",
@@ -190,7 +198,9 @@
    "payment_date": null,
    "description": "Fattura fornitore",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_instructor": {
    "id": "a1000000-0000-4000-8000-000000985015",
@@ -211,7 +221,9 @@
    "payment_date": null,
    "description": "Compenso",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_paid": {
    "id": "a1000000-0000-4000-8000-000000985016",
@@ -232,7 +244,9 @@
    "payment_date": "2026-04-01T00:00:00Z",
    "description": "Quota",
    "meta": null,
-   "attachment": true
+   "attachment": true,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_collab": {
    "id": "a1000000-0000-4000-8000-000000985017",
@@ -253,7 +267,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_admin": {
    "id": "a1000000-0000-4000-8000-000000985018",
@@ -274,7 +290,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_group": {
    "id": "a1000000-0000-4000-8000-000000985019",
@@ -295,7 +313,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_form": {
    "id": "a1000000-0000-4000-8000-000000985020",
@@ -316,7 +336,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_transfer": {
    "id": "a1000000-0000-4000-8000-000000985021",
@@ -337,7 +359,9 @@
    "payment_date": null,
    "description": null,
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ap_removed": {
    "id": "a1000000-0000-4000-8000-000000985022",
@@ -358,7 +382,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_plain": {
    "id": "a1000000-0000-4000-8000-000000985023",
@@ -379,7 +405,9 @@
    "payment_date": "2026-03-01T09:00:00Z",
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_uncategorized": {
    "id": "a1000000-0000-4000-8000-000000985024",
@@ -400,7 +428,9 @@
    "payment_date": "2026-03-02T09:00:00Z",
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_instructor": {
    "id": "a1000000-0000-4000-8000-000000985025",
@@ -421,7 +451,9 @@
    "payment_date": "2026-03-03T09:00:00Z",
    "description": "Compenso",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_supplier": {
    "id": "a1000000-0000-4000-8000-000000985026",
@@ -442,7 +474,9 @@
    "payment_date": "2026-03-04T09:00:00Z",
    "description": "Spesa",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_unpaid": {
    "id": "a1000000-0000-4000-8000-000000985027",
@@ -463,7 +497,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_collab": {
    "id": "a1000000-0000-4000-8000-000000985028",
@@ -484,7 +520,9 @@
    "payment_date": "2026-03-05T09:00:00Z",
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_admin": {
    "id": "a1000000-0000-4000-8000-000000985029",
@@ -505,7 +543,9 @@
    "payment_date": "2026-03-06T09:00:00Z",
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_transfer": {
    "id": "a1000000-0000-4000-8000-000000985030",
@@ -526,7 +566,9 @@
    "payment_date": null,
    "description": null,
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ca_removed": {
    "id": "a1000000-0000-4000-8000-000000985031",
@@ -547,7 +589,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "de_plain": {
    "id": "a1000000-0000-4000-8000-000000985032",
@@ -568,7 +612,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": true
+   "attachment": true,
+   "meta_categories": null,
+   "linked": false
   },
   "de_installments": {
    "id": "a1000000-0000-4000-8000-000000985033",
@@ -589,7 +635,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "de_paid": {
    "id": "a1000000-0000-4000-8000-000000985034",
@@ -610,7 +658,9 @@
    "payment_date": "2026-02-01T00:00:00Z",
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "de_group": {
    "id": "a1000000-0000-4000-8000-000000985035",
@@ -631,7 +681,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "de_collab": {
    "id": "a1000000-0000-4000-8000-000000985036",
@@ -652,7 +704,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "de_admin": {
    "id": "a1000000-0000-4000-8000-000000985037",
@@ -673,7 +727,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "de_removed": {
    "id": "a1000000-0000-4000-8000-000000985038",
@@ -694,7 +750,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ba_a": {
    "id": "a1000000-0000-4000-8000-000000985039",
@@ -715,7 +773,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ba_b": {
    "id": "a1000000-0000-4000-8000-000000985040",
@@ -736,7 +796,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ba_stored": {
    "id": "a1000000-0000-4000-8000-000000985041",
@@ -757,7 +819,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ba_group": {
    "id": "a1000000-0000-4000-8000-000000985042",
@@ -778,7 +842,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ba_plain": {
    "id": "a1000000-0000-4000-8000-000000985043",
@@ -799,7 +865,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ba_collab": {
    "id": "a1000000-0000-4000-8000-000000985044",
@@ -820,7 +888,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "ba_removed": {
    "id": "a1000000-0000-4000-8000-000000985045",
@@ -841,7 +911,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "bd_a": {
    "id": "a1000000-0000-4000-8000-000000985046",
@@ -862,7 +934,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "bd_installment": {
    "id": "a1000000-0000-4000-8000-000000985047",
@@ -883,7 +957,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "bd_group": {
    "id": "a1000000-0000-4000-8000-000000985048",
@@ -904,7 +980,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "bd_plain": {
    "id": "a1000000-0000-4000-8000-000000985049",
@@ -925,7 +1003,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "bd_collab": {
    "id": "a1000000-0000-4000-8000-000000985050",
@@ -946,7 +1026,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "bd_admin": {
    "id": "a1000000-0000-4000-8000-000000985051",
@@ -967,7 +1049,9 @@
    "payment_date": null,
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   },
   "abroad": {
    "id": "a1000000-0000-4000-8000-000000985052",
@@ -988,40 +1072,480 @@
    "payment_date": "2026-01-01T00:00:00Z",
    "description": "Quota",
    "meta": null,
-   "attachment": false
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_other": {
+   "id": "a1000000-0000-4000-8000-000000985053",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "15.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": true,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_old": {
+   "id": "a1000000-0000-4000-8000-000000985054",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "20.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_subscription": {
+   "id": "a1000000-0000-4000-8000-000000985055",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 1,
+   "amount": "30.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": [
+    {
+     "name": "Corso",
+     "amount": "5.50"
+    },
+    {
+     "name": "Gratis",
+     "amount": 0
+    },
+    {
+     "amount": 2
+    }
+   ],
+   "linked": false
+  },
+  "pf_course": {
+   "id": "a1000000-0000-4000-8000-000000985056",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "50.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": true
+  },
+  "pf_installment": {
+   "id": "a1000000-0000-4000-8000-000000985057",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "18.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": true
+  },
+  "pf_carnet": {
+   "id": "a1000000-0000-4000-8000-000000985058",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "35.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": true
+  },
+  "pf_course_none": {
+   "id": "a1000000-0000-4000-8000-000000985059",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "11.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_supplier": {
+   "id": "a1000000-0000-4000-8000-000000985060",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "12.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": true,
+   "supplier": true,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_instructor": {
+   "id": "a1000000-0000-4000-8000-000000985061",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "40.00",
+   "paid": false,
+   "expense": false,
+   "associate": false,
+   "user": false,
+   "supplier": false,
+   "instructor": true,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_collab": {
+   "id": "a1000000-0000-4000-8000-000000985062",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "16.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_admin": {
+   "id": "a1000000-0000-4000-8000-000000985063",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "17.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_group": {
+   "id": "a1000000-0000-4000-8000-000000985064",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "19.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": "own_group",
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_form": {
+   "id": "a1000000-0000-4000-8000-000000985065",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "21.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_scoped": {
+   "id": "a1000000-0000-4000-8000-000000985066",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "22.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": true
+  },
+  "pf_bad_meta": {
+   "id": "a1000000-0000-4000-8000-000000985067",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 1,
+   "amount": "23.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": [
+    {
+     "amount": "abc"
+    }
+   ],
+   "linked": false
+  },
+  "pf_carnet_null": {
+   "id": "a1000000-0000-4000-8000-000000985068",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "24.00",
+   "paid": false,
+   "expense": false,
+   "associate": true,
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": "a1000000-0000-4000-8000-000000985001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
+  },
+  "pf_flag": {
+   "id": "a1000000-0000-4000-8000-000000985093",
+   "association": "a1000000-0000-4000-8000-000000985091",
+   "subject": 0,
+   "amount": "26.00",
+   "paid": false,
+   "expense": false,
+   "associate": "flag",
+   "user": false,
+   "supplier": false,
+   "instructor": false,
+   "group": null,
+   "deleted": false,
+   "archived": false,
+   "category": null,
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota flag",
+   "meta": null,
+   "attachment": false,
+   "meta_categories": null,
+   "linked": false
   }
  },
  "supplier_invoices": {
   "si_approve": {
-   "id": "a1000000-0000-4000-8000-000000985053",
+   "id": "a1000000-0000-4000-8000-000000985069",
    "payment": "ap_supplier",
    "identifier": "FT-1",
    "amount": "30.00"
   },
   "si_linked": {
-   "id": "a1000000-0000-4000-8000-000000985054",
+   "id": "a1000000-0000-4000-8000-000000985070",
    "payment": "de_plain",
    "identifier": "FT-2",
    "amount": "10.00"
+  },
+  "si_paid_flow": {
+   "id": "a1000000-0000-4000-8000-000000985071",
+   "payment": "pf_supplier",
+   "identifier": "FT-3",
+   "amount": "12.00"
   }
  },
  "course_subscriptions": {
   "cs_linked": {
-   "id": "a1000000-0000-4000-8000-000000985055",
+   "id": "a1000000-0000-4000-8000-000000985072",
    "payment": "de_plain",
    "memberships": [
     "de_plain"
    ]
   },
   "cs_installments": {
-   "id": "a1000000-0000-4000-8000-000000985056",
+   "id": "a1000000-0000-4000-8000-000000985073",
+   "payment": null,
+   "memberships": []
+  },
+  "cs_pf": {
+   "id": "a1000000-0000-4000-8000-000000985074",
+   "payment": "pf_course",
+   "memberships": []
+  },
+  "cs_pf_parent": {
+   "id": "a1000000-0000-4000-8000-000000985075",
+   "payment": null,
+   "memberships": []
+  },
+  "cs_pf_carnet": {
+   "id": "a1000000-0000-4000-8000-000000985076",
+   "payment": null,
+   "memberships": []
+  },
+  "cs_pf_scoped": {
+   "id": "a1000000-0000-4000-8000-000000985077",
+   "payment": "pf_scoped",
+   "memberships": []
+  },
+  "cs_pf_null": {
+   "id": "a1000000-0000-4000-8000-000000985078",
    "payment": null,
    "memberships": []
   }
  },
  "installments": {
   "i1": {
-   "id": "a1000000-0000-4000-8000-000000985057",
+   "id": "a1000000-0000-4000-8000-000000985079",
    "payment": "de_installments",
    "deleted": false,
    "group": null,
@@ -1029,7 +1553,7 @@
    "number": 1
   },
   "i2": {
-   "id": "a1000000-0000-4000-8000-000000985058",
+   "id": "a1000000-0000-4000-8000-000000985080",
    "payment": "de_installments",
    "deleted": false,
    "group": null,
@@ -1037,7 +1561,7 @@
    "number": 2
   },
   "i_deleted": {
-   "id": "a1000000-0000-4000-8000-000000985059",
+   "id": "a1000000-0000-4000-8000-000000985081",
    "payment": "de_installments",
    "deleted": true,
    "group": null,
@@ -1045,7 +1569,7 @@
    "number": 3
   },
   "i_paid": {
-   "id": "a1000000-0000-4000-8000-000000985060",
+   "id": "a1000000-0000-4000-8000-000000985082",
    "payment": "de_paid",
    "deleted": false,
    "group": null,
@@ -1053,7 +1577,7 @@
    "number": 4
   },
   "ig_in": {
-   "id": "a1000000-0000-4000-8000-000000985061",
+   "id": "a1000000-0000-4000-8000-000000985083",
    "payment": "de_group",
    "deleted": false,
    "group": "own_group",
@@ -1061,7 +1585,7 @@
    "number": 5
   },
   "ig_out": {
-   "id": "a1000000-0000-4000-8000-000000985062",
+   "id": "a1000000-0000-4000-8000-000000985084",
    "payment": "de_group",
    "deleted": false,
    "group": null,
@@ -1069,19 +1593,59 @@
    "number": 6
   },
   "i_bulk": {
-   "id": "a1000000-0000-4000-8000-000000985063",
+   "id": "a1000000-0000-4000-8000-000000985085",
    "payment": "bd_installment",
    "deleted": false,
    "group": null,
    "cs": "cs_installments",
    "number": 7
+  },
+  "i_pf": {
+   "id": "a1000000-0000-4000-8000-000000985086",
+   "payment": "pf_installment",
+   "deleted": false,
+   "group": null,
+   "cs": "cs_pf_parent",
+   "number": 1
   }
  },
  "holdings": {
   "h_linked": {
-   "id": "a1000000-0000-4000-8000-000000985064",
+   "id": "a1000000-0000-4000-8000-000000985087",
    "payment": "de_plain"
+  },
+  "h_pf": {
+   "id": "a1000000-0000-4000-8000-000000985088",
+   "payment": "pf_carnet",
+   "subscription": true,
+   "courses": [
+    "cs_pf_carnet"
+   ]
+  },
+  "h_pf_null": {
+   "id": "a1000000-0000-4000-8000-000000985089",
+   "payment": "pf_carnet_null",
+   "subscription": true,
+   "carnet": false,
+   "courses": [
+    "cs_pf_null"
+   ]
   }
+ },
+ "flag_owner": {
+  "id": "a1000000-0000-4000-8000-000000985090",
+  "association": "a1000000-0000-4000-8000-000000985091",
+  "username": "payment-state-flag",
+  "email": "payment-state-flag@example.test",
+  "first": "Flavia",
+  "last": "Fiscale",
+  "denomination": "Associazione flag è",
+  "starting_number": 40
+ },
+ "flag_associate": {
+  "id": "a1000000-0000-4000-8000-000000985092",
+  "first": "Giulia",
+  "last": "Verdi"
  },
  "cases": [
   {
@@ -2392,6 +2956,3748 @@
    },
    "raw_body": "payment_date=2026-03-09&generate_invoice=false",
    "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "payment-state-approve-paid-flow-other-now",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985053/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985053",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "15.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+       "number": 1,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "15.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_other": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "15.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "1"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_other",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "label": "$notificationsbroadcast",
+      "action": 0,
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "label": "$usernotificationsbroadcast",
+      "action": 0,
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "15.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+     "number": 1,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 15,00per Quota. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-old-date-no-print",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985054/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985054",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "20.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+       "number": 1,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "20.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2020-02-03T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_old": {
+      "paid": true,
+      "payment_date": "2020-02-03T00:00:00Z",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "20.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "1"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_old",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2020-02-03 00:00:00"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "20.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+     "number": 1,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 20,00per Quota. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "payment_date": "2020-02-03",
+    "generate_invoice": false
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-subscription-fees",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985055/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985055",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "22.50",
+       "activity_fee": "7.50",
+       "meta_payment_categories": [
+        {
+         "name": "Corso",
+         "amount": "5.50"
+        },
+        {
+         "name": "Gratis",
+         "amount": 0
+        },
+        {
+         "amount": 2
+        }
+       ],
+       "description": "Ricevuta di pagamento per l'iscrizione di <b>Mario Rossi</b> all'associazione <b>Message reads own</b>.",
+       "number": 2,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 1,
+      "amount": "30.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": [
+       {
+        "name": "Corso",
+        "amount": "5.50"
+       },
+       {
+        "name": "Gratis",
+        "amount": 0
+       },
+       {
+        "amount": 2
+       }
+      ],
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_subscription": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "22.5"
+       ],
+       "activity_fee": [
+        "None",
+        "7.5"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": \"5.50\", \"name\": \"Corso\"}, {\"amount\": 0, \"name\": \"Gratis\"}, {\"amount\": 2}]"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento per l'iscrizione di <b>Mario Rossi</b> all'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "2"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "22.50",
+        "22.5"
+       ],
+       "activity_fee": [
+        "7.50",
+        "7.5"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_subscription",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "22.50",
+     "activity_fee": "7.50",
+     "meta_payment_categories": [
+      {
+       "name": "Corso",
+       "amount": "5.50"
+      },
+      {
+       "name": "Gratis",
+       "amount": 0
+      },
+      {
+       "amount": 2
+      }
+     ],
+     "description": "Ricevuta di pagamento per l'iscrizione di <b>Mario Rossi</b> all'associazione <b>Message reads own</b>.",
+     "number": 2,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       true
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 30,00per l'iscrizione all'associazione sportiva. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "send_receipt_email": true
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985056/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985056",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "50.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>.",
+       "number": 3,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "50.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_course": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "50.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "3"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_course",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "coursesubscription",
+      "label": "cs_pf",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "50.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>.",
+     "number": 3,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [
+     "cs_pf"
+    ],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 50,00per il corso \"Corso pagamenti\". Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-installment-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985057/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985057",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "18.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>.",
+       "number": 4,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "18.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_installment": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "18.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "4"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_installment",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "coursesubscription",
+      "label": "cs_pf_parent",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "18.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>.",
+     "number": 4,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [
+     "cs_pf_parent"
+    ],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 18,00per il corso \"Corso pagamenti\". Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985058/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985058",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "35.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Carnet pagamenti</b> dell'associazione <b>Message reads own</b>.",
+       "number": 5,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "35.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_carnet": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "35.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Carnet pagamenti</b> dell'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "5"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_carnet",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "coursesubscription",
+      "label": "cs_pf_carnet",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "35.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Carnet pagamenti</b> dell'associazione <b>Message reads own</b>.",
+     "number": 5,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [
+     "cs_pf_carnet"
+    ],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 35,00per carnet Carnet pagamenti. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-course-without-link",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985059/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985059",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "11.00",
+       "meta_payment_categories": null,
+       "description": "Quota",
+       "number": 6,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "11.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_course_none": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "11.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Quota"
+       ],
+       "number": [
+        "None",
+        "6"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_course_none",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "11.00",
+     "meta_payment_categories": null,
+     "description": "Quota",
+     "number": 6,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 11,00per il corso. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-supplier",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985060/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985060",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": {
+       "supplier_id": "a1000000-0000-4000-8000-000000985007",
+       "name": "Fornitore è",
+       "address": null,
+       "tax_code": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "vat_number": "01234567890",
+       "type": "supplier",
+       "email": "fornitore@example.test",
+       "phone_number": null,
+       "city": null,
+       "cap": null,
+       "state": null,
+       "country": "Italia",
+       "nationality": "Italiana",
+       "note": null,
+       "group": null,
+       "deleted": false
+      },
+      "supplier_id": "a1000000-0000-4000-8000-000000985007",
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "12.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento di <b>Fornitore è</b> con causale <b>Quota</b> per l'associazione <b>Message reads own</b>.",
+       "number": 7,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "12.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_supplier": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {
+     "si_paid_flow": {
+      "paid": true,
+      "payment_date": "$now"
+     }
+    },
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "12.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento di <b>Fornitore è</b> con causale <b>Quota</b> per l'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "7"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_supplier",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoicesuppliers",
+      "label": "si_paid_flow",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "12.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Fornitore è</b> con causale <b>Quota</b> per l'associazione <b>Message reads own</b>.",
+     "number": 7,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 12,00per Quota. Pagamento dell'utente Message Fixture.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-instructor-without-invoice",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985061/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985061",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000985006",
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000985006",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Anna è",
+       "last_name": "Bianchi",
+       "email": "anna@example.test",
+       "born_date": null,
+       "born_city": null,
+       "born_province": null,
+       "tax_code": "BNCNNA80A41H501X",
+       "address_city": null,
+       "address": null,
+       "address_province": null,
+       "civic_number": null,
+       "study_title": null,
+       "role": "Istruttore",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": false,
+       "associated_user_id": null,
+       "is_volunteer": false,
+       "stipulated_contract_in": null,
+       "default_hourly_billing": "12.50",
+       "default_percentage_billing": "0.00",
+       "documents": []
+      },
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "40.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_instructor": {
+      "paid": true,
+      "payment_date": "$now"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "pf_instructor",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": null,
+    "course_subscriptions_paid": [],
+    "celery": [],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 40,00per Quota.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985062/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985062",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "16.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+       "number": 8,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "16.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "payments_changed": {
+     "pf_collab": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "16.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "8"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_collab",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "16.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+     "number": 8,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 16,00per Quota. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985063/approve",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985063",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "17.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+       "number": 9,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "17.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "admin",
+    "payments_changed": {
+     "pf_admin": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "17.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "9"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_admin",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "17.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+     "number": 9,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 17,00per Quota. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985064/approve",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985064",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "19.00",
+       "meta_payment_categories": null,
+       "description": "Quota",
+       "number": 1,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": "a1000000-0000-4000-8000-000000714001",
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "19.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": "a1000000-0000-4000-8000-000000714001",
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_group": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "19.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Quota"
+       ],
+       "number": [
+        "None",
+        "1"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714001"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_group",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "19.00",
+     "meta_payment_categories": null,
+     "description": "Quota",
+     "number": 1,
+     "group_id": "a1000000-0000-4000-8000-000000714001"
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 19,00per il corso. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985065/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985065",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "21.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+       "number": 2,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "21.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2020-02-04T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_form": {
+      "paid": true,
+      "payment_date": "2020-02-04T00:00:00Z",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "21.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "2"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_form",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2020-02-04 00:00:00"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "21.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Pagamenti fixture</b> per l'associazione <b>Message reads own</b>.",
+     "number": 2,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       "yes"
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 21,00per Quota. Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "raw_body": "payment_date=2020-02-04&send_receipt_email=yes&generate_invoice=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "payment-state-approve-paid-flow-flag-owner-invoice-date",
+   "actor": "flag_owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985093/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985093",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985092",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1991-02-03",
+       "email": null,
+       "sex": "F",
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000985091",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000985090",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "2021-03-04T00:00:00Z",
+       "membership_fee": "0.00",
+       "activity_fee": "26.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento con causale <b>Quota flag</b> per l'associazione <b>Associazione flag è</b>.",
+       "number": 41,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000985091",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "$default_category_name",
+      "type": "default",
+      "subject": 0,
+      "amount": "26.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2021-03-04T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota flag",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "$default_category",
+      "sport_association": "a1000000-0000-4000-8000-000000985091",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "flag_owner",
+    "payments_changed": {
+     "pf_flag": {
+      "paid": true,
+      "payment_date": "2021-03-04T00:00:00Z",
+      "invoice": "$invoice",
+      "category": "$default_category"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000985091"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "26.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento con causale <b>Quota flag</b> per l'associazione <b>Associazione flag è</b>."
+       ],
+       "number": [
+        "None",
+        "41"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985091",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "creation_date": [
+        "$now",
+        "2021-03-04 00:00:00"
+       ],
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985091",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_flag",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2021-03-04 00:00:00"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000985091",
+       "direct"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "label": "$notificationsbroadcast",
+      "action": 0,
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000985091",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "label": "$usernotificationsbroadcast",
+      "action": 0,
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000985091",
+       "actor.sport_association"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000985091",
+     "creation_date": "2021-03-04T00:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "26.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Quota flag</b> per l'associazione <b>Associazione flag è</b>.",
+     "number": 41,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "flag_owner",
+     "msg": "Pagamento di € 26,00per Quota flag. Pagamento dell'associato Giulia Verdi.",
+     "association": "a1000000-0000-4000-8000-000000985091"
+    }
+   },
+   "body": {
+    "payment_date": "2021-03-04"
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-scoped-session",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985066/approve",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000985066",
+      "user": null,
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000985004",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000985005",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "$invoice",
+       "document_token": null,
+       "creation_date": "$now",
+       "membership_fee": "0.00",
+       "activity_fee": "22.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>.",
+       "number": 10,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Pagamenti fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "22.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000985001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null,
+      "invoice_generating": true
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "payments_changed": {
+     "pf_scoped": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "$invoice"
+     }
+    },
+    "payments_deleted": [],
+    "installments_deleted": [],
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 0,
+      "changes": {
+       "invoice_id": [
+        "None",
+        "$invoice"
+       ],
+       "document_pdf": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "membership_fee": [
+        "None",
+        "0.0"
+       ],
+       "activity_fee": [
+        "None",
+        "22.00"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "description": [
+        "None",
+        "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>."
+       ],
+       "number": [
+        "None",
+        "10"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "cancelled": [
+        "None",
+        "False"
+       ],
+       "selected_tutor": [
+        "None",
+        "None"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "imported_from_associami": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "label": "$invoice",
+      "action": 1,
+      "changes": {
+       "membership_fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "pf_scoped",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "invoice": [
+        "None",
+        "$invoice"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "coursesubscription",
+      "label": "cs_pf_scoped",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ]
+     }
+    ],
+    "invoice": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "creation_date": "$now",
+     "membership_fee": "0.00",
+     "activity_fee": "22.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Mario Rossi</b> per il corso <b>Corso pagamenti</b> dell'associazione <b>Message reads own</b>.",
+     "number": 10,
+     "group_id": null
+    },
+    "course_subscriptions_paid": [
+     "cs_pf_scoped"
+    ],
+    "celery": [
+     {
+      "task": "print_document_invoice",
+      "args": [
+       "$invoice",
+       "$authorization",
+       false
+      ],
+      "kwargs": [],
+      "args_list": true
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "Pagamento di € 22,00per il corso \"Corso pagamenti\". Pagamento dell'associato Mario Rossi.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "payment-state-approve-paid-flow-bad-meta-amount-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985067/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-state-approve-paid-flow-carnet-without-carnet-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000985068/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
   },
   {
    "name": "payment-state-cancel-anonymous",
