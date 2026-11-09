@@ -166,6 +166,31 @@ deferral +15 s, the prepared files removed); an unknown keyword handed off.
 - GREEN: `consumer-restore-export-process/results.json`.
 - Mutation (CAUGHT): `serialize_record` without the archived password of credential accounts; the archive member
   `data/02_users.json` differed (`consumer-restore-export-process-mutation`).
+- Re-run after the shared changes (`Task.Cleanup`, `pyzip.FileWriter`): capabilities 13/13, `celery_consumer_print_process.py`
+  30/30, `celery_consumer_process.py` 15/15 (receipts `consumer-restore-rerun-*-export`).
 - Unit tests: `go test ./internal/associationexport` (str(Decimal), float repr, JSON with and without indent, times,
   timestamps, jsonb, the plan and the IN-list binding), `./internal/pyzlib` (82 zlib goldens, chunk invariance),
   `./internal/service -run RestorablePasswordHash`.
+
+## Steps 3 and 4: `import_association_data` and `instance.restore.execute` (not ported)
+
+Both stay on Django's worker; with `GO_TASK_QUEUE_TASKS` not listing them nothing changes. What an exact port needs,
+beyond what steps 1 and 2 provide (prefork execution, the export, the archive writer):
+
+- **Import** (`AssociationImportService`, ~1,800 lines, plus `ImportValidator`): every archived record is created through
+  the ORM (`model(**kwargs).save()`), so the database end state includes each model's `save()` override (3 models), the
+  `post_save`/`pre_delete` receivers of `application/signals.py` (12, including membership and payment cascades and
+  workflow triggers that publish Celery tasks), a django-auditlog create entry for every audited model (76 `auditlog.register` calls in `BE`, with
+  each field rendered by `str()`) and its `AuditLogIndex` row through `application/audit_resolvers.py`, MPTT tree fields
+  for folders, the raw-save path for messages, deferred FKs and M2M passes inside one `transaction.atomic`, deferred
+  constraint checks, then the media files written to storage. `validate()` reports Python `zipfile`/`json` exception texts
+  and identifies password hashers through `PASSWORD_HASHERS`. Go has generic helpers for audit rendering of stored rows,
+  but not the per-model save/signal semantics or resolver coverage the import needs.
+- **Restore** (`execute`): the exclusive operation lock, the Go-transaction barrier, the receipt state machine and
+  progress cache (these parts are small), the archive validation of `archive.py` against the export/import registry
+  and every field's `to_python`, a recovery export (step 2's service, with `RecoveryExport`'s exclusions), Django's
+  `Collector` deletion plan and cascades of the current association graph (`replacement.py`), the import above in
+  replacement mode, media staging and pruning. The deletion and import halves carry the same ORM side effects.
+
+A port at the bar of steps 1 and 2 needs the per-model ORM behaviour characterized first (save overrides, signals,
+audit rendering and index paths for all exported models), most likely as its own families.
