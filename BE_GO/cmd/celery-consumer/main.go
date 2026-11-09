@@ -52,7 +52,7 @@ func run(arguments []string) error {
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			fmt.Println("Go Celery consumer: --env-file PATH, --concurrency N, --drain-timeout D. Consumes the assozeta-go queue " +
-				"(GO_TASK_QUEUE_TASKS routing); runs core.tasks.send_mail_async, send_email_text, send_email_template and send_email_html and hands every other message to the celery queue.")
+				"(GO_TASK_QUEUE_TASKS routing); runs core.tasks.send_mail_async, send_email_text, send_email_template, send_email_html and the automation workflow tasks and hands every other message to the celery queue.")
 			return nil
 		}
 		return errors.New("invalid celery consumer arguments")
@@ -95,9 +95,16 @@ func run(arguments []string) error {
 	transport := &celery.Transport{Client: broker, Queue: celery.GoQueue}
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
-	worker, err := celeryworker.New(transport, map[string]celeryworker.Task{service.SendMailAsyncTask: mail.Task(),
+	tasks := map[string]celeryworker.Task{service.SendMailAsyncTask: mail.Task(),
 		service.SendEmailTextTask: mail.SendEmailTextTask(), service.SendEmailTemplateTask: mail.SendEmailTemplateTask(),
-		service.SendEmailHTMLTask: mail.SendEmailHTMLTask()},
+		service.SendEmailHTMLTask: mail.SendEmailHTMLTask()}
+	// Messages the tasks publish (send_task inside a worker task) use the
+	// same routes as every other producer.
+	producer := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
+	for name, task := range service.NewWorkflowTasks(repository.NewWorkflowTaskStore(db), producer, time.Now).Tasks() {
+		tasks[name] = task
+	}
+	worker, err := celeryworker.New(transport, tasks,
 		repository.NewCeleryResults(db), admission, celeryworker.Options{Concurrency: *concurrency, HandoffQueue: celery.DefaultQueue,
 			Origin: "gen" + strconv.Itoa(os.Getpid()) + "@" + host, Hostname: "celery@" + host, DrainTimeout: *drain,
 			Coordinated: strings.TrimSpace(cfg.RestoreLockPath) != ""}, slog.Default())
