@@ -34,7 +34,7 @@ before(async () => {
             load(id) {
                 if (id === '\0test-router') return "import {writable} from 'svelte/store'; export const querystring = writable('page=self-instance');";
                 if (id === '\0test-breakpoint') return "import {writable} from 'svelte/store'; export const isMobile = writable(false);";
-                if (id === '\0test-icons') return "import {create_ssr_component} from 'svelte/internal'; const Icon = create_ssr_component(() => ''); export {Icon as User, Icon as Sliders, Icon as FingerprintSimple, Icon as Password, Icon as StripeLogo, Icon as Plugs, Icon as Database};";
+                if (id === '\0test-icons') return "import {create_ssr_component} from 'svelte/internal'; const Icon = create_ssr_component(() => ''); export {Icon as User, Icon as Sliders, Icon as FingerprintSimple, Icon as Password, Icon as StripeLogo, Icon as Plugs, Icon as Database, Icon as GearSix, Icon as UserSwitch};";
             },
         }, svelte({configFile: false})],
     });
@@ -60,6 +60,22 @@ test('restored profile navigation requires owner capability for every role and v
                 assert.equal(html.includes('href="/#/profile?page=self-instance"'), instanceOwner,
                     `${role}, mobile=${mobile}, owner=${instanceOwner}`);
             }
+        }
+    }
+});
+
+test('Gestione Dati is only in the Bakney profile menu; self-hosted owners use the Backup tab', async () => {
+    const {default: ProfileMenu} = await server.ssrLoadModule('/src/routes/profile/ProfileMenu.svelte');
+    cache.set('subPage', JSON.stringify('self-instance'));
+    cache.set('permissions', JSON.stringify(['other.settings.read']));
+    cache.set('userData', JSON.stringify({first_name: 'Fixture', last_name: 'User'}));
+    for (const role of ['association', 'administrator']) {
+        cache.set('role', JSON.stringify(role));
+        for (const selfHosted of [true, false]) {
+            const {html} = ProfileMenu.render({instanceOwner: true, selfHosted});
+            assert.equal(html.includes('Gestione Dati'), !selfHosted, `${role}, selfHosted=${selfHosted}`);
+            assert.equal(html.includes('page=data-management'), !selfHosted, `${role}, selfHosted=${selfHosted}`);
+            assert.match(html, /href="\/#\/profile\?page=self-instance"/);
         }
     }
 });

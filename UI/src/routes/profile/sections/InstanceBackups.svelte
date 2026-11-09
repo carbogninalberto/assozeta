@@ -8,6 +8,7 @@
     import InstanceMenu from './InstanceMenu.svelte';
     import DiagnosticResult from './DiagnosticResult.svelte';
     import BackupSchedule from './BackupSchedule.svelte';
+    import DataTransfer from './DataTransfer.svelte';
     import {formatSize, formatDate, formatRelative} from './instanceFormat.js';
 
     // request(path, options) is the owner page helper rooted at /instance.
@@ -217,6 +218,9 @@
     {#if overview?.available && overview.schedule}
         <BackupSchedule {request} schedule={overview.schedule} retention={overview.retention} disabled={!!active} onSaved={() => onReload()} />
     {/if}
+
+    <!-- Bakney ZIP export/import, self-hosted only: this page exists only there. -->
+    <DataTransfer />
 </section>
 
 <InstanceDialog open={dialog?.kind === 'download'} title="Scarica backup" locked={working} on:close={closeDialog}>

@@ -176,6 +176,21 @@ try {
             } else throw new Error(`Unexpected request ${method} ${endpoint}`);
             await route.fulfill({status, contentType: 'application/json', body: status === 204 ? '' : JSON.stringify(value)});
         });
+        // Trasferisci dati closes the Backup tab: Bakney ZIP export list and import drawer.
+        await page.route('**/api/association/export/list', route => route.fulfill({json: {exports: [{document_id: 'fixture-export', filename: 'export_fixture.zip', file_size_bytes: 48 * 1024 ** 2, download_token: 'fixture', created_at: hoursAgo(30)}]}}));
+        await page.route('**/api/instance/admin/data-restore', route => route.fulfill({json: {available: true, max_upload_bytes: 5 * GIB, active: null, history: [], backups: [], backups_next: null}}));
+        await page.goto('http://127.0.0.1:5198/#/profile?page=self-instance&tab=backups');
+        const transfer = page.getByRole('region', {name: 'Trasferisci dati'});
+        await expect(transfer.getByRole('list', {name: 'Export'}).getByRole('listitem')).toHaveCount(1);
+        await transfer.getByRole('button', {name: 'Importa da Bakney'}).click();
+        await expect(page.getByRole('dialog', {name: 'Importa da Bakney'}).getByRole('button', {name: 'Seleziona backup ZIP'})).toBeVisible();
+        await page.waitForTimeout(400);
+        await page.screenshot({path: path.join(output, `transfer-import-${viewport.width}.png`)});
+        await page.keyboard.press('Escape');
+        await transfer.scrollIntoViewIfNeeded();
+        await page.screenshot({path: path.join(output, `transfer-${viewport.width}.png`)});
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'transfer: horizontal overflow');
+        await page.goto('about:blank');
         const tabs = page.getByRole('tablist', {name: 'Sezioni istanza'});
         const settingsNav = page.getByRole('tablist', {name: 'Impostazioni'});
         const navigate = label => tabs.getByRole('tab', {name: label}).click();

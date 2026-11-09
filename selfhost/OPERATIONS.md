@@ -321,8 +321,8 @@ through the environment, rather than a password command-line argument. The
 explicit `--allow-weak-password` option is accepted only when the application's
 deployment mode is development; it is intended for local test accounts.
 
-The active superuser receives Self Instance, Gestione Dati, and impersonation
-management. Existing primary-association owners retain their installation
+The active superuser receives Istanza (including the association export and
+import under Backup → Trasferisci dati) and impersonation management. Existing primary-association owners retain their installation
 administration and data-management access. Administrator exports and restores
 operate on the configured primary association; restore restrictions and backup
 validation still apply. Ordinary association exports remain scoped to their
