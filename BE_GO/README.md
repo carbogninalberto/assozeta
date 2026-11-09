@@ -265,13 +265,13 @@ groups cover actual-model descriptions, denial, pool/cancellation and executed
 plans over 4,096 course relations. General payment saves remain open; see
 `internal/service/payment_save_inputs.md`.
 
-Automatic subscription archive now composes date/payment defaults and updates
-subscriptions, payments and invoices with exact audits/indexes and fenced job
-completion in one transaction. Thirteen PostgreSQL groups cover model readback,
-optional/foreign links, bounded pages, rollback across pages, overlapping jobs,
-cancellation and real executor heartbeat. Explicit corrections to the broken
-legacy task are documented in `internal/service/subscription_auto_archive.md`.
-Production registration, scheduler ownership and activation remain unfinished.
+The v1.0.35 nightly subscription tasks, `clear_deleted_subscription` and
+`auto_archive_subscription`, are registered in the native worker and mapped for
+the scheduler (including the archive's day-of-month/month calendar); the native
+worker matches the actual Django task on private PostgreSQL and MinIO. See
+`docs/architecture/go-migration/sync-v1035.md` and
+`internal/service/subscription_auto_archive.md`. Ownership activation remains
+unfinished.
 
 Medical cleanup now has bounded, read-only candidate discovery protecting every
 current Document FK/M2M and draft medical reference. Fourteen actual Django cases

@@ -36,8 +36,8 @@ The static `app.conf.beat_schedule` entries are not the effective fresh schedule
 | `update-age-of-associates` | 00:00 UTC daily | publishes `update_age_of_associates` v1 |
 | `delete-old-audit-logs` | 00:00 UTC daily | publishes `delete_old_audit_logs` v1 |
 | `clear-expired-subscription-tokens` | every minute | publishes `clear_expired_subscription_tokens` v1 |
-| `auto-archive-subscription` | 01:00 on days 1-4 of Jan/Jun/Sep | unsupported task and calendar |
-| `clear-deleted-subscription` | 00:15 daily | unsupported task |
+| `auto-archive-subscription` | 01:00 on days 1-4 of Jan/Jun/Sep | publishes `auto_archive_subscription` v1 since [sync-v1035](sync-v1035.md) |
+| `clear-deleted-subscription` | 00:15 daily | publishes `clear_deleted_subscription` v1 since [sync-v1035](sync-v1035.md) |
 | `renew-memberships-payments` | 00:10 daily | unsupported task |
 | `association-quote-assign` | 03:00 daily | unsupported task |
 | `cleanup-old-exports` | 02:30 daily | unsupported task |
@@ -48,20 +48,9 @@ cursor advanced to the dispatch time, three operational attempts, idempotency ke
 
 ## Not ported
 
-- `auto_archive_subscription`: the Go body implements the behaviour after two
-  explicit repairs (aware clock, primary-key diagnostic). The actual task stops
-  at the first eligible subscription on the naive/aware comparison and returns
-  `None` without writes. Registering the Go body would start archiving that the
-  current Django task does not perform, so it stays unregistered pending an
-  explicit decision. Its calendar is also outside the evaluator subset.
-- `clear_deleted_subscription`: hard-deletes the invoices and payments linked to
-  soft-deleted subscriptions and their course subscriptions and installments
-  through Django's collector and three `pre_delete` handlers, soft-deletes the
-  course subscriptions, then calls `.delete()` on the iterator; that raises
-  `AttributeError`, which the task catches, so Subscription rows remain and are
-  reprocessed on every run. Exact parity needs the full collector/signal/audit
-  characterization of Payment, Invoice and installment deletion; it is left to a
-  dedicated family.
+- `auto_archive_subscription` and `clear_deleted_subscription`: rewritten in
+  v1.0.35 and ported in [sync-v1035](sync-v1035.md); the notes that stood here
+  described the earlier task code.
 - `renew_memberships_payments`: Django cache lock, `send_mail` to support and a
   self-scheduled Celery retry (`apply_async`).
 - `association_quote_assign`: sends a templated email to each assigned member.

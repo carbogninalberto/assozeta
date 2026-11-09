@@ -1722,12 +1722,10 @@ and inspect a plan over 4,096 course relations. General payment writes remain un
 transactional task body, described in the component contract below. See
 [the component contract](../../../BE_GO/internal/service/payment_save_inputs.md).
 
-Automatic archive now has thirteen PostgreSQL scenario groups and actual Django
-model readback, including explicit legacy repairs and atomic audit/index writes.
-The five-task combined rehearsal passes all 48 required groups (7 reset, 10 token,
-8 age, 10 retention, 13 archive). Production task/scheduler ownership, historical
-restore and activation remain unverified. See
-[automatic archive](../../../BE_GO/internal/service/subscription_auto_archive.md).
+Automatic archive and deleted-subscription cleanup follow the v1.0.35 Django
+tasks: both are registered in the native worker and mapped for the scheduler,
+with Django-first parity on private PostgreSQL and MinIO. Production ownership
+and activation remain unverified. See [v1.0.35 alignment](sync-v1035.md).
 
 Medical orphan cleanup has fourteen actual Django characterization scenarios and
 six PostgreSQL discovery groups, including every current Document relationship and

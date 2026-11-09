@@ -51,15 +51,9 @@ invalid calendar is supplied despite existing dates. Go must pass all 329 named
 oracle cases under race detection; missing/skipped cases fail. Separate ordinary
 Go tests cover explicit examples, cancellation and pointer ownership.
 
-The fixture also establishes two blockers in the actual automatic archive task.
-With its normal naive clock, it catches the offset-naive/offset-aware comparison
-error and changes no rows. Changing only the injected clock to an aware value
-exposes the next failure: the diagnostic accesses nonexistent `subscription.id`.
-Again no rows change. These failures are recorded for review; no Go no-op task has
-been substituted for the required archiving workflow. The separate
-`subscription_auto_archive.md` contract now implements the task body,
-including additional save defaults/audits, optional links and explicit atomicity
-corrections. Scheduling and production ownership remain unfinished.
+Since v1.0.35 the archive task saves with `update_fields=['archived']`: these
+defaults are computed (and the calendar validated) but not written by it. See
+`subscription_auto_archive.md`.
 
 Run production Python with `TESTS/adapters/django/accounts.py --only
 subscription-dates`. The full accounts adapter includes it, while `--only
