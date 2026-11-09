@@ -24692,25 +24692,69 @@
         "target": "subscription_medical_appointments_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/medical_appointment_add.go",
+        "BE_GO/internal/dto/medical_appointment_add.go",
+        "BE_GO/internal/repository/medical_appointment_add.go",
+        "BE_GO/internal/service/medical_appointment_add.go",
+        "BE_GO/internal/handler/medical_appointment_add.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "service.InvoiceSyncPrint (new MedicalAppointment method: direct CoordinatedTask call)",
+        "handler.SubscriptionMedicalHandler.failure, dispatchMedical"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/medical-appointments/add",
+          "/api/v2/subscription/<uid>/medical-appointments/add",
+          "/api/subscription/<uid>/medical-appointments/add"
+        ],
+        "request": "JSON: region, date (DD/MM/YYYY), notes, sport, address, meta, creation_date.",
+        "response": "200 {'data': 'medical appointment created.'}",
+        "errors": "401; 403 admin without session, restricted collaborator, association-scoped context, athletes; 405; 400 malformed uid, serializer field errors; 404 {'data': 'no subscription found.'}; 500 no association, list or form bodies, a busy/pending restore at print time (after the save).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.update.",
+        "resource_scope": "scoped, group-aware subscription of request.user.sport_association (deleted rows included).",
+        "side_effects": "MedicalAppointments create (audited, subscription.sport_association), GET CURRENT_HOST/document/medical-appointment/<id> with the request's Authorization.",
+        "transaction": "autocommit save, then the print request",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/medical_appointment_add_http.json",
+        "TESTS/fixtures/generate_medical_appointment_add_http.py",
+        "TESTS/contracts/test_medical_appointment_add_http.py",
+        "TESTS/adapters/django/medical_appointment_add_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/medical-appointment-add.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 37/37; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/medical-appointment-add-http-native-r1/results.json",
+          "receipt_sha256": "13c92de2ea0b5e749b76e86276576ebda39df9c19c80a2ee005304192a178980"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 37/37 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/medical-appointment-add-http-versioned-r1/results.json",
+          "receipt_sha256": "295564aa2e8402a7651bd7ed5d8f3123cdab2f6ccda6af36911451d77f817960"
+        },
+        {
+          "revision": "applying the eager completed-restore cutoff to the direct print call",
+          "result": "Mutation control: fails Go on medical-appointment-add-completed-restore-still-prints (no outbound request)",
+          "artifact": "quality-reports/go-migration/medical-appointment-add-http-mutation-r1/results.json",
+          "receipt_sha256": "8ad88667dbcffb4a514fe0c27ca73c3e47298b7fa05f6f4f30ab3075f108dce2"
+        }
+      ],
+      "notes": [
+        "Implementing: The print is a direct task call: restore lock and pending check only (no completed-restore cutoff); a non-null document and medical_appointments_id are refused before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/medical-appointments/list -> subscription_medical_appointments_list",
@@ -26565,25 +26609,72 @@
         "target": "subscription_import_upload",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/pandascsv/pandascsv.go",
+        "BE_GO/internal/pandascsv/pandascsv_test.go",
+        "BE_GO/internal/domain/subscription_import_upload.go",
+        "BE_GO/internal/repository/subscription_import_upload.go",
+        "BE_GO/internal/service/subscription_import_upload.go",
+        "BE_GO/internal/handler/subscription_import_upload.go",
+        "BE_GO/cmd/server/subscription_import_upload.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "pandascsv.Columns (8,379 pandas 2.2.3 golden inputs, TESTS/adapters/go/pandas_csv_golden.py)",
+        "service.DocumentUploads (new storeImportFile: Document create + object save)",
+        "handler bufferMultipart/uploadBody/parseDjangoMultipart"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/import/upload",
+          "/api/v2/subscription/import/upload",
+          "/api/subscription/import/upload"
+        ],
+        "request": "multipart associates_file (CSV), or document_id + map (only its failure paths are ported).",
+        "response": "200 {'columns': [...], 'map': MAP, 'document_id': id}",
+        "errors": "401 (DRF and the view's bodiless 401 without an association); 403 admin without session, restricted collaborator, association-scoped context; 405; 400 [str(exception)] for an invalid document_id; 500 non-dict bodies, missing keys, non-file associates_file, unknown document, pandas errors and unknown extensions (after the writes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.create.",
+        "resource_scope": "scoped SportAssociation of request.user; Document resolved by id.",
+        "side_effects": "Document create (audited, actor's association) and S3 PutObject; process-wide MAP update.",
+        "transaction": "autocommit create, then storage",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_import_upload_http.json",
+        "TESTS/fixtures/generate_subscription_import_upload_http.py",
+        "TESTS/contracts/test_subscription_import_upload_http.py",
+        "TESTS/adapters/django/subscription_import_upload_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-import-upload.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-native-r5/results.json",
+          "receipt_sha256": "44b8c347a7fc66d46a7d6e356b94c577d6c19a68704ddaab9654546585414d0c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-versioned-r1/results.json",
+          "receipt_sha256": "047b20fe5cc7e3b570420632d5af45353bd1427e110afc514b84a7a07038e167"
+        },
+        {
+          "revision": "resetting the auto-mapped MAP on every request",
+          "result": "Mutation control: fails Go on subscription-import-upload-csv-keeps-earlier-map",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-mutation-r1/results.json",
+          "receipt_sha256": "4a0d883a52ea9ce69daa8d4b922708d539b36e0ed05b323026108a3c4a67be9a"
+        }
+      ],
+      "notes": [
+        "Implementing: SubscriptionMaps.MAP is updated in place per process; Go keeps one process-wide map. Refused before any write: Excel uploads, the import of an existing document (codicefiscale, dateutil), CSV outside the pandascsv subset (invalid UTF-8, NUL, bare CR), columns with İ/Σ, a file as document_id."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/list -> subscription_list",
@@ -30110,25 +30201,72 @@
         "target": "configuration_send_email",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/communications_send_email.go",
+        "BE_GO/internal/dto/communications_send_email.go",
+        "BE_GO/internal/repository/communications_send_email.go",
+        "BE_GO/internal/service/communications_send_email.go",
+        "BE_GO/internal/service/communications_send_email_test.go",
+        "BE_GO/internal/handler/communications_send_email.go",
+        "BE_GO/cmd/server/communications_send_email.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "smtpsend.Verify/Send/Render (send_email's MIMEMultipart text/plain)",
+        "celery producer (core.tasks.send_mail_async)",
+        "repository communicationSMTPTransaction (embedded unchanged)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/send/email",
+          "/api/v2/communications/send/email",
+          "/api/communications/send/email"
+        ],
+        "request": "JSON or form: email (comma-separated), subject, message, or message_id of a stored message.",
+        "response": "200 {'msg': 'Ok', 'result': true} or {'msg': 'Daily email limit reached', 'result': false}.",
+        "errors": "401; 403 admin without session, unmapped collaborators, association-scoped context, athletes; 405; 400 ['<Field> is required'], ['Email is not valid.'], DRF field errors; 404 {'msg': 'message not found.'}; 500 non-dict bodies, non-string email, rejected message_id, immutable QueryDict, no association, no configuration (after the writes), send_email exceptions (after the writes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; path not in the registry (FULL collaborators only).",
+        "resource_scope": "request.user.sport_association; Message by id and association; first CommunicationConfiguration by key.",
+        "side_effects": "Message create (audited, direct), MessageTransaction per recipient, SMTP verify + delivery with audited balance save, or send_mail_async publish.",
+        "transaction": "autocommit per create/save (not atomic)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/communications_send_email_http.json",
+        "TESTS/fixtures/generate_communications_send_email_http.py",
+        "TESTS/contracts/test_communications_send_email_http.py",
+        "TESTS/adapters/django/communications_send_email_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/communications-send-email.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 55/55; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-native-r4/results.json",
+          "receipt_sha256": "08d175c62f858884285159ff3e84e466d194c9a5431dd21e0ae68a119f25d5e6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 55/55 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-versioned-r1/results.json",
+          "receipt_sha256": "045a880fa1b1967e8c7a040ab31dc846f635f7eab765c7a85aaa687c57ad35a6"
+        },
+        {
+          "revision": "daily limit compared with > instead of >=",
+          "result": "Mutation control: fails Go on communications-send-email-limit-reached",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-mutation-r1/results.json",
+          "receipt_sha256": "23f913fab72cd398a6894ddcd1accd00abd6543e8fdf3a208d840a1c070f0a17"
+        }
+      ],
+      "notes": [
+        "Implementing: Every create autocommits (Go: one transaction per step). SMTP deliveries outside smtpsend's subset are refused before any write whenever the configuration would take the SMTP path. send_email's (False, exception) is the 500 page after the writes."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/send/post -> configuration_send_post",
