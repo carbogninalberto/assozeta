@@ -24,6 +24,9 @@ type PaymentStates struct {
 	// tasks publishes approve's print_document_invoice; nil refuses that path.
 	tasks celery.Publisher
 	log   *slog.Logger
+	// paid and notifier run approve's paid flow (invoice, notification); nil refuses it.
+	paid     domain.PaymentPaidFlowStore
+	notifier *SubscriptionNotifier
 }
 
 func NewPaymentStates(store domain.PaymentStateStore, now func() time.Time) *PaymentStates {
@@ -33,6 +36,13 @@ func NewPaymentStates(store domain.PaymentStateStore, now func() time.Time) *Pay
 // WithTasks lets approve dispatch the invoice PDF task through the Celery producer.
 func (s *PaymentStates) WithTasks(tasks celery.Publisher) *PaymentStates {
 	s.tasks = tasks
+	return s
+}
+
+// WithPaidFlow lets approve mark unpaid income payments with a party paid
+// (invoice creation, course subscription flags and the notification).
+func (s *PaymentStates) WithPaidFlow(store domain.PaymentPaidFlowStore, notifier *SubscriptionNotifier) *PaymentStates {
+	s.paid, s.notifier = store, notifier
 	return s
 }
 
@@ -169,8 +179,7 @@ func (s *PaymentStates) save(ctx context.Context, tx domain.PaymentStateTransact
 // the association, then atomically the payment. A paid payment answers with
 // the message; an unpaid one is marked paid (an expense also pays its first
 // supplier invoice). Unpaid income payments with an associate, supplier or
-// instructor (invoice, notification and PDF task) and paid invoiced payments
-// with a truthy generate_invoice (PDF task) are refused before any write.
+// instructor run the paid flow (approvePaid) when it is configured.
 func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIdentity, request PaymentStateRequest, body any) (map[string]any, error) {
 	id, err := messageReadsParseUUID(request.ID)
 	if err != nil {
@@ -185,7 +194,12 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 	if err != nil {
 		return nil, err
 	}
-	tx, err := s.store.BeginPaymentState(ctx)
+	var tx domain.PaymentStateTransaction
+	if s.paid != nil && s.notifier != nil {
+		tx, err = s.paid.BeginPaymentPaidFlow(ctx)
+	} else {
+		tx, err = s.store.BeginPaymentState(ctx)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +249,11 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 		return map[string]any{"data": map[string]any{"msg": "payment mark as payed.", "payment": item}}, nil
 	}
 	if !row.Expense && (row.AssociateID != nil || row.SupplierID != nil || row.InstructorID != nil) {
-		return nil, domain.ErrPaymentStateNotPorted
+		flow, ok := tx.(domain.PaymentPaidFlowTransaction)
+		if !ok {
+			return nil, domain.ErrPaymentStateNotPorted
+		}
+		return s.approvePaid(ctx, flow, identity, request, object, row, association, group, sent, generate)
 	}
 	paymentDate := row.PaymentDate
 	if sent != nil {

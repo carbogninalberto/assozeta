@@ -2,9 +2,9 @@
 
 `POST instructor/add`, `PATCH instructor/<uid>/update`, `DELETE instructor/<uid>/delete`,
 `POST instructor/<uid>/hours/add/compensation`, `GET instructor/lessons-hours` and
-`GET instructor/<uid>/lessons-hours` (function views in `BE/application/views/instructor_views.py`)
+`GET instructor/<uid>/lessons-hours` and `GET instructor/report` (function views in `BE/application/views/instructor_views.py`)
 are implemented in Go (`BE_GO/internal/{domain,dto,repository,service,handler}/instructor_writes.go`,
-`service/instructor_lessons.go`). Django remains the production execution owner. Registry keys:
+`service/instructor_lessons.go`, `{domain,repository,service}/instructor_report.go`). Django remains the production execution owner. Registry keys:
 `association.instructor.create`, `.update`, `.delete`, `.read` (lessons-hours) and
 `association.instructor.hours.create` (compensation). `Allow` is the decorated method plus OPTIONS;
 OPTIONS has no `actions`, and lessons-hours describes itself with the view docstring.
@@ -60,10 +60,23 @@ OPTIONS has no `actions`, and lessons-hours describes itself with the view docst
 - Requests are not atomic in Django; Go runs each request in one transaction and commits the work
   Django keeps before its exceptions.
 
-## Not ported
+## Report
 
-- `instructor/report` stays on Django: every success path builds an XLSX export (pandas/xlsxwriter) of the
-  attendance report.
+`instructor/report` (`association.instructor.read`, OPTIONS `Instructor Report`): `request.user.sport_association` first
+(athletes 403 `User is not a sport association`, owners without one 500), then both `start_date` and `end_date` (400
+`{'msg': 'Entrambe le date sono richieste.'}`), parsed day first (Go: `D/M/YYYY` with `/`, `-` or `.`; a date that does not
+exist is a 500) as 00:00:00 and 23:59:59 Europe/Rome. Every attendance registry of the association (database order), its days
+in range by date; the day's event is the first whose `event_id` equals `str(associated_event)` (a non-object event or one
+without `event_id` met before it raises), a matched event without `title` raises (the log line reads it); the instructors of
+`extendedProps.instructor` (an object's `str(instructor_id)`, a list's items' `instructor_id`; other shapes raise) that belong to
+the user add a row: names, course title, day title, the description (falsy is `''`), the Rome date `%d/%m/%Y %H:%M`, the attendee
+count and the attendees and expected absences as `Concat(first, ' ', last)` of live course subscriptions by their exact id text,
+else `Atleta cancellato` (a malformed id is a 500). Rows sort by first name, last name and date. The report is pandas' xlsxwriter
+workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)) + 2` widths.
+`200 {'data': {'results': [...], 'report_file': base64}}`.
+
+## Not ported
+- report: other date spellings, course subscription ids that are not str or None, workbook inputs the writer refuses.
 - Refused with a 500 before any write: a non-canonical `X-Group-Id` spelling (auditlog would record it as
   sent); calculation amounts that are Decimal infinities or NaNs, have exponents beyond ±100000, or whose
   percentage product exceeds the 28-digit context.
@@ -79,3 +92,7 @@ OPTIONS has no `actions`, and lessons-hours describes itself with the view docst
 - Mutation (`mutation-r1`): dropping `NOT paid` from the compensation's hour selection fails Go on
   `instructor-writes-comp-owner-selected-hours` (CAUGHT).
 - `instructor-hours`, `instructor-info` and `instructor-list` re-run green natively (shared `main.go` route block).
+- Report (33 more cases after lessons-hours, 150 in all; a registry of all-day events, attendance days, associates and course
+  subscriptions; workbooks compared with `TESTS/contracts/xlsx.py`): RED `xlsx-red-r1` (Django 150/150, Go 404 on
+  `report-owner`), GREEN `xlsx-versioned-r1` on all four transports, mutation `xlsx-mutation-r1` (UTC instead of Europe/Rome
+  dates fail `report-owner`, CAUGHT).

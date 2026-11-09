@@ -82,8 +82,9 @@ The producer gained `Task.ArgsList` with a golden case captured from Celery/komb
   `generate_invoice_json` with the `a38` library) and then calls `print_document_customer_invoice.apply(...)` synchronously. The only
   path without the synchronous task is the XML-generation exception (`200 {'error': 'Errore durante la generazione del file XML.'}`),
   which depends on reproducing `a38`'s validation. Stays with invoice-parties (refused).
-- `payment/<uid>/approve` of unpaid income payments with a party: needs `NotificationService.send_notification` (Redis list and
-  Channels WebSocket push), not Celery. Unchanged (refused).
+- `payment/<uid>/approve` of unpaid income payments with a party: ported by payment-state's paid flow (invoice numbering with
+  `use_payment_date=True` under the same advisory lock, `NotificationService.send_notification` through
+  `SubscriptionNotifier`), see [payment-state](payment-state.md).
 
 ## Concurrency
 
