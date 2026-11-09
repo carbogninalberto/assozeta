@@ -91,7 +91,7 @@
             <dl class="details">
                 {#if info.origin}<div><dt>URL dell’istanza</dt><dd>{info.origin}</dd></div>{/if}
                 {#if info.association?.id}<div><dt>Associazione</dt><dd>{info.association.name || info.association.id}</dd></div>{/if}
-                {#if info.state !== 'disconnected'}<div><dt>Accesso automatico</dt><dd>{info.forwarding_enabled ? 'Attivo' : 'Non attivo'}</dd></div>{/if}
+                {#if info.state !== 'disconnected'}<div><dt>Accesso automatico</dt><dd>{info.forwarding_enabled ? 'Attivo su Bakney' : 'Non attivo'}</dd></div>{/if}
                 {#if info.checked_at}<div><dt>Ultima verifica</dt><dd title={formatDate(info.checked_at)}>{formatRelative(info.checked_at)}</dd></div>{/if}
             </dl>
         {/if}

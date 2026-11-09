@@ -27,6 +27,8 @@ async function session(browser, viewport, token = input.token) {
 
 for (const viewport of viewports) {
     test(`${phase}: ${viewport.name}`, async ({browser}) => {
+        // The operations phase saves, reloads and runs live diagnostics (up to 45 s).
+        if (phase === 'operations') test.setTimeout(180000);
         const {context, page} = await session(browser, viewport);
         try {
             if (phase === 'operations') {
@@ -70,6 +72,7 @@ for (const viewport of viewports) {
                     await drawer.getByRole('button', {name: 'Chiudi'}).click();
                 }
                 await page.reload();
+                await tabs.getByRole('tab', {name: 'Panoramica'}).click();
                 await page.getByRole('button', {name: /^Servizi/}).click();
                 await expect(page.getByRole('dialog', {name: 'Stato dei servizi'}).locator('.diagnostic-result').filter({has: page.getByText('Database', {exact: true})})).toContainText('Verificato');
                 await page.keyboard.press('Escape');

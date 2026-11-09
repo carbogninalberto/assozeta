@@ -158,6 +158,8 @@ async function peer(req,res) {
     }
     return json(res,404,{error:'not_found'});
 }
+// Pairing actions other than the first code live in the card's ⋯ menu.
+let pairingAction;
 async function seed(page,base,session,extras={}) {
     await page.goto(base+'/fixture-blank.html');
     await page.evaluate(({session,extras})=>{localStorage.clear();sessionStorage.clear();for(const [key,value]of Object.entries({sessionToken:session.access_token,refreshToken:session.refresh_token,expires:Date.now()+session.expires_in*1000,userData:{...session.user_data,requires_welcome:false},role:session.role,currentPage:'dashboard',...extras}))localStorage.setItem(key,JSON.stringify(value));},{session,extras});
@@ -229,6 +231,7 @@ try {
     browser=await chromium.launch({headless:true,args:['--no-proxy-server','--host-resolver-rules=MAP *.test 127.0.0.1']});
     const context=await browser.newContext({ignoreHTTPSErrors:true,viewport:{width:1360,height:1000},permissions:['clipboard-read','clipboard-write']});
     const admin=await context.newPage();
+    pairingAction=async label=>{await admin.getByRole('button',{name:'Altre azioni Bakney'}).click();await admin.getByRole('menuitem',{name:label,exact:true}).click();};
     // Preserve startup failures before any pairing secret is generated. Keep
     // URLs free of queries/fragments and do not export storage or response bodies.
     const startupErrors=[];
@@ -240,8 +243,8 @@ try {
     admin.on('response',startupResponse);
     await admin.route('**/api/instance/admin/releases*',r=>r.fulfill({json:{relation:'current',history:[],pending:[],page:1,next_page:null,total:0,latest:null}}));
     try {
-        await seed(admin,origin,receiver.owner);await admin.goto(origin+'/#/profile?page=self-instance&tab=overview');
-        await expect(admin.getByRole('button',{name:'Genera codice di collegamento',exact:true})).toBeVisible({timeout:30000});
+        await seed(admin,origin,receiver.owner);await admin.goto(origin+'/#/profile?page=self-instance&tab=pairing');
+        await expect(admin.getByRole('button',{name:'Genera codice',exact:true})).toBeVisible({timeout:30000});
     } catch(error) {
         await fs.writeFile(path.join(output,'startup-failure.json'),JSON.stringify({stage:'before-pairing',errors:startupErrors},null,2));
         await admin.screenshot({path:path.join(output,'startup-failure.png'),fullPage:true});
@@ -251,7 +254,7 @@ try {
         admin.off('requestfailed',startupRequestFailed);
         admin.off('response',startupResponse);
     }
-    await admin.getByRole('button',{name:'Genera codice di collegamento',exact:true}).click({timeout:30000});
+    await admin.getByRole('button',{name:'Genera codice',exact:true}).click({timeout:30000});
     let secret=await admin.getByLabel('Codice di collegamento',{exact:true}).inputValue();assert.equal(secret.length,43);
     await admin.getByRole('button',{name:'Copia codice',exact:true}).click();assert(await admin.evaluate(()=>navigator.clipboard.readText())===secret,'Copied pairing code differs');
     let setupPage;
@@ -274,12 +277,12 @@ try {
             await request(authority+'/api/pairing/v1/settings',{method:'PATCH',data:{forwarding:true}});
         }
     }
-    await register();await admin.getByRole('button',{name:'Nascondi codice'}).click();
-    await admin.getByRole('button',{name:'Aggiorna stato',exact:true}).click();
-    await expect(admin.getByText('Collegato',{exact:true})).toBeVisible();await expect(admin.getByText('Abilitato su Bakney',{exact:true})).toBeVisible();
+    await register();await admin.getByRole('button',{name:'Nascondi',exact:true}).click();
+    await pairingAction('Aggiorna stato');
+    await expect(admin.getByText('Collegato',{exact:true})).toBeVisible();await expect(admin.getByText('Attivo su Bakney',{exact:true})).toBeVisible();
     await admin.screenshot({path:path.join(output,'pairing-desktop.png')});await admin.setViewportSize({width:390,height:844});
     assert(await admin.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await admin.screenshot({path:path.join(output,'pairing-mobile.png'),fullPage:true});
-    checks.push('Panoramica: generated/copyable code, challenge/commit, verified status and separate forwarding status; desktop/mobile');
+    checks.push('Impostazioni → Bakney: generated/copyable code, challenge/commit, verified status and separate forwarding status; desktop/mobile');
     const normal=await browser.newContext({ignoreHTTPSErrors:true});const page=await normal.newPage();
     page.on('response',response=>{const url=new URL(response.url());if(response.status()>=400 && url.pathname.includes('/pairing/'))console.log('Pairing response:',url.pathname,response.status());});
     await enterApp(page,()=>launch(page));assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('userData')).user_id),users.alice.user_id);
@@ -316,16 +319,16 @@ try {
     if(real)await request(authority+'/api/fixture',{method:'POST',data:{reset_throttles:true}});
     checks.push('Replayed callback, bad state/PKCE, expired code, unavailable Bakney and inactive local account preserve the session without loops');
     // Regeneration/removal are immediately local, with server-to-server revocation retried explicitly by the fixture.
-    await admin.getByRole('button',{name:'Rigenera codice',exact:true}).click();await admin.getByRole('button',{name:'Continua',exact:true}).click();
+    await pairingAction('Rigenera codice');await admin.getByRole('dialog').getByRole('button',{name:'Genera',exact:true}).click();
     secret=await admin.getByLabel('Codice di collegamento',{exact:true}).inputValue();
     await request(origin+'/api/fixture',{method:'POST',data:{deliver_revocations:true}});
-    await register();await admin.getByRole('button',{name:'Nascondi codice'}).click();await admin.getByRole('button',{name:'Aggiorna stato',exact:true}).click();
+    await register();await admin.getByRole('button',{name:'Nascondi',exact:true}).click();await pairingAction('Aggiorna stato');
     await expect(admin.getByText('Collegato',{exact:true})).toBeVisible();
-    await expect(admin.getByText('Abilitato su Bakney',{exact:true})).toBeVisible();
+    await expect(admin.getByText('Attivo su Bakney',{exact:true})).toBeVisible();
     await launch(page);
     await expect(page.getByRole('button',{name:'Conferma cambio account'})).toBeVisible();
     await enterApp(page,()=>page.getByRole('button',{name:'Conferma cambio account'}).click());
-    await admin.getByRole('button',{name:'Rimuovi collegamento',exact:true}).click();await admin.getByRole('button',{name:'Continua',exact:true}).click();
+    await pairingAction('Rimuovi collegamento');await admin.getByRole('dialog').getByRole('button',{name:'Rimuovi',exact:true}).click();
     await expect(admin.getByText('Non collegato',{exact:true})).toBeVisible();await request(origin+'/api/fixture',{method:'POST',data:{deliver_revocations:true}});
     const status=await request(authority+'/api/pairing/v1/settings',{token:central?.owner.access_token});assert.equal(status.data.status,'revoked');
     const retained=await page.evaluate(()=>localStorage.getItem('sessionToken'));
