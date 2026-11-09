@@ -3,7 +3,7 @@
 `documents/list`, `documents/<pk>/move` and `documents/<pk>/delete` map
 `DocumentArchiveViewSet` actions (`BE/application/views/archive_views.py`) and are
 implemented in Go (`BE_GO/internal/{domain,dto,repository,service,handler}/documents_archive.go`).
-`documents/bulk-delete` is implemented too. Add and update are not ported yet.
+`documents/bulk-delete` is implemented too. Add and update are in `documents-writes.md`.
 
 ## List behavior
 

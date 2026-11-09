@@ -1,9 +1,11 @@
 // Package documentobjects reads stored documents from the S3 default storage
 // the way PrintingService does: default_storage.exists (HeadObject, 404 means
-// absent) and a direct GetObject stream. It never writes or deletes objects.
+// absent) and a direct GetObject stream, and stores uploads the way
+// S3Storage._save does (one PutObject). It never deletes objects.
 package documentobjects
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"errors"
@@ -19,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/ratelimit"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go/logging"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/s3trust"
@@ -131,6 +134,35 @@ func (s *S3) Open(ctx context.Context, key string) (*Object, error) {
 		return nil, err
 	}
 	return &Object{Body: output.Body, ContentLength: output.ContentLength, ContentType: output.ContentType, ContentEncoding: output.ContentEncoding}, nil
+}
+
+// Upload is the ExtraArgs S3Storage._get_write_parameters passes to
+// upload_fileobj: ContentType and ContentEncoding from mimetypes.guess_type,
+// AWS_S3_OBJECT_PARAMETERS' CacheControl and AWS_DEFAULT_ACL ("" for unset).
+type Upload struct {
+	ContentType, ContentEncoding, CacheControl, ACL string
+}
+
+// Put stores body under key in one PutObject (uploads below boto3's 8 MiB
+// multipart threshold; larger bodies are stored the same way, in one request).
+func (s *S3) Put(ctx context.Context, key string, body []byte, upload Upload) error {
+	client, err := s.client(ctx)
+	if err != nil {
+		return err
+	}
+	input := &s3.PutObjectInput{Bucket: aws.String(s.options.Bucket), Key: aws.String(key), Body: bytes.NewReader(body),
+		ContentLength: aws.Int64(int64(len(body))), ContentType: aws.String(upload.ContentType)}
+	if upload.ContentEncoding != "" {
+		input.ContentEncoding = aws.String(upload.ContentEncoding)
+	}
+	if upload.CacheControl != "" {
+		input.CacheControl = aws.String(upload.CacheControl)
+	}
+	if upload.ACL != "" {
+		input.ACL = types.ObjectCannedACL(upload.ACL)
+	}
+	_, err = client.PutObject(ctx, input)
+	return err
 }
 
 // identityTransport keeps stored bytes unchanged (botocore never asks for a

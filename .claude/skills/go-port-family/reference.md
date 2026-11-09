@@ -95,8 +95,13 @@ Each item was confirmed by an authored family passing on Django. Cite the family
 - Values: `supplierUUID`, `supplierRelated`, `pythonTypeName`, `PythonStr`, `pythonBool`,
   `DRFDecimal`, `dto.DRFUTCDateTime`, `parsePaymentCategoryBoolean`, `parsePaymentCategoryDate`.
 
+- Document uploads (`documents-writes.md`): `DocumentUploads.save` (`documentkey.UploadName`,
+  `documentkey.S3Key`, `pymime.GuessType`, `documentobjects.S3.Put`), `dto.PythonB64Decode`,
+  the Django multipart parse (`parseDjangoMultipart`, files as `domain.RequestFile`); write
+  families with storage effects own a MinIO through the runner's `service_context` hook.
+
 ## Not portable yet (refuse explicitly before any write)
 
-S3 document uploads (Document + storage save), printing tasks (`print_document_*`), Celery
+Printing tasks (`print_document_*`), Celery
 task dispatch, and synchronous PDF generation. Defer routes that need them or refuse the
 specific input with a 500 before writing, and document it.
