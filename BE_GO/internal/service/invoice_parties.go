@@ -17,6 +17,8 @@ type InvoiceParties struct {
 	store domain.InvoicePartyStore
 	now   func() time.Time
 	ids   func() string
+	// customerSync carries the valid customer add (invoice-sync-print); nil refuses it.
+	customerSync *invoiceSyncCustomer
 }
 
 func NewInvoiceParties(store domain.InvoicePartyStore, now func() time.Time, ids func() string) *InvoiceParties {
@@ -31,6 +33,8 @@ type InvoicePartyRequest struct {
 	Query    domain.RequestObject
 	Group    string
 	Audit    domain.LoginAuditContext
+	// Authorization is request.headers.get('authorization') (nil when absent).
+	Authorization *string
 }
 
 func invoicePartyStr(value bool) string {
@@ -146,8 +150,8 @@ func (s *InvoiceParties) unique(ctx context.Context, errors dto.InvoicePartyErro
 
 func invoicePartyGroup(header string) *string { return supplierGroup(header) }
 
-// CustomerAdd follows invoice_customers_add up to the serializer's validation;
-// a valid invoice would be saved and turned into XML and a PDF (not ported).
+// CustomerAdd follows invoice_customers_add: the serializer's validation, then
+// (with WithCustomerInvoiceSync) the save, XML/JSON and print task.
 func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRequest) error {
 	association, err := s.userAssociation(ctx, request.Identity)
 	if err != nil {
@@ -216,7 +220,10 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 		return &dto.InvoicePartyValidationError{Errors: dto.InvoicePartyErrors{"non_field_errors": []string{
 			dto.InvoicePartyText + "Invoice already exists!"}}}
 	}
-	return domain.ErrInvoicePartyNotPorted
+	if s.customerSync == nil {
+		return domain.ErrInvoicePartyNotPorted
+	}
+	return s.customerAddSave(ctx, request, association, object)
 }
 
 // CustomerUpdate follows invoice_customers_update: paid and transmitted are

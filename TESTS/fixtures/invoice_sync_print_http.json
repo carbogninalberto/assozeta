@@ -1,0 +1,6272 @@
+{
+ "matrix_version": 1,
+ "scope": "invoice/<uid>/update and invoice-customers/add with their eager print tasks (outbound GET to CURRENT_HOST, restore gate), payment, invoice, customer invoice and audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "category": {
+  "id": "a1000000-0000-4000-8000-000000998001",
+  "name": "Quote <sync> & co"
+ },
+ "documents": {
+  "pdf": {
+   "id": "a1000000-0000-4000-8000-000000998002",
+   "token": "a1000000-0000-4000-8000-000000998003",
+   "filename": "ricevuta.pdf",
+   "filepath": "docs/ricevuta-sync.pdf",
+   "size": 2048,
+   "created": "2026-02-03T08:00:00Z"
+  },
+  "attached": {
+   "id": "a1000000-0000-4000-8000-000000998004",
+   "token": "a1000000-0000-4000-8000-000000998005",
+   "filename": "allegato.pdf",
+   "filepath": "docs/allegato-sync.pdf",
+   "size": 1024,
+   "created": "2026-02-04T08:00:00Z"
+  }
+ },
+ "supplier": {
+  "id": "a1000000-0000-4000-8000-000000998006",
+  "name": "Fornitore <sync>",
+  "vat_number": "01234567890",
+  "email": "fornitore-sync@example.test"
+ },
+ "instructor": {
+  "id": "a1000000-0000-4000-8000-000000998007",
+  "first": "Ivo",
+  "last": "Rossi & Figli"
+ },
+ "associates": {
+  "anna": {
+   "id": "a1000000-0000-4000-8000-000000998008",
+   "first": "Anna",
+   "last": "Bianchi",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": false
+  },
+  "bruno": {
+   "id": "a1000000-0000-4000-8000-000000998009",
+   "first": "Bruno",
+   "last": "O'Neil & C",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": false
+  },
+  "carla": {
+   "id": "a1000000-0000-4000-8000-000000998010",
+   "first": "Carla",
+   "last": "Gialli",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": "a1000000-0000-4000-8000-000000714001",
+   "deleted": false
+  },
+  "dora": {
+   "id": "a1000000-0000-4000-8000-000000998011",
+   "first": "Dora",
+   "last": "Cancellata",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": true
+  },
+  "hans": {
+   "id": "a1000000-0000-4000-8000-000000998012",
+   "first": "Hans",
+   "last": "Muller",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false
+  }
+ },
+ "invoices": {
+  "i_plain": {
+   "id": "a1000000-0000-4000-8000-000000998013",
+   "number": 1,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": true,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": "anna",
+   "cancelled": false,
+   "attached": true
+  },
+  "i_other": {
+   "id": "a1000000-0000-4000-8000-000000998014",
+   "number": 2,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_sub": {
+   "id": "a1000000-0000-4000-8000-000000998015",
+   "number": 3,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_course": {
+   "id": "a1000000-0000-4000-8000-000000998016",
+   "number": 4,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_install": {
+   "id": "a1000000-0000-4000-8000-000000998017",
+   "number": 5,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_carnet": {
+   "id": "a1000000-0000-4000-8000-000000998018",
+   "number": 6,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_reason": {
+   "id": "a1000000-0000-4000-8000-000000998019",
+   "number": 7,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_supplier": {
+   "id": "a1000000-0000-4000-8000-000000998020",
+   "number": 8,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_instructor": {
+   "id": "a1000000-0000-4000-8000-000000998021",
+   "number": 9,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_noparty": {
+   "id": "a1000000-0000-4000-8000-000000998022",
+   "number": 10,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_transfer": {
+   "id": "a1000000-0000-4000-8000-000000998023",
+   "number": 11,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_long": {
+   "id": "a1000000-0000-4000-8000-000000998024",
+   "number": 12,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_overflow": {
+   "id": "a1000000-0000-4000-8000-000000998025",
+   "number": 13,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_two": {
+   "id": "a1000000-0000-4000-8000-000000998026",
+   "number": 14,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_group": {
+   "id": "a1000000-0000-4000-8000-000000998027",
+   "number": 15,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": "a1000000-0000-4000-8000-000000714001",
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_foreignpay": {
+   "id": "a1000000-0000-4000-8000-000000998028",
+   "number": 16,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_cancelled": {
+   "id": "a1000000-0000-4000-8000-000000998029",
+   "number": 17,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": true,
+   "attached": false
+  },
+  "i_archived": {
+   "id": "a1000000-0000-4000-8000-000000998030",
+   "number": 90,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": true,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_deleted": {
+   "id": "a1000000-0000-4000-8000-000000998031",
+   "number": 91,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": true,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  },
+  "i_foreign": {
+   "id": "a1000000-0000-4000-8000-000000998032",
+   "number": 92,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "created": "2026-01-05T09:00:00Z",
+   "archived": false,
+   "deleted": false,
+   "group": null,
+   "document": false,
+   "membership_fee": "0.00",
+   "activity_fee": "10.00",
+   "description": "Ricevuta seed",
+   "tutor": null,
+   "cancelled": false,
+   "attached": false
+  }
+ },
+ "payments": {
+  "p_other": {
+   "id": "a1000000-0000-4000-8000-000000998033",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Quota <palestra>",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998014",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000998008",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_sub": {
+   "id": "a1000000-0000-4000-8000-000000998034",
+   "type": "default",
+   "subject": 1,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": "2026-02-10T10:30:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Iscrizione",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998015",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000998008",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": {
+    "subscription_data": {
+     "name": "Quota <A>",
+     "id": "q-a"
+    }
+   },
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_course": {
+   "id": "a1000000-0000-4000-8000-000000998035",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Corso nuoto",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998016",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000998009",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_install": {
+   "id": "a1000000-0000-4000-8000-000000998036",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Rata yoga",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998017",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000998008",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_carnet": {
+   "id": "a1000000-0000-4000-8000-000000998037",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Carnet",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998018",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000998009",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_reason": {
+   "id": "a1000000-0000-4000-8000-000000998038",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": null,
+   "payment_category_id": null,
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998019",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000998008",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_supplier": {
+   "id": "a1000000-0000-4000-8000-000000998039",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Rimborso \"spese\"",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998020",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": "a1000000-0000-4000-8000-000000998006",
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_instructor": {
+   "id": "a1000000-0000-4000-8000-000000998040",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": null,
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998021",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": "a1000000-0000-4000-8000-000000998007",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_noparty": {
+   "id": "a1000000-0000-4000-8000-000000998041",
+   "type": "default",
+   "subject": 2,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Varie",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998022",
+   "user_id": null,
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_transfer": {
+   "id": "a1000000-0000-4000-8000-000000998042",
+   "type": "default",
+   "subject": 3,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998023",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000998008",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_long": {
+   "id": "a1000000-0000-4000-8000-000000998043",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Causale lunga xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998024",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_two_deleted": {
+   "id": "a1000000-0000-4000-8000-000000998390",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Cancellato",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998026",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": true,
+   "group_id": null,
+   "course": null
+  },
+  "p_two_a": {
+   "id": "a1000000-0000-4000-8000-000000998391",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Prima",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998026",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_two_b": {
+   "id": "a1000000-0000-4000-8000-000000998392",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Seconda",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998026",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_nogroup": {
+   "id": "a1000000-0000-4000-8000-000000998044",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Fuori gruppo",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998027",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_foreignpay": {
+   "id": "a1000000-0000-4000-8000-000000998045",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Estero",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000998028",
+   "user_id": "a1000000-0000-4000-8000-000000700007",
+   "associate_id": "a1000000-0000-4000-8000-000000998012",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_free": {
+   "id": "a1000000-0000-4000-8000-000000998046",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-03-01T08:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Pagamento libero",
+   "payment_category_id": "a1000000-0000-4000-8000-000000998001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  }
+ },
+ "subscriptions": {
+  "sub_anna": {
+   "id": "a1000000-0000-4000-8000-000000998047",
+   "associate": "a1000000-0000-4000-8000-000000998008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "payment": "a1000000-0000-4000-8000-000000998034",
+   "start": "2025-09-01",
+   "end": "2026-08-31",
+   "group": null,
+   "created": "2026-01-10T08:00:00Z"
+  },
+  "sub_bruno": {
+   "id": "a1000000-0000-4000-8000-000000998048",
+   "associate": "a1000000-0000-4000-8000-000000998009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "payment": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "created": "2026-01-10T08:00:00Z"
+  }
+ },
+ "memberships": {
+  "mem_anna": {
+   "id": "a1000000-0000-4000-8000-000000998049",
+   "subscription": "a1000000-0000-4000-8000-000000998047",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "type": "FIDAL"
+  }
+ },
+ "courses": {
+  "nuoto": {
+   "id": "a1000000-0000-4000-8000-000000998050",
+   "title": "Nuoto & Co"
+  },
+  "yoga": {
+   "id": "a1000000-0000-4000-8000-000000998051",
+   "title": "Yoga"
+  }
+ },
+ "course_subscriptions": {
+  "cs_nuoto": {
+   "id": "a1000000-0000-4000-8000-000000998052",
+   "course": "nuoto",
+   "subscription": "sub_bruno",
+   "payment": "p_course"
+  },
+  "cs_yoga": {
+   "id": "a1000000-0000-4000-8000-000000998053",
+   "course": "yoga",
+   "subscription": "sub_anna",
+   "payment": null
+  }
+ },
+ "installments": {
+  "inst_yoga": {
+   "id": "a1000000-0000-4000-8000-000000998054",
+   "course_subscription": "cs_yoga",
+   "payment": "p_install"
+  }
+ },
+ "carnets": {
+  "carnet": {
+   "id": "a1000000-0000-4000-8000-000000998055",
+   "title": "Carnet <10>"
+  }
+ },
+ "carnet_subscriptions": {
+  "carsub": {
+   "id": "a1000000-0000-4000-8000-000000998056",
+   "carnet": "carnet",
+   "subscription": "sub_bruno",
+   "payment": "p_carnet"
+  }
+ },
+ "cases": [
+  {
+   "name": "invoice-sync-print-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.documents.invoices.update"
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-update-admin-without-session",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-update-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-update-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Invoice Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-update-malformed-uid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-list-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": [
+    "number"
+   ]
+  },
+  {
+   "name": "invoice-sync-print-update-string-body-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": "number"
+  },
+  {
+   "name": "invoice-sync-print-update-missing-number-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "cancelled": true
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-athlete-server-error",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "athlete",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner_without_association",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-unknown-invoice-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000720009/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-archived-invoice-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998030/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-deleted-invoice-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998031/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-foreign-invoice-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998032/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-other-group-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-number-text-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": "x"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-number-null-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": null
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-number-decimal-text-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": "1.5"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-number-list-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": [
+     1
+    ]
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-number-infinite-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "raw_body": "{\"number\": 1e999}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "invoice-sync-print-update-tutor-malformed-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1,
+    "selected_tutor": "abc"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-tutor-blank-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1,
+    "selected_tutor": ""
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-tutor-float-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1,
+    "selected_tutor": 1.5
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-tutor-object-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 1,
+    "selected_tutor": {
+     "id": 1
+    }
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-text-number-clears-tutor",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 12,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 12,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "1",
+        "12"
+       ],
+       "selected_tutor": [
+        "a1000000-0000-4000-8000-000000998008",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": "12"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-float-number-string-cancelled",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 7,
+     "archived": false,
+     "cancelled": true,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 7,
+      "cancelled": true,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "12",
+        "7"
+       ],
+       "cancelled": [
+        "False",
+        "True"
+       ],
+       "selected_tutor": [
+        "None",
+        "a1000000-0000-4000-8000-000000998008"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 7.9,
+    "cancelled": "false",
+    "selected_tutor": "a1000000-0000-4000-8000-000000998008"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-tutor-deleted-kept",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 7,
+     "archived": false,
+     "cancelled": true,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 7,
+      "cancelled": true,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 7,
+    "cancelled": true,
+    "selected_tutor": "a1000000-0000-4000-8000-000000998011"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-tutor-null-kept",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 7,
+     "archived": false,
+     "cancelled": true,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 7,
+      "cancelled": true,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 7,
+    "cancelled": true,
+    "selected_tutor": null
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-tutor-integer-kept",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 7,
+     "archived": false,
+     "cancelled": true,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 7,
+      "cancelled": true,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 7,
+    "cancelled": true,
+    "selected_tutor": 5
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-tutor-resolved-by-id",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 7,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998012",
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 7,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998012"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "cancelled": [
+        "True",
+        "False"
+       ],
+       "selected_tutor": [
+        "a1000000-0000-4000-8000-000000998008",
+        "a1000000-0000-4000-8000-000000998012"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 7,
+    "selected_tutor": "a1000000-0000-4000-8000-000000998012"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-bool-number-upper-tutor",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 1,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998009",
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 1,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998009"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "7",
+        "1"
+       ],
+       "selected_tutor": [
+        "a1000000-0000-4000-8000-000000998012",
+        "a1000000-0000-4000-8000-000000998009"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": true,
+    "cancelled": 0,
+    "selected_tutor": "A1000000-0000-4000-8000-000000998009"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-spaced-number",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 8,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998009",
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 8,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998009"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "1",
+        "8"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": " 8 ",
+    "cancelled": [],
+    "selected_tutor": "a1000000-0000-4000-8000-000000998009"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-form-body",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 9,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "invoices": {
+     "i_plain": {
+      "number": 9,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "8",
+        "9"
+       ],
+       "selected_tutor": [
+        "a1000000-0000-4000-8000-000000998009",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "raw_body": "number=9&cancelled=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-sync-print-update-plain-admin-impersonating",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 10,
+     "archived": false,
+     "cancelled": true,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "admin",
+    "invoices": {
+     "i_plain": {
+      "number": 10,
+      "cancelled": true,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "9",
+        "10"
+       ],
+       "cancelled": [
+        "False",
+        "True"
+       ],
+       "selected_tutor": [
+        "None",
+        "a1000000-0000-4000-8000-000000998008"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 10,
+    "cancelled": "x",
+    "selected_tutor": "a1000000-0000-4000-8000-000000998008"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-restore-completed-no-print",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 11,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 11,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "10",
+        "11"
+       ],
+       "cancelled": [
+        "True",
+        "False"
+       ],
+       "selected_tutor": [
+        "a1000000-0000-4000-8000-000000998008",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "restore": {
+    "state": "completed",
+    "completed_at": "2026-01-01T00:00:00Z"
+   },
+   "body": {
+    "number": 11
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-restore-review-prints",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 12,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 12,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "11",
+        "12"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": {
+    "state": "review",
+    "completed_at": null
+   },
+   "body": {
+    "number": 12
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-restore-completed-without-date-prints",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 13,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 13,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "12",
+        "13"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": {
+    "state": "completed",
+    "completed_at": null
+   },
+   "body": {
+    "number": 13
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-print-error-swallowed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 14,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 14,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "13",
+        "14"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 500,
+      "body": "renderer down"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 14
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-plain-print-redirect-followed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998013",
+     "document_token": "a1000000-0000-4000-8000-000000998003",
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 15,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": "a1000000-0000-4000-8000-000000998002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": [
+      "a1000000-0000-4000-8000-000000998004"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_plain": {
+      "number": 15,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998013",
+      "action": 1,
+      "changes": {
+       "number": [
+        "14",
+        "15"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998013?send_receipt_email=False",
+     "reply": {
+      "status": 302,
+      "location": "/document/redirected?x=1"
+     }
+    },
+    {
+     "path": "/document/redirected?x=1",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 15
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-number-out-of-range-audited-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998025/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998025",
+      "action": 1,
+      "changes": {
+       "number": [
+        "13",
+        "2147483648"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 2147483648
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-cancelled-null-uncancels",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998029",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 17,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_cancelled": {
+      "number": 17,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998029",
+      "action": 1,
+      "changes": {
+       "cancelled": [
+        "True",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998029?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 17,
+    "cancelled": null
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-other-subject-payment-date",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998014/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998014",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+     "number": 21,
+     "archived": false,
+     "cancelled": true,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_other": {
+      "number": 21,
+      "cancelled": true,
+      "description": "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
+     }
+    },
+    "payments": {
+     "p_other": {
+      "payment_date": "2026-05-06T00:00:00Z"
+     }
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "payment",
+      "key": "a1000000-0000-4000-8000-000000998033",
+      "action": 1,
+      "changes": {
+       "payment_date": [
+        "None",
+        "2026-05-06 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998014",
+      "action": 1,
+      "changes": {
+       "number": [
+        "2",
+        "21"
+       ],
+       "cancelled": [
+        "False",
+        "True"
+       ],
+       "selected_tutor": [
+        "None",
+        "a1000000-0000-4000-8000-000000998008"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998014?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 21,
+    "cancelled": "false",
+    "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+    "payment_date": "2026-05-06"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-other-unchanged-payment-not-audited",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998014/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998014",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+     "number": 21,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_other": {
+      "number": 21,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
+     }
+    },
+    "payments": {
+     "p_other": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998014",
+      "action": 1,
+      "changes": {
+       "cancelled": [
+        "True",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998014?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 21,
+    "payment_date": "2026-05-06",
+    "selected_tutor": "a1000000-0000-4000-8000-000000998008"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-subscription-subject-invalid-date-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998015/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998015",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento per l'iscrizione 25/26 (Quota &lt;A&gt;)  e tesseramento, 2026 (FIDAL) di <b>Anna Bianchi</b> all'associazione <b>Message reads own</b>.",
+     "number": 31,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_sub": {
+      "number": 31,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento per l'iscrizione 25/26 (Quota &lt;A&gt;)  e tesseramento, 2026 (FIDAL) di <b>Anna Bianchi</b> all'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_sub": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998015",
+      "action": 1,
+      "changes": {
+       "number": [
+        "3",
+        "31"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento per l'iscrizione 25/26 (Quota &lt;A&gt;)  e tesseramento, 2026 (FIDAL) di <b>Anna Bianchi</b> all'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998015?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 31,
+    "payment_date": "not-a-date"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-course-subscription-number-date-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998016/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998016",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Bruno O&#x27;Neil &amp; C</b> per il corso <b>Nuoto &amp; Co</b> dell'associazione <b>Message reads own</b>.",
+     "number": 41,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_course": {
+      "number": 41,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento di <b>Bruno O&#x27;Neil &amp; C</b> per il corso <b>Nuoto &amp; Co</b> dell'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_course": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998016",
+      "action": 1,
+      "changes": {
+       "number": [
+        "4",
+        "41"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento di <b>Bruno O&#x27;Neil &amp; C</b> per il corso <b>Nuoto &amp; Co</b> dell'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998016?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 41,
+    "payment_date": 20260101
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-course-installment",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998017/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998017",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Anna Bianchi</b> per il corso <b>Yoga</b> dell'associazione <b>Message reads own</b>.",
+     "number": 51,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_install": {
+      "number": 51,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento di <b>Anna Bianchi</b> per il corso <b>Yoga</b> dell'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_install": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998017",
+      "action": 1,
+      "changes": {
+       "number": [
+        "5",
+        "51"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento di <b>Anna Bianchi</b> per il corso <b>Yoga</b> dell'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998017?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 51
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-carnet",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998018",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Bruno O&#x27;Neil &amp; C</b> per il corso <b>Carnet &lt;10&gt;</b> dell'associazione <b>Message reads own</b>.",
+     "number": 61,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "invoices": {
+     "i_carnet": {
+      "number": 61,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento di <b>Bruno O&#x27;Neil &amp; C</b> per il corso <b>Carnet &lt;10&gt;</b> dell'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_carnet": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998018",
+      "action": 1,
+      "changes": {
+       "number": [
+        "6",
+        "61"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento di <b>Bruno O&#x27;Neil &amp; C</b> per il corso <b>Carnet &lt;10&gt;</b> dell'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998018?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 61
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-course-reason-save-defaults",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998019/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998019",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Quota Corso",
+     "number": 71,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_reason": {
+      "number": 71,
+      "cancelled": false,
+      "description": "Quota Corso",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_reason": {
+      "payment_category_id": "$default_category",
+      "description": "Quota Corso"
+     }
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "payment",
+      "key": "a1000000-0000-4000-8000-000000998038",
+      "action": 1,
+      "changes": {
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "description": [
+        "None",
+        "Quota Corso"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998019",
+      "action": 1,
+      "changes": {
+       "number": [
+        "7",
+        "71"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Quota Corso"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998019?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 71
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-supplier-without-associate",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998020/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998020",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Fornitore &lt;sync&gt;</b> con causale <b>Rimborso &quot;spese&quot;</b> per l'associazione <b>Message reads own</b>.",
+     "number": 81,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_supplier": {
+      "number": 81,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento di <b>Fornitore &lt;sync&gt;</b> con causale <b>Rimborso &quot;spese&quot;</b> per l'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_supplier": {
+      "payment_date": "2026-06-01T00:00:00Z"
+     }
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "payment",
+      "key": "a1000000-0000-4000-8000-000000998039",
+      "action": 1,
+      "changes": {
+       "payment_date": [
+        "None",
+        "2026-06-01 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998020",
+      "action": 1,
+      "changes": {
+       "number": [
+        "8",
+        "81"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento di <b>Fornitore &lt;sync&gt;</b> con causale <b>Rimborso &quot;spese&quot;</b> per l'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998020?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 81,
+    "payment_date": "2026-06-01"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-instructor-category-reason",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998021/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998021",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento di <b>Ivo Rossi &amp; Figli</b> con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+     "number": 91,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_instructor": {
+      "number": 91,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento di <b>Ivo Rossi &amp; Figli</b> con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_instructor": {
+      "description": "Quote <sync> & co"
+     }
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "payment",
+      "key": "a1000000-0000-4000-8000-000000998040",
+      "action": 1,
+      "changes": {
+       "description": [
+        "None",
+        "Quote <sync> & co"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998021",
+      "action": 1,
+      "changes": {
+       "number": [
+        "9",
+        "91"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento di <b>Ivo Rossi &amp; Figli</b> con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998021?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 91
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-no-party",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998022/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998022",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Varie</b> per l'associazione <b>Message reads own</b>.",
+     "number": 101,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_noparty": {
+      "number": 101,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento con causale <b>Varie</b> per l'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_noparty": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998022",
+      "action": 1,
+      "changes": {
+       "number": [
+        "10",
+        "101"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento con causale <b>Varie</b> per l'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998022?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 101
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-first-live-payment-by-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998026/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998026",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Prima</b> per l'associazione <b>Message reads own</b>.",
+     "number": 141,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_two": {
+      "number": 141,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento con causale <b>Prima</b> per l'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_two_a": {}
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998026",
+      "action": 1,
+      "changes": {
+       "number": [
+        "14",
+        "141"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento con causale <b>Prima</b> per l'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998026?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 141
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-group-invoice-payment-and-tutor-outside-group",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998027/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998027",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 151,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": "a1000000-0000-4000-8000-000000714001",
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_group": {
+      "number": 151,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998027",
+      "action": 1,
+      "changes": {
+       "number": [
+        "15",
+        "151"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998027?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 151,
+    "selected_tutor": "a1000000-0000-4000-8000-000000998008"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-payment-resolved-by-invoice",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998028/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998028",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+     "number": 161,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": null,
+     "group": null,
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_foreignpay": {
+      "number": 161,
+      "cancelled": false,
+      "description": "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>.",
+      "selected_tutor_id": null
+     }
+    },
+    "payments": {
+     "p_foreignpay": {
+      "payment_date": "2026-07-01T00:00:00Z"
+     }
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "payment",
+      "key": "a1000000-0000-4000-8000-000000998045",
+      "action": 1,
+      "changes": {
+       "payment_date": [
+        "None",
+        "2026-07-01 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701002",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998028",
+      "action": 1,
+      "changes": {
+       "number": [
+        "16",
+        "161"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento con causale <b>Quote &lt;sync&gt; &amp; co</b> per l'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998028?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 161,
+    "payment_date": "2026-07-01"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-transfer-subject-saved-payment-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998023/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {
+     "p_transfer": {
+      "payment_date": "2026-08-01T00:00:00Z"
+     }
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "payment",
+      "key": "a1000000-0000-4000-8000-000000998042",
+      "action": 1,
+      "changes": {
+       "payment_date": [
+        "None",
+        "2026-08-01 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 111,
+    "payment_date": "2026-08-01"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-long-description-audited-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998024/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {
+     "p_long": {
+      "payment_date": "2026-08-02T00:00:00Z"
+     }
+    },
+    "customer": null,
+    "audit": [
+     {
+      "model": "payment",
+      "key": "a1000000-0000-4000-8000-000000998043",
+      "action": 1,
+      "changes": {
+       "payment_date": [
+        "None",
+        "2026-08-02 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998024",
+      "action": 1,
+      "changes": {
+       "number": [
+        "12",
+        "121"
+       ],
+       "description": [
+        "Ricevuta seed",
+        "Ricevuta di pagamento con causale <b>Causale lunga xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</b> per l'associazione <b>Message reads own</b>."
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "number": 121,
+    "payment_date": "2026-08-02"
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.documents.clientinvoices.create"
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Invoice Customers Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "invoice-sync-print-add-defaults",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 501,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": "$xml",
+      "pdf": null,
+      "json": "$json",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 501,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": 0,
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "501"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "True"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ],
+       "xml": [
+        "None",
+        "$xml"
+       ],
+       "json": [
+        "null",
+        "$json_audit"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/$customer",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 501
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-explicit-values",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "a1000000-0000-4000-8000-000000998057",
+      "prefix": "FE",
+      "number": 502,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": "12345678901",
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": false,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "2026-03-04",
+      "causal": null,
+      "lines": [
+       {
+        "description": "Corso <nuoto> & \"acqua\"",
+        "quantity": 2,
+        "unit_of_measure": "ore",
+        "unit_price": 19.99,
+        "vat": 22
+       },
+       {
+        "description": "Libro",
+        "quantity": 3,
+        "unit_of_measure": "pz",
+        "unit_price": "0.125",
+        "vat": "4"
+       },
+       {
+        "description": "Servizio",
+        "quantity": 1.5,
+        "unit_of_measure": "h",
+        "unit_price": 33.333,
+        "vat": 10.0
+       }
+      ],
+      "payment_condition": "TP01",
+      "payment_modality": "MP01",
+      "payment_total_amount": "120.50",
+      "payment_expiry_date": "2026-04-30",
+      "xml": "$xml",
+      "pdf": "a1000000-0000-4000-8000-000000998002",
+      "json": "$json",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": "a1000000-0000-4000-8000-000000998046",
+      "creation_date": "2026-02-03T04:05:06.123456Z",
+      "paid": true,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "a1000000-0000-4000-8000-000000998057",
+      "prefix": "FE",
+      "number": 502,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": "12345678901",
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": false,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "2026-03-04",
+      "causal": null,
+      "lines": [
+       {
+        "description": "Corso <nuoto> & \"acqua\"",
+        "quantity": 2,
+        "unit_of_measure": "ore",
+        "unit_price": 19.99,
+        "vat": 22
+       },
+       {
+        "description": "Libro",
+        "quantity": 3,
+        "unit_of_measure": "pz",
+        "unit_price": "0.125",
+        "vat": "4"
+       },
+       {
+        "description": "Servizio",
+        "quantity": 1.5,
+        "unit_of_measure": "h",
+        "unit_price": 33.333,
+        "vat": 10.0
+       }
+      ],
+      "payment_condition": "TP01",
+      "payment_modality": "MP01",
+      "payment_total_amount": "120.50",
+      "payment_expiry_date": "2026-04-30",
+      "xml": "<old/>",
+      "pdf": "a1000000-0000-4000-8000-000000998002",
+      "json": {
+       "big": 1e+20,
+       "small": 1e-05,
+       "n": 2
+      },
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": "a1000000-0000-4000-8000-000000998046",
+      "creation_date": "2026-02-03T04:05:06.123456Z",
+      "paid": true,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000998057"
+       ],
+       "prefix": [
+        "None",
+        "FE"
+       ],
+       "number": [
+        "None",
+        "502"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_vat_number": [
+        "None",
+        "12345678901"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "False"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "2026-03-04"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Corso <nuoto> & \\\"acqua\\\"\", \"quantity\": 2, \"unit_of_measure\": \"ore\", \"unit_price\": 19.99, \"vat\": 22}, {\"description\": \"Libro\", \"quantity\": 3, \"unit_of_measure\": \"pz\", \"unit_price\": \"0.125\", \"vat\": \"4\"}, {\"description\": \"Servizio\", \"quantity\": 1.5, \"unit_of_measure\": \"h\", \"unit_price\": 33.333, \"vat\": 10.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP01"
+       ],
+       "payment_modality": [
+        "None",
+        "MP01"
+       ],
+       "payment_total_amount": [
+        "None",
+        "120.50"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "2026-04-30"
+       ],
+       "xml": [
+        "None",
+        "<old/>"
+       ],
+       "pdf": [
+        "None",
+        "a1000000-0000-4000-8000-000000998002"
+       ],
+       "json": [
+        "None",
+        "{\"big\": 1e+20, \"n\": 2, \"small\": 1e-05}"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "a1000000-0000-4000-8000-000000998046"
+       ],
+       "creation_date": [
+        "None",
+        "2026-02-03 04:05:06.123456"
+       ],
+       "paid": [
+        "None",
+        "True"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "json": [
+        "{\"big\": 100000000000000000000, \"n\": 2, \"small\": 1e-05}",
+        "{\"big\": 1e+20, \"n\": 2, \"small\": 1e-05}"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "json": [
+        "{\"big\": 100000000000000000000, \"n\": 2, \"small\": 1e-05}",
+        "$json_audit"
+       ],
+       "xml": [
+        "<old/>",
+        "$xml"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/$customer",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": null,
+    "lines": [
+     {
+      "description": "Corso <nuoto> & \"acqua\"",
+      "quantity": 2,
+      "unit_of_measure": "ore",
+      "unit_price": 19.99,
+      "vat": 22
+     },
+     {
+      "description": "Libro",
+      "quantity": 3,
+      "unit_of_measure": "pz",
+      "unit_price": "0.125",
+      "vat": "4"
+     },
+     {
+      "description": "Servizio",
+      "quantity": 1.5,
+      "unit_of_measure": "h",
+      "unit_price": 33.333,
+      "vat": 10.0
+     }
+    ],
+    "payment_condition": "TP01",
+    "payment_modality": "MP01",
+    "customer_invoice_id": "a1000000-0000-4000-8000-000000998057",
+    "number": 502,
+    "prefix": "FE",
+    "transmitting_date": "2026-03-04",
+    "payment_expiry_date": "2026-04-30",
+    "payment_total_amount": "120.5",
+    "paid": true,
+    "transmitted": "false",
+    "e_invoice": 0,
+    "pdf": "a1000000-0000-4000-8000-000000998002",
+    "payment": "a1000000-0000-4000-8000-000000998046",
+    "creation_date": "2026-02-03T04:05:06.123456Z",
+    "xml": "<old/>",
+    "json": {
+     "big": 1e+20,
+     "small": 1e-05,
+     "n": 2
+    },
+    "transferor_vat_number": "12345678901"
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-xml-error-keeps-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "error": "Errore durante la generazione del file XML."
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 503,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": null,
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": "ABC1234",
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 503,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": null,
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": "ABC1234",
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": 0,
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "503"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "e_invoice": [
+        "None",
+        "True"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "id_transmitter": [
+        "None",
+        "ABC1234"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": null,
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 503,
+    "id_transmitter": "ABC1234"
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-restore-completed-no-print",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 504,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "10.00",
+      "payment_expiry_date": "$today",
+      "xml": "$xml",
+      "pdf": null,
+      "json": "$json",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 504,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "10.00",
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "504"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "True"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "10.00"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "xml": [
+        "None",
+        "$xml"
+       ],
+       "json": [
+        "null",
+        "$json_audit"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "restore": {
+    "state": "completed",
+    "completed_at": "2026-01-01T00:00:00Z"
+   },
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 504,
+    "payment_total_amount": 10
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-admin-impersonating-print-error",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "admin",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 505,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": "$xml",
+      "pdf": null,
+      "json": "$json",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 505,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "505"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "True"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0.00"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "xml": [
+        "None",
+        "$xml"
+       ],
+       "json": [
+        "null",
+        "$json_audit"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/$customer",
+     "reply": {
+      "status": 500,
+      "body": "renderer down"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 505,
+    "payment_total_amount": "0",
+    "transmitting_date": null
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-number-taken",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invoice already exists!"
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": null,
+    "audit": []
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 501,
+    "prefix": "FX"
+   }
+  }
+ ]
+}
