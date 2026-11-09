@@ -31244,25 +31244,105 @@
         "target": "document_einvoice_view",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/fatturapa/decimal.go",
+        "BE_GO/internal/fatturapa/fattura.go",
+        "BE_GO/internal/fatturapa/html_template.go",
+        "BE_GO/internal/fatturapa/json.go",
+        "BE_GO/internal/fatturapa/output.go",
+        "BE_GO/internal/fatturapa/values.go",
+        "BE_GO/internal/domain/invoice_views.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_views.go",
+        "BE_GO/internal/service/invoice_views_einvoice.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/handler/invoice_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/serializers/invoice_serializers.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
+        "BE/templates/document/application/invoice.html",
+        "BE/templates/document/application/invoice_classic.html",
+        "BE/requirements.txt",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/einvoice/<uid>/view/",
+          "/api/v2/document/einvoice/<uid>/view/",
+          "/api/document/einvoice/<uid>/view/"
+        ],
+        "request": "Path uid.",
+        "response": "200 text/html generate_invoice_html(CustomerInvoice) — the a38 FatturaPA model rendered as HTML; request language.",
+        "errors": "401 DRF challenge without a session or a matching DOCUMENT_BYPASS_TOKEN; 403 admin without a session, collaborator 'No permission mapping', scoped reference denial; 405 other methods; the stable 500 page for unhandled exceptions and refused inputs (non-ASCII bypass header included). A uid the field rejects, a missing row, a38 constructor errors or validation errors: the 500 page.",
+        "authentication": "DRF IsAuthenticated (JWT/session) | HasBypassAuthorizationHeader.",
+        "permissions": "IsAuthenticated | HasBypassAuthorizationHeader; no registry key.",
+        "resource_scope": "CustomerInvoice.objects.get(pk=uid): the row by id, no manager scope or group.",
+        "side_effects": "None (reads only).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_views_http.json",
+        "TESTS/fixtures/generate_invoice_views_http.py",
+        "TESTS/contracts/test_invoice_views_http.py",
+        "TESTS/adapters/django/invoice_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-native-r4/results.json",
+          "receipt_sha256": "277f1b5c721c2ad04c413dfadd9e91e1ab0c904f4ceb5a6cd00fc79eabe929c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-versioned-r2/results.json",
+          "receipt_sha256": "68f84793c5ff99b3bdc22f13788d1577dec1c870bea78d5ca9942e3b174346f2"
+        },
+        {
+          "revision": "committing change without the payment soft-delete filter in InvoiceViews.Payments",
+          "result": "Mutation control: fails Go on invoice-views-invoice-deleted-second-payment (the 500 page instead of the receipt).",
+          "artifact": "quality-reports/go-migration/invoice-views-http-mutation-r1/results.json",
+          "receipt_sha256": "2ade3201a743b948aee57927af799c3d5486fa1339114ea36d4f3241c322e01c"
+        }
+      ],
+      "notes": [
+        "Implementing: Both views render in Go with byte parity: document/invoice/<uid>/view/ builds the receipt context (OTHER description, course/carnet category name, meta payment categories with the float remainder, tutor, get_subscription and the first membership, the plan block, mentions, custom_data) for djtemplate; document/einvoice/<uid>/view/ renders generate_invoice_html through internal/fatturapa (a38 0.1.8 model, validation, Decimal cleaning and VAT summary rounding; golden-tested against a38 on 630 invoices). Refused before rendering (no writes): main tutor promotion, stored JSON outside the handled shapes, mention keys/markup and template inputs outside the document-views subset, FatturaPA shapes outside the proven subset (fatturapa.ErrUnsupported). invoice-customers/add and invoice/<uid>/update stay uncharacterized (see invoice-views.md, follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/invoice/<str:uid> -> document_invoice",
@@ -31376,25 +31456,105 @@
         "target": "document_invoice_view",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/fatturapa/decimal.go",
+        "BE_GO/internal/fatturapa/fattura.go",
+        "BE_GO/internal/fatturapa/html_template.go",
+        "BE_GO/internal/fatturapa/json.go",
+        "BE_GO/internal/fatturapa/output.go",
+        "BE_GO/internal/fatturapa/values.go",
+        "BE_GO/internal/domain/invoice_views.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_views.go",
+        "BE_GO/internal/service/invoice_views_einvoice.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/handler/invoice_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/serializers/invoice_serializers.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
+        "BE/templates/document/application/invoice.html",
+        "BE/templates/document/application/invoice_classic.html",
+        "BE/requirements.txt",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/invoice/<uid>/view/",
+          "/api/v2/document/invoice/<uid>/view/",
+          "/api/document/invoice/<uid>/view/"
+        ],
+        "request": "Path uid; X-Group-Id (a value the UUID field rejects is ignored).",
+        "response": "200 text/html invoice.html or invoice_classic.html (the association template) with the receipt context; request language.",
+        "errors": "401 DRF challenge without a session or a matching DOCUMENT_BYPASS_TOKEN; 403 admin without a session, collaborator 'No permission mapping', scoped reference denial; 405 other methods; the stable 500 page for unhandled exceptions and refused inputs (non-ASCII bypass header included). Missing/deleted/other-group invoice, none or two live payments, unknown payment type, invalid meta payment categories, a carnet subscription without a carnet, a course without a title in the courses list, a truthy non-dict custom_data: the 500 page.",
+        "authentication": "DRF IsAuthenticated (JWT/session) | HasBypassAuthorizationHeader.",
+        "permissions": "IsAuthenticated | HasBypassAuthorizationHeader; no registry key (collaborators get the No permission mapping 403).",
+        "resource_scope": "scoped_queryset on Invoice and Payment (impersonation boundary), live and X-Group-Id aware; related rows through the base manager.",
+        "side_effects": "None (reads only).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_views_http.json",
+        "TESTS/fixtures/generate_invoice_views_http.py",
+        "TESTS/contracts/test_invoice_views_http.py",
+        "TESTS/adapters/django/invoice_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-native-r4/results.json",
+          "receipt_sha256": "277f1b5c721c2ad04c413dfadd9e91e1ab0c904f4ceb5a6cd00fc79eabe929c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-versioned-r2/results.json",
+          "receipt_sha256": "68f84793c5ff99b3bdc22f13788d1577dec1c870bea78d5ca9942e3b174346f2"
+        },
+        {
+          "revision": "committing change without the payment soft-delete filter in InvoiceViews.Payments",
+          "result": "Mutation control: fails Go on invoice-views-invoice-deleted-second-payment (the 500 page instead of the receipt).",
+          "artifact": "quality-reports/go-migration/invoice-views-http-mutation-r1/results.json",
+          "receipt_sha256": "2ade3201a743b948aee57927af799c3d5486fa1339114ea36d4f3241c322e01c"
+        }
+      ],
+      "notes": [
+        "Implementing: Both views render in Go with byte parity: document/invoice/<uid>/view/ builds the receipt context (OTHER description, course/carnet category name, meta payment categories with the float remainder, tutor, get_subscription and the first membership, the plan block, mentions, custom_data) for djtemplate; document/einvoice/<uid>/view/ renders generate_invoice_html through internal/fatturapa (a38 0.1.8 model, validation, Decimal cleaning and VAT summary rounding; golden-tested against a38 on 630 invoices). Refused before rendering (no writes): main tutor promotion, stored JSON outside the handled shapes, mention keys/markup and template inputs outside the document-views subset, FatturaPA shapes outside the proven subset (fatturapa.ErrUnsupported). invoice-customers/add and invoice/<uid>/update stay uncharacterized (see invoice-views.md, follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/medical-appointment/<str:uid> -> document_medical_appointment",
