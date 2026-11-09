@@ -753,6 +753,7 @@ func run() (runErr error) {
 	routerStock.RegisterCourseSubscriptions(courseSubscriptionsHandler, courseEnrolmentHandler)
 	routerStockDestroy := service.NewRouterStockDestroy(repository.NewRouterStockDeletes(db, time.Now))
 	routerStock.RegisterPersonas(personasHandler, personasWritesHandler, routerStockDestroy)
+	routerStock.RegisterPersonaSubscriptions(personasWritesHandler, routerStockDestroy)
 	for _, path := range routerStock.Routes() {
 		e.Any(path, routerStock.Serve, middleware.DjangoSessionAudit(sessionAuthentication))
 	}
