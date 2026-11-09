@@ -435,7 +435,7 @@
     .spin { display: inline-flex; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .backups { width: 100%; border-collapse: collapse; }
-    .backups th { padding: 0 .75rem .5rem 0; font-size: .8125rem; font-weight: 600; color: var(--text-secondary); text-align: left; border-bottom: 1px solid var(--border-color); }
+    .backups th { padding: 0 .75rem .5rem 0; font-size: .8125rem; font-weight: 600; color: var(--text-secondary); text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border-color); }
     .backups td { padding: .75rem .75rem .75rem 0; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
     .backups tr:last-child td { border-bottom: 0; }
     .backups .num { text-align: right; white-space: nowrap; }

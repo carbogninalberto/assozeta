@@ -5023,11 +5023,11 @@
       "title": "Collegare il tuo account Stripe",
       "content_sha256": "b21544bb87be9a0c369fb3c45cca9667523e352edb4a3f2c574b748d94407c1b",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "d8450024f05b753f9b06f4d8a8fe01e34f6b23e3a9a561563068e791d0b3e6bf",
+      "recipe_sha256": "1614779ff6b57832e64376e68ad16558afa48bdf8a691da91a1647a45885d451",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "bfdf2ceede76da01b59d4ca75dba5138f636d5f4c5a143ced58357dabb6ad6b6",
-        "sha256": "d8450024f05b753f9b06f4d8a8fe01e34f6b23e3a9a561563068e791d0b3e6bf",
+        "previous_sha256": "d8450024f05b753f9b06f4d8a8fe01e34f6b23e3a9a561563068e791d0b3e6bf",
+        "sha256": "1614779ff6b57832e64376e68ad16558afa48bdf8a691da91a1647a45885d451",
         "purpose": "editorial-review-only"
       }
     },
@@ -5035,11 +5035,11 @@
       "title": "Verificare il collegamento",
       "content_sha256": "b08bc9d427618cde2d20a786bf5d214c0373a47bcaacc0f636d567fec3d85f63",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "3fc2663e1d9ccb41dea9537b5004f10d297cf8f2b949854beb8db0857cf0110e",
+      "recipe_sha256": "e28a594a00b1ee5bd463934a46cdc54c53f6efaa4d636529158d34b0fbdac606",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "475872ed8db7eb7bb2a74dc995e0d93c3a7c92a6aad00f91a4c049ed9da1ad33",
-        "sha256": "3fc2663e1d9ccb41dea9537b5004f10d297cf8f2b949854beb8db0857cf0110e",
+        "previous_sha256": "3fc2663e1d9ccb41dea9537b5004f10d297cf8f2b949854beb8db0857cf0110e",
+        "sha256": "e28a594a00b1ee5bd463934a46cdc54c53f6efaa4d636529158d34b0fbdac606",
         "purpose": "editorial-review-only"
       }
     },
@@ -5155,11 +5155,11 @@
       "title": "Come attivare Stripe",
       "content_sha256": "d255305518a51993005a0d55ceefc47df09ad1ad76a0858fe76a59df2c14b27f",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "b3e8d79a430f83732876a80d65fa4533136d7a8ed48eac2e1d6e10e2eb5e23f0",
+      "recipe_sha256": "595667eb4890c14380562af0a2ba49860a3cca2c1a206f8b712eefdadc8648e9",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "a95bbb7cccfe703e5ebbbe1e81e17609a600ae832b9fbec87f3156dd693e4379",
-        "sha256": "b3e8d79a430f83732876a80d65fa4533136d7a8ed48eac2e1d6e10e2eb5e23f0",
+        "previous_sha256": "b3e8d79a430f83732876a80d65fa4533136d7a8ed48eac2e1d6e10e2eb5e23f0",
+        "sha256": "595667eb4890c14380562af0a2ba49860a3cca2c1a206f8b712eefdadc8648e9",
         "purpose": "editorial-review-only"
       }
     },
@@ -5215,11 +5215,11 @@
       "title": "Posso disattivare i pagamenti online?",
       "content_sha256": "47f26838623cf3d2b04a3f3915dafe934148b1627fdf082ab8691007a2a844ea",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "b13895c354b8a8db1ba4dade44344251a7a1bc684beb8e792d27c688e7a2efde",
+      "recipe_sha256": "fd619deeea3b36b01569838faa6921d99b2075dc5a7e313b352afd3409f74b15",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "72e1a547031ac4a876e27decd6218004737432c442c69f18a214168dd37d9a34",
-        "sha256": "b13895c354b8a8db1ba4dade44344251a7a1bc684beb8e792d27c688e7a2efde",
+        "previous_sha256": "b13895c354b8a8db1ba4dade44344251a7a1bc684beb8e792d27c688e7a2efde",
+        "sha256": "fd619deeea3b36b01569838faa6921d99b2075dc5a7e313b352afd3409f74b15",
         "purpose": "editorial-review-only"
       }
     },

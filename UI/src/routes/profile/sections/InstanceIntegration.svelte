@@ -119,7 +119,7 @@
                 {#if provider === 'ai'}
                     <p class="si-hint">I messaggi e i dati necessari a rispondere vengono inviati al provider configurato.</p>
                     <div class="si-grid-2">
-                        <label>Chiave API<input class="form-control" type="password" bind:value={secretKey} maxlength="2000" autocomplete="new-password" placeholder={config.api_key_configured ? 'Salvata · lascia vuoto per mantenerla' : 'Chiave del provider'} disabled={clearSecret} aria-label="Chiave API" /></label>
+                        <label>Chiave API<input class="form-control" type="password" bind:value={secretKey} maxlength="2000" autocomplete="new-password" placeholder={config.api_key_configured ? 'Salvata (lascia vuoto)' : 'Chiave del provider'} disabled={clearSecret} aria-label="Chiave API" /></label>
                         <div class="si-field align-end">{#if config.api_key_configured}<Switch id="ai-clear-key" label="Rimuovi chiave API" bind:checked={clearSecret} disabled={!!secretKey} />{/if}</div>
                         {#each aiFields as field}
                             <label>{field.label}
@@ -138,11 +138,11 @@
                     <div class="si-grid-2">
                         <label class="span-2">Chiave pubblica Stripe<input class="form-control" bind:value={draft.public_key} maxlength="300" autocomplete="off" placeholder="pk_live_…" required={draft.enabled} /></label>
                         <div class="si-field">
-                            <label>Chiave segreta Stripe<input class="form-control" type="password" bind:value={secretKey} maxlength="500" autocomplete="new-password" placeholder={config.secret_key_configured ? 'Salvata · lascia vuoto per mantenerla' : 'sk_live_…'} disabled={clearSecret} /></label>
+                            <label>Chiave segreta Stripe<input class="form-control" type="password" bind:value={secretKey} maxlength="500" autocomplete="new-password" placeholder={config.secret_key_configured ? 'Salvata (lascia vuoto)' : 'sk_live_…'} disabled={clearSecret} /></label>
                             {#if config.secret_key_configured}<Switch id="stripe-clear-key" label="Rimuovi chiave segreta Stripe" bind:checked={clearSecret} disabled={!!secretKey} />{/if}
                         </div>
                         <div class="si-field">
-                            <label>Firma webhook Stripe<input class="form-control" type="password" bind:value={webhookSecret} maxlength="500" autocomplete="new-password" placeholder={config.webhook_secret_configured ? 'Salvata · lascia vuoto per mantenerla' : 'whsec_…'} disabled={clearWebhook} /></label>
+                            <label>Firma webhook Stripe<input class="form-control" type="password" bind:value={webhookSecret} maxlength="500" autocomplete="new-password" placeholder={config.webhook_secret_configured ? 'Salvata (lascia vuoto)' : 'whsec_…'} disabled={clearWebhook} /></label>
                             {#if config.webhook_secret_configured}<Switch id="stripe-clear-webhook" label="Rimuovi firma webhook Stripe" bind:checked={clearWebhook} disabled={!!webhookSecret} />{/if}
                         </div>
                     </div>
