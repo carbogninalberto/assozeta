@@ -20875,25 +20875,82 @@
         "target": "subscription_approve",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_approve.go",
+        "BE_GO/internal/repository/subscription_approve.go",
+        "BE_GO/internal/service/subscription_approve.go",
+        "BE_GO/internal/handler/subscription_approve.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/celery/python.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/subscriptions_views.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/signals.py",
+        "BE/application/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/approve",
+          "/api/v2/subscription/<uid>/approve",
+          "/api/subscription/<uid>/approve"
+        ],
+        "request": "No body. uid in the path (is_valid_uuid); X-Group-Id selects the group.",
+        "response": "200 {\"data\": {\"msg\": \"subscription approved.\"}}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 401 anonymous; 403 admin without session, registry, owner scoped to an athlete, another association's row (User not allowed.), an accepted row (User cannot change the status of the subscription.); 404 {\"msg\": \"Subscription not found.\"} (also outside X-Group-Id); 405; 500 page for athletes and owners without an association and for a publish failure after the save.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (identity, impersonation and registry association.members.update).",
+        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the group-aware Subscription.objects row by pk (soft-deleted rows found; limited to the association under an association impersonation) must belong to that association.",
+        "side_effects": "status_flag=4, acceptance_date=UTC date of timezone.now(); a row without a signature takes signature_storage_key/signature_url from the newest other accepted/pending row of the same associate (associate None matches None) with a signature column, when that row has_signature; Subscription.save() fills missing dates; one auditlog update entry (acceptance_date as str(datetime)), indexed direct; then one Celery message check_workflows_trigger(trigger_type='subscription_approved', sport_association_id=UUID, subscription_id=UUID) on queue celery.",
+        "transaction": "Django autocommits the save, then publishes (no on_commit). Go: one transaction committed, then the publish (not cancelled with the request); a publish failure is a 500 with the save kept, as in Django.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_approve_http.json",
+        "TESTS/fixtures/generate_subscription_approve_http.py",
+        "TESTS/contracts/test_subscription_approve_http.py",
+        "TESTS/adapters/django/subscription_approve_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-approve.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 27/27; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-approve-http-native-r1/results.json",
+          "receipt_sha256": "e0fbffc926463a9fe50f0a9950262b387795e1ef9a157763c71826ae965a0c38"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact subscription, audit, index and Celery message effects, and a real Django worker executing the last published message (and refusing it after a later data restore).",
+          "artifact": "quality-reports/go-migration/subscription-approve-http-versioned-r1/results.json",
+          "receipt_sha256": "f61ceb088366d0620e322080886ea11e288fab4982e1643e983ce2762abd1716"
+        },
+        {
+          "revision": "committing change with subscription_id published as a string instead of a UUID",
+          "result": "Mutation control: fails Go on subscription-approve-pending (celery.headers: kwargsrepr).",
+          "artifact": "quality-reports/go-migration/subscription-approve-http-mutation-r1/results.json",
+          "receipt_sha256": "bc988c5d0178eb412bff291f8a3e3a9ed8699fc3ca1c606321eb7931d3770b34"
+        }
+      ],
+      "notes": [
+        "Implementing: Go publishes the check_workflows_trigger Celery message (protocol 2, Redis DB 0, queue celery, assozeta_published_at stamp) after the commit through internal/celery (docs/architecture/go-migration/celery-producer.md); Django workers execute it. Nothing on the route is refused."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/archive -> subscription_archive",
@@ -32556,8 +32613,11 @@
         "decorator": "receiver(subscription_approved)",
         "arguments": "sender, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/subscription_approve.go",
+        "BE_GO/internal/celery/celery.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -32568,13 +32628,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "check_workflows_trigger.delay(trigger_type='subscription_approved', sport_association_id=<association UUID>, subscription_id=<subscription UUID>) published to the Redis broker; executed by Django workers.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_approve_http.json",
+        "TESTS/fixtures/generate_subscription_approve_http.py",
+        "TESTS/contracts/test_subscription_approve_http.py",
+        "TESTS/adapters/django/subscription_approve_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-approve.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 27/27; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-approve-http-native-r1/results.json",
+          "receipt_sha256": "e0fbffc926463a9fe50f0a9950262b387795e1ef9a157763c71826ae965a0c38"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact subscription, audit, index and Celery message effects, and a real Django worker executing the last published message (and refusing it after a later data restore); exercised by subscription-approve-pending, subscription-approve-replaces-acceptance, subscription-approve-rejected, subscription-approve-fills-dates, subscription-approve-group-full-collaborator, subscription-approve-soft-deleted-row, subscription-approve-admin-impersonating-owner, subscription-approve-copies-signature, subscription-approve-blank-signature-not-copied, subscription-approve-own-signature-kept, subscription-approve-group-scoped-signature, subscription-approve-without-associate-signature, subscription-approve-signature-source-soft-deleted.",
+          "artifact": "quality-reports/go-migration/subscription-approve-http-versioned-r1/results.json",
+          "receipt_sha256": "f61ceb088366d0620e322080886ea11e288fab4982e1643e983ce2762abd1716"
+        },
+        {
+          "revision": "committing change with subscription_id published as a string instead of a UUID",
+          "result": "Mutation control: fails Go on subscription-approve-pending (celery.headers: kwargsrepr).",
+          "artifact": "quality-reports/go-migration/subscription-approve-http-mutation-r1/results.json",
+          "receipt_sha256": "bc988c5d0178eb412bff291f8a3e3a9ed8699fc3ca1c606321eb7931d3770b34"
+        }
+      ],
+      "notes": [
+        "Implementing via subscription-approve: Reproduced in Go for subscription/<uid>/approve; the Celery message is compared with Django's on every case and executed by a real worker."
+      ]
     },
     {
       "id": "signal:BE/application/signals.py:subscription_signed_callback",
