@@ -362,6 +362,9 @@ func run() (runErr error) {
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/stats", paymentReadsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/payments", paymentReadsHandler.SubscriptionPayments, middleware.DjangoSessionAudit(sessionAuthentication))
+	paymentExportHandler := handler.NewPaymentExportHandler(service.NewPaymentExport(repository.NewPaymentExport(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities)
+	e.Any("/payment/list/export", paymentExportHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionReadsHandler := handler.NewSubscriptionReadsHandler(service.NewSubscriptionReads(repository.NewSubscriptionReads(db),
 		repository.NewCourseSubscriptions(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/subscription/list", subscriptionReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
