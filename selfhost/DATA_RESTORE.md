@@ -1,8 +1,9 @@
 # Restore a Bakney association export
 
 On an already configured, single-association self-hosted installation, the actual
-instance owner can open **Gestione Dati → Ripristina backup**. The page uses the
-same navigation, alerts, review panel and history controls as Self Instance.
+instance owner can open **Profilo → Istanza → Backup → Trasferisci dati → Importa
+da Bakney**. The import runs in a drawer, one step at a time: file, summary,
+typed confirmation, progress and result.
 Collaborators and administrators impersonating the owner cannot use these APIs.
 
 1. Upload a complete Bakney ZIP (`bakney_sport_export_v1`, version `1.0.0`).
@@ -172,7 +173,7 @@ node selfhost/tests/browser/data-restore-ui.mjs
 npm --prefix UI run build:vite:production
 ```
 
-The browser test uses isolated API fixtures and the actual Gestione Dati components
+The browser test uses isolated API fixtures and the actual Trasferisci dati components
 at desktop/mobile widths. It checks validation failures, typed confirmation,
 missing-media consent, reload, connection errors, resume, failure/completion,
 recovery pagination/download, fresh profile retrieval before completion reload,

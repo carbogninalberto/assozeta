@@ -30,7 +30,7 @@ const server = await createServer({
             if (id === '\0fixture-exportProgressStore.js') return `import {writable} from 'svelte/store'; export const exportProgress = Object.assign(writable({active:false}), {applySnapshot(){}});`;
             if (id === '\0fixture-NotificationService.js') return `export default {syncActiveExport: async () => {}, subscribeRestoreProgress(callback) { window.restoreProgressFixture = callback; return () => { window.restoreProgressFixture = null; }; }};`;
             if (id === '\0fixture-permissions') return `export const canPerformAction = () => true;`;
-            if (id === '\0fixture-entry') return `import DataManagement from '/src/routes/profile/sections/DataManagement.svelte'; window.__bakney = {env:{API:{ASSOCIATION:{EXPORT:{LIST:'/fixture/exports', START:'/fixture/export'}}, DOCUMENT:{RETRIEVE:'/fixture/document'}}}}; new DataManagement({target: document.getElementById('app'), props:{instanceOwner: !location.search.includes('non-owner')}});`;
+            if (id === '\0fixture-entry') return `import '/src/routes/profile/sections/selfInstance.css'; import DataManagement from '/src/routes/profile/sections/DataManagement.svelte'; import DataTransfer from '/src/routes/profile/sections/DataTransfer.svelte'; window.__bakney = {env:{API:{ASSOCIATION:{EXPORT:{LIST:'/fixture/exports', START:'/fixture/export'}}, DOCUMENT:{RETRIEVE:'/fixture/document'}}}}; const target = document.getElementById('app'); if (location.search.includes('bakney')) new DataManagement({target, props:{instanceOwner:false}}); else { target.classList.add('si-page'); new DataTransfer({target}); }`;
         },
         configureServer(vite) {
             vite.middlewares.use(async (req, res, next) => {
@@ -126,20 +126,29 @@ try {
         });
         await page.goto('http://127.0.0.1:5199/');
         await page.evaluate(() => import('/restore-entry.js'));
-        await expect(page.getByRole('heading', {name:'Gestione Dati',exact:true})).toBeVisible({timeout:30000});
-        await expect(page.getByRole('button',{name:'Avvia Export',exact:true})).toBeVisible();
-        await page.getByRole('button',{name:'Ripristina backup',exact:true}).click();
-        await expect(page.getByText('Formato ZIP · Dimensione massima 5 GB', {exact:true})).toBeVisible();
-        const picker = page.getByRole('button',{name:'Seleziona backup ZIP',exact:true});
+        const card = page.getByRole('region', {name:'Trasferisci dati', exact:true});
+        await expect(card.getByRole('heading', {name:'Trasferisci dati', exact:true})).toBeVisible({timeout:30000});
+        await expect(card.getByRole('button',{name:'Esporta dati',exact:true})).toBeVisible();
+        await expect(card.getByText('Ancora nessun export.', {exact:true})).toBeVisible();
+        const openImport = card.getByRole('button',{name:'Importa da Bakney',exact:true});
+        const drawer = page.getByRole('dialog', {name:'Importa da Bakney'});
+        await openImport.click();
+        await expect(drawer.getByRole('heading', {name:'Scegli il file', exact:true})).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(drawer).toHaveCount(0);
+        await expect(openImport).toBeFocused();
+        await openImport.click();
+        await expect(drawer.getByText('Solo export ZIP di Bakney, non i backup del server. Massimo 5 GB.', {exact:true})).toBeVisible();
+        const picker = drawer.getByRole('button',{name:'Seleziona backup ZIP',exact:true});
         await expect(picker).toBeEnabled();
         const [chooser] = await Promise.all([
             page.waitForEvent('filechooser'),
             picker.press('Enter'),
         ]);
         await chooser.setFiles({name:'wrong.txt',mimeType:'text/plain',buffer:Buffer.from('fixture')});
-        await expect(page.getByRole('alert')).toContainText('Seleziona un solo file ZIP');
+        await expect(drawer.getByRole('alert')).toContainText('Seleziona un solo file ZIP');
         // Exercise the size boundary without allocating or uploading a 5 GB file.
-        await page.locator('input[type=file]').evaluate(input => {
+        await drawer.locator('input[type=file]').evaluate(input => {
             const transfer = new DataTransfer();
             const oversized = new File(['fixture'], 'oversized.zip', {type:'application/zip'});
             Object.defineProperty(oversized, 'size', {value:5*1024**3 + 1});
@@ -147,113 +156,121 @@ try {
             input.files = transfer.files;
             input.dispatchEvent(new Event('change', {bubbles:true}));
         });
-        await expect(page.getByRole('alert')).toContainText('Il file supera il limite di 5 GB');
+        await expect(drawer.getByRole('alert')).toContainText('Il file supera il limite di 5 GB');
         await picker.evaluate(element => {
             const transfer = new DataTransfer();
             transfer.items.add(new File(['fixture'], 'dropped-backup.ZIP', {type:'application/zip'}));
             element.dispatchEvent(new DragEvent('drop', {bubbles:true,cancelable:true,dataTransfer:transfer}));
         });
-        await expect(page.getByText('dropped-backup.ZIP',{exact:true})).toBeVisible();
-        await page.getByRole('button',{name:'Rimuovi backup selezionato',exact:true}).click();
+        await expect(drawer.getByText('dropped-backup.ZIP',{exact:true})).toBeVisible();
+        await drawer.getByRole('button',{name:'Rimuovi backup selezionato',exact:true}).click();
         await expect(picker).toBeVisible();
-        await page.screenshot({path:path.join(output,`${viewport.width}-upload.png`),fullPage:true});
-        await page.locator('input[type=file]').setInputFiles({name:'bakney.zip',mimeType:'application/zip',buffer:Buffer.from('fixture')});
-        await expect(page.getByText('bakney.zip',{exact:true})).toBeVisible();
+        await page.waitForTimeout(300);
+        await page.screenshot({path:path.join(output,`${viewport.width}-upload.png`)});
+        await drawer.locator('input[type=file]').setInputFiles({name:'bakney.zip',mimeType:'application/zip',buffer:Buffer.from('fixture')});
+        await expect(drawer.getByText('bakney.zip',{exact:true})).toBeVisible();
         failUpload = true;
-        await page.getByRole('button',{name:'Carica e verifica backup',exact:true}).click();
-        await expect(page.getByRole('alert')).toContainText('Export incompleto');
+        await drawer.getByRole('button',{name:'Carica e verifica',exact:true}).click();
+        await expect(drawer.getByRole('alert')).toContainText('Export incompleto');
         failUpload = false;
-        await page.getByRole('button',{name:'Carica e verifica backup',exact:true}).click();
-        await expect(page.getByRole('heading',{name:'Backup verificato',exact:true})).toBeVisible();
-        await expect(page.getByText('Le 3 fatture del servizio Bakney', {exact:false})).toBeVisible();
-        await expect(page.getByText('Il backup contiene 58 collegamenti opzionali', {exact:false})).toBeVisible();
-        await expect(page.getByText('Tutori assegnati a questa associazione: 2', {exact:false})).toBeVisible();
-        await expect(page.getByText('Per 1 tutore il codice fiscale', {exact:false})).toBeVisible();
-        await page.getByRole('button',{name:'Scarica rapporto del backup',exact:true}).click();
+        await drawer.getByRole('button',{name:'Carica e verifica',exact:true}).click();
+        await expect(drawer.getByRole('heading',{name:'Backup verificato',exact:true})).toBeVisible();
+        await expect(drawer.getByText('Associazione Bakney',{exact:true})).toBeVisible();
+        await expect(drawer.getByText('3 fatture del servizio Bakney', {exact:false})).toBeVisible();
+        await expect(drawer.getByText('58 collegamenti opzionali', {exact:false})).toBeVisible();
+        await expect(drawer.getByText('2 tutori assegnati a questa associazione', {exact:false})).toBeVisible();
+        await expect(drawer.getByText('1 tutore ha un codice fiscale già in uso', {exact:false})).toBeVisible();
+        await drawer.getByRole('button',{name:'Scarica rapporto del backup',exact:true}).click();
         await expect.poll(()=>relationReports).toBe(1);
-        await page.getByRole('button',{name:'Visualizza rapporto',exact:true}).click();
-        await expect(page.getByText('Certificati medici → Utente', {exact:false})).toBeVisible();
-        await page.locator('summary').filter({hasText:'Certificati medici'}).click();
-        await expect(page.getByText('certificate-original-id',{exact:true})).toBeVisible();
-        await expect(page.getByText('missing-user-id',{exact:true})).toBeVisible();
-        await expect(page.getByText('Tutore di esempio',{exact:true})).toBeVisible();
-        await expect(page.getByText('RSSMRA80A01H501U',{exact:true})).toBeVisible();
+        await drawer.getByRole('button',{name:'Mostra rapporto',exact:true}).click();
+        const report = drawer.getByRole('region',{name:'Rapporto del backup'});
+        await expect(report.getByText('Certificati medici → Utente', {exact:false})).toBeVisible();
+        await expect(report.getByText('certificate-original-id',{exact:true})).toBeVisible();
+        await expect(report.getByText('missing-user-id',{exact:true})).toBeVisible();
+        await expect(report.getByText('Tutore di esempio',{exact:true})).toBeVisible();
+        await expect(report.getByText('RSSMRA80A01H501U',{exact:true})).toBeVisible();
         // Tutor conflicts must remain visible even when there are no missing links.
         op.preview.missing_relations = 0;
         await page.clock.runFor(4000);
-        await expect(page.getByText('Il backup contiene 58 collegamenti opzionali', {exact:false})).not.toBeVisible();
-        await expect(page.getByText('Per 1 tutore il codice fiscale', {exact:false})).toBeVisible();
+        await expect(drawer.getByText('58 collegamenti opzionali', {exact:false})).toHaveCount(0);
+        await expect(drawer.getByText('1 tutore ha un codice fiscale già in uso', {exact:false})).toBeVisible();
         op.preview.missing_relations = 58;
         await page.clock.runFor(4000);
-        const warningIcon = page.locator('.alert-light-warning .alert-icon').first();
-        await expect(warningIcon).toHaveCSS('color', 'rgb(154, 103, 0)');
-        const confirm = page.getByRole('button',{name:'Sostituisci i dati',exact:true});
+        await expect(drawer.locator('.notes .si-icon.warn').first()).toHaveCSS('color', 'rgb(194, 124, 0)');
+        await page.screenshot({path:path.join(output,`${viewport.width}-summary.png`)});
+        await drawer.getByRole('button',{name:'Continua',exact:true}).click();
+        await expect(drawer.getByRole('heading',{name:'Sostituire i dati attuali?',exact:true})).toBeVisible();
+        const confirm = drawer.getByRole('button',{name:'Sostituisci i dati',exact:true});
         await expect(confirm).toBeDisabled();
-        await page.getByLabel('Scrivi RIPRISTINA per confermare la sostituzione').fill('RIPRISTINA');
+        await drawer.getByLabel('Scrivi RIPRISTINA per confermare').fill('RIPRISTINA');
         await expect(confirm).toBeDisabled();
-        await setSwitch(page, 'restore-missing-media', 'Accetto che 2 allegati o firme non inclusi non siano recuperati', true);
+        await setSwitch(drawer, 'restore-missing-media', 'Accetto che 2 allegati o firme non inclusi non siano recuperati', true);
         await expect(confirm).toBeEnabled();
-        await page.screenshot({path:path.join(output,`${viewport.width}-review.png`),fullPage:true});
+        await page.screenshot({path:path.join(output,`${viewport.width}-review.png`)});
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('*')].filter(e => e.getBoundingClientRect().right > innerWidth + 1).slice(0, 12).map(e => [e.tagName,e.className,e.getBoundingClientRect().width]))));
+        assert.equal(await drawer.evaluate(element => element.scrollWidth <= element.clientWidth + 1), true, 'drawer overflows horizontally');
         await confirm.click();
-        await expect(page.getByRole('heading',{name:'In attesa del worker',exact:true})).toBeVisible();
+        await expect(drawer.getByRole('heading',{name:'In attesa del worker',exact:true})).toBeVisible();
         assert.equal(starts,1);
         await page.evaluate(() => window.restoreProgressFixture({operation_id:'fixture-restore', attempt:1, sequence:2,
             phase:'files', completed:1048576, total:2097152, unit:'bytes', percent:50, eta_seconds:120, updated_at:new Date().toISOString()}));
-        await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow','50');
-        await expect(page.getByText('Circa 2 min',{exact:true})).toBeVisible();
+        await expect(drawer.getByRole('progressbar')).toHaveAttribute('aria-valuenow','50');
+        await expect(drawer.getByText('Circa 2 min',{exact:true})).toBeVisible();
         await page.evaluate(() => window.restoreProgressFixture({operation_id:'fixture-restore', attempt:1, sequence:1,
             phase:'files', percent:10, updated_at:new Date().toISOString()}));
-        await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow','50');
-        await page.screenshot({path:path.join(output,`${viewport.width}-progress.png`),fullPage:true});
+        await expect(drawer.getByRole('progressbar')).toHaveAttribute('aria-valuenow','50');
+        await page.screenshot({path:path.join(output,`${viewport.width}-progress.png`)});
         await page.reload();
-        await page.getByRole('button',{name:'Ripristina backup',exact:true}).click();
-        await expect(page.getByRole('heading',{name:'In attesa del worker',exact:true})).toBeVisible();
+        await expect(card.getByText('Importazione in corso',{exact:true})).toBeVisible({timeout:30000});
+        await card.getByRole('button',{name:'Segui importazione',exact:true}).click();
+        await expect(drawer.getByRole('heading',{name:'In attesa del worker',exact:true})).toBeVisible();
         failStatus = true;
         await page.clock.fastForward(4500);
-        await expect(page.getByRole('alert')).toContainText('Connessione temporaneamente');
+        await expect(drawer.getByRole('alert')).toContainText('Connessione temporaneamente');
         failStatus = false;
-        await page.getByRole('button',{name:'Aggiorna stato',exact:true}).click();
-        await page.locator('summary').filter({hasText:'Il ripristino sembra fermo?'}).click();
-        await page.getByRole('button',{name:'Riprendi',exact:true}).click();
-        await expect(page.getByRole('heading',{name:'Creazione della copia di sicurezza',exact:true})).toBeVisible();
-        await expect(page.getByRole('button',{name:'Riprendi',exact:true})).toBeEnabled();
+        await drawer.getByRole('button',{name:'Riprova',exact:true}).click();
+        await expect(drawer.getByRole('alert')).toHaveCount(0);
+        await drawer.getByRole('button',{name:'Riprendi',exact:true}).click();
+        await expect(drawer.getByRole('heading',{name:'Creazione della copia di sicurezza',exact:true})).toBeVisible();
+        await expect(drawer.getByRole('button',{name:'Riprendi',exact:true})).toBeEnabled();
         op = {...op,state:'failed',stage:'failed',error:'I dati precedenti sono conservati.',has_recovery_backup:true};
         await page.clock.fastForward(4500);
-        await expect(page.getByRole('heading',{name:'Ripristino non riuscito',exact:true})).toBeVisible({timeout:10000});
-        await expect(page.getByRole('alert')).toContainText('I dati precedenti');
-        await page.getByRole('button',{name:'Chiudi esito ripristino',exact:true}).click();
-        await expect(page.getByRole('heading',{name:'Ripristino non riuscito',exact:true})).toHaveCount(0);
+        await expect(drawer.getByRole('heading',{name:'Ripristino non riuscito',exact:true})).toBeVisible({timeout:10000});
+        await expect(drawer.getByRole('alert')).toContainText('I dati precedenti');
+        await page.screenshot({path:path.join(output,`${viewport.width}-failed.png`)});
+        await drawer.getByRole('button',{name:'Riprova',exact:true}).click();
+        await expect(drawer.getByRole('heading',{name:'Ripristino non riuscito',exact:true})).toHaveCount(0);
+        await expect(drawer.getByRole('heading',{name:'Scegli il file',exact:true})).toBeVisible();
         await page.reload();
-        await page.getByRole('button',{name:'Ripristina backup',exact:true}).click();
-        await expect(page.getByRole('heading',{name:'Ripristino non riuscito',exact:true})).toHaveCount(0);
+        await card.getByRole('button',{name:'Importa da Bakney',exact:true}).click();
+        await expect(drawer.getByRole('heading',{name:'Scegli il file',exact:true})).toBeVisible({timeout:30000});
+        await expect(drawer.getByRole('heading',{name:'Ripristino non riuscito',exact:true})).toHaveCount(0);
         op = {...op,state:'completed',stage:'completed',error:'',preview:{...op.preview,dismissed:false}};
         await page.clock.fastForward(4500);
-        await expect(page.getByRole('button',{name:'Ricarica l’applicazione',exact:true})).toBeVisible({timeout:30000});
-        await page.locator('summary').filter({hasText:'Backup di sicurezza'}).click();
-        await page.getByRole('button',{name:'Carica backup precedenti',exact:true}).click();
-        await expect(page.getByRole('button',{name:'Scarica backup di sicurezza',exact:true})).toHaveCount(13);
-        await expect(page.getByRole('button',{name:'Carica backup precedenti',exact:true})).toHaveCount(0);
+        await expect(drawer.getByRole('button',{name:'Ricarica l’applicazione',exact:true})).toBeVisible({timeout:30000});
+        await drawer.getByRole('button',{name:'Mostra altri',exact:true}).click();
+        await expect(drawer.getByRole('button',{name:'Scarica backup di sicurezza',exact:true})).toHaveCount(13);
+        await expect(drawer.getByRole('button',{name:'Mostra altri',exact:true})).toHaveCount(0);
         const downloadStarted = page.waitForEvent('download');
-        await page.getByRole('button',{name:'Scarica backup di sicurezza',exact:true}).last().click();
+        await drawer.getByRole('button',{name:'Scarica backup di sicurezza',exact:true}).last().click();
         assert.equal((await downloadStarted).suggestedFilename(), 'recovery.zip');
         await expect.poll(()=>downloads).toBe(1);
         assert.equal(downloadedPath, '/api/instance/admin/data-restore/old-backup-11/download');
-        await page.screenshot({path:path.join(output,`${viewport.width}-completed.png`),fullPage:true});
+        await page.screenshot({path:path.join(output,`${viewport.width}-completed.png`)});
         await page.evaluate(() => {
             localStorage.setItem('userData', JSON.stringify({user_id:'owner-fixture',sport_association:{denomination:'Old ASD'}}));
             localStorage.setItem('selectedGroup', 'old-group');
             localStorage.setItem('sessionToken', 'retained-token');
             localStorage.setItem('refreshToken', 'retained-refresh');
         });
-        await page.getByRole('button',{name:'Ricarica l’applicazione',exact:true}).click();
-        await expect(page.getByRole('alert')).toContainText('Profilo non disponibile');
+        await drawer.getByRole('button',{name:'Ricarica l’applicazione',exact:true}).click();
+        await expect(drawer.getByRole('alert')).toContainText('Profilo non disponibile');
         assert.equal(profileFetches, 1);
         assert.equal(await page.evaluate(() => JSON.parse(localStorage.userData).sport_association.denomination), 'Old ASD');
         failProfile = false;
         await Promise.all([
             page.waitForNavigation({waitUntil:'domcontentloaded'}),
-            page.getByRole('button',{name:'Ricarica l’applicazione',exact:true}).click(),
+            drawer.getByRole('button',{name:'Ricarica l’applicazione',exact:true}).click(),
         ]);
         assert.equal(profileFetches, 2);
         assert.deepEqual(await page.evaluate(() => ({
@@ -261,14 +278,16 @@ try {
             token:localStorage.getItem('sessionToken'), refresh:localStorage.getItem('refreshToken'),
         })), {data:{user_id:'owner-fixture',sport_association:{denomination:'Restored ASD',tax_code:'RESTORED'}},
             group:null,token:'retained-token',refresh:'retained-refresh'});
-        await page.goto('http://127.0.0.1:5199/?non-owner');
-        await expect(page.getByRole('button',{name:'Ripristina backup',exact:true})).toHaveCount(0);
-        await expect(page.getByRole('button',{name:'Avvia Export',exact:true})).toBeVisible();
+        // Bakney keeps Gestione Dati as an export page without the import.
+        await page.goto('http://127.0.0.1:5199/?bakney');
+        await expect(page.getByRole('heading',{name:'Gestione Dati',exact:true})).toBeVisible({timeout:30000});
+        await expect(page.getByRole('button',{name:'Esporta dati',exact:true})).toBeVisible();
+        await expect(page.getByRole('button',{name:/Importa/})).toHaveCount(0);
         assert.deepEqual(errors, []);
         await context.close();
     }
-    await fs.writeFile(path.join(output,'report.json'),JSON.stringify({passed:true,checks:['desktop','mobile','export preserved','validation error','typed confirmation','missing media consent','reload','connection failure','resume','failed restore','completion','backup pagination and download','profile refresh before reload','profile refresh failure retry','authentication retained','owner visibility']},null,2));
-    console.log('PASS: desktop/mobile data restore review, confirmation, status reload, error recovery, completion and download.');
+    await fs.writeFile(path.join(output,'report.json'),JSON.stringify({passed:true,checks:['desktop','mobile','export card','drawer escape and focus return','validation error','summary and report','typed confirmation','missing media consent','reload while running','connection failure and retry','resume','failed restore and retry','completion','safety copy pagination and download','profile refresh before reload','profile refresh failure retry','authentication retained','Bakney keeps export only']},null,2));
+    console.log('PASS: desktop/mobile Trasferisci dati card and import drawer: review, confirmation, status reload, error recovery, completion and download.');
 } finally {
     await browser?.close();
     await server.close();

@@ -232,7 +232,7 @@ the legacy self-host default `storage` prefix. Restore stops before the live swa
 if the source and target prefixes differ.
 
 To replace association data from a **Bakney ZIP** while retaining the installation
-configuration and owner access, use [Gestione Dati → Ripristina backup](DATA_RESTORE.md).
+configuration and owner access, use [Istanza → Backup → Trasferisci dati](DATA_RESTORE.md).
 
 The following full-server restore replaces the current database and object-storage contents:
 
