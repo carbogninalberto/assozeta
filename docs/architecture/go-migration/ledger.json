@@ -10516,25 +10516,88 @@
         "target": "DocumentArchiveViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_writes.go",
+        "BE_GO/internal/dto/documents_writes.go",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/internal/repository/documents_writes.go",
+        "BE_GO/internal/repository/medical_upload_grants.go",
+        "BE_GO/internal/service/documents_writes.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/upload.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/pkg/pymime/pymime.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
+        "documents-archive ArchiveWrites (DELETE on the update route), subscription-medical transaction (targets, draft save, season dates)",
+        "Default storage (S3): AWS_* settings, AWS_LOCATION, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "Django Redis cache (impersonation-upload grants, SESSION_TTL)",
+        "docmanager_document",
+        "application_sportassociationdocumentsarchive",
+        "application_folder",
+        "application_subscriptionfile",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/documents/<pk>/update",
+          "/api/v2/documents/<pk>/update",
+          "/api/documents/<pk>/update"
+        ],
+        "request": "JSON only, partial DocumentArchiveSerializer: sport_association_documents_archive_id, sport_association, date (%d/%m/%Y), folder; document read-only.",
+        "response": "PATCH: the 500 page after the save (nested many=True document rendering raises). DELETE: 204.",
+        "errors": "401; 403 admin, registry, tenant_scope generic 403; 404 'Not found.' / model 404; 405; 415; 400 field errors (UUID, unique, related does-not-exist/incorrect type, null, date format), non_field_errors for non-dict; 500 athletes.",
+        "authentication": "DRF authentication (ScopedJWT); identity resolution and impersonation; collaborators act as the owner.",
+        "permissions": "IsAuthenticated; registry association.archive.update; tenant_scope on related fields.",
+        "resource_scope": "get_object on the owner's association archive rows.",
+        "side_effects": "Model.save(): update entry of changed fields (direct); a new primary key INSERTs a row (update-against-None entry via changes_json, then create entry, direct). DELETE: the archive row delete (changes_json).",
+        "transaction": "Single save; the 500 follows the committed save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_writes_http.json",
+        "TESTS/fixtures/generate_documents_writes_http.py",
+        "TESTS/contracts/test_documents_writes_http.py",
+        "TESTS/adapters/django/documents_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-native-r11/results.json",
+          "receipt_sha256": "2b3d2acfcfb16d4a52775172f67a7d1a0c7f61a27ede5d7a4e61aef7649a511d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, S3 object and cache effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f22be15e746aff4848d5ca12e3982c627bcde22c5c30f072081abf714e05f0ac"
+        },
+        {
+          "revision": "committing change with the requested folder dropped from new archive rows",
+          "result": "Mutation control: fails Go on documents-writes-add-collaborator-two-files-into-folder (state.archives).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-mutation-archive-folder/results.json",
+          "receipt_sha256": "de3dbb157a81883b82c683e33252728f9f2a5e715c99abe14db66455504e1ebf"
+        }
+      ],
+      "notes": [
+        "Implementing: documents/add, documents/<pk>/update, subscription upload-document, document/medical/certificate/ and subscription medical-certificate/upload with exact Document, archive, subscription-file, certificate, subscription and draft rows, audit entries, stored S3 objects (key, bytes, ContentType, ContentEncoding, CacheControl) and the scoped upload cache grant. Refused with 500 before any write: unmodelled filename values (None in add, NUL, lone surrogates), add items after an unmodelled one, multipart Content-Transfer-Encoding, HTML character references or non-UTF-8 RFC 2231 names, files as text field values, a boolean archive primary key. After the Document exists (earlier writes kept): an existing storage key (random alternative name), storage provider failures, a Subscription.save() season error. delete-document is in subscription-misc."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:documents/add -> DocumentArchiveViewSet.as_view({'post': 'add'})",
@@ -10551,25 +10614,88 @@
         "target": "DocumentArchiveViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_writes.go",
+        "BE_GO/internal/dto/documents_writes.go",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/internal/repository/documents_writes.go",
+        "BE_GO/internal/repository/medical_upload_grants.go",
+        "BE_GO/internal/service/documents_writes.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/upload.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/pkg/pymime/pymime.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
+        "documents-archive ArchiveWrites (DELETE on the update route), subscription-medical transaction (targets, draft save, season dates)",
+        "Default storage (S3): AWS_* settings, AWS_LOCATION, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "Django Redis cache (impersonation-upload grants, SESSION_TTL)",
+        "docmanager_document",
+        "application_sportassociationdocumentsarchive",
+        "application_folder",
+        "application_subscriptionfile",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/documents/add",
+          "/api/v2/documents/add",
+          "/api/documents/add"
+        ],
+        "request": "JSON only: {files: [{document: base64, filename}], folder}.",
+        "response": "201 {'data': [{sport_association_documents_archive_id, sport_association, document (DocumentSerializer), date (isoformat of the timezone.now() default), folder}]}.",
+        "errors": "401; 403 admin without session, 'Missing permission: association.archive.update', scoped athlete; 405; 415; 400 JSON parse; 500 non-dict body, unknown/unparsable folder, no association, non-iterable files, DELETE without pk; 400 {'exception': str(e)} for item errors (missing keys ValidationError text, not iterable, indexing, base64, value too long, os.path.join, SuspiciousFileOperation) after deleting the last created Document.",
+        "authentication": "DRF authentication (ScopedJWT); identity resolution and impersonation; collaborators act as the owner.",
+        "permissions": "IsAuthenticated; registry association.archive.update.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user); the folder is Folder.objects.get(id=...).",
+        "side_effects": "Document (uuid4 id/token, timezone.now()), then default_storage.save(<str(creation_date.timestamp())>/<id>/<filename>): validate_file_name, HeadObject (AWS_S3_FILE_OVERWRITE false), one PutObject under AWS_LOCATION with guess_type ContentType/ContentEncoding, CacheControl max-age=86400 and AWS_DEFAULT_ACL; Document create entry (actor.sport_association). Archive row per item (date column = UTC date, audit date = str(aware now), direct). On an item error: document.delete() of the last Document (archive cascade entries via changes_json, Document delete entry); stored objects stay.",
+        "transaction": "None (autocommit): items before an error stay.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_writes_http.json",
+        "TESTS/fixtures/generate_documents_writes_http.py",
+        "TESTS/contracts/test_documents_writes_http.py",
+        "TESTS/adapters/django/documents_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-native-r11/results.json",
+          "receipt_sha256": "2b3d2acfcfb16d4a52775172f67a7d1a0c7f61a27ede5d7a4e61aef7649a511d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, S3 object and cache effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f22be15e746aff4848d5ca12e3982c627bcde22c5c30f072081abf714e05f0ac"
+        },
+        {
+          "revision": "committing change with the requested folder dropped from new archive rows",
+          "result": "Mutation control: fails Go on documents-writes-add-collaborator-two-files-into-folder (state.archives).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-mutation-archive-folder/results.json",
+          "receipt_sha256": "de3dbb157a81883b82c683e33252728f9f2a5e715c99abe14db66455504e1ebf"
+        }
+      ],
+      "notes": [
+        "Implementing: documents/add, documents/<pk>/update, subscription upload-document, document/medical/certificate/ and subscription medical-certificate/upload with exact Document, archive, subscription-file, certificate, subscription and draft rows, audit entries, stored S3 objects (key, bytes, ContentType, ContentEncoding, CacheControl) and the scoped upload cache grant. Refused with 500 before any write: unmodelled filename values (None in add, NUL, lone surrogates), add items after an unmodelled one, multipart Content-Transfer-Encoding, HTML character references or non-UTF-8 RFC 2231 names, files as text field values, a boolean archive primary key. After the Document exists (earlier writes kept): an existing storage key (random alternative name), storage provider failures, a Subscription.save() season error. delete-document is in subscription-misc."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:documents/bulk-delete -> DocumentArchiveViewSet.as_view({'delete': 'bulk_delete'})",
@@ -22035,25 +22161,87 @@
         "target": "subscription_medical_certificate_upload",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_writes.go",
+        "BE_GO/internal/dto/documents_writes.go",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/internal/repository/documents_writes.go",
+        "BE_GO/internal/repository/medical_upload_grants.go",
+        "BE_GO/internal/service/documents_writes.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/upload.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/pkg/pymime/pymime.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
+        "documents-archive ArchiveWrites (DELETE on the update route), subscription-medical transaction (targets, draft save, season dates)",
+        "Default storage (S3): AWS_* settings, AWS_LOCATION, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "Django Redis cache (impersonation-upload grants, SESSION_TTL)",
+        "docmanager_document",
+        "application_sportassociationdocumentsarchive",
+        "application_folder",
+        "application_subscriptionfile",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/medical-certificate/upload",
+          "/api/v2/subscription/<uid>/medical-certificate/upload",
+          "/api/subscription/<uid>/medical-certificate/upload"
+        ],
+        "request": "Multipart medical_certificate file.",
+        "response": "200 {'medical': <document id>, 'expiring_date': None} for a subscription; {'msg': 'updated draft', 'expiring_date': None} for a draft.",
+        "errors": "401; 403 admin, 'Missing permission: association.members.update'; 405; 400 ['badly formed hexadecimal UUID string']; 404 {'error': 'Subscription not found'}; 400 {'error': 'medical_certificate key not present!'}; 500 {'error': str(e)} (parse errors, non-dict body, non-file value, draft data that is not a dict).",
+        "authentication": "DRF authentication (ScopedJWT); identity resolution and impersonation; collaborators act as the owner.",
+        "permissions": "IsAuthenticated; registry association.members.update.",
+        "resource_scope": "_medical_certificate_targets: impersonated association, athlete's own subscriptions, owner's active associations (subscriptions, then drafts).",
+        "side_effects": "Document (uuid4 id/token, timezone.now()), then default_storage.save(<str(creation_date.timestamp())>/<id>/<filename>): validate_file_name, HeadObject (AWS_S3_FILE_OVERWRITE false), one PutObject under AWS_LOCATION with guess_type ContentType/ContentEncoding, CacheControl max-age=86400 and AWS_DEFAULT_ACL; Document create entry (actor.sport_association). MedicalCertificate(document, user=request.user) create entry; subscription: full Subscription.save() with medical (and filled season dates), direct update entry; draft: medical_certificate entry (medical_id, filename) saved, data update entry.",
+        "transaction": "None (autocommit): the certificate stays when the draft cannot be updated.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_writes_http.json",
+        "TESTS/fixtures/generate_documents_writes_http.py",
+        "TESTS/contracts/test_documents_writes_http.py",
+        "TESTS/adapters/django/documents_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-native-r11/results.json",
+          "receipt_sha256": "2b3d2acfcfb16d4a52775172f67a7d1a0c7f61a27ede5d7a4e61aef7649a511d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, S3 object and cache effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f22be15e746aff4848d5ca12e3982c627bcde22c5c30f072081abf714e05f0ac"
+        },
+        {
+          "revision": "committing change with the requested folder dropped from new archive rows",
+          "result": "Mutation control: fails Go on documents-writes-add-collaborator-two-files-into-folder (state.archives).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-mutation-archive-folder/results.json",
+          "receipt_sha256": "de3dbb157a81883b82c683e33252728f9f2a5e715c99abe14db66455504e1ebf"
+        }
+      ],
+      "notes": [
+        "Implementing: documents/add, documents/<pk>/update, subscription upload-document, document/medical/certificate/ and subscription medical-certificate/upload with exact Document, archive, subscription-file, certificate, subscription and draft rows, audit entries, stored S3 objects (key, bytes, ContentType, ContentEncoding, CacheControl) and the scoped upload cache grant. Refused with 500 before any write: unmodelled filename values (None in add, NUL, lone surrogates), add items after an unmodelled one, multipart Content-Transfer-Encoding, HTML character references or non-UTF-8 RFC 2231 names, files as text field values, a boolean archive primary key. After the Document exists (earlier writes kept): an existing storage key (random alternative name), storage provider failures, a Subscription.save() season error. delete-document is in subscription-misc."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/payments -> subscription_payments",
@@ -22307,25 +22495,87 @@
         "target": "subscription_upload_document",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_writes.go",
+        "BE_GO/internal/dto/documents_writes.go",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/internal/repository/documents_writes.go",
+        "BE_GO/internal/repository/medical_upload_grants.go",
+        "BE_GO/internal/service/documents_writes.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/upload.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/pkg/pymime/pymime.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
+        "documents-archive ArchiveWrites (DELETE on the update route), subscription-medical transaction (targets, draft save, season dates)",
+        "Default storage (S3): AWS_* settings, AWS_LOCATION, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "Django Redis cache (impersonation-upload grants, SESSION_TTL)",
+        "docmanager_document",
+        "application_sportassociationdocumentsarchive",
+        "application_folder",
+        "application_subscriptionfile",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/upload-document",
+          "/api/v2/subscription/<uid>/upload-document",
+          "/api/subscription/<uid>/upload-document"
+        ],
+        "request": "JSON, form or multipart: document (base64), filename.",
+        "response": "200 {'mgs': 'file uploaded'}.",
+        "errors": "401; 403 admin, 'Missing permission: association.members.update', scoped resource; 405; 400 ['badly formed hexadecimal UUID string']; 500 unknown subscription; 400 JSON parse; 500 non-dict body; 400 {'exception': 'document key not present'}; after the Document exists: 500 non-str filename or bad base64, Django's 400 page for SuspiciousFileOperation.",
+        "authentication": "DRF authentication (ScopedJWT); identity resolution and impersonation; collaborators act as the owner.",
+        "permissions": "IsAuthenticated; registry association.members.update.",
+        "resource_scope": "scoped_queryset(request, Subscription.objects) by id (group-aware; narrowed during association-scoped impersonation).",
+        "side_effects": "Document (uuid4 id/token, timezone.now()), then default_storage.save(<str(creation_date.timestamp())>/<id>/<filename>): validate_file_name, HeadObject (AWS_S3_FILE_OVERWRITE false), one PutObject under AWS_LOCATION with guess_type ContentType/ContentEncoding, CacheControl max-age=86400 and AWS_DEFAULT_ACL; Document create entry (actor.sport_association). SubscriptionFile create entry (subscription.sport_association).",
+        "transaction": "None (autocommit): the Document stays when a later step fails.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_writes_http.json",
+        "TESTS/fixtures/generate_documents_writes_http.py",
+        "TESTS/contracts/test_documents_writes_http.py",
+        "TESTS/adapters/django/documents_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-native-r11/results.json",
+          "receipt_sha256": "2b3d2acfcfb16d4a52775172f67a7d1a0c7f61a27ede5d7a4e61aef7649a511d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, S3 object and cache effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f22be15e746aff4848d5ca12e3982c627bcde22c5c30f072081abf714e05f0ac"
+        },
+        {
+          "revision": "committing change with the requested folder dropped from new archive rows",
+          "result": "Mutation control: fails Go on documents-writes-add-collaborator-two-files-into-folder (state.archives).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-mutation-archive-folder/results.json",
+          "receipt_sha256": "de3dbb157a81883b82c683e33252728f9f2a5e715c99abe14db66455504e1ebf"
+        }
+      ],
+      "notes": [
+        "Implementing: documents/add, documents/<pk>/update, subscription upload-document, document/medical/certificate/ and subscription medical-certificate/upload with exact Document, archive, subscription-file, certificate, subscription and draft rows, audit entries, stored S3 objects (key, bytes, ContentType, ContentEncoding, CacheControl) and the scoped upload cache grant. Refused with 500 before any write: unmodelled filename values (None in add, NUL, lone surrogates), add items after an unmodelled one, multipart Content-Transfer-Encoding, HTML character references or non-UTF-8 RFC 2231 names, files as text field values, a boolean archive primary key. After the Document exists (earlier writes kept): an existing storage key (random alternative name), storage provider failures, a Subscription.save() season error. delete-document is in subscription-misc."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/add -> subscription_add",
@@ -28453,25 +28703,87 @@
         "target": "medical_certificate_document",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_writes.go",
+        "BE_GO/internal/dto/documents_writes.go",
+        "BE_GO/internal/dto/python_base64.go",
+        "BE_GO/internal/repository/documents_writes.go",
+        "BE_GO/internal/repository/medical_upload_grants.go",
+        "BE_GO/internal/service/documents_writes.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/cmd/server/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/upload.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/pkg/pymime/pymime.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope, tenant_scope and audit index",
+        "documents-archive ArchiveWrites (DELETE on the update route), subscription-medical transaction (targets, draft save, season dates)",
+        "Default storage (S3): AWS_* settings, AWS_LOCATION, AWS_S3_OBJECT_PARAMETERS, AWS_DEFAULT_ACL, AWS_S3_FILE_OVERWRITE",
+        "Django Redis cache (impersonation-upload grants, SESSION_TTL)",
+        "docmanager_document",
+        "application_sportassociationdocumentsarchive",
+        "application_folder",
+        "application_subscriptionfile",
+        "application_medicalcertificate",
+        "application_subscription",
+        "application_associateimportdraft",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/medical/certificate/",
+          "/api/v2/document/medical/certificate/",
+          "/api/document/medical/certificate/"
+        ],
+        "request": "Multipart medical_certificate file (Django MultiPartParser naming), JSON or form bodies fail.",
+        "response": "200 {'msg': 'success!', 'uid': <medical_id>, 'expiring_date': None}.",
+        "errors": "403 admin without session; 405; 500 missing key, non-dict body, non-file value, skipped file names.",
+        "authentication": "DRF authentication (ScopedJWT) when present; AllowAny.",
+        "permissions": "AllowAny (default permission classes).",
+        "resource_scope": "The requester (request.user or None).",
+        "side_effects": "Document (uuid4 id/token, timezone.now()), then default_storage.save(<str(creation_date.timestamp())>/<id>/<filename>): validate_file_name, HeadObject (AWS_S3_FILE_OVERWRITE false), one PutObject under AWS_LOCATION with guess_type ContentType/ContentEncoding, CacheControl max-age=86400 and AWS_DEFAULT_ACL; Document create entry (actor.sport_association). MedicalCertificate(document, user) create entry (actor.sport_association); association-scoped session: cache :1:impersonation-upload:<session>:<id> = association, SESSION_TTL.",
+        "transaction": "None (autocommit).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_writes_http.json",
+        "TESTS/fixtures/generate_documents_writes_http.py",
+        "TESTS/contracts/test_documents_writes_http.py",
+        "TESTS/adapters/django/documents_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 119/119; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-native-r11/results.json",
+          "receipt_sha256": "2b3d2acfcfb16d4a52775172f67a7d1a0c7f61a27ede5d7a4e61aef7649a511d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 119/119 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, S3 object and cache effects.",
+          "artifact": "quality-reports/go-migration/documents-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f22be15e746aff4848d5ca12e3982c627bcde22c5c30f072081abf714e05f0ac"
+        },
+        {
+          "revision": "committing change with the requested folder dropped from new archive rows",
+          "result": "Mutation control: fails Go on documents-writes-add-collaborator-two-files-into-folder (state.archives).",
+          "artifact": "quality-reports/go-migration/documents-writes-http-mutation-archive-folder/results.json",
+          "receipt_sha256": "de3dbb157a81883b82c683e33252728f9f2a5e715c99abe14db66455504e1ebf"
+        }
+      ],
+      "notes": [
+        "Implementing: documents/add, documents/<pk>/update, subscription upload-document, document/medical/certificate/ and subscription medical-certificate/upload with exact Document, archive, subscription-file, certificate, subscription and draft rows, audit entries, stored S3 objects (key, bytes, ContentType, ContentEncoding, CacheControl) and the scoped upload cache grant. Refused with 500 before any write: unmodelled filename values (None in add, NUL, lone surrogates), add items after an unmodelled one, multipart Content-Transfer-Encoding, HTML character references or non-UTF-8 RFC 2231 names, files as text field values, a boolean archive primary key. After the Document exists (earlier writes kept): an existing storage key (random alternative name), storage provider failures, a Subscription.save() season error. delete-document is in subscription-misc."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/retrieve/<str:uid> -> retrieve_document",
