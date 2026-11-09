@@ -22042,25 +22042,86 @@
         "target": "subscription_medical_certificate_send_email_reminder",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_update.go",
+        "BE_GO/internal/dto/subscription_update.go",
+        "BE_GO/internal/repository/subscription_update.go",
+        "BE_GO/internal/service/subscription_update.go",
+        "BE_GO/internal/handler/subscription_update.go",
+        "BE_GO/internal/domain/subscription_medical_reminder.go",
+        "BE_GO/internal/repository/subscription_medical_reminder.go",
+        "BE_GO/internal/service/subscription_medical_reminder.go",
+        "BE_GO/internal/handler/subscription_medical_reminder.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/subscriptions_views.py",
+        "BE/application/services/subscription_service.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/medical-certificate/send-email-reminder",
+          "/api/v2/subscription/<uid>/medical-certificate/send-email-reminder",
+          "/api/subscription/<uid>/medical-certificate/send-email-reminder"
+        ],
+        "request": "No body is read.",
+        "response": "200 {\"msg\": \"Email reminder sent\"}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 401 anonymous; 403 registry / admin without session / owner scoped to an athlete; 404 {\"exception\": \"Subscription not found\"}; 405; 500 without certificate, associate, expiration date or recipient email.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (identity, impersonation and registry association.members.update).",
+        "resource_scope": "_medical_certificate_targets: the impersonated association, the athlete's own subscriptions, or the owner's live associations; group-aware, soft-deleted rows found.",
+        "side_effects": "send_email_template.delay(recipient_list=[associate, else primary tutor, else subscription user email], subject, template, data, sport_association_id=UUID). Nothing is written.",
+        "transaction": "Read only; Go publishes after the lookup transaction is closed.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/celery_routes_a_http.json",
+        "TESTS/fixtures/generate_celery_routes_a_http.py",
+        "TESTS/contracts/test_celery_routes_a_http.py",
+        "TESTS/adapters/django/celery_routes_a_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/celery-routes-a.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/celery-routes-a-http-native-r4/results.json",
+          "receipt_sha256": "7016442c7ce5844a8ebd153984bdb2181d8b65a642a584dbf6391bf81b4ebdf2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact subscription, audit, index and Celery broker effects.",
+          "artifact": "quality-reports/go-migration/celery-routes-a-http-versioned-r1/results.json",
+          "receipt_sha256": "9bb2bc39758f1e15cf43594d0add91b36c86864edd67a07b1a676a45e9863984"
+        },
+        {
+          "revision": "committing change with the athlete user filter dropped from the subscription/<uid>/update lookup",
+          "result": "Mutation control: fails Go on celery-routes-a-athlete-other-denied (response.status 200).",
+          "artifact": "quality-reports/go-migration/celery-routes-a-http-mutation-r1/results.json",
+          "receipt_sha256": "a61820df3cb8cfa1f4d5c1fcc6c3de8dcc3480c91e3c4a6b035a750d7b6c95d3"
+        }
+      ],
+      "notes": [
+        "Implementing: Both routes publish through BE_GO/internal/celery after the autocommitted work: print_document_subscription(str(id), Authorization header) after a saved update, send_email_template(...) after a reminder. Refused before any write: update date strings other than ASCII YYYY-MM-DD containing a digit, text with NUL or lone surrogates; reminder for an associate without email whose tutor relations are all non-primary (get_main_tutor promotion). Reviewed and not ported: collaborators/add, payment/<uid>/request, invoice/<uid>/send (synchronous render_to_string with instance branding), subscription/<uid>/medical-appointments/add (synchronous print_document_medical_appointment), payment/<uid>/generate-invoice (invoice numbering, description and Invoice create not in Go yet)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/medical-certificate/set-certificate-expiration -> subscription_medical_certificate_set_certificate_expiration",
@@ -22460,25 +22521,86 @@
         "target": "subscription_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_update.go",
+        "BE_GO/internal/dto/subscription_update.go",
+        "BE_GO/internal/repository/subscription_update.go",
+        "BE_GO/internal/service/subscription_update.go",
+        "BE_GO/internal/handler/subscription_update.go",
+        "BE_GO/internal/domain/subscription_medical_reminder.go",
+        "BE_GO/internal/repository/subscription_medical_reminder.go",
+        "BE_GO/internal/service/subscription_medical_reminder.go",
+        "BE_GO/internal/handler/subscription_medical_reminder.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/subscriptions_views.py",
+        "BE/application/services/subscription_service.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/update",
+          "/api/v2/subscription/<uid>/update",
+          "/api/subscription/<uid>/update"
+        ],
+        "request": "JSON or form body: start_date/end_date (check_date regex, stripped), type/role (int(); blank gives 2/1), subscription_number/subscription_type (str().strip()), and raw acceptance_date, resignation_date, custom_data, additional_fields, status_flag, notes. A form body with any converted key raises on the immutable QueryDict; a non-dict JSON body with any assigned key (Python `in`) raises.",
+        "response": "200 {\"data\": {\"msg\": \"subscription updated.\"}}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 400 JSON parse error (after the lookups); 400 [\"Invalid start_date format\"] / [\"Invalid end_date format\"]; 401 anonymous; 403 User not allowed. / Subscription not found. / registry / admin without session / scoped-session path check; 405; 500 owner without association, int() failure, immutable form data, non-dict body with an assigned key, and values the save rejects (pre_save audit entry kept).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (identity, impersonation and registry association.members.update).",
+        "resource_scope": "Athletes: their own subscription (user = request.user); others: scoped group-aware Subscription.objects row of request.user's live association (soft-deleted rows found).",
+        "side_effects": "Saves the assigned columns, clears document_pdf, fills missing start/end dates (Subscription.save); one auditlog update entry indexed direct when anything changed; then print_document_subscription.delay(str(subscription_id), request.headers.get('authorization')).",
+        "transaction": "Not atomic in Django (autocommit; the pre_save audit entry commits before a rejected UPDATE). Go: lookups in a read-only transaction, then one write transaction committed before the publish; a rejected value commits only the entry.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/celery_routes_a_http.json",
+        "TESTS/fixtures/generate_celery_routes_a_http.py",
+        "TESTS/contracts/test_celery_routes_a_http.py",
+        "TESTS/adapters/django/celery_routes_a_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/celery-routes-a.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/celery-routes-a-http-native-r4/results.json",
+          "receipt_sha256": "7016442c7ce5844a8ebd153984bdb2181d8b65a642a584dbf6391bf81b4ebdf2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact subscription, audit, index and Celery broker effects.",
+          "artifact": "quality-reports/go-migration/celery-routes-a-http-versioned-r1/results.json",
+          "receipt_sha256": "9bb2bc39758f1e15cf43594d0add91b36c86864edd67a07b1a676a45e9863984"
+        },
+        {
+          "revision": "committing change with the athlete user filter dropped from the subscription/<uid>/update lookup",
+          "result": "Mutation control: fails Go on celery-routes-a-athlete-other-denied (response.status 200).",
+          "artifact": "quality-reports/go-migration/celery-routes-a-http-mutation-r1/results.json",
+          "receipt_sha256": "a61820df3cb8cfa1f4d5c1fcc6c3de8dcc3480c91e3c4a6b035a750d7b6c95d3"
+        }
+      ],
+      "notes": [
+        "Implementing: Both routes publish through BE_GO/internal/celery after the autocommitted work: print_document_subscription(str(id), Authorization header) after a saved update, send_email_template(...) after a reminder. Refused before any write: update date strings other than ASCII YYYY-MM-DD containing a digit, text with NUL or lone surrogates; reminder for an associate without email whose tutor relations are all non-primary (get_main_tutor promotion). Reviewed and not ported: collaborators/add, payment/<uid>/request, invoice/<uid>/send (synchronous render_to_string with instance branding), subscription/<uid>/medical-appointments/add (synchronous print_document_medical_appointment), payment/<uid>/generate-invoice (invoice numbering, description and Invoice create not in Go yet)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/upload-document -> subscription_upload_document",
