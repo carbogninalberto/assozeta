@@ -131,10 +131,9 @@ Go refuses these with the server error page before any write:
 
 Routes left entirely on Django:
 
-- `admin/releases`: every uncached read fetches the GitHub release feed, and the catalog lives
-  in Django's cache.
 - `admin/logo`: an upload to the default (S3) storage.
-- `admin/email/test` and `admin/integrations/<provider>/test`: outbound SMTP and provider probes.
+- `admin/releases`, `admin/email/test` and `admin/integrations/<provider>/test` are ported by
+  [instance-outbound](instance-outbound.md).
 - `admin/backups*`, `admin/data-restore*` and `admin/bakney-pairing`: other families.
 
 ## Evidence

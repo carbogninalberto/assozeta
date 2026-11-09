@@ -16,7 +16,7 @@ import (
 // from the public bootstrap service (configuration body and administrator
 // check) and the settings the Django views read.
 func composeInstanceAdmin(cfg config.Config, db *sqlx.DB, bootstrap *service.InstanceBootstrap, actors *service.ActorAuthentication,
-	identities *service.IdentityResolver, operations *paymentcategorylifecycle.Lifecycle) *handler.InstanceAdminHandler {
+	identities *service.IdentityResolver, operations *paymentcategorylifecycle.Lifecycle) (*handler.InstanceAdminHandler, *service.InstanceAdmin) {
 	settings := cfg.InstanceAdmin
 	environment := service.InstanceAdminEnvironment{
 		Version: cfg.Version, ConfiguredVersion: settings.ConfiguredVersion, DeploymentMode: settings.DeploymentMode, AppURL: settings.AppURL,
@@ -29,5 +29,5 @@ func composeInstanceAdmin(cfg config.Config, db *sqlx.DB, bootstrap *service.Ins
 		GoogleClientID: cfg.GoogleClientID, AppleClientID: cfg.AppleClientID, SecretKeys: []string{cfg.SessionSecret},
 	}
 	admin := service.NewInstanceAdmin(repository.NewInstanceAdmin(db), bootstrap, environment, time.Now)
-	return handler.NewInstanceAdminHandler(admin, actors, identities, middleware.SessionAuditContext, operations)
+	return handler.NewInstanceAdminHandler(admin, actors, identities, middleware.SessionAuditContext, operations), admin
 }
