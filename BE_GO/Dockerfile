@@ -10,7 +10,8 @@ RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server && \
     CGO_ENABLED=0 go build -trimpath -o /migrate ./cmd/migrate && \
     CGO_ENABLED=0 go build -trimpath -o /check-manual ./cmd/check-manual && \
     CGO_ENABLED=0 go build -trimpath -o /create-instance-superuser ./cmd/create-instance-superuser && \
-    CGO_ENABLED=0 go build -trimpath -o /mcp-server ./cmd/mcp-server
+    CGO_ENABLED=0 go build -trimpath -o /mcp-server ./cmd/mcp-server && \
+    CGO_ENABLED=0 go build -trimpath -o /run-agent ./cmd/run-agent
 
 # Keep the codec independent of Go's CGO toolchain and isolate codec faults in a
 # bounded child process. Static linking also avoids cross-stage musl ABI drift.
@@ -51,6 +52,7 @@ COPY --from=builder /migrate /app/migrate
 COPY --from=builder /check-manual /app/check-manual
 COPY --from=builder /create-instance-superuser /app/create-instance-superuser
 COPY --from=builder /mcp-server /app/mcp-server
+COPY --from=builder /run-agent /app/run-agent
 COPY --from=codec-builder /image-codec /app/image-codec
 COPY --from=codec-builder /codec-version /app/licenses/libjpeg-turbo-version.txt
 COPY --from=codec-builder /zlib-version /app/licenses/zlib-version.txt
