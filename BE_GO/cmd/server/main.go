@@ -262,6 +262,10 @@ func run() (runErr error) {
 	if err != nil {
 		return err
 	}
+	instanceBackupActionsHandler, err := composeInstanceBackupActions(cfg, db, cache, instanceAdminHandler)
+	if err != nil {
+		return err
+	}
 	bakneySSOHandler, closeBakneySSO, err := composeBakneySSO(cfg, db, cache, tokens, accounts, identities, instanceService, images)
 	if err != nil {
 		return err
@@ -803,6 +807,15 @@ func run() (runErr error) {
 	e.Any("/instance/admin/backups", instanceBackupsHandler.Overview, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/download-token", instanceBackupsHandler.Token, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/backups/:name/download", instanceBackupsHandler.Download, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/schedule", instanceBackupActionsHandler.Schedule, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/upload", instanceBackupActionsHandler.Upload, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/:name/restore", instanceBackupActionsHandler.Restore, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/remote", instanceBackupActionsHandler.RemoteSettings, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/remote/test", instanceBackupActionsHandler.RemoteTest, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/remote/key", instanceBackupActionsHandler.RemoteKey, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/remote/key/confirm", instanceBackupActionsHandler.RemoteKeyConfirm, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/remote/fetch", instanceBackupActionsHandler.RemoteFetch, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/:name", instanceBackupActionsHandler.Item, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore", dataRestoreHandler.Root, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore/backups", dataRestoreHandler.Backups, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore/:id/download", dataRestoreHandler.Download, middleware.DjangoSessionAudit(sessionAuthentication))
