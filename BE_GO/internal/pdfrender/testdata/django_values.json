@@ -1,0 +1,60 @@
+{
+ "headers": [
+  {
+   "text": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+   "bytes_b64": "aW5saW5lOyBmaWxlbmFtZT1bTWVzc2FnZSByZWFkcyBvd25dIE1vZHVsbyBkaSBJc2NyaXppb25lIE1hcmlvIFJvc3NpLnBkZg=="
+  },
+  {
+   "text": "inline; filename=Societ\u00e0 Sportiva \u00c8cole.pdf",
+   "bytes_b64": "aW5saW5lOyBmaWxlbmFtZT1Tb2NpZXTgIFNwb3J0aXZhIMhjb2xlLnBkZg=="
+  },
+  {
+   "text": "attachment; filename=Club \u2013 Roma.pdf",
+   "bytes_b64": "PT91dGYtOD9xP2F0dGFjaG1lbnQ9M0JfZmlsZW5hbWU9M0RDbHViXz1FMj04MD05M19Sb21hPTJFcGRmPz0="
+  },
+  {
+   "text": "inline; filename=\u0394\u03b7\u03bc\u03ae\u03c4\u03c1\u03b7\u03c2 \u03a0\u03b1\u03c0\u03b1\u03b4\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf\u03c2.pdf",
+   "bytes_b64": "PT91dGYtOD9iP2FXNXNhVzVsT3lCbWFXeGxibUZ0WlQzT2xNNjN6cnpPcnMrRXo0SE90OCtDSU02Z3pySFBnTTZ4enJUUGpNK0F6ci9QaGM2N3pyL1BnaTV3WkdZPT89"
+  },
+  {
+   "text": "inline; filename=emoji \ud83d\ude00 x.pdf",
+   "bytes_b64": "PT91dGYtOD9iP2FXNXNhVzVsT3lCbWFXeGxibUZ0WlQxbGJXOXFhU0R3bjVpQUlIZ3VjR1JtPz0="
+  },
+  {
+   "text": "inline; filename=a\tb \"q\" ; c.pdf",
+   "bytes_b64": "aW5saW5lOyBmaWxlbmFtZT1hCWIgInEiIDsgYy5wZGY="
+  },
+  {
+   "text": "inline; filename=\u20ac",
+   "bytes_b64": "PT91dGYtOD9iP2FXNXNhVzVsT3lCbWFXeGxibUZ0WlQzaWdxdz0/PQ=="
+  },
+  {
+   "text": "inline; filename=x \u20ac y \u20ac z \u20ac w.pdf",
+   "bytes_b64": "PT91dGYtOD9iP2FXNXNhVzVsT3lCbWFXeGxibUZ0WlQxNElPS0NyQ0I1SU9LQ3JDQjZJT0tDckNCM0xuQmtaZz09Pz0="
+  },
+  {
+   "text": "inline; filename=\u00ff\u20acab",
+   "bytes_b64": "PT91dGYtOD9iP2FXNXNhVzVsT3lCbWFXeGxibUZ0WlQzRHYrS0NyR0ZpPz0="
+  }
+ ],
+ "payloads": [
+  {
+   "host": "http://127.0.0.1:9",
+   "url": "document/invoice/abc/view",
+   "authorization": "Bearer x.y.z",
+   "body_b64": "eyJ0eXBlIjogInBkZiIsICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTo5L2RvY3VtZW50L2ludm9pY2UvYWJjL3ZpZXciLCAiYXN5bmMiOiBmYWxzZSwgImhlYWRlcnMiOiB7IkF1dGhvcml6YXRpb24iOiAiQmVhcmVyIHgueS56In0sICJkZXZpY2UiOiB7InVzZXJBZ2VudCI6ICJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvOTEuMC40NDcyLjEyNCBTYWZhcmkvNTM3LjM2IiwgInNjYWxlIjogMSwgIndpZHRoIjogMTkyMCwgImhlaWdodCI6IDEwODB9LCAicmVuZGVyIjogeyJibG9jayI6IHsiY29va2llcyI6IGZhbHNlLCAiYWRzIjogZmFsc2UsICJ0cmFja2VycyI6IGZhbHNlLCAiYmFubmVycyI6IGZhbHNlfSwgIndhaXRUaW1lIjogMCwgInRpbWVvdXQiOiAzMDAwMCwgImZ1bGxQYWdlIjogZmFsc2UsICJ0cmlnZ2VyTGF6eUFuaW1hdGlvbnMiOiBmYWxzZSwgInNjcm9sbCI6IHsicG9zaXRpb24iOiAwLCAiYW5pbWF0ZSI6IGZhbHNlLCAiZHVyYXRpb24iOiAwLCAiYW5pbWF0aW9uIjogIiJ9LCAid2FpdFVudGlsIjogIm5ldHdvcmtpZGxlMiJ9LCAicGRmIjogeyJzY2FsZSI6IDEsICJkaXNwbGF5SGVhZGVyRm9vdGVyIjogZmFsc2UsICJoZWFkZXJUZW1wbGF0ZSI6ICIiLCAiZm9vdGVyVGVtcGxhdGUiOiAiIiwgInByaW50QmFja2dyb3VuZCI6IHRydWUsICJsYW5kc2NhcGUiOiBmYWxzZSwgInBhZ2VSYW5nZXMiOiAiIiwgImZvcm1hdCI6ICJBNCIsICJtYXJnaW4iOiB7InRvcCI6ICIxY20iLCAicmlnaHQiOiAiMHB4IiwgImJvdHRvbSI6ICIxY20iLCAibGVmdCI6ICIwcHgifSwgInByZWZlckNTU1BhZ2VTaXplIjogZmFsc2UsICJvbWl0QmFja2dyb3VuZCI6IGZhbHNlLCAidGltZW91dCI6IDMwMDAwfX0="
+  },
+  {
+   "host": "http://h",
+   "url": "document/template/u/view?subscription_id=\u00e9\ud83d\ude00\"\\\n\u0001&",
+   "authorization": null,
+   "body_b64": "eyJ0eXBlIjogInBkZiIsICJ1cmwiOiAiaHR0cDovL2gvZG9jdW1lbnQvdGVtcGxhdGUvdS92aWV3P3N1YnNjcmlwdGlvbl9pZD1cdTAwZTlcdWQ4M2RcdWRlMDBcIlxcXG5cdTAwMDEmIiwgImFzeW5jIjogZmFsc2UsICJoZWFkZXJzIjogeyJBdXRob3JpemF0aW9uIjogbnVsbH0sICJkZXZpY2UiOiB7InVzZXJBZ2VudCI6ICJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvOTEuMC40NDcyLjEyNCBTYWZhcmkvNTM3LjM2IiwgInNjYWxlIjogMSwgIndpZHRoIjogMTkyMCwgImhlaWdodCI6IDEwODB9LCAicmVuZGVyIjogeyJibG9jayI6IHsiY29va2llcyI6IGZhbHNlLCAiYWRzIjogZmFsc2UsICJ0cmFja2VycyI6IGZhbHNlLCAiYmFubmVycyI6IGZhbHNlfSwgIndhaXRUaW1lIjogMCwgInRpbWVvdXQiOiAzMDAwMCwgImZ1bGxQYWdlIjogZmFsc2UsICJ0cmlnZ2VyTGF6eUFuaW1hdGlvbnMiOiBmYWxzZSwgInNjcm9sbCI6IHsicG9zaXRpb24iOiAwLCAiYW5pbWF0ZSI6IGZhbHNlLCAiZHVyYXRpb24iOiAwLCAiYW5pbWF0aW9uIjogIiJ9LCAid2FpdFVudGlsIjogIm5ldHdvcmtpZGxlMiJ9LCAicGRmIjogeyJzY2FsZSI6IDEsICJkaXNwbGF5SGVhZGVyRm9vdGVyIjogZmFsc2UsICJoZWFkZXJUZW1wbGF0ZSI6ICIiLCAiZm9vdGVyVGVtcGxhdGUiOiAiIiwgInByaW50QmFja2dyb3VuZCI6IHRydWUsICJsYW5kc2NhcGUiOiBmYWxzZSwgInBhZ2VSYW5nZXMiOiAiIiwgImZvcm1hdCI6ICJBNCIsICJtYXJnaW4iOiB7InRvcCI6ICIxY20iLCAicmlnaHQiOiAiMHB4IiwgImJvdHRvbSI6ICIxY20iLCAibGVmdCI6ICIwcHgifSwgInByZWZlckNTU1BhZ2VTaXplIjogZmFsc2UsICJvbWl0QmFja2dyb3VuZCI6IGZhbHNlLCAidGltZW91dCI6IDMwMDAwfX0="
+  },
+  {
+   "host": "https://app.example",
+   "url": "document/x/\u2028/view",
+   "authorization": "tok\u00ff\t",
+   "body_b64": "eyJ0eXBlIjogInBkZiIsICJ1cmwiOiAiaHR0cHM6Ly9hcHAuZXhhbXBsZS9kb2N1bWVudC94L1x1MjAyOC92aWV3IiwgImFzeW5jIjogZmFsc2UsICJoZWFkZXJzIjogeyJBdXRob3JpemF0aW9uIjogInRva1x1MDBmZlx0In0sICJkZXZpY2UiOiB7InVzZXJBZ2VudCI6ICJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvOTEuMC40NDcyLjEyNCBTYWZhcmkvNTM3LjM2IiwgInNjYWxlIjogMSwgIndpZHRoIjogMTkyMCwgImhlaWdodCI6IDEwODB9LCAicmVuZGVyIjogeyJibG9jayI6IHsiY29va2llcyI6IGZhbHNlLCAiYWRzIjogZmFsc2UsICJ0cmFja2VycyI6IGZhbHNlLCAiYmFubmVycyI6IGZhbHNlfSwgIndhaXRUaW1lIjogMCwgInRpbWVvdXQiOiAzMDAwMCwgImZ1bGxQYWdlIjogZmFsc2UsICJ0cmlnZ2VyTGF6eUFuaW1hdGlvbnMiOiBmYWxzZSwgInNjcm9sbCI6IHsicG9zaXRpb24iOiAwLCAiYW5pbWF0ZSI6IGZhbHNlLCAiZHVyYXRpb24iOiAwLCAiYW5pbWF0aW9uIjogIiJ9LCAid2FpdFVudGlsIjogIm5ldHdvcmtpZGxlMiJ9LCAicGRmIjogeyJzY2FsZSI6IDEsICJkaXNwbGF5SGVhZGVyRm9vdGVyIjogZmFsc2UsICJoZWFkZXJUZW1wbGF0ZSI6ICIiLCAiZm9vdGVyVGVtcGxhdGUiOiAiIiwgInByaW50QmFja2dyb3VuZCI6IHRydWUsICJsYW5kc2NhcGUiOiBmYWxzZSwgInBhZ2VSYW5nZXMiOiAiIiwgImZvcm1hdCI6ICJBNCIsICJtYXJnaW4iOiB7InRvcCI6ICIxY20iLCAicmlnaHQiOiAiMHB4IiwgImJvdHRvbSI6ICIxY20iLCAibGVmdCI6ICIwcHgifSwgInByZWZlckNTU1BhZ2VTaXplIjogZmFsc2UsICJvbWl0QmFja2dyb3VuZCI6IGZhbHNlLCAidGltZW91dCI6IDMwMDAwfX0="
+  }
+ ]
+}
