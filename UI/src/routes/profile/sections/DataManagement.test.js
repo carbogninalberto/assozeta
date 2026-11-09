@@ -2,14 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
-test('Data Management restores active exports as a history row without polling', () => {
-    const source = readFileSync(new URL('./DataManagement.svelte', import.meta.url), 'utf8');
+const read = name => readFileSync(new URL(`./${name}`, import.meta.url), 'utf8');
+
+test('exports restore an active export as a progress row without polling', () => {
+    const source = read('DataExports.svelte');
     assert.match(source, /notificationService\.syncActiveExport\(\)/);
-    assert.match(source, /class="export-running-row/);
+    assert.match(source, /class="export-running"/);
     assert.match(source, /\{visibleExportLabel\}/);
     assert.match(source, /\{visibleExportPercent\}%/);
     assert.match(source, /role="progressbar"/);
-    assert.match(source, /exports\.length === 0 && !startingExport && !exporting/);
+    assert.match(source, /\{#if startingExport \|\| exporting\}/);
     assert.match(source, /handledTerminalTasks\.has\(exportTaskId\)/);
     assert.match(source, /handleTerminalExport\(exportStatus, announceTerminal\)/);
     assert.match(source, /if \(shouldAnnounce\) toast\.success/);
@@ -18,26 +20,39 @@ test('Data Management restores active exports as a history row without polling',
     assert.doesNotMatch(source, /EXPORT\.STATUS/);
 });
 
-test('Data Management hides the start button at the limit and renders a warning alert', () => {
-    const source = readFileSync(new URL('./DataManagement.svelte', import.meta.url), 'utf8');
-    assert.match(source, /\{#if exports\.length >= 3\}/);
-    assert.match(source, /alert alert-custom alert-light-warning/);
-    assert.match(source, /export-limit-alert/);
-    assert.doesNotMatch(source, /border-warning/);
-    assert.match(source, /Hai raggiunto il limite di 3 export/);
-    assert.match(source, /\{:else\}[\s\S]*Avvia Export/);
+test('the export limit disables the start button with its reason', () => {
+    const source = read('DataExports.svelte');
+    assert.match(source, /const LIMIT = 3;/);
+    assert.match(source, /atLimit \? `Puoi tenere \$\{LIMIT\} export: eliminane uno\.`/);
+    assert.match(source, /disabled=\{[^}]*!!startReason\}/);
+    assert.match(source, /class="si-reason start-reason">\{startReason\}/);
 });
 
-test('Data Management uses borderless, softened export states and spaced history', () => {
-    const source = readFileSync(new URL('./DataManagement.svelte', import.meta.url), 'utf8');
-    const runningRowClasses = source.match(/class="(export-running-row[^\"]*)"/)?.[1];
-    assert.match(source, /form-group row mb-0 mt-8/);
-    assert.ok(runningRowClasses);
-    assert.match(runningRowClasses, /rounded-lg/);
-    assert.doesNotMatch(runningRowClasses, /\bborder\b/);
-    assert.match(source, /color-mix\(in srgb, var\(--primary/);
-    assert.match(source, /color-mix\(in srgb, var\(--warning/);
-    assert.match(source, /\.export-limit-alert[\s\S]*border: 0 !important/);
+test('exports keep the same endpoints and ask before deleting', () => {
+    const source = read('DataExports.svelte');
+    assert.match(source, /apiFetch\(EXPORT\.LIST/);
+    assert.match(source, /apiFetch\(EXPORT\.START, \{method: 'POST'\}\)/);
+    assert.match(source, /apiFetch\(EXPORT\.DELETE, \{\s*method: 'DELETE'/);
+    assert.match(source, /\?download=true&download_token=/);
+    assert.match(source, /<InstanceDialog open=\{!!removing\} title="Eliminare l’export\?"/);
+    assert.match(source, /data-autofocus[^>]*>Annulla</);
+});
+
+test('Gestione Dati on Bakney is the export list; self-hosted gets it in the Backup tab', () => {
+    assert.match(read('DataManagement.svelte'), /<DataExports \{instanceOwner\} \{accessPending\}/);
+    assert.doesNotMatch(read('DataManagement.svelte'), /DataRestore|DataImport/);
+    assert.match(read('InstanceBackups.svelte'), /<DataTransfer \/>/);
+    const transfer = read('DataTransfer.svelte');
+    assert.match(transfer, /title="Trasferisci dati"/);
+    assert.match(transfer, /variant="drawer"/);
+    assert.match(transfer, /<DataImport bind:busy=\{importBusy\} \/>/);
+});
+
+test('the import keeps the typed confirmation and the media consent', () => {
+    const source = read('DataImport.svelte');
+    assert.match(source, /confirmation === 'RIPRISTINA' && \(!selected\.preview\.missing_media \|\| allowMissing\)/);
+    assert.match(source, /body: JSON\.stringify\(\{confirmation, allow_missing_media: allowMissing\}\)/);
+    assert.doesNotMatch(source, /<details|InstanceAlert|InstanceAccordion/);
 });
 
 test('recovered terminal exports are synchronized without a completion announcement', () => {

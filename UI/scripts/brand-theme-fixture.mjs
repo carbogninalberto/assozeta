@@ -8,7 +8,7 @@ const server = await createServer({root, configFile: false, logLevel: 'error',
     resolve: {alias: Object.fromEntries(['store', 'utils', 'components', 'routes', 'shim'].map(name => [name, `${root}/src/${name}`]))},
     plugins: [{name: 'branding-fixture', enforce: 'pre',
         resolveId(id) {
-            if (/utils\/ApiMiddleware(?:\.js)?$/.test(id)) return '\0brand-api';
+            if (/(?:^|\/)ApiMiddleware(?:\.js)?$/.test(id)) return '\0brand-api';
             if (id === '/brand-entry.js') return '\0brand-entry';
         },
         load(id) {

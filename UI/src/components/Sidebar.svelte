@@ -56,7 +56,7 @@
     import {toast} from 'svelte-sonner';
     import SmartSelect from 'components/formBuilder/preview-blocks/smart-select-input.svelte';
     import {ChevronRight, Ellipsis} from 'lucide-svelte';
-    import {oemConfig, manualEnabled} from 'store/instanceStore.js';
+    import {oemConfig, manualEnabled, isSelfHostedMode} from 'store/instanceStore.js';
 
     role.useLocalStorage();
     permissions.useLocalStorage();
@@ -133,8 +133,8 @@
                 {#key $permissions}
                 {#if $role === 'administrator'}
                     {#each [
-                        {page: 'self-instance', label: 'Self Instance', href: '/#/profile?page=self-instance', icon: GearSix},
-                        {page: 'data-management', label: 'Gestione Dati', href: '/#/profile?page=data-management', icon: Files},
+                        {page: 'self-instance', label: 'Istanza', href: '/#/profile?page=self-instance', icon: GearSix},
+                        ...(isSelfHostedMode() ? [] : [{page: 'data-management', label: 'Gestione Dati', href: '/#/profile?page=data-management', icon: Files}]),
                         {page: 'impersonation', label: 'Impersona utenti', href: '/#/tools/sport-associations-manager', icon: UserFocus}
                     ] as item}
                         <div class="menu-item" class:menu-item-active={item.page === $subPage || (item.page === 'impersonation' && $currentPage !== 'profile')}>

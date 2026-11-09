@@ -1,7 +1,8 @@
 <script>
     import {onMount, onDestroy} from 'svelte';
-    import swal from 'sweetalert2';
-    import InstanceAlert from './InstanceAlert.svelte';
+    import InstanceMenu from './InstanceMenu.svelte';
+    import InstanceDialog from './InstanceDialog.svelte';
+    import {formatRelative, formatDate} from './instanceFormat.js';
     export let request;
     export let disabled = false;
     export let busy = false;
@@ -10,109 +11,123 @@
     let error = '';
     let timer;
     let disposed = false;
-    const labels = {generated: 'Da collegare', pending: 'In attesa di conferma', paired: 'Collegato', disconnected: 'Non collegato', revalidation_required: 'Da verificare'};
-    const errors = {
-        configuration_required: 'Controlla l’URL dell’istanza e gli indirizzi di Bakney nella configurazione del server.',
-        bakney_unavailable: 'Bakney non è raggiungibile. Lo stato mostrato è quello dell’ultima verifica riuscita.',
-        pairing_rejected: 'Bakney non riconosce più questo collegamento. Genera un nuovo codice per ricollegare l’istanza.',
-        stale_pairing: 'Il collegamento è cambiato. Aggiorna lo stato prima di riprovare.',
-        revalidation_required: 'L’URL, l’associazione o l’autorità sono cambiati. Genera un nuovo codice e ripeti il collegamento.',
+    let confirming = null;
+    let copied = false;
+    const labels = {generated: ['info', 'Da collegare'], pending: ['info', 'In attesa di conferma'], paired: ['ok', 'Collegato'], disconnected: ['', 'Non collegato'], revalidation_required: ['warn', 'Da verificare']};
+    const steps = {
+        disconnected: 'Genera un codice e inseriscilo su Bakney con l’URL dell’istanza.',
+        generated: 'Inserisci il codice nelle impostazioni dell’associazione su Bakney.',
+        pending: 'Completa il collegamento su Bakney, poi attiva l’accesso automatico.',
     };
+    const errors = {
+        configuration_required: 'Controlla l’URL dell’istanza e gli indirizzi di Bakney sul server.',
+        bakney_unavailable: 'Bakney non risponde. Lo stato è quello dell’ultima verifica.',
+        pairing_rejected: 'Bakney non riconosce più il collegamento. Genera un nuovo codice.',
+        stale_pairing: 'Il collegamento è cambiato. Aggiorna lo stato e riprova.',
+        revalidation_required: 'URL o associazione cambiati. Genera un nuovo codice.',
+    };
+
+    $: state = info ? labels[info.state] || ['', 'Stato sconosciuto'] : null;
 
     async function load() {
         if (busy || disposed) return;
-        try { info = await request('/admin/bakney-pairing'); error = errors[info.sync_error] || (info.sync_error ? 'Verifica con Bakney non riuscita. Lo stato mostrato è quello dell’ultima verifica.' : ''); }
+        try { info = await request('/admin/bakney-pairing'); error = errors[info.sync_error] || (info.sync_error ? 'Verifica con Bakney non riuscita.' : ''); }
         catch { error = 'Impossibile leggere il collegamento con Bakney.'; }
+    }
+
+    function ask(action) {
+        if (action === 'disconnect' || (action === 'generate' && info.state !== 'disconnected')) confirming = action;
+        else perform(action);
     }
 
     async function perform(action) {
         if (busy || disabled) return;
-        if (action === 'disconnect' || action === 'generate' && info.state !== 'disconnected') {
-            const result = await swal.fire({
-                title: action === 'disconnect' ? 'Scollegare Bakney?' : 'Generare un nuovo codice?',
-                text: 'I trasferimenti in corso e il precedente codice non saranno più validi. Le sessioni locali già aperte continueranno a funzionare.',
-                showCancelButton: true, confirmButtonText: 'Continua', cancelButtonText: 'Annulla', icon: 'warning',
-            });
-            if (!result.isConfirmed) return;
-        }
         busy = true;
         error = '';
         secret = '';
+        copied = false;
         try {
             const result = await request('/admin/bakney-pairing', {method: 'POST', body: JSON.stringify({action, pairing_id: info.pairing_id})});
             secret = result.secret || '';
             const {secret: ignored, ...status} = result;
             info = status;
-        } catch (e) { error = errors[e.message] || 'Operazione non riuscita. Aggiorna lo stato e riprova.'; }
+            confirming = null;
+        } catch (e) { error = errors[e.message] || 'Operazione non riuscita. Riprova.'; confirming = null; }
         finally { busy = false; }
     }
 
     async function copyCode() {
-        try { await navigator.clipboard.writeText(secret); }
-        catch { error = 'Seleziona e copia il codice dal campo qui sotto.'; }
+        try { await navigator.clipboard.writeText(secret); copied = true; }
+        catch { error = 'Copia il codice selezionandolo.'; }
     }
 
     onMount(() => { load(); timer = setInterval(load, 30000); });
     onDestroy(() => { disposed = true; secret = ''; clearInterval(timer); });
 </script>
 
-<section class="pairing-panel" aria-labelledby="bakney-pairing-title">
-    <header class="pairing-heading">
-        <h2 id="bakney-pairing-title">Collegamento con Bakney</h2>
-        {#if info}<span class="pairing-status" class:connected={info.state === 'paired'} role="status">{labels[info.state] || 'Stato non disponibile'}</span>{/if}
-    </header>
-    <p class="pairing-description">Accesso automatico da Bakney per gli utenti dell’associazione.</p>
-    {#if error}<InstanceAlert tone="danger" role="alert">{error}</InstanceAlert>{/if}
-    {#if info}
-        {#if info.origin || info.state !== 'disconnected'}
-            <dl class="pairing-details">
+<section class="si-card" aria-labelledby="bakney-pairing-title">
+    <div class="si-card-head">
+        <div>
+            <h2 id="bakney-pairing-title" class="si-title">Collegamento con Bakney</h2>
+            <p class="si-muted si-small">Accesso automatico da Bakney per gli utenti dell’associazione.</p>
+        </div>
+        {#if info}
+            <div class="si-actions">
+                <span class="si-pill {state[0]}" role="status">{state[1]}</span>
+                <InstanceMenu label="Altre azioni Bakney" items={[
+                    ['pending', 'paired'].includes(info.state) && {label: 'Verifica con Bakney', disabled: disabled || busy, onSelect: () => perform('sync')},
+                    info.state !== 'disconnected' && {label: 'Rigenera codice', disabled: disabled || busy, onSelect: () => ask('generate')},
+                    {label: 'Aggiorna stato', disabled: busy, onSelect: load},
+                    info.state !== 'disconnected' && {label: 'Rimuovi collegamento', danger: true, disabled: disabled || busy, onSelect: () => ask('disconnect')},
+                ]} />
+            </div>
+        {/if}
+    </div>
+    {#if error}<p class="text-danger" role="alert">{error}</p>{/if}
+    {#if !info}
+        <span class="si-skeleton" style="width: 60%"></span>
+    {:else}
+        {#if info.origin || info.association?.id || info.state !== 'disconnected'}
+            <dl class="details">
                 {#if info.origin}<div><dt>URL dell’istanza</dt><dd>{info.origin}</dd></div>{/if}
-                {#if info.association?.id}<div><dt>Associazione collegata</dt><dd>{info.association.name || info.association.id}{#if info.association.name}<small>{info.association.id}</small>{/if}</dd></div>{/if}
-                <div><dt>Accesso automatico</dt><dd>{info.forwarding_enabled ? 'Abilitato su Bakney' : 'Disabilitato'}</dd></div>
-                {#if info.checked_at}<div><dt>Ultima verifica</dt><dd>{new Date(info.checked_at).toLocaleString('it-IT')}</dd></div>{/if}
+                {#if info.association?.id}<div><dt>Associazione</dt><dd>{info.association.name || info.association.id}</dd></div>{/if}
+                {#if info.state !== 'disconnected'}<div><dt>Accesso automatico</dt><dd>{info.forwarding_enabled ? 'Attivo su Bakney' : 'Non attivo'}</dd></div>{/if}
+                {#if info.checked_at}<div><dt>Ultima verifica</dt><dd title={formatDate(info.checked_at)}>{formatRelative(info.checked_at)}</dd></div>{/if}
             </dl>
         {/if}
-        {#if info.state === 'disconnected'}
-            <p>Importa prima i dati dell’associazione, poi genera il codice da inserire su Bakney insieme all’URL dell’istanza.</p>
-        {:else if info.state === 'generated' || info.state === 'pending'}
-            <p>Completa il collegamento nelle impostazioni dell’associazione su Bakney, poi abilita l’accesso automatico.</p>
-        {:else if info.state === 'paired'}
-            <p class="pairing-hint">L’accesso automatico si gestisce su Bakney. Gli account di gestione e gli istruttori accedono direttamente qui.</p>
-        {/if}
+        {#if steps[info.state]}<p class="mb-0">{steps[info.state]}</p>{/if}
+        {#if info.notification_pending}<p class="si-hint mt-2 mb-0" role="status">Revoca in attesa di conferma da Bakney.</p>{/if}
         {#if secret}
-            <InstanceAlert>
-                <label class="d-block">Codice di collegamento
+            <div class="code">
+                <label class="code-field">Codice di collegamento
                     <input class="form-control" readonly value={secret} autocomplete="off" spellcheck="false" on:focus={event => event.target.select()} />
                 </label>
-                <p class="pairing-hint">Copia il codice ora: non sarà più visibile dopo aver lasciato la pagina.</p>
-                <button class="btn btn-primary mr-2" on:click={copyCode}>Copia codice</button>
-                <button class="btn btn-light" on:click={() => secret = ''}>Nascondi codice</button>
-            </InstanceAlert>
+                <div class="si-actions">
+                    <button type="button" class="btn btn-primary btn-sm" on:click={copyCode}>{copied ? 'Copiato' : 'Copia codice'}</button>
+                    <button type="button" class="btn btn-light btn-sm" on:click={() => secret = ''}>Nascondi</button>
+                </div>
+                <p class="si-hint mb-0">Visibile solo ora.</p>
+            </div>
         {/if}
-        {#if info.notification_pending}<p class="pairing-hint" role="status">Collegamento precedente revocato. Comunicazione a Bakney in attesa.</p>{/if}
-        <div class="pairing-actions">
-            <button class="btn btn-primary" disabled={disabled || busy} on:click={() => perform('generate')}>{info.state === 'disconnected' ? 'Genera codice di collegamento' : 'Rigenera codice'}</button>
-            {#if ['pending', 'paired'].includes(info.state)}<button class="btn btn-light-primary" disabled={disabled || busy} on:click={() => perform('sync')}>Verifica con Bakney</button>{/if}
-            {#if info.state !== 'disconnected'}<button class="btn btn-light-danger" disabled={disabled || busy} on:click={() => perform('disconnect')}>Rimuovi collegamento</button>{/if}
-            <button class="btn btn-light" disabled={busy} on:click={load}>Aggiorna stato</button>
-        </div>
-    {:else}<p role="status">Caricamento collegamento…</p>{/if}
+        {#if info.state === 'disconnected'}
+            <div class="si-actions mt-4"><button type="button" class="btn btn-primary" disabled={disabled || busy} on:click={() => perform('generate')}>Genera codice</button></div>
+        {/if}
+    {/if}
 </section>
 
+<InstanceDialog open={!!confirming} title={confirming === 'disconnect' ? 'Rimuovere il collegamento?' : 'Generare un nuovo codice?'} locked={busy} on:close={() => confirming = null}>
+    <p>Il codice attuale smette di funzionare. Le sessioni già aperte restano attive.</p>
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" data-autofocus disabled={busy} on:click={() => confirming = null}>Annulla</button>
+        <button type="button" class="btn {confirming === 'disconnect' ? 'btn-danger' : 'btn-primary'}" disabled={busy} on:click={() => perform(confirming)}>{confirming === 'disconnect' ? 'Rimuovi' : 'Genera'}</button>
+    </svelte:fragment>
+</InstanceDialog>
+
 <style>
-    .pairing-panel { border: 1px solid var(--border-color, #dce1e7); border-top: 3px solid var(--primary); border-radius: .75rem; padding: 1.5rem; }
-    .pairing-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .5rem; }
-    h2 { font-size: 1.35rem; font-weight: 600; margin: 0; }
-    .pairing-description, .pairing-hint, dt, small { color: var(--text-secondary, #536171); }
-    .pairing-description { margin-bottom: 1.25rem; }
-    .pairing-status { border-radius: 1rem; padding: .25rem .75rem; background: var(--bg-hover, #f3f6fa); color: var(--text-secondary, #536171); font-size: .85rem; font-weight: 600; }
-    .pairing-status.connected { background: #e8f5ed; color: #22643e; }
-    .pairing-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-bottom: 1.25rem; }
-    .pairing-details > div { background: var(--bg-hover, #f8fafc); border-radius: .5rem; padding: 1rem; }
-    dt { font-size: .9rem; font-weight: 400; }
-    dd { margin: .4rem 0 0; font-weight: 600; overflow-wrap: anywhere; }
-    small { display: block; margin-top: .25rem; font-weight: 400; }
-    .pairing-hint { font-size: .95rem; }
-    .pairing-actions {display: flex; flex-wrap: wrap; gap: .75rem;}
-    @media (max-width: 575px) { .pairing-panel { padding: 1rem; } .pairing-details { grid-template-columns: 1fr; } }
+    .details { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .75rem 1.5rem; margin: 0 0 1rem; }
+    dt { font-size: .8125rem; font-weight: 500; color: var(--text-secondary); }
+    dd { margin: .15rem 0 0; font-weight: 600; overflow-wrap: anywhere; }
+    .code { display: grid; gap: .5rem; margin-top: 1rem; padding: 1rem; border-radius: .625rem; background: var(--light-primary); }
+    .code-field { display: grid; gap: .4rem; margin: 0; font-weight: 500; }
+    .code-field input { font-family: var(--font-family-monospace, monospace); }
 </style>

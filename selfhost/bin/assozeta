@@ -51,8 +51,14 @@ Production commands:
   status
   logs [SERVICE]
   sync-manual               Install the published manual for the configured release.
-  backup [DIRECTORY]
-  restore ARCHIVE [--yes]
+  backup [--scheduled] [DIRECTORY]
+  restore ARCHIVE [--yes] [--no-backup]
+                            Back up the current data first (unless --no-backup), then restore.
+  restore --from-s3 [NAME] [--bucket B] [--endpoint URL] [--region R] [--prefix P] [--path-style] [--yes]
+                            Download an encrypted remote copy, decrypt it with the recovery
+                            key read from standard input, then restore it. Without NAME,
+                            list the remote copies. Access keys come from ASSOZETA_S3_ACCESS_KEY
+                            and ASSOZETA_S3_SECRET_KEY (or the saved remote copy settings).
   recover-upgrade ARCHIVE [--yes]
   reconcile-updates
   upgrade VERSION
@@ -1406,22 +1412,90 @@ backup_require_space() {
     copies=2
     backup_tar_removes_files && copies=1
     required_kib=$(( estimated_kib * copies + (margin_mb + ${backup_extra_space_mb:-0}) * 1024 ))
-    available_kib=$(df -Pk "$destination" | awk 'NR == 2 { print $4 }')
+    available_kib=$(backup_available_kib)
     case "$available_kib" in
         ""|*[!0-9]*) die "could not determine free disk space in $destination" ;;
     esac
     if [ "$available_kib" -lt "$required_kib" ]; then
+        backup_free_space "$required_kib"
+        available_kib=$(backup_available_kib)
+        case "$available_kib" in
+            ""|*[!0-9]*) die "could not determine free disk space in $destination" ;;
+        esac
+    fi
+    if [ "$available_kib" -lt "$required_kib" ]; then
         required_mb=$(( required_kib / 1024 ))
         available_mb=$(( available_kib / 1024 ))
-        report_failure "Spazio su disco insufficiente per il backup: servono circa $required_mb MB, disponibili $available_mb MB. Libera spazio sul server (per esempio spostando altrove i backup meno recenti) e riprova."
+        report_failure "Spazio su disco insufficiente per il backup: servono circa $required_mb MB, disponibili $available_mb MB anche dopo aver eliminato i backup automatici più vecchi. Libera spazio sul server e riprova."
         die "insufficient disk space for the backup in $destination: about $required_mb MB required, $available_mb MB available; copy older archives off-host and remove them"
     fi
     log "backup needs about $(( required_kib / 1024 )) MB; $(( available_kib / 1024 )) MB available"
 }
 
+backup_available_kib() {
+    df -Pk "$destination" | awk 'NR == 2 { print $4 }'
+}
+
+backup_archive_names() {
+    ls "$destination" | grep -E '^assozeta-[0-9]{8}T[0-9]{6}Z(-[0-9]+)?\.tar\.gz$'
+}
+
+# Make room for a new backup in the default directory, oldest first: first the
+# local copies already uploaded off-site, then automatic archives. Never the
+# newest archive, a kept one, the last successful upgrade's or a pending
+# upgrade's: if that is not enough, the caller fails and reports the space.
+backup_free_space() {
+    free_needed_kib=$1
+    [ "$destination" = "$SELFHOST_DIR/backups" ] || return 0
+    free_archives=$(backup_archive_names | sort)
+    [ -n "$free_archives" ] || return 0
+    free_newest=$(printf '%s\n' "$free_archives" | tail -n 1)
+    free_last_upgrade=
+    for candidate in $(printf '%s\n' "$free_archives" | sort -r); do
+        if [ "$(backup_meta_value upgrade "$destination/$candidate")" = completed ]; then
+            free_last_upgrade=$candidate
+            break
+        fi
+    done
+    free_transaction="$SELFHOST_DIR/.updater/pending-distribution/transaction.json"
+    for free_pass in uploaded automatic; do
+        for candidate in $free_archives; do
+            [ -f "$destination/$candidate" ] || continue
+            free_available=$(backup_available_kib)
+            case "$free_available" in ""|*[!0-9]*) return 0 ;; esac
+            [ "$free_available" -lt "$free_needed_kib" ] || return 0
+            [ "$candidate" != "$free_newest" ] || continue
+            [ "$candidate" != "$free_last_upgrade" ] || continue
+            [ "$candidate" != "${backup_protected:-}" ] || continue
+            [ "$(backup_meta_value keep "$destination/$candidate")" != true ] || continue
+            if [ -f "$free_transaction" ] && grep -qF "$candidate" "$free_transaction"; then
+                continue
+            fi
+            case "$free_pass" in
+                uploaded) [ "$(backup_meta_value remote "$destination/$candidate")" = uploaded ] || continue ;;
+                automatic)
+                    case "$(backup_meta_value origin "$destination/$candidate")" in
+                        scheduled|pre-upgrade) ;;
+                        *) continue ;;
+                    esac
+                    ;;
+            esac
+            rm -f "$destination/$candidate" "$destination/$candidate.meta"
+            log "removed $candidate to make room for the new backup"
+        done
+    done
+}
+
+# Lifecycle stages for the update runner when it runs a backup on its own.
+backup_stage() {
+    [ "${ASSOZETA_BACKUP_STAGES:-}" = 1 ] || return 0
+    printf '@@ASSOZETA_STAGE %s\n' "$1"
+}
+
 # Each archive has a sidecar "<archive>.meta" of key=value lines:
 #   origin   manual | scheduled | pre-upgrade | pre-restore
 #   keep     true when the owner asked to keep it ("Conserva")
+#   remote   uploaded once an encrypted copy is stored off-site
 #   upgrade  completed once the upgrade that took it succeeded
 # Archives without a sidecar predate this format and are treated as manual.
 backup_meta_value() {
@@ -1492,6 +1566,16 @@ backup_prune() {
 }
 
 backup_prod() {
+    backup_origin=${backup_origin:-manual}
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --scheduled) backup_origin=scheduled ;;
+            --) shift; break ;;
+            -*) die "unknown backup option: $1" ;;
+            *) break ;;
+        esac
+        shift
+    done
     preflight
     [ -f "$PROD_ENV" ] || die "run configure first"
     ensure_configuration_values "$PROD_ENV"
@@ -1535,6 +1619,7 @@ backup_prod() {
 
     backup_require_space
 
+    backup_stage backup
     log "stopping application services for consistent backup"
     backup_app_stopped=true
     stop_prod_data_services
@@ -1566,12 +1651,18 @@ EOF
         tar -C "$working" -czf "$archive" .
     fi
     chmod 600 "$archive"
+    backup_stage restarting
     cleanup_status=0
     backup_cleanup 0 || cleanup_status=$?
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
     log "backup created: $archive"
-    backup_write_meta "$archive" "${backup_origin:-manual}"
-    backup_prune
+    backup_write_meta "$archive" "$backup_origin"
+    # A pre-upgrade backup rotates only once the upgrade succeeds; a
+    # pre-restore one must not remove the archive about to be restored.
+    case "$backup_origin" in
+        pre-upgrade|pre-restore) ;;
+        *) backup_prune ;;
+    esac
     log "the archive contains secrets; copy it off-host and protect it"
 }
 
@@ -1585,7 +1676,87 @@ confirm_destructive() {
     case "$answer" in y|Y|yes|YES) ;; *) die "cancelled" ;; esac
 }
 
+# Bring an age-encrypted remote copy back, for example onto a fresh server.
+# The verified updater image has boto3 and age; the recovery key goes to it on
+# standard input and is never written to disk or passed as an argument.
+restore_from_s3() {
+    remote_name=
+    remote_yes=false
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --endpoint|--region|--bucket|--prefix)
+                [ "$#" -ge 2 ] || die "$1 requires a value"
+                case "$1" in
+                    --endpoint) ASSOZETA_S3_ENDPOINT=$2; export ASSOZETA_S3_ENDPOINT ;;
+                    --region) ASSOZETA_S3_REGION=$2; export ASSOZETA_S3_REGION ;;
+                    --bucket) ASSOZETA_S3_BUCKET=$2; export ASSOZETA_S3_BUCKET ;;
+                    --prefix) ASSOZETA_S3_PREFIX=$2; export ASSOZETA_S3_PREFIX ;;
+                esac
+                shift
+                ;;
+            --path-style) ASSOZETA_S3_PATH_STYLE=1; export ASSOZETA_S3_PATH_STYLE ;;
+            --yes) remote_yes=true ;;
+            -*) die "unknown restore option: $1" ;;
+            *)
+                [ -z "$remote_name" ] || die "restore --from-s3 takes one backup name"
+                remote_name=$1
+                ;;
+        esac
+        shift
+    done
+    preflight
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    updater_tool_image=$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")
+    if [ -z "$updater_tool_image" ]; then
+        updater_tool_image="ghcr.io/carbogninalberto/assozeta-updater:$(env_value ASSOZETA_VERSION "$PROD_ENV")"
+        docker image inspect "$updater_tool_image" >/dev/null 2>&1 || docker pull "$updater_tool_image"
+    fi
+    updater_tool_options="-i -e ASSOZETA_S3_ENDPOINT -e ASSOZETA_S3_REGION -e ASSOZETA_S3_BUCKET -e ASSOZETA_S3_PREFIX -e ASSOZETA_S3_ACCESS_KEY -e ASSOZETA_S3_SECRET_KEY -e ASSOZETA_S3_PATH_STYLE"
+    if [ -z "$remote_name" ]; then
+        run_updater_tool /runner/remote_backups.py list "$SELFHOST_DIR" </dev/null
+        return 0
+    fi
+    printf '%s\n' "$remote_name" | grep -Eq '^assozeta-[0-9]{8}T[0-9]{6}Z(-[0-9]+)?\.tar\.gz$' \
+        || die "not a backup name: $remote_name (run restore --from-s3 to list them)"
+    recovery_key=
+    if [ -f "$SELFHOST_DIR/backups/$remote_name" ]; then
+        log "$remote_name is already in $SELFHOST_DIR/backups; restoring the local copy"
+    elif [ -t 0 ]; then
+        printf 'Recovery key (AGE-SECRET-KEY-...): ' >&2
+        stty -echo 2>/dev/null || true
+        read -r recovery_key || true
+        stty echo 2>/dev/null || true
+        printf '\n' >&2
+    else
+        # Accept the bare key or the whole key file.
+        while IFS= read -r recovery_line; do
+            case "$recovery_line" in AGE-SECRET-KEY-*) recovery_key=$recovery_line; break ;; esac
+        done
+    fi
+    if [ ! -f "$SELFHOST_DIR/backups/$remote_name" ]; then
+        [ -n "$recovery_key" ] || die "the recovery key is required on standard input"
+        fetched=$(printf '%s\n' "$recovery_key" | run_updater_tool /runner/remote_backups.py fetch "$SELFHOST_DIR" "$remote_name") \
+            || { recovery_key=; die "could not download or decrypt $remote_name"; }
+        recovery_key=
+        [ "$(printf '%s\n' "$fetched" | tail -n 1)" = "$SELFHOST_DIR/backups/$remote_name" ] \
+            || die "the downloaded backup was not found in $SELFHOST_DIR/backups"
+        log "downloaded and decrypted $remote_name"
+    fi
+    updater_tool_options=
+    # Same path as a local restore, including the safety backup of current data.
+    if [ "$remote_yes" = true ]; then
+        restore_command_prod "$SELFHOST_DIR/backups/$remote_name" --yes
+    else
+        restore_command_prod "$SELFHOST_DIR/backups/$remote_name"
+    fi
+}
+
 restore_prod() {
+    if [ "${1:-}" = --from-s3 ]; then
+        shift
+        restore_from_s3 "$@"
+        return
+    fi
     archive=${1:-}
     [ -n "$archive" ] || die "restore requires a backup archive"
     [ -f "$archive" ] || die "backup archive not found: $archive"
@@ -1612,6 +1783,11 @@ restore_prod() {
     restore_live_modified=false
     restore_app_was_running=false
     restore_app_stopped=false
+    if [ "${restore_safety_stopped:-false}" = true ]; then
+        # The safety backup left the services stopped: restart them on failure.
+        restore_app_was_running=true
+        restore_app_stopped=true
+    fi
     restore_cleanup_done=false
     trap 'restore_on_exit' EXIT
     trap 'exit 129' HUP
@@ -1722,13 +1898,57 @@ restore_prod() {
         redis redis-cli FLUSHALL >/dev/null
 
     migrate_prod_schemas
-    start_prod_app_services "${recover_upgrade_active:-false}"
+    printf '%s\n' '@@ASSOZETA_STAGE restarting'
+    start_prod_app_services "${recover_upgrade_active:-false}" true
     require_public_readiness
     cleanup_status=0
     restore_cleanup 0 || cleanup_status=$?
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
     status_prod
     log "restore completed"
+}
+
+# The restore command: unless --no-backup, the current data are backed up
+# first (origin pre-restore) and the services stay stopped until the restore
+# ends, so the safety backup holds exactly the data that get replaced.
+restore_command_prod() {
+    if [ "${1:-}" = --from-s3 ]; then
+        shift
+        restore_from_s3 "$@"
+        return
+    fi
+    restore_source=
+    restore_assume_yes=false
+    restore_take_backup=true
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --yes) restore_assume_yes=true ;;
+            --no-backup) restore_take_backup=false ;;
+            -*) die "unknown restore option: $1" ;;
+            *) [ -z "$restore_source" ] || die "restore accepts one archive"; restore_source=$1 ;;
+        esac
+        shift
+    done
+    [ -n "$restore_source" ] || die "restore requires a backup archive"
+    [ -f "$restore_source" ] || die "backup archive not found: $restore_source"
+    confirm_destructive "Restore $restore_source and replace current database/object data?" "$restore_assume_yes"
+    printf '%s\n' '@@ASSOZETA_STAGE checking'
+    restore_source="$(CDPATH= cd -- "$(dirname -- "$restore_source")" && pwd)/$(basename -- "$restore_source")"
+    if [ "$restore_take_backup" = true ]; then
+        printf '%s\n' '@@ASSOZETA_STAGE backup'
+        backup_keep_stopped=true
+        backup_origin=pre-restore
+        backup_protected=$(basename -- "$restore_source")
+        # The restore extracts the archive and stages its objects once more.
+        restore_source_kib=$(du -k "$restore_source" | awk 'NR == 1 { print $1 }')
+        backup_extra_space_mb=$(( ${restore_source_kib:-0} * 2 / 1024 ))
+        backup_prod
+        restore_safety_stopped=$backup_app_was_running
+        printf '@@ASSOZETA_BACKUP %s\n' "$(basename -- "$archive")"
+        log "safety backup created: $archive"
+    fi
+    printf '%s\n' '@@ASSOZETA_STAGE restoring'
+    restore_prod "$restore_source" --yes
 }
 
 supports_self_update() {
@@ -1747,9 +1967,11 @@ run_updater_tool() {
     # mutate the installation under the lifecycle lock so the next CLI can
     # refuse overlapping work after the parent lock disappears.
     if [ "${prod_lock_held:-false}" = true ]; then
-        set -- --label "org.assozeta.lifecycle.installation=$SELFHOST_DIR" "$updater_tool_image" "$@"
+        # shellcheck disable=SC2086 # fixed docker options without spaces
+        set -- --label "org.assozeta.lifecycle.installation=$SELFHOST_DIR" ${updater_tool_options:-} "$updater_tool_image" "$@"
     else
-        set -- "$updater_tool_image" "$@"
+        # shellcheck disable=SC2086
+        set -- ${updater_tool_options:-} "$updater_tool_image" "$@"
     fi
     case "$PROD_ENV" in
         "$SELFHOST_DIR"/*)
@@ -1969,7 +2191,7 @@ run_locked_prod_command() {
         stop) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose stop ;;
         restart) restart_prod ;;
         backup) backup_prod "$@" ;;
-        restore) restore_prod "$@" ;;
+        restore) restore_command_prod "$@" ;;
         recover-upgrade) recover_upgrade_prod "$@" ;;
         reconcile-updates) reconcile_updates_prod "$@" ;;
         upgrade) upgrade_prod "$@" ;;

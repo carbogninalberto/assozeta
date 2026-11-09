@@ -31,3 +31,9 @@ def cleanup_data_restores():
             prune_storage()
     except Busy:
         return
+
+
+@shared_task(name='instance.backups.notify_failures')
+def notify_backup_failures():
+    from .backups import notify_failures
+    return notify_failures()

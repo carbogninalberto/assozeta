@@ -264,7 +264,7 @@
     "UI/src/routes/manuale/manualPresentation.js",
     "UI/src/routes/profile/ProfileMenu.svelte",
     "UI/src/routes/profile/sections/Account.svelte",
-    "UI/src/routes/profile/sections/DataManagement.svelte",
+    "UI/src/routes/profile/sections/DataExports.svelte",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte",
     "UI/src/routes/profile/sections/Integrations.svelte",
@@ -7981,13 +7981,13 @@
       "BE/application/tasks.py",
       "BE/application/views/export_views.py",
       "UI/src/routes/profile/ProfileMenu.svelte",
-      "UI/src/routes/profile/sections/DataManagement.svelte"
+      "UI/src/routes/profile/sections/DataExports.svelte"
     ],
     "tutorials/come-esportare-dati-associazione.mdx#formati-disponibili-e-consigli": [
       "UI/src/components/modals/CurrentViewPrintingModal.svelte",
       "UI/src/routes/accounting/payment/PaymentList.svelte",
       "UI/src/routes/association/Members/shared/ExportData.svelte",
-      "UI/src/routes/profile/sections/DataManagement.svelte"
+      "UI/src/routes/profile/sections/DataExports.svelte"
     ],
     "tutorials/come-esportare-dati-associazione.mdx#formato-dei-file": [
       "BE/application/views/subscriptions_views.py",
@@ -7995,14 +7995,14 @@
       "UI/src/routes/accounting/payment/PaymentList.svelte",
       "UI/src/routes/association/Members/shared/ExportData.svelte",
       "UI/src/routes/association/course/instructor/modals/ReportModal.svelte",
-      "UI/src/routes/profile/sections/DataManagement.svelte"
+      "UI/src/routes/profile/sections/DataExports.svelte"
     ],
     "tutorials/come-esportare-dati-associazione.mdx#indice": [
       "BE/application/views/export_views.py",
       "BE/application/views/subscriptions_views.py",
       "UI/src/routes/accounting/payment/PaymentList.svelte",
       "UI/src/routes/association/Members/shared/ExportData.svelte",
-      "UI/src/routes/profile/sections/DataManagement.svelte"
+      "UI/src/routes/profile/sections/DataExports.svelte"
     ],
     "tutorials/come-gestire-certificati-medici.mdx#caricare-un-certificato-medico": [
       "UI/src/routes/association/Members/add/sections/Section4.svelte",
@@ -16169,7 +16169,9 @@
         "UI/src/routes/association/Members/MembersList.svelte",
         "UI/src/routes/association/Members/shared/ExportData.svelte",
         "UI/src/routes/profile/ProfileMenu.svelte",
+        "UI/src/routes/profile/sections/DataExports.svelte",
         "UI/src/routes/profile/sections/DataManagement.svelte",
+        "UI/src/routes/profile/sections/DataTransfer.svelte",
         "UI/src/store/exportProgressStore.js",
         "UI/src/utils/Permissions.js",
         "UI/src/utils/profileNavigation.js",
@@ -16200,6 +16202,8 @@
         "UI/src/routes/association/Members/shared/ExportData.svelte",
         "UI/src/components/modals/CurrentViewPrintingModal.svelte",
         "UI/src/routes/profile/sections/DataManagement.svelte",
+        "UI/src/routes/profile/sections/DataExports.svelte",
+        "UI/src/routes/profile/sections/DataTransfer.svelte",
         "UI/src/routes/profile/ProfileMenu.svelte",
         "UI/src/utils/profileNavigation.js",
         "UI/src/store/exportProgressStore.js",

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readProfileLocation, navigateProfile, profileTab, isProfileLocation} from './profileNavigation.js';
+import {readProfileLocation, navigateProfile, profileTab, isProfileLocation, legacyProfileTarget} from './profileNavigation.js';
 
 test('profile links accept reordered parameters and reject unknown pages', () => {
     assert.deepEqual(readProfileLocation('#/profile?tab=restore&page=data-management'),{page:'data-management',tab:'restore'});
@@ -35,4 +35,13 @@ test('profile navigation preserves the deployment path and changes tab history',
 test('profile event handlers can ignore navigation outside the profile', () => {
     for (const hash of ['#/profile', '#/profile?page=settings&tab=general']) assert.equal(isProfileLocation(hash), true);
     for (const hash of ['#/balance-sheet/list', '#/members/list', '#/profile-other', '#/']) assert.equal(isProfileLocation(hash), false);
+});
+
+test('self-hosted Gestione Dati links land on the Backup tab; Bakney keeps them', () => {
+    const backup = {page: 'self-instance', tab: 'backups'};
+    assert.deepEqual(legacyProfileTarget('data-management', 'info', true), backup);
+    assert.deepEqual(legacyProfileTarget(null, 'data-management', true), backup);
+    assert.equal(legacyProfileTarget('info', 'data-management', true), null);
+    assert.equal(legacyProfileTarget('data-management', 'data-management', false), null);
+    assert.equal(legacyProfileTarget(null, 'data-management', false), null);
 });

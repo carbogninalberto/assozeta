@@ -146,7 +146,7 @@ export function observeInitialPairing(page) {
             } catch { /* A closed page still has useful network evidence. */ }
             const button = {count: 0, visible: false, enabled: false};
             try {
-                const locator = page.getByRole('button', {name: 'Genera codice di collegamento', exact: true});
+                const locator = page.getByRole('button', {name: 'Genera codice', exact: true});
                 button.count = Math.min(1000, await locator.count());
                 if (button.count === 1) {
                     button.visible = await locator.isVisible();

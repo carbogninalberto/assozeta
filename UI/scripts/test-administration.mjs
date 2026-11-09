@@ -92,7 +92,7 @@ try{
         page.on('console',message=>{if(message.type()==='error')console.error(message.text());});
         await page.goto('http://127.0.0.1:5204/');
         await expect(page.getByRole('heading',{name:/^Impersona utenti/})).toBeVisible({timeout:30000});
-        await expect(page.locator('.menu-nav a')).toHaveText(['Self Instance','Gestione Dati','Impersona utenti']);
+        await expect(page.locator('.menu-nav a')).toHaveText(['Istanza','Impersona utenti']);
         await expect(page.getByText('Sei in modalità superuser, attenzione!', {exact:true})).toHaveCount(0);
         for(const target of users){
             let picker = page;
@@ -140,7 +140,7 @@ try{
             await expect(page.getByRole('heading',{name:target.username,exact:true})).toBeVisible({timeout:30000});
             await expect(page.locator('.identity-summary')).toContainText(target.username);
             await expect(page.locator('.menu-nav').getByRole('link',{name:'Bacheca',exact:true})).toBeVisible();
-            await expect(page.locator('#bkn_profile_aside')).not.toContainText('Self Instance');
+            await expect(page.locator('#bkn_profile_aside')).not.toContainText('Istanza');
             assert.equal(await page.evaluate(()=>localStorage.getItem('bkn_datatable-1-meta')),null);
             assert.equal(await page.evaluate(()=>localStorage.getItem('selectedGroup')),'null');
             assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sessionToken'))),'fixture-admin-token');
@@ -149,7 +149,7 @@ try{
             await page.locator('.identity-summary').click();
             await page.getByRole('button',{name:'Torna all’amministrazione'}).click();
             await expect(page.getByRole('heading',{name:/^Impersona utenti/})).toBeVisible({timeout:30000});
-            await expect(page.locator('.menu-nav a')).toHaveText(['Self Instance','Gestione Dati','Impersona utenti']);
+            await expect(page.locator('.menu-nav a')).toHaveText(['Istanza','Impersona utenti']);
             assert.equal(sessions.size,0);
         }
         assert.deepEqual(errors,[]);

@@ -3685,7 +3685,7 @@
         "target": "impersonation_users",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/impersonation_management.go",
@@ -3746,7 +3746,8 @@
       ],
       "notes": [
         "Current-schema implementing slice only; no verified or activation claim. Complete frontend behavior, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
-        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above."
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above.",
+        "Django behavior changed on main: Go parity must be re-verified."
       ]
     },
     {
@@ -4236,7 +4237,7 @@
         "target": "impersonation_users",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/impersonation_management.go",
@@ -4297,7 +4298,8 @@
       ],
       "notes": [
         "Current-schema implementing slice only; no verified or activation claim. Complete frontend behavior, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
-        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above."
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above.",
+        "Django behavior changed on main: Go parity must be re-verified."
       ]
     },
     {
@@ -24290,7 +24292,7 @@
         "target": "stripe_multiple_pay",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24371,7 +24373,8 @@
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
+        "Django behavior changed on main: Go parity must be re-verified."
       ]
     },
     {
@@ -24488,7 +24491,7 @@
         "target": "stripe_pay",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24569,7 +24572,8 @@
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
+        "Django behavior changed on main: Go parity must be re-verified."
       ]
     },
     {
@@ -24587,7 +24591,7 @@
         "target": "stripe_webhook",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24668,7 +24672,8 @@
         }
       ],
       "notes": [
-        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
+        "Django behavior changed on main: Go parity must be re-verified."
       ]
     },
     {
@@ -34835,9 +34840,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 40,
+        "line": 52,
         "symbol": "access -> InstanceAccessView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -34845,7 +34850,7 @@
         "target": "InstanceAccessView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",
@@ -34922,9 +34927,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 41,
+        "line": 53,
         "symbol": "admin -> InstanceAdminView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -34932,7 +34937,7 @@
         "target": "InstanceAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -35018,9 +35023,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 34,
+        "line": 37,
         "symbol": "admin/backups -> BackupOverviewView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35028,7 +35033,7 @@
         "target": "BackupOverviewView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -35103,13 +35108,48 @@
       ]
     },
     {
+      "id": "route:BE/instance/urls.py:admin/backups/<str:name> -> BackupItemView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 48,
+        "symbol": "admin/backups/<str:name> -> BackupItemView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/<str:name>",
+        "target": "BackupItemView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "route:BE/instance/urls.py:admin/backups/<str:name>/download -> BackupDownloadView.as_view()",
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 36,
+        "line": 39,
         "symbol": "admin/backups/<str:name>/download -> BackupDownloadView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35117,7 +35157,7 @@
         "target": "BackupDownloadView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -35191,13 +35231,48 @@
       ]
     },
     {
+      "id": "route:BE/instance/urls.py:admin/backups/<str:name>/restore -> BackupRestoreView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 42,
+        "symbol": "admin/backups/<str:name>/restore -> BackupRestoreView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/<str:name>/restore",
+        "target": "BackupRestoreView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "route:BE/instance/urls.py:admin/backups/download-token -> BackupDownloadTokenView.as_view()",
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 35,
+        "line": 38,
         "symbol": "admin/backups/download-token -> BackupDownloadTokenView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35205,7 +35280,7 @@
         "target": "BackupDownloadTokenView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/handler/instance_backups.go",
         "BE_GO/internal/service/instance_backups.go",
@@ -35279,13 +35354,258 @@
       ]
     },
     {
+      "id": "route:BE/instance/urls.py:admin/backups/remote -> RemoteBackupSettingsView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 43,
+        "symbol": "admin/backups/remote -> RemoteBackupSettingsView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/remote",
+        "target": "RemoteBackupSettingsView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/instance/urls.py:admin/backups/remote/fetch -> RemoteBackupFetchView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 47,
+        "symbol": "admin/backups/remote/fetch -> RemoteBackupFetchView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/remote/fetch",
+        "target": "RemoteBackupFetchView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/instance/urls.py:admin/backups/remote/key -> RemoteBackupKeyView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 45,
+        "symbol": "admin/backups/remote/key -> RemoteBackupKeyView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/remote/key",
+        "target": "RemoteBackupKeyView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/instance/urls.py:admin/backups/remote/key/confirm -> RemoteBackupKeyConfirmView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 46,
+        "symbol": "admin/backups/remote/key/confirm -> RemoteBackupKeyConfirmView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/remote/key/confirm",
+        "target": "RemoteBackupKeyConfirmView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/instance/urls.py:admin/backups/remote/test -> RemoteBackupTestView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 44,
+        "symbol": "admin/backups/remote/test -> RemoteBackupTestView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/remote/test",
+        "target": "RemoteBackupTestView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/instance/urls.py:admin/backups/schedule -> BackupScheduleView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 40,
+        "symbol": "admin/backups/schedule -> BackupScheduleView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/schedule",
+        "target": "BackupScheduleView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
+      "id": "route:BE/instance/urls.py:admin/backups/upload -> BackupUploadView.as_view()",
+      "kind": "route",
+      "django": {
+        "file": "BE/instance/urls.py",
+        "line": 41,
+        "symbol": "admin/backups/upload -> BackupUploadView.as_view()",
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
+      },
+      "source_present": true,
+      "declaration": {
+        "path": "admin/backups/upload",
+        "target": "BackupUploadView.as_view()",
+        "syntax": "path"
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "route:BE/instance/urls.py:admin/bakney-pairing -> PairingAdminView.as_view()",
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 27,
+        "line": 30,
         "symbol": "admin/bakney-pairing -> PairingAdminView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35293,7 +35613,7 @@
         "target": "PairingAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/bakney_sso.go",
         "BE_GO/internal/repository/bakney_sso.go",
@@ -35382,9 +35702,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 28,
+        "line": 31,
         "symbol": "admin/data-restore -> DataRestoreView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35392,7 +35712,7 @@
         "target": "DataRestoreView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -35496,9 +35816,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 31,
+        "line": 34,
         "symbol": "admin/data-restore/<uuid:operation_id>/<str:action> -> DataRestoreActionView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35506,7 +35826,7 @@
         "target": "DataRestoreActionView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -35610,9 +35930,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 30,
+        "line": 33,
         "symbol": "admin/data-restore/<uuid:operation_id>/download -> DataRestoreDownloadView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35620,7 +35940,7 @@
         "target": "DataRestoreDownloadView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -35723,9 +36043,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 29,
+        "line": 32,
         "symbol": "admin/data-restore/backups -> DataRestoreBackupsView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35733,7 +36053,7 @@
         "target": "DataRestoreBackupsView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore.go",
         "BE_GO/internal/repository/data_restore.go",
@@ -35836,9 +36156,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 37,
+        "line": 49,
         "symbol": "admin/diagnostics -> DiagnosticsView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35846,7 +36166,7 @@
         "target": "DiagnosticsView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -35932,9 +36252,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 38,
+        "line": 50,
         "symbol": "admin/email -> EmailSettingsView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -35942,7 +36262,7 @@
         "target": "EmailSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36029,9 +36349,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 39,
+        "line": 51,
         "symbol": "admin/email/test -> EmailTestView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36039,7 +36359,7 @@
         "target": "EmailTestView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36120,9 +36440,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 33,
+        "line": 36,
         "symbol": "admin/integrations/<str:provider> -> IntegrationSettingsView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36130,7 +36450,7 @@
         "target": "IntegrationSettingsView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36217,9 +36537,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 32,
+        "line": 35,
         "symbol": "admin/integrations/<str:provider>/test -> IntegrationTestView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36227,7 +36547,7 @@
         "target": "IntegrationTestView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36308,9 +36628,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 42,
+        "line": 54,
         "symbol": "admin/logo -> OwnerLogoView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36318,7 +36638,7 @@
         "target": "OwnerLogoView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -36406,9 +36726,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 43,
+        "line": 55,
         "symbol": "admin/releases -> InstanceReleasesView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36416,7 +36736,7 @@
         "target": "InstanceReleasesView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/instanceprobe/http.go",
         "BE_GO/internal/instanceprobe/pyjson.go",
@@ -36498,9 +36818,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 45,
+        "line": 57,
         "symbol": "admin/restarts -> InstanceRestartsView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36508,7 +36828,7 @@
         "target": "InstanceRestartsView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36592,9 +36912,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 44,
+        "line": 56,
         "symbol": "admin/updates -> InstanceUpdatesView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36602,7 +36922,7 @@
         "target": "InstanceUpdatesView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/cmd/server/instance_admin.go",
@@ -36688,9 +37008,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 48,
+        "line": 60,
         "symbol": "config -> InstanceConfigView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36698,7 +37018,7 @@
         "target": "InstanceConfigView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",
@@ -36775,9 +37095,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 49,
+        "line": 61,
         "symbol": "configure -> InstanceSetupView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36785,7 +37105,7 @@
         "target": "InstanceSetupView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -36873,9 +37193,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 50,
+        "line": 62,
         "symbol": "logo -> InstanceLogoUploadView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36883,7 +37203,7 @@
         "target": "InstanceLogoUploadView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -36971,9 +37291,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 51,
+        "line": 63,
         "symbol": "logo.png -> InstanceLogoServeView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -36981,7 +37301,7 @@
         "target": "InstanceLogoServeView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/cmd/server/instance_logo.go",
         "BE_GO/internal/domain/instance_logo.go",
@@ -37086,9 +37406,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 52,
+        "line": 64,
         "symbol": "manifest.json -> InstanceManifestView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -37096,7 +37416,7 @@
         "target": "InstanceManifestView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_manifest.go",
         "BE_GO/internal/dto/instance_manifest.go",
@@ -37234,9 +37554,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 53,
+        "line": 65,
         "symbol": "reconfigure -> InstanceReconfigureView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -37244,7 +37564,7 @@
         "target": "InstanceReconfigureView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37332,9 +37652,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 47,
+        "line": 59,
         "symbol": "setup-token/validate -> InstanceSetupTokenValidateView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -37342,7 +37662,7 @@
         "target": "InstanceSetupTokenValidateView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_setup.go",
         "BE_GO/internal/dto/instance_setup.go",
@@ -37430,9 +37750,9 @@
       "kind": "route",
       "django": {
         "file": "BE/instance/urls.py",
-        "line": 46,
+        "line": 58,
         "symbol": "status -> InstanceStatusView.as_view()",
-        "sha256": "baff35383506333d06432b2cfa9f70156b880f823275db540698026d4cfcd6cb"
+        "sha256": "a484b234eeeb329f45a23c51a1e85e0bc391a5e119431e493c6e5a0b1be666bd"
       },
       "source_present": true,
       "declaration": {
@@ -37440,7 +37760,7 @@
         "target": "InstanceStatusView.as_view()",
         "syntax": "path"
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/instance_bootstrap.go",
         "BE_GO/internal/dto/instance_bootstrap.go",
@@ -37517,9 +37837,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 65,
+        "line": 67,
         "symbol": "association-quote-assign",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -37528,7 +37848,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -37596,9 +37916,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 100,
+        "line": 102,
         "symbol": "auto-archive-subscription",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -37607,7 +37927,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -37696,9 +38016,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 115,
+        "line": 117,
         "symbol": "auto-delete-orphan-medical-certificate",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -37707,7 +38027,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -37775,9 +38095,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 110,
+        "line": 112,
         "symbol": "auto-mark-attendance",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -37786,7 +38106,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -37849,13 +38169,49 @@
       ]
     },
     {
+      "id": "schedule:BE/core/celery.py:bakney-pairing-maintenance",
+      "kind": "schedule",
+      "django": {
+        "file": "BE/core/celery.py",
+        "line": 44,
+        "symbol": "bakney-pairing-maintenance",
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+      },
+      "source_present": true,
+      "declaration": {
+        "schedule": "{'task': 'instance.sso.tasks.maintain_bakney_pairings', 'schedule': 60.0}",
+        "assignment": [
+          "app.conf.beat_schedule"
+        ]
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "schedule:BE/core/celery.py:change-type-of-stripe-payments",
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 85,
+        "line": 87,
         "symbol": "change-type-of-stripe-payments",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -37864,7 +38220,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -37931,9 +38287,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 44,
+        "line": 45,
         "symbol": "cleanup-data-restores",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -37942,7 +38298,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38009,9 +38365,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 140,
+        "line": 142,
         "symbol": "cleanup-old-exports",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38020,7 +38376,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38087,9 +38443,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 95,
+        "line": 97,
         "symbol": "clear-deleted-subscription",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38098,7 +38454,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38180,9 +38536,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 50,
+        "line": 52,
         "symbol": "clear-expired-subscription-tokens",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38191,7 +38547,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38259,9 +38615,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 135,
+        "line": 137,
         "symbol": "delete-old-audit-logs",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38270,7 +38626,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38338,9 +38694,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 60,
+        "line": 62,
         "symbol": "delete-users-with-request",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38349,7 +38705,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38416,9 +38772,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 80,
+        "line": 82,
         "symbol": "generate-coupon-if-not-exists",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38427,7 +38783,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38494,9 +38850,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 90,
+        "line": 92,
         "symbol": "mark-as-paid-payments-checking-stripe",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38505,7 +38861,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38569,13 +38925,49 @@
       ]
     },
     {
+      "id": "schedule:BE/core/celery.py:notify-backup-failures",
+      "kind": "schedule",
+      "django": {
+        "file": "BE/core/celery.py",
+        "line": 46,
+        "symbol": "notify-backup-failures",
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
+      },
+      "source_present": true,
+      "declaration": {
+        "schedule": "{'task': 'instance.backups.notify_failures', 'schedule': 300.0}",
+        "assignment": [
+          "app.conf.beat_schedule"
+        ]
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "schedule:BE/core/celery.py:renew-memberships-payments",
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 45,
+        "line": 47,
         "symbol": "renew-memberships-payments",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38584,7 +38976,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38651,9 +39043,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 55,
+        "line": 57,
         "symbol": "reset-communication-daily-email-balance",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38662,7 +39054,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38736,9 +39128,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 125,
+        "line": 127,
         "symbol": "send-expired-certificate-email",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38747,7 +39139,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38814,9 +39206,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 120,
+        "line": 122,
         "symbol": "send-expiring-certificate-email",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38825,7 +39217,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38892,9 +39284,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 70,
+        "line": 72,
         "symbol": "send-reminders",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38903,7 +39295,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38970,9 +39362,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 130,
+        "line": 132,
         "symbol": "send-user-partial-registration-email",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -38981,7 +39373,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -39048,9 +39440,9 @@
       "kind": "schedule",
       "django": {
         "file": "BE/core/celery.py",
-        "line": 75,
+        "line": 77,
         "symbol": "update-age-of-associates",
-        "sha256": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352"
+        "sha256": "a3309ce3b177ef08acb19bd2c5783d3f813aa0c6e1ee5a39c84b880851677be2"
       },
       "source_present": true,
       "declaration": {
@@ -39059,7 +39451,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -39131,14 +39523,14 @@
         "symbol": "bakney-pairing-maintenance",
         "sha256": "c6d2a9d8539abfd76752ed61d6ab9cd21321ffe35c1fb76911ebdd36ff92dbe3"
       },
-      "source_present": true,
+      "source_present": false,
       "declaration": {
         "schedule": "{'task': 'instance.sso.tasks.maintain_bakney_pairings', 'schedule': 60.0}",
         "assignment": [
           "CELERY_BEAT_SCHEDULE"
         ]
       },
-      "status": "implementing",
+      "status": "source_removed",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -43025,7 +43417,7 @@
           "name": "'mark_as_paid_payments_checking_stripe'"
         }
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/stripe_paid_check.go",
         "BE_GO/internal/repository/stripe_paid_check.go",
@@ -43095,7 +43487,8 @@
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Ported by tasks-db-f: Go serializes the ten-thread pool in payment_id order; the parity proof is against a one-thread Django run. See docs/architecture/go-migration/tasks-db-f.md."
+        "Ported by tasks-db-f: Go serializes the ten-thread pool in payment_id order; the parity proof is against a one-thread Django run. See docs/architecture/go-migration/tasks-db-f.md.",
+        "Django behavior changed on main: Go parity must be re-verified."
       ]
     },
     {
@@ -44795,7 +45188,7 @@
         "file": "BE/instance/tasks.py",
         "line": 18,
         "symbol": "cleanup_data_restores",
-        "sha256": "1a21956e87c2c6553dca78cdd4824ef2acb28d06864cc13c71da325143cb9733"
+        "sha256": "4c7d08c6f6c3e88cb3ac63f4980552c9f8c8a0d68bdac8d232f3f4ee7c9f4619"
       },
       "source_present": true,
       "declaration": {
@@ -44805,7 +45198,7 @@
           "name": "'instance.restore.cleanup'"
         }
       },
-      "status": "implementing",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/data_restore_cleanup.go",
         "BE_GO/internal/repository/data_restore_cleanup.go",
@@ -44870,13 +45263,50 @@
       ]
     },
     {
+      "id": "task:BE/instance/tasks.py:notify_backup_failures",
+      "kind": "task",
+      "django": {
+        "file": "BE/instance/tasks.py",
+        "line": 37,
+        "symbol": "notify_backup_failures",
+        "sha256": "4c7d08c6f6c3e88cb3ac63f4980552c9f8c8a0d68bdac8d232f3f4ee7c9f4619"
+      },
+      "source_present": true,
+      "declaration": {
+        "name": "instance.backups.notify_failures",
+        "arguments": "",
+        "options": {
+          "name": "'instance.backups.notify_failures'"
+        }
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "task:BE/instance/tasks.py:restore_instance_data",
       "kind": "task",
       "django": {
         "file": "BE/instance/tasks.py",
         "line": 7,
         "symbol": "restore_instance_data",
-        "sha256": "1a21956e87c2c6553dca78cdd4824ef2acb28d06864cc13c71da325143cb9733"
+        "sha256": "4c7d08c6f6c3e88cb3ac63f4980552c9f8c8a0d68bdac8d232f3f4ee7c9f4619"
       },
       "source_present": true,
       "declaration": {
@@ -44892,7 +45322,7 @@
           "max_retries": "None"
         }
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/celeryworker/prefork.go",
         "BE_GO/internal/celeryworker/worker.go",

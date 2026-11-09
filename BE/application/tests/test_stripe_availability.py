@@ -221,6 +221,37 @@ class StripeAvailabilityTests(TestCase):
         self.assertTrue(self.payment.paid)
 
     @override_settings(STRIPE_WEBHOOK_SECRET='whsec_direct')
+    @patch('application.views.stripe_views.NotificationService.send_notification')
+    @patch('application.views.stripe_views.stripe.Webhook.construct_event')
+    def test_webhook_records_stripe_method_before_printing_receipt(self, construct_event, _notify):
+        self.payment.payment_intent_id = 'pi_direct_charge_456'
+        self.payment.save(update_fields=['payment_intent_id'])
+        self.assertEqual(self.payment.type, Payment.DEFAULT)
+        construct_event.return_value = {
+            'type': 'charge.succeeded',
+            'data': {'object': {'payment_intent': 'pi_direct_charge_456'}},
+        }
+        printed = []
+
+        def print_invoice(invoice_id, _token):
+            payment = Payment.objects.get(invoice_id=invoice_id)
+            printed.append((payment.paid, payment.get_type_in_lang()))
+
+        with patch('application.views.stripe_views.print_document_invoice.delay', side_effect=print_invoice), \
+                self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                '/stripe/webhook',
+                data=b'{"id":"evt_charge"}',
+                content_type='application/json',
+                HTTP_STRIPE_SIGNATURE='t=1,v1=sig',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(printed, [(True, 'Stripe')])
+        self.payment.refresh_from_db()
+        self.assertEqual(self.payment.type, Payment.STRIPE)
+
+    @override_settings(STRIPE_WEBHOOK_SECRET='whsec_direct')
     @patch('application.views.stripe_views.stripe.Webhook.construct_event')
     def test_platform_billing_webhook_events_are_ignored(self, construct_event):
         construct_event.return_value = {

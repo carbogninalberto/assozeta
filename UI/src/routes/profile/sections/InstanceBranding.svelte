@@ -1,18 +1,26 @@
 <script>
+    // Identità: name, colour, support email and logo in one card with one save bar.
     import {onDestroy} from 'svelte';
     import {toast} from 'svelte-sonner';
-    import {oemConfig, uploadInstanceLogo} from 'store/instanceStore.js';
+    import {oemConfig, uploadInstanceLogo, saveRuntimeConfig} from 'store/instanceStore.js';
 
-    let fileInput;
+    export let request;
+    export let oem = {};
     export let changes = false;
     export let disabled = false;
     export let busy = false;
+    export let onSaved = () => {};
+
+    const pick = value => ({name: value?.name || '', abbreviation: value?.abbreviation || '', supportEmail: value?.supportEmail || '', primaryColor: value?.primaryColor || '#000000'});
+    let draft = pick(oem);
+    let saved = JSON.stringify(draft);
+    let fileInput;
     let selectedFile = null;
     let previewUrl = '';
-    let uploading = false;
-    $: busy = uploading;
     let error = '';
-    $: changes = selectedFile !== null;
+
+    $: identityChanged = JSON.stringify(draft) !== saved;
+    $: changes = identityChanged || selectedFile !== null;
 
     function clearSelection() {
         if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -26,100 +34,87 @@
         if (!file) return;
         clearSelection();
         error = '';
-        if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-            error = 'Seleziona un’immagine PNG, JPG o WebP.';
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            error = 'L’immagine non può superare 5 MB.';
-            return;
-        }
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) { error = 'Usa un’immagine PNG, JPG o WebP.'; return; }
+        if (file.size > 5 * 1024 * 1024) { error = 'L’immagine supera 5 MB.'; return; }
         selectedFile = file;
         previewUrl = URL.createObjectURL(file);
     }
 
-    async function saveLogo() {
-        if (!selectedFile || uploading || disabled) return;
-        uploading = true;
+    function cancel() {
+        draft = JSON.parse(saved);
+        clearSelection();
+        error = '';
+    }
+
+    async function save() {
+        if (busy || disabled || !changes) return;
+        busy = true;
         error = '';
         try {
-            await uploadInstanceLogo(selectedFile, '', true);
-            clearSelection();
-            toast.success('Logo aggiornato.');
-        } catch (e) {
-            error = 'Impossibile aggiornare il logo. Riprova.';
-        } finally {
-            uploading = false;
-        }
+            if (identityChanged) {
+                const submitted = {...draft};
+                const result = await request('/admin', {method: 'PUT', body: JSON.stringify({oem: submitted})});
+                saveRuntimeConfig(result.config);
+                saved = JSON.stringify(submitted);
+                onSaved(submitted);
+            }
+            if (selectedFile) {
+                try { await uploadInstanceLogo(selectedFile, '', true); clearSelection(); }
+                catch { throw new Error('Logo non caricato. Riprova.'); }
+            }
+            toast.success('Identità salvata.');
+        } catch (e) { error = e.message; }
+        finally { busy = false; }
     }
 
-    onDestroy(() => {
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-    });
+    onDestroy(() => { if (previewUrl) URL.revokeObjectURL(previewUrl); });
 </script>
 
-<section class="mb-8" aria-labelledby="instance-branding-title">
-    <h2 id="instance-branding-title" class="font-weight-boldest text-dark">Logo dell’applicazione</h2>
-    <p class="text-muted">
-        Personalizza il logo mostrato nella navigazione e nella pagina di accesso per tutti gli utenti.
-    </p>
-    <div class="border border-secondary rounded-xl p-4">
-        <div class="logo-preview mb-4">
-            <img src={previewUrl || $oemConfig?.logo || ''} alt="Anteprima del logo dell’applicazione" />
-        </div>
-        <label for="instance-logo-file" class="font-weight-bolder">Scegli un nuovo logo</label>
-        <input
-            bind:this={fileInput}
-            id="instance-logo-file"
-            class="logo-file"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            aria-describedby="instance-logo-help"
-            disabled={uploading || disabled}
-            on:change={selectLogo} />
-        <p id="instance-logo-help" class="text-muted mt-2">PNG, JPG o WebP, massimo 5 MB. L’immagine mantiene le sue proporzioni.</p>
-        {#if selectedFile}
-            <p class="selected-filename">{selectedFile.name}</p>
-        {/if}
-        {#if error}
-            <p class="text-danger" role="alert">{error}</p>
-        {/if}
-        <div class="d-flex flex-wrap" style="gap: 0.5rem;">
-            <button class="btn btn-primary font-weight-bolder" disabled={!selectedFile || uploading || disabled} on:click={saveLogo}>
-                {uploading ? 'Caricamento…' : 'Salva logo'}
-            </button>
-            {#if selectedFile}
-                <button class="btn btn-light" disabled={uploading} on:click={clearSelection}>Annulla</button>
-            {/if}
+<form class="si-card" aria-labelledby="instance-identity" on:submit|preventDefault={save}>
+    <div class="si-card-head">
+        <div>
+            <h2 id="instance-identity" class="si-title">Identità</h2>
+            <p class="si-muted si-small">Come appare l’app a tutti gli utenti.</p>
         </div>
     </div>
-</section>
+    <fieldset disabled={disabled || busy}>
+        <legend class="si-sr-only">Nome, colore e logo</legend>
+        <div class="identity">
+            <div class="logo">
+                <div class="logo-preview" style:--brand={draft.primaryColor}>
+                    <img src={previewUrl || $oemConfig?.logo || ''} alt="Anteprima del logo dell’applicazione" />
+                </div>
+                <label class="btn btn-light btn-sm logo-pick" for="instance-logo-file">Scegli un nuovo logo</label>
+                <input bind:this={fileInput} id="instance-logo-file" class="si-sr-only" type="file" accept="image/png,image/jpeg,image/webp" aria-describedby="instance-logo-help" on:change={selectLogo} />
+                <span id="instance-logo-help" class="si-hint">{selectedFile ? selectedFile.name : 'PNG, JPG o WebP, fino a 5 MB'}</span>
+            </div>
+            <div class="si-grid-2 fields">
+                <label>Nome<input class="form-control" bind:value={draft.name} required maxlength="255" /></label>
+                <label>Abbreviazione<input class="form-control" bind:value={draft.abbreviation} maxlength="50" /></label>
+                <label>Email di supporto<input class="form-control" type="email" bind:value={draft.supportEmail} /></label>
+                <label>Colore principale
+                    <span class="color"><input class="form-control color-input" type="color" bind:value={draft.primaryColor} aria-label="Colore principale" /><code>{draft.primaryColor}</code></span>
+                </label>
+            </div>
+        </div>
+        {#if error}<p class="text-danger mt-3 mb-0" role="alert">{error}</p>{/if}
+        <div class="si-savebar" class:dirty={changes}>
+            <button type="submit" class="btn btn-primary" disabled={!changes}>{busy ? 'Salvataggio…' : 'Salva identità'}</button>
+            {#if changes}<button type="button" class="btn btn-light" on:click={cancel}>Annulla</button><span class="si-dirty" role="status">Modifiche non salvate</span>{/if}
+        </div>
+    </fieldset>
+</form>
 
 <style>
-    .logo-preview {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        max-width: 320px;
-        height: 100px;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        background: var(--bg-surface-secondary);
-    }
-
-    .logo-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-
-    .logo-file {
-        display: block;
-        max-width: 100%;
-    }
-
-    .selected-filename {
-        overflow-wrap: anywhere;
-    }
+    fieldset { min-width: 0; }
+    .identity { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+    .logo { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; min-width: 0; }
+    .logo-preview { display: flex; align-items: center; justify-content: center; width: 100%; height: 6.5rem; padding: .875rem; border-radius: .625rem; background: var(--bg-surface-secondary); border-bottom: 3px solid var(--brand); }
+    .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
+    .logo-pick { margin: 0; cursor: pointer; }
+    input[type='file']:focus-visible + .si-hint, .logo:focus-within .logo-pick { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .color { display: flex; align-items: center; gap: .75rem; }
+    .color-input { width: 3.25rem; padding: .2rem; height: calc(1.5em + 1.3rem + 2px); }
+    .color code { color: var(--text-secondary); }
+    @media (max-width: 767px) { .identity { grid-template-columns: 1fr; } .logo { max-width: 20rem; } }
 </style>

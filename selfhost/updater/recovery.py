@@ -107,6 +107,12 @@ def reconcile(root, env_file):
     engine = Engine(root, env_file, journal)
     configured = image_version(read_env(env_file).get('ASSOZETA_VERSION'))
     for operation in unresolved:
+        if operation.get('kind') == 'restore':
+            # The operator restored the data from the server: check the running app.
+            engine.verify_running(configured, allow_configured_images=True)
+            journal.update(operation['id'], status='recovered', stage='recovered', reconciled_at=now(),
+                           recovery='Ripristino verificato dopo l’intervento sul server.')
+            continue
         source, target = image_version(operation['source_version']), image_version(operation['tag'])
         if configured == target:
             # A target is successful only with the operation-bound receipt,
