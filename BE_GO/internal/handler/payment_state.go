@@ -89,7 +89,8 @@ func (h *PaymentStatesHandler) admitted(c echo.Context, run func(ctx context.Con
 }
 
 func (h *PaymentStatesHandler) request(c echo.Context, audit domain.LoginAuditContext) service.PaymentStateRequest {
-	return service.PaymentStateRequest{ID: c.Param("uid"), GroupHeader: c.Request().Header.Get("X-Group-Id"), Audit: audit}
+	return service.PaymentStateRequest{ID: c.Param("uid"), GroupHeader: c.Request().Header.Get("X-Group-Id"), Audit: audit,
+		Authorization: requestAuthorization(c.Request())}
 }
 
 func (h *PaymentStatesHandler) Approve(c echo.Context) error {

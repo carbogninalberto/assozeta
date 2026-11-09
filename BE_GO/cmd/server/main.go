@@ -378,9 +378,12 @@ func run() (runErr error) {
 	e.Any("/course-subscriptions/bulk-delete", courseSubscriptionsHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course-subscriptions/:pk/update", courseSubscriptionsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course-subscriptions/:pk/delete", courseSubscriptionsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
-	paymentStatesHandler := handler.NewPaymentStatesHandler(service.NewPaymentStates(repository.NewPaymentStates(db), time.Now),
+	paymentStatesHandler := handler.NewPaymentStatesHandler(service.NewPaymentStates(repository.NewPaymentStates(db), time.Now).WithTasks(tasks),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/payment/:uid/approve", paymentStatesHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
+	invoiceGenerateHandler := handler.NewInvoiceGenerateHandler(paymentStatesHandler,
+		service.NewInvoiceGenerations(repository.NewInvoiceGenerations(repository.NewPaymentStates(db)), tasks, time.Now))
+	e.Any("/payment/:uid/generate-invoice", invoiceGenerateHandler.Generate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/cancel", paymentStatesHandler.Cancel, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/delete", paymentStatesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,

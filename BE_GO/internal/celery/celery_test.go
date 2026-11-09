@@ -24,6 +24,7 @@ type golden struct {
 		Task     string               `json:"task"`
 		Args     []json.RawMessage    `json:"args"`
 		Kwargs   [][2]json.RawMessage `json:"kwargs"`
+		ArgsList bool                 `json:"args_list"`
 		Payload  string               `json:"payload"`
 		Commands []string             `json:"broker_commands"`
 	} `json:"cases"`
@@ -126,7 +127,7 @@ func TestEncodeMatchesKombu(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			task := Task{Name: c.Task, Kwargs: Dict{}}
+			task := Task{Name: c.Task, Kwargs: Dict{}, ArgsList: c.ArgsList}
 			for _, arg := range c.Args {
 				task.Args = append(task.Args, taggedValue(t, arg))
 			}

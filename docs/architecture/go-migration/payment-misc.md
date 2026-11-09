@@ -71,9 +71,10 @@ their invoice is rendered whatever `generate_invoice` says.
 - Apply quotes for users other than the association owner with an associate (`render_to_string` + `send_email_html`):
   the whole request is rolled back.
 - Sign with a signature to store (Signature row, payment save, synchronous `print_document_compensation` PDF).
-- Approve of a paid invoiced payment with a truthy `generate_invoice` (`print_document_invoice` on commit) and of unpaid
-  income payments with a party (invoice numbering, notification via Redis/WebSocket, PDF task) — unchanged from
-  payment-state.
+- Approve of unpaid income payments with a party (invoice numbering, notification via Redis/WebSocket, PDF task) —
+  unchanged from payment-state. A paid invoiced payment with a truthy `generate_invoice` is now ported (the
+  `print_document_invoice` dispatch, see [invoice-generate](invoice-generate.md)); a `send_receipt_email` other than
+  None, a bool, a string or an int64 is refused.
 - Plan values outside the ported conversions: `int()` of non-ASCII digits or beyond int64, fees that are not a JSON
   number or a plain decimal string (or exceed numeric(9, 2)), previous plan / plan id values that are not strings or
   numbers, a non-canonical `X-Group-Id` spelling on apply, a `date` with non-ASCII digits.
@@ -82,8 +83,7 @@ their invoice is rendered whatever `generate_invoice` says.
 
 - `payment/<uid>/request`: its only success path renders the pending-payment e-mail synchronously (`render_to_string`, instance
   branding) and queues it (`send_mail_async`); the rendering is not reproduced in Go (see [celery-routes-a](celery-routes-a.md)).
-- `payment/<uid>/generate-invoice`: the `print_document_invoice.apply_async` dispatch is portable, but the generation path needs invoice
-  numbering, `generate_invoice_description` and the Invoice create, not yet in Go (see [celery-routes-a](celery-routes-a.md)).
+- `payment/<uid>/generate-invoice`: ported by [invoice-generate](invoice-generate.md).
 - `payment/list/export`: has a non-PDF success path (CSV/XLSX base64 export with petty-cash balances); not ported in
   this pass because of its size (filters, `smart_search`, petty-cash transfers and account balances, CSV/XLSX
   rendering). It remains uncharacterized.
