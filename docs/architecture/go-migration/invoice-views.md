@@ -81,7 +81,7 @@ random) and records the real outputs; `go test ./internal/fatturapa` requires id
   underscores or non-ASCII digits, dates before year 1000, arithmetic beyond Decimal's 28-digit context.
 - `HEAD` and the slash-less paths.
 
-## Follow-up: invoice-customers/add and invoice/<uid>/update (not ported here)
+## Follow-up: invoice-customers/add and invoice/<uid>/update (ported in [invoice-sync-print](invoice-sync-print.md))
 
 Both call a print task with `.apply(...)`. What that runs in the request:
 

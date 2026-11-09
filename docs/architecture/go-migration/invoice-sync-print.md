@@ -40,7 +40,7 @@ Go reads `CURRENT_HOST` from the environment (Django's required setting). The re
 5. the first scoped, live, `X-Group-Id`-aware payment of the invoice by primary key: a parsed `payment_date` is assigned as a naive
    midnight (stored as UTC midnight, audited as `YYYY-MM-DD 00:00:00`), `Payment.save()` applies its defaults (default category,
    `get_course_carnet_name()`, `Quota Corso`) and writes its auditlog entry (only changed fields, indexed `direct` on the payment's
-   association, which can be another association's payment linked to the invoice); then `generate_invoice_description(payment,
+   own association); then `generate_invoice_description(payment,
    association)` with the saved values, every subject (OTHER, subscription with period and membership, course subscription, installment,
    carnet, reason fallback, supplier or instructor without an associate, no party). A subject without a template (ACCOUNT_TRANSFER with
    an associate) or a carnet subscription without a carnet is a 500 **after** the payment save;
@@ -88,7 +88,8 @@ ProgressivoInvio normalized, each value decoded and checked: request time `<< 16
 
 - RED (`native-r3`): Django 70/70; Go 404 on the first case.
 - GREEN (`versioned-r1`): 70/70 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
-- Mutation: see the family spec (`mutation-r1`).
+- Mutation (`mutation-r1`): ignoring the completed-restore cutoff in `InvoiceSyncPrint.apply` fails Go on
+  `invoice-sync-print-update-plain-restore-completed-no-print` (an outbound request despite the completed restore).
 - `go test ./internal/service -run InvoiceSync`: request headers, redirect without Referer, lease release, stale/deferred admission,
   the ProgressivoInvio counter.
-- Re-run for shared code: invoice-parties (service, handler).
+- Re-run for shared code: invoice-parties (`native-r1`, 136/136; service and handler).

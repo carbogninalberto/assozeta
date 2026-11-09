@@ -96,8 +96,8 @@ ISO datetimes, ChoiceFields, `PrimaryKeyRelatedField` with `''` as None).
 
 - The customer list's XML generation and synchronous `print_document_customer_invoice`
   for invoices without a PDF: any such invoice refuses the list.
-- A valid customer add: the view saves the invoice, generates its XML and
-  JSON (`a38`) and runs the PDF print task.
+- A valid customer add was refused here; it is ported in
+  [invoice-sync-print](invoice-sync-print.md) (save, XML/JSON, eager print task).
 - Nested `payment` or `supplier` objects (DRF's nested serializer validation
   and writes), a non-null `payment_id`, and a new `invoice_supplier_id` on
   update (`save()` would insert a copy).
