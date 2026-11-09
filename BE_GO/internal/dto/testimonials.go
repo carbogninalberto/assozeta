@@ -188,6 +188,18 @@ func pythonRepr(out *strings.Builder, value any) {
 		out.WriteString(map[bool]string{true: "True", false: "False"}[v])
 	case string:
 		pythonStringRepr(out, v)
+	case float64:
+		// A computed Python float: repr() writes inf, -inf and nan.
+		text := pythonFloatRepr(v)
+		switch text {
+		case "Infinity":
+			text = "inf"
+		case "-Infinity":
+			text = "-inf"
+		case "NaN":
+			text = "nan"
+		}
+		out.WriteString(text)
 	case json.Number:
 		text := pythonJSONNumber(string(v))
 		switch text {

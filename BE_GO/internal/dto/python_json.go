@@ -57,6 +57,9 @@ func pythonJSONWriteWith(out *strings.Builder, value any, sorted bool, item, key
 		pythonJSONString(out, v)
 	case json.Number:
 		out.WriteString(pythonJSONNumber(string(v)))
+	case float64:
+		// A computed Python float (NaN and infinities as json.dumps writes them).
+		out.WriteString(pythonFloatRepr(v))
 	case domain.RequestObject:
 		if sorted {
 			v = append(domain.RequestObject(nil), v...)

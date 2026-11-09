@@ -1,0 +1,2739 @@
+{
+ "matrix_version": 1,
+ "scope": "Balance sheet and account delete authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "categories": {
+  "a": {
+   "id": "a1000000-0000-4000-8000-000001300001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Quote è",
+   "type": 1
+  },
+  "c": {
+   "id": "a1000000-0000-4000-8000-000001300002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Bar",
+   "type": 2
+  },
+  "f": {
+   "id": "a1000000-0000-4000-8000-000001300003",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estera",
+   "type": 1
+  }
+ },
+ "accounts": {
+  "main": {
+   "id": "a1000000-0000-4000-8000-000001300004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Banca",
+   "initial": "100.00",
+   "type": 2,
+   "code": "IT01",
+   "editable": true,
+   "enabled": true
+  },
+  "alt": {
+   "id": "a1000000-0000-4000-8000-000001300005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Banca 2",
+   "initial": "0.50",
+   "type": 2,
+   "code": "C",
+   "editable": false,
+   "enabled": true
+  },
+  "cash": {
+   "id": "a1000000-0000-4000-8000-000001300006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Cassa",
+   "initial": "10.25",
+   "type": 1,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "spare": {
+   "id": "a1000000-0000-4000-8000-000001300007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Vuoto",
+   "initial": "0.00",
+   "type": 1,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000001300008",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estero",
+   "initial": "1.00",
+   "type": 2,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  }
+ },
+ "transfers": {
+  "t1": {
+   "id": "a1000000-0000-4000-8000-000001300009",
+   "from": "main",
+   "to": "cash",
+   "amount": "20.00",
+   "date": "2025-06-01T10:00:00Z"
+  },
+  "t2": {
+   "id": "a1000000-0000-4000-8000-000001300010",
+   "from": "cash",
+   "to": "main",
+   "amount": "5.50",
+   "date": "2025-12-31T12:00:00Z"
+  },
+  "t3": {
+   "id": "a1000000-0000-4000-8000-000001300011",
+   "from": null,
+   "to": "cash",
+   "amount": "1.25",
+   "date": "2025-12-31T00:00:00Z"
+  }
+ },
+ "payments": {
+  "p1": {
+   "id": "a1000000-0000-4000-8000-000001300012",
+   "amount": "40.00",
+   "category": "a",
+   "date": "2025-03-10T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p2": {
+   "id": "a1000000-0000-4000-8000-000001300013",
+   "amount": "12.50",
+   "category": null,
+   "date": null,
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2025-04-01T10:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p3": {
+   "id": "a1000000-0000-4000-8000-000001300014",
+   "amount": "7.25",
+   "category": "c",
+   "date": "2025-05-05T10:00:00Z",
+   "account": "main",
+   "expense": true,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p4": {
+   "id": "a1000000-0000-4000-8000-000001300015",
+   "amount": "999.00",
+   "category": "a",
+   "date": "2025-03-01T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": false,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p5": {
+   "id": "a1000000-0000-4000-8000-000001300016",
+   "amount": "50.00",
+   "category": "a",
+   "date": "2025-03-02T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": true,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p6": {
+   "id": "a1000000-0000-4000-8000-000001300017",
+   "amount": "3.00",
+   "category": "a",
+   "date": "2025-02-01T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": true,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p7": {
+   "id": "a1000000-0000-4000-8000-000001300018",
+   "amount": "0.00",
+   "category": "a",
+   "date": "2025-02-03T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p8": {
+   "id": "a1000000-0000-4000-8000-000001300019",
+   "amount": "2.00",
+   "category": "a",
+   "date": "2025-02-02T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": "own_group",
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p9": {
+   "id": "a1000000-0000-4000-8000-000001300020",
+   "amount": "1000.00",
+   "category": "a",
+   "date": "2025-12-31T23:59:59.500000Z",
+   "account": "alt",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p10": {
+   "id": "a1000000-0000-4000-8000-000001300021",
+   "amount": "0.25",
+   "category": "a",
+   "date": "2025-12-31T23:59:59Z",
+   "account": "alt",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p12": {
+   "id": "a1000000-0000-4000-8000-000001300022",
+   "amount": "30.00",
+   "category": "a",
+   "date": "2025-07-01T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": [
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000001300002",
+     "amount": "10.5"
+    },
+    {
+     "payment_category": "a1000000-0000-4000-8000-000001300003",
+     "fee": 4
+    },
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000001399999",
+     "amount": 3
+    },
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000001300001",
+     "amount": 0
+    }
+   ],
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p13": {
+   "id": "a1000000-0000-4000-8000-000001300023",
+   "amount": "5.00",
+   "category": "f",
+   "date": "2025-03-03T10:00:00Z",
+   "account": null,
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  "p20": {
+   "id": "a1000000-0000-4000-8000-000001300024",
+   "amount": "8.00",
+   "category": "c",
+   "date": "2023-06-01T10:00:00Z",
+   "account": "alt",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": [
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000001300001",
+     "amount": "2.5"
+    }
+   ],
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p21": {
+   "id": "a1000000-0000-4000-8000-000001300025",
+   "amount": "1.00",
+   "category": "a",
+   "date": "2021-05-01T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": null,
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "p22": {
+   "id": "a1000000-0000-4000-8000-000001300026",
+   "amount": "6.00",
+   "category": "a",
+   "date": "2022-04-01T10:00:00Z",
+   "account": "main",
+   "expense": false,
+   "paid": true,
+   "deleted": false,
+   "archived": false,
+   "group": null,
+   "meta": [
+    {
+     "amount": 1
+    }
+   ],
+   "created": "2026-01-01T00:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  }
+ },
+ "sheets": {
+  "y2025": {
+   "id": "a1000000-0000-4000-8000-000001300027",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 1,
+   "year": 2025,
+   "archived": false,
+   "created": "2025-02-01T09:00:00Z",
+   "data": {
+    "incoming": {
+     "generalIncome": [
+      {
+       "description": "Quote è",
+       "institutional": 99,
+       "commercial": 1.5,
+       "id": "a1000000-0000-4000-8000-000001300001",
+       "editable": false,
+       "default": true
+      },
+      {
+       "description": "Manuale",
+       "institutional": 5,
+       "commercial": 0,
+       "id": "manuale-1",
+       "editable": true,
+       "default": false
+      },
+      {
+       "description": "Senza causale",
+       "institutional": 1,
+       "commercial": 0,
+       "id": "senza_causale",
+       "editable": false,
+       "default": true
+      }
+     ]
+    },
+    "outgoing": {
+     "generalExpenses": []
+    },
+    "cash": 0,
+    "bank": 0,
+    "other": 0,
+    "draft": true,
+    "version": 1
+   }
+  },
+  "y2024": {
+   "id": "a1000000-0000-4000-8000-000001300028",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 2,
+   "year": 2024,
+   "archived": false,
+   "created": "2025-01-10T09:00:00.250000Z",
+   "data": {
+    "incoming": {
+     "generalIncome": []
+    },
+    "outgoing": {
+     "generalExpenses": []
+    },
+    "cash": 3,
+    "bank": 4,
+    "other": 0,
+    "total": 7,
+    "draft": false,
+    "version": 1
+   }
+  },
+  "y2022": {
+   "id": "a1000000-0000-4000-8000-000001300029",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 1,
+   "year": 2022,
+   "archived": true,
+   "created": "2023-01-10T09:00:00Z",
+   "data": {
+    "incoming": {
+     "generalIncome": []
+    },
+    "outgoing": {
+     "generalExpenses": []
+    },
+    "cash": 0,
+    "bank": 0,
+    "other": 0,
+    "draft": true,
+    "version": 1
+   }
+  },
+  "y2021": {
+   "id": "a1000000-0000-4000-8000-000001300030",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 1,
+   "year": 2021,
+   "archived": false,
+   "created": "2022-01-10T09:00:00Z",
+   "data": {
+    "note": "x"
+   }
+  },
+  "y2019": {
+   "id": "a1000000-0000-4000-8000-000001300031",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "status": 1,
+   "year": 2019,
+   "archived": false,
+   "created": "2020-01-10T09:00:00Z",
+   "data": null
+  }
+ },
+ "cases": [
+  {
+   "name": "balance-sheet-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-restricted-read-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.balancesheet.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-restricted-post-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.balancesheet.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "balance-sheet-restricted-delete-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.balancesheet.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-athlete-forbidden",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-owner-without-association-info",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "Info not available."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-owner-without-association-post-info",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "Info not available."
+   },
+   "effect": null,
+   "body": {
+    "balance_sheet": {}
+   }
+  },
+  {
+   "name": "balance-sheet-wrong-method",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "balance-sheet-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Balance Sheet",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-invalid-month-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2025-13-01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-invalid-day-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2025-02-30",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-trailing-text-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2025-03-01x",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-null-data-draft-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2019-06-01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "balance-sheet-approved-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": []
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 3,
+       "bank": 4,
+       "other": 0,
+       "total": 7,
+       "draft": false,
+       "version": 1
+      },
+      "creation_date": "2025-01-10T09:00:00.250000Z",
+      "year": 2024,
+      "draft": false
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-approved-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-12-31",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": []
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 3,
+       "bank": 4,
+       "other": 0,
+       "total": 7,
+       "draft": false,
+       "version": 1
+      },
+      "creation_date": "2025-01-10T09:00:00.250000Z",
+      "year": 2024,
+      "draft": false
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-approved-admin-impersonating",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-01-01",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": []
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 3,
+       "bank": 4,
+       "other": 0,
+       "total": 7,
+       "draft": false,
+       "version": 1
+      },
+      "creation_date": "2025-01-10T09:00:00.250000Z",
+      "year": 2024,
+      "draft": false
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-approved-post-pdf-format-returns-stored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": []
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 3,
+       "bank": 4,
+       "other": 0,
+       "total": 7,
+       "draft": false,
+       "version": 1
+      },
+      "creation_date": "2025-01-10T09:00:00.250000Z",
+      "year": 2024,
+      "draft": false
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": null,
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "balance-sheet-draft-regenerated",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2025-03-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "description": "Quote è",
+          "institutional": 57.75,
+          "commercial": 1.5,
+          "id": "a1000000-0000-4000-8000-000001300001",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Manuale",
+          "institutional": 5,
+          "commercial": 0,
+          "id": "manuale-1",
+          "editable": true,
+          "default": false
+         },
+         {
+          "description": "Senza causale",
+          "institutional": 12.5,
+          "commercial": 0,
+          "id": "senza_causale",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 10.5,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Estera",
+          "institutional": 4.0,
+          "commercial": 0,
+          "id": "a1000000-0000-4000-8000-000001300003",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "outgoing": {
+        "generalExpenses": [
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 7.25,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "cash": 31.5,
+       "bank": 163.25,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 194.75
+      },
+      "creation_date": "2025-02-01T09:00:00Z",
+      "year": 2025,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 57.75,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 163.25,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 194.75
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 99}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 1}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}",
+      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}"
+     ]
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-draft-regenerated-again-no-audit",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2025-3-1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "description": "Quote è",
+          "institutional": 57.75,
+          "commercial": 1.5,
+          "id": "a1000000-0000-4000-8000-000001300001",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Manuale",
+          "institutional": 5,
+          "commercial": 0,
+          "id": "manuale-1",
+          "editable": true,
+          "default": false
+         },
+         {
+          "description": "Senza causale",
+          "institutional": 12.5,
+          "commercial": 0,
+          "id": "senza_causale",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 10.5,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Estera",
+          "institutional": 4.0,
+          "commercial": 0,
+          "id": "a1000000-0000-4000-8000-000001300003",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "outgoing": {
+        "generalExpenses": [
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 7.25,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "cash": 31.5,
+       "bank": 163.25,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 194.75
+      },
+      "creation_date": "2025-02-01T09:00:00Z",
+      "year": 2025,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 57.75,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 163.25,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 194.75
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {}
+   }
+  },
+  {
+   "name": "balance-sheet-draft-regenerated-group-header",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2025-06-15",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "description": "Quote è",
+          "institutional": 2.0,
+          "commercial": 1.5,
+          "id": "a1000000-0000-4000-8000-000001300001",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Manuale",
+          "institutional": 5,
+          "commercial": 0,
+          "id": "manuale-1",
+          "editable": true,
+          "default": false
+         },
+         {
+          "description": "Senza causale",
+          "institutional": 12.5,
+          "commercial": 0,
+          "id": "senza_causale",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 10.5,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Estera",
+          "institutional": 4.0,
+          "commercial": 0,
+          "id": "a1000000-0000-4000-8000-000001300003",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "outgoing": {
+        "generalExpenses": [
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 7.25,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "cash": 31.5,
+       "bank": 82.5,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 114.0
+      },
+      "creation_date": "2025-02-01T09:00:00Z",
+      "year": 2025,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 2.0,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 82.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 114.0
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}",
+      "{\"bank\": 82.5, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 114.0, \"version\": 1}"
+     ]
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-draft-regenerated-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2025-12-31",
+   "headers": {
+    "X-Group-Id": "not-a-group"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "description": "Quote è",
+          "institutional": 57.75,
+          "commercial": 1.5,
+          "id": "a1000000-0000-4000-8000-000001300001",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Manuale",
+          "institutional": 5,
+          "commercial": 0,
+          "id": "manuale-1",
+          "editable": true,
+          "default": false
+         },
+         {
+          "description": "Senza causale",
+          "institutional": 12.5,
+          "commercial": 0,
+          "id": "senza_causale",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 10.5,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Estera",
+          "institutional": 4.0,
+          "commercial": 0,
+          "id": "a1000000-0000-4000-8000-000001300003",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "outgoing": {
+        "generalExpenses": [
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 7.25,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "cash": 31.5,
+       "bank": 163.25,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 194.75
+      },
+      "creation_date": "2025-02-01T09:00:00Z",
+      "year": 2025,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "full_collaborator",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 57.75,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 163.25,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 194.75
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 82.5, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.0}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 114.0, \"version\": 1}",
+      "{\"bank\": 163.25, \"cash\": 31.5, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 1.5, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 57.75}, {\"commercial\": 0, \"default\": false, \"description\": \"Manuale\", \"editable\": true, \"id\": \"manuale-1\", \"institutional\": 5}, {\"commercial\": 0, \"default\": true, \"description\": \"Senza causale\", \"editable\": false, \"id\": \"senza_causale\", \"institutional\": 12.5}, {\"commercial\": 10.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Estera\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300003\", \"institutional\": 4.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": [{\"commercial\": 7.25, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}]}, \"total\": 194.75, \"version\": 1}"
+     ]
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-post-csv-format-regenerates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2025-01-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "description": "Quote è",
+          "institutional": 57.75,
+          "commercial": 1.5,
+          "id": "a1000000-0000-4000-8000-000001300001",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Manuale",
+          "institutional": 5,
+          "commercial": 0,
+          "id": "manuale-1",
+          "editable": true,
+          "default": false
+         },
+         {
+          "description": "Senza causale",
+          "institutional": 12.5,
+          "commercial": 0,
+          "id": "senza_causale",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 10.5,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Estera",
+          "institutional": 4.0,
+          "commercial": 0,
+          "id": "a1000000-0000-4000-8000-000001300003",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "outgoing": {
+        "generalExpenses": [
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 7.25,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "cash": 31.5,
+       "bank": 163.25,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 194.75
+      },
+      "creation_date": "2025-02-01T09:00:00Z",
+      "year": 2025,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2025",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 57.75,
+         "commercial": 1.5,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Manuale",
+         "institutional": 5,
+         "commercial": 0,
+         "id": "manuale-1",
+         "editable": true,
+         "default": false
+        },
+        {
+         "description": "Senza causale",
+         "institutional": 12.5,
+         "commercial": 0,
+         "id": "senza_causale",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 10.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Estera",
+         "institutional": 4.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300003",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 7.25,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "cash": 31.5,
+      "bank": 163.25,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 194.75
+     },
+     "year": 2025,
+     "status": 1
+    },
+    "changes": {}
+   },
+   "body": {
+    "format": "csv"
+   }
+  },
+  {
+   "name": "balance-sheet-draft-generation-error-keeps-data",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2021-06-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "note": "x",
+       "bank": 101.5,
+       "cash": 10.25,
+       "other": 0,
+       "total": 111.75
+      },
+      "creation_date": "2022-01-10T09:00:00Z",
+      "year": 2021,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2021",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "note": "x",
+      "bank": 101.5,
+      "cash": 10.25,
+      "other": 0,
+      "total": 111.75
+     },
+     "year": 2021,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"note\": \"x\"}",
+      "{\"bank\": 101.5, \"cash\": 10.25, \"note\": \"x\", \"other\": 0, \"total\": 111.75}"
+     ]
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-archived-draft-partial-generation",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2022-04-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "description": "Quote è",
+          "institutional": 6.0,
+          "commercial": 0,
+          "id": "a1000000-0000-4000-8000-000001300001",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 10.25,
+       "bank": 107.5,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 117.75
+      },
+      "creation_date": "2023-01-10T09:00:00Z",
+      "year": 2022,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2022",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Quote è",
+         "institutional": 6.0,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 10.25,
+      "bank": 107.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 117.75
+     },
+     "year": 2022,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": []}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}",
+      "{\"bank\": 107.5, \"cash\": 10.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 0, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 6.0}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 117.75, \"version\": 1}"
+     ]
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-default-date-creates-current-year",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": []
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 26.0,
+       "bank": 1169.0,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 1195.0
+      },
+      "creation_date": "$now",
+      "year": "$current_year",
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "create",
+    "sheet": "current",
+    "actor": "owner",
+    "association": "own_association",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 26.0,
+      "bank": 1169.0,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 1195.0
+     },
+     "year": "$current_year",
+     "status": 1
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-missing-year-creates-sheet",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2023-07-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "description": "Bar",
+          "institutional": 0,
+          "commercial": 5.5,
+          "id": "a1000000-0000-4000-8000-000001300002",
+          "editable": false,
+          "default": true
+         },
+         {
+          "description": "Quote è",
+          "institutional": 2.5,
+          "commercial": 0,
+          "id": "a1000000-0000-4000-8000-000001300001",
+          "editable": false,
+          "default": true
+         }
+        ]
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 10.25,
+       "bank": 115.5,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 125.75
+      },
+      "creation_date": "$now",
+      "year": 2023,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "create",
+    "sheet": "y2023",
+    "actor": "owner",
+    "association": "own_association",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "description": "Bar",
+         "institutional": 0,
+         "commercial": 5.5,
+         "id": "a1000000-0000-4000-8000-000001300002",
+         "editable": false,
+         "default": true
+        },
+        {
+         "description": "Quote è",
+         "institutional": 2.5,
+         "commercial": 0,
+         "id": "a1000000-0000-4000-8000-000001300001",
+         "editable": false,
+         "default": true
+        }
+       ]
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 10.25,
+      "bank": 115.5,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 125.75
+     },
+     "year": 2023,
+     "status": 1
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-post-empty-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Invalid data."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "balance-sheet-post-extra-key-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Invalid data."
+   },
+   "effect": null,
+   "body": {
+    "balance_sheet": {
+     "draft": true,
+     "year": 2023
+    },
+    "x": 1
+   }
+  },
+  {
+   "name": "balance-sheet-post-null-format-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Invalid data."
+   },
+   "effect": null,
+   "body": {
+    "format": null
+   }
+  },
+  {
+   "name": "balance-sheet-post-form-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "balance_sheet=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "balance-sheet-post-string-sheet-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "balance_sheet": "x"
+   }
+  },
+  {
+   "name": "balance-sheet-post-missing-draft-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "balance_sheet": {
+     "year": 2023
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-post-missing-year-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "balance_sheet": {
+     "draft": true
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-post-foreign-without-sheet",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "No balance sheet found."
+   },
+   "effect": null,
+   "body": {
+    "balance_sheet": {
+     "draft": true,
+     "year": 2024
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-post-replaces-newest",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "id": "x",
+          "institutional": 1.5
+         }
+        ]
+       },
+       "draft": "",
+       "year": "2023",
+       "note": "è"
+      },
+      "creation_date": "$now",
+      "year": "2023",
+      "draft": ""
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2023",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": [
+        {
+         "id": "x",
+         "institutional": 1.5
+        }
+       ]
+      },
+      "draft": "",
+      "year": "2023",
+      "note": "è"
+     },
+     "year": 2023,
+     "status": 2
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 115.5, \"cash\": 10.25, \"draft\": true, \"incoming\": {\"generalIncome\": [{\"commercial\": 5.5, \"default\": true, \"description\": \"Bar\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300002\", \"institutional\": 0}, {\"commercial\": 0, \"default\": true, \"description\": \"Quote \\u00e8\", \"editable\": false, \"id\": \"a1000000-0000-4000-8000-000001300001\", \"institutional\": 2.5}]}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 125.75, \"version\": 1}",
+      "{\"draft\": \"\", \"incoming\": {\"generalIncome\": [{\"id\": \"x\", \"institutional\": 1.5}]}, \"note\": \"\\u00e8\", \"year\": \"2023\"}"
+     ],
+     "status_flag": [
+      "1",
+      "2"
+     ]
+    }
+   },
+   "body": {
+    "balance_sheet": {
+     "incoming": {
+      "generalIncome": [
+       {
+        "id": "x",
+        "institutional": 1.5
+       }
+      ]
+     },
+     "draft": "",
+     "year": "2023",
+     "note": "è"
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-approved-after-post",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2023-01-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": [
+         {
+          "id": "x",
+          "institutional": 1.5
+         }
+        ]
+       },
+       "draft": "",
+       "year": "2023",
+       "note": "è"
+      },
+      "creation_date": "$now",
+      "year": 2023,
+      "draft": false
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-post-invalid-year-audited-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "audit-only",
+    "sheet": "y2023",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "draft": true,
+      "year": "abc"
+     },
+     "year": 2023,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"draft\": \"\", \"incoming\": {\"generalIncome\": [{\"id\": \"x\", \"institutional\": 1.5}]}, \"note\": \"\\u00e8\", \"year\": \"2023\"}",
+      "{\"draft\": true, \"year\": \"abc\"}"
+     ],
+     "status_flag": [
+      "2",
+      "1"
+     ],
+     "year": [
+      "2023",
+      "abc"
+     ]
+    }
+   },
+   "body": {
+    "balance_sheet": {
+     "draft": true,
+     "year": "abc"
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-post-float-year-truncated",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "balance_sheet": {
+      "data": {
+       "draft": 1,
+       "year": 2023.9
+      },
+      "creation_date": "$now",
+      "year": 2023.9,
+      "draft": 1
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701001"
+     }
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2023",
+    "actor": "full_collaborator",
+    "row": {
+     "data": {
+      "draft": 1,
+      "year": 2023.9
+     },
+     "year": 2023,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"draft\": \"\", \"incoming\": {\"generalIncome\": [{\"id\": \"x\", \"institutional\": 1.5}]}, \"note\": \"\\u00e8\", \"year\": \"2023\"}",
+      "{\"draft\": 1, \"year\": 2023.9}"
+     ],
+     "status_flag": [
+      "2",
+      "1"
+     ],
+     "year": [
+      "2023",
+      "2023.9"
+     ]
+    }
+   },
+   "body": {
+    "balance_sheet": {
+     "draft": 1,
+     "year": 2023.9
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-foreign-owner-creates-sheet",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2024-02-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": []
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 0,
+       "bank": 1.0,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 1.0
+      },
+      "creation_date": "$now",
+      "year": 2024,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701002"
+     }
+    }
+   },
+   "effect": {
+    "kind": "create",
+    "sheet": "foreign",
+    "actor": "foreign_owner",
+    "association": "foreign_association",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 0,
+      "bank": 1.0,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 1.0
+     },
+     "year": 2024,
+     "status": 1
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-delete-resets-data",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/balance-sheet?currentDate=2021-06-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Balance sheet refreshed."
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2021",
+    "actor": "full_collaborator",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 0,
+      "bank": 0,
+      "other": 0,
+      "draft": true,
+      "version": 1
+     },
+     "year": 2021,
+     "status": 1
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 101.5, \"cash\": 10.25, \"note\": \"x\", \"other\": 0, \"total\": 111.75}",
+      "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": []}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}"
+     ]
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-delete-default-data-no-audit",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet?currentDate=2021-01-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Balance sheet refreshed."
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2021",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 0,
+      "bank": 0,
+      "other": 0,
+      "draft": true,
+      "version": 1
+     },
+     "year": 2021,
+     "status": 1
+    },
+    "changes": {}
+   }
+  },
+  {
+   "name": "balance-sheet-delete-approved-keeps-status",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Balance sheet refreshed."
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "y2024",
+    "actor": "owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 0,
+      "bank": 0,
+      "other": 0,
+      "draft": true,
+      "version": 1
+     },
+     "year": 2024,
+     "status": 2
+    },
+    "changes": {
+     "data": [
+      "{\"bank\": 4, \"cash\": 3, \"draft\": false, \"incoming\": {\"generalIncome\": []}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"total\": 7, \"version\": 1}",
+      "{\"bank\": 0, \"cash\": 0, \"draft\": true, \"incoming\": {\"generalIncome\": []}, \"other\": 0, \"outgoing\": {\"generalExpenses\": []}, \"version\": 1}"
+     ]
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-delete-missing-year",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet?currentDate=2018-01-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "No balance sheet found."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-delete-invalid-date-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet?currentDate=2018-1-32",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-delete-deleted-association-owner-missing-year",
+   "actor": "deleted_association_owner",
+   "method": "DELETE",
+   "path": "/balance-sheet?currentDate=2024-05-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "No balance sheet found."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-post-deleted-association-owner-without-sheet",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/balance-sheet",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "No balance sheet found."
+   },
+   "effect": null,
+   "body": {
+    "balance_sheet": {
+     "draft": true,
+     "year": 2024
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-delete-owner-without-association-info",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/balance-sheet?currentDate=2018-01-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "Info not available."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-athlete-forbidden",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.accounts.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-deleted-association-owner-server-error",
+   "actor": "deleted_association_owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Balance Sheet Accounts Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-malformed-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/not-a-uuid/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "CustomAccounts matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-unknown-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001399999/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "CustomAccounts matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300008/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "CustomAccounts matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-non-editable-refused",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300005/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "This account is not deletable."
+   },
+   "effect": null
+  },
+  {
+   "name": "balance-sheet-account-deleted",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "bank accounts deleted"
+   },
+   "effect": {
+    "kind": "delete-account",
+    "account": "spare",
+    "transfers": [],
+    "actor": "full_collaborator"
+   }
+  },
+  {
+   "name": "balance-sheet-account-deleted-with-transfers",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300006/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "bank accounts deleted"
+   },
+   "effect": {
+    "kind": "delete-account",
+    "account": "cash",
+    "transfers": [
+     "t1",
+     "t2",
+     "t3"
+    ],
+    "actor": "owner"
+   }
+  },
+  {
+   "name": "balance-sheet-account-already-deleted-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000001300007/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "CustomAccounts matching query does not exist."
+   },
+   "effect": null
+  }
+ ]
+}
