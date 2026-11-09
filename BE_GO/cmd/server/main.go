@@ -246,6 +246,8 @@ func run() (runErr error) {
 		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
 
+	documentUploadsHandler := composeDocumentUploads(cfg, db, sessions, service.NewActorAuthentication(accounts, tokens), identities,
+		middleware.SessionAuditContext, paymentCategoryOperations)
 	healthService := service.NewHealthService(repository.NewDatabaseProbe(db), repository.NewRedisProbe(cache), 2*time.Second)
 	healthHandler := handler.NewHealthHandler(healthService, cfg.Version)
 	restoreAdmission := service.NewRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath), repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
@@ -542,6 +544,11 @@ func run() (runErr error) {
 	e.Any("/saved-reports/:pk/delete", savedReportsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/saved-reports/:pk/run", savedReportsHandler.Run, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/bulk-delete", documentArchiveHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/documents/add", documentUploadsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/documents/:pk/update", documentUploadsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/upload-document", documentUploadsHandler.UploadDocument, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/medical-certificate/upload", documentUploadsHandler.MedicalUpload, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/medical/certificate/", documentUploadsHandler.CertificateDocument, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/move", documentArchiveHandler.Move, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/delete", documentArchiveHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/retrieve/:uid", docmanagerReadsHandler.Retrieve, middleware.DjangoSessionAudit(sessionAuthentication))

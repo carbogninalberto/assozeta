@@ -104,8 +104,25 @@ func Guess(name string) (string, bool, error) {
 
 // Guess is MimeTypes.guess_type(name, strict=True)[0] for a path-like name.
 func (t *Table) Guess(name string) (string, bool, error) {
+	kind, ok, _, err := t.GuessType(name)
+	return kind, ok, err
+}
+
+// GuessType is mimetypes.guess_type(name) with the process-wide table: the
+// type (ok false for None) and the encoding ("" for None).
+func GuessType(name string) (string, bool, string, error) {
+	once.Do(func() { process, loadErr = Load(KnownFiles) })
+	if loadErr != nil {
+		return "", false, "", loadErr
+	}
+	return process.GuessType(name)
+}
+
+// GuessType is MimeTypes.guess_type(name, strict=True) for a path-like name:
+// the type (ok false for None) and the case-sensitive encoding ("" for None).
+func (t *Table) GuessType(name string) (string, bool, string, error) {
 	if urlScheme(name) {
-		return "", false, ErrURLName
+		return "", false, "", ErrURLName
 	}
 	base, ext := splitext(name)
 	for {
@@ -115,11 +132,12 @@ func (t *Table) Guess(name string) (string, bool, error) {
 		}
 		base, ext = splitext(base + mapped)
 	}
-	if _, ok := encodings[ext]; ok {
+	encoding, encoded := encodings[ext]
+	if encoded {
 		base, ext = splitext(base)
 	}
 	kind, ok := t.types[strings.ToLower(ext)]
-	return kind, ok, nil
+	return kind, ok, encoding, nil
 }
 
 // urlScheme follows urllib.parse.urlsplit: leading C0/space stripped, tab and
