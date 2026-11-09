@@ -38,6 +38,9 @@ type Task struct {
 	// python.go for the supported value types.
 	Args   []any
 	Kwargs Dict
+	// ArgsList marks apply_async(args=[...]) with a list: Celery's argsrepr
+	// is then the list's repr ('[...]') instead of the tuple's.
+	ArgsList bool
 	// ETA is the absolute execution time Celery derives from countdown
 	// (app.now() + countdown, UTC); nil publishes for immediate execution.
 	ETA *time.Time
@@ -77,7 +80,11 @@ func Encode(task Task, envelope Envelope) ([]byte, error) {
 	if kwargs == nil {
 		kwargs = Dict{}
 	}
-	argsrepr, err := saferepr(args, reprMaxSize)
+	var shown any = args
+	if task.ArgsList {
+		shown = []any(args)
+	}
+	argsrepr, err := saferepr(shown, reprMaxSize)
 	if err != nil {
 		return nil, err
 	}

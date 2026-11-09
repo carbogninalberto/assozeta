@@ -2,13 +2,16 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
@@ -18,10 +21,33 @@ import (
 type PaymentStates struct {
 	store domain.PaymentStateStore
 	now   func() time.Time
+	// tasks publishes approve's print_document_invoice; nil refuses that path.
+	tasks celery.Publisher
+	log   *slog.Logger
 }
 
 func NewPaymentStates(store domain.PaymentStateStore, now func() time.Time) *PaymentStates {
-	return &PaymentStates{store: store, now: now}
+	return &PaymentStates{store: store, now: now, log: slog.Default()}
+}
+
+// WithTasks lets approve dispatch the invoice PDF task through the Celery producer.
+func (s *PaymentStates) WithTasks(tasks celery.Publisher) *PaymentStates {
+	s.tasks = tasks
+	return s
+}
+
+// paymentStateReceiptArg is send_receipt_email as a task argument: the raw
+// request value (None, bool, str or int); other values are not ported.
+func paymentStateReceiptArg(value any) (any, error) {
+	switch v := value.(type) {
+	case nil, bool, string:
+		return v, nil
+	case json.Number:
+		if number, err := strconv.ParseInt(string(v), 10, 64); err == nil {
+			return number, nil
+		}
+	}
+	return nil, domain.ErrPaymentStateNotPorted
 }
 
 // PaymentStateRequest carries the request values the views read besides the body.
@@ -29,6 +55,8 @@ type PaymentStateRequest struct {
 	ID          string
 	GroupHeader string
 	Audit       domain.LoginAuditContext
+	// Authorization is request.headers.get('authorization') (approve's invoice task).
+	Authorization *string
 }
 
 // PaymentStateUUID is is_valid_uuid: a 400 list for a malformed id.
@@ -178,15 +206,33 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 		generate = dto.PythonTruthy(flag)
 	}
 	if row.Paid {
-		if row.InvoiceID != nil && generate {
-			// print_document_invoice on commit: not ported.
-			return nil, domain.ErrPaymentStateNotPorted
+		dispatch := row.InvoiceID != nil && generate
+		var receipt any = false
+		if dispatch {
+			if s.tasks == nil {
+				return nil, domain.ErrPaymentStateNotPorted
+			}
+			if value, present := object.Lookup("send_receipt_email"); present {
+				if receipt, err = paymentStateReceiptArg(value); err != nil {
+					return nil, err
+				}
+			}
 		}
 		item, err := s.render(ctx, tx, row.ID, group)
 		if err != nil {
 			return nil, err
 		}
-		return map[string]any{"data": map[string]any{"msg": "payment mark as payed.", "payment": item}}, tx.Commit()
+		if err = tx.Commit(); err != nil {
+			return nil, err
+		}
+		if dispatch {
+			// transaction.on_commit(..., robust=True): a broker failure is logged, the answer stays 200.
+			if err := printInvoice(ctx, s.tasks, *row.InvoiceID, authorizationArg(request.Authorization), receipt); err != nil {
+				s.log.Error("payment approve: invoice task not queued", "payment_id", row.ID, "error", err)
+			}
+			item["invoice_generating"] = true
+		}
+		return map[string]any{"data": map[string]any{"msg": "payment mark as payed.", "payment": item}}, nil
 	}
 	if !row.Expense && (row.AssociateID != nil || row.SupplierID != nil || row.InstructorID != nil) {
 		return nil, domain.ErrPaymentStateNotPorted

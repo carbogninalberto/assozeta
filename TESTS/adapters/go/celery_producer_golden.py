@@ -56,6 +56,9 @@ CASES = [
     {'name': 'quoted-truncation', 'task': 'long_quote', 'args': [], 'kwargs': [['q', s("x'" * 600)]]},
     {'name': 'countdown', 'task': 'later', 'args': [{'t': 'int', 'v': 1}], 'kwargs': [], 'countdown': 90},
     {'name': 'expires', 'task': 'expiring', 'args': [], 'kwargs': [], 'expires_in': 3600},
+    # apply_async(args=[...]) with a list: argsrepr is the list's repr.
+    {'name': 'list-args', 'task': 'print_document_invoice', 'args': [s(U2), {'t': 'none', 'v': None}, {'t': 'bool', 'v': False}],
+     'kwargs': [], 'args_list': True},
 ]
 
 
@@ -134,7 +137,8 @@ def main():
             if 'expires_in' in case:
                 options['expires'] = datetime.now(timezone.utc) + timedelta(seconds=case['expires_in'])
             before = len(commands)
-            task.apply_async(args=tuple(value(a) for a in case['args']), kwargs={k: value(v) for k, v in case['kwargs']}, **options)
+            args = [value(a) for a in case['args']]
+            task.apply_async(args=args if case.get('args_list') else tuple(args), kwargs={k: value(v) for k, v in case['kwargs']}, **options)
             raw = client.rpop('celery')
             assert raw is not None and client.llen('celery') == 0, case['name']
             time.sleep(0.2)

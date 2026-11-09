@@ -78,9 +78,7 @@ Routes reviewed for this family and not ported:
 - `subscription/<uid>/medical-appointments/add`: calls `print_document_medical_appointment(...)` directly (not `.delay`), so the PDF is
   rendered synchronously on every success path.
 - `payment/<uid>/generate-invoice`: portable as a dispatch (`print_document_invoice.apply_async(args=[str(id), authorization])`, after the
-  `transaction.atomic()` block), but its generation path also needs invoice numbering under the association lock
-  (`InvoiceService.get_next_invoice_number`), `generate_invoice_description` and the Invoice create, none of which exist in Go yet. Left for
-  a follow-up family.
+  `transaction.atomic()` block); ported since by [invoice-generate](invoice-generate.md) with the numbering, description and Invoice create.
 
 ## Evidence
 

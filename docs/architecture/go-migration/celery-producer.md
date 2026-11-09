@@ -45,6 +45,9 @@ connection; the set member is the same). Services take the `celery.Publisher` in
 visible in `kwargsrepr` and the body). Publish after the commit with `context.WithoutCancel` plus a timeout: Django's view is
 not interrupted when the client goes away. Return the error (the 500 page) like Django.
 
+`apply_async(args=[...])` with a list (not a tuple) makes Celery's `argsrepr` the list's repr (`['a', None]`): set
+`Task.ArgsList` (golden case `list-args`; harness spec `'args_list': True`). `.delay(...)` and tuple args keep the default.
+
 Supported: protocol 2 messages to the default queue (or a named direct queue), positional and keyword arguments of type None,
 bool, int/int64, str, `uuid.UUID`, list and dict (`celery.Dict`, ordered), `ETA` (countdown) and `Expires` as absolute UTC times
 (with kombu's `expiration` property), the restore stamp, Celery's publish retry policy, TLS through the shared Redis options.

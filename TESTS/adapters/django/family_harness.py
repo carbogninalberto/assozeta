@@ -265,7 +265,7 @@ def check_celery_message(contract, raw, spec, *, since, until, where=''):
     expected_headers = {
         'lang': 'py', 'task': spec['task'], 'id': task_id, 'shadow': None, 'eta': spec.get('eta'), 'expires': spec.get('expires'),
         'group': None, 'group_index': None, 'retries': 0, 'timelimit': [None, None], 'root_id': task_id, 'parent_id': None,
-        'argsrepr': saferepr(args, 1024), 'kwargsrepr': saferepr(kwargs, 1024), 'origin': headers['origin'], 'ignore_result': False,
+        'argsrepr': saferepr(list(args) if spec.get('args_list') else args, 1024), 'kwargsrepr': saferepr(kwargs, 1024), 'origin': headers['origin'], 'ignore_result': False,
         'replaced_task_nesting': 0, 'stamped_headers': None, 'stamps': {}, 'assozeta_published_at': headers['assozeta_published_at']}
     contract.require(headers == expected_headers, 'celery.headers' + where)
     contract.require(re.fullmatch(r'gen\d+@\S+', headers['origin']) is not None, 'celery.origin' + where)
