@@ -683,8 +683,16 @@ func run() (runErr error) {
 	e.Any("/folders/add", folderWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/update", folderWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/:uid/delete", invoiceDeletesHandler.Customer, middleware.DjangoSessionAudit(sessionAuthentication))
-	invoicePartiesHandler := handler.NewInvoicePartiesHandler(service.NewInvoiceParties(repository.NewInvoiceParties(db), time.Now, uuid.NewString),
+	// invoice-sync-print: the eager print tasks GET CURRENT_HOST/document/{e}invoice/<id> behind the CoordinatedTask restore gate.
+	invoiceSyncStore := repository.NewInvoiceSyncPrint(db)
+	invoiceSyncPrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
+		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
+	invoicePartiesHandler := handler.NewInvoicePartiesHandler(service.NewInvoiceParties(repository.NewInvoiceParties(db), time.Now, uuid.NewString).
+		WithCustomerInvoiceSync(invoiceSyncStore, invoiceSyncPrinter),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	invoiceSyncHandler := handler.NewInvoiceSyncPrintHandler(paymentStatesHandler,
+		service.NewInvoiceSyncUpdates(invoiceSyncStore, invoiceSyncPrinter, time.Now))
+	e.Any("/invoice/:uid/update", invoiceSyncHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/list", invoicePartiesHandler.CustomerList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/add", invoicePartiesHandler.CustomerAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/:uid/update", invoicePartiesHandler.CustomerUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
