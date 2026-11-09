@@ -25,8 +25,13 @@ type golden struct {
 		Args     []json.RawMessage    `json:"args"`
 		Kwargs   [][2]json.RawMessage `json:"kwargs"`
 		ArgsList bool                 `json:"args_list"`
-		Payload  string               `json:"payload"`
-		Commands []string             `json:"broker_commands"`
+		TaskID   string               `json:"task_id"`
+		Options  struct {
+			TimeLimit     *int64 `json:"time_limit"`
+			SoftTimeLimit *int64 `json:"soft_time_limit"`
+		} `json:"task_options"`
+		Payload  string   `json:"payload"`
+		Commands []string `json:"broker_commands"`
 	} `json:"cases"`
 }
 
@@ -127,7 +132,11 @@ func TestEncodeMatchesKombu(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			task := Task{Name: c.Task, Kwargs: Dict{}, ArgsList: c.ArgsList}
+			task := Task{Name: c.Task, Kwargs: Dict{}, ArgsList: c.ArgsList, ID: c.TaskID,
+				TimeLimit: c.Options.TimeLimit, SoftTimeLimit: c.Options.SoftTimeLimit}
+			if c.TaskID != "" && captured.Headers.ID != c.TaskID {
+				t.Fatalf("captured id %s, task_id %s", captured.Headers.ID, c.TaskID)
+			}
 			for _, arg := range c.Args {
 				task.Args = append(task.Args, taggedValue(t, arg))
 			}

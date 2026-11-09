@@ -67,9 +67,22 @@ func Filter(content string, present bool, context Context) (string, error) {
 	if !present || content == "" {
 		return "", nil
 	}
-	root, err := parse(content)
+	root, err := filterTree(content, context)
 	if err != nil {
 		return "", err
+	}
+	var out strings.Builder
+	for _, child := range root.children {
+		child.write(&out)
+	}
+	return out.String(), nil
+}
+
+// filterTree parses content and substitutes the mentions in place.
+func filterTree(content string, context Context) (*node, error) {
+	root, err := parse(content)
+	if err != nil {
+		return nil, err
 	}
 	// Mention spans, in document order (find_all), replaced by their value.
 	for _, span := range root.findAll(isMentionSpan) {
@@ -79,7 +92,7 @@ func Filter(content string, present bool, context Context) (string, error) {
 		}
 		value, err := resolve(key, context)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		span.replaceWithText(value)
 	}
@@ -91,15 +104,11 @@ func Filter(content string, present bool, context Context) (string, error) {
 		}
 		replaced, err := substituteAliases(text.text, context)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		text.text = replaced
 	}
-	var out strings.Builder
-	for _, child := range root.children {
-		child.write(&out)
-	}
-	return out.String(), nil
+	return root, nil
 }
 
 // resolve is _resolve_mention: the object's attribute, stripped, with an
@@ -192,4 +201,26 @@ func isASCII(runes []rune) bool {
 		}
 	}
 	return true
+}
+
+// FilterBlank is filter_mentions(content, context) of a non-empty content,
+// and whether BeautifulSoup(result, "html.parser").get_text().strip() is
+// empty: every text node of the filtered tree is Python whitespace (the
+// whitespace collapsing of a reparse keeps that).
+func FilterBlank(content string, context Context) (string, bool, error) {
+	root, err := filterTree(content, context)
+	if err != nil {
+		return "", false, err
+	}
+	var out strings.Builder
+	blank := true
+	for _, child := range root.children {
+		child.write(&out)
+	}
+	for _, text := range root.findAllText() {
+		if strings.TrimFunc(text.text, dto.PythonIsSpace) != "" {
+			blank = false
+		}
+	}
+	return out.String(), blank, nil
 }

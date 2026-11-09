@@ -13368,25 +13368,74 @@
         "target": "instructor_report",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_report.go",
+        "BE_GO/internal/repository/instructor_report.go",
+        "BE_GO/internal/service/instructor_report.go",
+        "BE_GO/internal/handler/instructor_writes.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/report",
+          "/api/v2/instructor/report",
+          "/api/instructor/report"
+        ],
+        "request": "GET ?start_date=D/M/YYYY&end_date=D/M/YYYY (Europe/Rome days).",
+        "response": "{data: {results: [{first_name, last_name, course, title, description, date, attendees_count, attendees, expected_absences}], report_file: base64 workbook}}.",
+        "errors": "400 {'msg': 'Entrambe le date sono richieste.'}; 401; 403 registry/association-scoped context, athlete 'User is not a sport association'; 405; 500 owner without association, unparseable or nonexistent dates, malformed events/instructors/attendees, matched event without title.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.instructor.read.",
+        "resource_scope": "the user's instructors; the association's attendance registries.",
+        "side_effects": "none",
+        "transaction": "reads only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_writes_http.json",
+        "TESTS/fixtures/generate_instructor_writes_http.py",
+        "TESTS/contracts/test_instructor_writes_http.py",
+        "TESTS/adapters/django/instructor_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 150/150; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "1dd656330c975883f7840e186d820c02319400c02498cacf50a68005dd57f0d1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 150/150 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "ee66b4d2a8b218d3ab71264150a3f1d63b58e608ac676ab58c1e6729a9360215"
+        },
+        {
+          "revision": "report dates rendered in UTC instead of Europe/Rome",
+          "result": "Mutation control: fails Go on instructor-writes-report-owner (sharedStrings.xml differs)",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-xlsx-mutation-r1/results.json",
+          "receipt_sha256": "0e4f5196d6e485d6e547a5098224b1cdb1968567256b1f255ab1393fdca7dbed"
+        }
+      ],
+      "notes": [
+        "Implementing: Implementing: instructor_report (attendance rows and the pandas xlsxwriter report); refused: date spellings other than D/M/YYYY, non-str course subscription ids, workbook inputs the writer does not reproduce. See docs/architecture/go-migration/instructor-writes.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-bulk/archive -> invoice_bulk_archive",
@@ -14743,9 +14792,18 @@
         "BE_GO/internal/repository/misc_exports.go",
         "BE_GO/internal/service/misc_exports.go",
         "BE_GO/internal/handler/misc_exports.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
         "BE_GO/cmd/server/main.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
         "methods": [
           "GET",
@@ -14756,14 +14814,14 @@
           "/api/v2/invoice/list/export",
           "/api/invoice/list/export"
         ],
-        "request": "GET ?m=csv|files|<other>&archived= (m=xlsx not ported).",
-        "response": "csv: {data: {file: base64 CSV, type: csv, filename: '[<today>] RICEVUTE a <denomination>.csv'}}; files: {data: {file: '', message}}; other: {data: {file: ''}}.",
-        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, invalid archived, broker failure; 500 m=xlsx (not ported).",
+        "request": "GET ?m=csv|xlsx|files|<other>&archived=",
+        "response": "csv/xlsx: {data: {file: base64, type: csv|xlsx, filename: '[<today>] RICEVUTE a <denomination>.csv|.xlsx'}}; files: {data: {file: '', message}}; other: {data: {file: ''}}.",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, invalid archived, broker failure.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry bookeeping.documents.invoices.read.",
-        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's live X-Group-Id-aware invoices by creation_date; each invoice's first live group-aware payment by key.",
-        "side_effects": "m=files publishes export_invoices_to_zip.delay([document ids], association UUID) to the default Celery queue.",
-        "transaction": "Read only; the publish follows the reads.",
+        "resource_scope": "scoped live association; live group-aware invoices.",
+        "side_effects": "files: export_invoices_to_zip.delay",
+        "transaction": "reads only",
         "execution_owner": "django"
       },
       "tests": [
@@ -14776,25 +14834,25 @@
         "docs/architecture/go-migration/misc-exports.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 57/57; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/misc-exports-http-native-r1/results.json",
-          "receipt_sha256": "1ee3b57a71200d51b63467c53dfd2461f90698fd5ba968722763c06023fdc23f"
+          "result": "RED: Django 70/70; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "4483ee528dd84751ec80b6194e90d2bc0fd3dd7d213f1e623bcfbab6117a382a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 57/57 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/misc-exports-http-versioned-r2/results.json",
-          "receipt_sha256": "b79ba58ecdf16cdce8e58e792da531732d5f6e0ecb2b35be596af7e0cb455435"
+          "result": "GREEN: 70/70 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "7b1a7589f8f237cd2d5753771f3d7b24525aca969d9f954b37a6ed87281a3772"
         },
         {
-          "revision": "taking each invoice's payment with the highest primary key instead of the lowest (payment_set.first())",
-          "result": "Mutation control: fails Go on misc-exports-inv-owner (CSV body differs).",
-          "artifact": "quality-reports/go-migration/misc-exports-http-mutation-r1/results.json",
-          "receipt_sha256": "68d6da7871b1f934ea054c8b83e13e84f7563001d51e5b1cd152e3c6fe887fa8"
+          "revision": "len(col) + 2 instead of len(col) + 10 column widths in the subscription workbook",
+          "result": "Mutation control: fails Go on misc-exports-subs-xls-full (<cols> differs)",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-mutation-r2/results.json",
+          "receipt_sha256": "9daabf4817f2ee7ae5e12b52fd41a353831d4511c832aacd2a86a20c68c03867"
         }
       ],
       "notes": [
-        "Implementing: CSV exports and the invoice zip dispatch (export_invoices_to_zip.delay through the Celery producer); subscription filetype containing xls and invoice m=xlsx (spreadsheet workbooks) are refused with a 500 before any lookup. See docs/architecture/go-migration/misc-exports.md."
+        "Implementing: Implementing: CSV, subscription xls (xlsxwriter, built from a dry pass before the tutor promotions), invoice m=xlsx (get_excel_base64) and the zip dispatch. See docs/architecture/go-migration/misc-exports.md and xlsx-exports.md."
       ]
     },
     {
@@ -15232,25 +15290,75 @@
         "target": "modules_response_export",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_export.go",
+        "BE_GO/internal/repository/modules_export.go",
+        "BE_GO/internal/service/modules_export.go",
+        "BE_GO/internal/handler/modules_responses.go",
+        "BE_GO/cmd/server/modules_responses.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/<module_id>/export",
+          "/api/v2/modules/<module_id>/export",
+          "/api/modules/<module_id>/export"
+        ],
+        "request": "GET, module id in the path (is_valid_uuid).",
+        "response": "{data: {file: base64 workbook, filename: '[<today>] Risposte al modulo (<title>).xls', type: xlsx}}.",
+        "errors": "400 malformed id (list); 401; 403 registry/association-scoped context, athlete 'User is not a sport association'; 404 {'error': 'response not found'}; 405; 500 owner without association, malformed elements or labels, non-dict responses with response columns.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.modules.read.",
+        "resource_scope": "request.user.sport_association's module responses.",
+        "side_effects": "none",
+        "transaction": "reads only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_responses_http.json",
+        "TESTS/fixtures/generate_modules_responses_http.py",
+        "TESTS/contracts/test_modules_responses_http.py",
+        "TESTS/adapters/django/modules_responses_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 135/135; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "db11fdb25d96ac832a5557abb7d844603b36311fa5d302330c3197f3ea212930"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "d146a5aa1c1aeff09a351b40a46b4e8fad6dfa1d127d2c26997fde579b64ffd3"
+        },
+        {
+          "revision": "attachment filenames joined by ', ' instead of ','",
+          "result": "Mutation control: fails Go on modules-responses-export-owner (sharedStrings.xml differs)",
+          "artifact": "quality-reports/go-migration/modules-responses-http-xlsx-mutation-r1/results.json",
+          "receipt_sha256": "9b5388f89f3f48502e9270cd59de49768bb96e339f812df938047713983adeb7"
+        }
+      ],
+      "notes": [
+        "Implementing: Implementing: modules_response_export (pandas xlsxwriter workbook, sheet Risposte); refused: list/object labels, ints beyond int64, workbook inputs the writer does not reproduce. See docs/architecture/go-migration/modules-responses.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/<str:module_id>/overview -> modules_overview",
@@ -18984,9 +19092,18 @@
         "BE_GO/internal/repository/payment_export.go",
         "BE_GO/internal/service/payment_export.go",
         "BE_GO/internal/handler/payment_export.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
         "BE_GO/cmd/server/main.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
         "methods": [
           "GET",
@@ -18998,13 +19115,13 @@
           "/api/payment/list/export"
         ],
         "request": "GET ?m=csv|xlsx&export_type=petty_cash_book&archived=&query[payment_range]=&query[paid]=&query[expense]=&query[payment_categories]=&query[account]=&query[generalSearch]=",
-        "response": "{data: {file: base64 CSV, type: csv, filename: '[<today>] PAGAMENTI a <denomination>.csv'}}.",
-        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, unsplittable range, invalid archived, malformed category/account UUID, petty cash book transfer or rendered row without an account, raising course JSON; 500 m=xlsx (not ported).",
+        "response": "csv: {data: {file: base64 CSV, type: csv, filename: '[<today>] PAGAMENTI a <denomination>.csv'}}; xlsx: {data: {file: base64 workbook (get_excel_base64), type: xlsx, filename: '[<today>] PAGAMENTI a <denomination>.xlsx'}}.",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, unsplittable range, invalid archived, malformed category/account UUID, petty cash transfer without an account, CSV petty row without an account, raising course JSON or meta categories; 500 refused workbook inputs.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry bookeeping.payments.read.",
-        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's live, X-Group-Id-aware payments and account transfers.",
-        "side_effects": "None (read).",
-        "transaction": "Read only.",
+        "resource_scope": "scoped live association; group-aware live payments.",
+        "side_effects": "none",
+        "transaction": "reads only",
         "execution_owner": "django"
       },
       "tests": [
@@ -19017,25 +19134,25 @@
         "docs/architecture/go-migration/payment-export.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 72/72; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-export-http-native-r4/results.json",
-          "receipt_sha256": "865de124a007a4d7fbd5221dee883a378c1781b84dd74a357dee73f449615cc9"
+          "result": "RED: Django 87/87; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-export-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "75540dd9637ceb4ae26508e0bdb0843190bf3a50d0fede64f0bdac053e64ad4c"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 72/72 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
-          "artifact": "quality-reports/go-migration/payment-export-http-versioned-r1/results.json",
-          "receipt_sha256": "3b454b9969929c09fa0d20c29a58210455cb0bf304ca1a6ea7356180c2f18591"
+          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/payment-export-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "c05a1780c2f08a773d2a8259a6bc3420f8558b0c181c509197b67c15a46eecf1"
         },
         {
-          "revision": "counting soft-deleted payments in the petty cash book opening balances",
-          "result": "Mutation control: fails Go on payment-export-petty-spring (response.body:data:file).",
-          "artifact": "quality-reports/go-migration/payment-export-http-mutation-r1/results.json",
-          "receipt_sha256": "9269d300b2f722c4850cba105a266f38d1e2f423dc18f75ba7aab4cc56d83700"
+          "revision": "'' instead of '-' for a payment without an account in the workbook",
+          "result": "Mutation control: fails Go on payment-export-xlsx (xl/worksheets/sheet1.xml differs)",
+          "artifact": "quality-reports/go-migration/payment-export-http-xlsx-mutation-r2/results.json",
+          "receipt_sha256": "ebdf01deb578624691218671e3bce50380caf80afe42b4540fb74728761f42fd"
         }
       ],
       "notes": [
-        "Implementing: payment/list/export CSV (filters, range, general/smart search, petty cash book transfers and progressive balances); m=xlsx is refused with a 500 (openpyxl workbook not byte-reproducible). See docs/architecture/go-migration/payment-export.md."
+        "Implementing: Implementing: CSV and m=xlsx (get_excel_base64 workbook, part-by-part XLSX parity, xlsx-exports.md); refused: workbook inputs the writer does not reproduce, bool/list/object/huge-int course labels. See docs/architecture/go-migration/payment-export.md."
       ]
     },
     {
@@ -25808,9 +25925,18 @@
         "BE_GO/internal/repository/misc_exports.go",
         "BE_GO/internal/service/misc_exports.go",
         "BE_GO/internal/handler/misc_exports.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
         "BE_GO/cmd/server/main.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
         "methods": [
           "GET",
@@ -25822,14 +25948,14 @@
           "/api/v2/subscription/list/export",
           "/api/subscription/list/export"
         ],
-        "request": "GET or POST ?filetype=csv|simplified|<other> (xls variants not ported).",
-        "response": "{data: {filename: '[<today>] ISCRIZIONI a <denomination>.csv', type: csv, file: base64 CSV}} (full or simplified columns).",
-        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, subscription without associate, zero rows (pandas), unknown status flag; 500 filetype containing xls (not ported).",
+        "request": "GET or POST ?filetype=csv|simplified|<contains xls>|<other>.",
+        "response": "{data: {filename: '[<today>] ISCRIZIONI a <denomination>.csv|.xls', type: csv|xls, file: base64}} (full or simplified columns; xls: pandas xlsxwriter, sheet Libro Soci, index column).",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, subscription without associate, zero rows (pandas), unknown status flag; 500 refused workbook inputs (before any write).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry association.members.read.",
-        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's X-Group-Id-aware unarchived subscriptions (Subscription.objects keeps deleted rows) by -creation_date.",
-        "side_effects": "Full exports: Associate.main_tutor promotes the first tutor relation when none is primary (audited update, indexed through associate.sport_association), autocommitted per row.",
-        "transaction": "Not atomic: promotions before a failing row are kept.",
+        "resource_scope": "scoped live association; group-aware subscriptions.",
+        "side_effects": "full exports promote and save the first tutor relation (audited) when none is primary.",
+        "transaction": "autocommit per promotion",
         "execution_owner": "django"
       },
       "tests": [
@@ -25842,25 +25968,25 @@
         "docs/architecture/go-migration/misc-exports.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 57/57; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/misc-exports-http-native-r1/results.json",
-          "receipt_sha256": "1ee3b57a71200d51b63467c53dfd2461f90698fd5ba968722763c06023fdc23f"
+          "result": "RED: Django 70/70; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "4483ee528dd84751ec80b6194e90d2bc0fd3dd7d213f1e623bcfbab6117a382a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 57/57 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/misc-exports-http-versioned-r2/results.json",
-          "receipt_sha256": "b79ba58ecdf16cdce8e58e792da531732d5f6e0ecb2b35be596af7e0cb455435"
+          "result": "GREEN: 70/70 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "7b1a7589f8f237cd2d5753771f3d7b24525aca969d9f954b37a6ed87281a3772"
         },
         {
-          "revision": "taking each invoice's payment with the highest primary key instead of the lowest (payment_set.first())",
-          "result": "Mutation control: fails Go on misc-exports-inv-owner (CSV body differs).",
-          "artifact": "quality-reports/go-migration/misc-exports-http-mutation-r1/results.json",
-          "receipt_sha256": "68d6da7871b1f934ea054c8b83e13e84f7563001d51e5b1cd152e3c6fe887fa8"
+          "revision": "len(col) + 2 instead of len(col) + 10 column widths in the subscription workbook",
+          "result": "Mutation control: fails Go on misc-exports-subs-xls-full (<cols> differs)",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-mutation-r2/results.json",
+          "receipt_sha256": "9daabf4817f2ee7ae5e12b52fd41a353831d4511c832aacd2a86a20c68c03867"
         }
       ],
       "notes": [
-        "Implementing: CSV exports and the invoice zip dispatch (export_invoices_to_zip.delay through the Celery producer); subscription filetype containing xls and invoice m=xlsx (spreadsheet workbooks) are refused with a 500 before any lookup. See docs/architecture/go-migration/misc-exports.md."
+        "Implementing: Implementing: CSV, subscription xls (xlsxwriter, built from a dry pass before the tutor promotions), invoice m=xlsx (get_excel_base64) and the zip dispatch. See docs/architecture/go-migration/misc-exports.md and xlsx-exports.md."
       ]
     },
     {
@@ -31118,25 +31244,105 @@
         "target": "document_einvoice_view",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/fatturapa/decimal.go",
+        "BE_GO/internal/fatturapa/fattura.go",
+        "BE_GO/internal/fatturapa/html_template.go",
+        "BE_GO/internal/fatturapa/json.go",
+        "BE_GO/internal/fatturapa/output.go",
+        "BE_GO/internal/fatturapa/values.go",
+        "BE_GO/internal/domain/invoice_views.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_views.go",
+        "BE_GO/internal/service/invoice_views_einvoice.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/handler/invoice_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/serializers/invoice_serializers.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
+        "BE/templates/document/application/invoice.html",
+        "BE/templates/document/application/invoice_classic.html",
+        "BE/requirements.txt",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/einvoice/<uid>/view/",
+          "/api/v2/document/einvoice/<uid>/view/",
+          "/api/document/einvoice/<uid>/view/"
+        ],
+        "request": "Path uid.",
+        "response": "200 text/html generate_invoice_html(CustomerInvoice) — the a38 FatturaPA model rendered as HTML; request language.",
+        "errors": "401 DRF challenge without a session or a matching DOCUMENT_BYPASS_TOKEN; 403 admin without a session, collaborator 'No permission mapping', scoped reference denial; 405 other methods; the stable 500 page for unhandled exceptions and refused inputs (non-ASCII bypass header included). A uid the field rejects, a missing row, a38 constructor errors or validation errors: the 500 page.",
+        "authentication": "DRF IsAuthenticated (JWT/session) | HasBypassAuthorizationHeader.",
+        "permissions": "IsAuthenticated | HasBypassAuthorizationHeader; no registry key.",
+        "resource_scope": "CustomerInvoice.objects.get(pk=uid): the row by id, no manager scope or group.",
+        "side_effects": "None (reads only).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_views_http.json",
+        "TESTS/fixtures/generate_invoice_views_http.py",
+        "TESTS/contracts/test_invoice_views_http.py",
+        "TESTS/adapters/django/invoice_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-native-r4/results.json",
+          "receipt_sha256": "277f1b5c721c2ad04c413dfadd9e91e1ab0c904f4ceb5a6cd00fc79eabe929c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-versioned-r2/results.json",
+          "receipt_sha256": "68f84793c5ff99b3bdc22f13788d1577dec1c870bea78d5ca9942e3b174346f2"
+        },
+        {
+          "revision": "committing change without the payment soft-delete filter in InvoiceViews.Payments",
+          "result": "Mutation control: fails Go on invoice-views-invoice-deleted-second-payment (the 500 page instead of the receipt).",
+          "artifact": "quality-reports/go-migration/invoice-views-http-mutation-r1/results.json",
+          "receipt_sha256": "2ade3201a743b948aee57927af799c3d5486fa1339114ea36d4f3241c322e01c"
+        }
+      ],
+      "notes": [
+        "Implementing: Both views render in Go with byte parity: document/invoice/<uid>/view/ builds the receipt context (OTHER description, course/carnet category name, meta payment categories with the float remainder, tutor, get_subscription and the first membership, the plan block, mentions, custom_data) for djtemplate; document/einvoice/<uid>/view/ renders generate_invoice_html through internal/fatturapa (a38 0.1.8 model, validation, Decimal cleaning and VAT summary rounding; golden-tested against a38 on 630 invoices). Refused before rendering (no writes): main tutor promotion, stored JSON outside the handled shapes, mention keys/markup and template inputs outside the document-views subset, FatturaPA shapes outside the proven subset (fatturapa.ErrUnsupported). invoice-customers/add and invoice/<uid>/update stay uncharacterized (see invoice-views.md, follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/invoice/<str:uid> -> document_invoice",
@@ -31250,25 +31456,105 @@
         "target": "document_invoice_view",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/fatturapa/decimal.go",
+        "BE_GO/internal/fatturapa/fattura.go",
+        "BE_GO/internal/fatturapa/html_template.go",
+        "BE_GO/internal/fatturapa/json.go",
+        "BE_GO/internal/fatturapa/output.go",
+        "BE_GO/internal/fatturapa/values.go",
+        "BE_GO/internal/domain/invoice_views.go",
+        "BE_GO/internal/repository/invoice_views.go",
+        "BE_GO/internal/service/invoice_views.go",
+        "BE_GO/internal/service/invoice_views_einvoice.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/handler/invoice_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/serializers/invoice_serializers.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
+        "BE/templates/document/application/invoice.html",
+        "BE/templates/document/application/invoice_classic.html",
+        "BE/requirements.txt",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/invoice/<uid>/view/",
+          "/api/v2/document/invoice/<uid>/view/",
+          "/api/document/invoice/<uid>/view/"
+        ],
+        "request": "Path uid; X-Group-Id (a value the UUID field rejects is ignored).",
+        "response": "200 text/html invoice.html or invoice_classic.html (the association template) with the receipt context; request language.",
+        "errors": "401 DRF challenge without a session or a matching DOCUMENT_BYPASS_TOKEN; 403 admin without a session, collaborator 'No permission mapping', scoped reference denial; 405 other methods; the stable 500 page for unhandled exceptions and refused inputs (non-ASCII bypass header included). Missing/deleted/other-group invoice, none or two live payments, unknown payment type, invalid meta payment categories, a carnet subscription without a carnet, a course without a title in the courses list, a truthy non-dict custom_data: the 500 page.",
+        "authentication": "DRF IsAuthenticated (JWT/session) | HasBypassAuthorizationHeader.",
+        "permissions": "IsAuthenticated | HasBypassAuthorizationHeader; no registry key (collaborators get the No permission mapping 403).",
+        "resource_scope": "scoped_queryset on Invoice and Payment (impersonation boundary), live and X-Group-Id aware; related rows through the base manager.",
+        "side_effects": "None (reads only).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_views_http.json",
+        "TESTS/fixtures/generate_invoice_views_http.py",
+        "TESTS/contracts/test_invoice_views_http.py",
+        "TESTS/adapters/django/invoice_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-native-r4/results.json",
+          "receipt_sha256": "277f1b5c721c2ad04c413dfadd9e91e1ab0c904f4ceb5a6cd00fc79eabe929c6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/invoice-views-http-versioned-r2/results.json",
+          "receipt_sha256": "68f84793c5ff99b3bdc22f13788d1577dec1c870bea78d5ca9942e3b174346f2"
+        },
+        {
+          "revision": "committing change without the payment soft-delete filter in InvoiceViews.Payments",
+          "result": "Mutation control: fails Go on invoice-views-invoice-deleted-second-payment (the 500 page instead of the receipt).",
+          "artifact": "quality-reports/go-migration/invoice-views-http-mutation-r1/results.json",
+          "receipt_sha256": "2ade3201a743b948aee57927af799c3d5486fa1339114ea36d4f3241c322e01c"
+        }
+      ],
+      "notes": [
+        "Implementing: Both views render in Go with byte parity: document/invoice/<uid>/view/ builds the receipt context (OTHER description, course/carnet category name, meta payment categories with the float remainder, tutor, get_subscription and the first membership, the plan block, mentions, custom_data) for djtemplate; document/einvoice/<uid>/view/ renders generate_invoice_html through internal/fatturapa (a38 0.1.8 model, validation, Decimal cleaning and VAT summary rounding; golden-tested against a38 on 630 invoices). Refused before rendering (no writes): main tutor promotion, stored JSON outside the handled shapes, mention keys/markup and template inputs outside the document-views subset, FatturaPA shapes outside the proven subset (fatturapa.ErrUnsupported). invoice-customers/add and invoice/<uid>/update stay uncharacterized (see invoice-views.md, follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/medical-appointment/<str:uid> -> document_medical_appointment",
@@ -32894,25 +33180,97 @@
         "target": "DataRestoreView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/data_restore.go",
+        "BE_GO/internal/repository/data_restore.go",
+        "BE_GO/internal/repository/data_restore_progress.go",
+        "BE_GO/internal/service/data_restore.go",
+        "BE_GO/internal/handler/data_restore.go",
+        "BE_GO/internal/dto/python_json_indent.go",
+        "BE_GO/internal/config/data_restore.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/server/data_restore.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/restore/views.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/restore/progress.py",
+        "BE/instance/restore/downloads.py",
+        "BE/instance/restore/execution.py",
+        "BE/instance/restore/replacement.py",
+        "BE/instance/restore/archive.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/tasks.py",
+        "BE/instance/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/repository/transaction.go",
+        "BE_GO/internal/service/docmanager_signing.go",
+        "BE_GO/internal/service/payment_info_uuid.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/pkg/pymime/pymime.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/data-restore",
+          "/api/v2/instance/admin/data-restore",
+          "/api/instance/admin/data-restore"
+        ],
+        "request": "GET: none. POST: multipart 'file' (MultiPartParser/JSONParser); LimitedRestoreUploadHandler drops the part passing DATA_RESTORE_MAX_UPLOAD_BYTES (cumulative over file parts) and everything after it.",
+        "response": "GET: {available, reason, max_upload_bytes, active, history (ten newest), backups, backups_next} with public_operation (preview without detail lists, DRF datetimes, progress from the cached snapshot when its attempt equals op.attempts, signed download_token). POST: 400 'Carica un file ZIP entro il limite indicato.' without a completed file part.",
+        "errors": "401/403 IsInstanceOwner; 405; POST 409 Busy (lock held, unset or unavailable lock path), 409 pending restore, 400 require_single, DRF parse errors; Cache-Control: no-store on every DRF response.",
+        "authentication": "DRF ScopedJWTAuthentication; IsInstanceOwner on the authenticated actor.",
+        "permissions": "IsInstanceOwner (active, not deleted, superuser or primary association owner of a self-hosted instance).",
+        "resource_scope": "Receipts of request.user; restore_pending and require_single instance-wide.",
+        "side_effects": "GET none. POST none on the ported paths (an admissible file goes to Django's archive validation; Go refuses it before any write).",
+        "transaction": "Autocommit reads; POST under the shared DATA_RESTORE_LOCK_PATH flock.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/data_restore_http.json",
+        "TESTS/fixtures/generate_data_restore_http.py",
+        "TESTS/contracts/test_data_restore_http.py",
+        "TESTS/adapters/django/data_restore_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/data-restore.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 139/139; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/data-restore-http-native-r5/results.json",
+          "receipt_sha256": "b2ca016c0b81c1688d4afdcc27974a2f981045ab1c95c485c8dba448f3d05d6f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 139/139 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact receipt, storage, cache and Celery effects.",
+          "artifact": "quality-reports/go-migration/data-restore-http-versioned-r1/results.json",
+          "receipt_sha256": "6e34a2eedeb99aa3ee1f2aadec47971ae5e853adc55702a673fa7c8587893605"
+        },
+        {
+          "revision": "committing change with resume allowed to queue a review receipt (the action == 'resume' condition dropped)",
+          "result": "Mutation control: fails Go on data-restore-resume-review (202 instead of 400).",
+          "artifact": "quality-reports/go-migration/data-restore-http-mutation-r1/results.json",
+          "receipt_sha256": "7ae217df696b1bbfad1ee7ce79af69369bbac878ef05e07afa1d327e16915060"
+        }
+      ],
+      "notes": [
+        "Implementing: data-restore family (docs/architecture/go-migration/data-restore.md): overview, recovery backups, receipt status/report/stream, actions (delete-backup, dismiss, cancel with storage cleanup, start/resume with the restore_instance_data publish) and the signed download in Go. Not ported: uploads reaching Archive.validate (ZIP inspection against the export/import model registry), bodies other than JSON/multipart/empty, cached progress values outside the decoded pickle subset, backup paths outside AWS_LOCATION and FileSystemStorage; refused with the 500 page before any write. Restore execution and cleanup_data_restores stay with Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/data-restore/<uuid:operation_id>/<str:action> -> DataRestoreActionView.as_view()",
@@ -32929,25 +33287,97 @@
         "target": "DataRestoreActionView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/data_restore.go",
+        "BE_GO/internal/repository/data_restore.go",
+        "BE_GO/internal/repository/data_restore_progress.go",
+        "BE_GO/internal/service/data_restore.go",
+        "BE_GO/internal/handler/data_restore.go",
+        "BE_GO/internal/dto/python_json_indent.go",
+        "BE_GO/internal/config/data_restore.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/server/data_restore.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/restore/views.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/restore/progress.py",
+        "BE/instance/restore/downloads.py",
+        "BE/instance/restore/execution.py",
+        "BE/instance/restore/replacement.py",
+        "BE/instance/restore/archive.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/tasks.py",
+        "BE/instance/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/repository/transaction.go",
+        "BE_GO/internal/service/docmanager_signing.go",
+        "BE_GO/internal/service/payment_info_uuid.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/pkg/pymime/pymime.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/data-restore/<operation_id>/<action>",
+          "/api/v2/instance/admin/data-restore/<operation_id>/<action>",
+          "/api/instance/admin/data-restore/<operation_id>/<action>"
+        ],
+        "request": "GET actions status, missing-relations, backup. POST actions delete-backup {confirm: true}, dismiss, cancel, start/resume {confirmation: 'RIPRISTINA', allow_missing_media: true} (JSON or multipart).",
+        "response": "status public_operation; missing-relations json.dumps(indent=2) attachment; backup S3 stream; POST 200/202 public_operation (503 on storage or broker failure).",
+        "errors": "404 receipt not owned, 404 'Backup di sicurezza non disponibile.', 409 Busy and pending, 400 require_single and action rules, 404 'Azione non disponibile.', 500 for a non-dict body where it is read or a missing stored object.",
+        "authentication": "DRF ScopedJWTAuthentication; IsInstanceOwner on the authenticated actor.",
+        "permissions": "IsInstanceOwner.",
+        "resource_scope": "The receipt by id and owner=request.user.",
+        "side_effects": "save_operation updates (backup_path/backup_sha256, preview.dismissed, state/stage, allow_missing_media, updated_at); storage delete of the backup; cancel cleanup of the upload object and the operation's upload/media prefixes; restore_instance_data.apply_async(args=[id], task_id=id) with timelimit [3600, 3300].",
+        "transaction": "Exclusive DATA_RESTORE_LOCK_PATH flock for the request; select_for_update and the action's writes in one transaction; cleanup and publish after commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/data_restore_http.json",
+        "TESTS/fixtures/generate_data_restore_http.py",
+        "TESTS/contracts/test_data_restore_http.py",
+        "TESTS/adapters/django/data_restore_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/data-restore.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 139/139; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/data-restore-http-native-r5/results.json",
+          "receipt_sha256": "b2ca016c0b81c1688d4afdcc27974a2f981045ab1c95c485c8dba448f3d05d6f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 139/139 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact receipt, storage, cache and Celery effects.",
+          "artifact": "quality-reports/go-migration/data-restore-http-versioned-r1/results.json",
+          "receipt_sha256": "6e34a2eedeb99aa3ee1f2aadec47971ae5e853adc55702a673fa7c8587893605"
+        },
+        {
+          "revision": "committing change with resume allowed to queue a review receipt (the action == 'resume' condition dropped)",
+          "result": "Mutation control: fails Go on data-restore-resume-review (202 instead of 400).",
+          "artifact": "quality-reports/go-migration/data-restore-http-mutation-r1/results.json",
+          "receipt_sha256": "7ae217df696b1bbfad1ee7ce79af69369bbac878ef05e07afa1d327e16915060"
+        }
+      ],
+      "notes": [
+        "Implementing: data-restore family (docs/architecture/go-migration/data-restore.md): overview, recovery backups, receipt status/report/stream, actions (delete-backup, dismiss, cancel with storage cleanup, start/resume with the restore_instance_data publish) and the signed download in Go. Not ported: uploads reaching Archive.validate (ZIP inspection against the export/import model registry), bodies other than JSON/multipart/empty, cached progress values outside the decoded pickle subset, backup paths outside AWS_LOCATION and FileSystemStorage; refused with the 500 page before any write. Restore execution and cleanup_data_restores stay with Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/data-restore/<uuid:operation_id>/download -> DataRestoreDownloadView.as_view()",
@@ -32964,25 +33394,96 @@
         "target": "DataRestoreDownloadView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/data_restore.go",
+        "BE_GO/internal/repository/data_restore.go",
+        "BE_GO/internal/repository/data_restore_progress.go",
+        "BE_GO/internal/service/data_restore.go",
+        "BE_GO/internal/handler/data_restore.go",
+        "BE_GO/internal/dto/python_json_indent.go",
+        "BE_GO/internal/config/data_restore.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/server/data_restore.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/restore/views.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/restore/progress.py",
+        "BE/instance/restore/downloads.py",
+        "BE/instance/restore/execution.py",
+        "BE/instance/restore/replacement.py",
+        "BE/instance/restore/archive.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/tasks.py",
+        "BE/instance/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/repository/transaction.go",
+        "BE_GO/internal/service/docmanager_signing.go",
+        "BE_GO/internal/service/payment_info_uuid.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/pkg/pymime/pymime.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/data-restore/<operation_id>/download",
+          "/api/v2/instance/admin/data-restore/<operation_id>/download",
+          "/api/instance/admin/data-restore/<operation_id>/download"
+        ],
+        "request": "query download_token (signing.dumps salt instance.data-restore.recovery-download, max_age 3600).",
+        "response": "S3 stream of the recovery archive (application/zip, attachment, Content-Length, Referrer-Policy: no-referrer).",
+        "errors": "404 unknown receipt; 403 'Link di download non valido o scaduto.'; 403 'Download non autorizzato.' (owner not an administrator or association not primary); 404 no backup; 500 for a token without timestamp or a missing object.",
+        "authentication": "None (authentication_classes = [], AllowAny).",
+        "permissions": "AllowAny; the signed token and the owner's administrator check.",
+        "resource_scope": "The receipt by id.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/data_restore_http.json",
+        "TESTS/fixtures/generate_data_restore_http.py",
+        "TESTS/contracts/test_data_restore_http.py",
+        "TESTS/adapters/django/data_restore_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/data-restore.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 139/139; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/data-restore-http-native-r5/results.json",
+          "receipt_sha256": "b2ca016c0b81c1688d4afdcc27974a2f981045ab1c95c485c8dba448f3d05d6f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 139/139 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact receipt, storage, cache and Celery effects.",
+          "artifact": "quality-reports/go-migration/data-restore-http-versioned-r1/results.json",
+          "receipt_sha256": "6e34a2eedeb99aa3ee1f2aadec47971ae5e853adc55702a673fa7c8587893605"
+        },
+        {
+          "revision": "committing change with resume allowed to queue a review receipt (the action == 'resume' condition dropped)",
+          "result": "Mutation control: fails Go on data-restore-resume-review (202 instead of 400).",
+          "artifact": "quality-reports/go-migration/data-restore-http-mutation-r1/results.json",
+          "receipt_sha256": "7ae217df696b1bbfad1ee7ce79af69369bbac878ef05e07afa1d327e16915060"
+        }
+      ],
+      "notes": [
+        "Implementing: data-restore family (docs/architecture/go-migration/data-restore.md): overview, recovery backups, receipt status/report/stream, actions (delete-backup, dismiss, cancel with storage cleanup, start/resume with the restore_instance_data publish) and the signed download in Go. Not ported: uploads reaching Archive.validate (ZIP inspection against the export/import model registry), bodies other than JSON/multipart/empty, cached progress values outside the decoded pickle subset, backup paths outside AWS_LOCATION and FileSystemStorage; refused with the 500 page before any write. Restore execution and cleanup_data_restores stay with Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/data-restore/backups -> DataRestoreBackupsView.as_view()",
@@ -32999,25 +33500,96 @@
         "target": "DataRestoreBackupsView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/data_restore.go",
+        "BE_GO/internal/repository/data_restore.go",
+        "BE_GO/internal/repository/data_restore_progress.go",
+        "BE_GO/internal/service/data_restore.go",
+        "BE_GO/internal/handler/data_restore.go",
+        "BE_GO/internal/dto/python_json_indent.go",
+        "BE_GO/internal/config/data_restore.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/server/data_restore.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/restore/views.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/restore/progress.py",
+        "BE/instance/restore/downloads.py",
+        "BE/instance/restore/execution.py",
+        "BE/instance/restore/replacement.py",
+        "BE/instance/restore/archive.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/tasks.py",
+        "BE/instance/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/utils/printing.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/repository/transaction.go",
+        "BE_GO/internal/service/docmanager_signing.go",
+        "BE_GO/internal/service/payment_info_uuid.go",
+        "BE_GO/internal/handler/instance_admin.go",
+        "BE_GO/internal/handler/documents_writes.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/pkg/pymime/pymime.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/data-restore/backups",
+          "/api/v2/instance/admin/data-restore/backups",
+          "/api/instance/admin/data-restore/backups"
+        ],
+        "request": "query before (last value): falsy for the first page, else uuid.UUID grammar.",
+        "response": "{backups: ten public_operation, backups_next} ordered -created_at, -id after the cursor receipt.",
+        "errors": "400 'Pagina dei backup non valida.', 404 cursor not owned, 401/403/405.",
+        "authentication": "DRF ScopedJWTAuthentication; IsInstanceOwner on the authenticated actor.",
+        "permissions": "IsInstanceOwner.",
+        "resource_scope": "request.user's receipts with a backup path; the cursor may be any of the owner's receipts.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/data_restore_http.json",
+        "TESTS/fixtures/generate_data_restore_http.py",
+        "TESTS/contracts/test_data_restore_http.py",
+        "TESTS/adapters/django/data_restore_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/data-restore.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 139/139; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/data-restore-http-native-r5/results.json",
+          "receipt_sha256": "b2ca016c0b81c1688d4afdcc27974a2f981045ab1c95c485c8dba448f3d05d6f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 139/139 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact receipt, storage, cache and Celery effects.",
+          "artifact": "quality-reports/go-migration/data-restore-http-versioned-r1/results.json",
+          "receipt_sha256": "6e34a2eedeb99aa3ee1f2aadec47971ae5e853adc55702a673fa7c8587893605"
+        },
+        {
+          "revision": "committing change with resume allowed to queue a review receipt (the action == 'resume' condition dropped)",
+          "result": "Mutation control: fails Go on data-restore-resume-review (202 instead of 400).",
+          "artifact": "quality-reports/go-migration/data-restore-http-mutation-r1/results.json",
+          "receipt_sha256": "7ae217df696b1bbfad1ee7ce79af69369bbac878ef05e07afa1d327e16915060"
+        }
+      ],
+      "notes": [
+        "Implementing: data-restore family (docs/architecture/go-migration/data-restore.md): overview, recovery backups, receipt status/report/stream, actions (delete-backup, dismiss, cancel with storage cleanup, start/resume with the restore_instance_data publish) and the signed download in Go. Not ported: uploads reaching Archive.validate (ZIP inspection against the export/import model registry), bodies other than JSON/multipart/empty, cached progress values outside the decoded pickle subset, backup paths outside AWS_LOCATION and FileSystemStorage; refused with the 500 page before any write. Restore execution and cleanup_data_restores stay with Django."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/diagnostics -> DiagnosticsView.as_view()",
