@@ -18,6 +18,7 @@ INSTANCE_ADMIN_ENVIRONMENT = (
     'MCP_AGENT_MAX_ITERATIONS', 'MCP_AGENT_MAX_RESULTS', 'MCP_AGENT_QUERY_TIMEOUT', 'MCP_AGENT_WS_RATE_LIMIT',
     'MCP_AGENT_WS_TIMEOUT', 'MCP_AGENT_HISTORY_CAP')
 DOCUMENT_RENDER_ENVIRONMENT = ('PUPPETEER_HOST', 'PUPPETEER_PORT', 'CURRENT_HOST_PUPPETEER', 'DOCUMENT_BYPASS_TOKEN', 'EMAIL_HOST_SUPPORT')
+GOOGLE_ENVIRONMENT = ('GOOGLE_CLIENT_SECRET_FILE', 'GOOGLE_CALENDAR_REDIRECT_URL', 'GOOGLE_OAUTH2_BASE', 'GOOGLE_API_BASE')
 
 
 @contextmanager
@@ -55,6 +56,10 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
         **({'STRIPE_API_BASE': os.environ['STRIPE_API_BASE']} if 'STRIPE_API_BASE' in os.environ else {}),
         # The PDF renderer (a family-owned stub in document-render) and the document settings Django reads.
         **{name: os.environ[name] for name in DOCUMENT_RENDER_ENVIRONMENT if name in os.environ},
+        # The google-calendar family's client secrets file and private Google stub; unset in production.
+        **{name: os.environ[name] for name in GOOGLE_ENVIRONMENT if name in os.environ},
+        # SessionMiddleware's cookie flag as this Django process resolved it (env.bool, default not DEBUG).
+        'SESSION_COOKIE_SECURE': str(settings.SESSION_COOKIE_SECURE),
     }
     command = [str(executable)]
     observation_path = work / "query-observations.jsonl" if query_observation else None
