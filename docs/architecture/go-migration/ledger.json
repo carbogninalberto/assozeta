@@ -30782,25 +30782,96 @@
         "target": "document_compensation_view",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/handler/document_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/printing.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
+        "BE/templates/document/application/compensation.html",
+        "BE/templates/document/application/model.html",
+        "BE/templates/document/medical-appointments/agonistica.html",
+        "BE/templates/document/medical-appointments/non-agonistica.html",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/compensation/<uid>/view/",
+          "/api/v2/document/compensation/<uid>/view/",
+          "/api/document/compensation/<uid>/view/"
+        ],
+        "request": "Path uid; X-Group-Id.",
+        "response": "200 text/html compensation.html in Italian (Content-Language it).",
+        "errors": "401; identity 403s (athlete-scoped sessions denied); 405; 500 page for missing/deleted/invalid payments and bad hour periods.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated.",
+        "resource_scope": "scoped_queryset(Payment.objects) (live, group-aware).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_views_http.json",
+        "TESTS/fixtures/generate_document_views_http.py",
+        "TESTS/contracts/test_document_views_http.py",
+        "TESTS/adapters/django/document_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-native-r4/results.json",
+          "receipt_sha256": "d288f781c35059da4bafec10270a791af522743dbf7547c72fab0555954c2342"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state.",
+          "artifact": "quality-reports/go-migration/document-views-http-versioned-r1/results.json",
+          "receipt_sha256": "c9f5e9bf857a3e50c09a819191359feaddaf2334ddbf450b5ca4c67a741dafae"
+        },
+        {
+          "revision": "compensation payment lookup without its soft-delete (NOT p.deleted) condition",
+          "result": "Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page)",
+          "artifact": "quality-reports/go-migration/document-views-http-mutation-r1/results.json",
+          "receipt_sha256": "bd269ff5e94a8c1aad62488ed5a48af879a0659532470797ace527af721a17d3"
+        }
+      ],
+      "notes": [
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/einvoice/<str:uid> -> document_einvoice",
@@ -31178,25 +31249,96 @@
         "target": "document_medical_appointment_view",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/handler/document_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/printing.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
+        "BE/templates/document/application/compensation.html",
+        "BE/templates/document/application/model.html",
+        "BE/templates/document/medical-appointments/agonistica.html",
+        "BE/templates/document/medical-appointments/non-agonistica.html",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/medical-appointment/<uid>/view/",
+          "/api/v2/document/medical-appointment/<uid>/view/",
+          "/api/document/medical-appointment/<uid>/view/"
+        ],
+        "request": "Path uid.",
+        "response": "200 text/html agonistica.html / non-agonistica.html in Italian; 303 {error} for other regions.",
+        "errors": "400 [ValueError text] for a malformed uid; 500 page for a missing appointment; identity 403s; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "AllowAny (identity still resolved for bearer requests).",
+        "resource_scope": "Appointment by pk.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_views_http.json",
+        "TESTS/fixtures/generate_document_views_http.py",
+        "TESTS/contracts/test_document_views_http.py",
+        "TESTS/adapters/django/document_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-native-r4/results.json",
+          "receipt_sha256": "d288f781c35059da4bafec10270a791af522743dbf7547c72fab0555954c2342"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state.",
+          "artifact": "quality-reports/go-migration/document-views-http-versioned-r1/results.json",
+          "receipt_sha256": "c9f5e9bf857a3e50c09a819191359feaddaf2334ddbf450b5ca4c67a741dafae"
+        },
+        {
+          "revision": "compensation payment lookup without its soft-delete (NOT p.deleted) condition",
+          "result": "Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page)",
+          "artifact": "quality-reports/go-migration/document-views-http-mutation-r1/results.json",
+          "receipt_sha256": "bd269ff5e94a8c1aad62488ed5a48af879a0659532470797ace527af721a17d3"
+        }
+      ],
+      "notes": [
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/medical/certificate/ -> medical_certificate_document",
@@ -31491,25 +31633,96 @@
         "target": "document_subscription_view",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/handler/document_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/printing.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
+        "BE/templates/document/application/compensation.html",
+        "BE/templates/document/application/model.html",
+        "BE/templates/document/medical-appointments/agonistica.html",
+        "BE/templates/document/medical-appointments/non-agonistica.html",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/subscription/<uid>/view/",
+          "/api/v2/document/subscription/<uid>/view/",
+          "/api/document/subscription/<uid>/view/"
+        ],
+        "request": "Path uid (UUIDField); X-Group-Id.",
+        "response": "200 text/html; charset=utf-8: subscription.html or subscription_classic.html in the request language.",
+        "errors": "401 without identity; identity 403s (admin without session, registry, scoped reference); 405; 500 page for missing/invalid rows, additional_sections not a list of dicts, template exceptions.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated.",
+        "resource_scope": "scoped_queryset(Subscription.objects) (group-aware, athlete family scope during impersonation).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_views_http.json",
+        "TESTS/fixtures/generate_document_views_http.py",
+        "TESTS/contracts/test_document_views_http.py",
+        "TESTS/adapters/django/document_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-native-r4/results.json",
+          "receipt_sha256": "d288f781c35059da4bafec10270a791af522743dbf7547c72fab0555954c2342"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state.",
+          "artifact": "quality-reports/go-migration/document-views-http-versioned-r1/results.json",
+          "receipt_sha256": "c9f5e9bf857a3e50c09a819191359feaddaf2334ddbf450b5ca4c67a741dafae"
+        },
+        {
+          "revision": "compensation payment lookup without its soft-delete (NOT p.deleted) condition",
+          "result": "Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page)",
+          "artifact": "quality-reports/go-migration/document-views-http-mutation-r1/results.json",
+          "receipt_sha256": "bd269ff5e94a8c1aad62488ed5a48af879a0659532470797ace527af721a17d3"
+        }
+      ],
+      "notes": [
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/subscription/preview/ -> document_subscription_preview",
@@ -31526,25 +31739,96 @@
         "target": "document_subscription_preview",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/handler/document_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/printing.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
+        "BE/templates/document/application/compensation.html",
+        "BE/templates/document/application/model.html",
+        "BE/templates/document/medical-appointments/agonistica.html",
+        "BE/templates/document/medical-appointments/non-agonistica.html",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/subscription/preview/",
+          "/api/v2/document/subscription/preview/",
+          "/api/document/subscription/preview/"
+        ],
+        "request": "?print (any value), ?sport_association_id (last value).",
+        "response": "?print: 200 {file: base64 pdf} or 500 {error: 'PDF not rendered'}; otherwise 200 text/html preview of the association's subscription template.",
+        "errors": "500 page without/invalid/missing/deleted association; 403 'User is not a sport association' for an athlete-owned association; identity 403s; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "AllowAny (identity still resolved for bearer requests).",
+        "resource_scope": "scoped_queryset(SportAssociation.objects) (live rows; impersonation boundary).",
+        "side_effects": "?print: outbound POST to the renderer service (FastRender payload with headers {}).",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_views_http.json",
+        "TESTS/fixtures/generate_document_views_http.py",
+        "TESTS/contracts/test_document_views_http.py",
+        "TESTS/adapters/django/document_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-native-r4/results.json",
+          "receipt_sha256": "d288f781c35059da4bafec10270a791af522743dbf7547c72fab0555954c2342"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state.",
+          "artifact": "quality-reports/go-migration/document-views-http-versioned-r1/results.json",
+          "receipt_sha256": "c9f5e9bf857a3e50c09a819191359feaddaf2334ddbf450b5ca4c67a741dafae"
+        },
+        {
+          "revision": "compensation payment lookup without its soft-delete (NOT p.deleted) condition",
+          "result": "Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page)",
+          "artifact": "quality-reports/go-migration/document-views-http-mutation-r1/results.json",
+          "receipt_sha256": "bd269ff5e94a8c1aad62488ed5a48af879a0659532470797ace527af721a17d3"
+        }
+      ],
+      "notes": [
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/template/<str:uid> -> document_template",
@@ -31658,25 +31942,96 @@
         "target": "document_template_view",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/djtemplate/render.go",
+        "BE_GO/internal/djtemplate/parse.go",
+        "BE_GO/internal/djtemplate/ifparser.go",
+        "BE_GO/internal/djtemplate/filters.go",
+        "BE_GO/internal/djtemplate/dates.go",
+        "BE_GO/internal/djtemplate/values.go",
+        "BE_GO/internal/djtemplate/json.go",
+        "BE_GO/internal/mentions/mentions.go",
+        "BE_GO/internal/mentions/parse.go",
+        "BE_GO/internal/mentions/tree.go",
+        "BE_GO/internal/emailrender/shared.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/domain/document_views.go",
+        "BE_GO/internal/repository/document_views.go",
+        "BE_GO/internal/service/document_views.go",
+        "BE_GO/internal/handler/document_views.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/application/models/utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/templatetags/format.py",
+        "BE/application/utils/printing.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/templates/document/application/subscription.html",
+        "BE/templates/document/application/subscription_classic.html",
+        "BE/templates/document/application/compensation.html",
+        "BE/templates/document/application/model.html",
+        "BE/templates/document/medical-appointments/agonistica.html",
+        "BE/templates/document/medical-appointments/non-agonistica.html",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/template/<uid>/view/",
+          "/api/v2/document/template/<uid>/view/",
+          "/api/document/template/<uid>/view/"
+        ],
+        "request": "Path uid; ?subscription_id (last value, optional).",
+        "response": "200 text/html model.html with the template body, header and footer through filter_mentions.",
+        "errors": "401 (DRF challenge) without identity or bypass token; 500 page for a non-ASCII Authorization, missing/invalid template; identity 403s; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasBypassAuthorizationHeader.",
+        "resource_scope": "Template by pk; the optional subscription through scoped_queryset(Subscription.objects).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_views_http.json",
+        "TESTS/fixtures/generate_document_views_http.py",
+        "TESTS/contracts/test_document_views_http.py",
+        "TESTS/adapters/django/document_views_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-views.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 114/114; Go 401 on the first case.",
+          "artifact": "quality-reports/go-migration/document-views-http-native-r4/results.json",
+          "receipt_sha256": "d288f781c35059da4bafec10270a791af522743dbf7547c72fab0555954c2342"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 114/114 on native Django, native Go, Caddy /api/v1 and /api/v2 with byte-exact HTML against contexts rendered by Django's template engine, the preview's renderer requests checked byte for byte, and unchanged model state.",
+          "artifact": "quality-reports/go-migration/document-views-http-versioned-r1/results.json",
+          "receipt_sha256": "c9f5e9bf857a3e50c09a819191359feaddaf2334ddbf450b5ca4c67a741dafae"
+        },
+        {
+          "revision": "compensation payment lookup without its soft-delete (NOT p.deleted) condition",
+          "result": "Mutation control: fails Go on document-views-compensation-deleted (200 instead of the 500 page)",
+          "artifact": "quality-reports/go-migration/document-views-http-mutation-r1/results.json",
+          "receipt_sha256": "bd269ff5e94a8c1aad62488ed5a48af879a0659532470797ace527af721a17d3"
+        }
+      ],
+      "notes": [
+        "Implementing: HTML views the renderer prints, rendered by BE_GO/internal/djtemplate (Django template subset, golden-tested against render_to_string) and BE_GO/internal/mentions (filter_mentions / BeautifulSoup subset, golden-tested). Not ported (500 page; the views write nothing): get_main_tutor promotion of a non-primary tutor relation (a write), get_signature_base64 (storage/HTTP), mention keys outside the editor list and all subscription.* keys, markup outside the bs4 subset, template inputs outside the djtemplate subset, non-ASCII compensation periods, collaborator-owned associations in preview, HEAD and slash-less paths. invoice/view and einvoice/view are separate follow-ups."
+      ]
     },
     {
       "id": "route:BE/instance/sso/urls.py:callback -> LoginCallbackView.as_view()",
