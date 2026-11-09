@@ -86,6 +86,10 @@ class Journal:
                 self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
                             error='Il backup è stato interrotto.',
                             recovery='Se l’app non torna disponibile, avviala dal server con ./bin/assozeta start.')
+            elif record['status'] in ('queued', 'running') and record.get('kind') == 'fetch':
+                # The recovery key lived only in memory: a fetch cannot resume.
+                self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
+                            error='Il recupero dalla copia remota è stato interrotto. Riprova.')
             elif record['status'] == 'running' and record.get('kind') != 'restart':
                 self.update(record['id'], status='recovery_required', stage='recovery_required',
                             interrupted_at=now(), failed_stage=record['stage'],

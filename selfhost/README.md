@@ -220,6 +220,66 @@ download is the unencrypted server archive, including its secrets, so store it
 as safely as the server itself. From the command line, `assozeta backup
 --scheduled` takes an automatic (rotated) archive instead of a manual one.
 
+### Remote copy (S3-compatible, encrypted)
+
+**Copia remota** in **Istanza → Backup** sends an encrypted copy of every
+backup to any S3-compatible bucket (AWS S3, Backblaze B2, Wasabi, MinIO, …).
+It is off by default.
+
+- Settings: endpoint (empty for AWS), region, bucket, prefix, access key,
+  secret key, path-style addressing and how many remote copies to keep
+  (default 3). They are stored in `selfhost/.updater/remote-backup.json`
+  (mode 0600, like `.env`); the secret key is never shown again.
+  **Prova connessione** writes, reads and deletes a small test object.
+- Encryption is mandatory and uses [age](https://age-encryption.org). The
+  server generates a key pair and shows the **recovery key** once, as text and
+  as a file; the owner confirms it by typing its last 6 characters. The server
+  keeps only the public key. **Without the recovery key the remote copies
+  cannot be restored.** "Genera nuova chiave" rotates it: new copies use the
+  new key, older copies still need the key they were made with (each row
+  shows the key id).
+- After every successful backup (manual, scheduled, pre-upgrade or
+  pre-restore) the runner streams the archive through `age` into a multipart
+  upload in the background; upgrades never wait for it. Next to each copy
+  `<prefix>/<archive>.age` it writes `<prefix>/<archive>.json` with the date,
+  version, size, origin and key id (no data). A failed upload is retried, then
+  the page shows the error and the owner gets an email. Successfully uploaded
+  local archives are marked `remote=uploaded` and are the first removed when
+  disk space runs short.
+- Remote retention keeps the newest N copies; copies of archives marked
+  **Conserva** are never deleted remotely.
+- The backup list shows where each backup is (local, both, remote only).
+  **Recupera sul server** downloads and decrypts a remote-only copy into
+  `selfhost/backups/` after asking for the recovery key, which is kept in
+  memory only.
+
+On a fresh server (installed and configured with `assozeta install`), restore
+a remote copy from the command line. S3 settings come from flags or
+environment variables (`ASSOZETA_S3_ENDPOINT`, `ASSOZETA_S3_REGION`,
+`ASSOZETA_S3_BUCKET`, `ASSOZETA_S3_PREFIX`, `ASSOZETA_S3_PATH_STYLE=1`), the
+access keys only from `ASSOZETA_S3_ACCESS_KEY` and `ASSOZETA_S3_SECRET_KEY`;
+saved settings are used when present. The recovery key is read from standard
+input (hidden prompt on a terminal, or the key file piped in):
+
+```bash
+export ASSOZETA_S3_ACCESS_KEY=… ASSOZETA_S3_SECRET_KEY=…
+# List the remote copies:
+./selfhost/bin/assozeta restore --from-s3 --bucket my-bucket --endpoint https://s3.example.com
+# Download, decrypt and restore one (asks for the recovery key):
+./selfhost/bin/assozeta restore --from-s3 assozeta-20260101T120000Z.tar.gz \
+  --bucket my-bucket --endpoint https://s3.example.com
+# Non-interactive:
+./selfhost/bin/assozeta restore --from-s3 assozeta-20260101T120000Z.tar.gz \
+  --bucket my-bucket --yes < assozeta-recovery-key.txt
+```
+
+The download runs in the updater image (`ASSOZETA_UPDATER_REF`, or the
+updater of the configured version), which includes `age` and `boto3`. The
+decrypted archive lands in `selfhost/backups/` and is then restored exactly
+like `assozeta restore ARCHIVE`.
+
+### How backup runs
+
 Backup stops the API, worker, and scheduler services while PostgreSQL and MinIO
 are snapshotted, then restarts them only if any were running beforehand. Caddy
 serves the maintenance page during this interval. Expect brief write downtime

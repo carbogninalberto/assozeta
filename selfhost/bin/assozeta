@@ -51,6 +51,11 @@ Production commands:
   sync-manual               Install the published manual for the configured release.
   backup [--scheduled] [DIRECTORY]
   restore ARCHIVE [--yes]
+  restore --from-s3 [NAME] [--bucket B] [--endpoint URL] [--region R] [--prefix P] [--path-style] [--yes]
+                            Download an encrypted remote copy, decrypt it with the recovery
+                            key read from standard input, then restore it. Without NAME,
+                            list the remote copies. Access keys come from ASSOZETA_S3_ACCESS_KEY
+                            and ASSOZETA_S3_SECRET_KEY (or the saved remote copy settings).
   recover-upgrade ARCHIVE [--yes]
   reconcile-updates
   upgrade VERSION
@@ -1562,7 +1567,86 @@ confirm_destructive() {
     case "$answer" in y|Y|yes|YES) ;; *) die "cancelled" ;; esac
 }
 
+# Bring an age-encrypted remote copy back, for example onto a fresh server.
+# The verified updater image has boto3 and age; the recovery key goes to it on
+# standard input and is never written to disk or passed as an argument.
+restore_from_s3() {
+    remote_name=
+    remote_yes=false
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --endpoint|--region|--bucket|--prefix)
+                [ "$#" -ge 2 ] || die "$1 requires a value"
+                case "$1" in
+                    --endpoint) ASSOZETA_S3_ENDPOINT=$2; export ASSOZETA_S3_ENDPOINT ;;
+                    --region) ASSOZETA_S3_REGION=$2; export ASSOZETA_S3_REGION ;;
+                    --bucket) ASSOZETA_S3_BUCKET=$2; export ASSOZETA_S3_BUCKET ;;
+                    --prefix) ASSOZETA_S3_PREFIX=$2; export ASSOZETA_S3_PREFIX ;;
+                esac
+                shift
+                ;;
+            --path-style) ASSOZETA_S3_PATH_STYLE=1; export ASSOZETA_S3_PATH_STYLE ;;
+            --yes) remote_yes=true ;;
+            -*) die "unknown restore option: $1" ;;
+            *)
+                [ -z "$remote_name" ] || die "restore --from-s3 takes one backup name"
+                remote_name=$1
+                ;;
+        esac
+        shift
+    done
+    preflight
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    updater_tool_image=$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")
+    if [ -z "$updater_tool_image" ]; then
+        updater_tool_image="ghcr.io/carbogninalberto/assozeta-updater:$(env_value ASSOZETA_VERSION "$PROD_ENV")"
+        docker image inspect "$updater_tool_image" >/dev/null 2>&1 || docker pull "$updater_tool_image"
+    fi
+    updater_tool_options="-i -e ASSOZETA_S3_ENDPOINT -e ASSOZETA_S3_REGION -e ASSOZETA_S3_BUCKET -e ASSOZETA_S3_PREFIX -e ASSOZETA_S3_ACCESS_KEY -e ASSOZETA_S3_SECRET_KEY -e ASSOZETA_S3_PATH_STYLE"
+    if [ -z "$remote_name" ]; then
+        run_updater_tool /runner/remote_backups.py list "$SELFHOST_DIR" </dev/null
+        return 0
+    fi
+    printf '%s\n' "$remote_name" | grep -Eq '^assozeta-[0-9]{8}T[0-9]{6}Z(-[0-9]+)?\.tar\.gz$' \
+        || die "not a backup name: $remote_name (run restore --from-s3 to list them)"
+    recovery_key=
+    if [ -f "$SELFHOST_DIR/backups/$remote_name" ]; then
+        log "$remote_name is already in $SELFHOST_DIR/backups; restoring the local copy"
+    elif [ -t 0 ]; then
+        printf 'Recovery key (AGE-SECRET-KEY-...): ' >&2
+        stty -echo 2>/dev/null || true
+        read -r recovery_key || true
+        stty echo 2>/dev/null || true
+        printf '\n' >&2
+    else
+        # Accept the bare key or the whole key file.
+        while IFS= read -r recovery_line; do
+            case "$recovery_line" in AGE-SECRET-KEY-*) recovery_key=$recovery_line; break ;; esac
+        done
+    fi
+    if [ ! -f "$SELFHOST_DIR/backups/$remote_name" ]; then
+        [ -n "$recovery_key" ] || die "the recovery key is required on standard input"
+        fetched=$(printf '%s\n' "$recovery_key" | run_updater_tool /runner/remote_backups.py fetch "$SELFHOST_DIR" "$remote_name") \
+            || { recovery_key=; die "could not download or decrypt $remote_name"; }
+        recovery_key=
+        [ "$(printf '%s\n' "$fetched" | tail -n 1)" = "$SELFHOST_DIR/backups/$remote_name" ] \
+            || die "the downloaded backup was not found in $SELFHOST_DIR/backups"
+        log "downloaded and decrypted $remote_name"
+    fi
+    updater_tool_options=
+    if [ "$remote_yes" = true ]; then
+        restore_prod "$SELFHOST_DIR/backups/$remote_name" --yes
+    else
+        restore_prod "$SELFHOST_DIR/backups/$remote_name"
+    fi
+}
+
 restore_prod() {
+    if [ "${1:-}" = --from-s3 ]; then
+        shift
+        restore_from_s3 "$@"
+        return
+    fi
     archive=${1:-}
     [ -n "$archive" ] || die "restore requires a backup archive"
     [ -f "$archive" ] || die "backup archive not found: $archive"
@@ -1719,9 +1803,11 @@ run_updater_tool() {
     # mutate the installation under the lifecycle lock so the next CLI can
     # refuse overlapping work after the parent lock disappears.
     if [ "${prod_lock_held:-false}" = true ]; then
-        set -- --label "org.assozeta.lifecycle.installation=$SELFHOST_DIR" "$updater_tool_image" "$@"
+        # shellcheck disable=SC2086 # fixed docker options without spaces
+        set -- --label "org.assozeta.lifecycle.installation=$SELFHOST_DIR" ${updater_tool_options:-} "$updater_tool_image" "$@"
     else
-        set -- "$updater_tool_image" "$@"
+        # shellcheck disable=SC2086
+        set -- ${updater_tool_options:-} "$updater_tool_image" "$@"
     fi
     case "$PROD_ENV" in
         "$SELFHOST_DIR"/*)

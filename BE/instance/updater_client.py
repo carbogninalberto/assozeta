@@ -18,8 +18,8 @@ class UpdaterRejected(Exception):
 
 
 class UnixConnection(http.client.HTTPConnection):
-    def __init__(self, path):
-        super().__init__('localhost', timeout=5)
+    def __init__(self, path, timeout=5):
+        super().__init__('localhost', timeout=timeout)
         self.path = str(path)
 
     def connect(self):
@@ -80,9 +80,9 @@ def open_runner_stream(path):
     return size, RunnerBody(connection, response)
 
 
-def call_runner(method, path, payload=None):
+def call_runner(method, path, payload=None, timeout=5):
     directory = _runner_directory()
-    connection = UnixConnection(directory / 'runner.sock')
+    connection = UnixConnection(directory / 'runner.sock', timeout=timeout)
     try:
         token = (directory / 'token').read_text().strip()
         if not token:

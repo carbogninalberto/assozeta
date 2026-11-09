@@ -4,6 +4,7 @@ const STEPS = {
     restart: ['checking', 'restarting', 'health_check'],
     backup: ['checking', 'backup', 'restarting'],
     restore: ['checking', 'backup', 'restoring', 'restarting', 'health_check'],
+    fetch: ['checking', 'downloading'],
 };
 
 const STAGES = {
@@ -20,10 +21,12 @@ export function operationTitle(operation) {
     if (kind === 'restart') return 'Riavvio dell’applicazione';
     if (kind === 'backup') return 'Backup in corso';
     if (kind === 'restore') return 'Ripristino in corso';
+    if (kind === 'fetch') return 'Recupero dalla copia remota';
     return `Aggiornamento a ${operation.target_version}`;
 }
 
 export function stageLabel(operation) {
+    if (kindOf(operation) === 'fetch' && operation.stage === 'downloading') return 'Download e decifratura';
     return STAGES[operation?.stage] || operation?.stage || '';
 }
 
@@ -39,6 +42,7 @@ export function historyTitle(operation) {
     if (kind === 'restart') return 'Riavvio';
     if (kind === 'backup') return operation.origin === 'scheduled' ? 'Backup automatico' : 'Backup manuale';
     if (kind === 'restore') return 'Ripristino';
+    if (kind === 'fetch') return 'Recupero da remoto';
     return operation.source_version ? `${operation.source_version} → ${operation.target_version}` : `Aggiornamento a ${operation.target_version}`;
 }
 
@@ -62,6 +66,7 @@ export function recentOutcome(history = [], now = Date.now()) {
         restart: ok ? 'Riavvio completato' : 'Riavvio non riuscito',
         backup: ok ? 'Backup completato' : 'Backup non riuscito',
         restore: ok ? 'Ripristino completato' : 'Ripristino non riuscito',
+        fetch: ok ? 'Backup recuperato sul server' : 'Recupero non riuscito',
     };
     return {id: latest.id, ok, title: titles[kind] || titles.update, detail: ok ? '' : latest.error || ''};
 }

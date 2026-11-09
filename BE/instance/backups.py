@@ -115,6 +115,8 @@ class BackupOverviewView(APIView):
             # Older runners have neither: the page then stays read-only.
             'schedule': inventory.get('schedule'),
             'actions': inventory.get('actions', {}),
+            # Remote copy status; absent on runners without it.
+            'remote': inventory.get('remote'),
         })
 
     def post(self, request):
@@ -276,6 +278,11 @@ def _failures(status, inventory):
     # A scheduled run that could not start has no operation of its own.
     if last.get('status') == 'failed' and not last.get('operation') and when and when >= cutoff:
         yield f'schedule:{last["at"]}', when, last.get('error') or ''
+    # Uploads to the remote copy are retried by the runner before they count.
+    failure = (inventory.get('remote') or {}).get('last_failure') or {}
+    when = parse_datetime(failure.get('at') or '')
+    if when and when >= cutoff:
+        yield f'remote:{failure["at"]}', when, failure.get('error') or ''
 
 
 def notify_failures():
@@ -300,12 +307,15 @@ def notify_failures():
             continue
         local = timezone.localtime(when).strftime('%d/%m/%Y %H:%M')
         link = f'https://{config.domain}/#/profile?page=self-instance&tab=backups' if config.domain else ''
-        body = f'Il backup del {local} non è riuscito.\n\n'
+        remote = key.startswith('remote:')
+        subject = 'Copia remota non riuscita' if remote else 'Backup non riuscito'
+        body = (f'La copia remota del backup non è riuscita ({local}).\n\n' if remote
+                else f'Il backup del {local} non è riuscito.\n\n')
         if reason:
             body += f'Motivo: {reason}\n\n'
         body += f'Controlla in Istanza > Backup{": " + link if link else ""}.\n'
         try:
-            send_mail('Backup non riuscito', body, None, [owner.email])
+            send_mail(subject, body, None, [owner.email])
             sent += 1
         except Exception:
             cache.delete(FAILURE_NOTIFIED.format(key))
