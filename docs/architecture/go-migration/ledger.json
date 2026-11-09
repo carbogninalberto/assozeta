@@ -36,7 +36,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "ledger-structural review: Needs the generic audit index resolver, which Go does not have (see create_audit_log_index and ledger-structural.md)."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/build_manuale_index.py:build_manuale_index",
@@ -71,7 +73,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "ledger-structural review: Manual build tooling called only from docs/scripts/manuale.py, but without a code guard; left open. check-manual validates the image bundle and is not equivalent."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/compare_manuale_captures.py:compare_manuale_captures",
@@ -106,7 +110,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "ledger-structural review: Manual CI tooling called only from docs/scripts/manuale.py, without a code guard; left open."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/create_instance_superuser.py:create_instance_superuser",
@@ -123,25 +129,65 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/create-instance-superuser/main.go",
+        "BE_GO/cmd/create-instance-superuser/term_bsd.go",
+        "BE_GO/cmd/create-instance-superuser/term_linux.go",
+        "BE_GO/internal/service/instance_superuser.go",
+        "BE_GO/internal/repository/instance_superuser.go",
+        "BE_GO/internal/domain/instance_superuser.go",
+        "BE_GO/internal/djangoauth/text.go",
+        "BE_GO/internal/djangoauth/password.go",
+        "BE_GO/internal/djangoauth/user.go",
+        "BE_GO/internal/djangoauth/common-passwords.txt.gz",
+        "BE_GO/Dockerfile"
+      ],
+      "dependencies": [
+        "BE/application/models/user_models.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
+        "request": "CLI options --username --email --first-name --last-name --phone --noinput --allow-weak-password; DJANGO_SUPERUSER_PASSWORD; interactive stdin and getpass prompts.",
+        "response": "stdout success line; stderr \"CommandError: <message>\" with exit 1.",
         "errors": null,
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "side_effects": "One bakney_user row (athlete role, staff, superuser) and its auditlog create entry in one transaction; no index row.",
+        "transaction": "Single transaction; unique violation reported as existing account.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/instance_superuser_command.py",
+        "BE_GO/internal/djangoauth/password_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/ledger-structural.md",
+        {
+          "revision": "RED receipt, before the Go code was usable",
+          "result": "RED: Django 24/24 authored cases; Go command absent.",
+          "artifact": "quality-reports/go-migration/instance-superuser-command-red/results.json",
+          "receipt_sha256": "6ac572602887a50cfc07a142f904c3c63c1095aa915e5a024fc941b472cf863f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 24/24 actual manage.py process vs race-built Go binary on the same seed; exit status, stdout, CommandError line and every managed table identical; hashes verified with check_password.",
+          "artifact": "quality-reports/go-migration/instance-superuser-command/results.json",
+          "receipt_sha256": "31c4fffcbb202e8e667c2581ebe89e90109d82cca441c37aa31fe5960b94a278"
+        },
+        {
+          "revision": "committing change with the identity check excluding soft-deleted users",
+          "result": "Mutation control: fails Go on \"soft-deleted account username\".",
+          "artifact": "quality-reports/go-migration/instance-superuser-command-mutation/results.json",
+          "receipt_sha256": "997724829599e8e33e4e4aa997c2d50c650b19e4e0e99a9ebff43e9b1dcab240"
+        }
+      ],
+      "notes": [
+        "Implementing via ledger-structural: Go command shipped in the image; selfhost still invokes Django. Not ported: Django global options and argparse abbreviations, traceback text for non-unique database errors, GetPassWarning text, Unicode 15.1-only characters."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/evaluate_manuale.py:evaluate_manuale",
@@ -176,7 +222,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "ledger-structural review: Manual evaluation tooling (MCP stdio plus the agent provider) without a code guard; left open."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/install_manuale_development.py:install_manuale_development",
@@ -193,7 +241,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -211,7 +259,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Development-only in code: development_enabled refuses unless ASSOZETA_DEPLOYMENT_MODE is development. Manual fixture tooling; no Go port needed. See ledger-structural.md."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/install_manuale_preview.py:install_manuale_preview",
@@ -228,7 +278,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -246,7 +296,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Development-only in code: development_enabled refuses unless ASSOZETA_DEPLOYMENT_MODE is development. Manual fixture tooling; no Go port needed. See ledger-structural.md."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/migrate_subscription_signatures_to_s3.py:migrate_subscription_signatures_to_s3",
@@ -281,7 +333,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "ledger-structural review: Still applicable: migration 0415 removes Subscription.signature in state only, so older databases keep the column. Writes to configured storage; not ported."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/run_agent.py:run_agent",
@@ -333,7 +387,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -351,7 +405,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Development-only in code: assert_disposable refuses unless ASSOZETA_DEPLOYMENT_MODE is development and the database is the disposable manuale_<run> database. Manual fixture tooling; no Go port needed. See ledger-structural.md."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/run_manuale_dashboard_lists.py:run_manuale_dashboard_lists",
@@ -368,7 +424,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -386,7 +442,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Development-only in code: assert_disposable refuses unless ASSOZETA_DEPLOYMENT_MODE is development and the database is the disposable manuale_<run> database. Manual fixture tooling; no Go port needed. See ledger-structural.md."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/run_manuale_instance.py:run_manuale_instance",
@@ -403,7 +461,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -421,7 +479,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Development-only in code: assert_disposable refuses unless ASSOZETA_DEPLOYMENT_MODE is development and the database is the disposable manuale_<run> database. Manual fixture tooling; no Go port needed. See ledger-structural.md."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/run_mcp_server.py:run_mcp_server",
@@ -466,7 +526,8 @@
         "40 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
       ],
       "notes": [
-        "Actual Django stdio protocol and manual subset characterized; no Go MCP transport/command or business-tool completion claim. SSE option and other management argument cases remain unverified."
+        "Actual Django stdio protocol and manual subset characterized; no Go MCP transport/command or business-tool completion claim. SSE option and other management argument cases remain unverified.",
+        "ledger-structural review: Go now has three business tool functions (sanitize_text, list_reports, save_report) besides the manual tools, but no Go command composes them; MCP schema validation for business tools is not ported."
       ]
     },
     {
@@ -484,7 +545,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -502,7 +563,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Development-only in code: assert_disposable refuses unless ASSOZETA_DEPLOYMENT_MODE is development and the database is the disposable manuale_<run> database. Manual fixture tooling; no Go port needed. See ledger-structural.md."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/seed_selfhost.py:seed_selfhost",
@@ -519,7 +582,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -537,7 +600,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Deprecated in Django: a no-op compatibility command (help text says so) that prints one line and reads or writes nothing; no caller in selfhost/bin or entrypoints. No Go port needed."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/sync_manuale_corpus.py:sync_manuale_corpus",
@@ -572,7 +637,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "ledger-structural review: Production (selfhost start and sync-manual). pkg/manual/refresh.go implements the synchronizer with cross-runtime lock evidence (manual-reader.md), but no Go command exists; not credited."
+      ]
     },
     {
       "id": "command:BE/notifications/management/commands/relay_go_realtime.py:relay_go_realtime",
@@ -1199,9 +1266,15 @@
         "name": "list_reports",
         "schema": "{'name': 'list_reports', 'description': \"List the user's saved report configurations. Use this when the user asks to see their saved reports.\", 'parameters': {'type': 'object', 'properties': {}}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/repository/business_mcp.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/models/report_models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -1215,9 +1288,34 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/business_mcp_tools.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/ledger-structural.md",
+        {
+          "revision": "RED receipt, before the Go code was usable",
+          "result": "RED: Django 25/25 authored tool calls; Go driver absent.",
+          "artifact": "quality-reports/go-migration/business-mcp-tools-red/results.json",
+          "receipt_sha256": "6f22b08f210597ccdcc2fc0e2ac58bef4f1eb0b4dd5b74b011e53ddba0d71331"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 25/25 actual Django tool functions vs Go BusinessMCPTools on the same rows (22 identical results and states, 3 refused by Go with state unchanged).",
+          "artifact": "quality-reports/go-migration/business-mcp-tools/results.json",
+          "receipt_sha256": "9ef22b9143eb6d068c40d8f91f975c7f1716b8c9bb36cad91c16b5eb51d90631"
+        },
+        {
+          "revision": "committing change with the user lookup including deleted users",
+          "result": "Mutation control: fails Go on the deleted-user save_report call.",
+          "artifact": "quality-reports/go-migration/business-mcp-tools-mutation/results.json",
+          "receipt_sha256": "b79239a6eee81c8b4e21cdc32c8aebf7690a28cd7937f0abbb41b31366989ea9"
+        }
+      ],
+      "notes": [
+        "Implementing via ledger-structural: Function-level port. Refused: user_id lists/objects/floats and invalid ids whose repr needs quoting. MCP schema validation and Go stdio composition for business tools not done."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:query_data",
@@ -1267,9 +1365,15 @@
         "name": "sanitize_text",
         "schema": "{'name': 'sanitize_text', 'description': 'Remove characters that are unsafe for filenames from a string. Replaces characters like / \\\\ : * ? \" < > | with the replacement character.', 'parameters': {'type': 'object', 'properties': {'text': {'type': 'string', 'description': 'The text to sanitize'}, 'replacement': {'type': 'string', 'description': 'Replacement character for unsafe chars. Default: \"-\"'}}, 'required': ['text']}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/repository/business_mcp.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/models/report_models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -1283,9 +1387,34 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/business_mcp_tools.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/ledger-structural.md",
+        {
+          "revision": "RED receipt, before the Go code was usable",
+          "result": "RED: Django 25/25 authored tool calls; Go driver absent.",
+          "artifact": "quality-reports/go-migration/business-mcp-tools-red/results.json",
+          "receipt_sha256": "6f22b08f210597ccdcc2fc0e2ac58bef4f1eb0b4dd5b74b011e53ddba0d71331"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 25/25 actual Django tool functions vs Go BusinessMCPTools on the same rows (22 identical results and states, 3 refused by Go with state unchanged).",
+          "artifact": "quality-reports/go-migration/business-mcp-tools/results.json",
+          "receipt_sha256": "9ef22b9143eb6d068c40d8f91f975c7f1716b8c9bb36cad91c16b5eb51d90631"
+        },
+        {
+          "revision": "committing change with the user lookup including deleted users",
+          "result": "Mutation control: fails Go on the deleted-user save_report call.",
+          "artifact": "quality-reports/go-migration/business-mcp-tools-mutation/results.json",
+          "receipt_sha256": "b79239a6eee81c8b4e21cdc32c8aebf7690a28cd7937f0abbb41b31366989ea9"
+        }
+      ],
+      "notes": [
+        "Implementing via ledger-structural: Function-level port. Refused before work: replacements containing a backslash (re template escapes). MCP schema validation and Go stdio composition for business tools not done."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:save_report",
@@ -1301,9 +1430,15 @@
         "name": "save_report",
         "schema": "{'name': 'save_report', 'description': 'Save a report configuration so the user can replay it from the frontend without the AI. Call this after generating a report when the user asks to save it. Provide the tool_name and params you just used, plus a human-readable name. The ui_config should describe which fields are editable in the frontend (date pickers, format selects, etc.).', 'parameters': {'type': 'object', 'properties': {'name': {'type': 'string', 'description': 'Human-readable name for the saved report (e.g. \"Presenze anno sportivo 2025/26\")'}, 'tool_name': {'type': 'string', 'description': 'The tool that generates this report (e.g. \"get_attendance_matrix\", \"export_data\")'}, 'params': {'type': 'object', 'description': 'The full parameter dict used to generate the report (excluding sport_association_id)'}, 'description': {'type': 'string', 'description': 'Optional description of what this report contains'}, 'ui_config': {'type': 'object', 'description': 'UI metadata for the frontend edit form. Should contain: \"fields\" (list of editable params with key, label, type, options) and optionally \"available_columns\" and \"filter_fields\" for export_data/query_data tools.'}}, 'required': ['name', 'tool_name', 'params']}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/repository/business_mcp.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/models/report_models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -1317,9 +1452,34 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/business_mcp_tools.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/ledger-structural.md",
+        {
+          "revision": "RED receipt, before the Go code was usable",
+          "result": "RED: Django 25/25 authored tool calls; Go driver absent.",
+          "artifact": "quality-reports/go-migration/business-mcp-tools-red/results.json",
+          "receipt_sha256": "6f22b08f210597ccdcc2fc0e2ac58bef4f1eb0b4dd5b74b011e53ddba0d71331"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 25/25 actual Django tool functions vs Go BusinessMCPTools on the same rows (22 identical results and states, 3 refused by Go with state unchanged).",
+          "artifact": "quality-reports/go-migration/business-mcp-tools/results.json",
+          "receipt_sha256": "9ef22b9143eb6d068c40d8f91f975c7f1716b8c9bb36cad91c16b5eb51d90631"
+        },
+        {
+          "revision": "committing change with the user lookup including deleted users",
+          "result": "Mutation control: fails Go on the deleted-user save_report call.",
+          "artifact": "quality-reports/go-migration/business-mcp-tools-mutation/results.json",
+          "receipt_sha256": "b79239a6eee81c8b4e21cdc32c8aebf7690a28cd7937f0abbb41b31366989ea9"
+        }
+      ],
+      "notes": [
+        "Implementing via ledger-structural: Function-level port; SavedReport is not audited. Refused before any write: user_id lists/objects/floats, ids needing repr quoting, name over 200 or tool name over 100 characters, NUL characters, missing server association. MCP schema validation and Go stdio composition for business tools not done."
+      ]
     },
     {
       "id": "mcp_tool:BE/application/mcp_server/server.py:call_tool",
@@ -1783,7 +1943,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Not satisfied (ledger-structural review): DefaultRouter generates routes that are not ledger route entries and that Go does not serve: <prefix>/ (GET list, POST create) and <prefix>/<pk>/ (GET, PUT, PATCH, DELETE) with .<format> suffixes for the eight registered viewsets, documents/bulk_delete/, and the API root."
+      ]
     },
     {
       "id": "mount:BE/core/urls.py: -> include('application.chat.urls')",
@@ -1818,7 +1980,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Not satisfied (ledger-structural review): Its one route chat/test/ is uncharacterized."
+      ]
     },
     {
       "id": "mount:BE/core/urls.py: -> include('application.urls')",
@@ -1853,7 +2017,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Not satisfied (ledger-structural review): 35 open application routes (33 uncharacterized, 2 needs_review)."
+      ]
     },
     {
       "id": "mount:BE/core/urls.py: -> include('communications.urls')",
@@ -1888,7 +2054,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Not satisfied (ledger-structural review): 2 communications routes uncharacterized (send/email, send/post)."
+      ]
     },
     {
       "id": "mount:BE/core/urls.py: -> include('docmanager.urls')",
@@ -1923,7 +2091,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Not satisfied (ledger-structural review): 13 docmanager routes uncharacterized."
+      ]
     },
     {
       "id": "mount:BE/core/urls.py:bakney/v1/ -> include('instance.sso.urls')",
@@ -1958,7 +2128,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Not satisfied (ledger-structural review): All 5 SSO routes uncharacterized."
+      ]
     },
     {
       "id": "mount:BE/core/urls.py:instance/ -> include('instance.urls')",
@@ -1993,7 +2165,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Not satisfied (ledger-structural review): 8 instance routes uncharacterized."
+      ]
     },
     {
       "id": "mount:BE/core/urls.py:silk/ -> include('silk.urls', namespace='silk')",
@@ -2010,7 +2184,7 @@
         "target": "include('silk.urls', namespace='silk')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -2028,7 +2202,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Development-only: mounted only when DEBUG (BE/core/urls.py), silk is added to INSTALLED_APPS only under DEBUG, and selfhost/bin/assozeta writes DEBUG=False for production (selfhost/.env.example too). No Go port needed; see ledger-structural.md."
+      ]
     },
     {
       "id": "route:BE/application/chat/urls.py:chat/test/ -> views.chat_test",
@@ -35441,7 +35617,8 @@
         "The explicit Go invariant transaction propagates index failures and rolls back username/event/index; Django can suppress index failures or leave pre-save collision events. These failure-side-effect differences remain explicit, not certified as identical parity.",
         "Django concurrent missing configuration lookups can create two rows; denied audit/index inserts retain partial autocommit effects. Go serializes participating Go writers and atomically rolls back the invariant. These differences are explicit; the Go parent lock does not coordinate unmodified Django writers. Cross-runtime concurrent creation remains unimplemented/unverified before activation.",
         "Final-login writes are a separate, unwired service: last_login and qualifying delete_on cancellation with atomic audit/index. Django full-model saves overwrite concurrent password/name/active changes; Go preserves them. End-to-end revocation admission and mixed-runtime audit races remain open. See BE_GO/internal/service/login_finalization.md.",
-        "Main-alignment audit review exposed pre-SQL index failures swallowed by Django despite transaction.atomic. Scoped atomic_audit_mutation now propagates index errors for profile, table preferences and 2FA only; unrelated legacy signal callers retain behavior. Six real-PostgreSQL regressions and JWT/fresh-connection fault readback pass; SQL-trigger coverage alone had not established this failure mode. See main-alignment.md and ignored audit-index-exceptions/green-results.json."
+        "Main-alignment audit review exposed pre-SQL index failures swallowed by Django despite transaction.atomic. Scoped atomic_audit_mutation now propagates index errors for profile, table preferences and 2FA only; unrelated legacy signal callers retain behavior. Six real-PostgreSQL regressions and JWT/fresh-connection fault readback pass; SQL-trigger coverage alone had not established this failure mode. See main-alignment.md and ignored audit-index-exceptions/green-results.json.",
+        "ledger-structural review: a generic Go resolver is not provably equivalent yet. model_class.objects is the default manager, which for group-aware models filters by the request thread-local X-Group-Id, so resolution depends on request context; about 60 registered content types each need their manager and traversal characterised; Django swallows index errors outside the scoped atomic mutations. Families keep their inline index writes; status stays needs_review."
       ]
     },
     {
