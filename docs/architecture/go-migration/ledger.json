@@ -3172,25 +3172,68 @@
         "target": "balance_sheet",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/balance_sheet.go",
+        "BE_GO/internal/repository/balance_sheet.go",
+        "BE_GO/internal/service/balance_sheet.go",
+        "BE_GO/internal/service/balance_sheet_python.go",
+        "BE_GO/internal/handler/balance_sheet.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet",
+          "/api/v2/balance-sheet",
+          "/api/balance-sheet"
+        ],
+        "request": "GET/POST?currentDate=YYYY-MM-DD; POST {format} regenerates, POST {balance_sheet: {draft, year, ...}} replaces the newest sheet; DELETE?currentDate resets the year's sheet.",
+        "response": "{data: {available_years, balance_sheet: {data, creation_date, year, draft}, sport_association}}; POST replace {data: {balance_sheet, sport_association}}; DELETE {msg}.",
+        "errors": "401; 403 registry/context/IsAssociationUser; 403 {msg: Info not available.}; 400 {msg: Invalid data.}; 404 {msg: No balance sheet found.}; 405; 500 invalid currentDate, non-dict data or body, missing draft/year, rejected year (after its audit entry); 500 excel/pdf export (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated, IsAssociationUser; registry GET bookeeping.management.balancesheet.read, POST/DELETE bookeeping.management.balancesheet.update.",
+        "resource_scope": "request.user.sportassociation (reverse one-to-one); sheets of that association; payments through the group-aware manager.",
+        "side_effects": "BalanceSheet create/update with auditlog create/update entries indexed directly.",
+        "transaction": "Not atomic: auditlog's pre_save entry stays when Model.save() fails.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/balance_sheet_http.json",
+        "TESTS/fixtures/generate_balance_sheet_http.py",
+        "TESTS/contracts/test_balance_sheet_http.py",
+        "TESTS/adapters/django/balance_sheet_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/balance-sheet.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 66/66; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-native-r3/results.json",
+          "receipt_sha256": "1773889d72d6a3d9f2a081c07d56b94739fdbdbae9a261f4a0ff01c34e32552f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 66/66 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-versioned-r1/results.json",
+          "receipt_sha256": "201a135d9d8704eaf30821e47c6faf8b473e7d60fd371d955f8888417043e010"
+        },
+        {
+          "revision": "committing change with archived payments included in the generated balance sheet",
+          "result": "Mutation control: fails Go on balance-sheet-draft-regenerated (generalIncome institutional).",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-mutation-r1/results.json",
+          "receipt_sha256": "4310249d52a5085d29f2e1449f3ace3489ec69e4827b6850b409a5eb0b11d4ab"
+        }
+      ],
+      "notes": [
+        "Implementing: balance sheet GET/POST/DELETE and account delete with audited effects; excel/pdf export on a non-approved sheet and deleting an account referenced by payments are refused with a 500 before any write. See docs/architecture/go-migration/balance-sheet.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/accounts-transfer/<str:uid>/delete -> balance_sheet_accounts_transfer_delete",
@@ -3531,28 +3574,65 @@
         "target": "balance_sheet_accounts_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/balance_sheet.go",
+        "BE_GO/internal/repository/balance_sheet.go",
+        "BE_GO/internal/service/balance_sheet.go",
+        "BE_GO/internal/service/balance_sheet_python.go",
+        "BE_GO/internal/handler/balance_sheet.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet/accounts/<uid>/delete",
+          "/api/v2/balance-sheet/accounts/<uid>/delete",
+          "/api/balance-sheet/accounts/<uid>/delete"
+        ],
+        "request": "DELETE, no body.",
+        "response": "{msg: bank accounts deleted}.",
+        "errors": "401; 403 registry/context/IsAssociationUser; 403 {msg: Info not available.}; 403 {msg: This account is not deletable.}; 404 {exception: CustomAccounts matching query does not exist.}; 405; 500 missing association; 500 account referenced by payments (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated, IsAssociationUser; registry bookeeping.management.accounts.delete.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user) accounts.",
+        "side_effects": "Deletes the account's transfers, then the account, each with an auditlog delete entry indexed through changes_json.",
+        "transaction": "Single transaction in Go; Django's collector deletes in one atomic block.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_balance_sheet_ownership.py"
+        "TESTS/fixtures/balance_sheet_http.json",
+        "TESTS/fixtures/generate_balance_sheet_http.py",
+        "TESTS/contracts/test_balance_sheet_http.py",
+        "TESTS/adapters/django/balance_sheet_http.py"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/balance-sheet.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 66/66; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-native-r3/results.json",
+          "receipt_sha256": "1773889d72d6a3d9f2a081c07d56b94739fdbdbae9a261f4a0ff01c34e32552f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 66/66 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-versioned-r1/results.json",
+          "receipt_sha256": "201a135d9d8704eaf30821e47c6faf8b473e7d60fd371d955f8888417043e010"
+        },
+        {
+          "revision": "committing change with archived payments included in the generated balance sheet",
+          "result": "Mutation control: fails Go on balance-sheet-draft-regenerated (generalIncome institutional).",
+          "artifact": "quality-reports/go-migration/balance-sheet-http-mutation-r1/results.json",
+          "receipt_sha256": "4310249d52a5085d29f2e1449f3ace3489ec69e4827b6850b409a5eb0b11d4ab"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Implementing: balance sheet GET/POST/DELETE and account delete with audited effects; excel/pdf export on a non-approved sheet and deleting an account referenced by payments are refused with a 500 before any write. See docs/architecture/go-migration/balance-sheet.md."
       ]
     },
     {
