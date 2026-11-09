@@ -313,6 +313,13 @@ func run() (runErr error) {
 	subscriptionApproveHandler := handler.NewSubscriptionApproveHandler(service.NewSubscriptionApprovals(repository.NewSubscriptionLifecycles(db), tasks, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/approve", subscriptionApproveHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
+	subscriptionUpdateHandler := handler.NewSubscriptionUpdateHandler(service.NewSubscriptionUpdates(repository.NewSubscriptionLifecycles(db), tasks, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/:uid/update", subscriptionUpdateHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	subscriptionReminderHandler := handler.NewSubscriptionMedicalReminderHandler(service.NewSubscriptionMedicalReminders(repository.NewSubscriptionMedical(db),
+		tasks, service.MedicalReminderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, IsWhitelabel: cfg.IsWhitelabel}),
+		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	e.Any("/subscription/:uid/medical-certificate/send-email-reminder", subscriptionReminderHandler.Send, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionWritesHandler := handler.NewSubscriptionWritesHandler(service.NewSubscriptionEdits(repository.NewSubscriptionEdits(db), time.Now, uuid.NewString),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/edit", subscriptionWritesHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
