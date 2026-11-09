@@ -13789,25 +13789,113 @@
         "target": "invoice_customers_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_sync_print.go",
+        "BE_GO/internal/dto/invoice_sync_print.go",
+        "BE_GO/internal/repository/invoice_sync_print.go",
+        "BE_GO/internal/service/invoice_sync_print.go",
+        "BE_GO/internal/service/invoice_sync_print_customer.go",
+        "BE_GO/internal/service/invoice_sync_print_test.go",
+        "BE_GO/internal/handler/invoice_sync_print.go",
+        "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/handler/invoice_parties.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/dto/payment_reads.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/repository/restore_admission.go",
+        "BE_GO/internal/fatturapa/fattura.go",
+        "BE_GO/internal/fatturapa/output.go",
+        "BE_GO/internal/fatturapa/json.go",
+        "BE_GO/internal/fatturapa/values.go",
+        "BE_GO/internal/fatturapa/decimal.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/invoice_views.py",
+        "BE/application/printing_tasks.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/models.py",
+        "BE/core/celery.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/serializers/invoice_serializers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/utils/api_utils.py",
+        "BE/requirements.txt",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-customers/add",
+          "/api/v2/invoice-customers/add",
+          "/api/invoice-customers/add"
+        ],
+        "request": "JSON object body of CustomerInvoice fields (validated by CustomerInvoiceSerializer, see invoice-parties); transmitting_date/payment_expiry_date YYYY-MM-DD or today; Authorization forwarded to the print task.",
+        "response": "200 {'message': 'Invoice created'}; 200 {'error': 'Errore durante la generazione del file XML.'} when generate_invoice_xml/json raise (the row is kept).",
+        "errors": "401 DRF challenge; 403 admin without a session, restricted collaborator (Missing permission: bookeeping.documents.clientinvoices.create), owner scoped to an athlete, athletes (User is not a sport association), another tenant's payment; 405; 400 serializer errors; the stable 500 page for non-object or form bodies, invalid dates, owners without an association and refused inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry invoice-customers/add -> bookeeping.documents.clientinvoices.create.",
+        "resource_scope": "request.user.sport_association; payment relation through the live, group-aware manager with tenant scope.",
+        "side_effects": "CustomerInvoice create with its auditlog entry, a second-save entry for in-memory differences, the xml/json save with its entry; eager print_document_customer_invoice: GET CURRENT_HOST/document/einvoice/<id> unless a completed restore exists.",
+        "transaction": "None (autocommit): three saves; a generation error keeps the created row.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_sync_print_http.json",
+        "TESTS/fixtures/generate_invoice_sync_print_http.py",
+        "TESTS/contracts/test_invoice_sync_print_http.py",
+        "TESTS/adapters/django/invoice_sync_print_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-sync-print.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 70/70; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-sync-print-http-native-r3/results.json",
+          "receipt_sha256": "3873007c2cc058fac52c61a28d7911eb88e44ce2d7beccdc1f6bcfb82f86ad81"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 70/70 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound print requests.",
+          "artifact": "quality-reports/go-migration/invoice-sync-print-http-versioned-r1/results.json",
+          "receipt_sha256": "3af0a286eedbdd0d41c1b3549f32fea52afbf3248654d3b02b2e98dc0655f253"
+        },
+        {
+          "revision": "committing change with the completed-restore cutoff ignored by the eager print task (InvoiceSyncPrint.apply)",
+          "result": "Mutation control: fails Go on invoice-sync-print-update-plain-restore-completed-no-print (an outbound print request despite the completed restore).",
+          "artifact": "quality-reports/go-migration/invoice-sync-print-http-mutation-r1/results.json",
+          "receipt_sha256": "66590122eedb170420987fc9f8aea52b5744d428237f87d24efd02fa56af64a0"
+        }
+      ],
+      "notes": [
+        "Implementing: invoice/<uid>/update and the valid invoice-customers/add run in Go with their eager print tasks: the CoordinatedTask gate on DATA_RESTORE_LOCK_PATH (a completed restore makes the eager call stale: no request) and the swallowed GET to CURRENT_HOST/document/invoice/<id>?send_receipt_email=False or /document/einvoice/<id> with requests' default headers and the caller's Authorization (stub-tested). Update: non-atomic payment save (defaults, audit) before generate_invoice_description for every subject, invoice audit entry before its UPDATE. Add: create entry from the in-memory values, second-save entry for in-memory differences (int 0 amount, jsonb renderings), FatturaPA XML/JSON through internal/fatturapa with a38's per-process ProgressivoInvio counter, the 200 XML error keeping the row. Not ported: a restore that becomes pending during the request (500 after the writes; Django re-applies synchronously), update bodies with uploaded files, add dates before year 1000 and FatturaPA inputs outside the ported subset (refused before any write)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-customers/list -> invoice_customers_list",
@@ -14587,25 +14675,113 @@
         "target": "invoice_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_sync_print.go",
+        "BE_GO/internal/dto/invoice_sync_print.go",
+        "BE_GO/internal/repository/invoice_sync_print.go",
+        "BE_GO/internal/service/invoice_sync_print.go",
+        "BE_GO/internal/service/invoice_sync_print_customer.go",
+        "BE_GO/internal/service/invoice_sync_print_test.go",
+        "BE_GO/internal/handler/invoice_sync_print.go",
+        "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/handler/invoice_parties.go",
+        "BE_GO/internal/service/invoice_generate.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/repository/invoice_core.go",
+        "BE_GO/internal/dto/payment_reads.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/repository/restore_admission.go",
+        "BE_GO/internal/fatturapa/fattura.go",
+        "BE_GO/internal/fatturapa/output.go",
+        "BE_GO/internal/fatturapa/json.go",
+        "BE_GO/internal/fatturapa/values.go",
+        "BE_GO/internal/fatturapa/decimal.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/invoice_views.py",
+        "BE/application/printing_tasks.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/models.py",
+        "BE/core/celery.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/serializers/invoice_serializers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/utils/api_utils.py",
+        "BE/requirements.txt",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice/<uid>/update",
+          "/api/v2/invoice/<uid>/update",
+          "/api/invoice/<uid>/update"
+        ],
+        "request": "Path uid; JSON or form body: number (required, Python int()), cancelled (bool()), payment_date (YYYY-MM-DD, otherwise ignored), selected_tutor (present: associate id, absent: cleared); X-Group-Id; Authorization forwarded to the print task.",
+        "response": "200 {'message': 'Invoice updated', 'invoice': InvoiceSerializer}.",
+        "errors": "401 DRF challenge; 403 admin without a session, restricted collaborator (Missing permission: bookeeping.documents.invoices.update), owner scoped to an athlete; 405 other methods; 400 ['badly formed hexadecimal UUID string']; the stable 500 page for a list/string body, a missing or invalid number, no scoped association, a missing/archived/deleted/foreign/other-group invoice, a selected_tutor UUIDField rejects, a subject without a description template or a carnet without a carnet (after the payment save), a number outside int32 or a description over 255 characters (after the invoice entry), and refused inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry invoice/*/update -> bookeeping.documents.invoices.update.",
+        "resource_scope": "scoped_queryset on SportAssociation, Invoice (association, unarchived), Associate and Payment, live and X-Group-Id aware; the associate and the invoice's payment resolve by id/invoice outside impersonation.",
+        "side_effects": "Payment save (payment_date, Payment.save() defaults) with its auditlog entry; invoice number/cancelled/selected_tutor/description with its auditlog entry; eager print_document_invoice: GET CURRENT_HOST/document/invoice/<id>?send_receipt_email=False unless a completed restore exists.",
+        "transaction": "None (autocommit): the payment save is kept when the description fails; the invoice entry is kept when its UPDATE fails.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_sync_print_http.json",
+        "TESTS/fixtures/generate_invoice_sync_print_http.py",
+        "TESTS/contracts/test_invoice_sync_print_http.py",
+        "TESTS/adapters/django/invoice_sync_print_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-sync-print.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 70/70; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-sync-print-http-native-r3/results.json",
+          "receipt_sha256": "3873007c2cc058fac52c61a28d7911eb88e44ce2d7beccdc1f6bcfb82f86ad81"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 70/70 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and outbound print requests.",
+          "artifact": "quality-reports/go-migration/invoice-sync-print-http-versioned-r1/results.json",
+          "receipt_sha256": "3af0a286eedbdd0d41c1b3549f32fea52afbf3248654d3b02b2e98dc0655f253"
+        },
+        {
+          "revision": "committing change with the completed-restore cutoff ignored by the eager print task (InvoiceSyncPrint.apply)",
+          "result": "Mutation control: fails Go on invoice-sync-print-update-plain-restore-completed-no-print (an outbound print request despite the completed restore).",
+          "artifact": "quality-reports/go-migration/invoice-sync-print-http-mutation-r1/results.json",
+          "receipt_sha256": "66590122eedb170420987fc9f8aea52b5744d428237f87d24efd02fa56af64a0"
+        }
+      ],
+      "notes": [
+        "Implementing: invoice/<uid>/update and the valid invoice-customers/add run in Go with their eager print tasks: the CoordinatedTask gate on DATA_RESTORE_LOCK_PATH (a completed restore makes the eager call stale: no request) and the swallowed GET to CURRENT_HOST/document/invoice/<id>?send_receipt_email=False or /document/einvoice/<id> with requests' default headers and the caller's Authorization (stub-tested). Update: non-atomic payment save (defaults, audit) before generate_invoice_description for every subject, invoice audit entry before its UPDATE. Add: create entry from the in-memory values, second-save entry for in-memory differences (int 0 amount, jsonb renderings), FatturaPA XML/JSON through internal/fatturapa with a38's per-process ProgressivoInvio counter, the 200 XML error keeping the row. Not ported: a restore that becomes pending during the request (500 after the writes; Django re-applies synchronously), update bodies with uploaded files, add dates before year 1000 and FatturaPA inputs outside the ported subset (refused before any write)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice/list -> invoice_list",
