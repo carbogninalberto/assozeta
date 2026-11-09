@@ -81,6 +81,24 @@ random) and records the real outputs; `go test ./internal/fatturapa` requires id
   underscores or non-ASCII digits, dates before year 1000, arithmetic beyond Decimal's 28-digit context.
 - `HEAD` and the slash-less paths.
 
+## Follow-up: invoice-customers/add and invoice/<uid>/update (not ported here)
+
+Both call a print task with `.apply(...)`. What that runs in the request:
+
+- `print_document_customer_invoice` / `print_document_invoice` do `requests.get(f"{CURRENT_HOST}/document/einvoice/<id>")` /
+  `.../document/invoice/<id>?send_receipt_email=False` with `{'Authorization': <raw header>}` (requests' default headers; a
+  missing header is dropped) and swallow every error. The renderer call happens inside that second request (document-render),
+  not in the task. A Go port is that outbound GET (stub-tested like the renderer), not an in-process render.
+- The app's task class is `CoordinatedTask`. With `DATA_RESTORE_LOCK_PATH` set, `.apply()` takes the shared operation lock, defers
+  on a pending restore (eager retries) and raises `StaleDataTask` when any completed restore exists (an eager call has no
+  `assozeta_published_at` header), so no GET is made. `JobBarrier` (restore admission) gives the same two facts.
+- invoice-customers/add stores `generate_invoice_xml`/`generate_invoice_json` (now in `internal/fatturapa`) from the in-memory
+  instance (request values, not a database reload), with an auditlog update entry for `xml`/`json`. ProgressivoInvio is
+  `(int(time.time()) << 16) + sequence` in base 43, with the sequence kept per process and per second (the XML and the JSON of
+  one add usually differ by one), so the stored text and its audit entry need a normalized comparison.
+- invoice/<uid>/update needs `generate_invoice_description` for every subject (invoice-generate has it on its transaction
+  interface), `Payment.save()` defaults, the audited payment and invoice saves and the InvoiceSerializer response.
+
 ## Evidence (TDD)
 
 `TESTS/fixtures/invoice_views_http.json` (generator alongside) authors 76 cases. Invoice HTML expectations are authored template
