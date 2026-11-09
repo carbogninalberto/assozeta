@@ -30294,25 +30294,87 @@
         "target": "document_compensation",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/compensation/<uid>",
+          "/api/v2/document/compensation/<uid>",
+          "/api/document/compensation/<uid>"
+        ],
+        "request": "uid; ?download; ?token",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401 (bypass header not accepted); 403 (scoped athlete: not an athlete view); 404 {exception: Compensation not found} (missing, deleted); 500 {exception} for invalid uid, no instructor, no payment date, renderer failures",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "scoped_queryset(Payment.objects) live + group",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (every InstructorHours of the payment: document, index instructor.user.sport_association)",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/compensation/<str:uid>/view/ -> document_compensation_view",
@@ -30364,25 +30426,87 @@
         "target": "document_einvoice",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/einvoice/<uid>",
+          "/api/v2/document/einvoice/<uid>",
+          "/api/document/einvoice/<uid>"
+        ],
+        "request": "uid; ?download; ?token; bypass Authorization",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401; 403; 405; 500 {exception} for a missing row (CustomerInvoice.DoesNotExist is not caught as 404), invalid uid, renderer failures; 500 page for bad document tokens",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken | HasBypassAuthorizationHeader. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "CustomerInvoice.objects.get(pk=uid): resolves the row by id (no scope, no group)",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (CustomerInvoice.pdf, full save, index direct)",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/einvoice/<str:uid>/view/ -> document_einvoice_view",
@@ -30434,25 +30558,87 @@
         "target": "document_invoice",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/invoice/<uid>",
+          "/api/v2/document/invoice/<uid>",
+          "/api/document/invoice/<uid>"
+        ],
+        "request": "uid; ?download; send_receipt_email from the query, else the urlencoded form ('true'/'True'/'1'); ?token; bypass Authorization",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "400 DRF JSON parse error (body read when the query flag is falsy); 401; 403; 404 {exception: Invoice not found} (missing, deleted, other group); 500 {exception} for the payment get() (none/several), payment without date, invalid uid, renderer failures; 500 page for a ?token UUIDField rejects or that names two Documents",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken | HasBypassAuthorizationHeader. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "scoped_queryset(Invoice.objects) live + group; scoped_queryset(Payment.objects).get(invoice=...) live + group",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (Invoice.document_pdf, index direct); then send_mail_async.apply_async(kwargs) for the opted-in receipt to the payment associate's e-mail",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/invoice/<str:uid>/view/ -> document_invoice_view",
@@ -30504,25 +30690,87 @@
         "target": "document_medical_appointment",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/medical-appointment/<uid>",
+          "/api/v2/document/medical-appointment/<uid>",
+          "/api/document/medical-appointment/<uid>"
+        ],
+        "request": "uid; ?download; ?token",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401; 403; 405; 500 {exception} for invalid uid, a missing row ('NoneType' ... 'subscription'), an unknown region (KeyError repr), renderer failures; 500 page (not ported) for PDF-form regions",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "MedicalAppointments.objects.filter(pk=uid).first(): resolves the row by id",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (MedicalAppointments.document, full save, index subscription.sport_association); agonistica/non-agonistica only",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/medical-appointment/<str:uid>/view/ -> document_medical_appointment_view",
@@ -30755,25 +31003,87 @@
         "target": "document_subscription",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/subscription/<uid>",
+          "/api/v2/document/subscription/<uid>",
+          "/api/document/subscription/<uid>"
+        ],
+        "request": "uid path; ?download (truthy: attachment); body ignored; X-Group-Id",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401 anonymous/invalid bearer (challenge); 403 admin without session, registry, scoped guard; 405; 500 {exception} for a missing row, a uid UUIDField rejects (Python repr list), no associate, renderer failures (500 {\"exception\": \"PDF rendering failed: Renderer returned HTTP <n>: <text[:500]>\"} or \"... invalid PDF data (content-type: <v>)\" with the Document kept)",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "scoped_queryset(Subscription.objects) (group-aware; impersonation boundary with the athlete family scope); otherwise resolves the row by id",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (Subscription.document_pdf, save(update_fields=['document_pdf']), index direct)",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/subscription/<str:uid>/view/ -> document_subscription_view",
@@ -30860,25 +31170,87 @@
         "target": "document_template",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/template/<uid>",
+          "/api/v2/document/template/<uid>",
+          "/api/document/template/<uid>"
+        ],
+        "request": "uid; JSON body additionalData {parent: folder id, subscription: id}; ?token",
+        "response": "200 {\"msg\": \"Generato con successo.\"} whatever the renderer answered",
+        "errors": "401; 403; 404 {exception: Template not found}; 500 {exception} for request.user.sport_association (anonymous, athlete, none/several) and an invalid uid",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "Template by pk and request.user.sport_association; Folder by id; scoped_queryset(Subscription.objects) for the subscription value",
+        "side_effects": "Document create; SportAssociationDocumentsArchive for a found folder (audited, direct); SubscriptionFile for a found subscription (audited); renderer POST with view?subscription_id=<str(value)>&; save_to_storage on a PDF; no link",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/template/<str:uid>/view/ -> document_template_view",
