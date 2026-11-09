@@ -3,19 +3,23 @@
 The checks are http_family's, plus JSON types (lesson hours are Python floats:
 2.0 must not render as 2). Responses may nest {'$unordered': [...]} (the
 lesson-hours list, whose instructor order the view does not fix: compared as a
-multiset of exact JSON values).
+multiset of exact JSON values). The report's ``{'$xlsx': spec}`` workbook is
+checked with the opt-in XLSX standard of TESTS/contracts/xlsx.py within the
+request window.
 """
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 from TESTS.http_client import Client
 from TESTS.contracts import http_family as family
+from TESTS.contracts import xlsx
 from TESTS.contracts.http_family import ResponseFailure, require  # noqa: F401  (runner interface)
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, difference, substitute
 
 SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/instructor_writes_http.json'
 ALLOWED = {'add': {'POST', 'OPTIONS'}, 'update': {'PATCH', 'OPTIONS'}, 'delete': {'DELETE', 'OPTIONS'}, 'compensation': {'POST', 'OPTIONS'},
-           'lessons-hours': {'GET', 'OPTIONS'}}
+           'lessons-hours': {'GET', 'OPTIONS'}, 'report': {'GET', 'OPTIONS'}}
 
 
 def load_source(path=SOURCE):
@@ -48,7 +52,9 @@ def assert_case(case, base_url, *, token, sessions):
     if 'raw_body' in case:
         body = case['raw_body'].encode()
         headers['Content-Type'] = case['content_type']
+    started = datetime.now(timezone.utc)
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+    finished = datetime.now(timezone.utc)
 
     def check(condition, code):
         if not condition:
@@ -66,7 +72,9 @@ def assert_case(case, base_url, *, token, sessions):
         actual = json.loads(raw)
     except (ValueError, UnicodeDecodeError):
         raise ResponseFailure('response.json', status) from None
-    expected, actual = resolve(case['response'], actual)
+    expected, reason = xlsx.resolve(case['response'], actual, started, finished)
+    check(reason is None, f'response.xlsx: {reason}'[:600])
+    expected, actual = resolve(expected, actual)
     check(actual == expected, 'response.body' + difference(expected, actual))
     check(_canonical(actual) == _canonical(expected), 'response.body-types')
     check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')

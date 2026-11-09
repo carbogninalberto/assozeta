@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"math"
 	"sort"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
 // PaymentExport ports payment_list_export's CSV export (the petty cash book included).
@@ -34,10 +36,8 @@ func (s *PaymentExport) Export(ctx context.Context, request PaymentReadsRequest)
 	if identity.ScopeUser.Role == domain.RoleAthlete {
 		return nil, domain.ErrPaymentReadsServer // raise Exception("Cannot export payments for athlete")
 	}
-	if mode, _ := paymentReadsParam(query, "m"); mode == "xlsx" {
-		// The openpyxl workbook (pandas numeric coercion, column widths, document timestamps) is not ported.
-		return nil, domain.ErrPaymentReadsNotPorted
-	}
+	mode, _ := paymentReadsParam(query, "m")
+	xlsx := mode == "xlsx"
 	exportType, _ := paymentReadsParam(query, "export_type")
 	petty := exportType == "petty_cash_book"
 	scope := paymentReadsScope(identity)
@@ -133,6 +133,7 @@ func (s *PaymentExport) Export(ctx context.Context, request PaymentReadsRequest)
 		return paymentExportSortKey(payments[i], now).Before(paymentExportSortKey(payments[j], now))
 	})
 	progressive := []string{}
+	progressiveValues := []xlsxexport.Value{} // the same running values as Python floats
 	if petty {
 		accounts := []string{}
 		seen := map[string]bool{}
@@ -157,6 +158,7 @@ func (s *PaymentExport) Export(ctx context.Context, request PaymentReadsRequest)
 		for _, payment := range payments {
 			if !payment.Paid {
 				progressive = append(progressive, "-")
+				progressiveValues = append(progressiveValues, xlsxexport.StrValue("-"))
 				continue
 			}
 			if payment.AccountID == nil {
@@ -177,6 +179,7 @@ func (s *PaymentExport) Export(ctx context.Context, request PaymentReadsRequest)
 			balance += amount * sign
 			balances[*payment.AccountID] = balance
 			progressive = append(progressive, dto.PythonFloatStr(balance))
+			progressiveValues = append(progressiveValues, xlsxexport.FloatValue(balance))
 		}
 	}
 	users, activities := make([]*string, len(payments)), []string{}
@@ -200,6 +203,9 @@ func (s *PaymentExport) Export(ctx context.Context, request PaymentReadsRequest)
 	categories, err := s.store.CategoryNames(ctx, association.ID)
 	if err != nil {
 		return nil, err
+	}
+	if xlsx {
+		return s.workbook(association, payments, courses, users, activities, categories, petty, progressiveValues, now)
 	}
 	header := paymentExportHeader
 	count := min(len(payments), len(activities))
@@ -474,4 +480,202 @@ func paymentExportPythonStr(value any) (string, error) {
 	}
 	// A list or object label renders as its Python repr: not ported.
 	return "", domain.ErrPaymentReadsNotPorted
+}
+
+// workbook is the m=xlsx branch: the column lists handed to
+// get_excel_base64 (zip truncates them to the shortest), with 'Saldo
+// progressivo' for the petty cash book.
+func (s *PaymentExport) workbook(association *domain.PaymentExportAssociation, payments []domain.PaymentExportRow,
+	courses map[string]domain.PaymentExportCourse, users []*string, activities []string, categories map[string]string, petty bool,
+	progressive []xlsxexport.Value, now time.Time) (any, error) {
+	columns := make([][]xlsxexport.Value, 14)
+	for i, payment := range payments {
+		status, kind, flow := "In Attesa", payment.Type, "Entrata"
+		if payment.Paid {
+			status = "Pagato"
+		}
+		if kind == "default" {
+			kind = "-"
+		}
+		if payment.Expense {
+			flow = "Uscita"
+		}
+		date := ""
+		if payment.PaymentDate != nil {
+			date = payment.PaymentDate.UTC().Format("2006-01-02")
+		}
+		invoice := xlsxexport.StrValue("")
+		if payment.HasInvoice {
+			invoice = xlsxexport.NoneValue()
+			if payment.InvoiceNumber != nil {
+				invoice = xlsxexport.IntValue(*payment.InvoiceNumber)
+			}
+		}
+		meta, err := paymentExportMetaXlsx(payment.MetaCategories, categories)
+		if err != nil {
+			return nil, err
+		}
+		category, account := xlsxexport.StrValue("-"), xlsxexport.StrValue("-")
+		if payment.HasCategory {
+			category = xlsxexport.OptionalStr(payment.CategoryName)
+		}
+		if payment.AccountID != nil {
+			account = xlsxexport.OptionalStr(payment.AccountName)
+		}
+		var course xlsxexport.Value
+		if found := courses[payment.ID]; found.Found && !payment.Transfer {
+			course = xlsxexport.OptionalStr(found.Title)
+		} else if course, err = paymentExportCourseValue(payment.Course); err != nil {
+			return nil, err
+		}
+		values := []xlsxexport.Value{xlsxexport.OptionalStr(users[i]), xlsxexport.StrValue(status), xlsxexport.StrValue(kind),
+			xlsxexport.StrValue(payment.CreationDate.UTC().Format("2006-01-02")), xlsxexport.StrValue(date), invoice, {},
+			xlsxexport.StrValue(meta), category, account, xlsxexport.StrValue(flow), course, xlsxexport.DecimalValue(payment.Amount),
+			xlsxexport.OptionalStr(payment.Notes)}
+		for c, value := range values {
+			if c != 6 {
+				columns[c] = append(columns[c], value)
+			}
+		}
+	}
+	for _, activity := range activities {
+		columns[6] = append(columns[6], xlsxexport.StrValue(activity))
+	}
+	if columns[6] == nil {
+		columns[6] = []xlsxexport.Value{}
+	}
+	for c := range columns {
+		if columns[c] == nil {
+			columns[c] = []xlsxexport.Value{}
+		}
+	}
+	header := paymentExportHeader
+	if petty {
+		header = append(append([]string{}, header...), "Saldo progressivo")
+		columns = append(columns, progressive)
+	}
+	workbook, err := xlsxexport.PandasOpenpyxl(columns, header, s.now())
+	switch {
+	case errors.Is(err, xlsxexport.ErrNotPorted):
+		return nil, domain.ErrPaymentReadsNotPorted
+	case err != nil:
+		return nil, domain.ErrPaymentReadsServer // get_excel_base64 returned None: raise Exception
+	}
+	denomination := "None"
+	if association.Denomination != nil {
+		denomination = *association.Denomination
+	}
+	data := domain.RequestObject{{Name: "file", Value: base64.StdEncoding.EncodeToString(workbook)}, {Name: "type", Value: "xlsx"},
+		{Name: "filename", Value: "[" + now.Format("2006-01-02") + "] PAGAMENTI a " + denomination + ".xlsx"}}
+	return domain.RequestObject{{Name: "data", Value: data}}, nil
+}
+
+// paymentExportMetaXlsx is the xlsx branch's ','.join(names[mpc[k]] for mpc
+// in meta if k in mpc and mpc[k] in names) when meta is truthy and
+// len(meta) > 0 (k is 'payment_category_id'): a str meta iterates its
+// characters and a dict its keys; 'in' on a number, bool or None raises, as
+// does indexing a str or list that contains k, or an unhashable mpc[k].
+func paymentExportMetaXlsx(text *string, names map[string]string) (string, error) {
+	const key = "payment_category_id"
+	value, err := paymentExportJSON(text)
+	if err != nil || !paymentExportTruthy(value) {
+		return "", err
+	}
+	var items []any
+	switch typed := value.(type) {
+	case []any:
+		items = typed
+	case string:
+		return "", nil // single characters never contain the key
+	case map[string]any:
+		for name := range typed {
+			if strings.Contains(name, key) {
+				return "", domain.ErrPaymentReadsServer // str indices must be integers
+			}
+		}
+		return "", nil
+	default:
+		return "", domain.ErrPaymentReadsServer // len() of a number or bool
+	}
+	parts := []string{}
+	for _, item := range items {
+		switch typed := item.(type) {
+		case map[string]any:
+			id, ok := typed[key]
+			if !ok {
+				continue
+			}
+			switch idValue := id.(type) {
+			case []any, map[string]any:
+				return "", domain.ErrPaymentReadsServer // unhashable
+			case string:
+				if name, ok := names[idValue]; ok {
+					parts = append(parts, name)
+				}
+			}
+		case string:
+			if strings.Contains(typed, key) {
+				return "", domain.ErrPaymentReadsServer
+			}
+		case []any:
+			for _, element := range typed {
+				if element == key {
+					return "", domain.ErrPaymentReadsServer
+				}
+			}
+		default:
+			return "", domain.ErrPaymentReadsServer // 'in' on a number, bool or None
+		}
+	}
+	return strings.Join(parts, ","), nil
+}
+
+// paymentExportCourseValue is the Python value payment.course['label'] if
+// course is not None and course != ” and 'label' in course, else ”.
+func paymentExportCourseValue(text *string) (xlsxexport.Value, error) {
+	value, err := paymentExportJSON(text)
+	if err != nil {
+		return xlsxexport.Value{}, err
+	}
+	switch typed := value.(type) {
+	case nil:
+		return xlsxexport.StrValue(""), nil
+	case string:
+		if strings.Contains(typed, "label") {
+			return xlsxexport.Value{}, domain.ErrPaymentReadsServer
+		}
+		return xlsxexport.StrValue(""), nil
+	case []any:
+		for _, item := range typed {
+			if item == "label" {
+				return xlsxexport.Value{}, domain.ErrPaymentReadsServer
+			}
+		}
+		return xlsxexport.StrValue(""), nil
+	case map[string]any:
+		label, ok := typed["label"]
+		if !ok {
+			return xlsxexport.StrValue(""), nil
+		}
+		switch item := label.(type) {
+		case nil:
+			return xlsxexport.NoneValue(), nil
+		case string:
+			return xlsxexport.StrValue(item), nil
+		case json.Number:
+			if number, err := strconv.ParseInt(item.String(), 10, 64); err == nil {
+				return xlsxexport.IntValue(number), nil
+			}
+			if !strings.ContainsAny(item.String(), ".eE") {
+				return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted // beyond int64
+			}
+			number, err := strconv.ParseFloat(item.String(), 64)
+			if err != nil || math.IsInf(number, 0) {
+				return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted
+			}
+			return xlsxexport.FloatValue(number), nil
+		}
+		return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted // a bool, list or object label
+	}
+	return xlsxexport.Value{}, domain.ErrPaymentReadsServer
 }

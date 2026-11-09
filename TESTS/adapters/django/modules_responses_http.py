@@ -45,7 +45,8 @@ SOURCES = ('TESTS/fixtures/modules_responses_http.json', 'TESTS/fixtures/generat
            'BE/application/serializers/auth_serializers.py', 'BE/application/models/user_models.py',
            'BE/application/models/invoices_models.py', 'BE/docmanager/models.py', 'BE/application/utils/api_utils.py',
            'BE/application/audit_resolvers.py', 'BE/application/signals.py', 'BE/application/permissions_registry.py',
-           'BE/application/impersonation_scope.py', 'BE/application/urls.py', 'BE/core/settings.py') + harness.SOURCES
+           'BE/application/impersonation_scope.py', 'BE/application/urls.py', 'BE/core/settings.py',
+           'BE/application/models/payment_models.py', 'TESTS/contracts/xlsx.py') + harness.SOURCES
 BUCKET = 'modules-responses-fixture'
 MODULE, RESPONSE, LINK = 'application.Module', 'application.ModuleResponses', 'application.ModuleResponses_attachments'
 DOCUMENT = 'docmanager.Document'
@@ -260,7 +261,36 @@ def assert_effect(case, before, after, source, context):
                      'index.owned')
 
 
-fixture_context = harness.fixture_context_for(contract, reads.seed_rows, purge=tuple(lambda index=index: models()[index] for index in (0, 1)))
+def seed_rows(source, created):
+    """The modules reads seed, plus the export's users and payments; the export
+    modules' responses are inserted last, in authored order, with their user
+    and payment (the export reads them in the database's order)."""
+    from application.models import ModuleResponses, Payment, User
+    from TESTS.adapters.django.modules_reads_http import moment
+    own = {label: row for label, row in source['responses'].items() if not row['module'].startswith('export')}
+    reads.seed_rows({**source, 'responses': own}, created)
+    for row in source['export_users'].values():
+        User._base_manager.bulk_create([User(user_id=row['id'], username=row['username'], email=row['username'] + '@example.test',
+                                             first_name=row['first_name'], last_name=row['last_name'], password='!synthetic')])
+        created.append((User, row['id']))
+    for row in source['export_payments'].values():
+        Payment._base_manager.bulk_create([Payment(payment_id=row['id'], amount=1, paid=row['paid'], deleted=row['deleted'],
+                                                   sport_association_id=source['ids']['own_association'])])
+        created.append((Payment, row['id']))
+    for label, row in source['responses'].items():
+        if label in own:
+            continue
+        ModuleResponses._base_manager.bulk_create([ModuleResponses(module_response_id=row['id'],
+            module_id=source['modules'][row['module']]['id'], creation_date=moment(row['created']),
+            progressive_response_number=row['number'], queue_position=row['queue'], response=row['response'], approved=row['approved'],
+            user_id=source['export_users'][row['export_user']]['id'] if row['export_user'] else None,
+            payment_id=source['export_payments'][row['payment']]['id'] if row['payment'] else None)])
+        created.append((ModuleResponses, row['id']))
+        ModuleResponses.attachments.through.objects.bulk_create([ModuleResponses.attachments.through(
+            moduleresponses_id=row['id'], document_id=source['documents'][d]['id']) for d in row['attachments']])
+
+
+fixture_context = harness.fixture_context_for(contract, seed_rows, purge=tuple(lambda index=index: models()[index] for index in (0, 1)))
 _run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared_diffs)
 
 
