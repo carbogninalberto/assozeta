@@ -31,7 +31,26 @@ type SavedReportChange struct {
 	At                                  time.Time
 }
 
+// ReportStatement is one read-only report query: the first Text columns are
+// text renderings (NULL: nil), the next Hidden columns only order a DISTINCT.
+type ReportStatement struct {
+	SQL          string
+	Args         []any
+	Text, Hidden int
+}
+
+// ReportQueryError is a database error raised by a report query.
+type ReportQueryError struct{ Err error }
+
+func (e *ReportQueryError) Error() string { return "report query failed: " + e.Err.Error() }
+func (e *ReportQueryError) Unwrap() error { return e.Err }
+
 type SavedReportStore interface {
+	// ReportIntegration reads the first instance configuration (if any).
+	ReportIntegration(ctx context.Context) (selfHosted bool, settings *string, err error)
+	// RunReportStatements runs the statements in one read-only transaction
+	// with the statement timeout, returning each statement's text rows.
+	RunReportStatements(ctx context.Context, timeoutMS int64, statements []ReportStatement) ([][][]*string, error)
 	ActiveAssociationForUser(ctx context.Context, user string) (string, error)
 	SavedReports(ctx context.Context, association, creator string) ([]SavedReport, error)
 	SavedReport(ctx context.Context, id, association, creator string) (SavedReport, error)

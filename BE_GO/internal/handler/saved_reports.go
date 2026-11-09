@@ -19,6 +19,7 @@ type SavedReportService interface {
 	Add(context.Context, domain.ResolvedIdentity, any) (string, string, error)
 	Update(context.Context, domain.ResolvedIdentity, string, any) (string, json.RawMessage, error)
 	Delete(context.Context, domain.ResolvedIdentity, string) error
+	Run(context.Context, domain.ResolvedIdentity, string, any) (any, error)
 }
 
 type SavedReportsHandler struct {
@@ -43,6 +44,9 @@ func (h *SavedReportsHandler) Info(c echo.Context) error {
 }
 func (h *SavedReportsHandler) Update(c echo.Context) error {
 	return h.serve(c, "update", http.MethodPatch, "PATCH, DELETE, OPTIONS")
+}
+func (h *SavedReportsHandler) Run(c echo.Context) error {
+	return h.serve(c, "run", http.MethodPost, "POST, DELETE, OPTIONS")
 }
 func (h *SavedReportsHandler) Delete(c echo.Context) error {
 	return h.serve(c, "delete", http.MethodDelete, "DELETE, OPTIONS")
@@ -96,6 +100,18 @@ func (h *SavedReportsHandler) serve(c echo.Context, action, method, allow string
 		var row dto.SavedReportDetail
 		if row, err = h.reports.Info(ctx, *identity, pk); err == nil {
 			result = map[string]any{"data": row}
+		}
+	case action == "run":
+		var data any
+		data, err = h.reports.Run(ctx, *identity, pk, body)
+		var failure *dto.ReportToolError
+		switch {
+		case errors.Is(err, dto.ErrReportFailed):
+			return c.JSON(500, map[string]string{"error": "Errore durante l'esecuzione del report."})
+		case errors.As(err, &failure):
+			return c.JSON(400, map[string]string{"error": failure.Message})
+		case err == nil:
+			return c.Blob(200, echo.MIMEApplicationJSON, dto.PythonJSONDumps(domain.RequestObject{{Name: "data", Value: data}}))
 		}
 	case action == "add":
 		var id, name string

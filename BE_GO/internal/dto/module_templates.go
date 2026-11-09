@@ -90,6 +90,125 @@ func ParseModuleTemplateWrite(body any, form bool, association string) (ModuleTe
 	return result, nil
 }
 
+// ModuleTemplateUpdate is SportAssociationModuleTemplatesSerializer(partial=True)
+// validated data: only present fields are set. Association is the related
+// sport_association pk (AssociationRaw: the submitted value for messages).
+type ModuleTemplateUpdate struct {
+	ID             *string
+	Text           map[string]*string
+	Flags          map[string]bool
+	Association    *string
+	AssociationRaw string
+	Errors         map[string]any
+}
+
+var moduleTemplateTextFields = []SupplierField{{Name: "name", Max: 150}, {Name: "template", Null: true},
+	{Name: "custom_footer", Null: true}, {Name: "custom_header", Null: true}}
+
+// ParseModuleTemplateUpdate applies the field rules of a partial update. A
+// non-dict body is DRF's non_field_errors; form input follows Field.get_value
+// (an empty nullable text is None, absent booleans stay unset).
+func ParseModuleTemplateUpdate(body any, form bool) ModuleTemplateUpdate {
+	result := ModuleTemplateUpdate{Text: map[string]*string{}, Flags: map[string]bool{}, Errors: map[string]any{}}
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		result.Errors["non_field_errors"] = []string{"dictionary:" + pythonTypeName(body)}
+		return result
+	}
+	if value, present := object.Lookup("sport_association_module_templates_id"); present {
+		if value == nil {
+			result.Errors["sport_association_module_templates_id"] = []string{PaymentCategoryValidationNull}
+		} else if id, err := parsePaymentCategoryUUID(value); err != nil {
+			result.Errors["sport_association_module_templates_id"] = []string{PaymentCategoryValidationUUID}
+		} else {
+			result.ID = &id
+		}
+	}
+	for _, field := range moduleTemplateTextFields {
+		value, present := object.Lookup(field.Name)
+		if !present {
+			continue
+		}
+		text, codes := modelTextValue(field, value, form)
+		if len(codes) > 0 {
+			result.Errors[field.Name] = codes
+			continue
+		}
+		result.Text[field.Name] = text
+	}
+	for _, name := range []string{"footer", "header", "custom_footer_header"} {
+		value, present := object.Lookup(name)
+		if !present {
+			continue
+		}
+		flag, code := drfBoolean(value, false)
+		if code != "" {
+			result.Errors[name] = []string{code}
+			continue
+		}
+		result.Flags[name] = *flag
+	}
+	if value, present := object.Lookup("sport_association"); present {
+		// RelatedField.run_validation turns '' into None.
+		if value == nil || value == "" {
+			result.Errors["sport_association"] = []string{PaymentCategoryValidationNull}
+		} else if id, code := supplierRelated(value); code != "" {
+			result.Errors["sport_association"] = []string{code}
+		} else {
+			result.Association, result.AssociationRaw = &id, PythonStr(value)
+		}
+	}
+	return result
+}
+
+// Apply returns the row with the validated values assigned.
+func (u ModuleTemplateUpdate) Apply(row domain.ModuleTemplate) domain.ModuleTemplate {
+	if u.ID != nil {
+		row.ID = *u.ID
+	}
+	if u.Association != nil {
+		row.AssociationID = *u.Association
+	}
+	for name, value := range u.Text {
+		switch name {
+		case "name":
+			row.Name = *value
+		case "template":
+			row.Template = value
+		case "custom_footer":
+			row.CustomFooter = value
+		case "custom_header":
+			row.CustomHeader = value
+		}
+	}
+	for name, value := range u.Flags {
+		switch name {
+		case "footer":
+			row.Footer = value
+		case "header":
+			row.Header = value
+		case "custom_footer_header":
+			row.CustomFooterHeader = value
+		}
+	}
+	return row
+}
+
+// ModuleTemplateAuditValues is auditlog's str() of every field (nil: None).
+func ModuleTemplateAuditValues(row domain.ModuleTemplate) map[string]*string {
+	flag := func(value bool) *string {
+		text := "False"
+		if value {
+			text = "True"
+		}
+		return &text
+	}
+	id, association, name := row.ID, row.AssociationID, row.Name
+	return map[string]*string{"sport_association_module_templates_id": &id, "sport_association": &association, "name": &name,
+		"template": row.Template, "footer": flag(row.Footer), "header": flag(row.Header),
+		"custom_footer_header": flag(row.CustomFooterHeader), "custom_footer": row.CustomFooter, "custom_header": row.CustomHeader}
+}
+
 // ParseModuleTemplateIDs follows request.data.get(key, []), the falsy check
 // and Django's UUIDField preparation of every __in value. nil IDs are
 // discarded by the lookup. String items are returned raw for the caller's

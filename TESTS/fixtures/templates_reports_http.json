@@ -1,0 +1,2832 @@
+{
+ "matrix_version": 1,
+ "scope": "Template update and saved report run authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "seed": {
+  "templates": {
+   "main": {
+    "id": "a1000000-0000-4000-8000-000000930001",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modulo base",
+    "template": "<p>Corpo</p>",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": "testa"
+   },
+   "form": {
+    "id": "a1000000-0000-4000-8000-000000930002",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modulo form",
+    "template": "x",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": "piede",
+    "custom_header": null
+   },
+   "source": {
+    "id": "a1000000-0000-4000-8000-000000930003",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Origine",
+    "template": "<p>o</p>",
+    "footer": false,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "remove": {
+    "id": "a1000000-0000-4000-8000-000000930004",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Da eliminare",
+    "template": "<p>Corpo</p>",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": "f",
+    "custom_header": null
+   },
+   "foreign": {
+    "id": "a1000000-0000-4000-8000-000000930005",
+    "association": "a1000000-0000-4000-8000-000000701002",
+    "name": "Estero",
+    "template": "<p>Corpo</p>",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   }
+  },
+  "tags": {
+   "calcio": {
+    "id": "a1000000-0000-4000-8000-000000930006",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Calcio &amp; Basket",
+    "created": "2026-09-01T10:00:00+00:00"
+   },
+   "nuoto": {
+    "id": "a1000000-0000-4000-8000-000000930007",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Nuoto",
+    "created": "2026-09-15T08:30:00.125000+00:00"
+   },
+   "agonistico": {
+    "id": "a1000000-0000-4000-8000-000000930008",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "nuoto agonistico",
+    "created": "2026-10-01T00:00:00+00:00"
+   },
+   "foreign": {
+    "id": "a1000000-0000-4000-8000-000000930009",
+    "association": "a1000000-0000-4000-8000-000000701002",
+    "name": "Nuoto estero",
+    "created": "2026-09-20T00:00:00+00:00"
+   }
+  },
+  "categories": {
+   "quote": {
+    "id": "a1000000-0000-4000-8000-000000930010",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Quote",
+    "type": 1,
+    "expense": false,
+    "tax_deductible": true,
+    "archived": false,
+    "deleted": false,
+    "created": "2026-01-10T09:00:00+00:00"
+   },
+   "affitto": {
+    "id": "a1000000-0000-4000-8000-000000930011",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Affitto",
+    "type": 2,
+    "expense": true,
+    "tax_deductible": false,
+    "archived": false,
+    "deleted": true,
+    "created": "2026-02-01T09:00:00+00:00"
+   },
+   "vecchia": {
+    "id": "a1000000-0000-4000-8000-000000930012",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Vecchia",
+    "type": 1,
+    "expense": false,
+    "tax_deductible": false,
+    "archived": true,
+    "deleted": false,
+    "created": "2025-05-01T09:00:00+00:00"
+   },
+   "sponsor": {
+    "id": "a1000000-0000-4000-8000-000000930013",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Sponsor",
+    "type": 3,
+    "expense": false,
+    "tax_deductible": false,
+    "archived": false,
+    "deleted": false,
+    "created": "2026-03-01T09:00:00+00:00"
+   },
+   "eventi": {
+    "id": "a1000000-0000-4000-8000-000000930014",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Eventi",
+    "type": 1,
+    "expense": true,
+    "tax_deductible": false,
+    "archived": false,
+    "deleted": false,
+    "created": "2026-04-01T09:00:00+00:00"
+   },
+   "foreign": {
+    "id": "a1000000-0000-4000-8000-000000930015",
+    "association": "a1000000-0000-4000-8000-000000701002",
+    "name": "Estera",
+    "type": 1,
+    "expense": false,
+    "tax_deductible": false,
+    "archived": false,
+    "deleted": false,
+    "created": "2026-01-01T09:00:00+00:00"
+   }
+  },
+  "carnets": {
+   "dieci": {
+    "id": "a1000000-0000-4000-8000-000000930016",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "title": "Dieci ingressi",
+    "description": "Pacchetto",
+    "fee": "80.00",
+    "lessons": 10,
+    "public": true,
+    "meta": {
+     "colore": "blu"
+    },
+    "created": "2026-05-01T10:00:00+00:00"
+   },
+   "cinque": {
+    "id": "a1000000-0000-4000-8000-000000930017",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "title": "Cinque",
+    "description": null,
+    "fee": "45.50",
+    "lessons": 5,
+    "public": false,
+    "meta": null,
+    "created": "2026-06-01T10:00:00+00:00"
+   },
+   "vuoto": {
+    "id": "a1000000-0000-4000-8000-000000930018",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "title": null,
+    "description": null,
+    "fee": "0.00",
+    "lessons": 0,
+    "public": true,
+    "meta": null,
+    "created": "2026-07-01T10:00:00+00:00"
+   },
+   "foreign": {
+    "id": "a1000000-0000-4000-8000-000000930019",
+    "association": "a1000000-0000-4000-8000-000000701002",
+    "title": "Estero",
+    "description": null,
+    "fee": "99.00",
+    "lessons": 3,
+    "public": true,
+    "meta": null,
+    "created": "2026-06-15T10:00:00+00:00"
+   }
+  },
+  "reports": {
+   "count": {
+    "id": "a1000000-0000-4000-8000-000000930021",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report count",
+    "description": "",
+    "tool": "count_data",
+    "params": {
+     "model_name": "Tags"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "collaborator": {
+    "id": "a1000000-0000-4000-8000-000000930022",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "full_collaborator",
+    "name": "Report collaborator",
+    "description": "",
+    "tool": "count_data",
+    "params": {
+     "model_name": "Tags"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "foreign": {
+    "id": "a1000000-0000-4000-8000-000000930023",
+    "association": "a1000000-0000-4000-8000-000000701002",
+    "creator": "foreign_owner",
+    "name": "Report foreign",
+    "description": "",
+    "tool": "count_data",
+    "params": {
+     "model_name": "Tags"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "unknown": {
+    "id": "a1000000-0000-4000-8000-000000930024",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report unknown",
+    "description": "",
+    "tool": "nope",
+    "params": {
+     "model_name": "Tags"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "list_params": {
+    "id": "a1000000-0000-4000-8000-000000930025",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report list_params",
+    "description": "",
+    "tool": "count_data",
+    "params": [
+     1
+    ],
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "remove": {
+    "id": "a1000000-0000-4000-8000-000000930026",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report remove",
+    "description": "",
+    "tool": "count_data",
+    "params": {
+     "model_name": "Tags"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_missing_model_error": {
+    "id": "a1000000-0000-4000-8000-000000930027",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_missing_model_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "fields": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_default_fields": {
+    "id": "a1000000-0000-4000-8000-000000930028",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_default_fields",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_categories_limit_offset": {
+    "id": "a1000000-0000-4000-8000-000000930029",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_categories_limit_offset",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "application.PaymentCategory",
+     "fields": [
+      "name",
+      "type",
+      "password"
+     ],
+     "order_by": [
+      "-name"
+     ],
+     "limit": 2,
+     "offset": 1
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_exclude_nullable": {
+    "id": "a1000000-0000-4000-8000-000000930030",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_exclude_nullable",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "lessons_number",
+      "fee"
+     ],
+     "filters": {
+      "lessons_number__gte": "0"
+     },
+     "exclude": {
+      "title": "Cinque"
+     },
+     "order_by": [
+      "lessons_number"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_all_columns": {
+    "id": "a1000000-0000-4000-8000-000000930031",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_all_columns",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "bogus"
+     ],
+     "filters": {
+      "public": false
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_json_column": {
+    "id": "a1000000-0000-4000-8000-000000930032",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_json_column",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "meta",
+      "description"
+     ],
+     "filters": {
+      "lessons_number": 10
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_categories_or_filters": {
+    "id": "a1000000-0000-4000-8000-000000930033",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_categories_or_filters",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "fields": [
+      "name"
+     ],
+     "or_filters": [
+      {
+       "name__istartswith": "q"
+      },
+      {
+       "type": "2"
+      },
+      "skip",
+      {}
+     ],
+     "order_by": [
+      "name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_categories_distinct_type": {
+    "id": "a1000000-0000-4000-8000-000000930034",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_categories_distinct_type",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "fields": [
+      "type"
+     ],
+     "filters": {
+      "type": 1
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_categories_distinct_with_order": {
+    "id": "a1000000-0000-4000-8000-000000930035",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_categories_distinct_with_order",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "fields": [
+      "type"
+     ],
+     "order_by": [
+      "name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_overrides": {
+    "id": "a1000000-0000-4000-8000-000000930036",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_overrides",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ],
+     "limit": 5
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_datetime_filters": {
+    "id": "a1000000-0000-4000-8000-000000930037",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_datetime_filters",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date__gte": "2026-09-15",
+      "creation_date__lt": "2026-10-01T00:00:00"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_empty_in": {
+    "id": "a1000000-0000-4000-8000-000000930038",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_empty_in",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": {
+      "tag_id__in": []
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_isnull_range_decimal": {
+    "id": "a1000000-0000-4000-8000-000000930039",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_isnull_range_decimal",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "lessons_number"
+     ],
+     "filters": {
+      "title__isnull": false,
+      "lessons_number__range": [
+       1,
+       10
+      ],
+      "fee__gt": 50
+     },
+     "order_by": [
+      "-fee"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_blacklisted_filter_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930040",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_blacklisted_filter_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "password": "x"
+     },
+     "order_by": [
+      "-tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_in_uuid": {
+    "id": "a1000000-0000-4000-8000-000000930041",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_in_uuid",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "tag_id__in": [
+       "a1000000-0000-4000-8000-000000930007",
+       "a1000000-0000-4000-8000-000000930009"
+      ]
+     },
+     "exclude": {
+      "tag_name__endswith": "x"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_unknown_filter_error": {
+    "id": "a1000000-0000-4000-8000-000000930042",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_unknown_filter_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": {
+      "colour": "x"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_invalid_uuid_error": {
+    "id": "a1000000-0000-4000-8000-000000930043",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_invalid_uuid_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": {
+      "tag_id": "nope"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_negative_limit_error": {
+    "id": "a1000000-0000-4000-8000-000000930044",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_negative_limit_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "limit": -1
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_unknown_order_error": {
+    "id": "a1000000-0000-4000-8000-000000930045",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_unknown_order_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "order_by": [
+      "colour"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_filters_list_error": {
+    "id": "a1000000-0000-4000-8000-000000930046",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_filters_list_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "count_filters_exclude": {
+    "id": "a1000000-0000-4000-8000-000000930047",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report count_filters_exclude",
+    "description": "",
+    "tool": "count_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "filters": {
+      "expense": true
+     },
+     "exclude": {
+      "deleted": true
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "count_include_archived": {
+    "id": "a1000000-0000-4000-8000-000000930048",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report count_include_archived",
+    "description": "",
+    "tool": "count_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "include_archived": 1
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "values_category_type_labels": {
+    "id": "a1000000-0000-4000-8000-000000930049",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report values_category_type_labels",
+    "description": "",
+    "tool": "get_field_values",
+    "params": {
+     "model_name": "PaymentCategory",
+     "field_name": "type"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "values_carnet_title_limit": {
+    "id": "a1000000-0000-4000-8000-000000930050",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report values_carnet_title_limit",
+    "description": "",
+    "tool": "get_field_values",
+    "params": {
+     "model_name": "Carnet",
+     "field_name": "title",
+     "limit": 2
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "values_carnet_title_nulls_last": {
+    "id": "a1000000-0000-4000-8000-000000930051",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report values_carnet_title_nulls_last",
+    "description": "",
+    "tool": "get_field_values",
+    "params": {
+     "model_name": "Carnet",
+     "field_name": "title",
+     "limit": null
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "values_tags_unescape": {
+    "id": "a1000000-0000-4000-8000-000000930052",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report values_tags_unescape",
+    "description": "",
+    "tool": "get_field_values",
+    "params": {
+     "model_name": "Tags",
+     "field_name": "tag_name",
+     "filters": {
+      "tag_name__contains": "&"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "values_blacklisted_error": {
+    "id": "a1000000-0000-4000-8000-000000930053",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report values_blacklisted_error",
+    "description": "",
+    "tool": "get_field_values",
+    "params": {
+     "model_name": "Tags",
+     "field_name": "password"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "values_missing_field_error": {
+    "id": "a1000000-0000-4000-8000-000000930054",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report values_missing_field_error",
+    "description": "",
+    "tool": "get_field_values",
+    "params": {
+     "model_name": "Tags"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_none": {
+    "id": "a1000000-0000-4000-8000-000000930055",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_none",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Carnet"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_invalid": {
+    "id": "a1000000-0000-4000-8000-000000930056",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_invalid",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Carnet",
+     "aggregations": [
+      {
+       "function": "median",
+       "field": "fee"
+      },
+      {
+       "function": "sum",
+       "field": "password"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_flat": {
+    "id": "a1000000-0000-4000-8000-000000930057",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_flat",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Carnet",
+     "aggregations": [
+      {
+       "function": "count",
+       "field": "*"
+      },
+      {
+       "function": "sum",
+       "field": "fee"
+      },
+      {
+       "function": "avg",
+       "field": "lessons_number",
+       "alias": "media.lezioni"
+      },
+      {
+       "function": "max",
+       "field": "creation_date"
+      },
+      {
+       "function": "MIN",
+       "field": "title"
+      },
+      {
+       "function": "avg",
+       "field": "fee",
+       "alias": "media-quota"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_group_type": {
+    "id": "a1000000-0000-4000-8000-000000930058",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_group_type",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "aggregations": [
+      {
+       "function": "count",
+       "field": "*",
+       "alias": "totale"
+      },
+      {
+       "function": "max",
+       "field": "name"
+      }
+     ],
+     "group_by": [
+      "type"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_group_invalid": {
+    "id": "a1000000-0000-4000-8000-000000930059",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_group_invalid",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "aggregations": [
+      {
+       "function": "count",
+       "field": "*"
+      }
+     ],
+     "group_by": [
+      "bogus",
+      "password"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_sum_text_error": {
+    "id": "a1000000-0000-4000-8000-000000930060",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_sum_text_error",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Tags",
+     "aggregations": [
+      {
+       "function": "sum",
+       "field": "tag_name"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_empty_set": {
+    "id": "a1000000-0000-4000-8000-000000930061",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_empty_set",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Carnet",
+     "filters": {
+      "carnet_id__in": []
+     },
+     "aggregations": [
+      {
+       "function": "sum",
+       "field": "fee"
+      },
+      {
+       "function": "count",
+       "field": "*"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_group_boolean_filtered": {
+    "id": "a1000000-0000-4000-8000-000000930062",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_group_boolean_filtered",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Carnet",
+     "exclude": {
+      "lessons_number": 0
+     },
+     "aggregations": [
+      {
+       "function": "sum",
+       "field": "lessons_number",
+       "alias": "lezioni"
+      }
+     ],
+     "group_by": [
+      "public"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "schema_unknown_model": {
+    "id": "a1000000-0000-4000-8000-000000930063",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report schema_unknown_model",
+    "description": "",
+    "tool": "get_schema",
+    "params": {
+     "model_name": "Nope"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   }
+  }
+ },
+ "cases": [
+  {
+   "name": "templates-reports-update-owner",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modulo aggiornato è",
+    "template": null,
+    "footer": false,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": "7",
+    "custom_header": "testa"
+   },
+   "effect": {
+    "kind": "template-update",
+    "label": "main",
+    "id": "a1000000-0000-4000-8000-000000930001",
+    "row": {
+     "id": "a1000000-0000-4000-8000-000000930001",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Modulo aggiornato è",
+     "template": null,
+     "footer": false,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": "7",
+     "custom_header": "testa"
+    },
+    "actor": "owner",
+    "changes": {
+     "name": [
+      "Modulo base",
+      "Modulo aggiornato è"
+     ],
+     "template": [
+      "<p>Corpo</p>",
+      "None"
+     ],
+     "footer": [
+      "True",
+      "False"
+     ],
+     "custom_footer": [
+      "None",
+      "7"
+     ]
+    }
+   },
+   "body": {
+    "name": "  Modulo aggiornato è ",
+    "template": null,
+    "footer": "no",
+    "custom_footer": 7,
+    "header": true,
+    "ignored": 1,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "templates-reports-update-form-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930002",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Form nuovo",
+    "template": "x",
+    "footer": true,
+    "header": false,
+    "custom_footer_header": true,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "template-update",
+    "label": "form",
+    "id": "a1000000-0000-4000-8000-000000930002",
+    "row": {
+     "id": "a1000000-0000-4000-8000-000000930002",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Form nuovo",
+     "template": "x",
+     "footer": true,
+     "header": false,
+     "custom_footer_header": true,
+     "custom_footer": null,
+     "custom_header": null
+    },
+    "actor": "full_collaborator",
+    "changes": {
+     "name": [
+      "Modulo form",
+      "Form nuovo"
+     ],
+     "header": [
+      "True",
+      "False"
+     ],
+     "custom_footer_header": [
+      "False",
+      "True"
+     ],
+     "custom_footer": [
+      "piede",
+      "None"
+     ]
+    }
+   },
+   "raw_body": "custom_footer=&header=false&custom_footer_header=true&name=Form+nuovo",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "templates-reports-update-unchanged-no-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modulo aggiornato è",
+    "template": null,
+    "footer": false,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": "7",
+    "custom_header": "testa"
+   },
+   "effect": {
+    "kind": "template-update",
+    "label": "main",
+    "id": "a1000000-0000-4000-8000-000000930001",
+    "row": {
+     "id": "a1000000-0000-4000-8000-000000930001",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Modulo aggiornato è",
+     "template": null,
+     "footer": false,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": "7",
+     "custom_header": "testa"
+    },
+    "actor": "owner",
+    "changes": null
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "templates-reports-update-new-id-inserts-copy",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930003/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930020",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Origine",
+    "template": "<p>o</p>",
+    "footer": false,
+    "header": false,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "template-copy",
+    "id": "a1000000-0000-4000-8000-000000930020",
+    "row": {
+     "id": "a1000000-0000-4000-8000-000000930020",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Origine",
+     "template": "<p>o</p>",
+     "footer": false,
+     "header": false,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    },
+    "actor": "owner"
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930020",
+    "header": false
+   }
+  },
+  {
+   "name": "templates-reports-update-existing-id-unique",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association_module_templates_id": [
+     "sport association module templates with this sport association module templates id already exists."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930005"
+   }
+  },
+  {
+   "name": "templates-reports-update-foreign-association-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002",
+    "name": ""
+   }
+  },
+  {
+   "name": "templates-reports-update-unknown-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000720009\" - object does not exist."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000720009"
+   }
+  },
+  {
+   "name": "templates-reports-update-invalid-fields",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "This field may not be blank."
+    ],
+    "template": [
+     "This field may not be blank."
+    ],
+    "footer": [
+     "This field may not be null."
+    ],
+    "custom_header": [
+     "Not a valid string."
+    ],
+    "sport_association": [
+     "“nope” is not a valid UUID."
+    ],
+    "sport_association_module_templates_id": [
+     "Must be a valid UUID."
+    ],
+    "header": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "",
+    "template": "  ",
+    "footer": null,
+    "custom_header": true,
+    "sport_association": "nope",
+    "sport_association_module_templates_id": "bad",
+    "header": "maybe"
+   }
+  },
+  {
+   "name": "templates-reports-update-null-values",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "This field may not be null."
+    ],
+    "sport_association": [
+     "This field may not be null."
+    ],
+    "sport_association_module_templates_id": [
+     "This field may not be null."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": null,
+    "sport_association": null,
+    "sport_association_module_templates_id": null,
+    "custom_footer": null
+   }
+  },
+  {
+   "name": "templates-reports-update-too-long-name",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "Ensure this field has no more than 150 characters."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   }
+  },
+  {
+   "name": "templates-reports-update-list-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": [
+    "name"
+   ]
+  },
+  {
+   "name": "templates-reports-update-malformed-pk",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/not-a-uuid/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "templates-reports-update-foreign-row",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930005/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationModuleTemplates matches the given query."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "templates-reports-update-missing-row",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000720009/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationModuleTemplates matches the given query."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "templates-reports-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.templates.update"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "templates-reports-update-athlete-server-error",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "templates-reports-update-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "templates-reports-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-update-admin-without-session",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-update-wrong-method",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Sport Association Module Templates",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "templates-reports-update-delete-method-deletes",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/templates/a1000000-0000-4000-8000-000000930004/update",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "template-delete",
+    "label": "remove",
+    "actor": "owner"
+   }
+  },
+  {
+   "name": "templates-reports-run-owner-count",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-foreign-owner-own-tags",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930023/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-foreign-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930023/run",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Report not found"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-collaborator-created-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930022/run",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Report not found"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-missing-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000720009/run",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Report not found"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-malformed-pk-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/abc/run",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'saved-reports/a1000000-0000-4000-8000-000000930021/run'. Contact administrator to grant access."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "templates-reports-run-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Saved Report",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "templates-reports-run-unknown-tool",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930024/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Unknown tool: nope"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": []
+  },
+  {
+   "name": "templates-reports-run-list-overrides-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "overrides": [
+     1
+    ]
+   }
+  },
+  {
+   "name": "templates-reports-run-null-overrides-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "overrides": null
+   }
+  },
+  {
+   "name": "templates-reports-run-stored-list-params-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930025/run",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-form-overrides-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "raw_body": "overrides=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "templates-reports-run-form-without-overrides",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "raw_body": "other=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "templates-reports-run-override-association-id-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "overrides": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "templates-reports-run-override-model-not-whitelisted-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "overrides": {
+     "model_name": "User"
+    }
+   }
+  },
+  {
+   "name": "templates-reports-run-override-model-number-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930021/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "overrides": {
+     "model_name": 5
+    }
+   }
+  },
+  {
+   "name": "templates-reports-run-query-missing-model-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930027/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-default-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930028/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "tag_id": "a1000000-0000-4000-8000-000000930006",
+       "tag_name": "Calcio & Basket",
+       "creation_date": "2026-09-01T10:00:00+00:00"
+      },
+      {
+       "tag_id": "a1000000-0000-4000-8000-000000930007",
+       "tag_name": "Nuoto",
+       "creation_date": "2026-09-15T08:30:00.125000+00:00"
+      },
+      {
+       "tag_id": "a1000000-0000-4000-8000-000000930008",
+       "tag_name": "nuoto agonistico",
+       "creation_date": "2026-10-01T00:00:00+00:00"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-categories-limit-offset",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930029/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 4,
+     "has_more": true,
+     "data": [
+      {
+       "name": "Quote",
+       "type": "Istituzionale"
+      },
+      {
+       "name": "Eventi",
+       "type": "Istituzionale"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-exclude-nullable",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930030/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "title": null,
+       "lessons_number": 0,
+       "fee": 0.0
+      },
+      {
+       "title": "Dieci ingressi",
+       "lessons_number": 10,
+       "fee": 80.0
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-all-columns",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930031/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "carnet_id": "a1000000-0000-4000-8000-000000930017",
+       "title": "Cinque",
+       "description": null,
+       "user_id_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "lessons_number": 5,
+       "fee": 45.5,
+       "creation_date": "2026-06-01T10:00:00+00:00",
+       "public": false,
+       "meta": null
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-json-column",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930032/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "meta": {
+        "colore": "blu"
+       },
+       "description": "Pacchetto"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-categories-or-filters",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930033/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "name": "Affitto"
+      },
+      {
+       "name": "Quote"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-categories-distinct-type",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930034/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "type": "Istituzionale"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-categories-distinct-with-order",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930035/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 4,
+     "has_more": false,
+     "data": [
+      {
+       "type": "Commerciale"
+      },
+      {
+       "type": "Istituzionale"
+      },
+      {
+       "type": "Istituzionale"
+      },
+      {
+       "type": 3
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-overrides",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930036/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": true,
+     "data": [
+      {
+       "tag_name": "Nuoto"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "overrides": {
+     "filters": {
+      "tag_name__icontains": "NUOTO"
+     },
+     "limit": 1
+    }
+   }
+  },
+  {
+   "name": "templates-reports-run-query-tags-datetime-filters",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930037/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Nuoto"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-empty-in",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930038/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 0,
+     "has_more": false,
+     "data": []
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-isnull-range-decimal",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930039/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "lessons_number": 10
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-blacklisted-filter-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930040/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "nuoto agonistico"
+      },
+      {
+       "tag_name": "Nuoto"
+      },
+      {
+       "tag_name": "Calcio & Basket"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-in-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930041/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Nuoto"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-unknown-filter-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930042/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-invalid-uuid-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930043/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-negative-limit-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930044/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-unknown-order-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930045/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-filters-list-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930046/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-count-filters-exclude",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930047/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-count-include-archived",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930048/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 5
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-values-category-type-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930049/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "values": [
+      "Istituzionale",
+      "Commerciale",
+      3
+     ],
+     "total_distinct": 3
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-values-carnet-title-limit",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930050/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "values": [
+      "Cinque",
+      "Dieci ingressi"
+     ],
+     "total_distinct": 3
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-values-carnet-title-nulls-last",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930051/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "values": [
+      "Cinque",
+      "Dieci ingressi",
+      null
+     ],
+     "total_distinct": 3
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-values-tags-unescape",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930052/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "values": [
+      "Calcio & Basket"
+     ],
+     "total_distinct": 1
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-values-blacklisted-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930053/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-values-missing-field-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930054/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-none",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930055/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No aggregations specified"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930056/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No valid aggregations"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-flat",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930057/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count_*": 3,
+     "sum_fee": 125.5,
+     "media_lezioni": 5.0,
+     "max_creation_date": "2026-07-01T10:00:00+00:00",
+     "min_title": "Cinque",
+     "media_quota": 41.833333333333336
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-group-type",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930058/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "data": [
+      {
+       "type": "Istituzionale",
+       "totale": 2,
+       "max_name": "Quote"
+      },
+      {
+       "type": "Commerciale",
+       "totale": 1,
+       "max_name": "Affitto"
+      },
+      {
+       "type": 3,
+       "totale": 1,
+       "max_name": "Sponsor"
+      }
+     ],
+     "count": 3
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-group-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930059/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No valid group_by fields"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-sum-text-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930060/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-empty-set",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930061/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "sum_fee": null,
+     "count_*": 0
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-group-boolean-filtered",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930062/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "data": [
+      {
+       "public": false,
+       "lezioni": 5
+      },
+      {
+       "public": true,
+       "lezioni": 10
+      }
+     ],
+     "count": 2
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-schema-unknown-model",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930063/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Model Nope not found"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-delete-method-deletes",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930026/run",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "report-delete",
+    "label": "remove"
+   }
+  }
+ ]
+}

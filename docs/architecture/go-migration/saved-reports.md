@@ -1,9 +1,10 @@
-# Saved reports — list, add, info, update and delete implementing; run not ported
+# Saved reports — list, add, info, update and delete implementing; run in templates-reports.md
 
 Five explicit `saved-reports/...` routes map `SavedReportViewSet` actions
 (`BE/application/views/report_views.py`) and are implemented in Go
 (`BE_GO/internal/{domain,dto,repository,service,handler}/saved_reports.go`).
-`saved-reports/<pk>/run` executes AI tool functions and is not ported.
+`saved-reports/<pk>/run` executes the MCP tool functions; its partial port is
+documented in `templates-reports.md`.
 
 ## Behavior
 

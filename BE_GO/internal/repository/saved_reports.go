@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/jmoiron/sqlx"
@@ -52,6 +53,76 @@ func (r *SavedReports) UpdateSavedReport(ctx context.Context, id string, change 
  description=COALESCE($3, description), params=COALESCE($4::jsonb, params), ui_config=COALESCE($5::jsonb, ui_config), updated_at=$6
  WHERE saved_report_id=$1`, id, change.Name, change.Description, change.Params, change.UIConfig, change.At)
 	return err
+}
+
+func (r *SavedReports) ReportIntegration(ctx context.Context) (bool, *string, error) {
+	var row struct {
+		SelfHosted bool    `db:"self_hosted"`
+		Settings   *string `db:"integration_settings"`
+	}
+	err := r.db.GetContext(ctx, &row, `SELECT self_hosted, integration_settings::text AS integration_settings
+ FROM instance_instanceconfiguration ORDER BY id LIMIT 1`)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil, nil
+	}
+	return row.SelfHosted, row.Settings, err
+}
+
+// RunReportStatements mirrors QueryBuilder's SET statement_timeout around
+// the queries; database errors are ReportQueryError (the tool's exception).
+func (r *SavedReports) RunReportStatements(ctx context.Context, timeoutMS int64, statements []domain.ReportStatement) ([][][]*string, error) {
+	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, `SELECT set_config('statement_timeout', $1, true)`, strconv.FormatInt(timeoutMS, 10)); err != nil {
+		return nil, err
+	}
+	results := make([][][]*string, 0, len(statements))
+	for _, statement := range statements {
+		rows, err := tx.QueryContext(ctx, statement.SQL, statement.Args...)
+		if err != nil {
+			return nil, reportQueryError(ctx, err)
+		}
+		var records [][]*string
+		for rows.Next() {
+			texts := make([]sql.NullString, statement.Text)
+			targets := make([]any, 0, statement.Text+statement.Hidden)
+			for i := range texts {
+				targets = append(targets, &texts[i])
+			}
+			for i := 0; i < statement.Hidden; i++ {
+				targets = append(targets, new(any))
+			}
+			if err = rows.Scan(targets...); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			record := make([]*string, statement.Text)
+			for i, text := range texts {
+				if text.Valid {
+					value := text.String
+					record[i] = &value
+				}
+			}
+			records = append(records, record)
+		}
+		if err = rows.Err(); err != nil {
+			rows.Close()
+			return nil, reportQueryError(ctx, err)
+		}
+		rows.Close()
+		results = append(results, records)
+	}
+	return results, nil
+}
+
+func reportQueryError(ctx context.Context, err error) error {
+	if ctx.Err() != nil {
+		return err
+	}
+	return &domain.ReportQueryError{Err: err}
 }
 
 func (r *SavedReports) DeleteSavedReport(ctx context.Context, id string) error {
