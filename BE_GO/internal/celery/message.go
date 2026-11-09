@@ -230,9 +230,11 @@ func EncodeRepublish(m *Message, r Republish) ([]byte, error) {
 	if !m.Plain() {
 		return nil, fmt.Errorf("%w: republish options", ErrUnsupportedValue)
 	}
-	var shown any = tuple{}
-	if len(m.Args) > 0 {
-		shown = m.Args
+	// signature_from_request passes request.args, a tuple: argsrepr is the
+	// tuple's repr whatever the original message's argsrepr was.
+	shown := tuple(m.Args)
+	if shown == nil {
+		shown = tuple{}
 	}
 	argsrepr, err := saferepr(shown, reprMaxSize)
 	if err != nil {
