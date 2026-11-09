@@ -11,8 +11,9 @@ each, autocommitted: kept when a later row raises). A subscription without an
 associate raises (500). pandas.DataFrame(rows).columns = cols raises with
 zero rows (500). The CSV (csv.writer, excel dialect) is returned base64 as
 {'data': {'filename': '[<today>] ISCRIZIONI a <denomination>.csv', 'type':
-'csv', 'file': ...}}. filetype containing 'xls' (the xlsxwriter workbook) is
-not authored.
+'csv', 'file': ...}}. filetype containing 'xls' is _export_to_excel: the same
+rows in pandas' xlsxwriter workbook (sheet 'Libro Soci', the index column,
+set_column(i, i, len(col) + 10)), '.xls' in the filename and type 'xls'.
 
 invoice_list_export (@api_view(['GET']), invoice_views.py): athletes raise
 (500), the scoped live association (500), the association's live
@@ -21,8 +22,10 @@ anything but t/True/1/f/False/0 is a 500), ordered by creation_date. Each
 invoice's payment is payment_set.first(): the live group-aware payments of
 the invoice by primary key. m=csv (default) is the CSV; m=files publishes
 export_invoices_to_zip.delay([<document ids>], <association UUID>) for the
-invoices with a document_pdf and answers a message; any other m (except the
-not-authored xlsx) answers {'data': {'file': ''}}. Run with ``python3 -I``.
+invoices with a document_pdf and answers a message; m=xlsx is get_excel_base64
+over the same columns (names and numbers as Python values, fees as Decimals);
+any other m answers {'data': {'file': ''}}. Workbooks are compared with
+TESTS/contracts/xlsx.py. Run with ``python3 -I``.
 """
 import csv
 import io
@@ -171,6 +174,15 @@ def subscription_body(simplified=False, association=OWN, group=None):
     return {'data': {'filename': f'[$today] ISCRIZIONI a {DENOMINATION[association]}.csv', 'type': 'csv', 'file': {'$csv': text}}}
 
 
+def subscription_xls(simplified=False, association=OWN, group=None):
+    rows = listed_subscriptions(association, group)
+    assert rows, 'zero rows is a 500'
+    cols = SIMPLE_COLS if simplified else FULL_COLS
+    spec = {'engine': 'xlsxwriter', 'sheet': 'Libro Soci', 'columns': cols, 'index': True,
+            'rows': [subscription_row(row, simplified) for row in rows], 'widths': [len(col) + 10 for col in cols]}
+    return {'data': {'filename': f'[$today] ISCRIZIONI a {DENOMINATION[association]}.xls', 'type': 'xls', 'file': {'$xlsx': spec}}}
+
+
 DOCUMENTS = {name: {'id': next(ids), 'filename': f'ricevuta-{name}.pdf'} for name in ('one', 'three', 'four', 'six', 'archived', 'foreign')}
 
 
@@ -231,6 +243,21 @@ def invoice_body(association=OWN, archived=False, group=None):
                      row['activity'], row['number'], ('-' if payment['type'] == 'default' else payment['type']) if payment else '-'])
     return {'data': {'file': {'$csv': write_csv(INVOICE_HEADER, rows)}, 'type': 'csv',
                      'filename': f'[$today] RICEVUTE a {DENOMINATION[association]}.csv'}}
+
+
+def invoice_xlsx(association=OWN, archived=False, group=None):
+    data = [[] for _ in INVOICE_HEADER]
+    for label, row in listed_invoices(association, archived, group):
+        payment = first_payment(label, group)
+        person = ASSOCIATES[payment['associate']] if payment and payment['associate'] else None
+        values = [row['created'][:10], person['first_name'] if person else '', person['last_name'] if person else '',
+                  {'decimal': row['membership']}, {'decimal': row['activity']},
+                  None if row['number'] is None else {'int': str(row['number'])},
+                  ('-' if payment['type'] == 'default' else payment['type']) if payment else '-']
+        for column, value in zip(data, values):
+            column.append(value)
+    return {'data': {'file': {'$xlsx': {'engine': 'excel_utils', 'columns': INVOICE_HEADER, 'data': data}}, 'type': 'xlsx',
+                     'filename': f'[$today] RICEVUTE a {DENOMINATION[association]}.xlsx'}}
 
 
 ZIP_MESSAGE = 'Export dei file in corso, controlla la sezione Documenti e Modelli tra qualche minuto.'
@@ -296,6 +323,16 @@ add('subs-foreign-simplified-no-associate', 'foreign_owner', SUBS + '?filetype=s
 add('subs-foreign-full-promotes-then-fails', 'foreign_owner', SUBS, 500, SERVER, effect=promoted('hans', actor='foreign_owner'))
 add('subs-foreign-full-again', 'foreign_owner', SUBS, 500, SERVER)
 
+# --- filetype containing 'xls': the xlsxwriter workbook (luisa's relation is already primary) ---
+add('subs-xls-full', 'owner', SUBS + '?filetype=xls', 200, subscription_xls())
+add('subs-xls-full-post', 'owner', SUBS + '?filetype=xlsx', 200, subscription_xls(), method='POST')
+add('subs-xls-simplified', 'owner', SUBS + '?filetype=xls-simplified', 200, subscription_xls(simplified=True))
+add('subs-xls-group', 'full_collaborator', SUBS + '?filetype=xls', 200, subscription_xls(group='own_group'),
+    headers={'X-Group-Id': OWN_GROUP})
+add('subs-xls-group-empty', 'owner', SUBS + '?filetype=xls', 500, SERVER, headers={'X-Group-Id': FOREIGN_GROUP})
+add('subs-xls-foreign-no-associate', 'foreign_owner', SUBS + '?filetype=xls', 500, SERVER)
+add('subs-xls-athlete', 'athlete', SUBS + '?filetype=xls', 500, SERVER)
+
 # --- invoice/list/export ---------------------------------------------------------------------------------------
 add('inv-anonymous', 'anonymous', INVS, 401, {'detail': 'Authentication credentials were not provided.'})
 add('inv-admin-without-session', 'admin', INVS, 403, {'detail': 'Seleziona un utente da impersonificare per accedere a questa sezione.'})
@@ -322,6 +359,12 @@ add('inv-group', 'owner', INVS, 200, invoice_body(group='own_group'), headers={'
 add('inv-group-empty', 'owner', INVS, 200, invoice_body(group='foreign_group'), headers={'X-Group-Id': FOREIGN_GROUP})
 add('inv-group-malformed-ignored', 'owner', INVS, 200, INVOICES_CSV, headers={'X-Group-Id': 'nope'})
 add('inv-foreign-owner', 'foreign_owner', INVS, 200, invoice_body(FOREIGN))
+add('inv-xlsx', 'owner', INVS + '?m=xlsx', 200, invoice_xlsx())
+add('inv-xlsx-archived', 'owner', INVS + '?m=xlsx&archived=1', 200, invoice_xlsx(archived=True))
+add('inv-xlsx-group', 'owner', INVS + '?m=xlsx', 200, invoice_xlsx(group='own_group'), headers={'X-Group-Id': OWN_GROUP})
+add('inv-xlsx-empty', 'owner', INVS + '?m=xlsx', 200, invoice_xlsx(group='foreign_group'), headers={'X-Group-Id': FOREIGN_GROUP})
+add('inv-xlsx-foreign', 'foreign_owner', INVS + '?m=xlsx', 200, invoice_xlsx(FOREIGN))
+add('inv-xlsx-archived-invalid', 'owner', INVS + '?m=xlsx&archived=yes', 500, SERVER)
 add('inv-mode-other', 'owner', INVS + '?m=pdf', 200, {'data': {'file': ''}})
 add('inv-mode-other-archived-invalid', 'owner', INVS + '?m=pdf&archived=yes', 500, SERVER)
 FILES = {'data': {'file': '', 'message': ZIP_MESSAGE}}

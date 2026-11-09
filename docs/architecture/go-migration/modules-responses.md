@@ -3,9 +3,9 @@
 `GET modules/<custom_link>/info` (`modules_custom_link_info`), `POST modules/<module_id>/response/add` (`modules_response_add`),
 `POST modules/response/<module_response_id>/approve` (`modules_response_approve`), `DELETE modules/response/<module_response_id>/delete`
 (`modules_response_delete`) and `POST|DELETE modules/response/<module_response_id>/add-attachment` (`modules_response_add_attachment`)
-are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/modules_responses.go`, composed in
-`BE_GO/cmd/server/modules_responses.go`). Django remains the execution owner. `modules/<module_id>/export` is not part of this family
-(see below).
+and `GET modules/<module_id>/export` (`modules_response_export`) are implemented in Go
+(`BE_GO/internal/{domain,repository,service,handler}/modules_responses.go`, `modules_export.go`, composed in
+`BE_GO/cmd/server/modules_responses.go`). Django remains the execution owner.
 
 ## Shared
 
@@ -58,10 +58,21 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/modul
     `AWS_S3_OBJECT_PARAMETERS` and `AWS_DEFAULT_ACL`; then the link (a missing response is a 500 after the document and the object
     exist). `200 {'msg': 'attachment added'}`.
 
+- **export** (`IsAuthenticated`, `association.modules.read`): `is_valid_uuid`, then `request.user.sport_association` (athletes 403
+  `User is not a sport association`, owners without an active association 500) in
+  `ModuleResponses.objects.filter(module_id=..., module__sport_association=...)`; no `first()` (by key) is 404
+  `{'error': 'response not found'}`. The first response's `module.elements` give the columns (type not heading/paragraph/link:
+  `props['label']`, `props['name']`; a missing key, a non-list `elements` other than an empty str or dict, or a non-str label
+  raises), then per response in the database's order (the queryset has no ordering; Go sends the same SQL) `response[name]` as its
+  Python value or `-` (`.keys()` of a non-dict response raises only when there are response columns), the creation date
+  `%d/%m/%Y %H:%M` (UTC), number and queue position or `-`, `user.get_full_name()` or `-`, `Pagato`/`Non pagato`/`-` (the payment
+  through the base manager), `Approvata`/`Non approvata` and the attachment filenames joined by `,`. The workbook is pandas'
+  xlsxwriter one ([xlsx-exports](xlsx-exports.md)): sheet `Risposte`, `index=False`, `set_column(i, i, len(label) + 10)`.
+  `200 {'data': {'file': base64, 'filename': '[<today>] Risposte al modulo (<title>).xls', 'type': 'xlsx'}}`.
+
 ## Not ported (refused with the 500 page before any write)
 
-- `modules/<module_id>/export`: every success path builds an XLSX workbook (pandas/xlsxwriter, `.xls` name) that is not
-  byte-reproducible; Go has no route for it and it stays on Django.
+- export: list or object labels, integers beyond int64 and inputs the workbook writer refuses ([xlsx-exports](xlsx-exports.md)).
 - add and add-attachment with a form or multipart body (a QueryDict as the stored JSON value, or as request data).
 - add-attachment POST with a non-string `filename` or `base64`, or a filename that is empty, `.`/`..`, contains `/`, `\` or NUL, is
   longer than 255 characters, or ends in an encoding suffix (`.gz`, `.tgz`, ...); a storage name already taken when
@@ -81,3 +92,8 @@ default storage). Every case checks the complete model state, the created/update
 entry with its index row, and the complete object listing of the bucket. RED: Django 110/110, Go 404 on the first case. GREEN: 110/110 on
 native Django, native Go, Caddy `/api/v1` and `/api/v2`. Dropping the association filter from the Go response lookup fails
 `approve-foreign-response`. The modules reads (81) and modules writes (98) families still pass.
+
+Export (25 more cases first in the sequence, 135 in all; an export module with typed answers, users, payments and attachments
+seeded in authored order; workbooks compared with `TESTS/contracts/xlsx.py`): RED `xlsx-red-r1` (Django 135/135, Go 404 on
+`export-anonymous`), GREEN `xlsx-versioned-r1` on all four transports, mutation `xlsx-mutation-r1` (attachments joined by `, `
+fail `export-owner`, CAUGHT).

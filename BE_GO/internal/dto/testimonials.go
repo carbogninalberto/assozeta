@@ -180,8 +180,13 @@ func PythonStr(value any) string {
 	return out.String()
 }
 
+// PythonUUID is a uuid.UUID object inside a Python value (repr UUID('...')).
+type PythonUUID string
+
 func pythonRepr(out *strings.Builder, value any) {
 	switch v := value.(type) {
+	case PythonUUID:
+		out.WriteString("UUID('" + string(v) + "')")
 	case nil:
 		out.WriteString("None")
 	case bool:

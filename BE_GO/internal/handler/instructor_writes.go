@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
@@ -25,6 +26,45 @@ type InstructorWritesService interface {
 type InstructorWritesHandler struct {
 	writes InstructorWritesService
 	hours  *InstructorHoursHandler
+	report *service.InstructorReport
+}
+
+// WithReport serves instructor_report through the report service.
+func (h *InstructorWritesHandler) WithReport(report *service.InstructorReport) *InstructorWritesHandler {
+	h.report = report
+	return h
+}
+
+// Report mirrors instructor_report (GET, IsAuthenticated; a read).
+func (h *InstructorWritesHandler) Report(c echo.Context) error {
+	identity, err := messageMutationsIdentity(c, h.hours.actors, h.hours.identities, http.MethodGet, "instructor_report")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, "Instructor Report", "")
+	}
+	if request.Method != http.MethodGet {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	query := parseReferenceForm(request.URL.RawQuery)
+	param := func(name string) *string {
+		value, ok := query.Lookup(name)
+		text, isText := value.(string)
+		if !ok || !isText {
+			return nil
+		}
+		return &text
+	}
+	body, err := h.report.Report(request.Context(), *identity, param("start_date"), param("end_date"))
+	switch {
+	case err == nil:
+		return c.Blob(http.StatusOK, echo.MIMEApplicationJSON, dto.PythonJSONDumpsCompact(body))
+	case errors.Is(err, service.InstructorReportMissingDates):
+		return c.JSON(400, map[string]string{"msg": err.Error()})
+	}
+	return messageReadsError(c, err)
 }
 
 func NewInstructorWritesHandler(writes InstructorWritesService, actors *service.ActorAuthentication, identities *service.IdentityResolver,

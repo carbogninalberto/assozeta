@@ -1,6 +1,6 @@
 {
  "matrix_version": 1,
- "scope": "Module responses info/add/approve/delete/add-attachment authored sequence",
+ "scope": "Module responses info/add/approve/delete/add-attachment/export authored sequence",
  "ids": {
   "owner": "a1000000-0000-4000-8000-000000700001",
   "full_collaborator": "a1000000-0000-4000-8000-000000700002",
@@ -363,6 +363,405 @@
     }
    ],
    "id": "a1000000-0000-4000-8000-000000643010"
+  },
+  "export": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Esporta \"risposte\" è",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Intestazione"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    },
+    {
+     "type": "number",
+     "props": {
+      "label": "Età",
+      "name": "eta"
+     }
+    },
+    {
+     "type": "checkbox",
+     "props": {
+      "label": "Consenso",
+      "name": "consenso"
+     }
+    },
+    {
+     "type": "select",
+     "props": {
+      "label": "Corsi scelti",
+      "name": "corsi"
+     }
+    },
+    {
+     "type": "group",
+     "props": {
+      "label": "Indirizzo",
+      "name": "indirizzo"
+     }
+    },
+    {
+     "type": "paragraph",
+     "props": {
+      "label": "Testo"
+     }
+    },
+    {
+     "type": "signature",
+     "props": {
+      "label": "Firma",
+      "name": "firma"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Note & <varie>",
+      "name": "note"
+     }
+    },
+    {
+     "type": "link",
+     "props": {
+      "label": "Sito",
+      "name": "sito"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "",
+      "name": "vuoto"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Numero",
+      "name": 5
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643101"
+  },
+  "export_empty": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-vuoto",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Intestazione"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    },
+    {
+     "type": "number",
+     "props": {
+      "label": "Età",
+      "name": "eta"
+     }
+    },
+    {
+     "type": "checkbox",
+     "props": {
+      "label": "Consenso",
+      "name": "consenso"
+     }
+    },
+    {
+     "type": "select",
+     "props": {
+      "label": "Corsi scelti",
+      "name": "corsi"
+     }
+    },
+    {
+     "type": "group",
+     "props": {
+      "label": "Indirizzo",
+      "name": "indirizzo"
+     }
+    },
+    {
+     "type": "paragraph",
+     "props": {
+      "label": "Testo"
+     }
+    },
+    {
+     "type": "signature",
+     "props": {
+      "label": "Firma",
+      "name": "firma"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Note & <varie>",
+      "name": "note"
+     }
+    },
+    {
+     "type": "link",
+     "props": {
+      "label": "Sito",
+      "name": "sito"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "",
+      "name": "vuoto"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Numero",
+      "name": 5
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643102"
+  },
+  "export_plain": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-semplice",
+   "created": "2026-09-01T08:00:00Z",
+   "title": null,
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [],
+   "id": "a1000000-0000-4000-8000-000000643103"
+  },
+  "export_noname": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-senza-nome",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "text",
+     "props": {
+      "label": "Senza nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643104"
+  },
+  "export_nolabel": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-senza-etichetta",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "text",
+     "props": {
+      "label": null,
+      "name": "x"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643105"
+  },
+  "export_dict": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-export-dizionario",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": {
+    "campo": 1
+   },
+   "id": "a1000000-0000-4000-8000-000000643106"
+  },
+  "export_foreign": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "link": "risposte-export-estero",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Intestazione"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    },
+    {
+     "type": "number",
+     "props": {
+      "label": "Età",
+      "name": "eta"
+     }
+    },
+    {
+     "type": "checkbox",
+     "props": {
+      "label": "Consenso",
+      "name": "consenso"
+     }
+    },
+    {
+     "type": "select",
+     "props": {
+      "label": "Corsi scelti",
+      "name": "corsi"
+     }
+    },
+    {
+     "type": "group",
+     "props": {
+      "label": "Indirizzo",
+      "name": "indirizzo"
+     }
+    },
+    {
+     "type": "paragraph",
+     "props": {
+      "label": "Testo"
+     }
+    },
+    {
+     "type": "signature",
+     "props": {
+      "label": "Firma",
+      "name": "firma"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Note & <varie>",
+      "name": "note"
+     }
+    },
+    {
+     "type": "link",
+     "props": {
+      "label": "Sito",
+      "name": "sito"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "",
+      "name": "vuoto"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Numero",
+      "name": 5
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643107"
   }
  },
  "documents": {
@@ -390,6 +789,16 @@
    "id": "a1000000-0000-4000-8000-000000643019",
    "filename": "anonimo.txt",
    "token": "a1000000-0000-4000-8000-000000643020"
+  },
+  "d6": {
+   "id": "a1000000-0000-4000-8000-000000643108",
+   "filename": "primo, allegato.pdf",
+   "token": "a1000000-0000-4000-8000-000000643109"
+  },
+  "d7": {
+   "id": "a1000000-0000-4000-8000-000000643110",
+   "filename": "secondo.png",
+   "token": "a1000000-0000-4000-8000-000000643111"
   }
  },
  "responses": {
@@ -407,7 +816,9 @@
    ],
    "id": "a1000000-0000-4000-8000-000000643021",
    "module": "open",
-   "number": 0
+   "number": 0,
+   "export_user": null,
+   "payment": null
   },
   "del_r": {
    "created": "2026-09-02T10:00:00Z",
@@ -423,7 +834,9 @@
    ],
    "id": "a1000000-0000-4000-8000-000000643022",
    "module": "open",
-   "number": 1
+   "number": 1,
+   "export_user": null,
+   "payment": null
   },
   "att_r": {
    "created": "2026-09-02T10:00:00Z",
@@ -436,7 +849,9 @@
    ],
    "id": "a1000000-0000-4000-8000-000000643023",
    "module": "open",
-   "number": 2
+   "number": 2,
+   "export_user": null,
+   "payment": null
   },
   "full_r": {
    "created": "2026-09-02T10:00:00Z",
@@ -447,7 +862,9 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643024",
    "module": "full",
-   "number": 0
+   "number": 0,
+   "export_user": null,
+   "payment": null
   },
   "q1": {
    "created": "2026-09-02T10:00:00Z",
@@ -460,7 +877,9 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643025",
    "module": "queue",
-   "number": 0
+   "number": 0,
+   "export_user": null,
+   "payment": null
   },
   "q2": {
    "created": "2026-09-02T10:00:00Z",
@@ -473,7 +892,9 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643026",
    "module": "queue",
-   "number": 1
+   "number": 1,
+   "export_user": null,
+   "payment": null
   },
   "q3": {
    "created": "2026-09-02T10:00:00Z",
@@ -486,7 +907,9 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643027",
    "module": "queue",
-   "number": 2
+   "number": 2,
+   "export_user": null,
+   "payment": null
   },
   "qa": {
    "created": "2026-09-02T10:00:00Z",
@@ -497,7 +920,9 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643028",
    "module": "queue",
-   "number": 3
+   "number": 3,
+   "export_user": null,
+   "payment": null
   },
   "foreign_r": {
    "created": "2026-09-02T10:00:00Z",
@@ -510,7 +935,9 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643029",
    "module": "foreign",
-   "number": 0
+   "number": 0,
+   "export_user": null,
+   "payment": null
   },
   "other_r": {
    "created": "2026-09-02T10:00:00Z",
@@ -523,7 +950,9 @@
    ],
    "id": "a1000000-0000-4000-8000-000000643030",
    "module": "foreign",
-   "number": 1
+   "number": 1,
+   "export_user": null,
+   "payment": null
   },
   "orphan_r": {
    "created": "2026-09-02T10:00:00Z",
@@ -534,7 +963,9 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643031",
    "module": "orphan",
-   "number": 0
+   "number": 0,
+   "export_user": null,
+   "payment": null
   },
   "nullnum_r": {
    "created": "2026-09-02T10:00:00Z",
@@ -545,10 +976,1329 @@
    "attachments": [],
    "id": "a1000000-0000-4000-8000-000000643032",
    "module": "nullnum",
-   "number": null
+   "number": null,
+   "export_user": null,
+   "payment": null
+  },
+  "e1": {
+   "created": "2026-09-03T08:05:59.900000Z",
+   "queue": null,
+   "response": {
+    "nome": "Anna è",
+    "eta": 30,
+    "consenso": true,
+    "corsi": [
+     "nuoto",
+     "tennis"
+    ],
+    "indirizzo": {
+     "via": "Roma",
+     "n": 1.5
+    },
+    "firma": "data:image/png;base64,AAAA",
+    "note": " spazi ",
+    "vuoto": null,
+    "sito": "ignorato"
+   },
+   "approved": true,
+   "user": null,
+   "attachments": [
+    "d6",
+    "d7"
+   ],
+   "id": "a1000000-0000-4000-8000-000000643117",
+   "module": "export",
+   "number": 0,
+   "export_user": "export_a",
+   "payment": "paid"
+  },
+  "e2": {
+   "created": "2026-09-04T23:59:00Z",
+   "queue": 2,
+   "response": {
+    "nome": "Bruno",
+    "eta": 41.5,
+    "consenso": false,
+    "corsi": [],
+    "indirizzo": {}
+   },
+   "approved": false,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643118",
+   "module": "export",
+   "number": 1,
+   "payment": "unpaid",
+   "export_user": null
+  },
+  "e3": {
+   "created": "2026-09-05T00:00:00Z",
+   "queue": null,
+   "response": {
+    "nome": "http://example.test/modulo?a=1&b=2",
+    "eta": null,
+    "note": "riga\nuno\u0001due",
+    "5": "non letto"
+   },
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643119",
+   "module": "export",
+   "number": null,
+   "export_user": null,
+   "payment": null
+  },
+  "e4": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643120",
+   "module": "export",
+   "number": 3,
+   "export_user": "export_b",
+   "payment": "gone"
+  },
+  "plain_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": [
+    1,
+    2
+   ],
+   "approved": true,
+   "user": null,
+   "attachments": [
+    "d6"
+   ],
+   "id": "a1000000-0000-4000-8000-000000643121",
+   "module": "export_plain",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  },
+  "noname_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643122",
+   "module": "export_noname",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  },
+  "nolabel_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643123",
+   "module": "export_nolabel",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  },
+  "dict_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643124",
+   "module": "export_dict",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  },
+  "xforeign_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {
+    "nome": "Estero"
+   },
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643125",
+   "module": "export_foreign",
+   "number": 0,
+   "export_user": null,
+   "payment": null
+  }
+ },
+ "export_users": {
+  "export_a": {
+   "id": "a1000000-0000-4000-8000-000000643112",
+   "first_name": "",
+   "last_name": "Neri  ",
+   "username": "modules-export-a"
+  },
+  "export_b": {
+   "id": "a1000000-0000-4000-8000-000000643113",
+   "first_name": "",
+   "last_name": "",
+   "username": "modules-export-b"
+  }
+ },
+ "export_payments": {
+  "paid": {
+   "id": "a1000000-0000-4000-8000-000000643114",
+   "paid": true,
+   "deleted": false
+  },
+  "unpaid": {
+   "id": "a1000000-0000-4000-8000-000000643115",
+   "paid": false,
+   "deleted": false
+  },
+  "gone": {
+   "id": "a1000000-0000-4000-8000-000000643116",
+   "paid": true,
+   "deleted": true
   }
  },
  "cases": [
+  {
+   "name": "modules-responses-export-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.modules.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Modules Response Export",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/abc/export",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-athlete-malformed",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/modules/abc/export",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643999/export",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-foreign-module",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643107/export",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-orphan-module",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643009/export",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-no-responses",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643102/export",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "Nome",
+        "Età",
+        "Consenso",
+        "Corsi scelti",
+        "Indirizzo",
+        "Firma",
+        "Note & <varie>",
+        "",
+        "Numero",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         {
+          "int": "30"
+         },
+         {
+          "bool": true
+         },
+         {
+          "list": [
+           "nuoto",
+           "tennis"
+          ]
+         },
+         {
+          "dict": [
+           [
+            "n",
+            {
+             "float": "1.5"
+            }
+           ],
+           [
+            "via",
+            "Roma"
+           ]
+          ]
+         },
+         "data:image/png;base64,AAAA",
+         " spazi ",
+         null,
+         "-",
+         "03/09/2026 08:05",
+         {
+          "int": "0"
+         },
+         "-",
+         "Neri",
+         "Pagato",
+         "Approvata",
+         "primo, allegato.pdf,secondo.png"
+        ],
+        [
+         "Bruno",
+         {
+          "float": "41.5"
+         },
+         {
+          "bool": false
+         },
+         {
+          "list": []
+         },
+         {
+          "dict": []
+         },
+         "-",
+         "-",
+         "-",
+         "-",
+         "04/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         {
+          "int": "2"
+         },
+         "-",
+         "Non pagato",
+         "Non approvata",
+         ""
+        ],
+        [
+         "http://example.test/modulo?a=1&b=2",
+         null,
+         "-",
+         "-",
+         "-",
+         "-",
+         "riga\nuno\u0001due",
+         "-",
+         "-",
+         "05/09/2026 00:00",
+         "-",
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "3"
+         },
+         "-",
+         "",
+         "Pagato",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        14,
+        13,
+        18,
+        22,
+        19,
+        15,
+        24,
+        10,
+        16,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Esporta \"risposte\" è).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-hex-upper",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/A1000000000040008000000000643101/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "Nome",
+        "Età",
+        "Consenso",
+        "Corsi scelti",
+        "Indirizzo",
+        "Firma",
+        "Note & <varie>",
+        "",
+        "Numero",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         {
+          "int": "30"
+         },
+         {
+          "bool": true
+         },
+         {
+          "list": [
+           "nuoto",
+           "tennis"
+          ]
+         },
+         {
+          "dict": [
+           [
+            "n",
+            {
+             "float": "1.5"
+            }
+           ],
+           [
+            "via",
+            "Roma"
+           ]
+          ]
+         },
+         "data:image/png;base64,AAAA",
+         " spazi ",
+         null,
+         "-",
+         "03/09/2026 08:05",
+         {
+          "int": "0"
+         },
+         "-",
+         "Neri",
+         "Pagato",
+         "Approvata",
+         "primo, allegato.pdf,secondo.png"
+        ],
+        [
+         "Bruno",
+         {
+          "float": "41.5"
+         },
+         {
+          "bool": false
+         },
+         {
+          "list": []
+         },
+         {
+          "dict": []
+         },
+         "-",
+         "-",
+         "-",
+         "-",
+         "04/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         {
+          "int": "2"
+         },
+         "-",
+         "Non pagato",
+         "Non approvata",
+         ""
+        ],
+        [
+         "http://example.test/modulo?a=1&b=2",
+         null,
+         "-",
+         "-",
+         "-",
+         "-",
+         "riga\nuno\u0001due",
+         "-",
+         "-",
+         "05/09/2026 00:00",
+         "-",
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "3"
+         },
+         "-",
+         "",
+         "Pagato",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        14,
+        13,
+        18,
+        22,
+        19,
+        15,
+        24,
+        10,
+        16,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Esporta \"risposte\" è).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "Nome",
+        "Età",
+        "Consenso",
+        "Corsi scelti",
+        "Indirizzo",
+        "Firma",
+        "Note & <varie>",
+        "",
+        "Numero",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         {
+          "int": "30"
+         },
+         {
+          "bool": true
+         },
+         {
+          "list": [
+           "nuoto",
+           "tennis"
+          ]
+         },
+         {
+          "dict": [
+           [
+            "n",
+            {
+             "float": "1.5"
+            }
+           ],
+           [
+            "via",
+            "Roma"
+           ]
+          ]
+         },
+         "data:image/png;base64,AAAA",
+         " spazi ",
+         null,
+         "-",
+         "03/09/2026 08:05",
+         {
+          "int": "0"
+         },
+         "-",
+         "Neri",
+         "Pagato",
+         "Approvata",
+         "primo, allegato.pdf,secondo.png"
+        ],
+        [
+         "Bruno",
+         {
+          "float": "41.5"
+         },
+         {
+          "bool": false
+         },
+         {
+          "list": []
+         },
+         {
+          "dict": []
+         },
+         "-",
+         "-",
+         "-",
+         "-",
+         "04/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         {
+          "int": "2"
+         },
+         "-",
+         "Non pagato",
+         "Non approvata",
+         ""
+        ],
+        [
+         "http://example.test/modulo?a=1&b=2",
+         null,
+         "-",
+         "-",
+         "-",
+         "-",
+         "riga\nuno\u0001due",
+         "-",
+         "-",
+         "05/09/2026 00:00",
+         "-",
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "3"
+         },
+         "-",
+         "",
+         "Pagato",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        14,
+        13,
+        18,
+        22,
+        19,
+        15,
+        24,
+        10,
+        16,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Esporta \"risposte\" è).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643101/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "Nome",
+        "Età",
+        "Consenso",
+        "Corsi scelti",
+        "Indirizzo",
+        "Firma",
+        "Note & <varie>",
+        "",
+        "Numero",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         {
+          "int": "30"
+         },
+         {
+          "bool": true
+         },
+         {
+          "list": [
+           "nuoto",
+           "tennis"
+          ]
+         },
+         {
+          "dict": [
+           [
+            "n",
+            {
+             "float": "1.5"
+            }
+           ],
+           [
+            "via",
+            "Roma"
+           ]
+          ]
+         },
+         "data:image/png;base64,AAAA",
+         " spazi ",
+         null,
+         "-",
+         "03/09/2026 08:05",
+         {
+          "int": "0"
+         },
+         "-",
+         "Neri",
+         "Pagato",
+         "Approvata",
+         "primo, allegato.pdf,secondo.png"
+        ],
+        [
+         "Bruno",
+         {
+          "float": "41.5"
+         },
+         {
+          "bool": false
+         },
+         {
+          "list": []
+         },
+         {
+          "dict": []
+         },
+         "-",
+         "-",
+         "-",
+         "-",
+         "04/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         {
+          "int": "2"
+         },
+         "-",
+         "Non pagato",
+         "Non approvata",
+         ""
+        ],
+        [
+         "http://example.test/modulo?a=1&b=2",
+         null,
+         "-",
+         "-",
+         "-",
+         "-",
+         "riga\nuno\u0001due",
+         "-",
+         "-",
+         "05/09/2026 00:00",
+         "-",
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "3"
+         },
+         "-",
+         "",
+         "Pagato",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        14,
+        13,
+        18,
+        22,
+        19,
+        15,
+        24,
+        10,
+        16,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Esporta \"risposte\" è).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643107/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "Nome",
+        "Età",
+        "Consenso",
+        "Corsi scelti",
+        "Indirizzo",
+        "Firma",
+        "Note & <varie>",
+        "",
+        "Numero",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "Estero",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "0"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        14,
+        13,
+        18,
+        22,
+        19,
+        15,
+        24,
+        10,
+        16,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Modulo).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-queue",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643005/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "Nome",
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "Uno",
+         "02/09/2026 10:00",
+         {
+          "int": "0"
+         },
+         {
+          "int": "1"
+         },
+         "-",
+         "-",
+         "Non approvata",
+         ""
+        ],
+        [
+         "Due",
+         "02/09/2026 10:00",
+         {
+          "int": "1"
+         },
+         {
+          "int": "2"
+         },
+         "-",
+         "-",
+         "Non approvata",
+         ""
+        ],
+        [
+         "Tre",
+         "02/09/2026 10:00",
+         {
+          "int": "2"
+         },
+         {
+          "int": "3"
+         },
+         "-",
+         "-",
+         "Non approvata",
+         ""
+        ],
+        [
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "3"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        14,
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (Modulo).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-plain-list-response",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643103/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Risposte",
+       "columns": [
+        "Data creazione",
+        "Progressivo risposta",
+        "Posizione in coda",
+        "Utente",
+        "Pagamento",
+        "Approvato",
+        "Allegati"
+       ],
+       "rows": [
+        [
+         "02/09/2026 10:00",
+         {
+          "int": "0"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         "primo, allegato.pdf"
+        ]
+       ],
+       "index": false,
+       "widths": [
+        24,
+        30,
+        27,
+        16,
+        19,
+        19,
+        18
+       ]
+      }
+     },
+     "filename": "[$today] Risposte al modulo (None).xls",
+     "type": "xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-list-response-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-element-without-name",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643104/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-label-none",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643105/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-export-elements-dict",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643106/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
   {
    "name": "modules-responses-info-anonymous",
    "actor": "anonymous",

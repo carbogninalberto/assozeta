@@ -570,6 +570,7 @@ func run() (runErr error) {
 	e.Any("/modules/:module_id/delete", modulesWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	modulesResponsesHandler := composeModulesResponses(cfg, db, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	e.Any("/modules/:module_id/info", modulesResponsesHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/modules/:module_id/export", modulesResponsesHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/response/add", modulesResponsesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/response/:module_response_id/approve", modulesResponsesHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/response/:module_response_id/delete", modulesResponsesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -583,11 +584,13 @@ func run() (runErr error) {
 	e.Any("/instructor/:uid/hours/:instructor_hours_id/update", instructorHoursHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/hours/:instructor_hours_id/delete", instructorHoursHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	instructorWritesHandler := handler.NewInstructorWritesHandler(service.NewInstructorWrites(repository.NewInstructorWrites(db), time.Now,
-		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).
+		WithReport(service.NewInstructorReport(repository.NewInstructorReport(db), time.Now))
 	e.Any("/instructor/add", instructorWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/update", instructorWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/delete", instructorWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/hours/add/compensation", instructorWritesHandler.Compensation, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instructor/report", instructorWritesHandler.Report, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/lessons-hours", instructorWritesHandler.Lessons, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/lessons-hours", instructorWritesHandler.Lessons, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/list", auditLogHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -799,10 +802,17 @@ func run() (runErr error) {
 	// and mirrored for Go sockets (internal/channels), on Redis database 0.
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
 		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
-	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks,
-		subscriptionNotifier, time.Now, nil), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
-		paymentCategoryOperations)
+	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil)
+	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(subscriptionCreates, service.NewActorAuthentication(accounts, tokens),
+		identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	// subscription/renew and associates-draft approve run create_subscription (subscription-renew.md).
+	subscriptionRenewHandler := handler.NewSubscriptionRenewHandler(
+		service.NewSubscriptionRenewals(repository.NewSubscriptionRenewals(db), subscriptionCreates),
+		service.NewSubscriptionDraftApprovals(repository.NewSubscriptionDraftApprovals(db), subscriptionCreates),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/renew", subscriptionRenewHandler.Renew, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/associates-draft/list/approve", subscriptionRenewHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
 	// subscription/<uid>/transfer: the recipient's notification through the same notifier.
 	subscriptionTransferHandler := handler.NewSubscriptionTransferHandler(service.NewSubscriptionTransfers(repository.NewSubscriptionTransfers(db),
 		subscriptionNotifier, tasks, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
@@ -810,6 +820,10 @@ func run() (runErr error) {
 			IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug}, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/transfer", subscriptionTransferHandler.Transfer, middleware.DjangoSessionAudit(sessionAuthentication))
+	// subscription/sign: signature upload, then subscription_signed and the print task after commit.
+	subscriptionSignHandler := composeSubscriptionSign(cfg, db, tasks, service.NewActorAuthentication(accounts, tokens), identities,
+		middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/sign", subscriptionSignHandler.Sign, middleware.DjangoSessionAudit(sessionAuthentication))
 	realtimeHub := service.NewRealtimeHub()
 	pubsubOptions := storeOptions
 	pubsubOptions.ReadTimeout = -1

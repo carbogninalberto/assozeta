@@ -13368,25 +13368,74 @@
         "target": "instructor_report",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_report.go",
+        "BE_GO/internal/repository/instructor_report.go",
+        "BE_GO/internal/service/instructor_report.go",
+        "BE_GO/internal/handler/instructor_writes.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/report",
+          "/api/v2/instructor/report",
+          "/api/instructor/report"
+        ],
+        "request": "GET ?start_date=D/M/YYYY&end_date=D/M/YYYY (Europe/Rome days).",
+        "response": "{data: {results: [{first_name, last_name, course, title, description, date, attendees_count, attendees, expected_absences}], report_file: base64 workbook}}.",
+        "errors": "400 {'msg': 'Entrambe le date sono richieste.'}; 401; 403 registry/association-scoped context, athlete 'User is not a sport association'; 405; 500 owner without association, unparseable or nonexistent dates, malformed events/instructors/attendees, matched event without title.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.instructor.read.",
+        "resource_scope": "the user's instructors; the association's attendance registries.",
+        "side_effects": "none",
+        "transaction": "reads only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_writes_http.json",
+        "TESTS/fixtures/generate_instructor_writes_http.py",
+        "TESTS/contracts/test_instructor_writes_http.py",
+        "TESTS/adapters/django/instructor_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 150/150; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "1dd656330c975883f7840e186d820c02319400c02498cacf50a68005dd57f0d1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 150/150 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "ee66b4d2a8b218d3ab71264150a3f1d63b58e608ac676ab58c1e6729a9360215"
+        },
+        {
+          "revision": "report dates rendered in UTC instead of Europe/Rome",
+          "result": "Mutation control: fails Go on instructor-writes-report-owner (sharedStrings.xml differs)",
+          "artifact": "quality-reports/go-migration/instructor-writes-http-xlsx-mutation-r1/results.json",
+          "receipt_sha256": "0e4f5196d6e485d6e547a5098224b1cdb1968567256b1f255ab1393fdca7dbed"
+        }
+      ],
+      "notes": [
+        "Implementing: Implementing: instructor_report (attendance rows and the pandas xlsxwriter report); refused: date spellings other than D/M/YYYY, non-str course subscription ids, workbook inputs the writer does not reproduce. See docs/architecture/go-migration/instructor-writes.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-bulk/archive -> invoice_bulk_archive",
@@ -14743,9 +14792,18 @@
         "BE_GO/internal/repository/misc_exports.go",
         "BE_GO/internal/service/misc_exports.go",
         "BE_GO/internal/handler/misc_exports.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
         "BE_GO/cmd/server/main.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
         "methods": [
           "GET",
@@ -14756,14 +14814,14 @@
           "/api/v2/invoice/list/export",
           "/api/invoice/list/export"
         ],
-        "request": "GET ?m=csv|files|<other>&archived= (m=xlsx not ported).",
-        "response": "csv: {data: {file: base64 CSV, type: csv, filename: '[<today>] RICEVUTE a <denomination>.csv'}}; files: {data: {file: '', message}}; other: {data: {file: ''}}.",
-        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, invalid archived, broker failure; 500 m=xlsx (not ported).",
+        "request": "GET ?m=csv|xlsx|files|<other>&archived=",
+        "response": "csv/xlsx: {data: {file: base64, type: csv|xlsx, filename: '[<today>] RICEVUTE a <denomination>.csv|.xlsx'}}; files: {data: {file: '', message}}; other: {data: {file: ''}}.",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, invalid archived, broker failure.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry bookeeping.documents.invoices.read.",
-        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's live X-Group-Id-aware invoices by creation_date; each invoice's first live group-aware payment by key.",
-        "side_effects": "m=files publishes export_invoices_to_zip.delay([document ids], association UUID) to the default Celery queue.",
-        "transaction": "Read only; the publish follows the reads.",
+        "resource_scope": "scoped live association; live group-aware invoices.",
+        "side_effects": "files: export_invoices_to_zip.delay",
+        "transaction": "reads only",
         "execution_owner": "django"
       },
       "tests": [
@@ -14776,25 +14834,25 @@
         "docs/architecture/go-migration/misc-exports.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 57/57; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/misc-exports-http-native-r1/results.json",
-          "receipt_sha256": "1ee3b57a71200d51b63467c53dfd2461f90698fd5ba968722763c06023fdc23f"
+          "result": "RED: Django 70/70; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "4483ee528dd84751ec80b6194e90d2bc0fd3dd7d213f1e623bcfbab6117a382a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 57/57 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/misc-exports-http-versioned-r2/results.json",
-          "receipt_sha256": "b79ba58ecdf16cdce8e58e792da531732d5f6e0ecb2b35be596af7e0cb455435"
+          "result": "GREEN: 70/70 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "7b1a7589f8f237cd2d5753771f3d7b24525aca969d9f954b37a6ed87281a3772"
         },
         {
-          "revision": "taking each invoice's payment with the highest primary key instead of the lowest (payment_set.first())",
-          "result": "Mutation control: fails Go on misc-exports-inv-owner (CSV body differs).",
-          "artifact": "quality-reports/go-migration/misc-exports-http-mutation-r1/results.json",
-          "receipt_sha256": "68d6da7871b1f934ea054c8b83e13e84f7563001d51e5b1cd152e3c6fe887fa8"
+          "revision": "len(col) + 2 instead of len(col) + 10 column widths in the subscription workbook",
+          "result": "Mutation control: fails Go on misc-exports-subs-xls-full (<cols> differs)",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-mutation-r2/results.json",
+          "receipt_sha256": "9daabf4817f2ee7ae5e12b52fd41a353831d4511c832aacd2a86a20c68c03867"
         }
       ],
       "notes": [
-        "Implementing: CSV exports and the invoice zip dispatch (export_invoices_to_zip.delay through the Celery producer); subscription filetype containing xls and invoice m=xlsx (spreadsheet workbooks) are refused with a 500 before any lookup. See docs/architecture/go-migration/misc-exports.md."
+        "Implementing: Implementing: CSV, subscription xls (xlsxwriter, built from a dry pass before the tutor promotions), invoice m=xlsx (get_excel_base64) and the zip dispatch. See docs/architecture/go-migration/misc-exports.md and xlsx-exports.md."
       ]
     },
     {
@@ -15232,25 +15290,75 @@
         "target": "modules_response_export",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_export.go",
+        "BE_GO/internal/repository/modules_export.go",
+        "BE_GO/internal/service/modules_export.go",
+        "BE_GO/internal/handler/modules_responses.go",
+        "BE_GO/cmd/server/modules_responses.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/<module_id>/export",
+          "/api/v2/modules/<module_id>/export",
+          "/api/modules/<module_id>/export"
+        ],
+        "request": "GET, module id in the path (is_valid_uuid).",
+        "response": "{data: {file: base64 workbook, filename: '[<today>] Risposte al modulo (<title>).xls', type: xlsx}}.",
+        "errors": "400 malformed id (list); 401; 403 registry/association-scoped context, athlete 'User is not a sport association'; 404 {'error': 'response not found'}; 405; 500 owner without association, malformed elements or labels, non-dict responses with response columns.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.modules.read.",
+        "resource_scope": "request.user.sport_association's module responses.",
+        "side_effects": "none",
+        "transaction": "reads only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_responses_http.json",
+        "TESTS/fixtures/generate_modules_responses_http.py",
+        "TESTS/contracts/test_modules_responses_http.py",
+        "TESTS/adapters/django/modules_responses_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 135/135; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "db11fdb25d96ac832a5557abb7d844603b36311fa5d302330c3197f3ea212930"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "d146a5aa1c1aeff09a351b40a46b4e8fad6dfa1d127d2c26997fde579b64ffd3"
+        },
+        {
+          "revision": "attachment filenames joined by ', ' instead of ','",
+          "result": "Mutation control: fails Go on modules-responses-export-owner (sharedStrings.xml differs)",
+          "artifact": "quality-reports/go-migration/modules-responses-http-xlsx-mutation-r1/results.json",
+          "receipt_sha256": "9b5388f89f3f48502e9270cd59de49768bb96e339f812df938047713983adeb7"
+        }
+      ],
+      "notes": [
+        "Implementing: Implementing: modules_response_export (pandas xlsxwriter workbook, sheet Risposte); refused: list/object labels, ints beyond int64, workbook inputs the writer does not reproduce. See docs/architecture/go-migration/modules-responses.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/<str:module_id>/overview -> modules_overview",
@@ -18984,9 +19092,18 @@
         "BE_GO/internal/repository/payment_export.go",
         "BE_GO/internal/service/payment_export.go",
         "BE_GO/internal/handler/payment_export.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
         "BE_GO/cmd/server/main.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
         "methods": [
           "GET",
@@ -18998,13 +19115,13 @@
           "/api/payment/list/export"
         ],
         "request": "GET ?m=csv|xlsx&export_type=petty_cash_book&archived=&query[payment_range]=&query[paid]=&query[expense]=&query[payment_categories]=&query[account]=&query[generalSearch]=",
-        "response": "{data: {file: base64 CSV, type: csv, filename: '[<today>] PAGAMENTI a <denomination>.csv'}}.",
-        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, unsplittable range, invalid archived, malformed category/account UUID, petty cash book transfer or rendered row without an account, raising course JSON; 500 m=xlsx (not ported).",
+        "response": "csv: {data: {file: base64 CSV, type: csv, filename: '[<today>] PAGAMENTI a <denomination>.csv'}}; xlsx: {data: {file: base64 workbook (get_excel_base64), type: xlsx, filename: '[<today>] PAGAMENTI a <denomination>.xlsx'}}.",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, unsplittable range, invalid archived, malformed category/account UUID, petty cash transfer without an account, CSV petty row without an account, raising course JSON or meta categories; 500 refused workbook inputs.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry bookeeping.payments.read.",
-        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's live, X-Group-Id-aware payments and account transfers.",
-        "side_effects": "None (read).",
-        "transaction": "Read only.",
+        "resource_scope": "scoped live association; group-aware live payments.",
+        "side_effects": "none",
+        "transaction": "reads only",
         "execution_owner": "django"
       },
       "tests": [
@@ -19017,25 +19134,25 @@
         "docs/architecture/go-migration/payment-export.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 72/72; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-export-http-native-r4/results.json",
-          "receipt_sha256": "865de124a007a4d7fbd5221dee883a378c1781b84dd74a357dee73f449615cc9"
+          "result": "RED: Django 87/87; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-export-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "75540dd9637ceb4ae26508e0bdb0843190bf3a50d0fede64f0bdac053e64ad4c"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 72/72 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
-          "artifact": "quality-reports/go-migration/payment-export-http-versioned-r1/results.json",
-          "receipt_sha256": "3b454b9969929c09fa0d20c29a58210455cb0bf304ca1a6ea7356180c2f18591"
+          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/payment-export-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "c05a1780c2f08a773d2a8259a6bc3420f8558b0c181c509197b67c15a46eecf1"
         },
         {
-          "revision": "counting soft-deleted payments in the petty cash book opening balances",
-          "result": "Mutation control: fails Go on payment-export-petty-spring (response.body:data:file).",
-          "artifact": "quality-reports/go-migration/payment-export-http-mutation-r1/results.json",
-          "receipt_sha256": "9269d300b2f722c4850cba105a266f38d1e2f423dc18f75ba7aab4cc56d83700"
+          "revision": "'' instead of '-' for a payment without an account in the workbook",
+          "result": "Mutation control: fails Go on payment-export-xlsx (xl/worksheets/sheet1.xml differs)",
+          "artifact": "quality-reports/go-migration/payment-export-http-xlsx-mutation-r2/results.json",
+          "receipt_sha256": "ebdf01deb578624691218671e3bce50380caf80afe42b4540fb74728761f42fd"
         }
       ],
       "notes": [
-        "Implementing: payment/list/export CSV (filters, range, general/smart search, petty cash book transfers and progressive balances); m=xlsx is refused with a 500 (openpyxl workbook not byte-reproducible). See docs/architecture/go-migration/payment-export.md."
+        "Implementing: Implementing: CSV and m=xlsx (get_excel_base64 workbook, part-by-part XLSX parity, xlsx-exports.md); refused: workbook inputs the writer does not reproduce, bool/list/object/huge-int course labels. See docs/architecture/go-migration/payment-export.md."
       ]
     },
     {
@@ -25066,25 +25183,70 @@
         "target": "subscription_associates_draft_approve",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_renew.go",
+        "BE_GO/internal/domain/subscription_create.go",
+        "BE_GO/internal/repository/subscription_renew.go",
+        "BE_GO/internal/service/subscription_renew.go",
+        "BE_GO/internal/service/subscription_create.go",
+        "BE_GO/internal/service/subscription_create_python.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/handler/subscription_renew.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/associates-draft/list/approve",
+          "/api/v2/subscription/associates-draft/list/approve",
+          "/api/subscription/associates-draft/list/approve"
+        ],
+        "request": "POST JSON {associate_import_draft_ids, subscription_details {type, role, plan_id, membership_plan_id}, all}.",
+        "response": "{msg: '<n> su <m> atleti approvati.', approved: n}.",
+        "errors": "401 empty for athletes; 400 {msg: 'bad request, missing drafts to approve.'}; 400 {msg: 'Dati mancanti, iscrizione non approvata.'}; 403 registry / admin session; 405; 500 non-dict body or details, non-iterable ids, no association, a draft without associate (earlier drafts kept); 500 refused inputs (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.create; collaborators act as the owner.",
+        "resource_scope": "Drafts of request.user.sport_association.",
+        "side_effects": "APPROVING status rows replaced and deleted; per approved draft the create_subscription rows, the draft deleted (entry with str(data)), notification rows; after commit Celery messages and notifications.",
+        "transaction": "Django: not atomic, one transaction per create_subscription. Go: one transaction with a savepoint per draft, after-commit work at the end.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_renew_http.json",
+        "TESTS/fixtures/generate_subscription_renew_http.py",
+        "TESTS/contracts/test_subscription_renew_http.py",
+        "TESTS/adapters/django/subscription_renew_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-renew.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 54/54; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-red-r7/results.json",
+          "receipt_sha256": "38505812e7630513646c6d5faf816babc9fe51e11a95cfeba172ed383b02ac71"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 54/54 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-versioned-r3/results.json",
+          "receipt_sha256": "4cc12dede0914abcf75237e2edf7654ee10620400c304093baccaf6759b67f43"
+        },
+        {
+          "revision": "letting the renewal payment clean-up also match the newly created payment (dropping the payment_id exclusion)",
+          "result": "Mutation control: fails Go on subscription-renew-renew-basic (the new payment is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-mutation-r1/results.json",
+          "receipt_sha256": "df7fe15c552bbc02f3019d0bb47154f2537e3b56ba3dac9a2f76f1410dbe2fd5"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/renew and subscription/associates-draft/list/approve for owners and collaborators through the create_subscription port, extended with AssociateSerializer.create's associate_id branch, the sport_association username lookup, None certificate expirations and Python str(e) texts. Renew: one transaction (create, unpaid same-person payment clean-up with the Payment delete cascade, user by e-mail, tag links), 400 {status: error, msg: str(e)}, on_commit work after commit. Approve: one transaction with a savepoint per draft (swallowed exceptions, draft delete entry rendering the in-memory data as str(dict), APPROVING status rows, crash before the try keeps earlier work), notifications and Celery after commit. Athlete renewals, another association in sport_association, renewal courses, string/non-string tag ids, invoiced payments in the clean-up, unknown str(e) texts, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-renew.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/calculate-tax-code -> subscription_calculate_tax_code",
@@ -25763,9 +25925,18 @@
         "BE_GO/internal/repository/misc_exports.go",
         "BE_GO/internal/service/misc_exports.go",
         "BE_GO/internal/handler/misc_exports.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/xlsxwriter.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/compare.go",
+        "BE_GO/internal/xlsxexport/golden_test.go",
         "BE_GO/cmd/server/main.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "Existing family Go code and xlsxexport writer"
+      ],
       "contract": {
         "methods": [
           "GET",
@@ -25777,14 +25948,14 @@
           "/api/v2/subscription/list/export",
           "/api/subscription/list/export"
         ],
-        "request": "GET or POST ?filetype=csv|simplified|<other> (xls variants not ported).",
-        "response": "{data: {filename: '[<today>] ISCRIZIONI a <denomination>.csv', type: csv, file: base64 CSV}} (full or simplified columns).",
-        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, subscription without associate, zero rows (pandas), unknown status flag; 500 filetype containing xls (not ported).",
+        "request": "GET or POST ?filetype=csv|simplified|<contains xls>|<other>.",
+        "response": "{data: {filename: '[<today>] ISCRIZIONI a <denomination>.csv|.xls', type: csv|xls, file: base64}} (full or simplified columns; xls: pandas xlsxwriter, sheet Libro Soci, index column).",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, subscription without associate, zero rows (pandas), unknown status flag; 500 refused workbook inputs (before any write).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; registry association.members.read.",
-        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's X-Group-Id-aware unarchived subscriptions (Subscription.objects keeps deleted rows) by -creation_date.",
-        "side_effects": "Full exports: Associate.main_tutor promotes the first tutor relation when none is primary (audited update, indexed through associate.sport_association), autocommitted per row.",
-        "transaction": "Not atomic: promotions before a failing row are kept.",
+        "resource_scope": "scoped live association; group-aware subscriptions.",
+        "side_effects": "full exports promote and save the first tutor relation (audited) when none is primary.",
+        "transaction": "autocommit per promotion",
         "execution_owner": "django"
       },
       "tests": [
@@ -25797,25 +25968,25 @@
         "docs/architecture/go-migration/misc-exports.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 57/57; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/misc-exports-http-native-r1/results.json",
-          "receipt_sha256": "1ee3b57a71200d51b63467c53dfd2461f90698fd5ba968722763c06023fdc23f"
+          "result": "RED: Django 70/70; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-red-r1/results.json",
+          "receipt_sha256": "4483ee528dd84751ec80b6194e90d2bc0fd3dd7d213f1e623bcfbab6117a382a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 57/57 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/misc-exports-http-versioned-r2/results.json",
-          "receipt_sha256": "b79ba58ecdf16cdce8e58e792da531732d5f6e0ecb2b35be596af7e0cb455435"
+          "result": "GREEN: 70/70 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-versioned-r1/results.json",
+          "receipt_sha256": "7b1a7589f8f237cd2d5753771f3d7b24525aca969d9f954b37a6ed87281a3772"
         },
         {
-          "revision": "taking each invoice's payment with the highest primary key instead of the lowest (payment_set.first())",
-          "result": "Mutation control: fails Go on misc-exports-inv-owner (CSV body differs).",
-          "artifact": "quality-reports/go-migration/misc-exports-http-mutation-r1/results.json",
-          "receipt_sha256": "68d6da7871b1f934ea054c8b83e13e84f7563001d51e5b1cd152e3c6fe887fa8"
+          "revision": "len(col) + 2 instead of len(col) + 10 column widths in the subscription workbook",
+          "result": "Mutation control: fails Go on misc-exports-subs-xls-full (<cols> differs)",
+          "artifact": "quality-reports/go-migration/misc-exports-http-xlsx-mutation-r2/results.json",
+          "receipt_sha256": "9daabf4817f2ee7ae5e12b52fd41a353831d4511c832aacd2a86a20c68c03867"
         }
       ],
       "notes": [
-        "Implementing: CSV exports and the invoice zip dispatch (export_invoices_to_zip.delay through the Celery producer); subscription filetype containing xls and invoice m=xlsx (spreadsheet workbooks) are refused with a 500 before any lookup. See docs/architecture/go-migration/misc-exports.md."
+        "Implementing: Implementing: CSV, subscription xls (xlsxwriter, built from a dry pass before the tutor promotions), invoice m=xlsx (get_excel_base64) and the zip dispatch. See docs/architecture/go-migration/misc-exports.md and xlsx-exports.md."
       ]
     },
     {
@@ -26169,25 +26340,70 @@
         "target": "subscription_renew",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_renew.go",
+        "BE_GO/internal/domain/subscription_create.go",
+        "BE_GO/internal/repository/subscription_renew.go",
+        "BE_GO/internal/service/subscription_renew.go",
+        "BE_GO/internal/service/subscription_create.go",
+        "BE_GO/internal/service/subscription_create_python.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/handler/subscription_renew.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/renew",
+          "/api/v2/subscription/renew",
+          "/api/subscription/renew"
+        ],
+        "request": "POST JSON create_subscription data {new_user_account, associate_data (associate_id), associate_tutor_data, signature, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id, sport_association, user, tags, courses}.",
+        "response": "{status: success, payment_id}.",
+        "errors": "400 {status: error, msg: str(e)} for Python exceptions (rolled back); 400 serializer errors / {msg, code: '400'}; 403 registry / admin session; 405; 409 duplicate; 500 athletes without sport_association; 500 refused inputs (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.create; collaborators act as the owner.",
+        "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id.",
+        "side_effects": "create_subscription rows and audit; deleted unpaid payments (Payment delete cascade); subscription user update; tag links; after commit check_workflows_trigger(new_subscription), print_document_subscription, notification rows/Redis/Channels.",
+        "transaction": "One atomic transaction around create_subscription and the post-processing; on_commit work after it.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_renew_http.json",
+        "TESTS/fixtures/generate_subscription_renew_http.py",
+        "TESTS/contracts/test_subscription_renew_http.py",
+        "TESTS/adapters/django/subscription_renew_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-renew.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 54/54; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-red-r7/results.json",
+          "receipt_sha256": "38505812e7630513646c6d5faf816babc9fe51e11a95cfeba172ed383b02ac71"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 54/54 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-versioned-r3/results.json",
+          "receipt_sha256": "4cc12dede0914abcf75237e2edf7654ee10620400c304093baccaf6759b67f43"
+        },
+        {
+          "revision": "letting the renewal payment clean-up also match the newly created payment (dropping the payment_id exclusion)",
+          "result": "Mutation control: fails Go on subscription-renew-renew-basic (the new payment is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-mutation-r1/results.json",
+          "receipt_sha256": "df7fe15c552bbc02f3019d0bb47154f2537e3b56ba3dac9a2f76f1410dbe2fd5"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/renew and subscription/associates-draft/list/approve for owners and collaborators through the create_subscription port, extended with AssociateSerializer.create's associate_id branch, the sport_association username lookup, None certificate expirations and Python str(e) texts. Renew: one transaction (create, unpaid same-person payment clean-up with the Payment delete cascade, user by e-mail, tag links), 400 {status: error, msg: str(e)}, on_commit work after commit. Approve: one transaction with a savepoint per draft (swallowed exceptions, draft delete entry rendering the in-memory data as str(dict), APPROVING status rows, crash before the try keeps earlier work), notifications and Celery after commit. Athlete renewals, another association in sport_association, renewal courses, string/non-string tag ids, invoiced payments in the clean-up, unknown str(e) texts, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-renew.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/sign -> subscription_sign",
@@ -26204,25 +26420,68 @@
         "target": "subscription_sign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_sign.go",
+        "BE_GO/internal/dto/subscription_sign.go",
+        "BE_GO/internal/repository/subscription_sign.go",
+        "BE_GO/internal/service/subscription_sign.go",
+        "BE_GO/internal/handler/subscription_sign.go",
+        "BE_GO/cmd/server/subscription_sign.go",
+        "BE_GO/pkg/storage/documentobjects/acl.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/sign",
+          "/api/v2/subscription/sign",
+          "/api/subscription/sign"
+        ],
+        "request": "JSON or form object with exactly subscription_id and signature {there_is_signature, data}.",
+        "response": "200 {'status': 'success'}.",
+        "errors": "400 {'msg': 'validation errors.'} for other keys; 400 list from is_valid_uuid; 400 serializer field errors; 400 invalid_signature; 503 signature_storage; 500 for non-mapping bodies and unknown ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update; athlete-facing in association-scoped sessions.",
+        "resource_scope": "scoped_queryset(Subscription.objects): group-aware, session association, athlete family rows; the row is resolved by id.",
+        "side_effects": "Signature row (create entry, actor.sport_association), signature object in default storage with optional public-read ACL, subscription signature columns and status PENDING (update entry, direct); after commit DeleteObject of the unreferenced old key, check_workflows_trigger(subscription_signed) and print_document_subscription Celery messages.",
+        "transaction": "transaction.atomic() with select_for_update; on_commit(robust=True) callbacks.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_sign_http.json",
+        "TESTS/fixtures/generate_subscription_sign_http.py",
+        "TESTS/contracts/test_subscription_sign_http.py",
+        "TESTS/adapters/django/subscription_sign_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-sign.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 46/46; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-native-r2/results.json",
+          "receipt_sha256": "69bdd96882036b7475c7dc823b7d493cfe150861175c09e7f496109e7df03b5c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 46/46 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage requests, objects, rows, audit and Celery effects.",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-versioned-r1/results.json",
+          "receipt_sha256": "8d42ed4163b922ec95302cf67dcc70952e31305ce8ea15507465297d7cd2b67e"
+        },
+        {
+          "revision": "counting only PENDING rows as references in delete_signature_key_if_unreferenced",
+          "result": "Mutation control: fails Go on subscription-sign-upload-keeps-referenced-object (the shared old object is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-mutation-r1/results.json",
+          "receipt_sha256": "9c3898eb38b19137a4c6721e6f3ec8aceead7e0167d3a4224bf151fa8443f739"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/sign: Signature row and signature upload (strict base64, subscriptions/<id>/signature_<timestamp>.png, HeadObject/PutObject, public-read ACL with AWS_S3_USE_OBJECT_ACL, public URL), status PENDING, then after commit the unreferenced old object, check_workflows_trigger(subscription_signed) and print_document_subscription. A generated key that already exists is refused with a 500 before any write. See docs/architecture/go-migration/subscription-sign.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/tags/<str:tag_id>/assign/<str:subscription_id> -> subscription_tags_assign",
@@ -34469,7 +34728,8 @@
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Task is not ported (member email); Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md."
+        "Task is not ported (member email); Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md.",
+        "Task is not registered in the Go worker; Go rejects such persisted rows as unsupported without effects (tasks-db-d occurrence check). See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -34657,32 +34917,66 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task change_type_of_stripe_payments with a */45 minute step UTC cron (0 and 45), a seconds interval or another supported cron, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide change_type_of_stripe_payments version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic change_type_of_stripe_payments v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps change_type_of_stripe_payments to its registered version-1 worker job. Existing */45 oracle cases. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -35104,33 +35398,66 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task generate_coupon_if_not_exists with a */15 minute step UTC cron, a seconds interval or another supported cron, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide generate_coupon_if_not_exists version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic generate_coupon_if_not_exists v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps generate_coupon_if_not_exists to its registered version-1 worker job. Existing */15 oracle cases. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Task is not registered in the Go worker; Go rejects such persisted rows as unsupported without effects. Not ported by tasks-db-b: creates Stripe coupons and promotion codes. See docs/architecture/go-migration/tasks-db-b.md."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -35174,7 +35501,8 @@
         "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
+        "Task is not registered in the Go worker; Go rejects such persisted rows as unsupported without effects (tasks-db-d rejection and occurrence checks). See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -35193,33 +35521,66 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task renew_memberships_payments with a scalar 00:10 UTC daily cron, a seconds interval or another supported cron, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide renew_memberships_payments version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic renew_memberships_payments v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps renew_memberships_payments to its registered version-1 worker job. Three new authored 00:10 cases match actual Celery. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Task is not ported (email and self-scheduled Celery retry); Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -37052,7 +37413,11 @@
         "TESTS/fixtures/subscription_create_http.json",
         "TESTS/fixtures/generate_subscription_create_http.py",
         "TESTS/contracts/test_subscription_create_http.py",
-        "TESTS/adapters/django/subscription_create_http.py"
+        "TESTS/adapters/django/subscription_create_http.py",
+        "TESTS/fixtures/subscription_renew_http.json",
+        "TESTS/fixtures/generate_subscription_renew_http.py",
+        "TESTS/contracts/test_subscription_renew_http.py",
+        "TESTS/adapters/django/subscription_renew_http.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/subscription-create.md",
@@ -37073,11 +37438,31 @@
           "result": "Mutation control: fails Go on subscription-create-zero-fee-no-payment (SubscriptionMembership start_date).",
           "artifact": "quality-reports/go-migration/subscription-create-http-mutation-r1/results.json",
           "receipt_sha256": "05240b812e059d72528cf8fb39c381501b81e26fba35563e60b6adce54798089"
+        },
+        "docs/architecture/go-migration/subscription-renew.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 54/54; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-red-r7/results.json",
+          "receipt_sha256": "38505812e7630513646c6d5faf816babc9fe51e11a95cfeba172ed383b02ac71"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 54/54 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by subscription-renew-renew-basic, subscription-renew-renew-new-associate-id-and-user, subscription-renew-approve-listed, subscription-renew-approve-all.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-versioned-r3/results.json",
+          "receipt_sha256": "4cc12dede0914abcf75237e2edf7654ee10620400c304093baccaf6759b67f43"
+        },
+        {
+          "revision": "letting the renewal payment clean-up also match the newly created payment (dropping the payment_id exclusion)",
+          "result": "Mutation control: fails Go on subscription-renew-renew-basic (the new payment is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-mutation-r1/results.json",
+          "receipt_sha256": "df7fe15c552bbc02f3019d0bb47154f2537e3b56ba3dac9a2f76f1410dbe2fd5"
         }
       ],
       "notes": [
         "Only publishes check_workflows_trigger(trigger_type=new_subscription). Not creditable yet: the sender (SubscriptionManager.create on_commit) is not in any Go route; a Go port of subscription creation must publish it after commit (recipe: subscription-approve / celery-producer.md). See docs/architecture/go-migration/tasks-db-b.md.",
-        "Implementing via subscription-create: new_subscription on commit publishes check_workflows_trigger(trigger_type='new_subscription', sport_association_id=UUID, subscription_id=UUID) from Go for subscription/add."
+        "Implementing via subscription-create: new_subscription on commit publishes check_workflows_trigger(trigger_type='new_subscription', sport_association_id=UUID, subscription_id=UUID) from Go for subscription/add.",
+        "Implementing via subscription-renew: new_subscription on commit publishes check_workflows_trigger(trigger_type='new_subscription', sport_association_id=UUID, subscription_id=UUID) from Go for subscription/renew and associates-draft approve."
       ]
     },
     {
@@ -37195,8 +37580,10 @@
         "decorator": "receiver(subscription_signed)",
         "arguments": "sender, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/subscription_sign.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -37211,10 +37598,36 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/subscription_sign_http.json",
+        "TESTS/fixtures/generate_subscription_sign_http.py",
+        "TESTS/contracts/test_subscription_sign_http.py",
+        "TESTS/adapters/django/subscription_sign_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-sign.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 46/46; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-native-r2/results.json",
+          "receipt_sha256": "69bdd96882036b7475c7dc823b7d493cfe150861175c09e7f496109e7df03b5c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 46/46 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage requests, objects, rows, audit and Celery effects; exercised by subscription-sign-no-signature, subscription-sign-no-signature-flag-default, subscription-sign-no-signature-urn-uuid, subscription-sign-no-signature-group-collaborator, subscription-sign-other-association-row-no-signature, subscription-sign-upload-data-uri, subscription-sign-resign-replaces-own-object, subscription-sign-url-signature, subscription-sign-url-replaces-stored-key, subscription-sign-upload-keeps-referenced-object, subscription-sign-athlete-upload, subscription-sign-admin-impersonating-owner-upload, subscription-sign-owner-scoped-athlete-url-signature, subscription-sign-undated-row-keeps-dates.",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-versioned-r1/results.json",
+          "receipt_sha256": "8d42ed4163b922ec95302cf67dcc70952e31305ce8ea15507465297d7cd2b67e"
+        },
+        {
+          "revision": "counting only PENDING rows as references in delete_signature_key_if_unreferenced",
+          "result": "Mutation control: fails Go on subscription-sign-upload-keeps-referenced-object (the shared old object is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-mutation-r1/results.json",
+          "receipt_sha256": "9c3898eb38b19137a4c6721e6f3ec8aceead7e0167d3a4224bf151fa8443f739"
+        }
+      ],
       "notes": [
-        "Only publishes check_workflows_trigger(trigger_type=subscription_signed). Not creditable yet: the sender (subscription signing view, on_commit) is not in any Go route. See docs/architecture/go-migration/tasks-db-b.md."
+        "Only publishes check_workflows_trigger(trigger_type=subscription_signed). Not creditable yet: the sender (subscription signing view, on_commit) is not in any Go route. See docs/architecture/go-migration/tasks-db-b.md.",
+        "Implementing via subscription-sign: Published by Go after the subscription/sign commit (check_workflows_trigger trigger_type=subscription_signed with UUID kwargs), compared with Django's message on every success case."
       ]
     },
     {
@@ -37661,7 +38074,8 @@
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-a: each created fee payment for a member sends a templated email."
+        "Not ported by tasks-db-a: each created fee payment for a member sends a templated email.",
+        "Not ported by tasks-db-d: needs email/payment/fee_assigned.html in emailrender and a generalized send_email_html (SMTP timer or send_mail_async) in the shared e-mail task service. See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -37956,27 +38370,52 @@
           "name": "'change_type_of_stripe_payments'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/tasks_db_d.go",
+        "BE_GO/internal/repository/tasks_db_d.go",
+        "BE_GO/internal/service/tasks_db_d.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go",
+        "BE_GO/cmd/worker/tasks_db_d.go",
+        "BE_GO/internal/stripeapi/client.go",
+        "BE_GO/internal/service/stripe_routes.go",
+        "BE_GO/internal/service/stripe_availability.go"
+      ],
+      "dependencies": [
+        "BE/application/models/payment_models.py",
+        "BE/application/utils/stripe_utils.py",
+        "BE/instance/integration_configuration.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/jobs.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "request": "No Python arguments; exact Go kind/version 1, empty object payload, nil association and a running fenced job.",
+        "response": "Django None; completed Go job with SQL NULL result.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "execution_owner": "django",
+        "errors": "StripeError per payment is swallowed (also PaymentIntent.retrieve with an empty id, raised before any request); a resource without status ends the task (AttributeError) dropping the batch update; a JSON success that is not an object fails the Go job (not characterized). Lost lease, cancellation and SQL/COMMIT failures go back to the executor.",
+        "resource_scope": "Payment.objects (not deleted) paid, type default, intent set, created after or paid on/after now-10d; count once, then [n:n+100] re-queried per batch with select_related joins and no ordering.",
+        "side_effects": "GET /v1/payment_intents/<quote_plus(id)> per payment with the stripe-python 11.6.0 headers, 1 s wait after each; succeeded intents bulk_update type=stripe per batch (NOT deleted, no signals, no audit).",
+        "transaction": "Count and each batch read in fenced READ COMMITTED transactions; each batch update in its own fenced transaction. Job deadline max(--task-timeout, 2h)."
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/tasks_db_d_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py",
+        "BE_GO/internal/service/tasks_db_d_test.go",
+        "BE_GO/internal/stripeapi/client_test.go"
+      ],
+      "evidence": [
+        "Native worker registration (version 1). TESTS/adapters/go/tasks_db_d_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private Redis (broker DB 0, cache DB 1) and a private Stripe stub; ten seeds are first processed by the actual Django tasks with authored path assertions, and each Go job must leave the same effects on the seeded rows (random keys, codes, timestamps and audit ids normalized after shape/window checks), send the same Stripe requests and publish the same Celery messages. RED: job stays pending without the registrations. GREEN 12/12 (green-r1; green-r2 after merging the export cleanup slice). Mutation caught: renewal month arithmetic without the day clamp. See docs/architecture/go-migration/tasks-db-d.md."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Celery rate_limit 30/m is a Django consumer throttle without Go counterpart. Batches beyond 100 payments are not exercised by the seeds. Django carries X-Stripe-Client-Telemetry across tasks in one worker thread; Go starts each job without it. See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -38017,7 +38456,8 @@
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md."
+        "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md.",
+        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -38058,7 +38498,8 @@
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md."
+        "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md.",
+        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -38479,28 +38920,54 @@
           "name": "'generate_coupon_if_not_exists'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/tasks_db_d.go",
+        "BE_GO/internal/repository/tasks_db_d.go",
+        "BE_GO/internal/service/tasks_db_d.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go",
+        "BE_GO/cmd/worker/tasks_db_d.go",
+        "BE_GO/internal/stripeapi/client.go",
+        "BE_GO/internal/service/stripe_routes.go",
+        "BE_GO/internal/service/stripe_availability.go"
+      ],
+      "dependencies": [
+        "BE/application/models/user_models.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/utils/stripe_utils.py",
+        "BE/instance/integration_configuration.py",
+        "BE/application/audit_resolvers.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "request": "No Python arguments; exact Go kind/version 1, empty object payload, nil association and a running fenced job.",
+        "response": "Django None; completed Go job with SQL NULL result.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "execution_owner": "django",
+        "errors": "The first exception ends the task keeping earlier saves: Stripe errors, a missing coupon id, stripe_request_options() raising for an empty key (no request). Coupon ids other than strings or integers fail the Go job. Lost lease, cancellation and SQL/COMMIT failures go back to the executor.",
+        "resource_scope": "SportAssociation.objects (not deleted) with affiliate_code NULL, unordered.",
+        "side_effects": "POST /v1/coupons percent_off=10.0, duration=once, name=denomination[:40]; POST /v1/promotion_codes coupon, code (generate_readable_unique_string), active=True; save() with auditlog UPDATE of affiliate_code/affiliate_code_stripe indexed self. Go updates only those two columns.",
+        "transaction": "Candidate read in one fenced transaction; each association save (audit, index, UPDATE) in its own fenced transaction after both Stripe calls."
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/tasks_db_d_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py",
+        "BE_GO/internal/service/tasks_db_d_test.go",
+        "BE_GO/internal/stripeapi/client_test.go"
+      ],
+      "evidence": [
+        "Native worker registration (version 1). TESTS/adapters/go/tasks_db_d_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private Redis (broker DB 0, cache DB 1) and a private Stripe stub; ten seeds are first processed by the actual Django tasks with authored path assertions, and each Go job must leave the same effects on the seeded rows (random keys, codes, timestamps and audit ids normalized after shape/window checks), send the same Stripe requests and publish the same Celery messages. RED: job stays pending without the registrations. GREEN 12/12 (green-r1; green-r2 after merging the export cleanup slice). Mutation caught: renewal month arithmetic without the day clamp. See docs/architecture/go-migration/tasks-db-d.md."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-b: creates Stripe coupons and promotion codes. See docs/architecture/go-migration/tasks-db-b.md."
+        "Celery rate_limit 4/m is a Django consumer throttle without Go counterpart. See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -38598,7 +39065,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Not ported by tasks-db-d: a ten-thread pool runs the full mark_payment_as_paid per unpaid payment (invoice numbering, print_document_invoice.delay(invoice, None), course/carnet saves, NotificationService); invoice numbers depend on thread completion order. Needs its own family. The Go scheduler rejects its Beat rows as unsupported. See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -38702,28 +39170,53 @@
           "name": "'renew_memberships_payments'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/tasks_db_d.go",
+        "BE_GO/internal/repository/tasks_db_d.go",
+        "BE_GO/internal/service/tasks_db_d.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go",
+        "BE_GO/cmd/worker/tasks_db_d.go",
+        "BE_GO/internal/celery/celery.go"
+      ],
+      "dependencies": [
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/balance_sheet_models.py",
+        "BE/application/audit_resolvers.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE/instance/restore/task_base.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "request": "Scheduled call only (attempt=1, max_attempts=3): exact Go kind/version 1, empty object payload, nil association and a running fenced job. The attempt 2/3 retries are Celery messages run by Django workers.",
+        "response": "Django None; completed Go job with SQL NULL result.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "execution_owner": "django",
+        "errors": "Held cache lock: returns without effect. Per-row exceptions (no association, no subscription) roll the row back and continue. A run whose due period already has a paid payment (Django send_mail to support) or a year outside four digits is refused before any effect (task_failed, lock released). Lock/broker failures and lost lease go back to the executor.",
+        "resource_scope": "CourseSubscription type membership, active, auto_renewal, billed_until<=now, fee>0, not deleted, active course; unordered with select_related joins; rows without subscription skipped.",
+        "side_effects": "django_redis cache.add/delete of :1:renew_memberships_payments_lock (pickle protocol 4, 300 s, Redis DB 1). Per row: reuse the unpaid payment of the period or Payment.objects.create (owner, associate, association, dates, default bank account/category, description, meta) audited create indexed direct; billed_until += relativedelta(months=frequency) via update(); membership_payments.add. Locked rows: apply_async(kwargs={attempt: 2, max_attempts: 3}, countdown=60) after the lock release.",
+        "transaction": "Candidates and planning in one fenced READ COMMITTED transaction; each row in its own fenced transaction with SELECT FOR UPDATE NOWAIT, mirroring the atomic block."
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/tasks_db_d_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py",
+        "BE_GO/internal/service/tasks_db_d_test.go"
+      ],
+      "evidence": [
+        "Native worker registration (version 1). TESTS/adapters/go/tasks_db_d_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private Redis (broker DB 0, cache DB 1) and a private Stripe stub; ten seeds are first processed by the actual Django tasks with authored path assertions, and each Go job must leave the same effects on the seeded rows (random keys, codes, timestamps and audit ids normalized after shape/window checks), send the same Stripe requests and publish the same Celery messages. RED: job stays pending without the registrations. GREEN 12/12 (green-r1; green-r2 after merging the export cleanup slice). Mutation caught: renewal month arithmetic without the day clamp. See docs/architecture/go-migration/tasks-db-d.md."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-a: uses a Django cache lock, sends an email to support for skipped subscriptions and reschedules itself with apply_async."
+        "Celery rate_limit 1/m is a Django consumer throttle without Go counterpart. A paid payment that appears concurrently after planning saves the run and then fails the job instead of sending the support e-mail. See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
@@ -39415,7 +39908,8 @@
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md."
+        "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md.",
+        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md."
       ]
     },
     {
