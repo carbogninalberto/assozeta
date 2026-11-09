@@ -1,8 +1,8 @@
 // Package documentobjects reads stored documents from the S3 default storage
 // the way PrintingService does: default_storage.exists (HeadObject, 404 means
 // absent) and a direct GetObject stream, and stores uploads the way
-// S3Storage._save does (one PutObject). PutACL and Delete (acl_delete.go) are
-// the signature upload's object ACL and S3Storage.delete.
+// S3Storage._save does (one PutObject). Delete is S3Storage.delete (the export
+// cleanup task, the signature upload); PutACL (acl.go) is the signature's object ACL.
 package documentobjects
 
 import (
@@ -163,6 +163,20 @@ func (s *S3) Put(ctx context.Context, key string, body []byte, upload Upload) er
 		input.ACL = types.ObjectCannedACL(upload.ACL)
 	}
 	_, err = client.PutObject(ctx, input)
+	return err
+}
+
+// Delete is S3Storage.delete: one DeleteObject; an HTTP 404 is not an error.
+func (s *S3) Delete(ctx context.Context, key string) error {
+	client, err := s.client(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = client.DeleteObject(ctx, &s3.DeleteObjectInput{Bucket: aws.String(s.options.Bucket), Key: aws.String(key)})
+	var response *smithyhttp.ResponseError
+	if err != nil && ctx.Err() == nil && errors.As(err, &response) && response.HTTPStatusCode() == 404 {
+		return nil
+	}
 	return err
 }
 
