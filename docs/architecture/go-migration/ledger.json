@@ -7294,25 +7294,79 @@
         "target": "course_installment_make_payment",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_enrolment.go",
+        "BE_GO/internal/dto/course_enrolment.go",
+        "BE_GO/internal/repository/course_enrolment.go",
+        "BE_GO/internal/service/course_enrolment.go",
+        "BE_GO/internal/service/course_enrolment_overview.go",
+        "BE_GO/internal/handler/course_enrolment.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/course_views.py",
+        "BE/application/serializers/courses_serializers.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/signals.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course-installment/<uid>/make-payment",
+          "/api/v2/course-installment/<uid>/make-payment",
+          "/api/course-installment/<uid>/make-payment"
+        ],
+        "request": "No body fields read.",
+        "response": "200 {'data': PaymentSerializer}.",
+        "errors": "400 uuid list; 401; 403 registry, scoped guard; 405; 500 missing installment or subscription.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.courses.update (athlete view)",
+        "resource_scope": "Live group-aware installment resolved by id; the payment takes the course's association.",
+        "side_effects": "Creates a payment for the installment amount and date and links it to the installment; audited.",
+        "transaction": "Autocommit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_enrolment_http.json",
+        "TESTS/fixtures/generate_course_enrolment_http.py",
+        "TESTS/contracts/test_course_enrolment_http.py",
+        "TESTS/adapters/django/course_enrolment_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-enrolment.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 80/80; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-red-r2/results.json",
+          "receipt_sha256": "c57b814f02e261024a296fa5d227a5c6bcfc29fa788d855156eb5d285451de49"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course subscription, payment, installment, membership link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-versioned-r1/results.json",
+          "receipt_sha256": "c3f88ae071997f016f83599a83d78567d51d20c51c47e6410cdc9d7863f44b2f"
+        },
+        {
+          "revision": "committing change without the X-Group-Id filter on the installment lookup",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-group-header-hides (200 instead of 500).",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-mutation-r1/results.json",
+          "receipt_sha256": "2c31e29686b59893f75da7cbc5d45aea702426b6bd47cba5ff01317091b7a886"
+        }
+      ],
+      "notes": [
+        "Implementing: course-subscriptions/add (atomic, single and list bodies, field and membership validate() errors, serializer create with body or planned events, add_course_subscription one-fee/fee/multi/quote payments, membership_created_callback), course-overview add (non-atomic add_course_to_subscription with quote selection, one-fee/quote/installment/fee payments) and the installment payment, with audit and index effects on four transports. Not ported (500 before any write): association-scoped impersonation sessions, non-canonical X-Group-Id, HTML form bodies, non-object overview bodies, the athlete membership prefill of the overview add, quote amounts other than plain decimals (7.2) and non-object payment_category or non-string quote ids/values, payments rendered with an instructor or invoice. new_course_subscription_callback has no sender and is not reached."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course-subscriptions/<str:pk>/delete -> CourseSubscriptionViewSet.as_view({'delete': 'delete'})",
@@ -7512,25 +7566,80 @@
         "target": "CourseSubscriptionViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_enrolment.go",
+        "BE_GO/internal/dto/course_enrolment.go",
+        "BE_GO/internal/repository/course_enrolment.go",
+        "BE_GO/internal/service/course_enrolment.go",
+        "BE_GO/internal/service/course_enrolment_overview.go",
+        "BE_GO/internal/handler/course_enrolment.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/course_views.py",
+        "BE/application/serializers/courses_serializers.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/signals.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course-subscriptions/add",
+          "/api/v2/course-subscriptions/add",
+          "/api/course-subscriptions/add"
+        ],
+        "request": "JSON object or list of objects: course, subscription_id (required), CourseSubscriptionOverviewSerializer writable fields, events, multiple_quote.",
+        "response": "201 list of CourseSubscriptionOverviewSerializer rows; 400 field errors (list per item for list bodies); 403 User is not a sport association (athletes); 500 page.",
+        "errors": "400 serializer/validate()/event errors; 401; 403 registry, scoped guard, athletes; 405; 500 unknown subscription, owner without association, single athlete membership, refused inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.courses.create",
+        "resource_scope": "Course among live courses; subscription by id (group-aware); payments in User.sport_association (memberships: the course's association).",
+        "side_effects": "Creates course subscriptions, installment payments and installments, the add_course_subscription payment with its link save, and membership payments with their membership link; audited.",
+        "transaction": "transaction.atomic: any error rolls back.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_enrolment_http.json",
+        "TESTS/fixtures/generate_course_enrolment_http.py",
+        "TESTS/contracts/test_course_enrolment_http.py",
+        "TESTS/adapters/django/course_enrolment_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-enrolment.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 80/80; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-red-r2/results.json",
+          "receipt_sha256": "c57b814f02e261024a296fa5d227a5c6bcfc29fa788d855156eb5d285451de49"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course subscription, payment, installment, membership link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-versioned-r1/results.json",
+          "receipt_sha256": "c3f88ae071997f016f83599a83d78567d51d20c51c47e6410cdc9d7863f44b2f"
+        },
+        {
+          "revision": "committing change without the X-Group-Id filter on the installment lookup",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-group-header-hides (200 instead of 500).",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-mutation-r1/results.json",
+          "receipt_sha256": "2c31e29686b59893f75da7cbc5d45aea702426b6bd47cba5ff01317091b7a886"
+        }
+      ],
+      "notes": [
+        "Implementing: course-subscriptions/add (atomic, single and list bodies, field and membership validate() errors, serializer create with body or planned events, add_course_subscription one-fee/fee/multi/quote payments, membership_created_callback), course-overview add (non-atomic add_course_to_subscription with quote selection, one-fee/quote/installment/fee payments) and the installment payment, with audit and index effects on four transports. Not ported (500 before any write): association-scoped impersonation sessions, non-canonical X-Group-Id, HTML form bodies, non-object overview bodies, the athlete membership prefill of the overview add, quote amounts other than plain decimals (7.2) and non-object payment_category or non-string quote ids/values, payments rendered with an instructor or invoice. new_course_subscription_callback has no sender and is not reached."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course-subscriptions/bulk-delete -> CourseSubscriptionViewSet.as_view({'delete': 'bulk_delete'})",
@@ -8412,25 +8521,79 @@
         "target": "course_overview_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_enrolment.go",
+        "BE_GO/internal/dto/course_enrolment.go",
+        "BE_GO/internal/repository/course_enrolment.go",
+        "BE_GO/internal/service/course_enrolment.go",
+        "BE_GO/internal/service/course_enrolment_overview.go",
+        "BE_GO/internal/handler/course_enrolment.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/course_views.py",
+        "BE/application/serializers/courses_serializers.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/utils/subscriptions_utils.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/signals.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/<uid>/overview/<uid_subscription>/add",
+          "/api/v2/course/<uid>/overview/<uid_subscription>/add",
+          "/api/course/<uid>/overview/<uid_subscription>/add"
+        ],
+        "request": "JSON object: optional one_fee_payment, multiple_quote {value}.",
+        "response": "200 {'data': {'msg': 'associate added.', 'payment': {...}|null, 'course_subscription': CourseSubscriptionSerializer}}.",
+        "errors": "400 uuid list; 401; 403 registry, scoped guard, User not allowed (course of another association); 405; 500 missing course/subscription, existing live row, late failures.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "association.courses.update (athlete view)",
+        "resource_scope": "Live group-aware course and subscription; the payments use the subscription's association.",
+        "side_effects": "Creates the course subscription, its one-fee/quote/fee payment or installments, and links the last positive payment; audited.",
+        "transaction": "Autocommit: work saved before a late error stays.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_enrolment_http.json",
+        "TESTS/fixtures/generate_course_enrolment_http.py",
+        "TESTS/contracts/test_course_enrolment_http.py",
+        "TESTS/adapters/django/course_enrolment_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-enrolment.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 80/80; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-red-r2/results.json",
+          "receipt_sha256": "c57b814f02e261024a296fa5d227a5c6bcfc29fa788d855156eb5d285451de49"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact course subscription, payment, installment, membership link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-versioned-r1/results.json",
+          "receipt_sha256": "c3f88ae071997f016f83599a83d78567d51d20c51c47e6410cdc9d7863f44b2f"
+        },
+        {
+          "revision": "committing change without the X-Group-Id filter on the installment lookup",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-group-header-hides (200 instead of 500).",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-mutation-r1/results.json",
+          "receipt_sha256": "2c31e29686b59893f75da7cbc5d45aea702426b6bd47cba5ff01317091b7a886"
+        }
+      ],
+      "notes": [
+        "Implementing: course-subscriptions/add (atomic, single and list bodies, field and membership validate() errors, serializer create with body or planned events, add_course_subscription one-fee/fee/multi/quote payments, membership_created_callback), course-overview add (non-atomic add_course_to_subscription with quote selection, one-fee/quote/installment/fee payments) and the installment payment, with audit and index effects on four transports. Not ported (500 before any write): association-scoped impersonation sessions, non-canonical X-Group-Id, HTML form bodies, non-object overview bodies, the athlete membership prefill of the overview add, quote amounts other than plain decimals (7.2) and non-object payment_category or non-string quote ids/values, payments rendered with an instructor or invoice. new_course_subscription_callback has no sender and is not reached."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/<str:uid>/overview/<str:uid_subscription>/delete -> course_overview_delete",
