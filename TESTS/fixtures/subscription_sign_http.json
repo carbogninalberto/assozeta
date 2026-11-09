@@ -1,0 +1,1987 @@
+{
+ "matrix_version": 1,
+ "scope": "subscription/sign authored sequence with row, audit, storage and Celery effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "location": "subscription-sign",
+ "public_base": "https://firme.example.test/cdn",
+ "acl_denied": "a1000000-0000-4000-8000-000000998006",
+ "subscriptions": {
+  "first": {
+   "id": "a1000000-0000-4000-8000-000000998001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "url": {
+   "id": "a1000000-0000-4000-8000-000000998002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "keyed": {
+   "id": "a1000000-0000-4000-8000-000000998003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 2,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": "subscriptions/a1000000-0000-4000-8000-000000998003/signature_1700000000.25.png",
+   "signature_url": null
+  },
+  "shared_a": {
+   "id": "a1000000-0000-4000-8000-000000998004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": "signatures/firma-condivisa.png",
+   "signature_url": null
+  },
+  "shared_b": {
+   "id": "a1000000-0000-4000-8000-000000998005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 4,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": "signatures/firma-condivisa.png",
+   "signature_url": "https://firme.example.test/cdn/subscription-sign/signatures/firma-condivisa.png"
+  },
+  "acl_denied": {
+   "id": "a1000000-0000-4000-8000-000000998006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "athlete_row": {
+   "id": "a1000000-0000-4000-8000-000000998007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "scoped_row": {
+   "id": "a1000000-0000-4000-8000-000000998008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "admin_row": {
+   "id": "a1000000-0000-4000-8000-000000998009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000998010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": "own_group",
+   "signature_key": null,
+   "signature_url": null
+  },
+  "undated": {
+   "id": "a1000000-0000-4000-8000-000000998011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": null,
+   "end": null,
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "other": {
+   "id": "a1000000-0000-4000-8000-000000998012",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000998013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "long_url": {
+   "id": "a1000000-0000-4000-8000-000000998014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "group": null,
+   "signature_key": null,
+   "signature_url": null
+  }
+ },
+ "objects": {
+  "subscriptions/a1000000-0000-4000-8000-000000998003/signature_1700000000.25.png": "c2VlZGVkIGtleWVkIHNpZ25hdHVyZQ==",
+  "signatures/firma-condivisa.png": "c2VlZGVkIHNoYXJlZCBzaWduYXR1cmU="
+ },
+ "unknown": "a1000000-0000-4000-8000-000000998999",
+ "cases": [
+  {
+   "name": "subscription-sign-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Sign",
+    "description": "API endpoint to sign a subscription\n:param request: data: {subscription_id, signature}\n:return: token, refresh token",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-sign-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-sign-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-owner-scoped-athlete-hidden-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-missing-signature-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013"
+   }
+  },
+  {
+   "name": "subscription-sign-extra-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "data": null
+    },
+    "note": "x"
+   }
+  },
+  {
+   "name": "subscription-sign-empty-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-sign-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "a1000000-0000-4000-8000-000000998013"
+   ]
+  },
+  {
+   "name": "subscription-sign-string-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": "firma"
+  },
+  {
+   "name": "subscription-sign-malformed-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "subscription_id": "not-a-uuid",
+    "signature": {
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-integer-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "'int' object has no attribute 'replace'"
+   ],
+   "effect": null,
+   "body": {
+    "subscription_id": 7,
+    "signature": {
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-null-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "one of the hex, bytes, bytes_le, fields, or int arguments must be given"
+   ],
+   "effect": null,
+   "body": {
+    "subscription_id": null,
+    "signature": {
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-unknown-subscription-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998999",
+    "signature": {
+     "there_is_signature": "x"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-group-header-hides-row-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998010",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-signature-not-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got str."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": "firma"
+   }
+  },
+  {
+   "name": "subscription-sign-signature-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "No data provided"
+    ]
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": null
+   }
+  },
+  {
+   "name": "subscription-sign-data-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "data": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-data-blank-required-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "data": [
+     "La firma è obbligatoria."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true,
+     "data": "   "
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-data-null-required-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "data": [
+     "La firma è obbligatoria."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-flag-not-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "there_is_signature": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": "forse",
+     "data": "abc"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-data-list-not-string",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "data": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true,
+     "data": [
+      "abc"
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-form-body-signature-string",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got str."
+    ]
+   },
+   "effect": null,
+   "raw_body": "subscription_id=a1000000-0000-4000-8000-000000998999&subscription_id=a1000000-0000-4000-8000-000000998013&signature=firma",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-sign-invalid-base64",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Firma non valida.",
+    "code": "400",
+    "ref": "invalid_signature"
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true,
+     "data": "data:image/png;base64,abc"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-base64-non-alphabet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Firma non valida.",
+    "code": "400",
+    "ref": "invalid_signature"
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true,
+     "data": "YWJj\nZA=="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-base64-excess-padding",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Firma non valida.",
+    "code": "400",
+    "ref": "invalid_signature"
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true,
+     "data": "YWI==="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-base64-non-ascii",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Firma non valida.",
+    "code": "400",
+    "ref": "invalid_signature"
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true,
+     "data": "firmà"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-base64-empty-after-comma",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Firma non valida.",
+    "code": "400",
+    "ref": "invalid_signature"
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": true,
+     "data": "data:image/png;base64,"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-data-number-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Firma non valida.",
+    "code": "400",
+    "ref": "invalid_signature"
+   },
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": "true",
+     "data": 12
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-url-too-long-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998014",
+    "signature": {
+     "there_is_signature": true,
+     "data": "https://firme.example.test/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-acl-denied-unavailable",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "msg": "Storage temporaneamente non disponibile.",
+    "code": "503",
+    "ref": "signature_storage"
+   },
+   "effect": {
+    "subscription": "acl_denied",
+    "columns": {},
+    "signature": null,
+    "stored": null,
+    "old": null,
+    "storage": [
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new denied",
+     "DELETE $new"
+    ],
+    "audit": [],
+    "celery": []
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998006",
+    "signature": {
+     "there_is_signature": true,
+     "data": "iVBORw0KGgpmaXJtYSBhY2w="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-no-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "plain",
+    "columns": {},
+    "signature": null,
+    "stored": null,
+    "old": null,
+    "storage": [],
+    "audit": [],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998013"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998013",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-no-signature-flag-default",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "plain",
+    "columns": {},
+    "signature": null,
+    "stored": null,
+    "old": null,
+    "storage": [],
+    "audit": [],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998013"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998013",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "data": "ignorata"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-no-signature-urn-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "plain",
+    "columns": {},
+    "signature": null,
+    "stored": null,
+    "old": null,
+    "storage": [],
+    "audit": [],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998013"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998013",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "urn:uuid:A1000000-0000-4000-8000-000000998013",
+    "signature": {
+     "there_is_signature": 0,
+     "data": ""
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-no-signature-group-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "grouped",
+    "columns": {},
+    "signature": null,
+    "stored": null,
+    "old": null,
+    "storage": [],
+    "audit": [],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998010"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998010",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998010",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-other-association-row-no-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "other",
+    "columns": {},
+    "signature": null,
+    "stored": null,
+    "old": null,
+    "storage": [],
+    "audit": [],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701002"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998012"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998012",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998012",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-upload-data-uri",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "first",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": "$key",
+     "signature_url": "$public"
+    },
+    "signature": {
+     "user": "owner",
+     "data": "data:image/png;base64,iVBORw0KGgpmaXJtYSBwcmltYQ==",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "stored": "iVBORw0KGgpmaXJtYSBwcmltYQ==",
+    "old": null,
+    "storage": [
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new"
+    ],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "status_flag": [
+        "1",
+        "2"
+       ],
+       "signature_storage_key": [
+        "None",
+        "$key"
+       ],
+       "signature_url": [
+        "None",
+        "$public"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998001"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998001",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998001",
+    "signature": {
+     "there_is_signature": true,
+     "data": "data:image/png;base64,iVBORw0KGgpmaXJtYSBwcmltYQ=="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-resign-replaces-own-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "first",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": "$key",
+     "signature_url": "$public"
+    },
+    "signature": {
+     "user": "owner",
+     "data": "iVBORw0KGgpmaXJtYSBzZWNvbmRh",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "stored": "iVBORw0KGgpmaXJtYSBzZWNvbmRh",
+    "old": "deleted",
+    "storage": [
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new",
+     "DELETE $old"
+    ],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "signature_storage_key": [
+        "$previous",
+        "$key"
+       ],
+       "signature_url": [
+        "$previous_url",
+        "$public"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998001"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998001",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998001",
+    "signature": {
+     "there_is_signature": true,
+     "data": "  iVBORw0KGgpmaXJtYSBzZWNvbmRh  "
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-url-signature",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "url",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": null,
+     "signature_url": "https://firme.example.test/esterne/firma-remota.png"
+    },
+    "signature": {
+     "user": "owner",
+     "data": "https://firme.example.test/esterne/firma-remota.png",
+     "index": null
+    },
+    "stored": null,
+    "old": null,
+    "storage": [],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "status_flag": [
+        "1",
+        "2"
+       ],
+       "signature_url": [
+        "None",
+        "https://firme.example.test/esterne/firma-remota.png"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998002"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998002",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998002",
+    "signature": {
+     "there_is_signature": true,
+     "data": "https://firme.example.test/esterne/firma-remota.png"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-url-replaces-stored-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "keyed",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": null,
+     "signature_url": "https://firme.example.test/esterne/firma-remota.png"
+    },
+    "signature": {
+     "user": "owner",
+     "data": "https://firme.example.test/esterne/firma-remota.png",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "stored": null,
+    "old": "deleted",
+    "storage": [
+     "DELETE $old"
+    ],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "signature_storage_key": [
+        "subscriptions/a1000000-0000-4000-8000-000000998003/signature_1700000000.25.png",
+        "None"
+       ],
+       "signature_url": [
+        "None",
+        "https://firme.example.test/esterne/firma-remota.png"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998003"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998003",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998003",
+    "signature": {
+     "there_is_signature": "yes",
+     "data": "https://firme.example.test/esterne/firma-remota.png"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-upload-keeps-referenced-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "shared_a",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": "$key",
+     "signature_url": "$public"
+    },
+    "signature": {
+     "user": "owner",
+     "data": "iVBORw0KGgpmaXJtYSBjb25kaXZpc2E=",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "stored": "iVBORw0KGgpmaXJtYSBjb25kaXZpc2E=",
+    "old": "kept",
+    "storage": [
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new"
+    ],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "status_flag": [
+        "1",
+        "2"
+       ],
+       "signature_storage_key": [
+        "signatures/firma-condivisa.png",
+        "$key"
+       ],
+       "signature_url": [
+        "None",
+        "$public"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998004"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998004",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998004",
+    "signature": {
+     "there_is_signature": true,
+     "data": "iVBORw0KGgpmaXJtYSBjb25kaXZpc2E="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-athlete-upload",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "athlete_row",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": "$key",
+     "signature_url": "$public"
+    },
+    "signature": {
+     "user": "athlete",
+     "data": "iVBORw0KGgpmaXJtYSBhdGxldGE=",
+     "index": null
+    },
+    "stored": "iVBORw0KGgpmaXJtYSBhdGxldGE=",
+    "old": null,
+    "storage": [
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new"
+    ],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "status_flag": [
+        "1",
+        "2"
+       ],
+       "signature_storage_key": [
+        "None",
+        "$key"
+       ],
+       "signature_url": [
+        "None",
+        "$public"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998007"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998007",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998007",
+    "signature": {
+     "there_is_signature": 1,
+     "data": "iVBORw0KGgpmaXJtYSBhdGxldGE="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-admin-impersonating-owner-upload",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "admin_row",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": "$key",
+     "signature_url": "$public"
+    },
+    "signature": {
+     "user": "owner",
+     "data": "data:image/png;base64,iVBORw0KGgpmaXJtYSBhbW1pbmlzdHJhdG9yZQ==",
+     "index": [
+      "a1000000-0000-4000-8000-000000711001",
+      "actor.sport_association"
+     ]
+    },
+    "stored": "iVBORw0KGgpmaXJtYSBhbW1pbmlzdHJhdG9yZQ==",
+    "old": null,
+    "storage": [
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new"
+    ],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "status_flag": [
+        "1",
+        "2"
+       ],
+       "signature_storage_key": [
+        "None",
+        "$key"
+       ],
+       "signature_url": [
+        "None",
+        "$public"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998009"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998009",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998009",
+    "signature": {
+     "there_is_signature": true,
+     "data": "data:image/png;base64,iVBORw0KGgpmaXJtYSBhbW1pbmlzdHJhdG9yZQ=="
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-owner-scoped-athlete-url-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "scoped_row",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": null,
+     "signature_url": "https://firme.example.test/esterne/firma-remota.png"
+    },
+    "signature": {
+     "user": "athlete",
+     "data": "https://firme.example.test/esterne/firma-remota.png",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "stored": null,
+    "old": null,
+    "storage": [],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "status_flag": [
+        "1",
+        "2"
+       ],
+       "signature_url": [
+        "None",
+        "https://firme.example.test/esterne/firma-remota.png"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998008"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998008",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998008",
+    "signature": {
+     "there_is_signature": true,
+     "data": "https://firme.example.test/esterne/firma-remota.png"
+    }
+   }
+  },
+  {
+   "name": "subscription-sign-undated-row-keeps-dates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "subscription": "undated",
+    "columns": {
+     "status_flag": 2,
+     "signature_storage_key": "$key",
+     "signature_url": "$public"
+    },
+    "signature": {
+     "user": "owner",
+     "data": "x,iVBORw0KGgpmaXJtYSBzZW56YSBkYXRl",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ]
+    },
+    "stored": "iVBORw0KGgpmaXJtYSBzZW56YSBkYXRl",
+    "old": null,
+    "storage": [
+     "HEAD $new",
+     "PUT $new",
+     "ACL $new"
+    ],
+    "audit": [
+     {
+      "model": "signature",
+      "changes": "$created"
+     },
+     {
+      "model": "subscription",
+      "changes": {
+       "status_flag": [
+        "1",
+        "2"
+       ],
+       "signature_storage_key": [
+        "None",
+        "$key"
+       ],
+       "signature_url": [
+        "None",
+        "$public"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_signed"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000998011"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000998011",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000998011",
+    "signature": {
+     "there_is_signature": true,
+     "data": "x,iVBORw0KGgpmaXJtYSBzZW56YSBkYXRl"
+    }
+   }
+  }
+ ]
+}
