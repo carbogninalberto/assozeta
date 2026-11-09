@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/google/uuid"
@@ -42,7 +43,26 @@ const managementPersonFrom = ` FROM bakney_user u LEFT JOIN application_sportass
 const managementEligible = ` WHERE NOT u.deleted AND u.is_active AND NOT u.is_superuser AND (
  ($2::uuid IS NULL AND (u.role=2 OR (u.role=1 AND a.sport_association_id IS NOT NULL AND NOT a.deleted)
   OR (u.role=3 AND owner.is_active AND NOT owner.deleted AND owner.role=1 AND ca.sport_association_id IS NOT NULL AND NOT ca.deleted)))
- OR ($2::uuid IS NOT NULL AND u.user_id<>$1::uuid AND ((u.role=2 AND EXISTS(SELECT 1 FROM application_associate member WHERE member.user_id=u.user_id AND member.sport_association_id=$2::uuid AND NOT member.deleted)) OR (u.role=3 AND u.connected_user_id=$1::uuid))))`
+ OR ($2::uuid IS NOT NULL AND u.user_id<>$1::uuid AND ((u.role=2 AND (` + managementInstanceOwner + `
+  OR EXISTS(SELECT 1 FROM application_associate member WHERE member.user_id=u.user_id AND member.sport_association_id=$2::uuid AND NOT member.deleted)
+  OR EXISTS(SELECT 1 FROM application_subscription subscriber WHERE subscriber.user_id=u.user_id AND subscriber.sport_association_id=$2::uuid AND NOT subscriber.deleted)))
+  OR (u.role=3 AND u.connected_user_id=$1::uuid))))`
+
+// managementInstanceOwner is is_instance_owner(actor): the first
+// InstanceConfiguration (by pk) is self-hosted and its primary association
+// belongs to the actor. Such an owner selects every athlete.
+const managementInstanceOwner = `COALESCE((SELECT c.self_hosted AND pa.user_id=$1::uuid FROM instance_instanceconfiguration c
+  LEFT JOIN application_sportassociation pa ON pa.sport_association_id=c.primary_association_id ORDER BY c.id LIMIT 1), false)`
+
+// managementSearchWords is search_users' query.split()[:10]: Python's
+// whitespace (str.isspace, which includes U+001C..U+001F) separates words.
+func managementSearchWords(search string) []string {
+	words := strings.FieldsFunc(search, func(r rune) bool { return unicode.IsSpace(r) || (r >= 0x1c && r <= 0x1f) })
+	if len(words) > 10 {
+		words = words[:10]
+	}
+	return words
+}
 
 func managementScope(association string) any {
 	if association == "" {
@@ -82,8 +102,9 @@ func (r *ImpersonationManagement) ListImpersonationPeople(ctx context.Context, a
 		args = append(args, filter.Role)
 		where += fmt.Sprintf(" AND u.role=$%d", len(args))
 	}
-	if filter.Search != "" {
-		pattern := "%" + strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(filter.Search) + "%"
+	// search_users: every word must match one of the fields (icontains).
+	for _, word := range managementSearchWords(filter.Search) {
+		pattern := "%" + strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(word) + "%"
 		args = append(args, pattern)
 		var expressions []string
 		for _, column := range []string{"u.username", "u.email", "u.first_name", "u.last_name", "a.denomination", "ca.denomination"} {

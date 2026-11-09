@@ -118,16 +118,31 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 		t.Fatal(err)
 	}
 	request := domain.IdentityRequest{Path: "/profile/info", Method: "GET", SessionID: memberSession, References: &domain.RequestReferences{Operation: "profile_info"}}
+	foreignOwner, err := accounts.ByID(context.Background(), "00000000-0000-4000-8000-000000000009")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Persisted sessions of the fixture: 9 on its member 15 (212), 9 on its subscriber 22 (210),
+	// the instance owner 8 on the unlinked athlete 15 (200).
+	ownMember := domain.IdentityRequest{Path: "/profile/info", Method: "GET", SessionID: "00000000-0000-4000-8000-000000000212", References: &domain.RequestReferences{Operation: "profile_info"}}
+	subscriber := ownMember
+	subscriber.SessionID = "00000000-0000-4000-8000-000000000210"
+	unlinked := ownMember
+	unlinked.SessionID = "00000000-0000-4000-8000-000000000200"
 	transitions := []struct {
 		name, table, column, key, id, detail string
 		changed, original                    bool
+		actor                                *domain.Account
+		request                              domain.IdentityRequest
 	}{
-		{"actor-disabled", "bakney_user", "is_active", "user_id", "00000000-0000-4000-8000-000000000008", "Account non disponibile.", false, true},
-		{"actor-deleted", "bakney_user", "deleted", "user_id", "00000000-0000-4000-8000-000000000008", "Account non disponibile.", true, false},
-		{"target-disabled", "bakney_user", "is_active", "user_id", "00000000-0000-4000-8000-000000000010", "Utente non disponibile per l’impersonificazione.", false, true},
-		{"target-deleted", "bakney_user", "deleted", "user_id", "00000000-0000-4000-8000-000000000010", "Utente non disponibile per l’impersonificazione.", true, false},
-		{"association-deleted", "application_sportassociation", "deleted", "sport_association_id", "00000000-0000-4000-8000-000000000080", "Associazione non disponibile.", true, false},
-		{"membership-removed", "application_associate", "deleted", "associate_id", "00000000-0000-4000-8000-000000000081", "Utente non disponibile per l’impersonificazione.", true, false},
+		{"actor-disabled", "bakney_user", "is_active", "user_id", "00000000-0000-4000-8000-000000000008", "Account non disponibile.", false, true, &actor, request},
+		{"actor-deleted", "bakney_user", "deleted", "user_id", "00000000-0000-4000-8000-000000000008", "Account non disponibile.", true, false, &actor, request},
+		{"target-disabled", "bakney_user", "is_active", "user_id", "00000000-0000-4000-8000-000000000010", "Utente non disponibile per l’impersonificazione.", false, true, &actor, request},
+		{"target-deleted", "bakney_user", "deleted", "user_id", "00000000-0000-4000-8000-000000000010", "Utente non disponibile per l’impersonificazione.", true, false, &actor, request},
+		{"association-deleted", "application_sportassociation", "deleted", "sport_association_id", "00000000-0000-4000-8000-000000000080", "Associazione non disponibile.", true, false, &actor, request},
+		{"membership-removed", "application_associate", "deleted", "associate_id", "00000000-0000-4000-8000-000000000091", "Utente non disponibile per l’impersonificazione.", true, false, &foreignOwner, ownMember},
+		{"subscription-removed", "application_subscription", "deleted", "subscription_id", "00000000-0000-4000-8000-000000000092", "Utente non disponibile per l’impersonificazione.", true, false, &foreignOwner, subscriber},
+		{"instance-not-self-hosted", "instance_instanceconfiguration", "self_hosted", "domain", "identity.example.test", "Utente non disponibile per l’impersonificazione.", false, true, &actor, unlinked},
 	}
 	for _, change := range transitions {
 		t.Run(change.name, func(t *testing.T) {
@@ -145,7 +160,7 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 			if rows, err := updated.RowsAffected(); err != nil || rows != 1 {
 				t.Fatal("transition did not change exactly one fixture row")
 			}
-			_, err = resolver.Resolve(context.Background(), &actor, request)
+			_, err = resolver.Resolve(context.Background(), change.actor, change.request)
 			var denied *domain.PermissionDenied
 			if !errors.As(err, &denied) || denied.Detail != change.detail || !denied.ImpersonationInvalid {
 				t.Fatalf("eligibility revocation failed: %v", err)

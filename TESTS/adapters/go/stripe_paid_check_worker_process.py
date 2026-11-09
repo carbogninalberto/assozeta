@@ -394,10 +394,23 @@ class PaidRehearsal(Rehearsal):
         # The one-thread run reached the payments in payment_id order.
         assert paths == ['/v1/payment_intents/' + p for p in ('pi_ok_1', 'pi_pending', 'pi_missing', 'pi_card', 'pi_empty', 'pi_nostatus',
                                                               'pi_ok_2', 'pi_ok_3', 'pi_ok_4', 'pi_ok_5')], paths
-        assert outcome['published'] == ['invoice:8', 'invoice:9', 'invoice:rolled-back', 'invoice:10'], outcome['published']
+        # print_document_invoice runs on commit: the payment without user (8, rolled back) publishes nothing.
+        assert outcome['published'] == ['invoice:8', 'invoice:9', 'invoice:10'], outcome['published']
         payments = {row['payment_id']: row for row in after['application.Payment']}
-        assert [n for n in range(14) if payments[U(100 + n)]['paid']] == [0, 7, 10, 12]
-        assert payments[U(108)]['type'] == 'cash' and payments[U(109)]['type'] == 'stripe' and not payments[U(109)]['paid']
+        # mark_payment_as_paid saves every unpaid payment paid (9 keeps its existing invoice); 8 rolls back.
+        assert [n for n in range(14) if payments[U(100 + n)]['paid']] == [0, 7, 9, 10, 12]
+        assert payments[U(108)]['type'] == 'cash' and payments[U(109)]['type'] == 'stripe' and payments[U(109)]['invoice_id'] == U(70)
+        # The task's type save, then mark_payment_as_paid's update_fields save (paid, payment date; type already
+        # 'stripe'), then the save that records the invoice.
+        # A payment that already has an invoice gets no further save.
+        for n, expected, invoiced in ((0, [['type'], ['paid', 'payment_date']], True), (7, [['paid', 'payment_date']], True),
+                                      (9, [['type'], ['paid', 'payment_date']], False), (12, [['type'], ['paid', 'payment_date']], True)):
+            entries = sorted((e for e in after['auditlog.LogEntry'] if e['object_pk'] == str(U(100 + n))), key=lambda e: e['id'])
+            changes = [e['changes'] if isinstance(e['changes'], dict) else json.loads(e['changes']) for e in entries]
+            if invoiced:
+                assert [sorted(c) for c in changes[:-1]] == expected and 'invoice' in changes[-1], (n, changes)
+            else:
+                assert [sorted(c) for c in changes] == expected, (n, changes)
         assert [row['paid'] for row in after['application.InvoiceSuppliers']] == [True]
         assert len(outcome['pushes']) == 3, outcome['pushes']
 
@@ -449,13 +462,11 @@ class PaidRehearsal(Rehearsal):
         await_condition(lambda: self.job(identifier)[0] == 'completed', 'later stripe paid check run')
         requests = [r['path'] for r in stripe_stub.check_requests(self.stub.take())]
         assert requests == ['/v1/payment_intents/' + p for p in ('pi_pending', 'pi_missing', 'pi_card', 'pi_empty', 'pi_nostatus',
-                                                                 'pi_ok_3', 'pi_ok_4')], requests
-        # Nothing new is paid: the payment without user publishes its invoice task and rolls back again, the
-        # unpaid payment with an invoice only marks its supplier invoice paid again (payment date, audited).
+                                                                 'pi_ok_3')], requests
+        # Nothing changes: the payment without user rolls back again and its on-commit invoice task is discarded.
         changed = {label: rows for label, rows in delta(later, self.fixture.snapshot()).items() if rows}
-        assert set(changed) == {'application.InvoiceSuppliers', 'auditlog.LogEntry', 'application.AuditLogIndex'}, changed
-        assert [list(row) for row in changed['application.InvoiceSuppliers']] == [['~pk', 'payment_date']], changed
-        assert len(self.messages()) == 1
+        assert changed == {}, changed
+        assert self.messages() == []
         self.case('a later run marks nothing')
         identifier, before = self.seed_job(variant='unconfigured')
         self.go_matches(identifier, before, 'unconfigured')

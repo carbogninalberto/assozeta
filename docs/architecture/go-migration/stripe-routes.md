@@ -73,9 +73,11 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
   `invoice.payment_failed`, `customer.subscription.updated` and other types: empty 200.
 - **mark_payment_as_paid**: with a request, a payment without user and associate is a 500 before anything. Atomically the
   payment is locked (`Payment.objects`, `X-Group-Id`; the scope is not applied because the view passes the Django request)
-  and its first supplier invoice marked paid with `timezone.now()` (audited, indexed directly). A payment that already has
-  an invoice is **not** saved (paid stays false). An unpaid payment without an invoice runs the paid flow (shared with
-  payment-state's approve in `payment_paid_flow.go`):
+  and its first supplier invoice marked paid with `timezone.now()` (audited, indexed directly). An unpaid payment then gets
+  `paid=True`, `payment_date` now and `type='stripe'` through `payment.save(update_fields=['paid', 'payment_date', 'type'])`
+  (`Payment.save()` fills its defaults in memory only; auditlog records the changed update fields; Go `stripeMarkPaid`).
+  A payment that already has an invoice gets nothing else. An unpaid payment without an invoice runs the paid flow (shared
+  with payment-state's approve in `payment_paid_flow.go`):
   1. fees: subject 1 keeps the amount (Decimal) as membership fee and `0.0` as activity fee; with truthy
      `meta_payment_categories` the activity fee is the sum of `float(amount)` of the truthy amounts (booleans count as
      1/0, unlike approve's `float(str())`) and a positive amount's membership fee becomes `float(amount) - activity`;
@@ -83,22 +85,24 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
   2. number: `Max('number')` of the association's live, `X-Group-Id`-aware, unarchived invoices created in the current
      balance year (start inclusive, end exclusive: the end is the day before the next start, so its last day is left out),
      `max(that or 0, starting_number_invoices) + 1`; no advisory lock;
-  3. `generate_invoice_description`, `Invoice.objects.create` (raw `X-Group-Id`, created now, audited create with the
-     float fees; no second save), `payment.save()` (`paid`, `payment_date` now, `invoice`, `Payment.save()` defaults);
+  3. `generate_invoice_description` (reading the in-memory defaults of the first save: a payment without category or
+     description gets the default category's name), `Invoice.objects.create` (raw `X-Group-Id`, created now, audited
+     create with the float fees; no second save), `payment.save()` (audited `invoice` and the `Payment.save()` defaults);
   4. subject 2: the first live course subscription (`paid=True`, entry through `course.sport_association`), else the first
      live group-aware installment (`paid=True` on the installment, entry through
      `course_subscription.course.sport_association`), else the first carnet subscription (its save changes nothing);
-  5. `print_document_invoice.delay(str(invoice), token)` inside the block (args as a tuple): the request's
-     `Authorization` (pay and multiple-pay; None when anonymous) or `DOCUMENT_BYPASS_TOKEN` (webhook, request None);
+  5. `transaction.on_commit(print_document_invoice.delay(str(invoice), token))` (args as a tuple): the request's
+     `Authorization` (pay and multiple-pay; None when anonymous) or `DOCUMENT_BYPASS_TOKEN` (webhook, request None). Go
+     returns it with the notification and publishes it after the commit, after the notification;
   6. the notification text (`rata del corso <title>` for an installment, `il corso "<title>"`, `carnet <title>` or
      `carnet` when no carnet title resolves, the subscription text, else the saved description) and
      `send_notification(payment.user, ..., association_id=payment.sport_association_id)`. A payment without user raises
-     there: the block rolls back after the task was published (Go publishes, then rolls back too).
+     there: the block rolls back and the on-commit task is discarded (nothing published).
   After the commit `payment.user.user_id` is read for the log: no user is a 500 with the supplier invoice already saved.
   Go writes `validate_broadcast`'s rows in the transaction and the Redis list and push after the commit.
 - Marks run where the view calls them: pay marks the intent's payment, then each metadata key's payment fetched afresh
   (one already marked in the loop is skipped); multiple-pay marks inside the per-payment loop (a repeated id is fetched
-  again and seen paid); the webhook marks each unpaid payment of the queryset in order and stops at the first exception
+  again and seen paid; a marked payment is no longer in the unpaid set the intent is created for); the webhook marks each unpaid payment of the queryset in order and stops at the first exception
   (200).
 - Saves are `Payment.save()` (default category and description hook, audited changed fields, indexed directly, actor
   the authenticated user or none). Requests are not atomic: every save commits on its own.
@@ -119,10 +123,7 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
   are retrieved one by one (1 s apart) and bulk-updated to type `stripe` when succeeded (no signals, no audit). The client
   makes the body straightforward; it still needs the worker registration, scheduler allowlist and a task-level stub
   harness (a tasks-db style follow-up).
-- `mark_as_paid_payments_checking_stripe` (every 20 min): a 10-thread pool retrieves every unpaid payment's intent and
-  runs the full mark-as-paid. The flow itself is now ported (shared `stripePaidFlow`), but the task needs the worker
-  registration, the scheduler allowlist and a task-level Stripe stub harness, and its invoice numbers follow thread
-  completion order: left for a tasks-db family.
+- `mark_as_paid_payments_checking_stripe`: ported by tasks-db-f (worker); see tasks-db-f.md.
 - `generate_coupon_if_not_exists` (every 15 min): `Coupon.create(percent_off=10.0, …)` and `PromotionCode.create` per
   association without an affiliate code, errors swallowed. Needs float encoding (`10.0`) and generic POSTs in the client
   plus the task harness.
@@ -145,5 +146,23 @@ payments live in the association without seeded invoices, so their numbers do no
 - Mutation (`mutation-pf1`): marking an installment's course subscription instead of the installment fails Go on
   `stripe-routes-webhook-charge-installment` (CAUGHT). Earlier (`mutation-r1`): treating only a 400 retrieve error as
   `InvalidRequestError` fails `stripe-routes-pay-missing-intent-recreates`.
+- Re-verification after main 6b20715d (payment type and on-commit print; see payments-impersonation-reverify below).
 - `go test ./internal/stripeapi` pins the encoding against stripe-python's output, `int()` parsing, signature
   verification and retry/telemetry headers.
+
+### payments-impersonation-reverify (main 6b20715d)
+
+Django now records `type='stripe'` with `paid`/`payment_date` in an `update_fields` save before anything else (so an
+unpaid payment that already has an invoice is saved paid too) and publishes `print_document_invoice` in
+`transaction.on_commit`. The fixture has 101 cases: the paid flow audits the update_fields save before the invoice create
+and the invoice save after it; invoiced payments marked by pay, multiple-pay (which then finds nothing unpaid and creates
+a zero-amount intent), the pay metadata loop and the webhook are saved paid; a payment already typed `stripe`, a `cash`
+payment and a payment without category/description (defaults read by the invoice description) are added; the rolled-back
+mark publishes nothing. `CommitObserver` reads, when each Celery message reaches the broker (Redis keyspace
+notifications), the committed invoice and its payments' `paid`/`type` on its own connection: every print message must
+find `(True, 'stripe')`.
+
+- RED (`reverify-red-try4`): Django 100/100; Go fails `stripe-routes-pay-succeeded-marks-supplier-invoice`
+  (`state.payment-date-now`: the invoiced payment was not saved).
+- GREEN (`reverify-versioned-*`): 101/101 on the four transports.
+- Mutation: gating `stripeMarkPaid` on payments without an invoice (the previous behaviour) is CAUGHT.

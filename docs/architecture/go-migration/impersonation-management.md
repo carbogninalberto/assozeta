@@ -301,3 +301,10 @@ disconnect/shutdown outcomes, historical installed data and backend switch/rollb
 acceptance are not established by the current-schema matrix. No route is promoted
 to verified, and operators should not activate the incomplete replacement backend
 on this evidence.
+
+## Re-verification after main 6b20715d
+
+`eligible_users` now gives the self-hosted instance owner every athlete and other owners the athletes with a
+non-deleted subscription of the association too; the list search splits into up to ten words, each matching one
+field. Go `managementEligible`, `managementSearchWords` and `IdentityRelations.EligibleTarget` follow; evidence in
+`impersonation-users.md` (authored family on four transports, identity cases and transitions).

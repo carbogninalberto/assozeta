@@ -32,8 +32,9 @@ func (r *IdentityRelations) AssociationOwnedBy(ctx context.Context, owner string
 }
 
 // EligibleTarget reproduces eligible_users' owner/admin branches without a
-// per-row lookup. Owner membership lookup deliberately ignores selected group,
-// as Django Associate.objects.all_objects() does, while excluding deleted members.
+// per-row lookup. Owner membership lookup ignores the selected group, as
+// Django Associate.objects.all_objects() and Subscription._base_manager do,
+// while excluding deleted members and subscriptions.
 func (r *IdentityRelations) EligibleTarget(ctx context.Context, actor, association, target string) (domain.Account, error) {
 	predicate := `AND (
   role=2 OR
@@ -43,8 +44,14 @@ func (r *IdentityRelations) EligibleTarget(ctx context.Context, actor, associati
  )`
 	args := []any{target}
 	if association != "" {
+		// The self-hosted instance owner selects every athlete; another owner its live
+		// members and the athletes with a non-deleted subscription of the association.
 		predicate = `AND u.user_id<>$3 AND (
-   (role=2 AND EXISTS(SELECT 1 FROM application_associate member WHERE member.user_id=u.user_id AND member.sport_association_id=$2 AND NOT member.deleted)) OR
+   (role=2 AND (
+    COALESCE((SELECT c.self_hosted AND pa.user_id=$3 FROM instance_instanceconfiguration c
+     LEFT JOIN application_sportassociation pa ON pa.sport_association_id=c.primary_association_id ORDER BY c.id LIMIT 1), false) OR
+    EXISTS(SELECT 1 FROM application_associate member WHERE member.user_id=u.user_id AND member.sport_association_id=$2 AND NOT member.deleted) OR
+    EXISTS(SELECT 1 FROM application_subscription subscriber WHERE subscriber.user_id=u.user_id AND subscriber.sport_association_id=$2 AND NOT subscriber.deleted))) OR
    (role=3 AND connected_user_id=$3)
   )`
 		args = append(args, association, actor)

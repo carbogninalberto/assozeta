@@ -1,0 +1,1118 @@
+{
+ "matrix_version": 1,
+ "scope": "association/impersonation/users, administration/impersonation/users",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "users": {
+  "rossi": {
+   "id": "a1000000-0000-4000-8000-000001680001",
+   "username": "imp-users-mario-rossi",
+   "email": "imp-users-mario-rossi@example.test",
+   "first_name": "Mario",
+   "last_name": "Rossi",
+   "role": 2,
+   "link": [
+    "member",
+    "foreign_association"
+   ],
+   "active": true,
+   "deleted": false
+  },
+  "bianchi": {
+   "id": "a1000000-0000-4000-8000-000001680002",
+   "username": "imp-users-mario-bianchi",
+   "email": "imp-users-mario-bianchi@example.test",
+   "first_name": "Mario",
+   "last_name": "Bianchi",
+   "role": 2,
+   "link": [
+    "subscriber",
+    "foreign_association",
+    false
+   ],
+   "active": true,
+   "deleted": false
+  },
+  "verdi": {
+   "id": "a1000000-0000-4000-8000-000001680003",
+   "username": "imp-users-luca-verdi",
+   "email": "imp-users-luca-verdi@example.test",
+   "first_name": "Luca",
+   "last_name": "Verdi",
+   "role": 2,
+   "link": [
+    "subscriber",
+    "foreign_association",
+    true
+   ],
+   "active": true,
+   "deleted": false
+  },
+  "neri": {
+   "id": "a1000000-0000-4000-8000-000001680004",
+   "username": "imp-users-anna-neri",
+   "email": "imp-users-anna-neri@example.test",
+   "first_name": "Anna",
+   "last_name": "Neri",
+   "role": 2,
+   "link": null,
+   "active": true,
+   "deleted": false
+  },
+  "gialli": {
+   "id": "a1000000-0000-4000-8000-000001680005",
+   "username": "imp-users-paolo-gialli",
+   "email": "imp-users-paolo-gialli@example.test",
+   "first_name": "Paolo",
+   "last_name": "Gialli",
+   "role": 2,
+   "link": [
+    "subscriber",
+    "own_association",
+    false
+   ],
+   "active": true,
+   "deleted": false
+  },
+  "inactive": {
+   "id": "a1000000-0000-4000-8000-000001680006",
+   "username": "imp-users-sara-inactive",
+   "email": "imp-users-sara-inactive@example.test",
+   "first_name": "Sara",
+   "last_name": "Inattiva",
+   "role": 2,
+   "link": [
+    "subscriber",
+    "foreign_association",
+    false
+   ],
+   "active": false,
+   "deleted": false
+  },
+  "removed": {
+   "id": "a1000000-0000-4000-8000-000001680007",
+   "username": "imp-users-dario-removed",
+   "email": "imp-users-dario-removed@example.test",
+   "first_name": "Dario",
+   "last_name": "Rimosso",
+   "role": 2,
+   "link": [
+    "subscriber",
+    "foreign_association",
+    false
+   ],
+   "active": true,
+   "deleted": true
+  },
+  "staff": {
+   "id": "a1000000-0000-4000-8000-000001680008",
+   "username": "imp-users-staff",
+   "email": "imp-users-staff@example.test",
+   "first_name": "Staff",
+   "last_name": "Esterno",
+   "role": 3,
+   "link": null,
+   "active": true,
+   "deleted": false
+  }
+ },
+ "owner_member": "a1000000-0000-4000-8000-000001680009",
+ "subscriptions": {
+  "bianchi": "a1000000-0000-4000-8000-000001680010",
+  "verdi": "a1000000-0000-4000-8000-000001680011",
+  "gialli": "a1000000-0000-4000-8000-000001680012",
+  "inactive": "a1000000-0000-4000-8000-000001680013",
+  "removed": "a1000000-0000-4000-8000-000001680014"
+ },
+ "members": {
+  "rossi": "a1000000-0000-4000-8000-000001680015"
+ },
+ "cases": [
+  {
+   "name": "impersonation-users-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/impersonation/users",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Accesso non consentito."
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/impersonation/users",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Impersonation Users",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/impersonation/users",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-instance-owner-every-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=imp-users",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680004",
+      "username": "imp-users-anna-neri",
+      "email": "imp-users-anna-neri@example.test",
+      "first_name": "Anna",
+      "last_name": "Neri",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680003",
+      "username": "imp-users-luca-verdi",
+      "email": "imp-users-luca-verdi@example.test",
+      "first_name": "Luca",
+      "last_name": "Verdi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680005",
+      "username": "imp-users-paolo-gialli",
+      "email": "imp-users-paolo-gialli@example.test",
+      "first_name": "Paolo",
+      "last_name": "Gialli",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 5,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-instance-owner-unlinked-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=anna+neri",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680004",
+      "username": "imp-users-anna-neri",
+      "email": "imp-users-anna-neri@example.test",
+      "first_name": "Anna",
+      "last_name": "Neri",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701001",
+       "name": "Message reads own"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-instance-owner-collaborator-role",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=imp-users&role=collaborator",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 0,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-owner-members-and-subscribers",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=imp-users",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680008",
+      "username": "imp-users-staff",
+      "email": "imp-users-staff@example.test",
+      "first_name": "Staff",
+      "last_name": "Esterno",
+      "last_login": null,
+      "role": "collaborator",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 3,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-owner-athlete-role",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=imp-users&role=athlete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 2,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-owner-subscriber-other-association",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=paolo",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 0,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-owner-deleted-subscription",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=verdi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 0,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-owner-pagination",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=imp-users&pagination%5Bperpage%5D=2",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": 2,
+    "meta": {
+     "page": 1,
+     "perpage": 2,
+     "total": 3,
+     "pages": 2
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-owner-pagination-second-page",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=imp-users&pagination%5Bperpage%5D=2&page=2",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680008",
+      "username": "imp-users-staff",
+      "email": "imp-users-staff@example.test",
+      "first_name": "Staff",
+      "last_name": "Esterno",
+      "last_login": null,
+      "role": "collaborator",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 2,
+     "perpage": 2,
+     "total": 3,
+     "pages": 2
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-two-words",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=Mario+Rossi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-reversed-words",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=rossi++mario",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-partial-words",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mar+ROSS",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-shared-word",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mario",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 2,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-unmatched-word",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mario+zzz",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 0,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-tab-separated",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mario%09rossi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-unit-separator",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mario%1Frossi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-eleventh-word-ignored",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mario+rossi+mario+rossi+mario+rossi+mario+rossi+mario+rossi+zzz",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-tenth-word-applies",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mario+rossi+mario+rossi+mario+rossi+mario+rossi+mario+zzz",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 0,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-email-and-name",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mario-rossi%40example+rossi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-owner-denomination",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=imp-users+foreign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680008",
+      "username": "imp-users-staff",
+      "email": "imp-users-staff@example.test",
+      "first_name": "Staff",
+      "last_name": "Esterno",
+      "last_login": null,
+      "role": "collaborator",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-wildcard-literal",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?q=mario_rossi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 0,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-search-general-search-parameter",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/impersonation/users?query%5BgeneralSearch%5D=Rossi+Mario&q=zzz",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-admin-every-eligible",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/administration/impersonation/users?q=imp-users",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680004",
+      "username": "imp-users-anna-neri",
+      "email": "imp-users-anna-neri@example.test",
+      "first_name": "Anna",
+      "last_name": "Neri",
+      "last_login": null,
+      "role": "athlete",
+      "association": null
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680003",
+      "username": "imp-users-luca-verdi",
+      "email": "imp-users-luca-verdi@example.test",
+      "first_name": "Luca",
+      "last_name": "Verdi",
+      "last_login": null,
+      "role": "athlete",
+      "association": null
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680002",
+      "username": "imp-users-mario-bianchi",
+      "email": "imp-users-mario-bianchi@example.test",
+      "first_name": "Mario",
+      "last_name": "Bianchi",
+      "last_login": null,
+      "role": "athlete",
+      "association": null
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680001",
+      "username": "imp-users-mario-rossi",
+      "email": "imp-users-mario-rossi@example.test",
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "last_login": null,
+      "role": "athlete",
+      "association": null
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680005",
+      "username": "imp-users-paolo-gialli",
+      "email": "imp-users-paolo-gialli@example.test",
+      "first_name": "Paolo",
+      "last_name": "Gialli",
+      "last_login": null,
+      "role": "athlete",
+      "association": null
+     },
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680008",
+      "username": "imp-users-staff",
+      "email": "imp-users-staff@example.test",
+      "first_name": "Staff",
+      "last_name": "Esterno",
+      "last_login": null,
+      "role": "collaborator",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 6,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-admin-two-words",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/administration/impersonation/users?q=gialli+PAOLO",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680005",
+      "username": "imp-users-paolo-gialli",
+      "email": "imp-users-paolo-gialli@example.test",
+      "first_name": "Paolo",
+      "last_name": "Gialli",
+      "last_login": null,
+      "role": "athlete",
+      "association": null
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "impersonation-users-admin-owner-denomination",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/administration/impersonation/users?q=staff+reads+foreign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "users": [
+     {
+      "user_id": "a1000000-0000-4000-8000-000001680008",
+      "username": "imp-users-staff",
+      "email": "imp-users-staff@example.test",
+      "first_name": "Staff",
+      "last_name": "Esterno",
+      "last_login": null,
+      "role": "collaborator",
+      "association": {
+       "id": "a1000000-0000-4000-8000-000000701002",
+       "name": "Message reads foreign"
+      }
+     }
+    ],
+    "next_page": null,
+    "meta": {
+     "page": 1,
+     "perpage": 25,
+     "total": 1,
+     "pages": 1
+    }
+   },
+   "effect": null
+  }
+ ]
+}
