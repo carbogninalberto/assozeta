@@ -21288,25 +21288,85 @@
         "target": "subscription_delete_document",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_misc.go",
+        "BE_GO/internal/repository/subscription_misc.go",
+        "BE_GO/internal/service/subscription_misc.go",
+        "BE_GO/internal/handler/subscription_misc.go",
+        "BE_GO/internal/codicefiscale/codicefiscale.go",
+        "BE_GO/internal/codicefiscale/slugify.go",
+        "BE_GO/internal/codicefiscale/dateparse.go",
+        "BE_GO/internal/codicefiscale/data.go",
+        "BE_GO/internal/codicefiscale/html_entities.go",
+        "BE_GO/internal/codicefiscale/unidecode_table.go",
+        "BE_GO/internal/codicefiscale/data.txt.gz",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope and audit index",
+        "Subscription-reads SubscriptionSerializer port",
+        "python-codicefiscale 0.10.3 data (embedded lookup index), text-unidecode 1.3 table subset",
+        "application_subscription",
+        "application_subscriptionfile",
+        "application_cumulativesubscriptiongymlinks",
+        "application_associateimportdraftstatus",
+        "application_sportassociation",
+        "docmanager_document",
+        "instance_bakneypairing"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/delete-document/<subscription_file_id>",
+          "/api/v2/subscription/<uid>/delete-document/<subscription_file_id>",
+          "/api/subscription/<uid>/delete-document/<subscription_file_id>"
+        ],
+        "request": "Path uid and subscription_file_id.",
+        "response": "200 {'msg': 'subscription file deleted'}.",
+        "errors": "400 is_valid_uuid list; 401 anonymous; 403 registry / scoped request / admin session / no association ('User not allowed.'); 500 missing subscription or file, Document referenced by other rows.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update.",
+        "resource_scope": "The user's scoped live association; group-aware scoped subscription; the subscription's file.",
+        "side_effects": "Deletes the Document and the file (entries: file, Document, file again) outside an association-scoped session, only the file inside one; indexed to the actor's association.",
+        "transaction": "One transaction in Go (Django autocommits the collector's atomic delete, then the stale delete).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_misc_http.json",
+        "TESTS/fixtures/generate_subscription_misc_http.py",
+        "TESTS/contracts/test_subscription_misc_http.py",
+        "TESTS/adapters/django/subscription_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 143/143; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-native-r6/results.json",
+          "receipt_sha256": "1c3836d505b394b8d24b158ff768a6effa588d074b6f4e3831dd9aa0bfacd9f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "95b4e28118964dfca5313f4530529eb069f70afacf10a845cc440bfb7482cb48"
+        },
+        {
+          "revision": "committing change without associate_id IS NOT NULL in the validate-token-link candidates' exclusion",
+          "result": "Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "c0346b4f06cced89df3f3dc696423e388406c2cef30818c50340c34b13ca7515"
+        }
+      ],
+      "notes": [
+        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/edit -> subscription_edit",
@@ -22680,25 +22740,85 @@
         "target": "subscription_calculate_tax_code",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_misc.go",
+        "BE_GO/internal/repository/subscription_misc.go",
+        "BE_GO/internal/service/subscription_misc.go",
+        "BE_GO/internal/handler/subscription_misc.go",
+        "BE_GO/internal/codicefiscale/codicefiscale.go",
+        "BE_GO/internal/codicefiscale/slugify.go",
+        "BE_GO/internal/codicefiscale/dateparse.go",
+        "BE_GO/internal/codicefiscale/data.go",
+        "BE_GO/internal/codicefiscale/html_entities.go",
+        "BE_GO/internal/codicefiscale/unidecode_table.go",
+        "BE_GO/internal/codicefiscale/data.txt.gz",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope and audit index",
+        "Subscription-reads SubscriptionSerializer port",
+        "python-codicefiscale 0.10.3 data (embedded lookup index), text-unidecode 1.3 table subset",
+        "application_subscription",
+        "application_subscriptionfile",
+        "application_cumulativesubscriptiongymlinks",
+        "application_associateimportdraftstatus",
+        "application_sportassociation",
+        "docmanager_document",
+        "instance_bakneypairing"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/calculate-tax-code",
+          "/api/v2/subscription/calculate-tax-code",
+          "/api/subscription/calculate-tax-code"
+        ],
+        "request": "JSON or form last_name, first_name, sex, born_date, born_city.",
+        "response": "200 {'tax_code': code} (None when a key is missing).",
+        "errors": "400 JSON parse; 400 {'msg': 'alcuni dati sono mancanti.'} / {'msg': 'Città non mappata.'} / {'msg': 'alcuni dati non sono validi.'}; 403 registry (collaborators) / admin session; 500 non-dict body, non-string sex, input outside the ported codice fiscale subset.",
+        "authentication": "DRF AllowAny (anonymous requests answered; JWT/session identities resolved).",
+        "permissions": "Registry association.members.read (collaborators).",
+        "resource_scope": "None (pure computation).",
+        "side_effects": "None.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_misc_http.json",
+        "TESTS/fixtures/generate_subscription_misc_http.py",
+        "TESTS/contracts/test_subscription_misc_http.py",
+        "TESTS/adapters/django/subscription_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 143/143; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-native-r6/results.json",
+          "receipt_sha256": "1c3836d505b394b8d24b158ff768a6effa588d074b6f4e3831dd9aa0bfacd9f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "95b4e28118964dfca5313f4530529eb069f70afacf10a845cc440bfb7482cb48"
+        },
+        {
+          "revision": "committing change without associate_id IS NOT NULL in the validate-token-link candidates' exclusion",
+          "result": "Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "c0346b4f06cced89df3f3dc696423e388406c2cef30818c50340c34b13ca7515"
+        }
+      ],
+      "notes": [
+        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/generate-token-link -> subscription_generate_token_link",
@@ -22715,25 +22835,85 @@
         "target": "subscription_generate_token_link",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_misc.go",
+        "BE_GO/internal/repository/subscription_misc.go",
+        "BE_GO/internal/service/subscription_misc.go",
+        "BE_GO/internal/handler/subscription_misc.go",
+        "BE_GO/internal/codicefiscale/codicefiscale.go",
+        "BE_GO/internal/codicefiscale/slugify.go",
+        "BE_GO/internal/codicefiscale/dateparse.go",
+        "BE_GO/internal/codicefiscale/data.go",
+        "BE_GO/internal/codicefiscale/html_entities.go",
+        "BE_GO/internal/codicefiscale/unidecode_table.go",
+        "BE_GO/internal/codicefiscale/data.txt.gz",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope and audit index",
+        "Subscription-reads SubscriptionSerializer port",
+        "python-codicefiscale 0.10.3 data (embedded lookup index), text-unidecode 1.3 table subset",
+        "application_subscription",
+        "application_subscriptionfile",
+        "application_cumulativesubscriptiongymlinks",
+        "application_associateimportdraftstatus",
+        "application_sportassociation",
+        "docmanager_document",
+        "instance_bakneypairing"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/generate-token-link",
+          "/api/v2/subscription/generate-token-link",
+          "/api/subscription/generate-token-link"
+        ],
+        "request": "JSON or form gym_name (any JSON value; str() is stored).",
+        "response": "201 {'token', 'gym_name', 'expires_at'} (two days ahead).",
+        "errors": "400 JSON parse / {'error': 'gym_name is required'}; 401 anonymous; 403 admin session / athletes; 500 no live association, non-dict body, unstorable or unrenderable value, uploaded file.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Excluded from the registry.",
+        "resource_scope": "request.user.sport_association.",
+        "side_effects": "Creates a CumulativeSubscriptionGymLinks (create entry, direct).",
+        "transaction": "Single insert.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_misc_http.json",
+        "TESTS/fixtures/generate_subscription_misc_http.py",
+        "TESTS/contracts/test_subscription_misc_http.py",
+        "TESTS/adapters/django/subscription_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 143/143; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-native-r6/results.json",
+          "receipt_sha256": "1c3836d505b394b8d24b158ff768a6effa588d074b6f4e3831dd9aa0bfacd9f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "95b4e28118964dfca5313f4530529eb069f70afacf10a845cc440bfb7482cb48"
+        },
+        {
+          "revision": "committing change without associate_id IS NOT NULL in the validate-token-link candidates' exclusion",
+          "result": "Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "c0346b4f06cced89df3f3dc696423e388406c2cef30818c50340c34b13ca7515"
+        }
+      ],
+      "notes": [
+        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/get-associations-for-federation -> get_associations_for_federation",
@@ -22750,25 +22930,85 @@
         "target": "get_associations_for_federation",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_misc.go",
+        "BE_GO/internal/repository/subscription_misc.go",
+        "BE_GO/internal/service/subscription_misc.go",
+        "BE_GO/internal/handler/subscription_misc.go",
+        "BE_GO/internal/codicefiscale/codicefiscale.go",
+        "BE_GO/internal/codicefiscale/slugify.go",
+        "BE_GO/internal/codicefiscale/dateparse.go",
+        "BE_GO/internal/codicefiscale/data.go",
+        "BE_GO/internal/codicefiscale/html_entities.go",
+        "BE_GO/internal/codicefiscale/unidecode_table.go",
+        "BE_GO/internal/codicefiscale/data.txt.gz",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope and audit index",
+        "Subscription-reads SubscriptionSerializer port",
+        "python-codicefiscale 0.10.3 data (embedded lookup index), text-unidecode 1.3 table subset",
+        "application_subscription",
+        "application_subscriptionfile",
+        "application_cumulativesubscriptiongymlinks",
+        "application_associateimportdraftstatus",
+        "application_sportassociation",
+        "docmanager_document",
+        "instance_bakneypairing"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/get-associations-for-federation",
+          "/api/v2/subscription/get-associations-for-federation",
+          "/api/subscription/get-associations-for-federation"
+        ],
+        "request": "Optional X-Group-Id.",
+        "response": "200 [{'id', 'denomination'}] of the association's subscriptions whose custom_data text has an asd-o-ssd or scuola-asc type_of_associate; first denomination wins.",
+        "errors": "401 anonymous; 403 admin session / athletes; 500 no live association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Excluded from the registry.",
+        "resource_scope": "request.user.sport_association; group-aware Subscription.objects (deleted rows kept), impersonation scope.",
+        "side_effects": "None.",
+        "transaction": "Read.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_misc_http.json",
+        "TESTS/fixtures/generate_subscription_misc_http.py",
+        "TESTS/contracts/test_subscription_misc_http.py",
+        "TESTS/adapters/django/subscription_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 143/143; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-native-r6/results.json",
+          "receipt_sha256": "1c3836d505b394b8d24b158ff768a6effa588d074b6f4e3831dd9aa0bfacd9f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "95b4e28118964dfca5313f4530529eb069f70afacf10a845cc440bfb7482cb48"
+        },
+        {
+          "revision": "committing change without associate_id IS NOT NULL in the validate-token-link candidates' exclusion",
+          "result": "Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "c0346b4f06cced89df3f3dc696423e388406c2cef30818c50340c34b13ca7515"
+        }
+      ],
+      "notes": [
+        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/import/status -> subscription_import_status",
@@ -22785,25 +23025,85 @@
         "target": "subscription_import_status",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_misc.go",
+        "BE_GO/internal/repository/subscription_misc.go",
+        "BE_GO/internal/service/subscription_misc.go",
+        "BE_GO/internal/handler/subscription_misc.go",
+        "BE_GO/internal/codicefiscale/codicefiscale.go",
+        "BE_GO/internal/codicefiscale/slugify.go",
+        "BE_GO/internal/codicefiscale/dateparse.go",
+        "BE_GO/internal/codicefiscale/data.go",
+        "BE_GO/internal/codicefiscale/html_entities.go",
+        "BE_GO/internal/codicefiscale/unidecode_table.go",
+        "BE_GO/internal/codicefiscale/data.txt.gz",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope and audit index",
+        "Subscription-reads SubscriptionSerializer port",
+        "python-codicefiscale 0.10.3 data (embedded lookup index), text-unidecode 1.3 table subset",
+        "application_subscription",
+        "application_subscriptionfile",
+        "application_cumulativesubscriptiongymlinks",
+        "application_associateimportdraftstatus",
+        "application_sportassociation",
+        "docmanager_document",
+        "instance_bakneypairing"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/import/status",
+          "/api/v2/subscription/import/status",
+          "/api/subscription/import/status"
+        ],
+        "request": "None.",
+        "response": "200 {'importing': doing of the newest importing status | False}.",
+        "errors": "401 anonymous; 403 registry / scoped session / admin session / athletes ('User is not a sport association'); 500 no live association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.read.",
+        "resource_scope": "request.user.sport_association.",
+        "side_effects": "None.",
+        "transaction": "Read.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_misc_http.json",
+        "TESTS/fixtures/generate_subscription_misc_http.py",
+        "TESTS/contracts/test_subscription_misc_http.py",
+        "TESTS/adapters/django/subscription_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 143/143; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-native-r6/results.json",
+          "receipt_sha256": "1c3836d505b394b8d24b158ff768a6effa588d074b6f4e3831dd9aa0bfacd9f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "95b4e28118964dfca5313f4530529eb069f70afacf10a845cc440bfb7482cb48"
+        },
+        {
+          "revision": "committing change without associate_id IS NOT NULL in the validate-token-link candidates' exclusion",
+          "result": "Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "c0346b4f06cced89df3f3dc696423e388406c2cef30818c50340c34b13ca7515"
+        }
+      ],
+      "notes": [
+        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/import/upload -> subscription_import_upload",
@@ -24023,25 +24323,85 @@
         "target": "validate_token_link_and_get_subscriptions",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_misc.go",
+        "BE_GO/internal/repository/subscription_misc.go",
+        "BE_GO/internal/service/subscription_misc.go",
+        "BE_GO/internal/handler/subscription_misc.go",
+        "BE_GO/internal/codicefiscale/codicefiscale.go",
+        "BE_GO/internal/codicefiscale/slugify.go",
+        "BE_GO/internal/codicefiscale/dateparse.go",
+        "BE_GO/internal/codicefiscale/data.go",
+        "BE_GO/internal/codicefiscale/html_entities.go",
+        "BE_GO/internal/codicefiscale/unidecode_table.go",
+        "BE_GO/internal/codicefiscale/data.txt.gz",
+        "BE_GO/internal/service/subscription_reads.go",
+        "BE_GO/internal/dto/subscription_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry, impersonation scope and audit index",
+        "Subscription-reads SubscriptionSerializer port",
+        "python-codicefiscale 0.10.3 data (embedded lookup index), text-unidecode 1.3 table subset",
+        "application_subscription",
+        "application_subscriptionfile",
+        "application_cumulativesubscriptiongymlinks",
+        "application_associateimportdraftstatus",
+        "application_sportassociation",
+        "docmanager_document",
+        "instance_bakneypairing"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/validate-token-link-and-get-subscriptions",
+          "/api/v2/subscription/validate-token-link-and-get-subscriptions",
+          "/api/subscription/validate-token-link-and-get-subscriptions"
+        ],
+        "request": "Query token (last value).",
+        "response": "200 {'expired': True} or {'expired': False, 'subscriptions': SubscriptionSerializer list, 'default_custom_data'}.",
+        "errors": "400 is_valid_uuid list; 403 admin session; 500 null gym name, non-dict custom_data or non-string name of a candidate, unknown canonical token with an active Bakney pairing.",
+        "authentication": "permission_classes([]) (anonymous requests answered; JWT/session identities resolved).",
+        "permissions": "Excluded from the registry.",
+        "resource_scope": "The link's association; group-aware Subscription.objects, impersonation scope.",
+        "side_effects": "Deletes every expired link (delete entries, changes_json.sport_association).",
+        "transaction": "Not atomic: the deletions stay when the request fails afterwards.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_misc_http.json",
+        "TESTS/fixtures/generate_subscription_misc_http.py",
+        "TESTS/contracts/test_subscription_misc_http.py",
+        "TESTS/adapters/django/subscription_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 143/143; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-native-r6/results.json",
+          "receipt_sha256": "1c3836d505b394b8d24b158ff768a6effa588d074b6f4e3831dd9aa0bfacd9f1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 143/143 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact link, file, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "95b4e28118964dfca5313f4530529eb069f70afacf10a845cc440bfb7482cb48"
+        },
+        {
+          "revision": "committing change without associate_id IS NOT NULL in the validate-token-link candidates' exclusion",
+          "result": "Mutation control: fails Go on subscription-misc-validate-anonymous (CAUGHT).",
+          "artifact": "quality-reports/go-migration/subscription-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "c0346b4f06cced89df3f3dc696423e388406c2cef30818c50340c34b13ca7515"
+        }
+      ],
+      "notes": [
+        "Implementing: calculate-tax-code with the codice fiscale port (slugify, dateutil digit dates, municipality/country/code lookup with date ranges, CIN, decode check), import/status, get-associations-for-federation, generate-token-link (audited create), validate-token-link-and-get-subscriptions (expired-link deletes, fuzzy matches rendered with SubscriptionSerializer) and delete-document (Document cascade plus the stale-instance delete entry) on four transports; refused with 500 before any write: tax-code inputs outside the ported subset, unknown canonical tokens while a Bakney pairing is active, Documents referenced by other rows, uploaded gym names; associates-draft/list/approve (create_subscription) is not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:supplier/<str:uid>/delete -> supplier_delete",
