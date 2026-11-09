@@ -180,6 +180,11 @@ CELERY_BEAT_SCHEDULE = {
 }
 # useful for mitigating memory leaks
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
+# Opt-in: task names consumed by the Go Celery consumer (empty by default, no routes).
+from core.task_routing import go_task_routes  # noqa: E402
+_go_task_routes = go_task_routes(os.environ.get('GO_TASK_QUEUE_TASKS', ''))
+if _go_task_routes:
+    CELERY_TASK_ROUTES = _go_task_routes
 
 # Redis cache configuration
 CACHES = {

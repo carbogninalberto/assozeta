@@ -30,6 +30,7 @@ type golden struct {
 			TimeLimit     *int64 `json:"time_limit"`
 			SoftTimeLimit *int64 `json:"soft_time_limit"`
 		} `json:"task_options"`
+		Routes   string   `json:"routes"`
 		Payload  string   `json:"payload"`
 		Commands []string `json:"broker_commands"`
 	} `json:"cases"`
@@ -134,6 +135,8 @@ func TestEncodeMatchesKombu(t *testing.T) {
 			}
 			task := Task{Name: c.Task, Kwargs: Dict{}, ArgsList: c.ArgsList, ID: c.TaskID,
 				TimeLimit: c.Options.TimeLimit, SoftTimeLimit: c.Options.SoftTimeLimit}
+			queue := (&Producer{}).WithRoutes(ParseRoutes(c.Routes)).queueFor(task)
+			task.Queue = queue
 			if c.TaskID != "" && captured.Headers.ID != c.TaskID {
 				t.Fatalf("captured id %s, task_id %s", captured.Headers.ID, c.TaskID)
 			}
@@ -169,7 +172,7 @@ func TestEncodeMatchesKombu(t *testing.T) {
 			if string(encoded) != c.Payload {
 				t.Fatalf("payload differs\n go:    %s\n kombu: %s", encoded, c.Payload)
 			}
-			if c.Commands[len(c.Commands)-1] != "LPUSH celery" {
+			if c.Commands[len(c.Commands)-1] != "LPUSH "+queue || (c.Routes != "") != (queue == GoQueue) {
 				t.Fatalf("commands %q", c.Commands)
 			}
 		})
@@ -288,5 +291,44 @@ func TestPythonFloat(t *testing.T) {
 		if got := pythonFloat(value); got != want {
 			t.Fatalf("%v: %s", value, got)
 		}
+	}
+}
+
+// TestRoutes: GO_TASK_QUEUE_TASKS parsing and queue selection; empty keeps
+// every task on the default queue with the same payload.
+func TestRoutes(t *testing.T) {
+	if ParseRoutes("") != nil || ParseRoutes(" , ") != nil {
+		t.Fatal("empty value must not route")
+	}
+	routes := ParseRoutes(" core.tasks.send_mail_async ,send_email_text,")
+	if len(routes) != 2 || routes["core.tasks.send_mail_async"] != GoQueue || routes["send_email_text"] != GoQueue {
+		t.Fatalf("routes %v", routes)
+	}
+	fixed := func(p *Producer) *Producer {
+		p.now = func() time.Time { return time.Unix(1794242363, 705195000) }
+		p.newID = func() string { return "6f1c1e9e-6a59-4b0e-9a54-3f1f0a7c2d11" }
+		return p
+	}
+	plain, routed := &fakeBroker{}, &fakeBroker{}
+	unrouted := fixed(NewProducer(plain))
+	withRoutes := fixed(NewProducer(routed).WithRoutes(routes))
+	for _, name := range []string{"core.tasks.send_mail_async", "check_workflows_trigger"} {
+		task := Task{Name: name, Kwargs: Dict{{"k", "v"}}}
+		if _, err := unrouted.Publish(context.Background(), task); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := withRoutes.Publish(context.Background(), task); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if strings.Join(plain.queues, ",") != "celery,celery" || strings.Join(routed.queues, ",") != "assozeta-go,celery" {
+		t.Fatalf("queues %v %v", plain.queues, routed.queues)
+	}
+	if plain.pushes[1] != routed.pushes[1] {
+		t.Fatal("an unrouted task changed")
+	}
+	if !strings.Contains(routed.pushes[0], `"routing_key": "assozeta-go"`) ||
+		strings.Replace(routed.pushes[0], `"routing_key": "assozeta-go"`, `"routing_key": "celery"`, 1) != plain.pushes[0] {
+		t.Fatal("a routed task differs beyond its routing key")
 	}
 }
