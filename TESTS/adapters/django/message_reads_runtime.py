@@ -1208,14 +1208,14 @@ def django_liveness_guard(server, thread, observer):
 
 
 @contextmanager
-def django_application(report, versioned, queries, *, liveness_observer=None):
+def django_application(report, versioned, queries, *, liveness_observer=None, application=None):
     import uvicorn
     from TESTS.adapters.django import historical_read_routes
     from TESTS.http_client import poll
 
     from django.core.asgi import get_asgi_application
 
-    observer = oracle.AsgiObserver(get_asgi_application(), queries)
+    observer = oracle.AsgiObserver(application or get_asgi_application(), queries)
     server = uvicorn.Server(uvicorn.Config(
         observer,
         host="0.0.0.0" if versioned else "127.0.0.1",
