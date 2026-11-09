@@ -1,0 +1,723 @@
+{
+ "matrix_version": 1,
+ "scope": "subscription/import/upload",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "location": "import-uploads",
+ "cases": [
+  {
+   "name": "subscription-import-upload-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-import-upload-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-import-upload-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.create"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-import-upload-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-import-upload-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-import-upload-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Import Upload",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-import-upload-athlete-unauthorized",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-import-upload-owner-without-association-unauthorized",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-import-upload-deleted-association-unauthorized",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-import-upload-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    {
+     "document_id": "a1000000-0000-4000-8000-000000984001",
+     "map": {}
+    }
+   ]
+  },
+  {
+   "name": "subscription-import-upload-empty-object-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-import-upload-document-id-without-map-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000984001"
+   }
+  },
+  {
+   "name": "subscription-import-upload-text-associates-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associates_file": "soci.csv"
+   }
+  },
+  {
+   "name": "subscription-import-upload-form-field-associates-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"\r\n\r\nsoci.csv\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-malformed-document-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "document_id": "non-un-uuid",
+    "map": {}
+   }
+  },
+  {
+   "name": "subscription-import-upload-integer-document-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "'int' object has no attribute 'replace'"
+   ],
+   "effect": null,
+   "body": {
+    "document_id": 5,
+    "map": {}
+   }
+  },
+  {
+   "name": "subscription-import-upload-null-document-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "one of the hex, bytes, bytes_le, fields, or int arguments must be given"
+   ],
+   "effect": null,
+   "body": {
+    "document_id": null,
+    "map": null
+   }
+  },
+  {
+   "name": "subscription-import-upload-unknown-document-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000720009",
+    "map": {
+     "nome": "Nome"
+    }
+   }
+  },
+  {
+   "name": "subscription-import-upload-unknown-document-form-server-error",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"document_id\"\r\n\r\na1000000-0000-4000-8000-000000720009\r\n--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"map\"\r\n\r\n{}\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-maps-every-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "COGNOME",
+     "Sesso",
+     "Codice fiscal",
+     "Data di Nascita",
+     "Città di nascita",
+     "Indirizzo",
+     "Città di residenza",
+     "CAP",
+     "E-mail",
+     "Telefono",
+     "Nome tutore",
+     "Cognome tutore",
+     "Sesso tutore",
+     "Codice fiscale tutore",
+     "Data nascita tutore",
+     "Città nascita tutore",
+     "Città residenza tutore",
+     "Indirizzo tutore",
+     "Cap tutore",
+     "Email tutore",
+     "Telefono tutore",
+     "Scadenza certificato med",
+     "Data tesseramento",
+     "Scadenza tesseramento",
+     "Numero tessera",
+     "Note",
+     "Nome.1"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": "COGNOME",
+     "sesso": "Sesso",
+     "codice fiscale": "Codice fiscal",
+     "data di nascita": "Data di Nascita",
+     "città di nascita": "Città di nascita",
+     "indirizzo": "Indirizzo",
+     "città di residenza": "Città di residenza",
+     "cap": "CAP",
+     "email": "E-mail",
+     "telefono": "Telefono",
+     "nome tutore": "Nome tutore",
+     "cognome tutore": "Cognome tutore",
+     "sesso tutore": "Sesso tutore",
+     "codice fiscale tutore": "Codice fiscale tutore",
+     "data di nascita tutore": "Data nascita tutore",
+     "città di nascita tutore": "Città nascita tutore",
+     "città di residenza tutore": "Città residenza tutore",
+     "indirizzo tutore": "Indirizzo tutore",
+     "cap tutore": "Cap tutore",
+     "email tutore": "Email tutore",
+     "telefono tutore": "Telefono tutore",
+     "scadenza certificato medico": "Scadenza certificato med",
+     "data tesseramento": "Data tesseramento",
+     "data scadenza tesseramento": "Scadenza tesseramento",
+     "numero tessera": "Numero tessera"
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "soci.csv",
+    "body_b64": "Tm9tZTtDT0dOT01FO1Nlc3NvO0NvZGljZSBmaXNjYWw7RGF0YSBkaSBOYXNjaXRhO0NpdHTDoCBkaSBuYXNjaXRhO0luZGlyaXp6bztDaXR0w6AgZGkgcmVzaWRlbnphO0NBUDtFLW1haWw7VGVsZWZvbm87Tm9tZSB0dXRvcmU7Q29nbm9tZSB0dXRvcmU7U2Vzc28gdHV0b3JlO0NvZGljZSBmaXNjYWxlIHR1dG9yZTtEYXRhIG5hc2NpdGEgdHV0b3JlO0NpdHTDoCBuYXNjaXRhIHR1dG9yZTtDaXR0w6AgcmVzaWRlbnphIHR1dG9yZTtJbmRpcml6em8gdHV0b3JlO0NhcCB0dXRvcmU7RW1haWwgdHV0b3JlO1RlbGVmb25vIHR1dG9yZTtTY2FkZW56YSBjZXJ0aWZpY2F0byBtZWQ7RGF0YSB0ZXNzZXJhbWVudG87U2NhZGVuemEgdGVzc2VyYW1lbnRvO051bWVybyB0ZXNzZXJhO05vdGU7Tm9tZQpNYXJpbztSb3NzaTtNO1JTU01SQTgwQTAxSDUwMVU7MDEvMDEvMTk4MDtSb21hO1ZpYSBSb21hIDE7Um9tYTswMDEwMDttYXJpb0BleGFtcGxlLnRlc3Q7MzMzMDAwMDAwMDs7Ozs7Ozs7Ozs7OzMxLzEyLzIwMjY7MDEvMDkvMjAyNjszMS8wOC8yMDI3OzQyOztNYXJpbwo=",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"soci.csv\"\r\nContent-Type: text/csv\r\n\r\nNome;COGNOME;Sesso;Codice fiscal;Data di Nascita;Città di nascita;Indirizzo;Città di residenza;CAP;E-mail;Telefono;Nome tutore;Cognome tutore;Sesso tutore;Codice fiscale tutore;Data nascita tutore;Città nascita tutore;Città residenza tutore;Indirizzo tutore;Cap tutore;Email tutore;Telefono tutore;Scadenza certificato med;Data tesseramento;Scadenza tesseramento;Numero tessera;Note;Nome\nMario;Rossi;M;RSSMRA80A01H501U;01/01/1980;Roma;Via Roma 1;Roma;00100;mario@example.test;3330000000;;;;;;;;;;;;31/12/2026;01/09/2026;31/08/2027;42;;Mario\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-keeps-earlier-map",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "Cognome"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": "Cognome",
+     "sesso": "Sesso",
+     "codice fiscale": "Codice fiscal",
+     "data di nascita": "Data di Nascita",
+     "città di nascita": "Città di nascita",
+     "indirizzo": "Indirizzo",
+     "città di residenza": "Città di residenza",
+     "cap": "CAP",
+     "email": "E-mail",
+     "telefono": "Telefono",
+     "nome tutore": "Nome tutore",
+     "cognome tutore": "Cognome tutore",
+     "sesso tutore": "Sesso tutore",
+     "codice fiscale tutore": "Codice fiscale tutore",
+     "data di nascita tutore": "Data nascita tutore",
+     "città di nascita tutore": "Città nascita tutore",
+     "città di residenza tutore": "Città residenza tutore",
+     "indirizzo tutore": "Indirizzo tutore",
+     "cap tutore": "Cap tutore",
+     "email tutore": "Email tutore",
+     "telefono tutore": "Telefono tutore",
+     "scadenza certificato medico": "Scadenza certificato med",
+     "data tesseramento": "Data tesseramento",
+     "data scadenza tesseramento": "Scadenza tesseramento",
+     "numero tessera": "Numero tessera"
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "altri.csv",
+    "body_b64": "Tm9tZTtDb2dub21lCk1hcmlvO1Jvc3NpCg==",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"altri.csv\"\r\nContent-Type: text/csv\r\n\r\nNome;Cognome\nMario;Rossi\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-bom-crlf-quoted-unnamed-duplicates",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "Unnamed: 1",
+     "Note;varie",
+     "Note",
+     "Unnamed: 4"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": "Cognome",
+     "sesso": "Sesso",
+     "codice fiscale": "Codice fiscal",
+     "data di nascita": "Data di Nascita",
+     "città di nascita": "Città di nascita",
+     "indirizzo": "Indirizzo",
+     "città di residenza": "Città di residenza",
+     "cap": "CAP",
+     "email": "E-mail",
+     "telefono": "Telefono",
+     "nome tutore": "Nome tutore",
+     "cognome tutore": "Cognome tutore",
+     "sesso tutore": "Sesso tutore",
+     "codice fiscale tutore": "Codice fiscale tutore",
+     "data di nascita tutore": "Data nascita tutore",
+     "città di nascita tutore": "Città nascita tutore",
+     "città di residenza tutore": "Città residenza tutore",
+     "indirizzo tutore": "Indirizzo tutore",
+     "cap tutore": "Cap tutore",
+     "email tutore": "Email tutore",
+     "telefono tutore": "Telefono tutore",
+     "scadenza certificato medico": "Scadenza certificato med",
+     "data tesseramento": "Data tesseramento",
+     "data scadenza tesseramento": "Scadenza tesseramento",
+     "numero tessera": "Numero tessera"
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "session": null,
+    "filename": "Esportazione.CSV",
+    "body_b64": "77u/Ik5vbWUiOzsiTm90ZTt2YXJpZSI7Tm90ZTsNCk1hcmlvOzt4O3k7DQoiQW5uYQ0KTWFyaWEiOzs7Ow0K",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"Esportazione.CSV\"\r\nContent-Type: text/csv\r\n\r\n﻿\"Nome\";;\"Note;varie\";Note;\r\nMario;;x;y;\r\n\"Anna\r\nMaria\";;;;\r\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-header-only",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "columns": [
+     "Telefono",
+     "Altro"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": "Cognome",
+     "sesso": "Sesso",
+     "codice fiscale": "Codice fiscal",
+     "data di nascita": "Data di Nascita",
+     "città di nascita": "Città di nascita",
+     "indirizzo": "Indirizzo",
+     "città di residenza": "Città di residenza",
+     "cap": "CAP",
+     "email": "E-mail",
+     "telefono": "Telefono",
+     "nome tutore": "Nome tutore",
+     "cognome tutore": "Cognome tutore",
+     "sesso tutore": "Sesso tutore",
+     "codice fiscale tutore": "Codice fiscale tutore",
+     "data di nascita tutore": "Data nascita tutore",
+     "città di nascita tutore": "Città nascita tutore",
+     "città di residenza tutore": "Città residenza tutore",
+     "indirizzo tutore": "Indirizzo tutore",
+     "cap tutore": "Cap tutore",
+     "email tutore": "Email tutore",
+     "telefono tutore": "Telefono tutore",
+     "scadenza certificato medico": "Scadenza certificato med",
+     "data tesseramento": "Data tesseramento",
+     "data scadenza tesseramento": "Scadenza tesseramento",
+     "numero tessera": "Numero tessera"
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "admin",
+    "session": "admin_owner",
+    "filename": "vuoto.csv",
+    "body_b64": "VGVsZWZvbm87QWx0cm8K",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"vuoto.csv\"\r\nContent-Type: text/csv\r\n\r\nTelefono;Altro\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-implicit-index",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "a",
+     "b"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": "Cognome",
+     "sesso": "Sesso",
+     "codice fiscale": "Codice fiscal",
+     "data di nascita": "Data di Nascita",
+     "città di nascita": "Città di nascita",
+     "indirizzo": "Indirizzo",
+     "città di residenza": "Città di residenza",
+     "cap": "CAP",
+     "email": "E-mail",
+     "telefono": "Telefono",
+     "nome tutore": "Nome tutore",
+     "cognome tutore": "Cognome tutore",
+     "sesso tutore": "Sesso tutore",
+     "codice fiscale tutore": "Codice fiscale tutore",
+     "data di nascita tutore": "Data nascita tutore",
+     "città di nascita tutore": "Città nascita tutore",
+     "città di residenza tutore": "Città residenza tutore",
+     "indirizzo tutore": "Indirizzo tutore",
+     "cap tutore": "Cap tutore",
+     "email tutore": "Email tutore",
+     "telefono tutore": "Telefono tutore",
+     "scadenza certificato medico": "Scadenza certificato med",
+     "data tesseramento": "Data tesseramento",
+     "data scadenza tesseramento": "Scadenza tesseramento",
+     "numero tessera": "Numero tessera"
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "indice.csv",
+    "body_b64": "YTtiCjE7MjszCjQ7NTs2Cg==",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"indice.csv\"\r\nContent-Type: text/csv\r\n\r\na;b\n1;2;3\n4;5;6\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-blank-lines-whitespace",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     " a ",
+     "b"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": "Cognome",
+     "sesso": "Sesso",
+     "codice fiscale": "Codice fiscal",
+     "data di nascita": "Data di Nascita",
+     "città di nascita": "Città di nascita",
+     "indirizzo": "Indirizzo",
+     "città di residenza": "Città di residenza",
+     "cap": "CAP",
+     "email": "E-mail",
+     "telefono": "Telefono",
+     "nome tutore": "Nome tutore",
+     "cognome tutore": "Cognome tutore",
+     "sesso tutore": "Sesso tutore",
+     "codice fiscale tutore": "Codice fiscale tutore",
+     "data di nascita tutore": "Data nascita tutore",
+     "città di nascita tutore": "Città nascita tutore",
+     "città di residenza tutore": "Città residenza tutore",
+     "indirizzo tutore": "Indirizzo tutore",
+     "cap tutore": "Cap tutore",
+     "email tutore": "Email tutore",
+     "telefono tutore": "Telefono tutore",
+     "scadenza certificato medico": "Scadenza certificato med",
+     "data tesseramento": "Data tesseramento",
+     "data scadenza tesseramento": "Scadenza tesseramento",
+     "numero tessera": "Numero tessera"
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "spazi.csv",
+    "body_b64": "CiAgCiBhIDtiCgkKMTsyCg==",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"spazi.csv\"\r\nContent-Type: text/csv\r\n\r\n\n  \n a ;b\n\t\n1;2\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-too-many-fields-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "errore.csv",
+    "body_b64": "YTtiCjE7MgoxOzI7Mwo=",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"errore.csv\"\r\nContent-Type: text/csv\r\n\r\na;b\n1;2\n1;2;3\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-unterminated-quote-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "virgolette.csv",
+    "body_b64": "YTtiCiIxOzIK",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"virgolette.csv\"\r\nContent-Type: text/csv\r\n\r\na;b\n\"1;2\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-csv-empty-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "nulla.csv",
+    "body_b64": "Cgo=",
+    "content_type": "text/csv"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"nulla.csv\"\r\nContent-Type: text/csv\r\n\r\n\n\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-text-extension-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "soci.txt",
+    "body_b64": "Tm9tZTtDb2dub21lCk1hcmlvO1Jvc3NpCg==",
+    "content_type": "text/plain"
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"soci.txt\"\r\nContent-Type: text/plain\r\n\r\nNome;Cognome\nMario;Rossi\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  }
+ ]
+}

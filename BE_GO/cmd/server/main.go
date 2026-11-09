@@ -430,6 +430,7 @@ func run() (runErr error) {
 	subscriptionMedicalHandler := handler.NewSubscriptionMedicalHandler(service.NewSubscriptionMedical(repository.NewSubscriptionMedical(db), time.Now,
 		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/medical-appointments/list", subscriptionMedicalHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/import/upload", composeSubscriptionImportUpload(cfg, db, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Upload, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/medical-appointments/:medical_appointments_id/delete", subscriptionMedicalHandler.Delete,
 		middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/medical-certificate/edit", subscriptionMedicalHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -706,6 +707,8 @@ func run() (runErr error) {
 	invoiceSyncHandler := handler.NewInvoiceSyncPrintHandler(paymentStatesHandler,
 		service.NewInvoiceSyncUpdates(invoiceSyncStore, invoiceSyncPrinter, time.Now))
 	e.Any("/invoice/:uid/update", invoiceSyncHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	// medical-appointment-add: print_document_medical_appointment called directly after the save.
+	e.Any("/subscription/:uid/medical-appointments/add", handler.NewMedicalAppointmentAddHandler(service.NewMedicalAppointmentAdd(repository.NewMedicalAppointmentAdd(db), invoiceSyncPrinter, time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/list", invoicePartiesHandler.CustomerList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/add", invoicePartiesHandler.CustomerAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/:uid/update", invoicePartiesHandler.CustomerUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -733,6 +736,7 @@ func run() (runErr error) {
 	e.Any("/communications/settings/smtp/info", communicationSMTPHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/settings/smtp/update", communicationSMTPHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/settings/smtp/verify", communicationSMTPHandler.Verify, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/send/email", composeCommunicationSendEmail(cfg, db, tasks, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Send, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/list", staffBoardHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/add", staffBoardHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/:staff_board_message_id/update", staffBoardHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
