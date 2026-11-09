@@ -17331,25 +17331,65 @@
         "target": "payment_list_export",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_export.go",
+        "BE_GO/internal/repository/payment_export.go",
+        "BE_GO/internal/service/payment_export.go",
+        "BE_GO/internal/handler/payment_export.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/list/export",
+          "/api/v2/payment/list/export",
+          "/api/payment/list/export"
+        ],
+        "request": "GET ?m=csv|xlsx&export_type=petty_cash_book&archived=&query[payment_range]=&query[paid]=&query[expense]=&query[payment_categories]=&query[account]=&query[generalSearch]=",
+        "response": "{data: {file: base64 CSV, type: csv, filename: '[<today>] PAGAMENTI a <denomination>.csv'}}.",
+        "errors": "401; 403 registry/association-scoped context; 404 unknown format; 405; 500 athlete, missing association, unsplittable range, invalid archived, malformed category/account UUID, petty cash book transfer or rendered row without an account, raising course JSON; 500 m=xlsx (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry bookeeping.payments.read.",
+        "resource_scope": "scoped_queryset(SportAssociation.objects).get(user=request.user); the association's live, X-Group-Id-aware payments and account transfers.",
+        "side_effects": "None (read).",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_export_http.json",
+        "TESTS/fixtures/generate_payment_export_http.py",
+        "TESTS/contracts/test_payment_export_http.py",
+        "TESTS/adapters/django/payment_export_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-export.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 72/72; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-export-http-native-r4/results.json",
+          "receipt_sha256": "865de124a007a4d7fbd5221dee883a378c1781b84dd74a357dee73f449615cc9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 72/72 on native Django, native Go, Caddy /api/v1 and /api/v2 with the model state unchanged.",
+          "artifact": "quality-reports/go-migration/payment-export-http-versioned-r1/results.json",
+          "receipt_sha256": "3b454b9969929c09fa0d20c29a58210455cb0bf304ca1a6ea7356180c2f18591"
+        },
+        {
+          "revision": "counting soft-deleted payments in the petty cash book opening balances",
+          "result": "Mutation control: fails Go on payment-export-petty-spring (response.body:data:file).",
+          "artifact": "quality-reports/go-migration/payment-export-http-mutation-r1/results.json",
+          "receipt_sha256": "9269d300b2f722c4850cba105a266f38d1e2f423dc18f75ba7aab4cc56d83700"
+        }
+      ],
+      "notes": [
+        "Implementing: payment/list/export CSV (filters, range, general/smart search, petty cash book transfers and progressive balances); m=xlsx is refused with a 500 (openpyxl workbook not byte-reproducible). See docs/architecture/go-migration/payment-export.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/sign -> payment_sign",
