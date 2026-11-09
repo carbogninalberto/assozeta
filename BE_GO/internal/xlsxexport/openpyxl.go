@@ -189,6 +189,10 @@ const openpyxlIndexedColors = `<colors><indexedColors><rgbColor rgb="00000000" /
 
 // openpyxlPackage is Workbook.save: the parts in openpyxl's ExcelWriter order.
 func openpyxlPackage(sheets []opSheet, styled bool, now time.Time) ([]byte, error) {
+	return openpyxlPackageFlags(sheets, styled, now, 0)
+}
+
+func openpyxlPackageFlags(sheets []opSheet, styled bool, now time.Time, flags uint16) ([]byte, error) {
 	stamp := now.UTC().Format("2006-01-02T15:04:05Z")
 	core := `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>openpyxl</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">` +
 		stamp + `</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">` + stamp + `</dcterms:modified></cp:coreProperties>`
@@ -226,7 +230,7 @@ func openpyxlPackage(sheets []opSheet, styled bool, now time.Time) ([]byte, erro
 		zipEntry{name: "xl/_rels/workbook.xml.rels", external: externalFile, data: []byte(rels.String())},
 		zipEntry{name: "[Content_Types].xml", external: externalFile, data: []byte(types.String())},
 	)
-	return writeZip(entries, now)
+	return writeZipFlags(entries, now, flags)
 }
 
 // etreeAttr is ElementTree's attribute escaping.
@@ -398,9 +402,19 @@ func pandasOpenpyxlCell(col int, kind dtype, value Value) (opCell, error) {
 }
 
 // OpenpyxlRows is a plain openpyxl Workbook whose default sheet is removed,
-// with one sheet per title and the rows appended as str values
-// (export_all_data).
+// with one sheet per title and the rows appended as str values.
 func OpenpyxlRows(titles []string, sheets [][][]string, now time.Time) ([]byte, error) {
+	return openpyxlRows(titles, sheets, now, 0)
+}
+
+// OpenpyxlRowsResponse is OpenpyxlRows saved to a stream zipfile cannot seek
+// (export_all_data's wb.save(HttpResponse)): every entry has general purpose
+// flag 0x08 and a data descriptor.
+func OpenpyxlRowsResponse(titles []string, sheets [][][]string, now time.Time) ([]byte, error) {
+	return openpyxlRows(titles, sheets, now, zipDataDescriptor)
+}
+
+func openpyxlRows(titles []string, sheets [][][]string, now time.Time, flags uint16) ([]byte, error) {
 	out := make([]opSheet, len(titles))
 	for i, title := range titles {
 		out[i].title = title
@@ -416,5 +430,5 @@ func OpenpyxlRows(titles []string, sheets [][][]string, now time.Time) ([]byte, 
 			out[i].rows = append(out[i].rows, row)
 		}
 	}
-	return openpyxlPackage(out, false, now)
+	return openpyxlPackageFlags(out, false, now, flags)
 }

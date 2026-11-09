@@ -64,11 +64,10 @@ hyperlinks, long strings, empty frames and multi-sheet openpyxl workbooks. Dropp
 
 ## Not ported
 
-- `export-all-data` and `printing/generate` have no Go route yet. Their libraries are covered (`OpenpyxlRows` and
-  `PandasOpenpyxl` pass the golden cases); what is missing is their row building: `export_all_data` writes `str()` of every
-  field of nine models (datetimes, Decimals, JSON reprs, related objects' `__str__`) in database order, and
-  `printing/generate` has eleven report builders whose `pdf` format renders in-process with reportlab (refuse) and whose
-  `excel` format goes through `get_excel_base64` (portable). Each is a family of its own.
+- `printing/generate`'s `pdf` format (in-process reportlab); its `excel` format runs in Go
+  ([printing-generate](printing-generate.md)). `export-all-data` runs in Go ([export-all-data](export-all-data.md)):
+  `wb.save(HttpResponse)` streams the zip (flag `0x08`, data descriptors), written by `OpenpyxlRowsResponse` and built by
+  the contract helper with `'stream': True`.
 - `instructor/report` dates other than `D/M/YYYY` with `/`, `-` or `.` (dateutil accepts many more spellings; an ISO date is
   read day first).
 
