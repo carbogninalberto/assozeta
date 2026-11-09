@@ -6,6 +6,12 @@ Collector: the subscription row and its tag links disappear (nothing else
 changes), with one auditlog delete entry whose changes are auditlog's own
 diff of the row read before the request, indexed through
 changes_json.sport_association.
+
+The stock update (persona-subs-writes.md) changes exactly the authored
+columns of one subscription, sets its tag links to the authored list (links
+it keeps are untouched) and appends one auditlog update entry with the
+authored changes, indexed directly to the association (none when no
+audited field changed). Create writes nothing.
 """
 import ipaddress
 
@@ -38,6 +44,9 @@ def assert_effect(case, before, after, source, context):
     if effect is None:
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
+    if effect['kind'] == 'update':
+        assert_update(case, effect, before, after, source, context)
+        return
     key = effect['subscription']
     old, new = keyed(before[SUBSCRIPTION], 'subscription_id'), keyed(after[SUBSCRIPTION], 'subscription_id')
     old, new = {str(k): v for k, v in old.items()}, {str(k): v for k, v in new.items()}
@@ -59,6 +68,33 @@ def assert_effect(case, before, after, source, context):
     index = indexes[str(event['id'])]
     contract.require([index['sport_association_id'], index['resolution_path']] == [ids['own_association'], 'changes_json.sport_association'],
                      'index.fields')
+
+
+def assert_update(case, effect, before, after, source, context):
+    key = effect['subscription']
+    old = {str(k): personas.flat(v) for k, v in keyed(before[SUBSCRIPTION], 'subscription_id').items()}
+    new = {str(k): personas.flat(v) for k, v in keyed(after[SUBSCRIPTION], 'subscription_id').items()}
+    contract.require(set(old) == set(new) and all(old[k] == new[k] for k in old if k != key), 'state.other-subscriptions')
+    contract.require(new[key] == {**old[key], **effect['columns']}, 'state.subscription')
+    link = lambda row: str(personas.flat(row)['subscription_id'])
+    others = lambda rows: [row for row in rows if link(row) != key]
+    contract.require(others(before[TAGS]) == others(after[TAGS]), 'state.other-tags')
+    mine_before = [row for row in before[TAGS] if link(row) == key]
+    mine_after = [row for row in after[TAGS] if link(row) == key]
+    if effect['tags'] is None:
+        contract.require(mine_before == mine_after, 'state.tags')
+    else:
+        contract.require(sorted(str(personas.flat(row)['tags_id']) for row in mine_after) == sorted(effect['tags']), 'state.tags')
+        kept = [row for row in mine_before if str(personas.flat(row)['tags_id']) in effect['tags']]
+        contract.require(all(row in mine_after for row in kept), 'state.tags-kept')
+    entries, indexes = harness.audit_delta(contract, before, after)
+    if effect['changes'] is None:
+        contract.require(not entries and not indexes, 'audit.count')
+        return
+    contract.require(len(entries) == 1 and len(indexes) == 1, 'audit.count')
+    harness.check_audit_event(contract, case, entries[0], indexes, before=before, ids=source['ids'], model='Subscription', key=key,
+                              action=1, changes=effect['changes'], actor=effect['actor'], association=source['ids']['own_association'],
+                              path='direct', context=context)
 
 
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)
