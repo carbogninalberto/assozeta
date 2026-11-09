@@ -1430,8 +1430,15 @@
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -1442,13 +1449,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "Course.save(): the pk is always set (UUID default), so a create goes through Course.objects.get, DoesNotExist and a plain save; an existing course is saved and, when the title changed, update_metadata_courses is sent with the old title; an unchanged title sends nothing.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by course-writes-add-course-fee, course-writes-add-installments, course-writes-add-grouped-defaults, course-writes-add-default-fee-payment, course-writes-update-full, course-writes-update-grouped, course-writes-update-same-values, course-writes-update-ignored-fields, course-writes-update-title-from-blank, course-writes-update-title-from-null, course-writes-update-title-to-empty.",
+          "artifact": "quality-reports/go-migration/course-writes-http-gaps-versioned-1/results.json",
+          "receipt_sha256": "789f929c48f0469df24ab8f4eada26865e9dc230f723e81c9e3f6a9825aeeb4a"
+        },
+        {
+          "revision": "committing change with the empty-title guard dropped from the title rewrite",
+          "result": "Mutation control: fails Go on course-writes-update-title-from-blank (association payments rewritten).",
+          "artifact": "quality-reports/go-migration/course-writes-http-gaps-mutation-1/results.json",
+          "receipt_sha256": "7a60fe38e4008b6162ce7959a1cc723f5d9ddfade49e1a62a1f776952bc7dad4"
+        }
+      ],
+      "notes": [
+        "Implementing via course-writes: Create (DoesNotExist branch) through course/add, update with and without a title change through course/update. The pk-less branch is unreachable (UUID default)."
+      ]
     },
     {
       "id": "model_hook:BE/application/models/courses_models.py:CourseSubscription.delete",
@@ -31528,8 +31562,25 @@
         "decorator": "receiver(pre_delete, sender=CourseSubscription)",
         "arguments": "sender, instance, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go",
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/handler/course_subscriptions.go",
+        "BE_GO/internal/domain/subscription_lifecycle.go",
+        "BE_GO/internal/repository/subscription_lifecycle.go",
+        "BE_GO/internal/service/subscription_lifecycle.go",
+        "BE_GO/internal/handler/subscription_lifecycle.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -31540,13 +31591,88 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "pre_delete of a CourseSubscription: a row with a payment fails on Payment.objects.get(id=...) and the exception is logged (nothing else happens); for a payment-less row a membership deletes its live group-aware unpaid membership payments, then the row's live group-aware installments are deleted (with their own pre_delete).",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py",
+        "TESTS/fixtures/course_subscriptions_http.json",
+        "TESTS/fixtures/generate_course_subscriptions_http.py",
+        "TESTS/contracts/test_course_subscriptions_http.py",
+        "TESTS/adapters/django/course_subscriptions_http.py",
+        "TESTS/fixtures/subscription_lifecycle_http.json",
+        "TESTS/fixtures/generate_subscription_lifecycle_http.py",
+        "TESTS/contracts/test_subscription_lifecycle_http.py",
+        "TESTS/adapters/django/subscription_lifecycle_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by course-writes-delete-full-cascade, course-writes-delete-grouped-cascade, course-writes-delete-membership-cascade.",
+          "artifact": "quality-reports/go-migration/course-writes-http-gaps-versioned-1/results.json",
+          "receipt_sha256": "789f929c48f0469df24ab8f4eada26865e9dc230f723e81c9e3f6a9825aeeb4a"
+        },
+        {
+          "revision": "committing change with the empty-title guard dropped from the title rewrite",
+          "result": "Mutation control: fails Go on course-writes-update-title-from-blank (association payments rewritten).",
+          "artifact": "quality-reports/go-migration/course-writes-http-gaps-mutation-1/results.json",
+          "receipt_sha256": "7a60fe38e4008b6162ce7959a1cc723f5d9ddfade49e1a62a1f776952bc7dad4"
+        },
+        "docs/architecture/go-migration/course-subscriptions.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 107/107; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-red-r2/results.json",
+          "receipt_sha256": "31592bdb101ced76518e9e6e0443e9be06e97c09c7f4b72159ded49c189130a1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by course-subscriptions-bulk-owner, course-subscriptions-bulk-row-without-payment-installments.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-gaps-versioned-1/results.json",
+          "receipt_sha256": "7559889dc34214ed6032a316b28de21380705a000108829d9e9f2eee3eec8977"
+        },
+        {
+          "revision": "committing change with the signal's installment delete skipped in the bulk delete",
+          "result": "Mutation control: fails Go on course-subscriptions-bulk-row-without-payment-installments (audit count).",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-gaps-mutation-1/results.json",
+          "receipt_sha256": "f744c5420c404e9c1d7f6b06121765761fd159c2b8918bf41f0bcc066989df92"
+        },
+        "docs/architecture/go-migration/subscription-lifecycle.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 51/51; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-native-r1/results.json",
+          "receipt_sha256": "ce82ee07a8b8591569582d2f1c7b116514facee05e8342dceb6659a93b7b727e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 52/52 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by subscription-lifecycle-delete-course-subscriptions, subscription-lifecycle-delete-membership-and-deleted-rows.",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-gaps-versioned-1/results.json",
+          "receipt_sha256": "d39d3096a5c44b5b326424219112b50c3a77d04ed4224b53eb520877b6bc1020"
+        },
+        {
+          "revision": "committing change with paid membership payments included in the signal's delete",
+          "result": "Mutation control: fails Go on subscription-lifecycle-delete-membership-and-deleted-rows (payments).",
+          "artifact": "quality-reports/go-migration/subscription-lifecycle-http-gaps-mutation-1/results.json",
+          "receipt_sha256": "9b20c9180c710f8498ce7e0847e91fa48559ca08433adfa8c6e3d75cddd1b833"
+        }
+      ],
+      "notes": [
+        "Implementing via course-writes: course/delete: a row with a payment, payment-less rows with installments (with and without X-Group-Id) and a payment-less membership row with unpaid, paid and soft-deleted membership payments.",
+        "Implementing via course-subscriptions: bulk-delete: a row with a payment, a payment-less membership row (unpaid and paid membership payments) and a payment-less row with live, grouped, soft-deleted and payment-bearing installments.",
+        "Implementing via subscription-lifecycle: subscription delete: a row with a payment, payment-less rows (soft-deleted by the service and pre-existing soft-deleted ones, with a remaining live installment) and a payment-less membership row with unpaid and paid membership payments."
+      ]
     },
     {
       "id": "signal:BE/application/signals.py:delete_related_payment",
@@ -31936,8 +32062,15 @@
         "decorator": "receiver(update_metadata_courses)",
         "arguments": "sender, instance, title, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -31948,13 +32081,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "An empty or null old title returns before reading payments; otherwise the course association's live group-aware payments whose meta text or description contains the old title (case-insensitively) get it replaced case-sensitively in their top-level meta strings and description (bulk_update, no audit).",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by course-writes-update-full, course-writes-update-grouped, course-writes-update-title-from-blank, course-writes-update-title-from-null, course-writes-update-title-to-empty.",
+          "artifact": "quality-reports/go-migration/course-writes-http-gaps-versioned-1/results.json",
+          "receipt_sha256": "789f929c48f0469df24ab8f4eada26865e9dc230f723e81c9e3f6a9825aeeb4a"
+        },
+        {
+          "revision": "committing change with the empty-title guard dropped from the title rewrite",
+          "result": "Mutation control: fails Go on course-writes-update-title-from-blank (association payments rewritten).",
+          "artifact": "quality-reports/go-migration/course-writes-http-gaps-mutation-1/results.json",
+          "receipt_sha256": "7a60fe38e4008b6162ce7959a1cc723f5d9ddfade49e1a62a1f776952bc7dad4"
+        }
+      ],
+      "notes": [
+        "Implementing via course-writes: Sent only by Course.save() from course/update. The no-instance and no-association guards are unreachable there (the view requires the caller's association to be the course's)."
+      ]
     },
     {
       "id": "signal_connection:BE/application/signals.py:post_save.connect:create_audit_log_index",
