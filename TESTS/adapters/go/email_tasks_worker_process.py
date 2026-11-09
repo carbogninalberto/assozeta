@@ -381,6 +381,7 @@ class EmailRehearsal(Rehearsal):
             _reset_celery_app(app)
         until = datetime.now(timezone.utc)
         raw = self.drain()
+        assert raw, f'Django {task} published no Celery message'
         specs = [spec_from(item) for item in raw]
         for i, (item, spec) in enumerate(zip(raw, specs)):
             from TESTS.adapters.django.family_harness import check_celery_message
@@ -388,8 +389,11 @@ class EmailRehearsal(Rehearsal):
         after = self.fixture.snapshot()
         transcripts = self.transcripts()
         self.authored_checks(task, before, after, specs, transcripts)
-        bodies = sorted(json.loads(item)['body'] for item in raw)
-        return (self.fixture.normalized(after, since, until), bodies, specs,
+        # (body, task header, spec) from Django's own messages; the Go side is
+        # checked against these, never against a spec derived from Go's output.
+        messages = sorted(((json.loads(item)['body'], spec['task'], spec) for item, spec in zip(raw, specs)),
+                          key=lambda message: message[:2])
+        return (self.fixture.normalized(after, since, until), messages,
                 {mode: sorted(json.dumps(t) for t in items) for mode, items in transcripts.items()})
 
     def authored_checks(self, task, before, after, specs, transcripts):
@@ -440,7 +444,8 @@ class EmailRehearsal(Rehearsal):
         assert self.sql('SELECT result FROM assozeta_go_jobs WHERE id=%s', (identifier,)) == [(None,)]
         if task == 'send_reminders':
             time.sleep(TIMER_WAIT)
-        state, bodies, specs, transcripts = self.django[task]
+        state, messages, transcripts = self.django[task]
+        bodies = [body for body, _, _ in messages]
         actual = self.fixture.normalized(self.fixture.snapshot(), self.since, datetime.now(timezone.utc))
         if actual != state:
             differences = {label: {'django': state.get(label), 'go': actual.get(label)}
@@ -453,10 +458,15 @@ class EmailRehearsal(Rehearsal):
             decode = lambda items: [json.loads(base64.b64decode(item)) for item in items]
             (self.output / f'messages-{task}.json').write_text(json.dumps({'django': decode(bodies), 'go': decode([body for body, _ in go])},
                                                                          indent=1, ensure_ascii=False) + '\n')
+        assert go and messages, f'Go {task} or Django published no Celery message'
         assert [body for body, _ in go] == bodies, f'Go {task} messages differ from the Django task'
+        go_names = sorted((body, json.loads(item)['headers']['task']) for body, item in go)
+        django_names = [(body, name) for body, name, _ in messages]
+        assert go_names == django_names, f'Go {task} task names differ from Django: {sorted({n for _, n in go_names})} != {sorted({n for _, n in django_names})}'
         from TESTS.adapters.django.family_harness import check_celery_message
-        for i, (body, item) in enumerate(go):
-            check_celery_message(Contract(), item, spec_from(item), since=self.started, until=time.time(), where=f':{i}')
+        go = sorted(go, key=lambda pair: (pair[0], json.loads(pair[1])['headers']['task']))
+        for i, ((body, item), (_, _, spec)) in enumerate(zip(go, messages, strict=True)):
+            check_celery_message(Contract(), item, spec, since=self.started, until=time.time(), where=f':{i}')
         actual_transcripts = {mode: sorted(json.dumps(t) for t in items) for mode, items in self.transcripts().items()}
         if actual_transcripts != transcripts:
             (self.output / f'smtp-{task}.json').write_text(json.dumps({'django': transcripts, 'go': actual_transcripts}, indent=1) + '\n')
