@@ -86,6 +86,7 @@ EXPIRING = 'email/account/email_subscription_medical_certificate_expiring.html'
 EXPIRED = 'email/account/email_subscription_medical_certificate_expired.html'
 REMINDER = 'email/reminders/event.html'
 WELCOME_PASSWORD = 'email/account/email_welcome_password_message.html'
+FEE_ASSIGNED = 'email/payment/fee_assigned.html'
 WHITELABEL_SETTINGS = obj(WHITELABEL_NAME=s('Bakney Sport'), IS_WHITELABEL={'t': 'bool', 'v': False})
 
 
@@ -110,6 +111,12 @@ def welcome_password(first, last, username, email, password, denomination, host=
     # AuthUtils.send_password_welcome_email (the association is read by attribute)
     return {'first_name': first, 'last_name': last, 'username': s(username), 'email': email, 'password': s(password),
             'sport_association': obj(denomination=denomination), 'app_host': s(host), 'settings': WHITELABEL_SETTINGS}
+
+
+def fee_assigned(recipient, fee_name, amount, association):
+    # association_quote_assign (the plan's JSON name and fee as stored)
+    return {'recipient_name': s(recipient), 'fee_name': fee_name, 'amount': amount, 'application_name': s('Bakney Sport'),
+            'association_name': association}
 
 
 CASES = [
@@ -153,6 +160,11 @@ CASES = [
                                                             'aB3dE5gH', s('ASD Esempio')), 'it', 'cloud'),
     ('welcome-password-escaped', WELCOME_PASSWORD, welcome_password(s("D'Amico"), s('<b>&</b>'), 'D\'AMIC0000000', s(''), 'Zz9Yy8Xx',
                                                                     s('Società "Uno"'), host='http://h/x?a=1&b=2'), 'en', 'self-logo'),
+    ('fee-assigned-int', FEE_ASSIGNED, fee_assigned("Anna D'Amico", s('Quota "Seconda" & <rata>'), {'t': 'int', 'v': 30},
+                                                    s('Società Uno & C.')), 'it', 'self-default'),
+    ('fee-assigned-float', FEE_ASSIGNED, fee_assigned('None Rossi', s('Quota float'), flt(12.5), s('ASD Esempio')), 'it', 'cloud'),
+    ('fee-assigned-string', FEE_ASSIGNED, fee_assigned('Luca Bianchi', {'t': 'int', 'v': 7}, s('45.00'), NONE), 'it', 'none'),
+    ('fee-assigned-other', FEE_ASSIGNED, fee_assigned('Zoë <b>', {'t': 'bool', 'v': True}, flt(1e-07), s("L'Aquila")), 'it', 'self-logo'),
     ('welcome-password-none', WELCOME_PASSWORD, welcome_password(s('Nora'), NONE, 'NORNUOQWERTY12', s('n@example.test'), '00000000',
                                                                  NONE), 'it', 'none'),
 ]
