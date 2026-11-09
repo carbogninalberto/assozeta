@@ -1,0 +1,377 @@
+{% load format %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <!-- CSS only -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <style>
+        @media print {
+            div {
+                break-inside: avoid;
+            }
+        }
+
+        .title-header {
+            width: 100%;
+            margin: 0px;
+            padding: 10px;
+            color: #ffffff;
+            text-align: center;
+            background-color: #1C5FCA;
+        }
+
+        .stampa {
+            /*border: 1px solid #000;*/
+            width: 19cm;
+            height: 15.7cm;
+            max-width: 21cm;
+            min-width: 19cm;
+            min-height: 15cm;
+            margin: auto;
+            /*margin: 10mm 10mm 10mm 10mm;*/
+        }
+
+        .custom-title {
+            font-size: 1rem;
+            color: #FFFFFF;
+        }
+
+        .stampa-title {
+            background-color: #1C5FCA;
+            padding: 0.5rem;
+            color: #ffffff;
+        }
+
+        .is-a-table {
+            /*border: 1px solid #ccc;*/
+            background-color: #f1f4f8;
+            padding: 1rem;
+            font-size: 8pt;
+        }
+
+        .is-a-cell {
+            width: 500px;
+            width: 100%;
+            word-wrap: break-word;
+        }
+
+        .stampa-header {
+            float: right;
+        }
+
+        .logo {
+            position: relative;
+            top: -6px;
+            max-width: 10cm;
+            height: 2.2cm;
+            max-height: 2.2cm;
+            padding: 0px;
+            margin-left: 0;
+        }
+
+        .table-data-row {
+            padding: 0.5rem !important;
+        }
+
+        ul, ol {
+            padding: 1rem;
+        }
+
+        .ql-align-center {
+            text-align: center;
+        }
+
+        .ql-align-left {
+            text-align: left;
+        }
+
+        .ql-align-right {
+            text-align: right;
+        }
+
+        @media screen {
+            div.divFooter {
+                display: none;
+            }
+        }
+
+        @media print {
+            div.divFooter {
+                border-top: 1px solid #ccc;
+                width: 19cm;
+                padding-top: 10px;
+                background: #fff;
+                font-size: 9px;
+                position: fixed;
+                bottom: 0;
+            }
+        }
+
+        table {
+            border-spacing: 0;
+            border-collapse: collapse;
+            overflow: hidden;
+            table-layout: fixed;
+        }
+
+        /* Border styles for table cells based on attributes */
+        td[borderright="solid"], th[borderright="solid"] {
+            border-right: 1px solid #aaa !important;
+        }
+
+        td[borderright="dashed"], th[borderright="dashed"] {
+            border-right: 1px dashed #aaa !important;
+        }
+
+        td[borderright="dotted"], th[borderright="dotted"] {
+            border-right: 1px dotted #aaa !important;
+        }
+
+        td[bordertop="solid"], th[bordertop="solid"] {
+            border-top: 1px solid #aaa !important;
+        }
+
+        td[bordertop="dashed"], th[bordertop="dashed"] {
+            border-top: 1px dashed #aaa !important;
+        }
+
+        td[bordertop="dotted"], th[bordertop="dotted"] {
+            border-top: 1px dotted #aaa !important;
+        }
+
+        td[borderleft="solid"], th[borderleft="solid"] {
+            border-left: 1px solid #aaa !important;
+        }
+
+        td[borderleft="dashed"], th[borderleft="dashed"] {
+            border-left: 1px dashed #aaa !important;
+        }
+
+        td[borderleft="dotted"], th[borderleft="dotted"] {
+            border-left: 1px dotted #aaa !important;
+        }
+
+        td[borderbottom="solid"], th[borderbottom="solid"] {
+            border-bottom: 1px solid #aaa !important;
+        }
+
+        td[borderbottom="dashed"], th[borderbottom="dashed"] {
+            border-bottom: 1px dashed #aaa !important;
+        }
+
+        td[borderbottom="dotted"], th[borderbottom="dotted"] {
+            border-bottom: 1px dotted #aaa !important;
+        }
+    </style>
+</head>
+
+<body style="{{ body_style }}">
+<div class='stampa' style="margin-top: 1rem;">
+    <div class='columns' style='width: 19cm;margin-left:0px;margin-top:0px;'>
+        <div class='column is-2 my-auto' style='margin:auto;padding:0px;'>
+            <img class='logo my-auto' src="{{ payment.sport_association.logo | safe }}"/>
+            <!--src="/static/img/logo.png" />-->
+        </div>
+        <div class='column is-10' style='margin:auto;padding:0px'>
+            <h2 class='title' style='font-size:1.5rem;text-align:right;margin:0;margin-right:1rem;padding:0px'>
+                <b><span id="invDate">
+                    {% if payment.instructor.is_volunteer %}
+                        <span style='font-size:1.2rem;'>
+                            Rimborso spese forfettario per prestazioni di volontariato
+                        </span>
+                    {% else %}
+                        Autocertificazioni redditi
+                    {% endif %}
+                </span></b>
+            </h2>
+            <h6 style="padding-top:0.2rem;font-size: 11px;text-align: right;margin-right:1rem;font-weight: bold">
+                {% if payment.instructor.is_volunteer %}
+                    ai sensi di quanto previsto dall'art. 29, comma 2, del D.Lgs 36/2021 come modificato dal D.L. 71/2024
+                {% else %}
+                    per applicazioni fascia esente ai sensi di quanto previsto dal <br>
+                    D.Lgs. 36/2021 art 51 - D.L. 198/2022 art. 16 - L. 14/2023.
+                {% endif %}
+            </h6>
+        </div>
+    </div>
+
+    <div class='stampa-element title-header'>
+        <h2 class='title custom-title' style="text-align: center">
+            <b>Dati anagrafici</b>
+        </h2>
+    </div>
+
+    <div class='columns' style='width:19cm;margin:0px;margin-top:0px; padding:0px;font-size:8pt;'>
+        <div class='column is-12'
+             style='margin:0px;padding:0px;'>
+            <div class='is-a-table'>
+                <div class='is-a-cell'>
+                    <strong>Nominativo:</strong>
+                    {{ payment.instructor.first_name | upper }} {{ payment.instructor.last_name | upper }}
+                </div>
+                <div class='is-a-cell'>
+                    <strong>Codice Fiscale:</strong>
+                    {{ payment.instructor.tax_code | upper }}
+                </div>
+                <div class='is-a-cell'>
+                    <strong>Indirizzo:</strong>
+                    {{ payment.instructor.address | upper }} {{ payment.instructor.civic_number | upper }}, {{ payment.instructor.address_city | upper }}
+                </div>
+                <div class='is-a-cell'>
+                    <strong>Nato il</strong>
+                    {{ payment.instructor.born_date | date:"d.m.Y" | upper }}
+                    <strong> a </strong>
+                    {{ payment.instructor.born_city | upper }}, {{ payment.instructor.born_province | upper }}
+                </div>
+                <div class='is-a-cell'>
+                    <strong>Telefono:</strong>
+                    {{ payment.instructor.phone | default:"-" | upper }}
+                </div>
+                <div class='is-a-cell'>
+                    <strong>Email:</strong>
+                    {{ payment.instructor.email | default:"-" | upper }}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="columns" style="margin:0px;margin-top:5px;width:19cm;padding:0px;font-size:8pt">
+        <div class="column is-6" style="text-align: center">
+            <h6><b>Titolo di Studio</b></h6>
+            <h6>{{ payment.instructor.study_title | default:"-" | upper }}</h6>
+        </div>
+        <div class="column is-6" style="text-align: center">
+            <h6><b>In qualità di</b></h6>
+            <h6>{{ payment.instructor.role | default:"-" | upper }}</h6>
+        </div>
+    </div>
+
+    <hr style="margin-top:0"/>
+    <div style="margin-bottom: 0;">
+        {% if not payment.instructor.is_volunteer %}
+        <p style="text-align: center;font-size:8pt;">
+            in relazione al contratto di lavoro sportivo dilettantistico in essere stipulato in data:
+        </p>
+        <p style="text-align: center;margin-top:10px;margin-bottom:10px;font-size:8pt;">
+            {% if payment.instructor.stipulated_contract_in %}
+                <b>{{ payment.instructor.stipulated_contract_in | date:"l, F d, Y" }}</b>
+            {% else %}
+                <b>-</b>
+            {% endif %}
+        </p>
+        <p style="text-align: center;font-size:8pt;">
+
+            ai sensi del D.Lgs. 36/2021 art. 25, che prevede un inquadramento come collaboratore coordinato e
+            continuativo, <br>
+            consapevole delle sanzioni penali previste in caso di dichiarazioni non veritieri e di falsità <br>
+            negli atti (D.P.R. 445/2000 art.76), sotto la propria responsabilità:
+
+        </p>
+        {% endif %}
+        <p style="text-align: center;font-size:8pt;margin-top:0px;">
+            <br>
+            <b>
+                Dichiara di ricevere da {{ payment.sport_association.denomination | upper }}<br>
+                Codice Fiscale: {{ payment.sport_association.tax_code | upper }}<br>
+                Sede
+                legale: {{ payment.sport_association.address | upper }}, {{ payment.sport_association.address_city }}
+                - {{ payment.sport_association.address_cap }}<br>
+            </b>
+            <br>
+            {% if not payment.instructor.is_volunteer %}
+                la somma esente da ritenute fiscali e previdenziali (sotto i 5.000 € annui)
+            {% endif %}
+        </p>
+        <p style="margin-top:10px;display:flex;justify-content: space-between">
+            <b>
+                Importo esente (€)
+            </b>
+            <b>
+                {{ payment.amount | floatformat:2 }} €
+            </b>
+        </p>
+        <hr style="margin-top:10px;margin-bottom:10px;"/>
+        {% if not payment.instructor.is_volunteer %}
+            <p style="text-align: center;font-size:8pt;margin-top:0px;">
+                Oppure, la somma soggetta a ritenute previdenziali per lavoratori sportivi co.co.co, senza altre gestioni
+                previdenziali
+                (da 5.000 a 15.000 € annui)
+            </p>
+            <p style="text-align: center;font-size:8pt;margin-top:5px;">
+                per le somme sopradescritte dichiara sotto la propria responsabilità:
+            </p>
+        {% endif %}
+        <p style="font-size:8pt;margin-top:10px;display:flex;justify-content: space-between">
+            <b>
+                Bonificato in data
+            </b>
+            <b>
+                {{ payment.payment_date | date:"l, F d, Y" }}
+            </b>
+        </p>
+        <div style="text-align: center">
+            <h6 style="font-size:8pt"><b>Periodo di riferimento</b></h6>
+        </div>
+        <div class="columns" style="margin:0px;width:19cm;padding:0px;font-size:8pt">
+            <div class="column is-6" style="text-align: center">
+                <h6><b>Dal giorno</b></h6>
+                <h6>{{ from_date | date:"l, F d, Y" }}</h6>
+            </div>
+            <div class="column is-6" style="text-align: center">
+                <h6><b>Al giorno</b></h6>
+                <h6>{{ to_date | date:"l, F d, Y" }}</h6>
+            </div>
+        </div>
+    </div>
+
+    {% if not payment.instructor.is_volunteer %}
+        <div class='is-a-table'
+             style="margin-bottom: 1.2rem;font-size:8pt;margin-top:0px;font-size:8pt;padding:5px !important;">
+            <div class='is-a-cell' style="text-align: center;padding:0 !important;">
+                Di essere un collaboratore coordinato e continuativo non iscritto ad altre gestioni di previdenza
+                obbligatoria e non pensionato.
+            </div>
+        </div>
+    {% endif %}
+
+    <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+
+
+        <p style="text-align:justify;font-size:0.65rem;">
+            FIRMA DEL COLLABORATORE <br><br>
+            {% if payment.signature is not None %}
+                <img src="{{ payment.signature.signature | safe }}" width="180"/>
+            {% else %}
+                <br>
+                _______________________________________________________________________
+            {% endif %}
+            <br><br>
+        </p>
+
+    </div>
+
+
+
+    {% if payment.notes %}
+        <div class='stampa-element title-header' style="margin-top: 1.2rem;page-break-before: always;">
+            <h2 class='title custom-title' style="text-align: center">
+                <b>NOTE AGGIUNTIVE</b>
+            </h2>
+
+        </div>
+        <div class='is-a-table' style="margin-bottom: 1.2rem;font-size:7pt;">
+            <div class='is-a-cell' style="text-align: justify">
+                {{ payment.notes | linebreaksbr | safe }}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+
+</body>
+
+</html>
