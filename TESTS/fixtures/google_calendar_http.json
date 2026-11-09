@@ -1,0 +1,5836 @@
+{
+ "matrix_version": 1,
+ "scope": "google/check, google/calendar/config, google/oauth2callback, google/calendar/list, google/calendar/<course_id>/export",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "client": {
+  "web": {
+   "client_id": "placeholder-client-id.apps.googleusercontent.com",
+   "project_id": "assozeta-placeholder",
+   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+   "token_uri": "https://oauth2.googleapis.com/token",
+   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+   "client_secret": "placeholder-client-secret",
+   "redirect_uris": [
+    "https://assozeta.example.test/google/oauth2callback"
+   ]
+  }
+ },
+ "redirect": "https://assozeta.example.test/google/oauth2callback",
+ "seed_users": {
+  "full_collaborator": {
+   "state": null,
+   "auto_sync": false,
+   "credentials": {
+    "token": "fc-old-token",
+    "refresh_token": "fc-refresh",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "client_id": "placeholder-client-id.apps.googleusercontent.com",
+    "client_secret": "placeholder-client-secret",
+    "scopes": [
+     "https://www.googleapis.com/auth/calendar",
+     "https://www.googleapis.com/auth/userinfo.email",
+     "https://www.googleapis.com/auth/userinfo.profile",
+     "openid"
+    ],
+    "universe_domain": "googleapis.com",
+    "account": "",
+    "expiry": "2026-01-01T00:00:00Z"
+   }
+  },
+  "athlete": {
+   "state": "athlete-fixture-state",
+   "auto_sync": false,
+   "credentials": {
+    "refresh_token": "athlete-refresh",
+    "client_id": "athlete-client",
+    "client_secret": "athlete-secret",
+    "scopes": "https://www.googleapis.com/auth/calendar openid",
+    "expiry": "2099-01-01T00:00:00Z",
+    "quota_project_id": "assozeta-quota"
+   }
+  },
+  "owner_without_association": {
+   "state": null,
+   "auto_sync": true,
+   "credentials": {
+    "token": "owa-token",
+    "client_id": "c",
+    "client_secret": "s"
+   }
+  }
+ },
+ "courses": {
+  "alpha": {
+   "id": "a1000000-0000-4000-8000-000001640001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Alfa è",
+   "calendar": null,
+   "color": "#1a73e8",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000001-0000-4000-8000-000000000001",
+     "title": "Lezione 1",
+     "start": "2026-10-05T16:00:00.000Z",
+     "end": "2026-10-05T17:30:00.000Z",
+     "extendedProps": {
+      "instructor": {
+       "value": "x",
+       "label": "Ines Uno"
+      }
+     },
+     "className": "fc-event-primary"
+    },
+    {
+     "event_id": "e0000002-0000-4000-8000-000000000002",
+     "title": "Saggio",
+     "start": "2026-12-20T00:00:00Z",
+     "end": null
+    },
+    {
+     "event_id": "e0000003-0000-4000-8000-000000000003",
+     "title": "Prova",
+     "start": "2026-11-02T09:00:00",
+     "end": "None",
+     "extendedProps": {
+      "instructor": null
+     }
+    },
+    {
+     "event_id": "e0000004-0000-4000-8000-000000000004",
+     "title": "Allenamento è",
+     "start": "2026-10-06T18:00:00+02:00",
+     "end": "2026-10-06T19:00:00+02:00",
+     "extendedProps": {
+      "instructor": {
+       "value": "y"
+      }
+     }
+    },
+    {
+     "event_id": "e0000005-0000-4000-8000-000000000005",
+     "title": "Duplicato",
+     "start": "2026-10-10",
+     "end": "2026-10-10T10:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "label": 7
+      }
+     }
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640010"
+  },
+  "beta": {
+   "id": "a1000000-0000-4000-8000-000001640002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Beta",
+   "calendar": "beta-old@group.calendar.google.com",
+   "color": "#ffe082",
+   "group": null,
+   "deleted": false,
+   "registry": [],
+   "registry_id": "a1000000-0000-4000-8000-000001640011"
+  },
+  "gamma": {
+   "id": "a1000000-0000-4000-8000-000001640003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Gamma",
+   "calendar": null,
+   "color": "#000000",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000006-0000-4000-8000-000000000006",
+     "title": "Gamma",
+     "start": "2026-10-01T08:00:00Z",
+     "end": "2026-10-01T09:00:00Z"
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640012"
+  },
+  "delta": {
+   "id": "a1000000-0000-4000-8000-000001640004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Delta",
+   "calendar": null,
+   "color": "#808080",
+   "group": null,
+   "deleted": false,
+   "registry": null,
+   "registry_id": null
+  },
+  "epsilon": {
+   "id": "a1000000-0000-4000-8000-000001640005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Epsilon",
+   "calendar": null,
+   "color": null,
+   "group": null,
+   "deleted": false,
+   "registry": [],
+   "registry_id": "a1000000-0000-4000-8000-000001640013"
+  },
+  "zeta": {
+   "id": "a1000000-0000-4000-8000-000001640006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Zeta",
+   "calendar": null,
+   "color": "#7f7f7f",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000007-0000-4000-8000-000000000007",
+     "title": "Prima",
+     "start": "2026-10-01T08:00:00Z",
+     "end": "2026-10-01T09:00:00Z"
+    },
+    {
+     "event_id": "e0000008-x",
+     "start": "2026-10-02T08:00:00Z",
+     "end": null
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640014"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000001640007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Gruppo",
+   "calendar": null,
+   "color": "#123456",
+   "group": "own_group",
+   "deleted": false,
+   "registry": [],
+   "registry_id": "a1000000-0000-4000-8000-000001640015"
+  },
+  "gone": {
+   "id": "a1000000-0000-4000-8000-000001640008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Eliminato",
+   "calendar": null,
+   "color": "#123456",
+   "group": null,
+   "deleted": true,
+   "registry": [],
+   "registry_id": "a1000000-0000-4000-8000-000001640016"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000001640009",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Corso Estero",
+   "calendar": null,
+   "color": "#334455",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000009-0000-4000-8000-000000000009",
+     "title": "Estero",
+     "start": "2026-07-01T10:00:00Z",
+     "end": "2026-07-01T11:00:00Z"
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640017"
+  }
+ },
+ "alpha_later_registry": "ffffffff-0000-4000-8000-000000000001",
+ "cases": [
+  {
+   "name": "google-calendar-check-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/google/check",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Google Check",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/check",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-restricted-collaborator-denied",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.read"
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-owner-disconnected",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "google_sync_enabled": false
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-full-collaborator-own-credentials",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "google_sync_enabled": true
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-owner-as-collaborator-session",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "google_sync_enabled": true
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "google_sync_enabled": true
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "google_sync_enabled": true
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-check-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "google_sync_enabled": false
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Google Calendar List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-restricted-collaborator-denied",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.calendar.read"
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-owner-disconnected-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-without-refresh-token-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-config-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Google Calendar Config",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-config-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-config-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-config-get-restricted-collaborator-denied",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.read"
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-config-delete-restricted-collaborator-denied",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.update"
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-config-delete-owner-disconnected-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-refresh-rejected-server-error",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "*/*"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "x-goog-api-client",
+        "gl-python/3.13.16 auth/2.38.0 cred-type/u"
+       ],
+       [
+        "Content-Length",
+        "328"
+       ]
+      ],
+      "body": "grant_type=refresh_token&client_id=placeholder-client-id.apps.googleusercontent.com&client_secret=placeholder-client-secret&refresh_token=fc-refresh&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid"
+     },
+     "reply": {
+      "status": 400,
+      "json": {
+       "error": "invalid_grant",
+       "error_description": "Token has been expired or revoked."
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-full-collaborator-refreshed-and-saved",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "calendars": [
+      {
+       "kind": "calendar#calendarListEntry",
+       "id": "primary-fc@example.test",
+       "summary": "Agenda è",
+       "accessRole": "owner",
+       "backgroundColor": "#9fe1e7",
+       "primary": true,
+       "defaultReminders": [
+        {
+         "method": "popup",
+         "minutes": 10
+        }
+       ]
+      },
+      {
+       "kind": "calendar#calendarListEntry",
+       "id": "it.italian#holiday@group.v.calendar.google.com",
+       "summary": "Festività",
+       "accessRole": "reader",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       },
+       "hidden": false,
+       "selected": null,
+       "colorId": "8",
+       "nested": {
+        "n": 1.5,
+        "big": 12345678901234567890
+       }
+      }
+     ]
+    }
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "*/*"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "x-goog-api-client",
+        "gl-python/3.13.16 auth/2.38.0 cred-type/u"
+       ],
+       [
+        "Content-Length",
+        "328"
+       ]
+      ],
+      "body": "grant_type=refresh_token&client_id=placeholder-client-id.apps.googleusercontent.com&client_secret=placeholder-client-secret&refresh_token=fc-refresh&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid"
+     },
+     "reply": {
+      "status": 400,
+      "json": {
+       "error": "temporarily_unavailable"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "*/*"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "x-goog-api-client",
+        "gl-python/3.13.16 auth/2.38.0 cred-type/u"
+       ],
+       [
+        "Content-Length",
+        "328"
+       ]
+      ],
+      "body": "grant_type=refresh_token&client_id=placeholder-client-id.apps.googleusercontent.com&client_secret=placeholder-client-secret&refresh_token=fc-refresh&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "fc-token-2",
+       "expires_in": 3599,
+       "scope": "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid",
+       "token_type": "Bearer"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarList",
+       "etag": "\"p1\"",
+       "nextPageToken": "page two/+",
+       "items": [
+        {
+         "kind": "calendar#calendarListEntry",
+         "id": "primary-fc@example.test",
+         "summary": "Agenda è",
+         "accessRole": "owner",
+         "backgroundColor": "#9fe1e7",
+         "primary": true,
+         "defaultReminders": [
+          {
+           "method": "popup",
+           "minutes": 10
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?pageToken=page+two%2F%2B&alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarList",
+       "etag": "\"p2\"",
+       "items": [
+        {
+         "kind": "calendar#calendarListEntry",
+         "id": "it.italian#holiday@group.v.calendar.google.com",
+         "summary": "Festività",
+         "accessRole": "reader",
+         "conferenceProperties": {
+          "allowedConferenceSolutionTypes": [
+           "hangoutsMeet"
+          ]
+         },
+         "hidden": false,
+         "selected": null,
+         "colorId": "8",
+         "nested": {
+          "n": 1.5,
+          "big": 12345678901234567890
+         }
+        }
+       ],
+       "nextSyncToken": "sync"
+      }
+     }
+    }
+   ],
+   "users": {
+    "full_collaborator": {
+     "credentials": {
+      "$json": {
+       "token": "fc-token-2",
+       "refresh_token": "fc-refresh",
+       "token_uri": "https://oauth2.googleapis.com/token",
+       "client_id": "placeholder-client-id.apps.googleusercontent.com",
+       "client_secret": "placeholder-client-secret",
+       "scopes": [
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "openid"
+       ],
+       "universe_domain": "googleapis.com",
+       "account": "",
+       "expiry": "$refresh:3599"
+      }
+     }
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "full_collaborator",
+     "fields": [
+      "integration_google_credentials"
+     ],
+     "actor": "full_collaborator",
+     "index": null,
+     "intermediate": null
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-list-athlete-in-memory-refresh",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "calendars": []
+    }
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "Content-Length",
+        "172"
+       ],
+       [
+        "content-type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "x-goog-api-client",
+        "gl-python/3.13.16 auth/2.38.0 cred-type/u"
+       ],
+       [
+        "user-agent",
+        "Python-httplib2/0.32.0 (gzip)"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ]
+      ],
+      "body": "grant_type=refresh_token&client_id=athlete-client&client_secret=athlete-secret&refresh_token=athlete-refresh&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+openid"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "athlete-token",
+       "expires_in": 3599,
+       "token_type": "Bearer"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer athlete-token"
+       ],
+       [
+        "x-goog-user-project",
+        "assozeta-quota"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "items": []
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-config-get-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "owner": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "state_for": "owner",
+   "session": true
+  },
+  {
+   "name": "google-calendar-callback-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/google/oauth2callback",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Google Oauth2Callback",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-callback-wrong-method",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/google/oauth2callback",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-callback-restricted-collaborator-denied",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/google/oauth2callback?error=access_denied",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.update"
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-callback-cancelled",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?error=access_denied&state={state:owner}",
+   "headers": {},
+   "status": 200,
+   "response": null,
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": [],
+   "html": "\n            <html>\n                <head>\n                    <script type=\"text/javascript\">\n                        window.close();\n                    </script>            \n                </head>\n                <body>\n                    <p>Richiesta cancellata. Per favore chiudi la pagina.</p>\n                </body>\n            </html>\n        "
+  },
+  {
+   "name": "google-calendar-callback-unknown-state",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?state=not-a-known-state&code=4%2Fcode",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "No user found for the integration flow."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-callback-missing-state-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?code=4%2Fcode",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-callback-missing-code-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?state={state:owner}",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-callback-token-rejected-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?state={state:owner}&code=4%2Frejected",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "122"
+       ],
+       [
+        "Authorization",
+        "Basic cGxhY2Vob2xkZXItY2xpZW50LWlkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tOnBsYWNlaG9sZGVyLWNsaWVudC1zZWNyZXQ="
+       ]
+      ],
+      "body": "grant_type=authorization_code&code=4%2Frejected&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback"
+     },
+     "reply": {
+      "status": 400,
+      "json": {
+       "error": "invalid_grant",
+       "error_description": "Bad Request"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-callback-scope-changed-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?state={state:owner}&code=4%2Fscope",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "119"
+       ],
+       [
+        "Authorization",
+        "Basic cGxhY2Vob2xkZXItY2xpZW50LWlkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tOnBsYWNlaG9sZGVyLWNsaWVudC1zZWNyZXQ="
+       ]
+      ],
+      "body": "grant_type=authorization_code&code=4%2Fscope&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "owner-token-x",
+       "expires_in": 3599,
+       "refresh_token": "owner-refresh-x",
+       "scope": "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid https://www.googleapis.com/auth/drive",
+       "token_type": "Bearer"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-callback-owner-authorized",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?state={state:owner}&code=4%2F0A%C3%A8b+c&scope=ignored",
+   "headers": {},
+   "status": 200,
+   "response": null,
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "125"
+       ],
+       [
+        "Authorization",
+        "Basic cGxhY2Vob2xkZXItY2xpZW50LWlkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tOnBsYWNlaG9sZGVyLWNsaWVudC1zZWNyZXQ="
+       ]
+      ],
+      "body": "grant_type=authorization_code&code=4%2F0A%C3%A8b+c&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "owner-token-1",
+       "expires_in": 3599,
+       "refresh_token": "owner-refresh-1",
+       "scope": "openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/calendar",
+       "token_type": "Bearer",
+       "id_token": "header.payload.signature"
+      }
+     }
+    }
+   ],
+   "users": {
+    "owner": {
+     "credentials": {
+      "$json": {
+       "token": "owner-token-1",
+       "refresh_token": "owner-refresh-1",
+       "token_uri": "https://oauth2.googleapis.com/token",
+       "client_id": "placeholder-client-id.apps.googleusercontent.com",
+       "client_secret": "placeholder-client-secret",
+       "scopes": [
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "openid"
+       ],
+       "universe_domain": "googleapis.com",
+       "account": "",
+       "expiry": "$callback:3599"
+      }
+     },
+     "auto_sync": true
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_credentials",
+      "integration_google_auto_sync"
+     ],
+     "actor": "anonymous",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "html": "\n            <html>\n                <head>\n                    <script type=\"text/javascript\">\n                        window.close();\n                    </script>            \n                </head>\n                <body>\n                    <p>Autorizzato. Per favore chiudi la pagina.</p>\n                </body>\n            </html>\n        "
+  },
+  {
+   "name": "google-calendar-check-owner-connected",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "google_sync_enabled": true
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-owner-single-page",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "calendars": [
+      {
+       "kind": "calendar#calendarListEntry",
+       "id": "primary-fc@example.test",
+       "summary": "Agenda è",
+       "accessRole": "owner",
+       "backgroundColor": "#9fe1e7",
+       "primary": true,
+       "defaultReminders": [
+        {
+         "method": "popup",
+         "minutes": 10
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "google": [
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "items": [
+        {
+         "kind": "calendar#calendarListEntry",
+         "id": "primary-fc@example.test",
+         "summary": "Agenda è",
+         "accessRole": "owner",
+         "backgroundColor": "#9fe1e7",
+         "primary": true,
+         "defaultReminders": [
+          {
+           "method": "popup",
+           "minutes": 10
+          }
+         ]
+        }
+       ],
+       "nextPageToken": ""
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-owner-unauthorized-refresh-retry",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "calendars": [
+      {
+       "kind": "calendar#calendarListEntry",
+       "id": "it.italian#holiday@group.v.calendar.google.com",
+       "summary": "Festività",
+       "accessRole": "reader",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       },
+       "hidden": false,
+       "selected": null,
+       "colorId": "8",
+       "nested": {
+        "n": 1.5,
+        "big": 12345678901234567890
+       }
+      }
+     ]
+    }
+   },
+   "google": [
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 401,
+      "json": {
+       "error": {
+        "code": 401,
+        "message": "Request had invalid authentication credentials.",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "authError",
+          "message": "Request had invalid authentication credentials."
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "Content-Length",
+        "333"
+       ],
+       [
+        "content-type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "x-goog-api-client",
+        "gl-python/3.13.16 auth/2.38.0 cred-type/u"
+       ],
+       [
+        "user-agent",
+        "Python-httplib2/0.32.0 (gzip)"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ]
+      ],
+      "body": "grant_type=refresh_token&client_id=placeholder-client-id.apps.googleusercontent.com&client_secret=placeholder-client-secret&refresh_token=owner-refresh-1&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "owner-token-mem",
+       "expires_in": 3599,
+       "scope": "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid",
+       "token_type": "Bearer"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-mem"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "items": [
+        {
+         "kind": "calendar#calendarListEntry",
+         "id": "it.italian#holiday@group.v.calendar.google.com",
+         "summary": "Festività",
+         "accessRole": "reader",
+         "conferenceProperties": {
+          "allowedConferenceSolutionTypes": [
+           "hangoutsMeet"
+          ]
+         },
+         "hidden": false,
+         "selected": null,
+         "colorId": "8",
+         "nested": {
+          "n": 1.5,
+          "big": 12345678901234567890
+         }
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-api-error-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 503,
+      "json": {
+       "error": {
+        "code": 503,
+        "message": "Backend Error",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "backendError",
+          "message": "Backend Error"
+         }
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-without-items-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarList"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "calendars": []
+    }
+   },
+   "google": [
+    {
+     "request": {
+      "method": "GET",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "items": []
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Google Calendar Export Course",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-restricted-collaborator-denied",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.calendar.read"
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-missing-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000000720009/export",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Course not found."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-malformed-course-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/not-a-uuid/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-deleted-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640008/export",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Course not found."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-other-group-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640007/export",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "msg": "Course not found."
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-disconnected-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-alpha-first",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "alpha-1@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "143"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Alfa \\u00e8\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "alpha-1@group.calendar.google.com",
+       "summary": "Corso Alfa è",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/alpha-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "103"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"alpha-1@group.calendar.google.com\", \"backgroundColor\": \"#1a73e8\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "alpha-1@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "522"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000001000040008000000000000001\"}}, \"calendar_id\": \"alpha-1@group.calendar.google.com\", \"summary\": \"Lezione 1\", \"description\": \"Istruttore: Ines Uno\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-05T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-05T19:30:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000001000040008000000000000001",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "473"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000002000040008000000000000002\"}}, \"calendar_id\": \"alpha-1@group.calendar.google.com\", \"summary\": \"Saggio\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"date\": \"2026-12-20\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"date\": \"2026-12-21\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000002000040008000000000000002",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "472"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000003000040008000000000000003\"}}, \"calendar_id\": \"alpha-1@group.calendar.google.com\", \"summary\": \"Prova\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"date\": \"2026-11-02\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"date\": \"2026-11-03\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000003000040008000000000000003",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "511"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000004000040008000000000000004\"}}, \"calendar_id\": \"alpha-1@group.calendar.google.com\", \"summary\": \"Allenamento \\u00e8\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-06T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-06T19:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000004000040008000000000000004",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "515"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000005000040008000000000000005\"}}, \"calendar_id\": \"alpha-1@group.calendar.google.com\", \"summary\": \"Duplicato\", \"description\": \"Istruttore: 7\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-10T02:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-10T12:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 409,
+      "json": {
+       "error": {
+        "code": 409,
+        "message": "The requested identifier already exists.",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "duplicate",
+          "message": "The requested identifier already exists."
+         }
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "alpha": "alpha-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "alpha",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "alpha-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-alpha-replaces-calendar",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "alpha-2@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/calendars/alpha-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 204
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "143"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Alfa \\u00e8\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "alpha-2@group.calendar.google.com",
+       "summary": "Corso Alfa è",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/alpha-2%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 204
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "103"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"alpha-2@group.calendar.google.com\", \"backgroundColor\": \"#1a73e8\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "alpha-2@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-2%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "522"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000001000040008000000000000001\"}}, \"calendar_id\": \"alpha-2@group.calendar.google.com\", \"summary\": \"Lezione 1\", \"description\": \"Istruttore: Ines Uno\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-05T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-05T19:30:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000001000040008000000000000001",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-2%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "473"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000002000040008000000000000002\"}}, \"calendar_id\": \"alpha-2@group.calendar.google.com\", \"summary\": \"Saggio\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"date\": \"2026-12-20\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"date\": \"2026-12-21\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000002000040008000000000000002",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-2%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "472"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000003000040008000000000000003\"}}, \"calendar_id\": \"alpha-2@group.calendar.google.com\", \"summary\": \"Prova\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"date\": \"2026-11-02\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"date\": \"2026-11-03\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000003000040008000000000000003",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-2%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "511"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000004000040008000000000000004\"}}, \"calendar_id\": \"alpha-2@group.calendar.google.com\", \"summary\": \"Allenamento \\u00e8\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-06T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-06T19:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000004000040008000000000000004",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-2%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "515"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000005000040008000000000000005\"}}, \"calendar_id\": \"alpha-2@group.calendar.google.com\", \"summary\": \"Duplicato\", \"description\": \"Istruttore: 7\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-10T02:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-10T12:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000005000040008000000000000005",
+       "status": "confirmed"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "alpha": "alpha-2@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "alpha",
+     "changes": {
+      "google_calendar_id": [
+       "alpha-1@group.calendar.google.com",
+       "alpha-2@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-beta-old-calendar-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640002/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "beta 2/x@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/calendars/beta-old%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "136"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Beta\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "beta 2/x@group.calendar.google.com",
+       "summary": "Corso Beta",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/beta%202%2Fx%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "104"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"beta 2/x@group.calendar.google.com\", \"backgroundColor\": \"#ffe082\", \"foregroundColor\": \"#000000\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "beta 2/x@group.calendar.google.com"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "beta": "beta 2/x@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "beta",
+     "changes": {
+      "google_calendar_id": [
+       "beta-old@group.calendar.google.com",
+       "beta 2/x@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-full-collaborator-keeps-course-id",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640001/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "alpha-2@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/calendars/alpha-2%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 204
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "143"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Alfa \\u00e8\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "alpha-fc@group.calendar.google.com",
+       "summary": "Corso Alfa è",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/alpha-fc%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "104"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": "{\"id\": \"alpha-fc@group.calendar.google.com\", \"backgroundColor\": \"#1a73e8\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "alpha-fc@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-fc%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "523"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000001000040008000000000000001\"}}, \"calendar_id\": \"alpha-fc@group.calendar.google.com\", \"summary\": \"Lezione 1\", \"description\": \"Istruttore: Ines Uno\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-05T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-05T19:30:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000001000040008000000000000001",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-fc%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "474"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000002000040008000000000000002\"}}, \"calendar_id\": \"alpha-fc@group.calendar.google.com\", \"summary\": \"Saggio\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"date\": \"2026-12-20\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"date\": \"2026-12-21\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000002000040008000000000000002",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-fc%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "473"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000003000040008000000000000003\"}}, \"calendar_id\": \"alpha-fc@group.calendar.google.com\", \"summary\": \"Prova\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"date\": \"2026-11-02\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"date\": \"2026-11-03\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000003000040008000000000000003",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-fc%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "512"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000004000040008000000000000004\"}}, \"calendar_id\": \"alpha-fc@group.calendar.google.com\", \"summary\": \"Allenamento \\u00e8\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-06T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-06T19:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000004000040008000000000000004",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/alpha-fc%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "516"
+       ],
+       [
+        "authorization",
+        "Bearer fc-token-2"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640001\", \"event_id\": \"e0000005000040008000000000000005\"}}, \"calendar_id\": \"alpha-fc@group.calendar.google.com\", \"summary\": \"Duplicato\", \"description\": \"Istruttore: 7\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-10T02:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-10T12:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000005000040008000000000000005",
+       "status": "confirmed"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640002/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "beta-3@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/calendars/beta%202%2Fx%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 204
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "136"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Beta\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "beta-3@group.calendar.google.com",
+       "summary": "Corso Beta",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/beta-3%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "102"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"beta-3@group.calendar.google.com\", \"backgroundColor\": \"#ffe082\", \"foregroundColor\": \"#000000\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "beta-3@group.calendar.google.com"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "beta": "beta-3@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "beta",
+     "changes": {
+      "google_calendar_id": [
+       "beta 2/x@group.calendar.google.com",
+       "beta-3@group.calendar.google.com"
+      ]
+     },
+     "actor": "admin",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-course-of-another-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640009/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "abroad-1@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "138"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Estero\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "abroad-1@group.calendar.google.com",
+       "summary": "Corso Estero",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/abroad-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "104"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"abroad-1@group.calendar.google.com\", \"backgroundColor\": \"#334455\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "abroad-1@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/abroad-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "500"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640009\", \"event_id\": \"e0000009000040008000000000000009\"}}, \"calendar_id\": \"abroad-1@group.calendar.google.com\", \"summary\": \"Estero\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-07-01T12:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-07-01T13:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000009000040008000000000000009",
+       "status": "confirmed"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "abroad": "abroad-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "abroad",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "abroad-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701002",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-quota-exceeded",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640003/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "quotaExceeded"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Gamma\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 403,
+      "json": {
+       "error": {
+        "code": 403,
+        "message": "Calendar usage limits exceeded.",
+        "errors": [
+         {
+          "domain": "usageLimits",
+          "reason": "quotaExceeded",
+          "message": "Calendar usage limits exceeded."
+         }
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-quota-in-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640003/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "quotaExceeded"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Gamma\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 403,
+      "json": {
+       "error": {
+        "code": 403,
+        "message": "quotaExceeded for user"
+       }
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-insert-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640003/export",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Error creating calendar."
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Gamma\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 500,
+      "json": {
+       "error": {
+        "code": 500,
+        "message": "Backend Error",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "backendError",
+          "message": "Backend Error"
+         }
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-insert-without-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640003/export",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Error creating calendar."
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Gamma\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-insert-not-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640003/export",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Error creating calendar."
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Gamma\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "text": "quota?"
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-insert-error-quota-reason-phrase",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640003/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "quotaExceeded"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Gamma\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 429,
+      "text": "<html>slow down</html>",
+      "reason": "quotaExceeded"
+     }
+    }
+   ],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-export-without-registry",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640004/export",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Attendance Registry not found."
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Delta\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "delta-1@group.calendar.google.com",
+       "summary": "Corso Delta",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/delta-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "103"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"delta-1@group.calendar.google.com\", \"backgroundColor\": \"#808080\", \"foregroundColor\": \"#000000\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "delta-1@group.calendar.google.com"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "delta": "delta-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "delta",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "delta-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-without-colour-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640005/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "139"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Epsilon\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "epsilon-1@group.calendar.google.com",
+       "summary": "Corso Epsilon",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "epsilon": "epsilon-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "epsilon",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "epsilon-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-event-without-title-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640006/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "136"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Zeta\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "zeta-1@group.calendar.google.com",
+       "summary": "Corso Zeta",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/zeta-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "102"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"zeta-1@group.calendar.google.com\", \"backgroundColor\": \"#7f7f7f\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "zeta-1@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/zeta-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "497"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640006\", \"event_id\": \"e0000007000040008000000000000007\"}}, \"calendar_id\": \"zeta-1@group.calendar.google.com\", \"summary\": \"Prima\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-01T10:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-01T11:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000007000040008000000000000007",
+       "status": "confirmed"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "zeta": "zeta-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "zeta",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "zeta-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-list-insert-error-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640003/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Gamma\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "gamma-1@group.calendar.google.com",
+       "summary": "Corso Gamma",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/gamma-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 204
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "103"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"gamma-1@group.calendar.google.com\", \"backgroundColor\": \"#000000\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 403,
+      "json": {
+       "error": {
+        "code": 403,
+        "message": "Forbidden",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "forbidden",
+          "message": "Forbidden"
+         }
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "gamma": "gamma-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "gamma",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "gamma-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-config-get-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "full_collaborator": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "full_collaborator",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "full_collaborator",
+     "index": null,
+     "intermediate": null
+    }
+   ],
+   "state_for": "full_collaborator",
+   "session": true
+  },
+  {
+   "name": "google-calendar-callback-collaborator-authorized",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?state={state:full_collaborator}&code=fc-code",
+   "headers": {},
+   "status": 200,
+   "response": null,
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "117"
+       ],
+       [
+        "Authorization",
+        "Basic cGxhY2Vob2xkZXItY2xpZW50LWlkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tOnBsYWNlaG9sZGVyLWNsaWVudC1zZWNyZXQ="
+       ]
+      ],
+      "body": "grant_type=authorization_code&code=fc-code&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "fc-token-3",
+       "expires_in": "3599",
+       "refresh_token": "fc-refresh-3",
+       "token_type": "Bearer"
+      }
+     }
+    }
+   ],
+   "users": {
+    "full_collaborator": {
+     "credentials": {
+      "$json": {
+       "token": "fc-token-3",
+       "refresh_token": "fc-refresh-3",
+       "token_uri": "https://oauth2.googleapis.com/token",
+       "client_id": "placeholder-client-id.apps.googleusercontent.com",
+       "client_secret": "placeholder-client-secret",
+       "scopes": [
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "openid"
+       ],
+       "universe_domain": "googleapis.com",
+       "account": "",
+       "expiry": "$callback:3599"
+      }
+     }
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "full_collaborator",
+     "fields": [
+      "integration_google_credentials"
+     ],
+     "actor": "anonymous",
+     "index": null,
+     "intermediate": null
+    }
+   ],
+   "html": "\n            <html>\n                <head>\n                    <script type=\"text/javascript\">\n                        window.close();\n                    </script>            \n                </head>\n                <body>\n                    <p>Autorizzato. Per favore chiudi la pagina.</p>\n                </body>\n            </html>\n        "
+  },
+  {
+   "name": "google-calendar-config-get-owner-as-collaborator-session",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "full_collaborator": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "full_collaborator",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "state_for": "full_collaborator",
+   "session": true
+  },
+  {
+   "name": "google-calendar-config-get-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "owner": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "admin",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "state_for": "owner",
+   "session": true
+  },
+  {
+   "name": "google-calendar-callback-owner-short-lived",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?state={state:owner}&code=short",
+   "headers": {},
+   "status": 200,
+   "response": null,
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "115"
+       ],
+       [
+        "Authorization",
+        "Basic cGxhY2Vob2xkZXItY2xpZW50LWlkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tOnBsYWNlaG9sZGVyLWNsaWVudC1zZWNyZXQ="
+       ]
+      ],
+      "body": "grant_type=authorization_code&code=short&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "owner-token-2",
+       "expires_in": 100,
+       "refresh_token": "owner-refresh-2",
+       "scope": "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid",
+       "token_type": "Bearer"
+      }
+     }
+    }
+   ],
+   "users": {
+    "owner": {
+     "credentials": {
+      "$json": {
+       "token": "owner-token-2",
+       "refresh_token": "owner-refresh-2",
+       "token_uri": "https://oauth2.googleapis.com/token",
+       "client_id": "placeholder-client-id.apps.googleusercontent.com",
+       "client_secret": "placeholder-client-secret",
+       "scopes": [
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "openid"
+       ],
+       "universe_domain": "googleapis.com",
+       "account": "",
+       "expiry": "$callback:100"
+      }
+     }
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_credentials"
+     ],
+     "actor": "anonymous",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ],
+   "html": "\n            <html>\n                <head>\n                    <script type=\"text/javascript\">\n                        window.close();\n                    </script>            \n                </head>\n                <body>\n                    <p>Autorizzato. Per favore chiudi la pagina.</p>\n                </body>\n            </html>\n        "
+  },
+  {
+   "name": "google-calendar-config-delete-owner-refreshes-then-revokes",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "deleted"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "*/*"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "x-goog-api-client",
+        "gl-python/3.13.16 auth/2.38.0 cred-type/u"
+       ],
+       [
+        "Content-Length",
+        "333"
+       ]
+      ],
+      "body": "grant_type=refresh_token&client_id=placeholder-client-id.apps.googleusercontent.com&client_secret=placeholder-client-secret&refresh_token=owner-refresh-2&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "owner-token-3",
+       "expires_in": 3599.75,
+       "refresh_token": "owner-refresh-3",
+       "scope": "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid",
+       "token_type": "Bearer"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/revoke?token=owner-token-3",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "*/*"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "content-type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "0"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 400,
+      "json": {
+       "error": "invalid_token"
+      }
+     }
+    }
+   ],
+   "users": {
+    "owner": {
+     "state": null,
+     "credentials": null,
+     "auto_sync": false
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_credentials"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": {
+      "$json": {
+       "token": "owner-token-3",
+       "refresh_token": "owner-refresh-3",
+       "token_uri": "https://oauth2.googleapis.com/token",
+       "client_id": "placeholder-client-id.apps.googleusercontent.com",
+       "client_secret": "placeholder-client-secret",
+       "scopes": [
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "openid"
+       ],
+       "universe_domain": "googleapis.com",
+       "account": "",
+       "expiry": "$refresh:3599.75"
+      }
+     }
+    },
+    {
+     "model": "user",
+     "label": "owner",
+     "fields": [
+      "integration_google_state",
+      "integration_google_credentials",
+      "integration_google_auto_sync"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "user.sport_association"
+     ],
+     "intermediate": null
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-check-owner-after-delete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/google/check",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "google_sync_enabled": false
+   },
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  },
+  {
+   "name": "google-calendar-config-delete-collaborator-session",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/google/calendar/config",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "deleted"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/revoke?token=fc-token-3",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "*/*"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "content-type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "0"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {}
+     }
+    }
+   ],
+   "users": {
+    "full_collaborator": {
+     "state": null,
+     "credentials": null
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "full_collaborator",
+     "fields": [
+      "integration_google_state",
+      "integration_google_credentials"
+     ],
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "actor.sport_association"
+     ],
+     "intermediate": null
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-config-delete-athlete-token-none",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "deleted"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/revoke",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "*/*"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "content-type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "0"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 200,
+      "json": {}
+     }
+    }
+   ],
+   "users": {
+    "athlete": {
+     "state": null,
+     "credentials": null
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "athlete",
+     "fields": [
+      "integration_google_state",
+      "integration_google_credentials"
+     ],
+     "actor": "athlete",
+     "index": null,
+     "intermediate": null
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-config-get-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/google/calendar/config",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "authorization_url": "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=placeholder-client-id.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&state={state}&access_type=offline&include_granted_scopes=true"
+   },
+   "google": [],
+   "users": {
+    "athlete": {
+     "state": "$state"
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "athlete",
+     "fields": [
+      "integration_google_state"
+     ],
+     "actor": "athlete",
+     "index": null,
+     "intermediate": null
+    }
+   ],
+   "state_for": "athlete",
+   "session": true
+  },
+  {
+   "name": "google-calendar-callback-athlete-without-refresh-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/google/oauth2callback?state={state:athlete}&code=a",
+   "headers": {},
+   "status": 200,
+   "response": null,
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/token",
+      "headers": [
+       [
+        "User-Agent",
+        "python-requests/2.34.2"
+       ],
+       [
+        "Accept-Encoding",
+        "gzip, deflate"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ],
+       [
+        "Connection",
+        "keep-alive"
+       ],
+       [
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+       ],
+       [
+        "Content-Length",
+        "111"
+       ],
+       [
+        "Authorization",
+        "Basic cGxhY2Vob2xkZXItY2xpZW50LWlkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tOnBsYWNlaG9sZGVyLWNsaWVudC1zZWNyZXQ="
+       ]
+      ],
+      "body": "grant_type=authorization_code&code=a&redirect_uri=https%3A%2F%2Fassozeta.example.test%2Fgoogle%2Foauth2callback"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "access_token": "athlete-token-2",
+       "expires_in": 3599,
+       "scope": "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid",
+       "token_type": "Bearer"
+      }
+     }
+    }
+   ],
+   "users": {
+    "athlete": {
+     "credentials": {
+      "$json": {
+       "token": "athlete-token-2",
+       "token_uri": "https://oauth2.googleapis.com/token",
+       "client_id": "placeholder-client-id.apps.googleusercontent.com",
+       "client_secret": "placeholder-client-secret",
+       "scopes": [
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "openid"
+       ],
+       "universe_domain": "googleapis.com",
+       "account": "",
+       "expiry": "$callback:3599"
+      }
+     },
+     "auto_sync": true
+    }
+   },
+   "courses": {},
+   "audit": [
+    {
+     "model": "user",
+     "label": "athlete",
+     "fields": [
+      "integration_google_credentials",
+      "integration_google_auto_sync"
+     ],
+     "actor": "anonymous",
+     "index": null,
+     "intermediate": null
+    }
+   ],
+   "html": "\n            <html>\n                <head>\n                    <script type=\"text/javascript\">\n                        window.close();\n                    </script>            \n                </head>\n                <body>\n                    <p>Autorizzato. Per favore chiudi la pagina.</p>\n                </body>\n            </html>\n        "
+  },
+  {
+   "name": "google-calendar-list-athlete-stored-without-refresh-token-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/google/calendar/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [],
+   "users": {},
+   "courses": {},
+   "audit": []
+  }
+ ]
+}

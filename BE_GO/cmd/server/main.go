@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	mathrand "math/rand/v2"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,12 +19,15 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/channels"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/googleapi"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -252,6 +256,13 @@ func run() (runErr error) {
 		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
 
+	// document/<kind>/<uid> PDF routes: the Puppeteer FastRender service (PUPPETEER_HOST/PORT) prints
+	// CURRENT_HOST_PUPPETEER/<view>; DOCUMENT_BYPASS_TOKEN is HasBypassAuthorizationHeader's token.
+	documentRenderHandler := handler.NewDocumentRenderHandler(service.NewDocumentRender(repository.NewDocumentRender(db),
+		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
+		documentRenderSettings(cfg), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+
 	apiSchemaHandler := handler.NewAPISchemaHandler(service.NewActorAuthentication(accounts, tokens), identities, cfg.CSRFCookieSecure)
 	documentUploadsHandler := composeDocumentUploads(cfg, db, sessions, service.NewActorAuthentication(accounts, tokens), identities,
 		middleware.SessionAuditContext, paymentCategoryOperations)
@@ -433,6 +444,17 @@ func run() (runErr error) {
 	e.Any("/stripe/pay/:payment_id", stripeRoutesHandler.Pay, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/stripe/multiple-pay", stripeRoutesHandler.MultiplePay, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/stripe/webhook", stripeRoutesHandler.Webhook, middleware.DjangoSessionAudit(sessionAuthentication))
+	// google/*: GOOGLE_OAUTH2_BASE / GOOGLE_API_BASE (unset in production) redirect the Google origins.
+	googleSettings, googleSecureCookie := service.GoogleCalendarSettingsFrom(os.Getenv)
+	googleCalendarHandler := handler.NewGoogleCalendarHandler(service.NewGoogleCalendar(repository.NewGoogleCalendars(db, cache),
+		googleapi.NewTransport(os.Getenv("GOOGLE_OAUTH2_BASE"), os.Getenv("GOOGLE_API_BASE"), mathrand.Float64), googleSettings, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations,
+		googleSecureCookie, time.Now)
+	e.Any("/google/check", googleCalendarHandler.Check, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/google/oauth2callback", googleCalendarHandler.Callback, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/google/calendar/config", googleCalendarHandler.Config, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/google/calendar/list", googleCalendarHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/google/calendar/:course_id/export", googleCalendarHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,
 		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -625,6 +647,12 @@ func run() (runErr error) {
 	e.Any("/document/medical/certificate/", documentUploadsHandler.CertificateDocument, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/move", documentArchiveHandler.Move, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/delete", documentArchiveHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/subscription/:uid", documentRenderHandler.Subscription, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/invoice/:uid", documentRenderHandler.Invoice, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/einvoice/:uid", documentRenderHandler.Einvoice, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/compensation/:uid", documentRenderHandler.Compensation, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/template/:uid", documentRenderHandler.Template, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/medical-appointment/:uid", documentRenderHandler.MedicalAppointment, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/retrieve/:uid", docmanagerReadsHandler.Retrieve, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/:uid/delete", docmanagerReadsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/delete", foldersHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -741,6 +769,14 @@ func run() (runErr error) {
 	if err != nil {
 		return err
 	}
+	// subscription/add: Channels group messages are written for Django sockets
+	// and mirrored for Go sockets (internal/channels), on Redis database 0.
+	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
+		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
+	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks,
+		subscriptionNotifier, time.Now, nil), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
+		paymentCategoryOperations)
+	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	realtimeHub := service.NewRealtimeHub()
 	pubsubOptions := storeOptions
 	pubsubOptions.ReadTimeout = -1
