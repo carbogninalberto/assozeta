@@ -2124,25 +2124,67 @@
         "target": "AssociationExportViewSet.as_view({'get': 'active_export'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_transfer.go",
+        "BE_GO/internal/dto/association_transfer.go",
+        "BE_GO/internal/repository/association_transfer.go",
+        "BE_GO/internal/service/association_transfer.go",
+        "BE_GO/internal/handler/association_transfer.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/association/export/active",
+          "/api/v2/association/export/active",
+          "/api/association/export/active"
+        ],
+        "request": "GET, no parameters.",
+        "response": "{active: false} when no active/last export snapshot is cached.",
+        "errors": "401; 403 registry (no mapping); 403 {error} non-owner or collaborator; 404 {error: Associazione non trovata}; 405; 500 cached snapshot present (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; owner role and not collaborator; admin without session acts as the primary association owner.",
+        "resource_scope": "User.sport_association (SportAssociation.objects, not deleted).",
+        "side_effects": "None (Django may delete the active cache key when the task is ready: not ported).",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_transfer_http.json",
+        "TESTS/fixtures/generate_association_transfer_http.py",
+        "TESTS/contracts/test_association_transfer_http.py",
+        "TESTS/adapters/django/association_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 146/146; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-red/results.json",
+          "receipt_sha256": "50c54f5054b8ae51fb9c2dea27bf5be6217640ec9f066b98e60d5b5f1446bce1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-green/results.json",
+          "receipt_sha256": "b1e1c778186406f0d131333fc7feb085592b941abfd56c768e54bdaa227b07e5"
+        },
+        {
+          "revision": "resolving soft-deleted associations in User.sport_association (dropping NOT deleted)",
+          "result": "Mutation control: fails Go on association-transfer-active-deleted-association-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/association-transfer-http-mutation-deleted-association/results.json",
+          "receipt_sha256": "37af5665620fbcadf7554b00ee3afbc6fd5594afc65ef772e5190ddb2ab74072"
+        }
+      ],
+      "notes": [
+        "Implementing: association export/import reads, refusals and pre-dispatch checks; cached export snapshots, storage size/delete, Celery dispatch, archive upload validation/storage, failed task results and setup-token comparison are refused with a 500 before any write. See docs/architecture/go-migration/association-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/export/delete -> AssociationExportViewSet.as_view({'delete': 'delete_export'})",
@@ -2159,25 +2201,66 @@
         "target": "AssociationExportViewSet.as_view({'delete': 'delete_export'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_transfer.go",
+        "BE_GO/internal/dto/association_transfer.go",
+        "BE_GO/internal/repository/association_transfer.go",
+        "BE_GO/internal/service/association_transfer.go",
+        "BE_GO/internal/handler/association_transfer.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/association/export/delete",
+          "/api/v2/association/export/delete",
+          "/api/association/export/delete"
+        ],
+        "request": "DELETE {document_id} (JSON or form).",
+        "response": "Refusals only: 400/403/404; deleting an existing export is not ported.",
+        "errors": "401; 403 registry; 403 {error}; 400 {error: document_id richiesto}; 404 {error: Associazione non trovata}; 404 {error: Export non trovato}; 405; 500 non-dict body, malformed UUID value; 500 existing export (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; owner role and not collaborator (checked after request.data.get).",
+        "resource_scope": "Archive of User.sport_association with an export_ document.",
+        "side_effects": "None in Go (storage delete, archive and document delete are not ported).",
+        "transaction": "No write.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_transfer_http.json",
+        "TESTS/fixtures/generate_association_transfer_http.py",
+        "TESTS/contracts/test_association_transfer_http.py",
+        "TESTS/adapters/django/association_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 146/146; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-red/results.json",
+          "receipt_sha256": "50c54f5054b8ae51fb9c2dea27bf5be6217640ec9f066b98e60d5b5f1446bce1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-green/results.json",
+          "receipt_sha256": "b1e1c778186406f0d131333fc7feb085592b941abfd56c768e54bdaa227b07e5"
+        },
+        {
+          "revision": "resolving soft-deleted associations in User.sport_association (dropping NOT deleted)",
+          "result": "Mutation control: fails Go on association-transfer-active-deleted-association-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/association-transfer-http-mutation-deleted-association/results.json",
+          "receipt_sha256": "37af5665620fbcadf7554b00ee3afbc6fd5594afc65ef772e5190ddb2ab74072"
+        }
+      ],
+      "notes": [
+        "Implementing: association export/import reads, refusals and pre-dispatch checks; cached export snapshots, storage size/delete, Celery dispatch, archive upload validation/storage, failed task results and setup-token comparison are refused with a 500 before any write. See docs/architecture/go-migration/association-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/export/list -> AssociationExportViewSet.as_view({'get': 'list_exports'})",
@@ -2194,25 +2277,67 @@
         "target": "AssociationExportViewSet.as_view({'get': 'list_exports'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_transfer.go",
+        "BE_GO/internal/dto/association_transfer.go",
+        "BE_GO/internal/repository/association_transfer.go",
+        "BE_GO/internal/service/association_transfer.go",
+        "BE_GO/internal/handler/association_transfer.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/association/export/list",
+          "/api/v2/association/export/list",
+          "/api/association/export/list"
+        ],
+        "request": "GET, no parameters.",
+        "response": "{exports: [{archive_id, document_id, filename, file_size_bytes, download_token, date, created_at}], count}, newest 20 export_ archives.",
+        "errors": "401; 403 registry; 403 {error}; 404 {error: Associazione non trovata}; 405; 500 null size with a filepath (storage size not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; owner role and not collaborator.",
+        "resource_scope": "Archives of User.sport_association whose document filename starts with export_.",
+        "side_effects": "None in the ported paths (Django saves a storage-read size: not ported).",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_transfer_http.json",
+        "TESTS/fixtures/generate_association_transfer_http.py",
+        "TESTS/contracts/test_association_transfer_http.py",
+        "TESTS/adapters/django/association_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 146/146; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-red/results.json",
+          "receipt_sha256": "50c54f5054b8ae51fb9c2dea27bf5be6217640ec9f066b98e60d5b5f1446bce1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-green/results.json",
+          "receipt_sha256": "b1e1c778186406f0d131333fc7feb085592b941abfd56c768e54bdaa227b07e5"
+        },
+        {
+          "revision": "resolving soft-deleted associations in User.sport_association (dropping NOT deleted)",
+          "result": "Mutation control: fails Go on association-transfer-active-deleted-association-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/association-transfer-http-mutation-deleted-association/results.json",
+          "receipt_sha256": "37af5665620fbcadf7554b00ee3afbc6fd5594afc65ef772e5190ddb2ab74072"
+        }
+      ],
+      "notes": [
+        "Implementing: association export/import reads, refusals and pre-dispatch checks; cached export snapshots, storage size/delete, Celery dispatch, archive upload validation/storage, failed task results and setup-token comparison are refused with a 500 before any write. See docs/architecture/go-migration/association-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/export/start -> AssociationExportViewSet.as_view({'post': 'start_export'})",
@@ -2229,25 +2354,66 @@
         "target": "AssociationExportViewSet.as_view({'post': 'start_export'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_transfer.go",
+        "BE_GO/internal/dto/association_transfer.go",
+        "BE_GO/internal/repository/association_transfer.go",
+        "BE_GO/internal/service/association_transfer.go",
+        "BE_GO/internal/handler/association_transfer.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/association/export/start",
+          "/api/v2/association/export/start",
+          "/api/association/export/start"
+        ],
+        "request": "POST, body ignored.",
+        "response": "Refusals only: 403/404/409; the Celery dispatch is not ported.",
+        "errors": "401; 403 registry; 403 {error}; 404 {error: Associazione non trovata}; 409 {error: Elimina un export prima di crearne uno nuovo}; 409 {error: Un export è già in corso}; 405; 500 dispatch (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; owner role and not collaborator.",
+        "resource_scope": "Export count and active cache key of User.sport_association.",
+        "side_effects": "None in Go (cache registration and task dispatch are not ported).",
+        "transaction": "No write.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_transfer_http.json",
+        "TESTS/fixtures/generate_association_transfer_http.py",
+        "TESTS/contracts/test_association_transfer_http.py",
+        "TESTS/adapters/django/association_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 146/146; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-red/results.json",
+          "receipt_sha256": "50c54f5054b8ae51fb9c2dea27bf5be6217640ec9f066b98e60d5b5f1446bce1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-green/results.json",
+          "receipt_sha256": "b1e1c778186406f0d131333fc7feb085592b941abfd56c768e54bdaa227b07e5"
+        },
+        {
+          "revision": "resolving soft-deleted associations in User.sport_association (dropping NOT deleted)",
+          "result": "Mutation control: fails Go on association-transfer-active-deleted-association-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/association-transfer-http-mutation-deleted-association/results.json",
+          "receipt_sha256": "37af5665620fbcadf7554b00ee3afbc6fd5594afc65ef772e5190ddb2ab74072"
+        }
+      ],
+      "notes": [
+        "Implementing: association export/import reads, refusals and pre-dispatch checks; cached export snapshots, storage size/delete, Celery dispatch, archive upload validation/storage, failed task results and setup-token comparison are refused with a 500 before any write. See docs/architecture/go-migration/association-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/export/status -> AssociationExportViewSet.as_view({'get': 'export_status'})",
@@ -2264,25 +2430,67 @@
         "target": "AssociationExportViewSet.as_view({'get': 'export_status'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_transfer.go",
+        "BE_GO/internal/dto/association_transfer.go",
+        "BE_GO/internal/repository/association_transfer.go",
+        "BE_GO/internal/service/association_transfer.go",
+        "BE_GO/internal/handler/association_transfer.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/association/export/status",
+          "/api/v2/association/export/status",
+          "/api/association/export/status"
+        ],
+        "request": "GET ?task_id=<id> (last value).",
+        "response": "404 {error: Export non trovato} without a task owner cache entry.",
+        "errors": "401; 403 registry; 403 {error}; 400 {error: task_id richiesto}; 404 {error: Associazione non trovata}; 405; 500 registered task (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; owner role and not collaborator.",
+        "resource_scope": "Task owner cache entry compared with User.sport_association.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_transfer_http.json",
+        "TESTS/fixtures/generate_association_transfer_http.py",
+        "TESTS/contracts/test_association_transfer_http.py",
+        "TESTS/adapters/django/association_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 146/146; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-red/results.json",
+          "receipt_sha256": "50c54f5054b8ae51fb9c2dea27bf5be6217640ec9f066b98e60d5b5f1446bce1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-green/results.json",
+          "receipt_sha256": "b1e1c778186406f0d131333fc7feb085592b941abfd56c768e54bdaa227b07e5"
+        },
+        {
+          "revision": "resolving soft-deleted associations in User.sport_association (dropping NOT deleted)",
+          "result": "Mutation control: fails Go on association-transfer-active-deleted-association-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/association-transfer-http-mutation-deleted-association/results.json",
+          "receipt_sha256": "37af5665620fbcadf7554b00ee3afbc6fd5594afc65ef772e5190ddb2ab74072"
+        }
+      ],
+      "notes": [
+        "Implementing: association export/import reads, refusals and pre-dispatch checks; cached export snapshots, storage size/delete, Celery dispatch, archive upload validation/storage, failed task results and setup-token comparison are refused with a 500 before any write. See docs/architecture/go-migration/association-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/impersonation -> impersonation_session",
@@ -2467,25 +2675,66 @@
         "target": "AssociationImportViewSet.as_view({'post': 'start_import'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_transfer.go",
+        "BE_GO/internal/dto/association_transfer.go",
+        "BE_GO/internal/repository/association_transfer.go",
+        "BE_GO/internal/service/association_transfer.go",
+        "BE_GO/internal/handler/association_transfer.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/association/import/start",
+          "/api/v2/association/import/start",
+          "/api/association/import/start"
+        ],
+        "request": "POST multipart/form-data with file and owner_password.",
+        "response": "Refusals only: 400 {error: File ZIP richiesto}, 415; storage save and Celery dispatch are not ported.",
+        "errors": "401; 403 registry; 403 setup token; 415; 400; 405; 500 uploaded file (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "SetupTokenOrAuthenticated.",
+        "resource_scope": "Uploaded archive.",
+        "side_effects": "None in Go.",
+        "transaction": "No write.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_transfer_http.json",
+        "TESTS/fixtures/generate_association_transfer_http.py",
+        "TESTS/contracts/test_association_transfer_http.py",
+        "TESTS/adapters/django/association_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 146/146; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-red/results.json",
+          "receipt_sha256": "50c54f5054b8ae51fb9c2dea27bf5be6217640ec9f066b98e60d5b5f1446bce1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-green/results.json",
+          "receipt_sha256": "b1e1c778186406f0d131333fc7feb085592b941abfd56c768e54bdaa227b07e5"
+        },
+        {
+          "revision": "resolving soft-deleted associations in User.sport_association (dropping NOT deleted)",
+          "result": "Mutation control: fails Go on association-transfer-active-deleted-association-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/association-transfer-http-mutation-deleted-association/results.json",
+          "receipt_sha256": "37af5665620fbcadf7554b00ee3afbc6fd5594afc65ef772e5190ddb2ab74072"
+        }
+      ],
+      "notes": [
+        "Implementing: association export/import reads, refusals and pre-dispatch checks; cached export snapshots, storage size/delete, Celery dispatch, archive upload validation/storage, failed task results and setup-token comparison are refused with a 500 before any write. See docs/architecture/go-migration/association-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/import/status -> AssociationImportViewSet.as_view({'get': 'import_status'})",
@@ -2502,25 +2751,67 @@
         "target": "AssociationImportViewSet.as_view({'get': 'import_status'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_transfer.go",
+        "BE_GO/internal/dto/association_transfer.go",
+        "BE_GO/internal/repository/association_transfer.go",
+        "BE_GO/internal/service/association_transfer.go",
+        "BE_GO/internal/handler/association_transfer.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/association/import/status",
+          "/api/v2/association/import/status",
+          "/api/association/import/status"
+        ],
+        "request": "GET ?task_id=<id>.",
+        "response": "{task_id, status, ready} (+ result for SUCCESS) from django_celery_results; PENDING without a row.",
+        "errors": "401; 403 registry; 403 {detail: Setup token missing or invalid.}; 400 {error: task_id richiesto}; 405; 500 undecodable result; 500 FAILURE/REVOKED/RETRY or transformed results (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "SetupTokenOrAuthenticated: primary association owner or superuser when configured; setup token otherwise (token comparison not ported).",
+        "resource_scope": "TaskResult by task_id.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_transfer_http.json",
+        "TESTS/fixtures/generate_association_transfer_http.py",
+        "TESTS/contracts/test_association_transfer_http.py",
+        "TESTS/adapters/django/association_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 146/146; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-red/results.json",
+          "receipt_sha256": "50c54f5054b8ae51fb9c2dea27bf5be6217640ec9f066b98e60d5b5f1446bce1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-green/results.json",
+          "receipt_sha256": "b1e1c778186406f0d131333fc7feb085592b941abfd56c768e54bdaa227b07e5"
+        },
+        {
+          "revision": "resolving soft-deleted associations in User.sport_association (dropping NOT deleted)",
+          "result": "Mutation control: fails Go on association-transfer-active-deleted-association-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/association-transfer-http-mutation-deleted-association/results.json",
+          "receipt_sha256": "37af5665620fbcadf7554b00ee3afbc6fd5594afc65ef772e5190ddb2ab74072"
+        }
+      ],
+      "notes": [
+        "Implementing: association export/import reads, refusals and pre-dispatch checks; cached export snapshots, storage size/delete, Celery dispatch, archive upload validation/storage, failed task results and setup-token comparison are refused with a 500 before any write. See docs/architecture/go-migration/association-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/import/validate -> AssociationImportViewSet.as_view({'post': 'validate_import'})",
@@ -2537,25 +2828,66 @@
         "target": "AssociationImportViewSet.as_view({'post': 'validate_import'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_transfer.go",
+        "BE_GO/internal/dto/association_transfer.go",
+        "BE_GO/internal/repository/association_transfer.go",
+        "BE_GO/internal/service/association_transfer.go",
+        "BE_GO/internal/handler/association_transfer.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/association/import/validate",
+          "/api/v2/association/import/validate",
+          "/api/association/import/validate"
+        ],
+        "request": "POST multipart/form-data with file.",
+        "response": "Refusals only: 400 {error: File ZIP richiesto}, 415; archive validation is not ported.",
+        "errors": "401; 403 registry; 403 setup token; 415; 400; 405; 500 uploaded file (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "SetupTokenOrAuthenticated.",
+        "resource_scope": "Uploaded archive.",
+        "side_effects": "None in Go (Django writes a temporary file).",
+        "transaction": "No write.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_transfer_http.json",
+        "TESTS/fixtures/generate_association_transfer_http.py",
+        "TESTS/contracts/test_association_transfer_http.py",
+        "TESTS/adapters/django/association_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 146/146; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-red/results.json",
+          "receipt_sha256": "50c54f5054b8ae51fb9c2dea27bf5be6217640ec9f066b98e60d5b5f1446bce1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 146/146 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/association-transfer-http-green/results.json",
+          "receipt_sha256": "b1e1c778186406f0d131333fc7feb085592b941abfd56c768e54bdaa227b07e5"
+        },
+        {
+          "revision": "resolving soft-deleted associations in User.sport_association (dropping NOT deleted)",
+          "result": "Mutation control: fails Go on association-transfer-active-deleted-association-owner (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/association-transfer-http-mutation-deleted-association/results.json",
+          "receipt_sha256": "37af5665620fbcadf7554b00ee3afbc6fd5594afc65ef772e5190ddb2ab74072"
+        }
+      ],
+      "notes": [
+        "Implementing: association export/import reads, refusals and pre-dispatch checks; cached export snapshots, storage size/delete, Celery dispatch, archive upload validation/storage, failed task results and setup-token comparison are refused with a 500 before any write. See docs/architecture/go-migration/association-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:attendance-day/<str:uid>/delete -> attendance_day_delete",
