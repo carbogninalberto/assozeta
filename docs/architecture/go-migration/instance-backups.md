@@ -135,8 +135,8 @@ sizes are accepted within `pg_database_size` measured before and after the reque
 must equal the reported one.
 
 - RED (`native-r9`): Django 123/123, Go 404 on the first case.
-- GREEN: see the family record (`versioned`), 123/123 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
-- Mutation: letting a fifth failed attempt through (`attempts > 5`) fails `token-too-many` on Go.
+- GREEN (`versioned-r1`, after merging the base): 123/123 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`mutation-r1`): letting the attempt limit through (`attempts > 5`) fails `token-too-many` on Go.
 - `go test ./internal/repository -run InstanceBackups` (CPython 3.13 protocol 4 pickles).
-- Re-run green after the shared changes: `instance-admin` (`config.InstanceAdminSettings`) and
-  `data-restore` (`documentobjects.S3`, the administration handler).
+- Re-run green after the shared changes: `instance-admin` (141, `config.InstanceAdminSettings`) and
+  `data-restore` (139, `documentobjects.S3`, the administration handler).
