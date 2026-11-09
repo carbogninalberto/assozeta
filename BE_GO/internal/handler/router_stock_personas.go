@@ -89,7 +89,9 @@ func (h *RouterStockHandler) RegisterPersonas(reads *PersonasHandler, writes *Pe
 			}
 			return c.NoContent(http.StatusNoContent)
 		},
-		postFields: func(echo.Context, *domain.ResolvedIdentity) (map[string]any, error) { return personaOptionsPost()["POST"].(map[string]any), nil },
+		postFields: func(echo.Context, *domain.ResolvedIdentity) (map[string]any, error) {
+			return personaOptionsPost()["POST"].(map[string]any), nil
+		},
 		putFields: func(c echo.Context, identity *domain.ResolvedIdentity, pk string) (map[string]any, error) {
 			query, header := read(c)
 			_, err := writes.writes.Locate(c.Request().Context(), *identity, pk, query, header)
