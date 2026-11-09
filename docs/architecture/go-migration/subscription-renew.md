@@ -31,7 +31,7 @@
   - a malformed certificate id;
   - `int()` of `type`, `role` and `subscription_number`;
   - `request.user.sport_association` failing.
-- `send_notification` is split: `Deliver` is the Redis/Channels part once `validate_broadcast`'s rows exist.
+- `send_notification` is split: `SendValidated` is the Redis/Channels part once `validate_broadcast`'s rows exist.
 
 ## subscription/renew
 
@@ -103,7 +103,11 @@ Refused with the 500 page before anything is committed:
 - the notification store, cache, pushes and mirrored envelopes, one per created subscription.
 
 - RED (`red-r7`, routes unregistered): Django 54/54; Go 404 on the first case.
-- GREEN (`versioned-r2`, after merging codex/go-backend-parity at 20064ddb): 54/54 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- GREEN (`versioned-r3`, after merging codex/go-backend-parity with subscription-transfer): 54/54 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`mutation-r1`): letting the renewal clean-up also match the new payment (dropping the exclusion) fails
   `subscription-renew-renew-basic` (CAUGHT).
 - Re-run green (`rerun-renew-r1`): `subscription-create` 40/40 (with two new cases), `associates-draft` 128/128, `websockets` 75/75.
+- After the merge with subscription-transfer, whose notifier changes were reconciled with this family's (`Send`, `Deliver`, and
+  `SendValidated` once the caller's transaction wrote `validate_broadcast`'s rows), re-run green (`rerun-renew-merge-r1`):
+  `subscription-transfer` 29/29 and `subscription-create` 40/40 on all four transports, `websockets` 75/75, `associates-draft` 128/128
+  and `email-render-routes` 82/82 natively.
