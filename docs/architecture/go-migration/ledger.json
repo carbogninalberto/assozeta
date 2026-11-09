@@ -37848,7 +37848,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -37865,7 +37865,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -37903,12 +37905,53 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps association_quote_assign to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md."
+        "domain.PeriodicJobKind maps association_quote_assign to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -37927,7 +37970,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -37944,7 +37987,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -37982,7 +38027,6 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
         "domain.PeriodicJobKind maps auto_archive_subscription to its registered version-1 worker job. The evaluator now supports listed days of the month and months with a scalar UTC hour and minute (Celery _delta_to_next). Authored cases (utc_archive_*) match actual Celery 5.6.2 / django-celery-beat 2.8.1. See docs/architecture/go-migration/sync-v1035.md.",
         {
           "command": "python -m TESTS.adapters.go.schedule_due",
@@ -38004,11 +38048,54 @@
           "result": "CAUGHT: bisect_left day index fails seven utc_archive_* oracle cases",
           "artifact": "quality-reports/go-migration/sync-v1035/schedule-mutation-r1.txt",
           "receipt_sha256": "bcb920307e9a8c090d43705b9f996efe9843a2c0e555f77b04a54a3b426c9cbc"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
         }
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "The Go scheduler publishes this task from a supported persisted row; no installed scheduler or worker ownership activation. See docs/architecture/go-migration/sync-v1035.md."
+        "The Go scheduler publishes this task from a supported persisted row; no installed scheduler or worker ownership activation. See docs/architecture/go-migration/sync-v1035.md.",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38027,7 +38114,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38044,7 +38131,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38082,12 +38171,53 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps auto_delete_orphan_medical_certificate to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md."
+        "domain.PeriodicJobKind maps auto_delete_orphan_medical_certificate to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38106,7 +38236,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38123,7 +38253,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38161,11 +38293,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps auto_mark_attendance to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md."
+        "domain.PeriodicJobKind maps auto_mark_attendance to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38184,25 +38357,94 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/cmd/scheduler/main.go"
+      ],
+      "dependencies": [
+        "BE/core/celery.py",
+        "BE/core/task_routing.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for task instance.sso.tasks.maintain_bakney_pairings with a 60-second interval and default transport metadata.",
+        "response": "Published receipt or not-due timing result.",
+        "errors": "Unsupported definition, busy source, inactive ownership, restore barrier, SQL failures leave no partial publication.",
+        "authentication": "Internal scheduler only.",
+        "permissions": "Shared lifecycle lease and Go ownership generation.",
+        "resource_scope": "Instance-wide, nil association.",
+        "side_effects": "Atomic v1 job (empty payload, three attempts, key periodic:<source>:<sequence>) and occurrence receipt.",
+        "transaction": "Read-committed; owner FOR SHARE, source FOR UPDATE NOWAIT; writes commit together.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/scheduler-authority.json",
+        "TESTS/contracts/test_scheduler_authority.py",
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "TESTS/adapters/django/beat_schedule_compare.py",
+        "TESTS/adapters/go/scheduler_process.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
+      ],
+      "notes": [
+        "Moved unchanged from core/settings.py CELERY_BEAT_SCHEDULE (task instance.sso.tasks.maintain_bakney_pairings, 60.0 s); domain.PeriodicJobKind maps the task, Django remains the default owner.",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
+      ]
     },
     {
       "id": "schedule:BE/core/celery.py:change-type-of-stripe-payments",
@@ -38220,7 +38462,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38237,7 +38479,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38275,11 +38519,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps change_type_of_stripe_payments to its registered version-1 worker job. Existing */45 oracle cases. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md."
+        "domain.PeriodicJobKind maps change_type_of_stripe_payments to its registered version-1 worker job. Existing */45 oracle cases. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38298,7 +38583,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38315,7 +38600,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38353,11 +38640,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps instance.restore.cleanup to its registered version-1 worker job; the 3600-second interval is inside the evaluator subset. Four hourly interval cases added to TESTS/fixtures/scheduler-authority.json match actual Celery 5.6.2/Beat 2.8.1 (78 oracle cases); the Go differential runs every supported case for the task. RED: the evaluator rejected the task before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/restore-cleanup.md."
+        "domain.PeriodicJobKind maps instance.restore.cleanup to its registered version-1 worker job; the 3600-second interval is inside the evaluator subset. Four hourly interval cases added to TESTS/fixtures/scheduler-authority.json match actual Celery 5.6.2/Beat 2.8.1 (78 oracle cases); the Go differential runs every supported case for the task. RED: the evaluator rejected the task before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/restore-cleanup.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38376,7 +38704,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38393,7 +38721,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38431,11 +38761,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps cleanup_old_exports to its registered version-1 worker job; the scalar daily cron is inside the evaluator subset. The Go schedule differential runs every supported case for the task against actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); RED: the evaluator rejected the task before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-e.md."
+        "domain.PeriodicJobKind maps cleanup_old_exports to its registered version-1 worker job; the scalar daily cron is inside the evaluator subset. The Go schedule differential runs every supported case for the task against actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); RED: the evaluator rejected the task before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-e.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38454,7 +38825,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38471,7 +38842,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38509,7 +38882,6 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
         "domain.PeriodicJobKind maps clear_deleted_subscription to its registered version-1 worker job. Authored cases (utc_daily_0015_*) match actual Celery 5.6.2 / django-celery-beat 2.8.1. See docs/architecture/go-migration/sync-v1035.md.",
         {
           "command": "python -m TESTS.adapters.go.schedule_due",
@@ -38524,11 +38896,54 @@
           "result": "passed: 18 groups; each registered task publishes its own v1 intent",
           "artifact": "quality-reports/go-migration/occurrence/results.json",
           "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
         }
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "The Go scheduler publishes this task from a supported persisted row; no installed scheduler or worker ownership activation. See docs/architecture/go-migration/sync-v1035.md."
+        "The Go scheduler publishes this task from a supported persisted row; no installed scheduler or worker ownership activation. See docs/architecture/go-migration/sync-v1035.md.",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38547,7 +38962,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38564,7 +38979,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38602,12 +39019,54 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/."
+        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
         "Current declaration authority is characterized; the static declaration is not the effective fresh schedule and is never seeded. Go publishes only from a persisted row with a supported definition. Persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete.",
-        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The clear_expired_subscription_tokens worker registration is a separate task entry; installed scheduler/worker ownership is not activated."
+        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The clear_expired_subscription_tokens worker registration is a separate task entry; installed scheduler/worker ownership is not activated.",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38626,7 +39085,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38643,7 +39102,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38681,12 +39142,54 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/."
+        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
         "Current declaration authority is characterized; the static declaration is not the effective fresh schedule and is never seeded. Go publishes only from a persisted row with a supported definition. Persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete.",
-        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The delete_old_audit_logs worker registration is a separate task entry; installed scheduler/worker ownership is not activated."
+        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The delete_old_audit_logs worker registration is a separate task entry; installed scheduler/worker ownership is not activated.",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38705,7 +39208,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38722,7 +39225,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38760,11 +39265,53 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps delete_users_with_request to its registered version-1 worker job. Two authored 07:30 cases match actual Celery 5.6.2/Beat 2.8.1 (59 oracle cases); the Go differential passes 34 supported cases for each of five tasks, 49 rejection cases include auto_mark_attendance, auto_delete_orphan_medical_certificate and send_user_partial_registration_email. RED: adding the task to the differential fails every case before the mapping. Actual-Beat PostgreSQL publication passes all occurrence groups including the exact v1 intent for this task. Mutation caught: mapping the task to the audit retention job. See docs/architecture/go-migration/tasks-db-b.md."
+        "domain.PeriodicJobKind maps delete_users_with_request to its registered version-1 worker job. Two authored 07:30 cases match actual Celery 5.6.2/Beat 2.8.1 (59 oracle cases); the Go differential passes 34 supported cases for each of five tasks, 49 rejection cases include auto_mark_attendance, auto_delete_orphan_medical_certificate and send_user_partial_registration_email. RED: adding the task to the differential fails every case before the mapping. Actual-Beat PostgreSQL publication passes all occurrence groups including the exact v1 intent for this task. Mutation caught: mapping the task to the audit retention job. See docs/architecture/go-migration/tasks-db-b.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static 07:30 declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Static 07:30 declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required.",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38783,7 +39330,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38800,7 +39347,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38838,11 +39387,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps generate_coupon_if_not_exists to its registered version-1 worker job. Existing */15 oracle cases. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md."
+        "domain.PeriodicJobKind maps generate_coupon_if_not_exists to its registered version-1 worker job. Existing */15 oracle cases. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38861,7 +39451,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38878,7 +39468,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -38916,12 +39508,53 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps mark_as_paid_payments_checking_stripe to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md."
+        "domain.PeriodicJobKind maps mark_as_paid_payments_checking_stripe to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -38940,25 +39573,98 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/service/consumer_backup_failures.go",
+        "BE_GO/internal/repository/consumer_backup_failures.go",
+        "BE_GO/internal/domain/consumer_backup_failures.go",
+        "BE_GO/cmd/celery-consumer/consumer_backup_failures.go"
+      ],
+      "dependencies": [
+        "BE/core/celery.py",
+        "BE/core/task_routing.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Interval 300 seconds, task instance.backups.notify_failures, no args, kwargs or options (core/celery.py).",
+        "response": "Django Beat publishes the message; with GO_TASK_QUEUE_TASKS listing the task it routes to assozeta-go, where the Go consumer runs it.",
+        "errors": "The Go persisted-Beat evaluator refuses a row for this task (ErrScheduleUnsupported, not in domain.PeriodicJobKind).",
+        "authentication": "Internal scheduler only.",
+        "permissions": "None.",
+        "resource_scope": "Instance-wide.",
+        "side_effects": "Those of task:BE/instance/tasks.py:notify_backup_failures.",
+        "transaction": "Beat cursor as characterized in scheduler-authority.md.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/scheduler-authority.json",
+        "TESTS/contracts/test_scheduler_authority.py",
+        "TESTS/adapters/django/scheduler_authority.py",
+        "TESTS/adapters/django/beat_schedule_compare.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "TESTS/adapters/go/celery_consumer_backup_failures_process.py"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_backup_failures_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 15 differential scenarios against the prefork Django worker with the production cache (race-built consumer): SMTP transcripts, managed models with TaskResult, broker keys, cache keys (bytes, TTL) and runner requests",
+          "artifact": "quality-reports/go-migration/beat-reverify-notify-process/results.json",
+          "receipt_sha256": "f42f151a2045f63dfb5bf8fe96327dbad8252871bdcaabc3adf3a1f3dba919cf"
+        }
+      ],
+      "notes": [
+        "Consumer-owned: Django Beat publishes, the Go Celery consumer executes when routed; the native Go scheduler does not publish it (TestScheduleDueEffectiveDeclarations).",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
+      ]
     },
     {
       "id": "schedule:BE/core/celery.py:renew-memberships-payments",
@@ -38976,7 +39682,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -38993,7 +39699,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -39031,11 +39739,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps renew_memberships_payments to its registered version-1 worker job. Three new authored 00:10 cases match actual Celery. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md."
+        "domain.PeriodicJobKind maps renew_memberships_payments to its registered version-1 worker job. Three new authored 00:10 cases match actual Celery. 74 actual Celery 5.6.2/Beat 2.8.1 oracle cases; the Go differential passes 49 supported cases for each of fifteen tasks and 56 rejection cases (mark_as_paid_payments_checking_stripe, association_quote_assign, check_workflows_trigger_cron among them). RED: adding the task to the differential fails before the mapping. Actual-Beat PostgreSQL publication passes 18 occurrence groups including the exact v1 intent for this task. See docs/architecture/go-migration/tasks-db-d.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -39054,7 +39803,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -39071,7 +39820,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -39109,18 +39860,60 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
         "Pure persisted timing evaluator: 48 actual Django oracle cases, 23 Go differential matches, 37 unsupported-input and five calendar/precision rejection cases pass under race detection; focused vet passes. Exact daily-reset task, seconds intervals or scalar daily UTC cron, empty args/kwargs/headers and default transport only. Receives explicit clock and immutable snapshot; no enqueue, cursor write, static seeding or activation. Raw NextCheckAfter requires bounded scheduler rechecks. Source hashes/red-green receipts: ignored schedule-due/validation.json. See scheduler-authority.md; complete task/schedule execution and handoff remain unverified.",
         "Exact-row periodic publication: 17 required race/PostgreSQL groups on actual pinned Beat migrations pass, with an independent direct-adapter rerun. Required lifecycle lease spans pending-only restore admission and transaction completion; owner then source/definition locks precede database clock evaluation. Due publication joins fixed daily-reset job, retained source-ID/sequence receipt and Django cursor/date_changed atomically without marker mutation. Tests cover two publishers, reverse editor lock order, owner transitions, every write/deferred-commit fault, count reset/source-ID reuse, cancellation, three-crash exhaustion and handled UPDATE completion. Additive schema 3 preserves preexisting intent/Django history and defaults to Django; native14 and existing queue/executor/ownership/migration38 groups plus full Go vet/race pass. See BE_GO/internal/service/occurrence.md and ignored occurrence/source-manifest.json. No installed scheduler, candidate-selection bounds, Celery producer fencing or handoff is claimed.",
         "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
         "Bounded inert schedule pages: eleven service and nine actual-Beat PostgreSQL/race groups pass. Primary-key seek uses a frozen high-water ID to finish rotations under continuous inserts; metadata discovery requires two statements for a new rotation and one thereafter, with a maximum of 64 rows. Disabled/unrelated rows are skipped, recognized rows are reread under publication locks, and error/cancellation preserves the last attempted cursor. Unforced plans at 100/1000/10000 rows are recorded; sixteen publications use 194 statements including one shared server-drain fence per publication. Cooperative context deadlines stop admission, but required driver cleanup can extend elapsed return. No installed scheduler, production cardinality/backlog guarantee or Celery handoff is claimed. See BE_GO/internal/service/schedule_page.md and ignored schedule-page evidence.",
         "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md.",
         "Native scheduler delivery: ten loop groups, twelve actual-Beat native process cases and four non-root/read-only image cases pass. The bounded serial loop retains cursors on ambiguous errors and joins shutdown; preflight checks operational and Beat schema, publication rechecks ownership/restore. Same scheduler image also passes seven existing worker-image cases. Source hashes and immutable image are in isolated scheduler-command/handoff.json; copied increment hashes are retained under quality-reports/go-migration/background-process-integration/. See docs/architecture/go-migration/scheduler-process.md. This dirty-source proof does not activate installed scheduling, broaden the daily-reset allowlist or close full handoff/Beat replacement.",
-        "Shared evaluator/publisher extension for three more registered tasks and the UTC every-minute cron leaves every daily-reset differential, publication, page, loop and native scheduler case green; see docs/architecture/go-migration/tasks-db-a.md."
+        "Shared evaluator/publisher extension for three more registered tasks and the UTC every-minute cron leaves every daily-reset differential, publication, page, loop and native scheduler case green; see docs/architecture/go-migration/tasks-db-a.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. The timing component is implementing; no verified status or automatic reseeding of lower-priority static declarations.",
-        "The inert exact-row publisher now chooses retained per-source sequence keys and three total operational crash-recovery attempts. Generation/name/resettable Django counters are not occurrence identity. This strengthens the failed-send boundary intentionally; receipt retention is mandatory and restoring a backup can rewind history. The selected subset now has bounded candidate pages; all other task/schedule shapes, production scheduling and installed handoff remain incomplete."
+        "The inert exact-row publisher now chooses retained per-source sequence keys and three total operational crash-recovery attempts. Generation/name/resettable Django counters are not occurrence identity. This strengthens the failed-send boundary intentionally; receipt retention is mandatory and restoring a backup can rewind history. The selected subset now has bounded candidate pages; all other task/schedule shapes, production scheduling and installed handoff remain incomplete.",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -39139,7 +39932,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -39156,7 +39949,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -39194,11 +39989,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps send_expired_certificate_email to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md."
+        "domain.PeriodicJobKind maps send_expired_certificate_email to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -39217,7 +40053,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -39234,7 +40070,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -39272,11 +40110,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps send_expiring_certificate_email to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md."
+        "domain.PeriodicJobKind maps send_expiring_certificate_email to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -39295,7 +40174,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -39312,7 +40191,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -39350,11 +40231,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps send_reminders to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md."
+        "domain.PeriodicJobKind maps send_reminders to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -39373,7 +40295,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -39390,7 +40312,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -39428,11 +40352,52 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "domain.PeriodicJobKind maps send_user_partial_registration_email to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md."
+        "domain.PeriodicJobKind maps send_user_partial_registration_email to its registered version-1 worker job. The evaluator accepts */N minute steps with * hour (Celery crontab expansion and remaining_delta over the hour/minute sets); twelve authored */15 and */45 cases match actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); the Go differential passes 46 supported cases for each of ten tasks and 57 rejection cases. RED: the previous evaluator rejects */15 and the task. Actual-Beat PostgreSQL publication passes the occurrence groups including the exact v1 intent for this task. Mutation caught: */N expansion starting at minute 1. See docs/architecture/go-migration/tasks-db-c.md.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
-        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -39451,7 +40416,7 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/schedule.go",
         "BE_GO/internal/service/schedule_due.go",
@@ -39468,7 +40433,9 @@
         "BE_GO/internal/repository/schedule_schema.go"
       ],
       "dependencies": [
+        "BE/core/celery.py",
         "BE/core/settings.py",
+        "BE/core/task_routing.py",
         "BE/instance/scheduler.py",
         "BE/requirements.txt"
       ],
@@ -39506,12 +40473,54 @@
         "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
-        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/."
+        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/.",
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py (merged tree, before the adapter and fixture update)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Missing declaration CELERY_BEAT_SCHEDULE (core/settings.py no longer defines it)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority-red/results.json",
+          "receipt_sha256": "c6ea19866cba49bf991c33448e761dc11f4394a01e6414a1126794aa01bf3b28"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/scheduler_authority.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 cases; the 22 core/celery.py entries are the effective fresh schedule (no settings override), loaded config equals the declarations, no kwargs/options, every task registered; GO_TASK_QUEUE_TASKS routes listed names to assozeta-go only",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-authority/results.json",
+          "receipt_sha256": "a1d6fb9124c1b389eee419d94deac4886309cf9583218fd450cf03c1a4ace928"
+        },
+        {
+          "command": "python -I TESTS/adapters/django/beat_schedule_compare.py e1e81f3a^1 HEAD quality-reports/go-migration/scheduler-authority/observations.json",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "before: only bakney-pairing-maintenance effective (settings override); after: 22 effective, bakney-pairing-maintenance moved unchanged, 20 shared entries identical, task_routing.py unchanged",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-compare/results.json",
+          "receipt_sha256": "517874280eae059c36b0bf4d4173937b41244d8ac4175479ddc3986a04caebae"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/schedule_due.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 98 oracle cases, 72 differential timing cases, 63 rejections, TestScheduleDueEffectiveDeclarations (21 mapped, notify_failures consumer-owned)",
+          "artifact": "quality-reports/go-migration/beat-reverify-schedule-due/results.json",
+          "receipt_sha256": "e99d8da10d1a215e61f65a333d2d250cda0fbc84bb7f9756e49b228b2025f136"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/occurrence.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 18 publication cases",
+          "artifact": "quality-reports/go-migration/beat-reverify-occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/scheduler_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 12 scheduler process scenarios (race)",
+          "artifact": "quality-reports/go-migration/beat-reverify-scheduler-process/results.json",
+          "receipt_sha256": "520e4dbfaa8b9d0a593a05835b7e7adce8ba1338c97455671145488d1c54a6b3"
+        }
       ],
       "notes": [
         "Current declaration authority is characterized; the static declaration is not the effective fresh schedule and is never seeded. Go publishes only from a persisted row with a supported definition. Persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete.",
-        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The update_age_of_associates worker registration is a separate task entry; installed scheduler/worker ownership is not activated."
+        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The update_age_of_associates worker registration is a separate task entry; installed scheduler/worker ownership is not activated.",
+        "Since main a7afd7ee the core/celery.py declarations are the effective fresh schedule (settings.py no longer overrides them). Go publishes only from a persisted supported row and never seeds the declarations; single scheduling ownership and handoff remain required. See docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -39598,7 +40607,8 @@
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Implementing via sso-pairing: domain.PeriodicJobKind maps the task (60 s interval) to the registered worker job; Django remains the default owner."
+        "Implementing via sso-pairing: domain.PeriodicJobKind maps the task (60 s interval) to the registered worker job; Django remains the default owner.",
+        "Source removed by main a7afd7ee: the entry moved unchanged to core/celery.py (schedule:BE/core/celery.py:bakney-pairing-maintenance); see docs/architecture/go-migration/beat-reverify.md."
       ]
     },
     {
@@ -45279,25 +46289,91 @@
           "name": "'instance.backups.notify_failures'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_backup_failures.go",
+        "BE_GO/internal/repository/consumer_backup_failures.go",
+        "BE_GO/internal/domain/consumer_backup_failures.go",
+        "BE_GO/cmd/celery-consumer/consumer_backup_failures.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/updaterrunner/client.go",
+        "BE_GO/internal/service/send_mail_async.go"
+      ],
+      "dependencies": [
+        "BE/instance/tasks.py",
+        "BE/instance/backups.py",
+        "BE/instance/updater_client.py",
+        "BE/instance/email_configuration.py",
+        "BE/instance/models.py",
+        "BE/instance/restore/task_base.py",
+        "BE/core/task_routing.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists instance.backups.notify_failures; Beat publishes it with headers periodic_task_name=notify-backup-failures); no arguments.",
+        "response": "TaskResult SUCCESS with the number of notices sent (0 outside production, with an unavailable or refusing runner, or without an owner e-mail); StaleDataTask FAILURE or RETRY Busy from CoordinatedTask admission.",
+        "errors": "Runner answers Go decodes differently or that Python reads with an exception, timestamps outside the runner isoformat subset, notices outside the rendered mail subset and arguments are handed off before any effect. Cache or database errors: consumer database failure.",
+        "authentication": "Internal task message; the runner bearer token from ASSOZETA_UPDATER_DIRECTORY/token.",
+        "permissions": "None beyond the queue.",
+        "resource_scope": "Instance-wide: the first InstanceConfiguration and its primary association owner.",
+        "side_effects": "GET /status and GET /backups on the runner socket; per failure of the last 48 hours cache.add of instance:backup-failure-notified:<key> (7 days) and an e-mail to the owner through the system backend; a failed send deletes the mark.",
+        "transaction": "None (reads and cache operations autocommit).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_backup_failures_process.py",
+        "BE_GO/internal/service/consumer_backup_failures_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_backup_failures_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "oracle: the Django prefork worker alone passed all 15 scenarios",
+          "artifact": "quality-reports/go-migration/beat-reverify-notify-oracle/results.json",
+          "receipt_sha256": "668e02b88a258d4163f53d5e24dca1dba13b4f938abd8b06e8c28fb7c486fca8"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='Beat message' python -I TESTS/adapters/go/celery_consumer_backup_failures_process.py (consumer without the registration)",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "red: Django passed, Go handed the message off and timed out",
+          "artifact": "quality-reports/go-migration/beat-reverify-notify-red/results.json",
+          "receipt_sha256": "e32518884e386e52f6aef40c305d751a07da039068b80c364453fb1095177290"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_backup_failures_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed: 15 differential scenarios against the prefork Django worker with the production cache (race-built consumer): SMTP transcripts, managed models with TaskResult, broker keys, cache keys (bytes, TTL) and runner requests",
+          "artifact": "quality-reports/go-migration/beat-reverify-notify-process/results.json",
+          "receipt_sha256": "f42f151a2045f63dfb5bf8fe96327dbad8252871bdcaabc3adf3a1f3dba919cf"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='SMTP login failure' with DeleteNotified skipped after a failed send",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "mutation CAUGHT: Go differs from Django",
+          "artifact": "quality-reports/go-migration/beat-reverify-notify-mutation/result.txt",
+          "receipt_sha256": "cf05c0fb5aeac06bdb2b817dad7b3e0e128fef66822b1083e7425d0fdf7d7610"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed after the consumer registration change",
+          "artifact": "quality-reports/go-migration/beat-reverify-consumer-process/results.json",
+          "receipt_sha256": "f41f6dc294db6eb6ec8ed567d7923dace4d2e216d7d437c95befac1d508cc23a"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_capabilities_process.py",
+          "revision": "go/beat-reverify on e1e81f3a (merged codex/go-backend-parity)",
+          "result": "passed after the consumer registration change",
+          "artifact": "quality-reports/go-migration/beat-reverify-consumer-capabilities/results.json",
+          "receipt_sha256": "7133d889f72c476452a48cea161366ca78ef1f64ab0fb9cb39de2fb7e145dd84"
+        }
+      ],
+      "notes": [
+        "Handoff reads: Plan reads the runner before it can refuse; a handed-off message is read again by Django (reads only). If the restore barrier clears between Plan and admission, the runner is read in the body and an answer outside the subset fails the task instead of a handoff. See docs/architecture/go-migration/beat-reverify.md."
+      ]
     },
     {
       "id": "task:BE/instance/tasks.py:restore_instance_data",
