@@ -915,15 +915,14 @@ plan over 4,096 course relations. Full accounts includes the fixture. This reads
 existing payments; complete mutations, audits and automatic archive remain open.
 See `BE_GO/internal/service/payment_save_inputs.md`.
 
-`accounts.py --only subscription-auto-archive` runs ten authored Django model
-scenarios after explicitly repairing the task's clock/diagnostic blockers in the
-fixture, then thirteen required Go/PostgreSQL groups. It verifies full fields,
-audits/indexes, truthful historical changes, optional links, ownership, atomic
-failure/replay, bounded pages with distinct financial links, cancellation, two
-overlapping tasks, actual executor heartbeat and rollback of a preceding page.
-Django reads and resaves the Go-written records. Full accounts and task-bodies
-include it; production scheduling/activation and historical migration evidence
-remain open. See `BE_GO/internal/service/subscription_auto_archive.md`.
+`accounts.py --only subscription-auto-archive` runs the actual v1.0.35 Django
+task on thirteen authored cases at a frozen instant, restores the seed, runs the
+Go service (`TestSubscriptionAutoArchivePostgres`: invalid envelope and
+cancellation before SQL, lost lease, archive and repeat) and requires the same
+complete state. `go/nightly_subscriptions_worker_process.py` checks both nightly
+subscription tasks through the native worker. Full accounts and task-bodies
+include the first; activation remains open. See
+`docs/architecture/go-migration/sync-v1035.md`.
 
 `accounts.py --only medical-orphan-cleanup` runs fourteen actual Django cleanup
 scenarios on private files and six Go/PostgreSQL discovery groups. It confirms

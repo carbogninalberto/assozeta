@@ -238,7 +238,8 @@ func TestPeriodicOccurrencesPostgres(t *testing.T) {
 			domain.JobAutoMarkAttendance, domain.JobSendUserPartialRegistrationEmail, domain.JobSendExpiringCertificateEmail,
 			domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings, domain.JobCleanupOldExports,
 			domain.JobChangeTypeOfStripePayments, domain.JobGenerateCouponIfNotExists, domain.JobRenewMembershipsPayments, domain.JobCleanupDataRestores,
-			domain.JobAssociationQuoteAssign, domain.JobMarkAsPaidPaymentsCheckingStripe, domain.JobAutoDeleteOrphanMedicalCertificate} {
+			domain.JobAssociationQuoteAssign, domain.JobMarkAsPaidPaymentsCheckingStripe, domain.JobAutoDeleteOrphanMedicalCertificate,
+			domain.JobClearDeletedSubscription, domain.JobAutoArchiveSubscription} {
 			seed()
 			exec(`UPDATE django_celery_beat_periodictask SET task=$2,interval_id=NULL,crontab_id=$3 WHERE id=$1`, sourceID, task, everyMinute)
 			result := publish()
@@ -254,7 +255,7 @@ func TestPeriodicOccurrencesPostgres(t *testing.T) {
 				t.Fatal("every-minute source published twice in one slot", task, e, second)
 			}
 		}
-		for _, task := range []string{"auto_archive_subscription", "clear_deleted_subscription", "check_workflows_trigger_cron", "send_updated_certificate_email"} {
+		for _, task := range []string{"application.tasks.auto_archive_subscription", "check_workflows_trigger_cron", "send_updated_certificate_email"} {
 			seed()
 			exec(`UPDATE django_celery_beat_periodictask SET task=$2 WHERE id=$1`, sourceID, task)
 			before := sourceState()

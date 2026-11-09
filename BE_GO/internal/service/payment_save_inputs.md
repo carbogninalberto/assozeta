@@ -4,8 +4,8 @@
 work, initially the supported automatic subscription archive. It composes the
 existing description calculator with one repository statement for up to 512
 payment/association references. It does not persist a payment or implement the
-archive task. The separate `subscription_auto_archive.md` service now uses it
-inside its mutation transaction. HTTP actor/group admission remains the caller's
+archive task. Since v1.0.35 the automatic archive task no longer uses it
+(`subscription_auto_archive.md`). HTTP actor/group admission remains the caller's
 responsibility.
 
 The raw batch limit is checked before duplicate collapse. Identical references

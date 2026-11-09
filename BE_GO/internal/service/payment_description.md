@@ -55,9 +55,9 @@ to reproduce. The future save service must enforce the migration's referenced-ID
 scope requirement and explicitly document the correction. Existing historical
 references, category selection, default-bank behavior, limits/validation, JSON
 decode boundaries, actual batch reads, transactional writes/audits, task fencing
-and general payment saves remain open. The separate
-`subscription_auto_archive.md` service now composes this calculation for its
-scoped archive transaction; production scheduling/ownership remain unfinished. Money and unrelated payment fields are not
+and general payment saves remain open. Since v1.0.35
+the automatic archive task saves payments with `update_fields=['archived']` and
+no longer uses this calculation. Money and unrelated payment fields are not
 part of this calculation's inputs or outputs.
 
 Run `quality-reports/go-migration/python313/bin/python

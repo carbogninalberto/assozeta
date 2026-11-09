@@ -16,8 +16,8 @@ var (
 // locks. No static app schedule is seeded or inferred by this type.
 //
 // The evaluator supports only the persisted task names in PeriodicJobKind,
-// seconds intervals, scalar UTC daily cron or the all-wildcard every-minute
-// UTC cron, empty arguments/headers and default transport. Explicit unsupported options remain represented so callers cannot
+// seconds intervals, scalar UTC daily cron (optionally on listed days of the
+// month and months), the every-minute or */N-minute UTC cron, empty arguments/headers and default transport. Explicit unsupported options remain represented so callers cannot
 // accidentally discard them while mapping a Django row.
 type PeriodicSchedule struct {
 	Task          string
@@ -89,6 +89,8 @@ var periodicJobKinds = map[string]string{
 	JobAssociationQuoteAssign:             JobAssociationQuoteAssign,
 	JobMarkAsPaidPaymentsCheckingStripe:   JobMarkAsPaidPaymentsCheckingStripe,
 	JobAutoDeleteOrphanMedicalCertificate: JobAutoDeleteOrphanMedicalCertificate,
+	JobClearDeletedSubscription:           JobClearDeletedSubscription,
+	JobAutoArchiveSubscription:            JobAutoArchiveSubscription,
 }
 
 // PeriodicJobKind returns the Go job kind for an exact persisted task name.
