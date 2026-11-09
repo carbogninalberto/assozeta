@@ -45,7 +45,7 @@
 
 - **list** rows without a document: the view prints each one synchronously (`print_document_medical_appointment`, an HTTP call to the document renderer). Go answers 500 before rendering; no write happens either way.
 - **set-certificate-expiration** for a subscription without a certificate: Django renders a placeholder PNG and saves it to storage before creating the certificate. Go answers 500 before any write.
-- `subscription/<uid>/medical-appointments/add` (its success path always prints the appointment document), `subscription/<uid>/medical-certificate/upload` (S3 upload) and `subscription/<uid>/medical-certificate/send-email-reminder` (Celery email) stay on Django.
+- `subscription/<uid>/medical-appointments/add` (its success path always prints the appointment document synchronously) and `subscription/<uid>/medical-certificate/upload` (S3 upload) stay on Django. `subscription/<uid>/medical-certificate/send-email-reminder` is ported in [celery-routes-a](celery-routes-a.md) (it publishes `send_email_template` through the Celery producer).
 
 ## Evidence
 
