@@ -1,0 +1,2340 @@
+{
+ "matrix_version": 1,
+ "scope": "calendar/events/export, communications/send/post and subscription/<uid>/card authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "courses": {
+  "main": {
+   "id": "a1000000-0000-4000-8000-0000e1000016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": false,
+   "title": "Nuoto"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-0000e1000017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": "own_group",
+   "deleted": false,
+   "title": "Serale"
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-0000e1000018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": true,
+   "title": "Cancellato"
+  },
+  "null_events": {
+   "id": "a1000000-0000-4000-8000-0000e1000019",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": false,
+   "title": "Senza eventi"
+  },
+  "empty_events": {
+   "id": "a1000000-0000-4000-8000-0000e1000020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": false,
+   "title": "Lista vuota"
+  },
+  "no_registry": {
+   "id": "a1000000-0000-4000-8000-0000e1000021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": false,
+   "title": "Senza registro"
+  },
+  "foreign_ok": {
+   "id": "a1000000-0000-4000-8000-0000e1000022",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Estero"
+  },
+  "foreign_no_title": {
+   "id": "a1000000-0000-4000-8000-0000e1000023",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_bad_start": {
+   "id": "a1000000-0000-4000-8000-0000e1000024",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_bad_end": {
+   "id": "a1000000-0000-4000-8000-0000e1000025",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_no_end": {
+   "id": "a1000000-0000-4000-8000-0000e1000026",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_string_event": {
+   "id": "a1000000-0000-4000-8000-0000e1000027",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_dict_events": {
+   "id": "a1000000-0000-4000-8000-0000e1000028",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_props_instructor_text": {
+   "id": "a1000000-0000-4000-8000-0000e1000029",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  },
+  "foreign_props_null": {
+   "id": "a1000000-0000-4000-8000-0000e1000030",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false,
+   "title": "Corso"
+  }
+ },
+ "registries": {
+  "main": {
+   "id": "a1000000-0000-4000-8000-0000e1000033",
+   "course": "main",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000002",
+     "title": "Lezione di nuoto",
+     "start": "2026-03-02T17:00:00Z",
+     "end": "2026-03-02T18:30:00Z",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-0000e1000001",
+       "label": "Mario Rossi"
+      }
+     }
+    },
+    {
+     "event_id": "EVENTO-MAIUSCOLO,1",
+     "title": "Yoga, pilates; stretching \\ base\nlivello 2\r\nfine",
+     "start": "2026-03-03T09:15:00",
+     "end": null,
+     "allDay": false
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000003",
+     "title": "Attività motoria per bambini più piccoli: giochi, percorsi e psicomotricità à è ì ò ù — sessione completa",
+     "start": "2026-03-04T07:05:09.123456+00:00",
+     "end": "None",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "x"
+      }
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000004",
+     "title": "Allenamento agonistico avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato fine",
+     "start": "2026-03-05T10:00:00Z",
+     "end": "2026-03-05T11:00:00Z",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": [
+       {
+        "label": "Lista"
+       }
+      ]
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000005",
+     "title": "Note libere",
+     "start": "2026-03-06T10:00:00Z",
+     "end": "2026-03-06T11:00:00Z",
+     "allDay": false,
+     "extendedProps": "nota senza istruttore"
+    },
+    {
+     "event_id": 7,
+     "title": 42,
+     "start": "2026-03-07T10:00:00Z",
+     "end": "2026-03-07T11:00:00Z",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-0000e1000006",
+       "label": 5
+      }
+     }
+    },
+    {
+     "event_id": true,
+     "title": null,
+     "start": "2026-03-08T10:00:00Z",
+     "end": "2026-03-08T11:00:00Z",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-0000e1000007",
+       "label": null
+      }
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000009",
+     "title": "Giornata intera",
+     "start": "2026-03-10",
+     "end": "2026-03-10 12:00",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-0000e1000008",
+       "label": true
+      }
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000010",
+     "title": "Offset zero",
+     "start": "2026-03-11T10:30+00:00",
+     "end": "2026-03-11T11:45Z",
+     "allDay": false,
+     "extendedProps": {
+      "description": "senza istruttore"
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000011",
+     "title": "Formato breve",
+     "start": "2026-3-5 9:05",
+     "end": "2026-03-05T10:05:07,5",
+     "allDay": false,
+     "extendedProps": {}
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000013",
+     "title": "\\Nuovo corso; base",
+     "start": "20260312T081500Z",
+     "end": "2026-03-12T09:15:00.000001Z",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-0000e1000012",
+       "label": "Ana, Bea; Cy\\"
+      }
+     }
+    }
+   ]
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-0000e1000034",
+   "course": "grouped",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000015",
+     "title": "Gruppo serale",
+     "start": "2026-04-01T19:00:00Z",
+     "end": "2026-04-01T20:00:00Z",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-0000e1000014",
+       "label": "Luca Bianchi"
+      }
+     }
+    }
+   ]
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-0000e1000035",
+   "course": "deleted",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000036",
+     "title": "Mai visto",
+     "start": "2026-03-01T10:00:00Z",
+     "end": null,
+     "allDay": false
+    }
+   ]
+  },
+  "null_events": {
+   "id": "a1000000-0000-4000-8000-0000e1000037",
+   "course": "null_events",
+   "events": null
+  },
+  "empty_events": {
+   "id": "a1000000-0000-4000-8000-0000e1000038",
+   "course": "empty_events",
+   "events": []
+  },
+  "foreign_ok": {
+   "id": "a1000000-0000-4000-8000-0000e1000039",
+   "course": "foreign_ok",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000032",
+     "title": "Corso estero",
+     "start": "2026-05-01T08:00:00Z",
+     "end": null,
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-0000e1000031",
+       "label": "Hans"
+      }
+     }
+    }
+   ]
+  },
+  "foreign_no_title": {
+   "id": "a1000000-0000-4000-8000-0000e1000040",
+   "course": "foreign_no_title",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000041",
+     "start": "2026-03-01T10:00:00Z",
+     "end": null
+    }
+   ]
+  },
+  "foreign_bad_start": {
+   "id": "a1000000-0000-4000-8000-0000e1000042",
+   "course": "foreign_bad_start",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000043",
+     "title": "x",
+     "start": "domani alle dieci",
+     "end": null,
+     "allDay": false
+    }
+   ]
+  },
+  "foreign_bad_end": {
+   "id": "a1000000-0000-4000-8000-0000e1000044",
+   "course": "foreign_bad_end",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000045",
+     "title": "x",
+     "start": "2026-03-01T10:00:00Z",
+     "end": "dopo",
+     "allDay": false
+    }
+   ]
+  },
+  "foreign_no_end": {
+   "id": "a1000000-0000-4000-8000-0000e1000046",
+   "course": "foreign_no_end",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000047",
+     "title": "x",
+     "start": "2026-03-01T10:00:00Z"
+    }
+   ]
+  },
+  "foreign_string_event": {
+   "id": "a1000000-0000-4000-8000-0000e1000048",
+   "course": "foreign_string_event",
+   "events": [
+    "evento"
+   ]
+  },
+  "foreign_dict_events": {
+   "id": "a1000000-0000-4000-8000-0000e1000049",
+   "course": "foreign_dict_events",
+   "events": {
+    "evento": 1
+   }
+  },
+  "foreign_props_instructor_text": {
+   "id": "a1000000-0000-4000-8000-0000e1000050",
+   "course": "foreign_props_instructor_text",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000051",
+     "title": "x",
+     "start": "2026-03-01T10:00:00Z",
+     "end": null,
+     "allDay": false,
+     "extendedProps": "instructor: Mario"
+    }
+   ]
+  },
+  "foreign_props_null": {
+   "id": "a1000000-0000-4000-8000-0000e1000052",
+   "course": "foreign_props_null",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-0000e1000053",
+     "title": "x",
+     "start": "2026-03-01T10:00:00Z",
+     "end": null,
+     "allDay": false,
+     "extendedProps": null
+    }
+   ]
+  }
+ },
+ "associates": {
+  "mario": {
+   "id": "a1000000-0000-4000-8000-0000e1000054",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Mario",
+   "last": "Rossi"
+  },
+  "giulia": {
+   "id": "a1000000-0000-4000-8000-0000e1000055",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Giulia",
+   "last": "Neri"
+  },
+  "hans": {
+   "id": "a1000000-0000-4000-8000-0000e1000056",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "first": "Hans",
+   "last": "Müller"
+  }
+ },
+ "subscriptions": {
+  "card": {
+   "id": "a1000000-0000-4000-8000-0000e1000057",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "number": "17",
+   "type": "Ordinaria",
+   "end": "2026-12-31",
+   "group": null,
+   "deleted": false
+  },
+  "second": {
+   "id": "a1000000-0000-4000-8000-0000e1000058",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "giulia",
+   "number": null,
+   "type": null,
+   "end": null,
+   "group": null,
+   "deleted": false
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-0000e1000059",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "giulia",
+   "number": "0",
+   "type": "Ordinaria",
+   "end": "2026-12-31",
+   "group": "own_group",
+   "deleted": false
+  },
+  "flagged": {
+   "id": "a1000000-0000-4000-8000-0000e1000060",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "number": "9",
+   "type": "Ordinaria",
+   "end": "2026-12-31",
+   "group": null,
+   "deleted": true
+  },
+  "orphan": {
+   "id": "a1000000-0000-4000-8000-0000e1000061",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": null,
+   "number": "17",
+   "type": "Ordinaria",
+   "end": "2026-12-31",
+   "group": null,
+   "deleted": false
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-0000e1000062",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "associate": "hans",
+   "number": "A-1",
+   "type": "Agonistica",
+   "end": "2027-06-30",
+   "group": null,
+   "deleted": false
+  },
+  "expired_anon": {
+   "id": "a1000000-0000-4000-8000-0000e1000063",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "number": "17",
+   "type": "Ordinaria",
+   "end": "2026-12-31",
+   "group": null,
+   "deleted": false
+  },
+  "expired_owner": {
+   "id": "a1000000-0000-4000-8000-0000e1000064",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "number": "17",
+   "type": "Ordinaria",
+   "end": "2026-12-31",
+   "group": null,
+   "deleted": false
+  }
+ },
+ "tokens": {
+  "card": {
+   "id": "a1000000-0000-4000-8000-0000e1000065",
+   "subscription": "card",
+   "token": "a1000000-0000-4000-8000-0000e1000066",
+   "created": "2026-01-01T09:00:00Z",
+   "expires": "2099-01-01T10:00:00Z"
+  },
+  "second": {
+   "id": "a1000000-0000-4000-8000-0000e1000067",
+   "subscription": "second",
+   "token": "a1000000-0000-4000-8000-0000e1000068",
+   "created": "2026-01-01T09:00:00Z",
+   "expires": "2099-01-01T10:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-0000e1000069",
+   "subscription": "grouped",
+   "token": "a1000000-0000-4000-8000-0000e1000070",
+   "created": "2026-01-01T09:00:00Z",
+   "expires": "2099-01-01T10:00:00Z"
+  },
+  "flagged": {
+   "id": "a1000000-0000-4000-8000-0000e1000071",
+   "subscription": "flagged",
+   "token": "a1000000-0000-4000-8000-0000e1000072",
+   "created": "2026-01-01T09:00:00Z",
+   "expires": "2099-01-01T10:00:00Z"
+  },
+  "orphan": {
+   "id": "a1000000-0000-4000-8000-0000e1000073",
+   "subscription": "orphan",
+   "token": "a1000000-0000-4000-8000-0000e1000074",
+   "created": "2026-01-01T09:00:00Z",
+   "expires": "2099-01-01T10:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-0000e1000075",
+   "subscription": "abroad",
+   "token": "a1000000-0000-4000-8000-0000e1000076",
+   "created": "2026-01-01T09:00:00Z",
+   "expires": "2099-01-01T10:00:00Z"
+  },
+  "expired_anon": {
+   "id": "a1000000-0000-4000-8000-0000e1000077",
+   "subscription": "expired_anon",
+   "token": "a1000000-0000-4000-8000-0000e1000078",
+   "created": "2019-12-29T10:00:00.250000Z",
+   "expires": "2020-01-01T10:00:00Z"
+  },
+  "expired_owner": {
+   "id": "a1000000-0000-4000-8000-0000e1000079",
+   "subscription": "expired_owner",
+   "token": "a1000000-0000-4000-8000-0000e1000080",
+   "created": "2019-12-29T10:00:00Z",
+   "expires": "2020-01-01T10:00:00Z"
+  }
+ },
+ "configurations": {
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-0000e1000081",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "emit_only_on_approval": true,
+   "customized_template": {
+    "colore": "#112233",
+    "campi": [
+     "nome",
+     "numero"
+    ],
+    "scala": 1.5,
+    "logo": null,
+    "z": {
+     "b": 2,
+     "a": 1
+    }
+   }
+  },
+  "foreign_later": {
+   "id": "ffffffff-0000-4000-8000-0000e1000999",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "emit_only_on_approval": false,
+   "customized_template": null
+  }
+ },
+ "cases": [
+  {
+   "name": "misc-routes-export-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Lezione di nuoto\r\nDTSTART:20260302T170000Z\r\nDTEND:20260302T183000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000002\r\nDESCRIPTION:Instructor: Mario Rossi\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Yoga\\, pilates\\; stretching \\\\ base\\nlivello 2\\nfine\r\nDTSTART:20260303T091500\r\nDTEND:20260303T101500\r\nDTSTAMP:$dtstamp\r\nUID:EVENTO-MAIUSCOLO\\,1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Attività motoria per bambini più piccoli: giochi\\, percorsi e ps\r\n icomotricità à è ì ò ù — sessione completa\r\nDTSTART:20260304T070509Z\r\nDTEND:20260304T080509Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000003\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Allenamento agonistico avanzato avanzato avanzato avanzato avanzat\r\n o avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato \r\n avanzato avanzato fine\r\nDTSTART:20260305T100000Z\r\nDTEND:20260305T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000004\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Note libere\r\nDTSTART:20260306T100000Z\r\nDTEND:20260306T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000005\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:42\r\nDTSTART:20260307T100000Z\r\nDTEND:20260307T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:7\r\nDESCRIPTION:Instructor: 5\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:None\r\nDTSTART:20260308T100000Z\r\nDTEND:20260308T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:True\r\nDESCRIPTION:Instructor: None\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Giornata intera\r\nDTSTART:20260310T000000\r\nDTEND:20260310T120000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000009\r\nDESCRIPTION:Instructor: True\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Offset zero\r\nDTSTART:20260311T103000Z\r\nDTEND:20260311T114500Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000010\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Formato breve\r\nDTSTART:20260305T090500\r\nDTEND:20260305T100507\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000011\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:\\nuovo corso\\; base\r\nDTSTART:20260312T081500Z\r\nDTEND:20260312T091500Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000013\r\nDESCRIPTION:Instructor: Ana\\, Bea\\; Cy\\\\\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Gruppo serale\r\nDTSTART:20260401T190000Z\r\nDTEND:20260401T200000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000015\r\nDESCRIPTION:Instructor: Luca Bianchi\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Lezione di nuoto\r\nDTSTART:20260302T170000Z\r\nDTEND:20260302T183000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000002\r\nDESCRIPTION:Instructor: Mario Rossi\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Yoga\\, pilates\\; stretching \\\\ base\\nlivello 2\\nfine\r\nDTSTART:20260303T091500\r\nDTEND:20260303T101500\r\nDTSTAMP:$dtstamp\r\nUID:EVENTO-MAIUSCOLO\\,1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Attività motoria per bambini più piccoli: giochi\\, percorsi e ps\r\n icomotricità à è ì ò ù — sessione completa\r\nDTSTART:20260304T070509Z\r\nDTEND:20260304T080509Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000003\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Allenamento agonistico avanzato avanzato avanzato avanzato avanzat\r\n o avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato \r\n avanzato avanzato fine\r\nDTSTART:20260305T100000Z\r\nDTEND:20260305T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000004\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Note libere\r\nDTSTART:20260306T100000Z\r\nDTEND:20260306T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000005\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:42\r\nDTSTART:20260307T100000Z\r\nDTEND:20260307T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:7\r\nDESCRIPTION:Instructor: 5\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:None\r\nDTSTART:20260308T100000Z\r\nDTEND:20260308T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:True\r\nDESCRIPTION:Instructor: None\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Giornata intera\r\nDTSTART:20260310T000000\r\nDTEND:20260310T120000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000009\r\nDESCRIPTION:Instructor: True\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Offset zero\r\nDTSTART:20260311T103000Z\r\nDTEND:20260311T114500Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000010\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Formato breve\r\nDTSTART:20260305T090500\r\nDTEND:20260305T100507\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000011\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:\\nuovo corso\\; base\r\nDTSTART:20260312T081500Z\r\nDTEND:20260312T091500Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000013\r\nDESCRIPTION:Instructor: Ana\\, Bea\\; Cy\\\\\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Gruppo serale\r\nDTSTART:20260401T190000Z\r\nDTEND:20260401T200000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000015\r\nDESCRIPTION:Instructor: Luca Bianchi\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Lezione di nuoto\r\nDTSTART:20260302T170000Z\r\nDTEND:20260302T183000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000002\r\nDESCRIPTION:Instructor: Mario Rossi\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Yoga\\, pilates\\; stretching \\\\ base\\nlivello 2\\nfine\r\nDTSTART:20260303T091500\r\nDTEND:20260303T101500\r\nDTSTAMP:$dtstamp\r\nUID:EVENTO-MAIUSCOLO\\,1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Attività motoria per bambini più piccoli: giochi\\, percorsi e ps\r\n icomotricità à è ì ò ù — sessione completa\r\nDTSTART:20260304T070509Z\r\nDTEND:20260304T080509Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000003\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Allenamento agonistico avanzato avanzato avanzato avanzato avanzat\r\n o avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato \r\n avanzato avanzato fine\r\nDTSTART:20260305T100000Z\r\nDTEND:20260305T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000004\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Note libere\r\nDTSTART:20260306T100000Z\r\nDTEND:20260306T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000005\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:42\r\nDTSTART:20260307T100000Z\r\nDTEND:20260307T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:7\r\nDESCRIPTION:Instructor: 5\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:None\r\nDTSTART:20260308T100000Z\r\nDTEND:20260308T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:True\r\nDESCRIPTION:Instructor: None\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Giornata intera\r\nDTSTART:20260310T000000\r\nDTEND:20260310T120000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000009\r\nDESCRIPTION:Instructor: True\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Offset zero\r\nDTSTART:20260311T103000Z\r\nDTEND:20260311T114500Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000010\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Formato breve\r\nDTSTART:20260305T090500\r\nDTEND:20260305T100507\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000011\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:\\nuovo corso\\; base\r\nDTSTART:20260312T081500Z\r\nDTEND:20260312T091500Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000013\r\nDESCRIPTION:Instructor: Ana\\, Bea\\; Cy\\\\\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Gruppo serale\r\nDTSTART:20260401T190000Z\r\nDTEND:20260401T200000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000015\r\nDESCRIPTION:Instructor: Luca Bianchi\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-group-header",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Gruppo serale\r\nDTSTART:20260401T190000Z\r\nDTEND:20260401T200000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000015\r\nDESCRIPTION:Instructor: Luca Bianchi\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-group-header",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-main",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000016",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Lezione di nuoto\r\nDTSTART:20260302T170000Z\r\nDTEND:20260302T183000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000002\r\nDESCRIPTION:Instructor: Mario Rossi\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Yoga\\, pilates\\; stretching \\\\ base\\nlivello 2\\nfine\r\nDTSTART:20260303T091500\r\nDTEND:20260303T101500\r\nDTSTAMP:$dtstamp\r\nUID:EVENTO-MAIUSCOLO\\,1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Attività motoria per bambini più piccoli: giochi\\, percorsi e ps\r\n icomotricità à è ì ò ù — sessione completa\r\nDTSTART:20260304T070509Z\r\nDTEND:20260304T080509Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000003\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Allenamento agonistico avanzato avanzato avanzato avanzato avanzat\r\n o avanzato avanzato avanzato avanzato avanzato avanzato avanzato avanzato \r\n avanzato avanzato fine\r\nDTSTART:20260305T100000Z\r\nDTEND:20260305T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000004\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Note libere\r\nDTSTART:20260306T100000Z\r\nDTEND:20260306T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000005\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:42\r\nDTSTART:20260307T100000Z\r\nDTEND:20260307T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:7\r\nDESCRIPTION:Instructor: 5\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:None\r\nDTSTART:20260308T100000Z\r\nDTEND:20260308T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:True\r\nDESCRIPTION:Instructor: None\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Giornata intera\r\nDTSTART:20260310T000000\r\nDTEND:20260310T120000\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000009\r\nDESCRIPTION:Instructor: True\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Offset zero\r\nDTSTART:20260311T103000Z\r\nDTEND:20260311T114500Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000010\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Formato breve\r\nDTSTART:20260305T090500\r\nDTEND:20260305T100507\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000011\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:\\nuovo corso\\; base\r\nDTSTART:20260312T081500Z\r\nDTEND:20260312T091500Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000013\r\nDESCRIPTION:Instructor: Ana\\, Bea\\; Cy\\\\\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-upper-case",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=A1000000-0000-4000-8000-0000E1000017",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Gruppo serale\r\nDTSTART:20260401T190000Z\r\nDTEND:20260401T200000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000015\r\nDESCRIPTION:Instructor: Luca Bianchi\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-deleted",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000018",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-without-events",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000019",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-without-registry",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000021",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-other-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000022",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1999999",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=abc",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-course-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000022",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Corso estero\r\nDTSTART:20260501T080000Z\r\nDTEND:20260501T090000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000032\r\nDESCRIPTION:Instructor: Hans\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-admin-impersonating-foreign",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000022",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_foreign",
+    "User-Id": "a1000000-0000-4000-8000-000000700007"
+   },
+   "status": 200,
+   "response": {
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Corso estero\r\nDTSTART:20260501T080000Z\r\nDTEND:20260501T090000Z\r\nDTSTAMP:$dtstamp\r\nUID:a1000000-0000-4000-8000-0000e1000032\r\nDESCRIPTION:Instructor: Hans\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-no-title-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000023",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-bad-start-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000024",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-bad-end-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000025",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-no-end-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-string-event-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000027",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-dict-events-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000028",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-props-instructor-text-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000029",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-foreign-props-null-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=a1000000-0000-4000-8000-0000e1000030",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.calendar.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/calendar/events/export?course_id=abc",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-export-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "misc-routes-export-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/calendar/events/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Full Events Calendar Export",
+    "description": "API endpoint to get the attendance registry for the current course",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-post-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "Allenamento spostato alle 18",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "message": "Allenamento spostato alle 18"
+   }
+  },
+  {
+   "name": "misc-routes-post-trimmed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "Ciao a tutti",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "message": "  Ciao a tutti \n",
+    "subject": "ignorato"
+   }
+  },
+  {
+   "name": "misc-routes-post-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "12345",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "message": 12345
+   }
+  },
+  {
+   "name": "misc-routes-post-max-length",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "àààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààà",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "message": "àààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààààà"
+   }
+  },
+  {
+   "name": "misc-routes-post-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "owner",
+    "session": null,
+    "message": "secondo",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "message=Ciao+dal+form&message=secondo",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "misc-routes-post-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "full_collaborator",
+    "session": null,
+    "message": "Dal collaboratore",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "message": "Dal collaboratore"
+   }
+  },
+  {
+   "name": "misc-routes-post-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "admin",
+    "session": "admin_owner",
+    "message": "Dall’amministratore",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "message": "Dall’amministratore"
+   }
+  },
+  {
+   "name": "misc-routes-post-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "post sent."
+   },
+   "effect": {
+    "kind": "post",
+    "actor": "foreign_owner",
+    "session": null,
+    "message": "Estero",
+    "association": "a1000000-0000-4000-8000-000000701002"
+   },
+   "body": {
+    "message": "Estero"
+   }
+  },
+  {
+   "name": "misc-routes-post-required-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "misc-routes-post-required-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "body": {
+    "message": ""
+   }
+  },
+  {
+   "name": "misc-routes-post-required-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "body": {
+    "message": null
+   }
+  },
+  {
+   "name": "misc-routes-post-required-zero",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "body": {
+    "message": 0
+   }
+  },
+  {
+   "name": "misc-routes-post-required-false",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "body": {
+    "message": false
+   }
+  },
+  {
+   "name": "misc-routes-post-required-empty-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "body": {
+    "message": []
+   }
+  },
+  {
+   "name": "misc-routes-post-empty-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "raw_body": "",
+   "content_type": "application/json"
+  },
+  {
+   "name": "misc-routes-post-blank",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "message": "   "
+   }
+  },
+  {
+   "name": "misc-routes-post-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "message": true
+   }
+  },
+  {
+   "name": "misc-routes-post-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "message": [
+     "a"
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-post-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "message": {
+     "a": 1
+    }
+   }
+  },
+  {
+   "name": "misc-routes-post-too-long",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "Ensure this field has no more than 10000 characters."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "message": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   }
+  },
+  {
+   "name": "misc-routes-post-null-character",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "Null characters are not allowed."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "message": "a\u0000b"
+   }
+  },
+  {
+   "name": "misc-routes-post-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    {
+     "message": "x"
+    }
+   ]
+  },
+  {
+   "name": "misc-routes-post-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting value: line 1 column 1 (char 0)"
+   },
+   "effect": null,
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "misc-routes-post-athlete-invalid",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "misc-routes-post-athlete-not-association",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "body": {
+    "message": "x"
+   }
+  },
+  {
+   "name": "misc-routes-post-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "message": "x"
+   }
+  },
+  {
+   "name": "misc-routes-post-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "message": "x"
+   }
+  },
+  {
+   "name": "misc-routes-post-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "message": "x"
+   }
+  },
+  {
+   "name": "misc-routes-post-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "message": "x"
+   }
+  },
+  {
+   "name": "misc-routes-post-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/send/post'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {
+    "message": "x"
+   }
+  },
+  {
+   "name": "misc-routes-post-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/post",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "message": "x"
+   }
+  },
+  {
+   "name": "misc-routes-post-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-post-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/send/post",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Configuration Send Post",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-anonymous-creates-configuration",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "17",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": {
+    "kind": "card_configuration",
+    "actor": null,
+    "association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "misc-routes-card-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "17",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-empty-values",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000058/card?token=a1000000-0000-4000-8000-0000e1000068",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": null,
+     "subscription_type": null,
+     "subscription_end_date": null,
+     "associate": {
+      "first_name": "Giulia",
+      "last_name": "Neri",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-upper-case-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=A1000000-0000-4000-8000-0000E1000066",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "17",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-upper-case-uid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/A1000000-0000-4000-8000-0000E1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "17",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-soft-deleted-subscription",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000060/card?token=a1000000-0000-4000-8000-0000e1000072",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "9",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-other-association-configuration",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000062/card?token=a1000000-0000-4000-8000-0000e1000076",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "A-1",
+     "subscription_type": "Agonistica",
+     "subscription_end_date": "2027-06-30",
+     "associate": {
+      "first_name": "Hans",
+      "last_name": "Müller",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads foreign",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": true,
+       "customized_template": {
+        "colore": "#112233",
+        "campi": [
+         "nome",
+         "numero"
+        ],
+        "scala": 1.5,
+        "logo": null,
+        "z": {
+         "b": 2,
+         "a": 1
+        }
+       }
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-group",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000059/card?token=a1000000-0000-4000-8000-0000e1000070",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "0",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Giulia",
+      "last_name": "Neri",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-other-group-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000059/card?token=a1000000-0000-4000-8000-0000e1000070",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-without-associate-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000061/card?token=a1000000-0000-4000-8000-0000e1000074",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "17",
+     "subscription_type": "Ordinaria",
+     "subscription_end_date": "2026-12-31",
+     "associate": {
+      "first_name": "Mario",
+      "last_name": "Rossi",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads own",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": false,
+       "customized_template": {}
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000062/card?token=a1000000-0000-4000-8000-0000e1000076",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "member": {
+     "subscription_number": "A-1",
+     "subscription_type": "Agonistica",
+     "subscription_end_date": "2027-06-30",
+     "associate": {
+      "first_name": "Hans",
+      "last_name": "Müller",
+      "avatar": null
+     },
+     "sport_association": {
+      "denomination": "Message reads foreign",
+      "user": {
+       "avatar_image": null
+      },
+      "membership_card_configuration": {
+       "emit_only_on_approval": true,
+       "customized_template": {
+        "colore": "#112233",
+        "campi": [
+         "nome",
+         "numero"
+        ],
+        "scala": 1.5,
+        "logo": null,
+        "z": {
+         "b": 2,
+         "a": 1
+        }
+       }
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-missing-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-empty-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-token-of-other-subscription",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000058/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-unknown-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1999998",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-unknown-upper-case-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=A1000000-0000-4000-8000-0000E1999998",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-malformed-token-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=abc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-expired-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000063/card?token=a1000000-0000-4000-8000-0000e1000078",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": {
+    "kind": "token_deleted",
+    "token": "expired_anon",
+    "actor": null,
+    "index": null
+   }
+  },
+  {
+   "name": "misc-routes-card-expired-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000064/card?token=a1000000-0000-4000-8000-0000e1000080",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": {
+    "kind": "token_deleted",
+    "token": "expired_owner",
+    "actor": "owner",
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-expired-again",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000063/card?token=a1000000-0000-4000-8000-0000e1000078",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "il token è scaduto"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-malformed-uid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/abc/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-get-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-get-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card?token=a1000000-0000-4000-8000-0000e1000066",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "token": "$new"
+   },
+   "effect": {
+    "kind": "token_created",
+    "subscription": "card",
+    "actor": "owner",
+    "session": null,
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "subscription.sport_association"
+    ]
+   },
+   "body": {}
+  },
+  {
+   "name": "misc-routes-card-post-soft-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000060/card",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "token": "$new"
+   },
+   "effect": {
+    "kind": "token_created",
+    "subscription": "flagged",
+    "actor": "owner",
+    "session": null,
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "subscription.sport_association"
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-post-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000059/card",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "token": "$new"
+   },
+   "effect": {
+    "kind": "token_created",
+    "subscription": "grouped",
+    "actor": "full_collaborator",
+    "session": null,
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "subscription.sport_association"
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-post-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000058/card",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "token": "$new"
+   },
+   "effect": {
+    "kind": "token_created",
+    "subscription": "second",
+    "actor": "admin",
+    "session": "admin_owner",
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "subscription.sport_association"
+    ]
+   }
+  },
+  {
+   "name": "misc-routes-card-post-other-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000059/card",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "msg": "Subscription not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-other-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000062/card",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Subscription not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1999997/card",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Subscription not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-malformed",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/abc/card",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-post-owner-scoped-athlete-resource",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-wrong-method",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"DELETE\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-routes-card-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-0000e1000057/card",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Card",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  }
+ ]
+}
