@@ -25210,25 +25210,73 @@
         "target": "configuration_smtp_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/communications_smtp.go",
+        "BE_GO/internal/dto/communications_smtp.go",
+        "BE_GO/internal/repository/communications_smtp.go",
+        "BE_GO/internal/service/communications_smtp.go",
+        "BE_GO/internal/service/communications_smtp_test.go",
+        "BE_GO/internal/handler/communications_smtp.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, unmapped-route registry rule and User.sport_association scope (email-logs)",
+        "communications_communicationconfiguration",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/settings/smtp/info",
+          "/api/v2/communications/settings/smtp/info",
+          "/api/communications/settings/smtp/info"
+        ],
+        "request": "No body.",
+        "response": "200 CommunicationConfigurationSerializer: email_smtp_host, email_smtp_port, email_smtp_user, email_sender_name, email_encryption, daily_email_limit, daily_email_balance.",
+        "errors": "401; 403 admin without session, unmapped route for restricted collaborators, owner scoped to an athlete, 'User is not a sport association'; 405; 500 missing or soft-deleted association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; unmapped in permissions_registry (FULL collaborators only).",
+        "resource_scope": "request.user.sport_association; filter(sport_association=...).first() (lowest key).",
+        "side_effects": "Creates the default configuration (port 587, TLS) when missing, with an auditlog create (password excluded) and a direct index row.",
+        "transaction": "Autocommit create (Go: one transaction, association row locked before the create).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/communications_smtp_http.json",
+        "TESTS/fixtures/generate_communications_smtp_http.py",
+        "TESTS/contracts/test_communications_smtp_http.py",
+        "TESTS/adapters/django/communications_smtp_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/communications-smtp.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 73/73; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-native-r1/results.json",
+          "receipt_sha256": "fb4611bf28ace972965fbd43a0727b42c9e75507dbc9088841db685e37831ca5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 73/73 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact CommunicationConfiguration, auditlog and index effects.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-versioned-r1/results.json",
+          "receipt_sha256": "e57ee3044a45401e02d2430a8cc55acd63144bda1326131d6bf0194cfd086287"
+        },
+        {
+          "revision": "committing change with the first configuration ordered by descending key",
+          "result": "Mutation control: fails Go on communications-smtp-info-foreign-owner-lowest-key (response.body:email_smtp_host).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-mutation-r1/results.json",
+          "receipt_sha256": "803cce64083bb7f1e7f5ec65c59e58721d8b2e1a12b1f2de69b1ed3b4af653aa"
+        }
+      ],
+      "notes": [
+        "Implementing: IsAuthenticated function views scoped by request.user.sport_association; info creates the default configuration (587/TLS, audited create without the password), update validates the partial patch serializer (generic 400) and audits changed fields except the password, verify answers the smtplib paths that fail before any socket (empty host, nonnumeric port), on four transports; verify of a connectable configuration (SMTP connection, login and test email) is refused with 500 before any network I/O."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/settings/smtp/update -> configuration_smtp_update",
@@ -25245,25 +25293,73 @@
         "target": "configuration_smtp_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/communications_smtp.go",
+        "BE_GO/internal/dto/communications_smtp.go",
+        "BE_GO/internal/repository/communications_smtp.go",
+        "BE_GO/internal/service/communications_smtp.go",
+        "BE_GO/internal/service/communications_smtp_test.go",
+        "BE_GO/internal/handler/communications_smtp.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, unmapped-route registry rule and User.sport_association scope (email-logs)",
+        "communications_communicationconfiguration",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/settings/smtp/update",
+          "/api/v2/communications/settings/smtp/update",
+          "/api/communications/settings/smtp/update"
+        ],
+        "request": "Partial CommunicationConfigurationPatchSerializer: email_smtp_host, email_smtp_port, email_smtp_user, email_smtp_password, email_sender_name, email_encryption (JSON or form).",
+        "response": "200 {'msg': 'info updated.'}.",
+        "errors": "401; 403 as info; 404 {'msg': 'info not found.'} without a configuration; 400 {'msg': 'info not valid.'} for any validation error or non-object body; 405; 500 missing or soft-deleted association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; unmapped in permissions_registry (FULL collaborators only).",
+        "resource_scope": "request.user.sport_association; first configuration.",
+        "side_effects": "save() of every column; auditlog update of the changed fields except the password (none when nothing else changed).",
+        "transaction": "Single save (Go: one transaction with the row locked).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/communications_smtp_http.json",
+        "TESTS/fixtures/generate_communications_smtp_http.py",
+        "TESTS/contracts/test_communications_smtp_http.py",
+        "TESTS/adapters/django/communications_smtp_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/communications-smtp.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 73/73; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-native-r1/results.json",
+          "receipt_sha256": "fb4611bf28ace972965fbd43a0727b42c9e75507dbc9088841db685e37831ca5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 73/73 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact CommunicationConfiguration, auditlog and index effects.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-versioned-r1/results.json",
+          "receipt_sha256": "e57ee3044a45401e02d2430a8cc55acd63144bda1326131d6bf0194cfd086287"
+        },
+        {
+          "revision": "committing change with the first configuration ordered by descending key",
+          "result": "Mutation control: fails Go on communications-smtp-info-foreign-owner-lowest-key (response.body:email_smtp_host).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-mutation-r1/results.json",
+          "receipt_sha256": "803cce64083bb7f1e7f5ec65c59e58721d8b2e1a12b1f2de69b1ed3b4af653aa"
+        }
+      ],
+      "notes": [
+        "Implementing: IsAuthenticated function views scoped by request.user.sport_association; info creates the default configuration (587/TLS, audited create without the password), update validates the partial patch serializer (generic 400) and audits changed fields except the password, verify answers the smtplib paths that fail before any socket (empty host, nonnumeric port), on four transports; verify of a connectable configuration (SMTP connection, login and test email) is refused with 500 before any network I/O."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/settings/smtp/verify -> configuration_smtp_verify",
@@ -25280,25 +25376,73 @@
         "target": "configuration_smtp_verify",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/communications_smtp.go",
+        "BE_GO/internal/dto/communications_smtp.go",
+        "BE_GO/internal/repository/communications_smtp.go",
+        "BE_GO/internal/service/communications_smtp.go",
+        "BE_GO/internal/service/communications_smtp_test.go",
+        "BE_GO/internal/handler/communications_smtp.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, unmapped-route registry rule and User.sport_association scope (email-logs)",
+        "communications_communicationconfiguration",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/settings/smtp/verify",
+          "/api/v2/communications/settings/smtp/verify",
+          "/api/communications/settings/smtp/verify"
+        ],
+        "request": "No body.",
+        "response": "200 {'verified': false, 'msg': 'please run connect() first' | 'nonnumeric port'}.",
+        "errors": "401; 403 as info; 404 {'msg': 'info not found.'}; 405; 500 missing or soft-deleted association; 500 (Go) for a configuration that would open an SMTP connection.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; unmapped in permissions_registry (FULL collaborators only).",
+        "resource_scope": "request.user.sport_association; first configuration.",
+        "side_effects": "None in Go (Django's SMTP connection, login and test email are not ported).",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/communications_smtp_http.json",
+        "TESTS/fixtures/generate_communications_smtp_http.py",
+        "TESTS/contracts/test_communications_smtp_http.py",
+        "TESTS/adapters/django/communications_smtp_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/communications-smtp.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 73/73; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-native-r1/results.json",
+          "receipt_sha256": "fb4611bf28ace972965fbd43a0727b42c9e75507dbc9088841db685e37831ca5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 73/73 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact CommunicationConfiguration, auditlog and index effects.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-versioned-r1/results.json",
+          "receipt_sha256": "e57ee3044a45401e02d2430a8cc55acd63144bda1326131d6bf0194cfd086287"
+        },
+        {
+          "revision": "committing change with the first configuration ordered by descending key",
+          "result": "Mutation control: fails Go on communications-smtp-info-foreign-owner-lowest-key (response.body:email_smtp_host).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-mutation-r1/results.json",
+          "receipt_sha256": "803cce64083bb7f1e7f5ec65c59e58721d8b2e1a12b1f2de69b1ed3b4af653aa"
+        }
+      ],
+      "notes": [
+        "Implementing: IsAuthenticated function views scoped by request.user.sport_association; info creates the default configuration (587/TLS, audited create without the password), update validates the partial patch serializer (generic 400) and audits changed fields except the password, verify answers the smtplib paths that fail before any socket (empty host, nonnumeric port), on four transports; verify of a connectable configuration (SMTP connection, login and test email) is refused with 500 before any network I/O."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/staff-board/<str:staff_board_message_id>/delete -> staff_board_messages_delete",
@@ -25912,12 +26056,25 @@
         "target": "communication_workflows_update",
         "syntax": "path"
       },
-      "status": "characterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/automation_workflows.go",
+        "BE_GO/internal/dto/automation_workflow_write.go",
+        "BE_GO/internal/repository/automation_workflows.go",
+        "BE_GO/internal/service/automation_workflow_update.go",
+        "BE_GO/internal/service/automation_workflow_update_test.go",
+        "BE_GO/internal/service/automation_workflow_writes.go",
+        "BE_GO/internal/handler/automation_workflow_writes.go"
+      ],
       "dependencies": [
-        "Existing identity, collaborator registry and association scope",
-        "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers",
-        "Workflow task family on the durable Go job system with execution ownership"
+        "Automation workflow add/delete writes (owner lock, association, audit writer)",
+        "Existing identity resolution and unmapped-route registry rule",
+        "communications_automationworkflow",
+        "application_sportassociation",
+        "auditlog_logentry",
+        "application_auditlogindex",
+        "Celery check_workflows_trigger_cron on the Go job system before the future-cron path can be ported"
       ],
       "contract": {
         "methods": [
@@ -25925,26 +26082,49 @@
           "OPTIONS"
         ],
         "external_paths": [
-          "/api/v1/communications/workflows/{id}/update",
-          "/api/v2/communications/workflows/{id}/update",
-          "/api/communications/workflows/{id}/update"
+          "/api/v1/communications/workflows/<workflow_id>/update",
+          "/api/v2/communications/workflows/<workflow_id>/update",
+          "/api/communications/workflows/<workflow_id>/update"
         ],
-        "request": "See automation-workflows.md.",
-        "response": "200 {\"msg\": \"workflow updated.\"}.",
-        "errors": "400 malformed UUID or {\"msg\": \"workflow not valid.\"}; 404 workflow not found.",
+        "request": "Partial AutomationWorkflowSerializer: automation_workflow_id, sport_association, name, description, automation_tree (list; message nodes email), enabled (JSON or form).",
+        "response": "200 {'msg': 'workflow updated.'}.",
+        "errors": "401; 403 admin without session, unmapped route, owner scoped to an athlete, IsAssociationUser, another tenant's sport_association; 400 ['badly formed hexadecimal UUID string'] and {'msg': 'workflow not valid.'}; 404 {'msg': 'workflow not found.'}; 405; 500 missing or soft-deleted association, trigger() errors after the saves; 500 (Go) refused paths.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "IsAssociationUser; routes unmapped in permissions_registry (FULL collaborators pass, others denied).",
-        "resource_scope": "request.user.sport_association through ActiveManager.",
-        "side_effects": "Row update and audit; on disabled->enabled, cron flag reset save and AutomationWorkflow.trigger(), which may enqueue Celery check_workflows_trigger_cron with a countdown.",
-        "transaction": "Separate autocommit saves; task enqueue outside any transaction.",
+        "permissions": "IsAuthenticated and IsAssociationUser; unmapped in permissions_registry (FULL collaborators only).",
+        "resource_scope": "request.user.sport_association; workflow by id within it.",
+        "side_effects": "save() of every column (updated_at), auditlog update of changed request fields; on enabling a triggered cron workflow a second save resetting data.triggered.",
+        "transaction": "Not atomic in Django (saves kept before a trigger error); Go commits the saves then answers 500.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/workflow_update_http.json",
+        "TESTS/fixtures/generate_workflow_update_http.py",
+        "TESTS/contracts/test_workflow_update_http.py",
+        "TESTS/adapters/django/workflow_update_http.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/automation-workflows.md"
+        "docs/architecture/go-migration/workflow-update.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 57/57; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/workflow-update-http-native-r4/results.json",
+          "receipt_sha256": "ca0c5cab6549e37c0961577d4ad82254a221027186c0d6874b173961a60d18aa"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 57/57 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact AutomationWorkflow, auditlog and index effects.",
+          "artifact": "quality-reports/go-migration/workflow-update-http-versioned-r1/results.json",
+          "receipt_sha256": "36d2d863bafb9bc4a98c75cd13c5ab2d210b6e8fa9f5418112eba42357290950"
+        },
+        {
+          "revision": "committing change without the 500 after a failing trigger()",
+          "result": "Mutation control: fails Go on workflow-update-enable-cron-invalid-time-server-error (response.status 200).",
+          "artifact": "quality-reports/go-migration/workflow-update-http-mutation-r2/results.json",
+          "receipt_sha256": "4b050a2753ca7db7ab3d3f6f6485e1aeca67d300848f0dbe7efd564726e8a4a8"
+        }
       ],
       "notes": [
-        "Characterized from inspected source; no Go implementation or executed evidence."
+        "Implementing: Partial AutomationWorkflowSerializer update (generic 400, tenant-scoped relation 403 ahead of other errors), full-row save with auditlog of changed request fields only, enabling resets a triggered cron flag with a second save, trigger() errors are a 500 after the saves, on four transports; enabling a cron workflow with a future, near or unclassified time (Celery countdown), a new automation_workflow_id (insert-copy save) and a form-encoded automation_tree are refused with 500 before any write."
       ]
     },
     {
