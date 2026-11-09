@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -820,14 +821,12 @@ func (s *BakneySSO) browserCookie(p *domain.BakneyPairing) (string, bool) {
 // djangoCookie is HttpResponse.set_cookie's Set-Cookie value (max_age set).
 func djangoCookie(name, value string, maxAge int, secure bool, sameSite string, now time.Time) string {
 	expires := time.Unix(now.Unix()+int64(maxAge), 0).UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT")
-	cookie := name + "=" + value + "; expires=" + expires + "; HttpOnly; Max-Age=" + itoa(maxAge) + "; Path=/; SameSite=" + sameSite
+	cookie := name + "=" + value + "; expires=" + expires + "; HttpOnly; Max-Age=" + strconv.Itoa(maxAge) + "; Path=/; SameSite=" + sameSite
 	if secure {
 		cookie += "; Secure"
 	}
 	return cookie
 }
-
-func itoa(value int) string { return big.NewInt(int64(value)).String() }
 
 // browserOrigin is views.browser_origin.
 func (s *BakneySSO) browserOrigin(st *bakneyState, browser BakneyBrowser) error {

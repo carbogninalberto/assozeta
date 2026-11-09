@@ -2,8 +2,8 @@
 
 `POST subscription/<uid>/edit` (`subscription_edit` in `BE/application/views/subscriptions_views.py`) is implemented in Go
 (`BE_GO/internal/{domain,dto,repository,service,handler}/subscription_writes.go`). Registry `association.members.update`. Django
-remains the execution owner. `subscription/<uid>/update` is ported in [celery-routes-a](celery-routes-a.md). The other routes of the
-family (`subscription/add`, `subscription/renew`, `subscription/<uid>/transfer`) are not ported (see below).
+remains the execution owner. `subscription/<uid>/update` is ported in [celery-routes-a](celery-routes-a.md). `subscription/add` is ported in
+[subscription-create](subscription-create.md). `subscription/renew` and `subscription/<uid>/transfer` are not ported (see below).
 
 ## Behaviour
 

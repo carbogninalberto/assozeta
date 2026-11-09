@@ -11686,25 +11686,82 @@
         "target": "google_calendar_export_course",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/calendar/<course_id>/export",
+          "/api/v2/google/calendar/<course_id>/export",
+          "/api/google/calendar/<course_id>/export"
+        ],
+        "request": "No body.",
+        "response": "200 {'msg': 'exported.', 'google_calendar_id'}; 403 {'msg': 'quotaExceeded'}; 400 {'msg': 'Error creating calendar.'}; 404 {'msg': 'Course not found.'} / {'msg': 'Attendance Registry not found.'}.",
+        "errors": "401; 403 admin without session, 'Missing permission: association.calendar.read', owner scoped to an athlete; 405; 500 malformed course id, no credentials, missing colour (after the course save), list insert errors, event errors (after earlier inserts).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry google/calendar/*/export association.calendar.read.",
+        "resource_scope": "Course.objects.filter(course_id=...).first() (live, X-Group-Id); first AttendanceRegistry by key.",
+        "side_effects": "Calendar v3: stored calendar deleted, calendar inserted, calendar list entry deleted and inserted, events inserted; Course.save() with the new google_calendar_id for non-collaborators (audited); expired credentials refreshed and saved.",
+        "transaction": "Autocommit saves; not atomic (writes before a 404/500 stay).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/calendar/config -> google_calendar_config",
@@ -11721,25 +11778,83 @@
         "target": "google_calendar_config",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/calendar/config",
+          "/api/v2/google/calendar/config",
+          "/api/google/calendar/config"
+        ],
+        "request": "No body.",
+        "response": "GET 200 {'authorization_url'} (client secrets auth_uri, offline access, granted scopes, 30-character state) with a sessionid cookie; DELETE 200 {'msg': 'deleted'}.",
+        "errors": "401; 403 admin without session, 'Missing permission: other.settings.read' (GET) / 'other.settings.update' (DELETE), owner scoped to an athlete; 405; 500 DELETE without stored credentials, refresh failures, unreadable client secrets.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry ('GET') other.settings.read, ('DELETE') other.settings.update.",
+        "resource_scope": "acting_user(request) for collaborators, else request.user.",
+        "side_effects": "GET: User.save() of integration_google_state (audited) and a cache session {'state'} with Set-Cookie. DELETE: expired credentials refreshed and saved, POST to Google's revoke endpoint (answer ignored), then state, credentials and auto sync cleared (audited).",
+        "transaction": "Autocommit saves (each User.save() commits with its auditlog entry).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/calendar/list -> google_calendar_list",
@@ -11756,25 +11871,82 @@
         "target": "google_calendar_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/calendar/list",
+          "/api/v2/google/calendar/list",
+          "/api/google/calendar/list"
+        ],
+        "request": "No body.",
+        "response": "200 {'data': {'calendars': [every calendarList item]}}.",
+        "errors": "401; 403 admin without session, 'Missing permission: association.calendar.read'; 405; 500 no credentials, invalid stored credentials, refresh or API errors, a page without items.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.calendar.read.",
+        "resource_scope": "acting_user(request) for collaborators, else request.user.",
+        "side_effects": "Expired credentials refreshed and saved (audited); calendarList GETs with in-memory refresh and 401 retry.",
+        "transaction": "Autocommit save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/check -> google_check",
@@ -11791,25 +11963,82 @@
         "target": "google_check",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/check",
+          "/api/v2/google/check",
+          "/api/google/check"
+        ],
+        "request": "No body.",
+        "response": "200 {'google_sync_enabled': credentials stored} of the acting user (the collaborator itself for collaborators).",
+        "errors": "401; 403 admin without session, 'Missing permission: other.settings.read', owner scoped to an athlete; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry other.settings.read.",
+        "resource_scope": "acting_user(request) for collaborators, else request.user.",
+        "side_effects": "None.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/oauth2callback -> google_oauth2callback",
@@ -11826,25 +12055,82 @@
         "target": "google_oauth2callback",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/oauth2callback",
+          "/api/v2/google/oauth2callback",
+          "/api/google/oauth2callback"
+        ],
+        "request": "Query error | state, code.",
+        "response": "200 text/html cancel page for ?error; 200 text/html 'Autorizzato' page after storing the credentials.",
+        "errors": "400 {'msg': 'No user found for the integration flow.'}; 403 'Missing permission: other.settings.update' for restricted collaborators; 405; 500 missing state/code, token endpoint errors, changed scope, missing expiry.",
+        "authentication": "DRF AllowAny (JWT identity resolved when a token is sent).",
+        "permissions": "AllowAny; registry other.settings.update.",
+        "resource_scope": "User.objects.filter(integration_google_state=state).first() (live users, by key).",
+        "side_effects": "POST to the client secrets token_uri (authorization_code, Basic client authentication); User.save() of the credentials JSON and auto sync for non-collaborators (audited).",
+        "transaction": "Autocommit save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/delete -> instructor_delete",
@@ -24180,25 +24466,70 @@
         "target": "subscription_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_create.go",
+        "BE_GO/internal/dto/subscription_create.go",
+        "BE_GO/internal/repository/subscription_create.go",
+        "BE_GO/internal/service/subscription_create.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/handler/subscription_create.go",
+        "BE_GO/internal/channels/channels.go",
+        "BE_GO/internal/channels/python.go",
+        "BE_GO/internal/repository/notification_store.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/add",
+          "/api/v2/subscription/add",
+          "/api/subscription/add"
+        ],
+        "request": "POST JSON {new_user_account, associate_data, associate_tutor_data, signature[, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id]}; ?m=only_associate quick mode.",
+        "response": "{status: success, payment_id, amount (float or 0)}.",
+        "errors": "400 {msg: validation errors.}; 400 serializer errors (associate fields, born_date DD/MM/YYYY, signature data); 400 {msg, code: '400'} membership plan; 403 registry / admin session / 'Seleziona la tua associazione.' / 'User is not a sport association'; 405; 409 {msg, code: '409', ref: subscription_duplicate}; 500 non-dict body, born date, medical_certificate null, int() errors, no association; 500 refused inputs (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "AllowAny view; registry association.members.create; collaborators act as the owner.",
+        "resource_scope": "request.user.sport_association (exactly one live association); associates by tax code within it; certificates by id.",
+        "side_effects": "Associate/tutor/relation, certificate owner, payment, subscription, membership rows with audit entries; after commit check_workflows_trigger(new_subscription) and print_document_subscription Celery messages, notification broadcast rows, Redis DB 0 list, user_broadcasts cache, Channels notification_push and mirrored envelope.",
+        "transaction": "One atomic transaction; on_commit callbacks after it, failures logged.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_create_http.json",
+        "TESTS/fixtures/generate_subscription_create_http.py",
+        "TESTS/contracts/test_subscription_create_http.py",
+        "TESTS/adapters/django/subscription_create_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-create.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 38/38; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-red-r1/results.json",
+          "receipt_sha256": "452cc6591e33a54ec1cbd33882e2b93d9540c91005a289116717a3c71331b4a3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 38/38 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-versioned-r1/results.json",
+          "receipt_sha256": "c13a3a9b28545ba60936735698c2485602afd25c7a70b4cc843f8f25f9853f3e"
+        },
+        {
+          "revision": "starting a membership_duration=3 membership at the season start instead of the creation day",
+          "result": "Mutation control: fails Go on subscription-create-zero-fee-no-payment (SubscriptionMembership start_date).",
+          "artifact": "quality-reports/go-migration/subscription-create-http-mutation-r1/results.json",
+          "receipt_sha256": "05240b812e059d72528cf8fb39c381501b81e26fba35563e60b6adce54798089"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/add for authenticated owners and collaborators: create_subscription (associate get_or_create, minor tutor, certificate owner, fees and plans, payment reuse/create, numbering, subscription, membership) in one transaction, then check_workflows_trigger and print_document_subscription Celery messages and the notification (broadcast rows, Redis store, user_broadcasts cache, Channels group_send written by Go plus the mirrored envelope). Anonymous/athlete/sport_association bodies, quick and family modes, preregistration, new member accounts, signature uploads, certificate expirations, type_of_associate filters, associate_id updates, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-create.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/associates-draft/<str:uid>/delete -> subscription_associates_draft_delete",
@@ -30249,25 +30580,87 @@
         "target": "document_compensation",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/compensation/<uid>",
+          "/api/v2/document/compensation/<uid>",
+          "/api/document/compensation/<uid>"
+        ],
+        "request": "uid; ?download; ?token",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401 (bypass header not accepted); 403 (scoped athlete: not an athlete view); 404 {exception: Compensation not found} (missing, deleted); 500 {exception} for invalid uid, no instructor, no payment date, renderer failures",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "scoped_queryset(Payment.objects) live + group",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (every InstructorHours of the payment: document, index instructor.user.sport_association)",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/compensation/<str:uid>/view/ -> document_compensation_view",
@@ -30319,25 +30712,87 @@
         "target": "document_einvoice",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/einvoice/<uid>",
+          "/api/v2/document/einvoice/<uid>",
+          "/api/document/einvoice/<uid>"
+        ],
+        "request": "uid; ?download; ?token; bypass Authorization",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401; 403; 405; 500 {exception} for a missing row (CustomerInvoice.DoesNotExist is not caught as 404), invalid uid, renderer failures; 500 page for bad document tokens",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken | HasBypassAuthorizationHeader. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "CustomerInvoice.objects.get(pk=uid): resolves the row by id (no scope, no group)",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (CustomerInvoice.pdf, full save, index direct)",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/einvoice/<str:uid>/view/ -> document_einvoice_view",
@@ -30389,25 +30844,87 @@
         "target": "document_invoice",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/invoice/<uid>",
+          "/api/v2/document/invoice/<uid>",
+          "/api/document/invoice/<uid>"
+        ],
+        "request": "uid; ?download; send_receipt_email from the query, else the urlencoded form ('true'/'True'/'1'); ?token; bypass Authorization",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "400 DRF JSON parse error (body read when the query flag is falsy); 401; 403; 404 {exception: Invoice not found} (missing, deleted, other group); 500 {exception} for the payment get() (none/several), payment without date, invalid uid, renderer failures; 500 page for a ?token UUIDField rejects or that names two Documents",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken | HasBypassAuthorizationHeader. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "scoped_queryset(Invoice.objects) live + group; scoped_queryset(Payment.objects).get(invoice=...) live + group",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (Invoice.document_pdf, index direct); then send_mail_async.apply_async(kwargs) for the opted-in receipt to the payment associate's e-mail",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/invoice/<str:uid>/view/ -> document_invoice_view",
@@ -30459,25 +30976,87 @@
         "target": "document_medical_appointment",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/medical-appointment/<uid>",
+          "/api/v2/document/medical-appointment/<uid>",
+          "/api/document/medical-appointment/<uid>"
+        ],
+        "request": "uid; ?download; ?token",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401; 403; 405; 500 {exception} for invalid uid, a missing row ('NoneType' ... 'subscription'), an unknown region (KeyError repr), renderer failures; 500 page (not ported) for PDF-form regions",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "MedicalAppointments.objects.filter(pk=uid).first(): resolves the row by id",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (MedicalAppointments.document, full save, index subscription.sport_association); agonistica/non-agonistica only",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/medical-appointment/<str:uid>/view/ -> document_medical_appointment_view",
@@ -30710,25 +31289,87 @@
         "target": "document_subscription",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/subscription/<uid>",
+          "/api/v2/document/subscription/<uid>",
+          "/api/document/subscription/<uid>"
+        ],
+        "request": "uid path; ?download (truthy: attachment); body ignored; X-Group-Id",
+        "response": "200 application/pdf (renderer bytes), Content-Disposition inline|attachment; filename=<name> as Django writes it (latin-1 bytes or RFC 2047 word); Allow: POST, GET, OPTIONS",
+        "errors": "401 anonymous/invalid bearer (challenge); 403 admin without session, registry, scoped guard; 405; 500 {exception} for a missing row, a uid UUIDField rejects (Python repr list), no associate, renderer failures (500 {\"exception\": \"PDF rendering failed: Renderer returned HTTP <n>: <text[:500]>\"} or \"... invalid PDF data (content-type: <v>)\" with the Document kept)",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "scoped_queryset(Subscription.objects) (group-aware; impersonation boundary with the athlete family scope); otherwise resolves the row by id",
+        "side_effects": "Document.objects.create (audited, actor association index); one renderer POST (FastRender payload) to PUPPETEER_HOST:PORT/render; on a PDF: save_to_storage.delay(path, base64) then the row link (audited update) (Subscription.document_pdf, save(update_fields=['document_pdf']), index direct)",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/subscription/<str:uid>/view/ -> document_subscription_view",
@@ -30815,25 +31456,87 @@
         "target": "document_template",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/document_render.go",
+        "BE_GO/internal/repository/document_render.go",
+        "BE_GO/internal/service/document_render.go",
+        "BE_GO/internal/handler/document_render.go",
+        "BE_GO/internal/pdfrender/client.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/document_render.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/views/printing_views.py",
+        "BE/docmanager/views/utils.py",
+        "BE/docmanager/models.py",
+        "BE/docmanager/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/core/tasks.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/impersonation.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/template/<uid>",
+          "/api/v2/document/template/<uid>",
+          "/api/document/template/<uid>"
+        ],
+        "request": "uid; JSON body additionalData {parent: folder id, subscription: id}; ?token",
+        "response": "200 {\"msg\": \"Generato con successo.\"} whatever the renderer answered",
+        "errors": "401; 403; 404 {exception: Template not found}; 500 {exception} for request.user.sport_association (anonymous, athlete, none/several) and an invalid uid",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated | HasDocumentToken. Identity resolution inside IsAuthenticated (admin without session, collaborator registry: no key, athlete-view list, scoped request guard on uid)",
+        "resource_scope": "Template by pk and request.user.sport_association; Folder by id; scoped_queryset(Subscription.objects) for the subscription value",
+        "side_effects": "Document create; SportAssociationDocumentsArchive for a found folder (audited, direct); SubscriptionFile for a found subscription (audited); renderer POST with view?subscription_id=<str(value)>&; save_to_storage on a PDF; no link",
+        "transaction": "Not atomic in Django: Document, links and created rows commit one by one; the renderer call and Celery publishes sit between them. Go: one short transaction per write in the same order, publishes after the Document commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/document_render_http.json",
+        "TESTS/fixtures/generate_document_render_http.py",
+        "TESTS/contracts/test_document_render_http.py",
+        "TESTS/adapters/django/document_render_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/document-render.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 141/141; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/document-render-http-native-r7/results.json",
+          "receipt_sha256": "f5b76f034ab84d4d31a98416918ec5c8a5c8d1a2ade536790ded6a16c81a316a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 141/141 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact renderer requests, Document/link/audit/index effects and Celery messages.",
+          "artifact": "quality-reports/go-migration/document-render-http-versioned-r1/results.json",
+          "receipt_sha256": "74e18e1865b44421254c98d7647c24254127157bca945508268961d07fa88c60"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter",
+          "result": "Mutation control: fails Go on document-render-invoice-deleted (500 render attempt instead of 404).",
+          "artifact": "quality-reports/go-migration/document-render-http-mutation-r1/results.json",
+          "receipt_sha256": "2ed426ddadede442e7362e52915c91ee46043357a01da5208d280ade5aa80683"
+        }
+      ],
+      "notes": [
+        "Implementing: PDF routes via the renderer service (stubbed per run). Refused before any write: PDF-form medical regions (fill_pdf_and_store, in-process pypdf/PyMuPDF), header-unsafe filenames, unmodelled template/invoice bodies, compensation hours whose instructor owner has no association. The /view/ variants and subscription/preview stay outside this family (Django template rendering plus filter_mentions, model helpers and the FatturaPA builder; portable as a follow-up)."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/template/<str:uid>/view/ -> document_template_view",
@@ -35319,8 +36022,10 @@
         "decorator": "receiver(new_subscription)",
         "arguments": "sender, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/subscription_create.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -35335,10 +36040,36 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/subscription_create_http.json",
+        "TESTS/fixtures/generate_subscription_create_http.py",
+        "TESTS/contracts/test_subscription_create_http.py",
+        "TESTS/adapters/django/subscription_create_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-create.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 38/38; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-red-r1/results.json",
+          "receipt_sha256": "452cc6591e33a54ec1cbd33882e2b93d9540c91005a289116717a3c71331b4a3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 38/38 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by subscription-create-basic, subscription-create-membership-fee, subscription-create-member-only, subscription-create-plans, subscription-create-quotes-disabled, subscription-create-minor-with-tutor.",
+          "artifact": "quality-reports/go-migration/subscription-create-http-versioned-r1/results.json",
+          "receipt_sha256": "c13a3a9b28545ba60936735698c2485602afd25c7a70b4cc843f8f25f9853f3e"
+        },
+        {
+          "revision": "starting a membership_duration=3 membership at the season start instead of the creation day",
+          "result": "Mutation control: fails Go on subscription-create-zero-fee-no-payment (SubscriptionMembership start_date).",
+          "artifact": "quality-reports/go-migration/subscription-create-http-mutation-r1/results.json",
+          "receipt_sha256": "05240b812e059d72528cf8fb39c381501b81e26fba35563e60b6adce54798089"
+        }
+      ],
       "notes": [
-        "Only publishes check_workflows_trigger(trigger_type=new_subscription). Not creditable yet: the sender (SubscriptionManager.create on_commit) is not in any Go route; a Go port of subscription creation must publish it after commit (recipe: subscription-approve / celery-producer.md). See docs/architecture/go-migration/tasks-db-b.md."
+        "Only publishes check_workflows_trigger(trigger_type=new_subscription). Not creditable yet: the sender (SubscriptionManager.create on_commit) is not in any Go route; a Go port of subscription creation must publish it after commit (recipe: subscription-approve / celery-producer.md). See docs/architecture/go-migration/tasks-db-b.md.",
+        "Implementing via subscription-create: new_subscription on commit publishes check_workflows_trigger(trigger_type='new_subscription', sport_association_id=UUID, subscription_id=UUID) from Go for subscription/add."
       ]
     },
     {
