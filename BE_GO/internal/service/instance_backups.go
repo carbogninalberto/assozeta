@@ -43,6 +43,7 @@ const (
 // InstanceBackupsRunner is updater_client's call_runner and open_runner_stream.
 type InstanceBackupsRunner interface {
 	Call(ctx context.Context, method, path string) (*updaterrunner.Reply, error)
+	CallPayload(ctx context.Context, method, path string, payload []byte) (*updaterrunner.Reply, error)
 	Open(ctx context.Context, path string) (*updaterrunner.Stream, error)
 }
 
@@ -72,11 +73,15 @@ func NewInstanceBackups(store *repository.InstanceBackups, runner InstanceBackup
 	return &InstanceBackups{store: store, runner: runner, objects: objects, hashes: hashes, secret: secret, now: now, newID: newID}
 }
 
-// InstanceBackupsReply is one response: a JSON body or the relayed archive.
+// InstanceBackupsReply is one response: a JSON body, the runner's relayed
+// JSON value (Relayed set: Data is rendered as it is, null included) or the
+// relayed archive.
 type InstanceBackupsReply struct {
-	Status int
-	Body   domain.RequestObject
-	Stream *InstanceBackupsStream
+	Status  int
+	Body    domain.RequestObject
+	Data    any
+	Relayed bool
+	Stream  *InstanceBackupsStream
 }
 
 type InstanceBackupsStream struct {
@@ -194,8 +199,17 @@ func (s *InstanceBackups) Overview(ctx context.Context, refresh bool) (*Instance
 	if err != nil {
 		return nil, err
 	}
+	// Older runners have no schedule or actions (the page stays read-only)
+	// and no remote copy status.
+	schedule, _ := inventory.Lookup("schedule")
+	actions, found := inventory.Lookup("actions")
+	if !found {
+		actions = domain.RequestObject{}
+	}
+	remote, _ := inventory.Lookup("remote")
 	body := domain.RequestObject{{Name: "available", Value: true}, {Name: "archives", Value: archives},
-		{Name: "retention", Value: retention}, {Name: "disk", Value: merged}, {Name: "next_backup", Value: next}}
+		{Name: "retention", Value: retention}, {Name: "disk", Value: merged}, {Name: "next_backup", Value: next},
+		{Name: "schedule", Value: schedule}, {Name: "actions", Value: actions}, {Name: "remote", Value: remote}}
 	if !dto.AuditFiniteJSON(body) {
 		return nil, errInstanceBackupsUnhandled // strict JSONRenderer: ValueError
 	}

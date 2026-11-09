@@ -303,14 +303,146 @@
    "database": false
   },
   {
-   "name": "instance-backups-owner-overview-post",
+   "name": "instance-backups-owner-overview-put",
    "actor": "owner",
-   "method": "POST",
+   "method": "PUT",
    "path": "/instance/admin/backups",
    "headers": {},
    "status": 405,
    "response": {
-    "detail": "Method \"POST\" not allowed."
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "body": {}
+  },
+  {
+   "name": "instance-backups-owner-overview-delete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"DELETE\" not allowed."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-anonymous-overview-post",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "body": {}
+  },
+  {
+   "name": "instance-backups-athlete-overview-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "body": {}
+  },
+  {
+   "name": "instance-backups-restricted-collaborator-overview-post",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "body": {}
+  },
+  {
+   "name": "instance-backups-owner-impersonation-header-post",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Esci dall’impersonificazione per accedere all’amministrazione."
    },
    "runner": {
     "state": "up",
@@ -486,7 +618,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -622,7 +757,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -710,7 +848,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -797,7 +938,10 @@
       "margin": 2,
       "free": 408021893120
      }
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -879,7 +1023,10 @@
       "margin": 2,
       "free": 408021893120
      }
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -966,7 +1113,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1055,7 +1205,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1146,7 +1299,10 @@
       "margin": 2,
       "free": 408021893120
      }
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1225,7 +1381,10 @@
      "database": "$database",
      "objects": null
     },
-    "next_backup": null
+    "next_backup": null,
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1297,7 +1456,10 @@
      "database": null,
      "objects": 7
     },
-    "next_backup": null
+    "next_backup": null,
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1383,7 +1545,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1563,7 +1728,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1646,7 +1814,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": false
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1729,7 +1900,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1813,7 +1987,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1895,7 +2072,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -1978,7 +2158,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": false
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2063,7 +2246,10 @@
      "estimated": 8388608,
      "required": 1090519040,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2148,7 +2334,10 @@
      "estimated": 8388608,
      "required": 1090519040,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2233,7 +2422,10 @@
      "estimated": 8388608,
      "required": 1090519040,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2318,7 +2510,10 @@
      "estimated": 8388608,
      "required": 1090519040,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2403,7 +2598,10 @@
      "estimated": 8388608,
      "required": 1090519040,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2486,7 +2684,10 @@
      "estimated": 8388608,
      "required": 10485760000016777216,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2553,7 +2754,10 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2631,12 +2835,774 @@
      "estimated": 8388608,
      "required": 18874368,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
     "status": 200,
     "body": "{\"archives\": [{\"size\": 1000000000000000000000000000000, \"ratio\": 0.1, \"n\": 0, \"flags\": [true, null, \"x\"]}], \"retention\": [], \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"extra\": {\"ignored\": true}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-schedule-actions-remote",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": {
+     "enabled": true,
+     "frequency": "weekly",
+     "time": "02:30",
+     "weekday": 6,
+     "keep": 7,
+     "next_run": "2026-11-08T02:30:00Z",
+     "last_run": {
+      "at": "2026-11-01T02:30:00Z",
+      "status": "ok",
+      "operation": "op-7"
+     }
+    },
+    "actions": {
+     "create": true,
+     "delete": true,
+     "keep": false,
+     "restore": true,
+     "upload": true,
+     "schedule": true
+    },
+    "remote": {
+     "configured": true,
+     "provider": "s3",
+     "bucket": "remote-placeholder",
+     "last_upload": {
+      "at": "2026-11-01T03:00:00Z"
+     },
+     "last_failure": null,
+     "note": "copia àè €"
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"schedule\": {\"enabled\": true, \"frequency\": \"weekly\", \"time\": \"02:30\", \"weekday\": 6, \"keep\": 7, \"next_run\": \"2026-11-08T02:30:00Z\", \"last_run\": {\"at\": \"2026-11-01T02:30:00Z\", \"status\": \"ok\", \"operation\": \"op-7\"}}, \"actions\": {\"create\": true, \"delete\": true, \"keep\": false, \"restore\": true, \"upload\": true, \"schedule\": true}, \"remote\": {\"configured\": true, \"provider\": \"s3\", \"bucket\": \"remote-placeholder\", \"last_upload\": {\"at\": \"2026-11-01T03:00:00Z\"}, \"last_failure\": null, \"note\": \"copia àè €\"}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-schedule-null",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"schedule\": null, \"actions\": {}, \"remote\": null}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-schedule-only",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": {
+     "enabled": false
+    },
+    "actions": {},
+    "remote": null
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"schedule\": {\"enabled\": false}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-actions-only",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": null,
+    "actions": {
+     "create": false
+    },
+    "remote": null
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"actions\": {\"create\": false}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-remote-only",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": {
+     "configured": false
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"remote\": {\"configured\": false}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-pass-through-shapes",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": [
+     1,
+     "x"
+    ],
+    "actions": null,
+    "remote": "off"
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"schedule\": [1, \"x\"], \"actions\": null, \"remote\": \"off\"}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-pass-through-numbers",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": true,
+    "archives": [
+     {
+      "name": "assozeta-20261102T020000Z-1.tar.gz",
+      "size": 73400320,
+      "created_at": "2026-11-02T02:00:00Z",
+      "verified": true
+     },
+     {
+      "name": "assozeta-20261101T020000Z.tar.gz",
+      "size": 71303168,
+      "created_at": "2026-11-01T02:00:00Z",
+      "verified": false,
+      "note": "àè €"
+     }
+    ],
+    "retention": {
+     "daily": 7,
+     "weekly": 4,
+     "monthly": 3
+    },
+    "disk": {
+     "total": 536870912000,
+     "used": 128849018880,
+     "free": 408021893120,
+     "database": 3145728,
+     "objects": 5242880
+    },
+    "next_backup": {
+     "estimated": 8388608,
+     "required": 18874368,
+     "fits": true
+    },
+    "schedule": 0,
+    "actions": [
+     true,
+     1.5,
+     10000000000000000000000000
+    ],
+    "remote": false
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [{\"name\": \"assozeta-20261102T020000Z-1.tar.gz\", \"size\": 73400320, \"created_at\": \"2026-11-02T02:00:00Z\", \"verified\": true}, {\"name\": \"assozeta-20261101T020000Z.tar.gz\", \"size\": 71303168, \"created_at\": \"2026-11-01T02:00:00Z\", \"verified\": false, \"note\": \"àè €\"}], \"retention\": {\"daily\": 7, \"weekly\": 4, \"monthly\": 3}, \"disk\": {\"total\": 536870912000, \"used\": 128849018880, \"free\": 408021893120}, \"space_margin_mb\": 2, \"schedule\": 0, \"actions\": [true, 1.5, 10000000000000000000000000], \"remote\": false}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-schedule-nan",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [], \"disk\": {}, \"schedule\": {\"keep\": NaN}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "cache_after": {
+    "sizes": {
+     "payload": {
+      "database": 3145728,
+      "objects": 5242880
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-overview-remote-infinite",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"archives\": [], \"disk\": {}, \"remote\": {\"size\": -1e400}}",
     "chunked": false,
     "expect": [
      {
@@ -2701,7 +3667,10 @@
      "estimated": 8388608,
      "required": 1090519040,
      "fits": false
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -2767,7 +3736,10 @@
      "estimated": 8388608,
      "required": 1090519040,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -3325,7 +4297,10 @@
      "estimated": 8388608,
      "required": 1090519040,
      "fits": true
-    }
+    },
+    "schedule": null,
+    "actions": {},
+    "remote": null
    },
    "runner": {
     "state": "up",
@@ -3708,6 +4683,1205 @@
        "accept-encoding": "identity",
        "authorization": "Bearer runner-token-placeholder",
        "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-started",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": "op-20261109-1",
+     "kind": "backup",
+     "status": "queued",
+     "note": "àè €"
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"op-20261109-1\", \"kind\": \"backup\", \"status\": \"queued\", \"note\": \"àè €\"}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "op-20261109-1"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "body": {}
+  },
+  {
+   "name": "instance-backups-create-started-admin",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": "op-20261109-1",
+     "kind": "backup",
+     "status": "queued",
+     "note": "àè €"
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"op-20261109-1\", \"kind\": \"backup\", \"status\": \"queued\", \"note\": \"\\u00e0\\u00e8 \\u20ac\"}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000710001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "op-20261109-1"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000710001"
+    },
+    "actor": "admin",
+    "association": "admin_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "body": {}
+  },
+  {
+   "name": "instance-backups-create-runner-200-is-202",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": "a"
+    },
+    "extra": [
+     1,
+     null
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"operation\": {\"id\": \"a\"}, \"extra\": [1, null]}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "a"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-body-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": "b"
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"b\"}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "b"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "body": {
+    "request_id": "mine",
+    "actor_id": "other"
+   }
+  },
+  {
+   "name": "instance-backups-create-malformed-json-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": "c"
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"c\"}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "c"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "raw_body": "{\"request_id\": ",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instance-backups-create-form-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": "d"
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": \"d\"}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "d"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "raw_body": "keep=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-create-operation-id-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {}
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      ""
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-operation-id-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": 42
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": 42}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "42"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-operation-id-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "id": {
+      "n": [
+       true,
+       null
+      ]
+     }
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": {\"id\": {\"n\": [true, null]}}}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "action": 1,
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_create": [
+      "",
+      "{'n': [True, None]}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-operation-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"queued\": true}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-operation-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": [\"x\"]}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-operation-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": null}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-reply-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "[1]",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-invalid-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica."
+   },
+   "runner": {
+    "state": "up",
+    "status": 202,
+    "body": "{\"operation\": ",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-no-socket",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica."
+   },
+   "runner": {
+    "state": "no-socket",
+    "status": 202,
+    "body": "",
+    "chunked": false,
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-no-token",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica."
+   },
+   "runner": {
+    "state": "no-token",
+    "status": 202,
+    "body": "",
+    "chunked": false,
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-runner-404",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Il servizio di aggiornamento richiede una versione più recente."
+   },
+   "runner": {
+    "state": "up",
+    "status": 404,
+    "body": "{\"error\": \"Not found\"}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-runner-404-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica."
+   },
+   "runner": {
+    "state": "up",
+    "status": 404,
+    "body": "Not Found",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-runner-409",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Un backup è già in corso."
+   },
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "{\"error\": \"Un backup è già in corso.\"}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-runner-400-default",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Aggiornamento non disponibile."
+   },
+   "runner": {
+    "state": "up",
+    "status": 400,
+    "body": "{\"detail\": \"x\"}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-runner-422-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 422,
+   "response": {
+    "error": "7"
+   },
+   "runner": {
+    "state": "up",
+    "status": 422,
+    "body": "{\"error\": 7}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-runner-500",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Runner non pronto."
+   },
+   "runner": {
+    "state": "up",
+    "status": 500,
+    "body": "{\"error\": \"Runner non pronto.\"}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-runner-507",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Spazio insufficiente."
+   },
+   "runner": {
+    "state": "up",
+    "status": 507,
+    "body": "{\"error\": \"Spazio insufficiente.\"}",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false
+  },
+  {
+   "name": "instance-backups-create-runner-error-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "runner": {
+    "state": "up",
+    "status": 409,
+    "body": "[\"x\"]",
+    "chunked": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "$uuid4",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
       }
      }
     ]

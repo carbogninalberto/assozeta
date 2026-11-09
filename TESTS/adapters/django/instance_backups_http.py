@@ -7,6 +7,8 @@ service_context owns, for the whole run and before either server starts:
   the bearer token in '<dir>/token' (a short directory under /tmp, inside
   the Unix socket path limit). It answers each request with the case's
   scripted response and records every request (method, path, headers, body);
+  a request with a body must carry exactly json.dumps of the expected 'json'
+  ('$uuid4' is a str(uuid4()) value), every other request none;
 - production mode with ASSOZETA_UPDATER_DIRECTORY on that directory, for
   Django (override_settings) and Go (GO_FIXTURE_ENVIRONMENT), and Django's
   production password hashers (the test runtime prefers MD5).
@@ -23,8 +25,9 @@ seed_rows inserts the self-hosted InstanceConfiguration. Around each request:
   exactly 'cache_after' (pickled bytes as Django writes them, TTLs fresh or
   kept), and they are deleted;
 - '$token' in the path is a token signed with the running SECRET_KEY.
-The effect check: no model changes except the authored ACCESS entry and its
-index row, and the expected stored hash (an upgraded one when 'rehash').
+The effect check: no model changes except the authored audit entry (ACCESS,
+or the case's 'action') and its index row, and the expected stored hash (an
+upgraded one when 'rehash').
 """
 from contextlib import contextmanager
 import base64
@@ -48,8 +51,8 @@ from TESTS.adapters.django import family_harness as harness
 SOURCES = ('TESTS/fixtures/instance_backups_http.json', 'TESTS/contracts/test_instance_backups_http.py',
            'TESTS/adapters/django/instance_backups_http.py', 'TESTS/adapters/django/instance_logo.py',
            'BE/instance/backups.py', 'BE/instance/updater_client.py', 'BE/instance/permissions.py', 'BE/instance/models.py',
-           'BE/instance/urls.py', 'BE/application/utils/printing.py', 'BE/application/signals.py',
-           'BE/core/settings.py') + harness.SOURCES
+           'BE/instance/urls.py', 'BE/instance/upload_stream.py', 'BE/application/utils/printing.py',
+           'BE/application/signals.py', 'BE/core/middleware.py', 'BE/core/settings.py') + harness.SOURCES
 BUCKET = 'instance-backups-fixture'
 SIZES_KEY = 'instance:backup-data-sizes:v1'
 TOKEN_SALT = 'instance.backups.download'
@@ -81,7 +84,7 @@ class RunnerStub:
                 with outer.lock:
                     outer.requests.append({'method': self.command, 'path': self.path,
                                            'headers': {name.lower(): value for name, value in self.headers.items()},
-                                           'duplicates': len(names) != len(set(names)), 'body': len(body)})
+                                           'duplicates': len(names) != len(set(names)), 'body': body})
                     script = outer.script or {'status': 500, 'body': '{"error": "unscripted"}', 'chunked': False}
                 content = base64.b64decode(script['body_b64']) if 'body_b64' in script else script['body'].encode()
                 self.send_response(script['status'])
@@ -322,8 +325,34 @@ def runner_state(case, source):
     with stub.lock:
         recorded = [dict(request) for request in stub.requests]
         stub.script = None
-    require(all(not request.pop('duplicates') and request.pop('body') == 0 for request in recorded), 'runner.request-shape')
-    require(recorded == spec['expect'], 'runner.requests')
+    require(all(not request.pop('duplicates') for request in recorded), 'runner.request-shape')
+    expect = [dict(request) for request in spec['expect']]
+    require(len(recorded) == len(expect), 'runner.request-count')
+    for request, expected in zip(recorded, expect):
+        require(runner_body_matches(request.pop('body'), expected.pop('json', None)), 'runner.request-body')
+    require(recorded == expect, 'runner.requests')
+
+
+UUID4 = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')
+
+
+def runner_body_matches(raw, expected):
+    """No body, or exactly json.dumps(expected) with '$uuid4' values filled by uuid4 strings."""
+    if expected is None:
+        return raw == b''
+    try:
+        actual = json.loads(raw)
+    except ValueError:
+        return False
+    if not isinstance(actual, dict) or list(actual) != list(expected) or raw != json.dumps(actual).encode():
+        return False
+    for key, value in expected.items():
+        if value == '$uuid4':
+            if not isinstance(actual[key], str) or UUID4.fullmatch(actual[key]) is None:
+                return False
+        elif actual[key] != value:
+            return False
+    return True
 
 
 @contextmanager
@@ -391,7 +420,8 @@ def assert_effect(case, before, after, source, context):
         event = added[0]
         types_ = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
         actor = source['ids'][expected['actor']]
-        require(event['content_type_id'] == types_[('instance', 'instanceconfiguration')] and event['action'] == 3
+        require(event['content_type_id'] == types_[('instance', 'instanceconfiguration')]
+                and event['action'] == expected.get('action', 3)
                 and event['object_pk'] == expected['object_pk'] and event['object_id'] == int(expected['object_pk'])
                 and event['object_repr'] == expected['object_repr'] and event['serialized_data'] is None, 'audit.identity')
         require(event['changes'] == expected['changes'] and event['changes_text'] == '', 'audit.changes')

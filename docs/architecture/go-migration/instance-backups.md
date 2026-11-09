@@ -6,13 +6,13 @@ The owner's "Backup e ripristino" views of `BE/instance/backups.py` are implemen
 
 | Route | Django view | Methods in Go |
 | --- | --- | --- |
-| `instance/admin/backups` | `BackupOverviewView` | GET (HEAD) |
+| `instance/admin/backups` | `BackupOverviewView` | GET (HEAD), POST |
 | `instance/admin/backups/download-token` | `BackupDownloadTokenView` | POST |
 | `instance/admin/backups/<str:name>/download` | `BackupDownloadView` | GET |
 
 ## Shared behaviour
 
-- Plain `APIView`s: `Allow` is `GET, HEAD, OPTIONS`, `POST, OPTIONS` and `GET, OPTIONS` (the download
+- Plain `APIView`s: `Allow` is `GET, POST, HEAD, OPTIONS`, `POST, OPTIONS` and `GET, OPTIONS` (the download
   view's `http_method_names` has no `head`, so HEAD is 405). OPTIONS metadata uses the class name
   without `View`; only the download view has a description (its docstring). No `Cache-Control` except
   on the relayed archive.
@@ -35,7 +35,8 @@ control character in the URL, or any HTTP or decoding failure is
 
 Go sends the same request http.client does: `Host: localhost`, `Accept-Encoding: identity`,
 `Authorization: Bearer <token>`, `Content-Type: application/json` on `call_runner` only, no
-`User-Agent` and no body. Python's socket timeout applies to each read and write (5 s, 300 s for
+`User-Agent`, and no body unless `call_runner` has a payload: then `json.dumps(payload)` (default
+separators, ASCII) with its `Content-Length` (`updaterrunner.Client.CallPayload`). Python's socket timeout applies to each read and write (5 s, 300 s for
 streams).
 
 `call_runner` decodes the body with `json.loads(bytes)` before it looks at the status: a UTF-8 BOM is
@@ -61,7 +62,28 @@ a body that is not an object is an `AttributeError` (the 500 page).
    `estimated = database + objects`, `required = estimated * 2 + margin * 1 MiB` (margin is
    `space_margin_mb` only when it is an `int` other than `bool` and at least 1, else 1024; Python
    integers, so no overflow) and `fits = free is None or free >= required` (exact int/float
-   comparison; a string `free` is a `TypeError`). Non-finite numbers fail DRF's strict renderer (500).
+   comparison; a string `free` is a `TypeError`). Then the runner's `schedule` (default `None`),
+  `actions` (default `{}`) and `remote` (default `None`), passed through whatever their type (older
+  runners have none of them). Non-finite numbers anywhere fail DRF's strict renderer (500).
+
+## POST admin/backups
+
+A manual backup. The request body is never read (malformed JSON and form bodies are ignored).
+`relay('POST', '/backups', {'request_id': str(uuid4()), 'actor_id': str(actor.pk)}, success=202)`:
+
+- unavailable (including a body that does not decode): 503 `{'error': <message>}`;
+- rejected: 404 is 409 `Il servizio di aggiornamento richiede una versione più recente.`, another
+  4xx keeps its status, anything else is 503, each with `str(error)` (default
+  `Aggiornamento non disponibile.`); a rejection body that is not an object is the 500 page;
+- otherwise (any status below 400) the runner's body is answered with 202. Then
+  `response.data['operation'].get('id', '')`: a body that is not an object, without `operation`, or
+  whose `operation` is not an object is the 500 page (no entry). The entry is an auditlog `UPDATE` on
+  the configuration with `changes {'backup_create': ['', str(id)]}` and `additional_data
+  {'actor_id': actor}` (same target, actor, cid, remote address and index row as the download
+  entry). It is written before the response is rendered.
+
+`service.InstanceBackups.Relay` is `relay()` for any runner action; the repository's `AppendAudit`
+is `audit()` (action, change, value, extra `additional_data`).
 
 ## POST admin/backups/download-token
 
@@ -109,6 +131,8 @@ runner's `Content-Length`, `Content-Disposition: attachment; filename="<name>"`,
 - Runner bodies Python decodes but Go does not: UTF-16/UTF-32 JSON, surrogate code points, `NaN` and
   `Infinity` literals (Django renders them only where they are not in the response, for example an
   ignored inventory key or an error message), deep nesting.
+  On the manual backup POST such a reply is refused before the entry is written (Django writes the
+  `backup_create` entry and then fails rendering a `NaN` reply).
 - Cached sizes that are not a dict of `None`, `int`, `str` and `bool` values, or whose sizes are not
   both `int` (Django may add floats); attempt counters that are not plain integers.
 - A claimed actor whose hex form needs Python's `int(..., 16)` extras (sign, underscores, `0x`,
@@ -121,18 +145,30 @@ runner status above 599 (500), a cache or database error.
 
 ## Evidence
 
-`TESTS/fixtures/instance_backups_http.json` (123 cases, from `TESTS/fixtures/generate_instance_backups_http.py`).
+`TESTS/fixtures/instance_backups_http.json` (161 cases, from `TESTS/fixtures/generate_instance_backups_http.py`).
 The adapter (`TESTS/adapters/django/instance_backups_http.py`) owns, for both servers, a private MinIO
 bucket, the update runner stub (an HTTP/1.1 server on a Unix socket in a short `/tmp` directory with a
 placeholder token file) and production mode (`override_settings` for Django, `GO_FIXTURE_ENVIRONMENT`
 for Go), with Django's production password hashers. Per case it scripts the runner's answer and
-requires the exact requests it received (method, path, every header, no body), stores bucket objects
+requires the exact requests it received (method, path, every header, and no body or exactly
+`json.dumps` of the expected payload with a `str(uuid4())` request id), stores bucket objects
 or removes the bucket, presets and then requires the exact cache keys (pickled bytes, values, fresh or
 kept TTLs), sets the PBKDF2 hashes of the owner and the administrator (put back afterwards, the request's
 result checked: unchanged, or upgraded and still matching), signs download tokens (fresh, expired,
 tampered, other salt, untimed, other claims) and checks the audit entry and its index row. Database
 sizes are accepted within `pg_database_size` measured before and after the request, and the cached value
 must equal the reported one.
+
+Re-verification after the Django main merge (`BE/instance/backups.py` gained the overview's `schedule`,
+`actions` and `remote` keys and its POST; the other new backup routes are a separate family):
+
+- RED (`reverify-red161`): Django 161/161; Go fails the first case (`Allow` without `POST`).
+- GREEN (`reverify-green`): 161/161 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`reverify-mutation`): attempting the `backup_create` entry for every runner answer below
+  500 fails `create-runner-404` on Go (500 page instead of 409).
+- Receipts copied under `quality-reports/go-migration/instance-reverify-backups-*`.
+
+Original port:
 
 - RED (`native-r9`): Django 123/123, Go 404 on the first case.
 - GREEN (`versioned-r1`, after merging the base): 123/123 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.

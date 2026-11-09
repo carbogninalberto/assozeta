@@ -1,18 +1,22 @@
 """Author the instance backups HTTP sequence (instance-backups.md).
 
-Pins BE/instance/backups.py (BackupOverviewView, BackupDownloadTokenView,
-BackupDownloadView) with updater_client.py (call_runner, open_runner_stream)
-in Django's order: identity, the IsInstanceOwner permission (the download
-view has none), method dispatch, the runner call, the cached data sizes, the
-serializer, the password attempts, the password check, the ACCESS audit
-entry, the signed token, the single-use marker and the relayed archive.
+Pins BE/instance/backups.py (BackupOverviewView GET and POST,
+BackupDownloadTokenView, BackupDownloadView) with updater_client.py
+(call_runner, open_runner_stream) in Django's order: identity, the
+IsInstanceOwner permission (the download view has none), method dispatch, the
+runner call, the cached data sizes, the serializer, the password attempts, the
+password check, the audit entry, the signed token, the single-use marker and
+the relayed archive. The overview passes the runner's schedule, actions and
+remote status through; its POST relays a manual backup (relay()) and records
+an UPDATE entry with the runner's operation id.
 
 The run is in production mode with ASSOZETA_UPDATER_DIRECTORY pointing at a
 runner stub owned by the adapter (a Unix socket plus a token file). Per case:
 - 'runner' scripts the stub: 'state' ('up', 'no-socket', 'no-token',
   'empty-token'), the response ('status', raw 'body' text or 'body_b64',
   'chunked'), and 'expect', the exact requests it must receive (method, path
-  and every header, names lower case);
+  and every header, names lower case; 'json' is the exact json.dumps body,
+  '$uuid4' standing for str(uuid4()));
 - 'objects' are stored in the run's bucket during the request (object_bytes
   sums the whole bucket); 'bucket_absent' removes the bucket for the request;
 - 'cache' presets Django cache values: 'sizes' ({'payload': value} through
@@ -23,7 +27,8 @@ runner stub owned by the adapter (a Unix socket plus a token file). Per case:
 - 'token' signs the '$token' in a download path ('claims' with '$id:<key>'
   user ids, 'age' seconds, 'salt', 'tamper', 'untimed');
 - 'password' replaces the actor's stored hash for the request; 'audit' is
-  the expected ACCESS entry; 'rehash' expects check_password's upgrade.
+  the expected entry (ACCESS unless 'action' says otherwise); 'rehash'
+  expects check_password's upgrade.
 Every credential, host and name is a placeholder. Run with ``python3 -I``.
 """
 import base64
@@ -42,6 +47,7 @@ REQUIRED, NULL, BLANK = 'This field is required.', 'This field may not be null.'
 PATTERN, STRING = 'This value does not match the required pattern.', 'Not a valid string.'
 UNREACHABLE = 'Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.'
 OUTDATED = 'Il servizio di aggiornamento richiede una versione più recente per mostrare i backup.'
+OUTDATED_ACTION = 'Il servizio di aggiornamento richiede una versione più recente.'
 WRONG = 'Password non corretta.'
 TOO_MANY = 'Troppi tentativi. Riprova tra qualche minuto.'
 INVALID_LINK = 'Link di download non valido o scaduto.'
@@ -79,16 +85,23 @@ LEGACY_HASH = pbkdf2(PASSWORD, 'backupfixturelegacy000001', 1000)
 cases = []
 
 
-def runner_request(path, *, json_type=True):
+def runner_request(path, *, json_type=True, method='GET', payload=None):
     headers = {'host': 'localhost', 'accept-encoding': 'identity', 'authorization': f'Bearer {RUNNER_TOKEN}'}
     if json_type:
         headers['content-type'] = 'application/json'
-    return {'method': 'GET', 'path': path, 'headers': headers}
+    request = {'method': method, 'path': path, 'headers': headers}
+    if payload is not None:
+        # json.dumps(payload); str(uuid4()) has a fixed length, so the length is exact.
+        text = json.dumps({key: ('0' * 36 if value == '$uuid4' else value) for key, value in payload.items()})
+        headers['content-length'] = str(len(text.encode()))
+        request['json'] = payload
+    return request
 
 
-def runner(status=200, body='', *, state='up', chunked=False, body_b64=None, path='/backups', json_type=True):
+def runner(status=200, body='', *, state='up', chunked=False, body_b64=None, path='/backups', json_type=True, method='GET',
+           payload=None):
     spec = {'state': state, 'status': status, 'body': body, 'chunked': chunked,
-            'expect': [runner_request(path, json_type=json_type)] if state == 'up' else []}
+            'expect': [runner_request(path, json_type=json_type, method=method, payload=payload)] if state == 'up' else []}
     if body_b64 is not None:
         spec['body_b64'] = body_b64
     return spec
@@ -146,7 +159,8 @@ def overview(inv, sizes, *, margin=2):
         free = disk.get('free')
         next_backup = {'estimated': estimated, 'required': required, 'fits': free is None or free >= required}
     return {'available': True, 'archives': inv.get('archives', []), 'retention': inv.get('retention', {}), 'disk': merged,
-            'next_backup': next_backup}
+            'next_backup': next_backup, 'schedule': inv.get('schedule'), 'actions': inv.get('actions', {}),
+            'remote': inv.get('remote')}
 
 
 def ok(inv):
@@ -166,7 +180,13 @@ add('foreign-owner-denied', 'foreign_owner', OVERVIEW, 403, DENIED)
 add('owner-without-association-denied', 'owner_without_association', TOKEN, 403, DENIED, method='POST', body={})
 add('athlete-wrong-method-denied-first', 'athlete', OVERVIEW, 403, DENIED, method='PUT', body={})
 add('owner-impersonation-header', 'owner', OVERVIEW, 403, LEAVE, headers={'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']})
-add('owner-overview-post', 'owner', OVERVIEW, 405, {'detail': 'Method "POST" not allowed.'}, method='POST', body={})
+add('owner-overview-put', 'owner', OVERVIEW, 405, {'detail': 'Method "PUT" not allowed.'}, method='PUT', body={})
+add('owner-overview-delete', 'owner', OVERVIEW, 405, {'detail': 'Method "DELETE" not allowed.'}, method='DELETE')
+add('anonymous-overview-post', 'anonymous', OVERVIEW, 401, ANON, method='POST', body={})
+add('athlete-overview-post', 'athlete', OVERVIEW, 403, DENIED, method='POST', body={})
+add('restricted-collaborator-overview-post', 'restricted_collaborator', OVERVIEW, 403, DENIED, method='POST', body={})
+add('owner-impersonation-header-post', 'owner', OVERVIEW, 403, LEAVE, method='POST', body={},
+    headers={'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']})
 add('owner-token-get', 'owner', TOKEN, 405, {'detail': 'Method "GET" not allowed.'})
 add('owner-token-delete', 'owner', TOKEN, 405, {'detail': 'Method "DELETE" not allowed.'}, method='DELETE')
 add('options-overview', 'owner', OVERVIEW, 200, options('Backup Overview'), method='OPTIONS')
@@ -223,6 +243,24 @@ for name, inv, margin in (
                               retention=[], extra={'ignored': True}), 2)):
     add('overview-' + name, 'owner', OVERVIEW, 200, overview(inv, SIZES, margin=margin), run=ok(inv), cache=CACHED)
 
+SCHEDULE = {'enabled': True, 'frequency': 'weekly', 'time': '02:30', 'weekday': 6, 'keep': 7,
+            'next_run': '2026-11-08T02:30:00Z', 'last_run': {'at': '2026-11-01T02:30:00Z', 'status': 'ok', 'operation': 'op-7'}}
+ACTIONS = {'create': True, 'delete': True, 'keep': False, 'restore': True, 'upload': True, 'schedule': True}
+REMOTE = {'configured': True, 'provider': 's3', 'bucket': 'remote-placeholder', 'last_upload': {'at': '2026-11-01T03:00:00Z'},
+          'last_failure': None, 'note': 'copia àè €'}
+for name, inv in (
+        ('schedule-actions-remote', inventory(schedule=SCHEDULE, actions=ACTIONS, remote=REMOTE)),
+        ('schedule-null', inventory(schedule=None, actions={}, remote=None)),
+        ('schedule-only', inventory(schedule={'enabled': False})),
+        ('actions-only', inventory(actions={'create': False})),
+        ('remote-only', inventory(remote={'configured': False})),
+        ('pass-through-shapes', inventory(schedule=[1, 'x'], actions=None, remote='off')),
+        ('pass-through-numbers', inventory(schedule=0, actions=[True, 1.5, 10 ** 25], remote=False))):
+    add('overview-' + name, 'owner', OVERVIEW, 200, overview(inv, SIZES), run=ok(inv), cache=CACHED)
+add('overview-schedule-nan', 'owner', OVERVIEW, 500, SERVER,
+    run=runner(200, '{"archives": [], "disk": {}, "schedule": {"keep": NaN}}'), cache=CACHED)
+add('overview-remote-infinite', 'owner', OVERVIEW, 500, SERVER,
+    run=runner(200, '{"archives": [], "disk": {}, "remote": {"size": -1e400}}'), cache=CACHED)
 add('overview-number-forms', 'owner', OVERVIEW, 200,
     overview({'archives': [1.5, 100.0, 1e-07, 12345678901234567890], 'disk': {'free': 1}}, SIZES, margin=1024),
     run=runner(200, '{"archives": [1.50, 1E2, 1e-7, 12345678901234567890], "disk": {"free": 1}, "space_margin_mb": 1.0}'),
@@ -267,10 +305,68 @@ add('overview-runner-503-object', 'owner', OVERVIEW, 503, error("{'a': [1, None,
 add('overview-runner-error-list', 'owner', OVERVIEW, 500, SERVER, run=runner(400, '[1]'))
 
 # ---------------------------------------------------------------------------
-# POST admin/backups/download-token
+# POST admin/backups: relay('POST', '/backups', {request_id, actor_id},
+# success=202) and, on 202, audit(actor, 'backup_create', operation id). The
+# request body is never parsed.
 # ---------------------------------------------------------------------------
 OWNER = IDS['owner']
 ADMIN = IDS['admin']
+
+
+def create_runner(status=202, body='', actor='owner', **options):
+    return runner(status, body, method='POST', payload={'request_id': '$uuid4', 'actor_id': IDS[actor]}, **options)
+
+
+def created(value, actor='owner', association='own_association'):
+    return {'action': 1, 'object_pk': str(INSTANCE['id']), 'object_repr': REPR, 'changes': {'backup_create': ['', value]},
+            'additional_data': {'actor_id': IDS[actor]}, 'actor': actor, 'association': association,
+            'resolution_path': 'actor.sport_association'}
+
+
+OPERATION = {'operation': {'id': 'op-20261109-1', 'kind': 'backup', 'status': 'queued', 'note': 'àè €'}}
+add('create-started', 'owner', OVERVIEW, 202, OPERATION, method='POST', body={},
+    run=create_runner(202, json.dumps(OPERATION, ensure_ascii=False)), audit=created('op-20261109-1'))
+add('create-started-admin', 'admin', OVERVIEW, 202, OPERATION, method='POST', body={},
+    run=create_runner(202, json.dumps(OPERATION), actor='admin'), audit=created('op-20261109-1', 'admin', 'admin_association'))
+add('create-runner-200-is-202', 'owner', OVERVIEW, 202, {'operation': {'id': 'a'}, 'extra': [1, None]}, method='POST',
+    run=create_runner(200, '{"operation": {"id": "a"}, "extra": [1, null]}'), audit=created('a'))
+add('create-body-ignored', 'owner', OVERVIEW, 202, {'operation': {'id': 'b'}}, method='POST',
+    body={'request_id': 'mine', 'actor_id': 'other'}, run=create_runner(202, '{"operation": {"id": "b"}}'), audit=created('b'))
+add('create-malformed-json-ignored', 'owner', OVERVIEW, 202, {'operation': {'id': 'c'}}, method='POST',
+    raw_body='{"request_id": ', content_type='application/json', run=create_runner(202, '{"operation": {"id": "c"}}'),
+    audit=created('c'))
+add('create-form-ignored', 'owner', OVERVIEW, 202, {'operation': {'id': 'd'}}, method='POST', raw_body='keep=1',
+    content_type='application/x-www-form-urlencoded', run=create_runner(202, '{"operation": {"id": "d"}}'), audit=created('d'))
+add('create-operation-id-missing', 'owner', OVERVIEW, 202, {'operation': {}}, method='POST',
+    run=create_runner(202, '{"operation": {}}'), audit=created(''))
+add('create-operation-id-number', 'owner', OVERVIEW, 202, {'operation': {'id': 42}}, method='POST',
+    run=create_runner(202, '{"operation": {"id": 42}}'), audit=created('42'))
+add('create-operation-id-object', 'owner', OVERVIEW, 202, {'operation': {'id': {'n': [True, None]}}}, method='POST',
+    run=create_runner(202, '{"operation": {"id": {"n": [true, null]}}}'), audit=created("{'n': [True, None]}"))
+add('create-operation-missing', 'owner', OVERVIEW, 500, SERVER, method='POST', run=create_runner(202, '{"queued": true}'))
+add('create-operation-list', 'owner', OVERVIEW, 500, SERVER, method='POST', run=create_runner(202, '{"operation": ["x"]}'))
+add('create-operation-null', 'owner', OVERVIEW, 500, SERVER, method='POST', run=create_runner(202, '{"operation": null}'))
+add('create-reply-list', 'owner', OVERVIEW, 500, SERVER, method='POST', run=create_runner(202, '[1]'))
+add('create-invalid-json', 'owner', OVERVIEW, 503, error(UNREACHABLE), method='POST', run=create_runner(202, '{"operation": '))
+add('create-no-socket', 'owner', OVERVIEW, 503, error(UNREACHABLE), method='POST', run=create_runner(state='no-socket'))
+add('create-no-token', 'owner', OVERVIEW, 503, error(UNREACHABLE), method='POST', run=create_runner(state='no-token'))
+add('create-runner-404', 'owner', OVERVIEW, 409, error(OUTDATED_ACTION), method='POST',
+    run=create_runner(404, '{"error": "Not found"}'))
+add('create-runner-404-text', 'owner', OVERVIEW, 503, error(UNREACHABLE), method='POST', run=create_runner(404, 'Not Found'))
+add('create-runner-409', 'owner', OVERVIEW, 409, error('Un backup è già in corso.'), method='POST',
+    run=create_runner(409, '{"error": "Un backup è già in corso."}'))
+add('create-runner-400-default', 'owner', OVERVIEW, 400, error('Aggiornamento non disponibile.'), method='POST',
+    run=create_runner(400, '{"detail": "x"}'))
+add('create-runner-422-number', 'owner', OVERVIEW, 422, error('7'), method='POST', run=create_runner(422, '{"error": 7}'))
+add('create-runner-500', 'owner', OVERVIEW, 503, error('Runner non pronto.'), method='POST',
+    run=create_runner(500, '{"error": "Runner non pronto."}'))
+add('create-runner-507', 'owner', OVERVIEW, 503, error('Spazio insufficiente.'), method='POST',
+    run=create_runner(507, '{"error": "Spazio insufficiente."}'))
+add('create-runner-error-list', 'owner', OVERVIEW, 500, SERVER, method='POST', run=create_runner(409, '["x"]'))
+
+# ---------------------------------------------------------------------------
+# POST admin/backups/download-token
+# ---------------------------------------------------------------------------
 
 
 def attempts(actor, value):

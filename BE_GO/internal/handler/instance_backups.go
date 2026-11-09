@@ -63,12 +63,17 @@ func (h *InstanceBackupsHandler) instanceBackupsReply(c echo.Context, reply *ser
 		_, err := io.Copy(c.Response(), stream.Body)
 		return err
 	}
+	if reply.Relayed {
+		return c.Blob(reply.Status, "application/json", dto.PythonJSONDumpsCompact(reply.Data))
+	}
 	return c.Blob(reply.Status, "application/json", dto.PythonJSONDumpsCompact(reply.Body))
 }
 
-// Overview is BackupOverviewView (GET; HEAD is the same view).
+// Overview is BackupOverviewView (GET, HEAD is the same view; POST starts a
+// manual backup and never reads the request body).
 func (h *InstanceBackupsHandler) Overview(c echo.Context) error {
-	if actor, err := h.instanceBackupsBegin(c, "GET, HEAD, OPTIONS", "instance_backups"); actor == nil {
+	actor, err := h.instanceBackupsBegin(c, "GET, POST, HEAD, OPTIONS", "instance_backups")
+	if actor == nil {
 		return err
 	}
 	request := c.Request()
@@ -78,6 +83,22 @@ func (h *InstanceBackupsHandler) Overview(c echo.Context) error {
 	case isRead(request.Method):
 		refresh, _ := parseReferenceForm(request.URL.RawQuery).Lookup("refresh")
 		reply, err := h.backups.Overview(request.Context(), refresh == "1")
+		return h.instanceBackupsReply(c, reply, err)
+	case request.Method == http.MethodPost:
+		tracked, err := h.operations.Track(request.Context())
+		if err != nil {
+			return paymentCategoryError(c, err)
+		}
+		defer tracked.Release()
+		audit, err := h.audit(request)
+		if err != nil {
+			return restError(c, err)
+		}
+		ctx, err := tracked.Admit()
+		if err != nil {
+			return paymentCategoryError(c, err)
+		}
+		reply, err := h.backups.Create(ctx, actor.ID, audit)
 		return h.instanceBackupsReply(c, reply, err)
 	}
 	return h.notAllowed(c)
