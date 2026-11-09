@@ -7600,25 +7600,95 @@
         "target": "collaborators_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/emailrender/numbers.go",
+        "BE_GO/internal/emailrender/brand.go",
+        "BE_GO/internal/emailrender/formats.go",
+        "BE_GO/internal/domain/email_render_routes.go",
+        "BE_GO/internal/repository/email_render_routes.go",
+        "BE_GO/internal/service/email_render_routes.go",
+        "BE_GO/internal/handler/email_render_routes.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/collaborator_views.py",
+        "BE/application/views/payment_views.py",
+        "BE/application/views/invoice_views.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE/templates/email/_base.html",
+        "BE/templates/email/account/email_welcome_collaborator_message.html",
+        "BE/templates/email/payment/pending.html",
+        "BE/templates/email/payment/payment_receipt.html",
+        "BE/instance/models.py",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "BE/docmanager/models.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/collaborators/add",
+          "/api/v2/collaborators/add",
+          "/api/collaborators/add"
+        ],
+        "request": "JSON or form body: email (required; Django validate_email on the raw value), collaborator_role (int(), default 3; other than 1/2/3 becomes 1), collaborator_permissions (any JSON, stored for every role; form: last value as a string).",
+        "response": "200 {\"msg\": \"User invited\"}",
+        "errors": "400 JSON parse error; 400 [\"Email is required\"] / [\"Email is not valid.\"]; 401 anonymous; 403 DRF generic for athletes (IsAssociationUser), registry other.users.collaborators.create, admin without session; 405; 500 for a non-dict body Python's `in` matches or rejects, truthy non-string emails, int() failures, values PostgreSQL rejects (nothing written) and an owner without exactly one live association (invitation and entry kept).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated + IsAssociationUser (identity, impersonation and registry other.users.collaborators.create).",
+        "resource_scope": "The invitation belongs to request.user (the owner for collaborators and impersonation); the e-mail names request.user's live association.",
+        "side_effects": "CollaborationInvites create (token_hex(16), expiration now+90 days) with its auditlog create entry indexed actor.sport_association (none for collaborators); then send_mail_async(subject, message, from_email=DEFAULT_FROM_EMAIL, recipient_list=[email], html_message, fail_silently=False, sport_association_id=UUID).",
+        "transaction": "Not atomic in Django (autocommit insert and entry). Go: insert, entry and index in one transaction committed before the association check, render and publish.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/email_render_routes_http.json",
+        "TESTS/fixtures/generate_email_render_routes_http.py",
+        "TESTS/contracts/test_email_render_routes_http.py",
+        "TESTS/adapters/django/email_render_routes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/email-render-routes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 82/82; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-native-r3/results.json",
+          "receipt_sha256": "2a1c8275028c546bae9d8e3ab15643ba11f01752fe07221bb9f59bc3edc90c77"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 82/82 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact invitation, audit, index and Celery broker effects (message HTML rendered by Django's render_to_string in the adapter).",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-versioned-r1/results.json",
+          "receipt_sha256": "069266130afdba21663a58d24bd3635b89cb9ebeecffcc7933b04d5a7b79ef22"
+        },
+        {
+          "revision": "committing change escaping ' as &#39; instead of Django's &#x27; in emailrender.Escape",
+          "result": "Mutation control: fails Go on email-render-routes-request-subscription-other-user (celery.body:0).",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-mutation-r1/results.json",
+          "receipt_sha256": "2adc68b580e712d20ae4dbaf3777347b75387a04c3a392854f162c823bff157f"
+        }
+      ],
+      "notes": [
+        "Implementing: All three views render their e-mail in the request (render_to_string of email/_base.html plus the per-mail template, instance_email_brand, autoescaping, the active language's decimal separator) and publish core.tasks.send_mail_async(kwargs=...) through BE_GO/internal/celery; Go renders the same bytes with BE_GO/internal/emailrender (golden-tested against Django's render_to_string, 25 renders, palettes, separators). collaborators/add writes the invitation and its auditlog create entry (indexed through the actor's live association), commits, then renders and publishes; an owner without a live association keeps the invitation (500). Refused before any write: invitation permissions with floats whose repr uses an exponent or -0.0 (the second save would log an update entry), e-mail strings with NUL or lone surrogates, template inputs the renderer does not port (payment date before year 1000). HTTP cases run in English; other languages are covered by the golden test."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:collaborators/list -> collaborators_list",
@@ -13783,25 +13853,95 @@
         "target": "invoice_send",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/emailrender/numbers.go",
+        "BE_GO/internal/emailrender/brand.go",
+        "BE_GO/internal/emailrender/formats.go",
+        "BE_GO/internal/domain/email_render_routes.go",
+        "BE_GO/internal/repository/email_render_routes.go",
+        "BE_GO/internal/service/email_render_routes.go",
+        "BE_GO/internal/handler/email_render_routes.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/collaborator_views.py",
+        "BE/application/views/payment_views.py",
+        "BE/application/views/invoice_views.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE/templates/email/_base.html",
+        "BE/templates/email/account/email_welcome_collaborator_message.html",
+        "BE/templates/email/payment/pending.html",
+        "BE/templates/email/payment/payment_receipt.html",
+        "BE/instance/models.py",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "BE/docmanager/models.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice/<uid>/send",
+          "/api/v2/invoice/<uid>/send",
+          "/api/invoice/<uid>/send"
+        ],
+        "request": "No body is read.",
+        "response": "200 {\"msg\": \"email sent.\"}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 401; 403 User not allowed. / registry bookeeping.documents.invoices.update / admin without session; 405; 412 {\"msg\": \"Nessuna email associata.\"}; 500 without exactly one live association, missing invoice or payment, no PDF, no payment date.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (identity, impersonation and registry bookeeping.documents.invoices.update).",
+        "resource_scope": "scoped_queryset(Invoice.objects) by id (live, X-Group-Id-aware), its first scoped payment by key; the invoice's association must be request.user's.",
+        "side_effects": "send_mail_async(subject='<denomination> | Ricevuta di pagamento n. <number> - <dd/mm/YYYY>', payment_receipt.html message (float fee sum |floatformat:2), from_email=DEFAULT_TEAM_EMAIL, recipient_list=[associate, user or supplier email], html_message, fail_silently=False, sport_association_id=UUID, reply_to=[association owner email]). Nothing is written.",
+        "transaction": "Read only; Go publishes after the reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/email_render_routes_http.json",
+        "TESTS/fixtures/generate_email_render_routes_http.py",
+        "TESTS/contracts/test_email_render_routes_http.py",
+        "TESTS/adapters/django/email_render_routes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/email-render-routes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 82/82; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-native-r3/results.json",
+          "receipt_sha256": "2a1c8275028c546bae9d8e3ab15643ba11f01752fe07221bb9f59bc3edc90c77"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 82/82 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact invitation, audit, index and Celery broker effects (message HTML rendered by Django's render_to_string in the adapter).",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-versioned-r1/results.json",
+          "receipt_sha256": "069266130afdba21663a58d24bd3635b89cb9ebeecffcc7933b04d5a7b79ef22"
+        },
+        {
+          "revision": "committing change escaping ' as &#39; instead of Django's &#x27; in emailrender.Escape",
+          "result": "Mutation control: fails Go on email-render-routes-request-subscription-other-user (celery.body:0).",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-mutation-r1/results.json",
+          "receipt_sha256": "2adc68b580e712d20ae4dbaf3777347b75387a04c3a392854f162c823bff157f"
+        }
+      ],
+      "notes": [
+        "Implementing: All three views render their e-mail in the request (render_to_string of email/_base.html plus the per-mail template, instance_email_brand, autoescaping, the active language's decimal separator) and publish core.tasks.send_mail_async(kwargs=...) through BE_GO/internal/celery; Go renders the same bytes with BE_GO/internal/emailrender (golden-tested against Django's render_to_string, 25 renders, palettes, separators). collaborators/add writes the invitation and its auditlog create entry (indexed through the actor's live association), commits, then renders and publishes; an owner without a live association keeps the invitation (500). Refused before any write: invitation permissions with floats whose repr uses an exponent or -0.0 (the second save would log an update entry), e-mail strings with NUL or lone surrogates, template inputs the renderer does not port (payment date before year 1000). HTTP cases run in English; other languages are covered by the golden test."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice/<str:uid>/update -> invoice_update",
@@ -17010,25 +17150,95 @@
         "target": "payment_request",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/emailrender/numbers.go",
+        "BE_GO/internal/emailrender/brand.go",
+        "BE_GO/internal/emailrender/formats.go",
+        "BE_GO/internal/domain/email_render_routes.go",
+        "BE_GO/internal/repository/email_render_routes.go",
+        "BE_GO/internal/service/email_render_routes.go",
+        "BE_GO/internal/handler/email_render_routes.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/collaborator_views.py",
+        "BE/application/views/payment_views.py",
+        "BE/application/views/invoice_views.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE/templates/email/_base.html",
+        "BE/templates/email/account/email_welcome_collaborator_message.html",
+        "BE/templates/email/payment/pending.html",
+        "BE/templates/email/payment/payment_receipt.html",
+        "BE/instance/models.py",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "BE/docmanager/models.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/<uid>/request",
+          "/api/v2/payment/<uid>/request",
+          "/api/payment/<uid>/request"
+        ],
+        "request": "No body is read.",
+        "response": "200 {\"msg\": \"email sent.\"}",
+        "errors": "400 [\"badly formed hexadecimal UUID string\"]; 401; 403 User not allowed. / registry bookeeping.payments.update / admin without session; 405; 412 {\"msg\": \"email not sent, payment already paid.\"}; 500 without exactly one live association, missing payment, payment without association or associate.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated (identity, impersonation and registry bookeeping.payments.update).",
+        "resource_scope": "scoped_queryset(Payment.objects) by id (live, X-Group-Id-aware, impersonated association), then the payment's association must be request.user's.",
+        "side_effects": "send_mail_async(subject='<denomination> | Pagamento in attesa', pending.html message, from_email=DEFAULT_TEAM_EMAIL, recipients [associate email if not None, request.user.email if the payment user differs], html_message, fail_silently=False, sport_association_id=UUID, reply_to=[association owner email]). Nothing is written.",
+        "transaction": "Read only; Go publishes after the reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/email_render_routes_http.json",
+        "TESTS/fixtures/generate_email_render_routes_http.py",
+        "TESTS/contracts/test_email_render_routes_http.py",
+        "TESTS/adapters/django/email_render_routes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/email-render-routes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 82/82; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-native-r3/results.json",
+          "receipt_sha256": "2a1c8275028c546bae9d8e3ab15643ba11f01752fe07221bb9f59bc3edc90c77"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 82/82 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact invitation, audit, index and Celery broker effects (message HTML rendered by Django's render_to_string in the adapter).",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-versioned-r1/results.json",
+          "receipt_sha256": "069266130afdba21663a58d24bd3635b89cb9ebeecffcc7933b04d5a7b79ef22"
+        },
+        {
+          "revision": "committing change escaping ' as &#39; instead of Django's &#x27; in emailrender.Escape",
+          "result": "Mutation control: fails Go on email-render-routes-request-subscription-other-user (celery.body:0).",
+          "artifact": "quality-reports/go-migration/email-render-routes-http-mutation-r1/results.json",
+          "receipt_sha256": "2adc68b580e712d20ae4dbaf3777347b75387a04c3a392854f162c823bff157f"
+        }
+      ],
+      "notes": [
+        "Implementing: All three views render their e-mail in the request (render_to_string of email/_base.html plus the per-mail template, instance_email_brand, autoescaping, the active language's decimal separator) and publish core.tasks.send_mail_async(kwargs=...) through BE_GO/internal/celery; Go renders the same bytes with BE_GO/internal/emailrender (golden-tested against Django's render_to_string, 25 renders, palettes, separators). collaborators/add writes the invitation and its auditlog create entry (indexed through the actor's live association), commits, then renders and publishes; an owner without a live association keeps the invitation (500). Refused before any write: invitation permissions with floats whose repr uses an exponent or -0.0 (the second save would log an update entry), e-mail strings with NUL or lone surrogates, template inputs the renderer does not port (payment date before year 1000). HTTP cases run in English; other languages are covered by the golden test."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/<str:uid>/update -> payment_update",
