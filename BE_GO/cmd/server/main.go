@@ -233,6 +233,7 @@ func run() (runErr error) {
 	instanceAdminHandler := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	instanceManifestHandler := handler.NewInstanceManifestHandler(service.NewInstanceManifest(repository.NewInstanceManifest(db)))
 	instanceLogoHandler := composeInstanceLogo(cfg)
+	instanceSetupHandler := composeInstanceSetup(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	docmanagerReadsHandler := handler.NewDocmanagerReadsHandler(service.NewDocmanagerReads(repository.NewDocmanagerReads(db),
 		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
@@ -578,6 +579,11 @@ func run() (runErr error) {
 	e.Any("/instance/admin/diagnostics", instanceAdminHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/updates", instanceAdminHandler.Updates, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/restarts", instanceAdminHandler.Restarts, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/setup-token/validate", instanceSetupHandler.Validate, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/configure", instanceSetupHandler.Configure, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/reconfigure", instanceSetupHandler.Reconfigure, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/logo", instanceSetupHandler.Logo, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/logo", instanceSetupHandler.OwnerLogo, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/manuale/sections", manualHandler.Sections, handler.ManualResponseEncoding(), middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/manuale/assets/*", manualHandler.Asset, handler.ManualResponseEncoding(), middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/info", profileHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
