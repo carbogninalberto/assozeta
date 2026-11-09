@@ -1,0 +1,1036 @@
+{
+ "generator": "TESTS/adapters/go/pyzlib_golden.py",
+ "python": "3.13.16",
+ "zlib_runtime_version": "1.2.12",
+ "compressobj": "zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)",
+ "cases": [
+  {
+   "name": "empty",
+   "recipe": {
+    "kind": "hex",
+    "hex": ""
+   },
+   "input_len": 0,
+   "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "output_len": 2,
+   "output_sha256": "9b4fb24edd6d1d8830e272398263cdbf026b97392cc35387b991dc0248a628f9",
+   "output_hex": "0300"
+  },
+  {
+   "name": "one_byte",
+   "recipe": {
+    "kind": "hex",
+    "hex": "41"
+   },
+   "input_len": 1,
+   "input_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+   "output_len": 3,
+   "output_sha256": "368f084eda77ca9ecdb573d09e754104bb9fe598566da405c7f6f0c5eccf9e43",
+   "output_hex": "730400"
+  },
+  {
+   "name": "two_bytes",
+   "recipe": {
+    "kind": "hex",
+    "hex": "4141"
+   },
+   "input_len": 2,
+   "input_sha256": "58bb119c35513a451d24dc20ef0e9031ec85b35bfc919d263e7e5d9868909cb5",
+   "output_len": 4,
+   "output_sha256": "854db67bbbde6dc578ffe7635a51d5a2fb4be4a6bc886d53be65a77d506cca9f",
+   "output_hex": "73740400"
+  },
+  {
+   "name": "three_same",
+   "recipe": {
+    "kind": "hex",
+    "hex": "000000"
+   },
+   "input_len": 3,
+   "input_sha256": "709e80c88487a2411e1ee4dfb9f22a861492d20c4765150c0c794abd70f8147c",
+   "output_len": 5,
+   "output_sha256": "467aa266c7622d9be51f841dea33cdbb8f0b9b2c7bb8b74e5fb8bde64a957de3",
+   "output_hex": "6360600000"
+  },
+  {
+   "name": "short_ascii",
+   "recipe": {
+    "kind": "hex",
+    "hex": "48656c6c6f2c20776f726c64212048656c6c6f2c207a6c69622e2048656c6c6f2c20476f2e"
+   },
+   "input_len": 37,
+   "input_sha256": "a48d399b7afeb958b9172707019045598470b2cddf79b6c020925f5e209208b6",
+   "output_len": 28,
+   "output_sha256": "b4b4abe0569ab3969f753f30d04ee5ea87486424bb86564a39c84dff2c3b2f94",
+   "output_hex": "f348cdc9c9d75128cf2fca495154f080f0aa723293f4601cf77c3d00"
+  },
+  {
+   "name": "short_utf8",
+   "recipe": {
+    "kind": "hex",
+    "hex": "5065726368c3a9206c612063697474c3a020c3a8206769c3a0207069c3b92062656c6c6120636f73c3ac2e"
+   },
+   "input_len": 43,
+   "input_sha256": "022b91310ce555983f4d0080cc6fcd4f9f509906a6bdcc8224de7c91ac4bd31b",
+   "output_len": 42,
+   "output_sha256": "853d8778cc4dfc3a670f6c4b3dcbb983f98f14b7779fec1d782bcf2a35d996d3",
+   "output_hex": "0b482d4ace38bc522127512139b3a4e4f00285c32b14d233817441e6e19d0a49a9392099fce2c36bf400"
+  },
+  {
+   "name": "text_3",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 3
+   },
+   "input_len": 3,
+   "input_sha256": "a08bf07d189f4c5ec1eb83a4e8e1a9bf8bc331e31f99d282aaf839291508c343",
+   "output_len": 5,
+   "output_sha256": "e1a1ef3a6d9c95181e4c9956b860157d5d6312a0d8fc7d05e6f5756c846f2247",
+   "output_hex": "73cb2c0200"
+  },
+  {
+   "name": "text_4",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 4
+   },
+   "input_len": 4,
+   "input_sha256": "c141faa80e43a11909f5736d1e767f12e1468aa06dadd446081746934e875fc3",
+   "output_len": 6,
+   "output_sha256": "638b2c7b1865853b9296c97d7ac5a5e87e7c869fc438623202fc2bd0db50c1b2",
+   "output_hex": "73cb2c4a0500"
+  },
+  {
+   "name": "text_257",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 257
+   },
+   "input_len": 257,
+   "input_sha256": "c5a2d7e76f7a6e12ec6e0dda66140db7c2f58eb87b2bcde912b4c6dd99e9aba2",
+   "output_len": 162,
+   "output_sha256": "e89c7687e8171f5b629774e5a847d1675280863309dc8bd5f47989ed8a51a686",
+   "output_hex": "6d8e3b0ec2400c44fb9cc26749011d1517708c132c053b78375ba4e424b44891b800ddde8493900f9f867666f4e66dc4590786125de0dc5bc4822ce411b6ac96102a53a985acd86167ad8062be27866024068de42bac73c7464cd7025b0609e4322c910b71ea2342c74ec77c83d25a6b14217208ec78628d0618a3248913706f2e6aff5764878906f5849f5ff2a3622f9e97f177b238bde5e7e2c75dc65fec47f805"
+  },
+  {
+   "name": "text_258",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 258
+   },
+   "input_len": 258,
+   "input_sha256": "c25a15f3eb864756300114d7d49a9885a512ca154a8cc3b54061a0101651a941",
+   "output_len": 162,
+   "output_sha256": "e4ac35e1ca4646e0314ccf5c32a293240a35a25da3a1dad9a9dccf91c60ca87c",
+   "output_hex": "6d8e3b0ec2400c44fb9cc26749011d1517708c132c053b78375ba4e424b44891b800ddde8493900f0a0dedcce8cddb89b30e0c25bac0b5b7880559c823ec592d2154a6520b5971c0ce5a01c5fc4c0cc1480c1ac97758e78e8d98ae05b60c12c865582217e2d447848e9dcef901a5b5d62842e410d8f1c21a0d3046491227e0d15cd4feafc84e130dea093fbfe457c55ebc6fe3ef6471facacfc58fbb8c37ec26fc01"
+  },
+  {
+   "name": "text_259",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 259
+   },
+   "input_len": 259,
+   "input_sha256": "8738f82e98f7f3089455a7fc40b5d9721d8135fee4a1ef7ba3304ebac55cfaf8",
+   "output_len": 162,
+   "output_sha256": "bd47c2970c598acf5b4a36fe276ffb4eeb7d8b7e97af9e46e98e2e120de957a9",
+   "output_hex": "6d8e3b0ec2400c44fb9cc26749011d1517701627580a76f03a5ba4e424b44891b800ddde8493900f220dedcce8cddbb1910c04251ac3b557c72268cc23ec493421542a5c73d0e2809db60c82f99908a206566838df619d1b36acb216d812700cc6c31219074abd237464e19c1f506aab8d2038c5488617125740774eec13f0a8c6a2ff57414f130dea093fbfe4574556bc6fe376b2387de5e762e32ee31f7613fe00"
+  },
+  {
+   "name": "text_261",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 261
+   },
+   "input_len": 261,
+   "input_sha256": "b590ac10735964204a8807a49c7f1161c49576d35762c568ad3bc9901817b031",
+   "output_len": 162,
+   "output_sha256": "5426ed3bbd274ef9d5a7d2a3525f7b3639464adc214581858052adadb73a18a0",
+   "output_hex": "6d8e3b0ec2400c44fb9cc267a1808e8a0b38c60996821dbc9b2d5272125aa4485c806e6fc249c807110ada99d19bb71567ed1936e80297ce221664210fb063b584509a4a2564c51e5b6b0414f32331042331a825df60993bd662ba14d8304820977e8e5c885317115a763ae53b6cacb15a112287c08e67d66880314a9238020fe6a2f67f45761c69508df8e9253f4bf6e2751dd693d9e9233f152b771e7fb1bfc26f"
+  },
+  {
+   "name": "text_262",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 262
+   },
+   "input_len": 262,
+   "input_sha256": "cdbb36cf371ea4e00dea2b5ee4a2b84a33453e0cf043b9bc7d10afbbe27f166d",
+   "output_len": 163,
+   "output_sha256": "ceeab527e4378e1b2604d5201104d81a99afd13d92265b9bace6ab899bb2bf6e",
+   "output_hex": "6d8e3b0ec2400c44fb9cc267a1808e8a0b38c60996821dbc9b2d5272125aa4485c806e6fc249c8071121d1ce8cdebcad386bcfb04117b87416b1200b79801dab2584d2542a212bf6d85a23a0981f89211889412df906cbdcb116d3a5c0864102b9f473e4429cba88d0b2d329df61638dd58a103904763cb346038c5192c411783017b5ff2bb2e348836ac44f2ff959b217afebb09ecc4e1ff9a958b9f3f88bfd117e03"
+  },
+  {
+   "name": "text_263",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 263
+   },
+   "input_len": 263,
+   "input_sha256": "4838a1de19d0d72e8e733b50c2a87e39075cd86646df319472fe175d32bd74bc",
+   "output_len": 163,
+   "output_sha256": "987ab1f7526fed83e932b65ffbc91b521f20095ae4e6d3f9193c481bd8bc6cc8",
+   "output_hex": "6d8e3b0ec2400c44fb9cc267a1808e8a0b38c60996821dbc9b2d5272125aa4485c806e6fc249c8071121d1ce8cdebcad386bcfb04117b87416b1200b79801dab2584d2542a212bf6d85a23a0981f89211889412df906cbdcb116d3a5c0864102b9f473e4429cba88d0b2d329df61638dd58a103904763cb346038c5192c411783017b5ff2bb2e348836ac44f2ff959b217afebb09ecc4e1ff9a958b9f3f88bfd157e03"
+  },
+  {
+   "name": "text_1000",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 1000
+   },
+   "input_len": 1000,
+   "input_sha256": "cf92683b7afedac1ed46f619759cf963b05721641665a3c2eaff66172ece6fbc",
+   "output_len": 366,
+   "output_sha256": "2e5a2d4cce56b71cb89f0ab6f26a4087d151ba89e0ef32929ef2ebb848301d07",
+   "output_hex": "6d533b4ec43010ed7d8a39cb1650811042f4b3c61b46ca7a82e34d919293502ed24ad44874be0927c1b1c7ce872de319bf9f5f6ec8193b1ad8a123783bb147a5b90f17b8359607843d5b3a9066758f1db70416c3d760a0674d0c0d850fc8eb0e1b629b07d81aa05e3b1ad391236d869347e88cd3afe11376dc726311bce97be3f068ac6740ef69201f019fd891e5eb5b9a5f221a1c22fcc4127ef6c6a9dff7cb4c923489f86930e3a6e50abb151cce11dc7ab49ec49d18136025b266bc8778cd1d396fab8957619fe0c4f78621a50b92e3ca95842aa3a8a4a3f05d5f434495f4b2ac473ee232e459d67cb75e9138d2a4f87f36d68c8402579e39dab571975374a267c1a2c94f145b6772dc6123862a5cd6111ddd518b9697e28bb8551242792d2439db34604e655d8c732e82343447a88a3981dad850299f5aa47540531ee2418a50512357095582c8ae5765283a6b2049d9bf4e2dda7a86dceb2c39fd9fe5a37642f8d230852a4d5a3c9968f903"
+  },
+  {
+   "name": "text_4096",
+   "recipe": {
+    "kind": "text",
+    "seed": 7,
+    "size": 4096
+   },
+   "input_len": 4096,
+   "input_sha256": "692f0c5701fcc0ac9d8497b732297c02bd9611d39f5c660595a59fc8775d9c7e",
+   "output_len": 1012,
+   "output_sha256": "0983808ac8151c30b68fef25ba743eb576554845a5c95d3e02a526a0f647024c"
+  },
+  {
+   "name": "json_2k",
+   "recipe": {
+    "kind": "json",
+    "seed": 11,
+    "size": 2000
+   },
+   "input_len": 2000,
+   "input_sha256": "e1385405bf6f1824588ec193042345be4e9ef268728b159b6f9d899b3747af55",
+   "output_len": 599,
+   "output_sha256": "05c1553ec2b9f0453e03155808271f48a700ff070b908ac05b1f30ab85fd88fb"
+  },
+  {
+   "name": "json_220k",
+   "recipe": {
+    "kind": "json",
+    "seed": 1,
+    "size": 220000
+   },
+   "input_len": 220000,
+   "input_sha256": "d952b863e1512311d98b9b7b638095aa3f533abc64fa711f6c8b80f7ce93cbf6",
+   "output_len": 33908,
+   "output_sha256": "c0a7120b9f41d6c03b51b13b79d1b895c32dfa7fa3651f9d9c1398c60b31c03a"
+  },
+  {
+   "name": "json_1m",
+   "recipe": {
+    "kind": "json",
+    "seed": 2,
+    "size": 1000000
+   },
+   "input_len": 1000000,
+   "input_sha256": "bc667399b73c1e6787b1472aae97f8a08467068c4b1058984319793646d4e706",
+   "output_len": 150956,
+   "output_sha256": "3725d363391a92031810a9a771b368729928fd08f2951a84de3c2968d0681d17"
+  },
+  {
+   "name": "json_220k_chunked",
+   "recipe": {
+    "kind": "json",
+    "seed": 1,
+    "size": 220000
+   },
+   "input_len": 220000,
+   "input_sha256": "d952b863e1512311d98b9b7b638095aa3f533abc64fa711f6c8b80f7ce93cbf6",
+   "output_len": 33908,
+   "output_sha256": "c0a7120b9f41d6c03b51b13b79d1b895c32dfa7fa3651f9d9c1398c60b31c03a",
+   "chunks": [
+    1,
+    7,
+    4093,
+    65537,
+    13
+   ],
+   "chunked_output_sha256": "c0a7120b9f41d6c03b51b13b79d1b895c32dfa7fa3651f9d9c1398c60b31c03a"
+  },
+  {
+   "name": "run_a_300k",
+   "recipe": {
+    "kind": "run",
+    "byte": 97,
+    "size": 300000
+   },
+   "input_len": 300000,
+   "input_sha256": "12e1b9b179b29a4f7e5889b185d7ac71bff0ad1f49a7b391d0911b737a0f5381",
+   "output_len": 308,
+   "output_sha256": "68545bfde6e014231fc5eb8d44ffb42ba43e74c082049f00edd83eeeb2d9361b",
+   "output_hex": "edc1010d000000c2a0acef5fc21e0e280000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f831"
+  },
+  {
+   "name": "run_zero_70k",
+   "recipe": {
+    "kind": "run",
+    "byte": 0,
+    "size": 70000
+   },
+   "input_len": 70000,
+   "input_sha256": "f51b279903037b37ea1828a1021499995718d38016cad6c0da30962a41be052f",
+   "output_len": 85,
+   "output_sha256": "5de73a93ed1d02e62a25d5f5bb9927bb9563ea9c2ba2dc32d78e45a323bc7b38",
+   "output_hex": "edc13101000000c2a0f54f6d094fa00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080b701"
+  },
+  {
+   "name": "pattern_abc_100k",
+   "recipe": {
+    "kind": "pattern",
+    "pattern": "616263",
+    "size": 100000
+   },
+   "input_len": 100000,
+   "input_sha256": "3af361142563c6e63e2a271176a8b1f61b046c53b4b9dd077be78c895d1919e1",
+   "output_len": 117,
+   "output_sha256": "8f3d96b87490b9e9be263151c4e283ee16be7e1014e86fe578a24bb1a1d04e94",
+   "output_hex": "edc2411100000c02a0ac6aff0eabb1071ce9a2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafe7c"
+  },
+  {
+   "name": "period_300_200k",
+   "recipe": {
+    "kind": "random_period",
+    "seed": 5,
+    "period": 300,
+    "size": 200000
+   },
+   "input_len": 200000,
+   "input_sha256": "cf666d0f68ccceaeb0a590bb5c9d35a3333e8b828f947ebd9952c14507a86b39",
+   "output_len": 1267,
+   "output_sha256": "2fb25ad0a0612002001420b33b26c2976c258cb0e2e72554ad57b3fe31379a4c"
+  },
+  {
+   "name": "period_32506_150k",
+   "recipe": {
+    "kind": "random_period",
+    "seed": 6,
+    "period": 32506,
+    "size": 150000
+   },
+   "input_len": 150000,
+   "input_sha256": "123fa0430079fb8f86fc9a5843ca1bc20824b6a295f1f8ddfd5cfc51e735e887",
+   "output_len": 34441,
+   "output_sha256": "16421028e79cf95e69676b0e69c6ea06a8a92b8180bea0b103fe1d0103af0535"
+  },
+  {
+   "name": "period_32507_150k",
+   "recipe": {
+    "kind": "random_period",
+    "seed": 6,
+    "period": 32507,
+    "size": 150000
+   },
+   "input_len": 150000,
+   "input_sha256": "ed519d7ed56b867fccd8212ce64fe6fbf4fe8b191f00a912be5e7db6f00fa1bb",
+   "output_len": 150050,
+   "output_sha256": "2709ab08f6658803592135d6643b55b04b528011dedc5b04e021c5ca68f31523"
+  },
+  {
+   "name": "period_40000_150k",
+   "recipe": {
+    "kind": "random_period",
+    "seed": 6,
+    "period": 40000,
+    "size": 150000
+   },
+   "input_len": 150000,
+   "input_sha256": "8ef2708a0fb96c6fbb4c264dfccec0cdb84345817f249f98ba2f0bef88bc53c8",
+   "output_len": 150050,
+   "output_sha256": "be95915e498092f59177ca1f138b907aac7b02c1acdd983c5dd614f47658f5c2"
+  },
+  {
+   "name": "random_1k",
+   "recipe": {
+    "kind": "random",
+    "seed": 3,
+    "size": 1000
+   },
+   "input_len": 1000,
+   "input_sha256": "f50dfcb3951b40942ea3463e643f7d3f4ab86717f302d9ed2fd6d59c56b880e9",
+   "output_len": 1005,
+   "output_sha256": "c23dea791a9055a9382b6a35802a21dd5b6a4d2ee0d6de24e3f87abb707cc8a3"
+  },
+  {
+   "name": "random_100k",
+   "recipe": {
+    "kind": "random",
+    "seed": 3,
+    "size": 100000
+   },
+   "input_len": 100000,
+   "input_sha256": "6bdebb827a9ef1dd043ca9415b1d1fee614ae3ccb94139c3d32d34df4b006813",
+   "output_len": 100035,
+   "output_sha256": "6485962c17af6efe18a9ca5b75fcfca682687ba393b758c84c6f94fa666588ce"
+  },
+  {
+   "name": "random_100k_chunked",
+   "recipe": {
+    "kind": "random",
+    "seed": 3,
+    "size": 100000
+   },
+   "input_len": 100000,
+   "input_sha256": "6bdebb827a9ef1dd043ca9415b1d1fee614ae3ccb94139c3d32d34df4b006813",
+   "output_len": 100035,
+   "output_sha256": "6485962c17af6efe18a9ca5b75fcfca682687ba393b758c84c6f94fa666588ce",
+   "chunks": [
+    8192
+   ],
+   "chunked_output_sha256": "6485962c17af6efe18a9ca5b75fcfca682687ba393b758c84c6f94fa666588ce"
+  },
+  {
+   "name": "mixed_1m",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 9,
+    "size": 1000000
+   },
+   "input_len": 1000000,
+   "input_sha256": "2360289cbd2816551cd8ee3447e5368fbc5716b8889c6ff5b9216755f4b1053d",
+   "output_len": 271164,
+   "output_sha256": "e0b1b96c3cbb53bcc50d1a8fe07046905ebac28232c1e30284bf65fa57f05672"
+  },
+  {
+   "name": "mixed_1m_chunked",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 9,
+    "size": 1000000
+   },
+   "input_len": 1000000,
+   "input_sha256": "2360289cbd2816551cd8ee3447e5368fbc5716b8889c6ff5b9216755f4b1053d",
+   "output_len": 271164,
+   "output_sha256": "e0b1b96c3cbb53bcc50d1a8fe07046905ebac28232c1e30284bf65fa57f05672",
+   "chunks": [
+    3,
+    100000,
+    17,
+    32768
+   ],
+   "chunked_output_sha256": "e0b1b96c3cbb53bcc50d1a8fe07046905ebac28232c1e30284bf65fa57f05672"
+  },
+  {
+   "name": "large_mixed_6m",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 42,
+    "size": 6000000
+   },
+   "input_len": 6000000,
+   "input_sha256": "70c6956549de4e8d5e2a23ebb7f6bea778bc669bb1d06c6f950e1e355d69393d",
+   "output_len": 1783780,
+   "output_sha256": "2b527661b95b2dc1ff72148406d4e6359cc99f910ec0981957d1d939cafeefd9"
+  },
+  {
+   "name": "large_text_3m",
+   "recipe": {
+    "kind": "text",
+    "seed": 43,
+    "size": 3000000
+   },
+   "input_len": 3000000,
+   "input_sha256": "7a4c130aa9092fefff990dc63c7889417cf322ff8404e306c9febf8c1ff84a5e",
+   "output_len": 463932,
+   "output_sha256": "886127b017c6e480410bdd5b37ea3375a716f67579d83d08cc7d58a4a93fdd68"
+  },
+  {
+   "name": "fuzz_mixed_00",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1000,
+    "size": 89000
+   },
+   "input_len": 89000,
+   "input_sha256": "36800916ee2a1fcafa207f2a3182b21686aa6f671a9f0b4080ccb12ea23fd2af",
+   "output_len": 26546,
+   "output_sha256": "89d155fa6a226725183c825928013bef52f0f801383509bfffc5aaef240e36fa"
+  },
+  {
+   "name": "fuzz_mixed_01",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1001,
+    "size": 6919
+   },
+   "input_len": 6919,
+   "input_sha256": "516ec43f7cf18d9db0e9ebce5ff2cec9c6128480666e0ce86116a04cd2d13389",
+   "output_len": 6924,
+   "output_sha256": "61e386d6271d3200bf5a9520c4ab1cd3404c6d4072c6ab1571633f5db34b8edc"
+  },
+  {
+   "name": "fuzz_mixed_02",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1002,
+    "size": 14838
+   },
+   "input_len": 14838,
+   "input_sha256": "c52663c8a1145b996c9b1a422c0f9ce95348c13ca30dfa076843d20c99e4e249",
+   "output_len": 2916,
+   "output_sha256": "913adc57dfd25c115414159e8e082d16e02e37057d48ead4c0b3e41b4ce593c7"
+  },
+  {
+   "name": "fuzz_mixed_03",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1003,
+    "size": 22757
+   },
+   "input_len": 22757,
+   "input_sha256": "ab8a33a9bec903360c07fac088e0f01d90ddc704c6b13478c24f92d385d6d21d",
+   "output_len": 4282,
+   "output_sha256": "06cd6629e96a9a0ec914213bbdf0ad1c328f1b8f9f3258186906ecf9ad244dc9"
+  },
+  {
+   "name": "fuzz_mixed_04",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1004,
+    "size": 30676
+   },
+   "input_len": 30676,
+   "input_sha256": "a517c43b1581858ca2b01cbb1fb8084a708766b617f7a23b9e0edca49a8b67f9",
+   "output_len": 3652,
+   "output_sha256": "5e27f58377d444b92e86717122873f8b78a4756a3ab428673105c8f2dc7b51e9"
+  },
+  {
+   "name": "fuzz_mixed_05",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1005,
+    "size": 38595
+   },
+   "input_len": 38595,
+   "input_sha256": "74d80c7ab6761918675cbfa7d1a21c28dc043fa1ec15ed717649090bdd92b189",
+   "output_len": 1148,
+   "output_sha256": "1056a3fd3250c555b8b635659d04dae9e5d4f7027dcd446610682703ac8ecaf5"
+  },
+  {
+   "name": "fuzz_mixed_06",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1006,
+    "size": 46514
+   },
+   "input_len": 46514,
+   "input_sha256": "e26ed530da6c30144c4909c3f7ea154e246e7947e50b333bf43a18c60ab1a80f",
+   "output_len": 21960,
+   "output_sha256": "82bebd3680ca6c0db6d8aeeadae7ea57107eba1123b5db1657a37168a802038a"
+  },
+  {
+   "name": "fuzz_mixed_07",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1007,
+    "size": 54433
+   },
+   "input_len": 54433,
+   "input_sha256": "aa0b25b3ef873b6dff2ee90d707a057058af913c27991a63a1a190d895d68131",
+   "output_len": 84,
+   "output_sha256": "ae6742ec74155e82331b9c368faabeedaae221b0a4c053232baa8460e48e2ffd",
+   "output_hex": "edc2310d00300800308988d903662663faf6a08093b469bd53aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa6e1e0000000000000000000000000c5d00000000000000000000000000000000764b000000000000681f"
+  },
+  {
+   "name": "fuzz_mixed_08",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1008,
+    "size": 62352
+   },
+   "input_len": 62352,
+   "input_sha256": "e5125f28d54675875723895a5baabb3d5829b147770d08676eb8632392fe9701",
+   "output_len": 17538,
+   "output_sha256": "ad6414c703abda95e3d87327cf4dcf72b282bc8d040133ffb9177f5adc8ece2a"
+  },
+  {
+   "name": "fuzz_mixed_09",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1009,
+    "size": 70271
+   },
+   "input_len": 70271,
+   "input_sha256": "bde0c036d21889ee9c917b77acd7cdd7147fdc14da2c509d87e6402db7eb2e55",
+   "output_len": 9215,
+   "output_sha256": "16052d8a9773feac69d1e2fe22654766a5f611001c773477a1d24fd935b35bc4"
+  },
+  {
+   "name": "fuzz_mixed_10",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1010,
+    "size": 78190
+   },
+   "input_len": 78190,
+   "input_sha256": "d18942e30157f04b2dda771f1770afc6f8d02bba3cc0cbc5fe6afd847f19546d",
+   "output_len": 28072,
+   "output_sha256": "a9d0cd35796ab61b1bbc75c7d011bd31bddbf49e56352f49e65e57442c32ebd8"
+  },
+  {
+   "name": "fuzz_mixed_11",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1011,
+    "size": 86109
+   },
+   "input_len": 86109,
+   "input_sha256": "d12b642bf6e46333d8be8874edc69bae35f7b830b604690802be3389ac69c84b",
+   "output_len": 9470,
+   "output_sha256": "f6ee1c88c498b8a8981919e045eda62eb67b1dee07bec166264a645fc33a644a"
+  },
+  {
+   "name": "fuzz_mixed_12",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1012,
+    "size": 4028
+   },
+   "input_len": 4028,
+   "input_sha256": "eaa035934d0caa03d1ce71de3d9e74ef19a210d8934c3f7a743175628d4acc34",
+   "output_len": 22,
+   "output_sha256": "79ea36ab6b9849f62460e5f8d3758cfb87aff6e24b1ebe48a80c13156766dbbf",
+   "output_hex": "edc13101000000c2a0fe4597c31a1e4001000000cf06"
+  },
+  {
+   "name": "fuzz_mixed_13",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1013,
+    "size": 11947
+   },
+   "input_len": 11947,
+   "input_sha256": "ba267514db1194f86a74437892ceef3ce7619eb5de273e58366f992384fe81aa",
+   "output_len": 30,
+   "output_sha256": "7827688f49617855a8c13116a954ef16280ecc86206c618d44cbbc6a0ae8b250",
+   "output_hex": "edc13101000000c2a086eb1fc7129e400100000000000000000000c0d500"
+  },
+  {
+   "name": "fuzz_mixed_14",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1014,
+    "size": 19866
+   },
+   "input_len": 19866,
+   "input_sha256": "ec13911896f8b8c76946593926650eeff9b4d6d375c5076c2a8f901ae8c19a2a",
+   "output_len": 3772,
+   "output_sha256": "b014d91acc1d6f9e4f9249aa6ddd9f5982ff7042b3088c916a846ba2be37e6df"
+  },
+  {
+   "name": "fuzz_mixed_15",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1015,
+    "size": 27785
+   },
+   "input_len": 27785,
+   "input_sha256": "2aeba33f87011fad842f6dca17075ba7a6a01ed8a40007ddf1979b9ddd8d5cf7",
+   "output_len": 5408,
+   "output_sha256": "cd7bfd0838c55937e7cc0b45a60c5de356eb80a474e59ac335827bb15160b6d4"
+  },
+  {
+   "name": "fuzz_mixed_16",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1016,
+    "size": 35704
+   },
+   "input_len": 35704,
+   "input_sha256": "2fcd33acc294e69194f8d65a58529ea7062fd9f3117471d1da247769894c6935",
+   "output_len": 3823,
+   "output_sha256": "76a413dc8ff75cc35d5ed8d533e8ab345f481e485165050ade54a65735d77183"
+  },
+  {
+   "name": "fuzz_mixed_17",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1017,
+    "size": 43623
+   },
+   "input_len": 43623,
+   "input_sha256": "a97b2644c5a1e6b4ffba0646bb42901268c66705054525cb9ef2619759af208e",
+   "output_len": 3651,
+   "output_sha256": "b78f5af6be8082f45857cfdc841081f50907fd04f53ef92148968c43421b2358"
+  },
+  {
+   "name": "fuzz_mixed_18",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1018,
+    "size": 51542
+   },
+   "input_len": 51542,
+   "input_sha256": "7eed6fb740343c009d51b969eb9d026ea0ecd0f98f1e6c36a1264cc8d5e58325",
+   "output_len": 4929,
+   "output_sha256": "3aa8fd20703ac303bff1a9a5597702006754c278f2b43153111e7d9df5aaac5d"
+  },
+  {
+   "name": "fuzz_mixed_19",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1019,
+    "size": 59461
+   },
+   "input_len": 59461,
+   "input_sha256": "1c89a2772c0dc57b80b5c9edbb75c3ff409b9cc6e186ecf6499953d60e79dc22",
+   "output_len": 14149,
+   "output_sha256": "c2167ff0ded6a158d28e2c14c9e0381386415f475ad6947df2579138556473bc"
+  },
+  {
+   "name": "fuzz_mixed_20",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1020,
+    "size": 67380
+   },
+   "input_len": 67380,
+   "input_sha256": "e2dc44dc1b691daa941d4e6a0d97d8a05e2b48e1407529d9004915c35b05ba68",
+   "output_len": 21678,
+   "output_sha256": "aa5a00ef850262185f982dfd026cbeb84c60d61fea1feda5ecde35fc2bf6713f"
+  },
+  {
+   "name": "fuzz_mixed_21",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1021,
+    "size": 75299
+   },
+   "input_len": 75299,
+   "input_sha256": "65eec039acce3e334e3bf514ccff737d54112621d5a2a17c4962af531cde12ba",
+   "output_len": 14965,
+   "output_sha256": "38a901bf077c51e9d97585a4746c47bc58f0fcbab87093ecdfe161df65650af3"
+  },
+  {
+   "name": "fuzz_mixed_22",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1022,
+    "size": 83218
+   },
+   "input_len": 83218,
+   "input_sha256": "69e3d258b92f437a3a068559e138a0e6d11fddcc46fdf12d6cccfa63d1bb1972",
+   "output_len": 19275,
+   "output_sha256": "bbcc6bb6f3a465765fd92d0faac8a4bbc4ebe987947e42a8b4c7974975de7f86"
+  },
+  {
+   "name": "fuzz_mixed_23",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1023,
+    "size": 1137
+   },
+   "input_len": 1137,
+   "input_sha256": "63a70456cc6627330931ff9458f8893ade5ec0fa5e247c2ce9a9b60e38d8fa36",
+   "output_len": 17,
+   "output_sha256": "9ba651157ad53b0e7072c308606b3e309e10e977f8891796cc6ca58deff8cf8f",
+   "output_hex": "bb9859a6597b71941825468951820e0400"
+  },
+  {
+   "name": "fuzz_mixed_24",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1024,
+    "size": 9056
+   },
+   "input_len": 9056,
+   "input_sha256": "e48497da910c06c110d92cd6a39abacb65f2311f0a7857d0d6c1241681dd179d",
+   "output_len": 27,
+   "output_sha256": "d5c0b90a77125df6a35468a6667b0b623c014dd33005486c13402ab4f1b6a85f",
+   "output_hex": "edc18100000000c3207fa5d19de00655010000000000000000cf00"
+  },
+  {
+   "name": "fuzz_mixed_25",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1025,
+    "size": 16975
+   },
+   "input_len": 16975,
+   "input_sha256": "77dc3db9b9ef680bd62908bee6a5536a796338562badc147fb30fe7b7f3436b8",
+   "output_len": 8914,
+   "output_sha256": "23fc99a53f72fc37d7fd396e0962589af561699412965de8ac14775cb5aed556"
+  },
+  {
+   "name": "fuzz_mixed_26",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1026,
+    "size": 24894
+   },
+   "input_len": 24894,
+   "input_sha256": "7f841bd679d07555e54a20fad734b13ada1997ef37ede851092df075c345f2a4",
+   "output_len": 48,
+   "output_sha256": "b5a5d23ee28e633f216e5751af7092e9fb755dfe0a06bfd6639096af516b94a9",
+   "output_hex": "edc1310100000803a0544b647a5b18c1d3432081030d000000000000000000f04401000000000000000000000000b01b"
+  },
+  {
+   "name": "fuzz_mixed_27",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1027,
+    "size": 32813
+   },
+   "input_len": 32813,
+   "input_sha256": "057124fe66458b70c2ecf8ef3ecf3f3af1ca641f0de0be2f89756972e7fee298",
+   "output_len": 70,
+   "output_sha256": "25047d781301c9712023eee819842ccd4f697a49f92929cd7556b500f36ca66c",
+   "output_hex": "edc4310d0030080030538840024610b377866609190b497b34130000000000000000000000000000000000006093fbfa44d9b66ddbb66ddbb66ddbb66ddbb66ddbb66ddb5f1f"
+  },
+  {
+   "name": "fuzz_mixed_28",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1028,
+    "size": 40732
+   },
+   "input_len": 40732,
+   "input_sha256": "8d4e366708050b8939f77c6bdc4248e348448091979d6fb157b01d364955ded0",
+   "output_len": 7312,
+   "output_sha256": "8110a874fddd9d10286adcb53f88e86b92bdb551f7061063b7c5b610e6323b98"
+  },
+  {
+   "name": "fuzz_mixed_29",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1029,
+    "size": 48651
+   },
+   "input_len": 48651,
+   "input_sha256": "c84443535a9a8cd298e2fb2c300361a455b3abe90ff7d50592608d8706b108d3",
+   "output_len": 4530,
+   "output_sha256": "a75368a03983d930d0b0873e060627d4fddc3bafe1f146226021fae99a68f3cb"
+  },
+  {
+   "name": "fuzz_mixed_30",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1030,
+    "size": 56570
+   },
+   "input_len": 56570,
+   "input_sha256": "d433dcf734297d14f64318e2d891eb5cace4e58f6e65eae4fcbd512b2c49a800",
+   "output_len": 4667,
+   "output_sha256": "d42f11643bafeacc5381ff0733466ebf9a7c83d86a36b5aa2be56920eead83c5"
+  },
+  {
+   "name": "fuzz_mixed_31",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1031,
+    "size": 64489
+   },
+   "input_len": 64489,
+   "input_sha256": "fb0d37ce864cc540fafd0b1900456b55b89e31e1d15c374a0b5e9467cc54c90a",
+   "output_len": 20431,
+   "output_sha256": "491b9dc1b73c2ff87966d7e17c7d611af0ca3d502da07448435db29f5f5b5248"
+  },
+  {
+   "name": "fuzz_mixed_32",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1032,
+    "size": 72408
+   },
+   "input_len": 72408,
+   "input_sha256": "ce176d5e2b63255dfa2299b90a98563f876d6b60423c1196301497951c9bf6f5",
+   "output_len": 6050,
+   "output_sha256": "32ecf23227ad43ffc4da8d52c2dd50fe249fb862b0834a408b7024fa9db93786"
+  },
+  {
+   "name": "fuzz_mixed_33",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1033,
+    "size": 80327
+   },
+   "input_len": 80327,
+   "input_sha256": "bba00a5615cc8a29a1eb344ddf031cc48f9539e863d37d47afa6f6b32e7c9a5c",
+   "output_len": 25907,
+   "output_sha256": "4c152a285e072985a7ea29dc7533b5f3da7097712d07c30057e1f132c4bbe9ee"
+  },
+  {
+   "name": "fuzz_mixed_34",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1034,
+    "size": 88246
+   },
+   "input_len": 88246,
+   "input_sha256": "2124d73cc1054a16bc11533416019a8c2fbc152b70f34dc69cb1cd8f928ea8f5",
+   "output_len": 39280,
+   "output_sha256": "f56dac312c59a4a62d6b99f611cfac3f86b1855604789622fd759babb98717df"
+  },
+  {
+   "name": "fuzz_mixed_35",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1035,
+    "size": 6165
+   },
+   "input_len": 6165,
+   "input_sha256": "3bf2f36283523458c49d7c32ab46effdb05551849681125be10896366f03addf",
+   "output_len": 1386,
+   "output_sha256": "3693864baf1cf34a28f7ec1f98e83d57fb03b8f6deb70a5c38040f73e56ef23a"
+  },
+  {
+   "name": "fuzz_mixed_36",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1036,
+    "size": 14084
+   },
+   "input_len": 14084,
+   "input_sha256": "4feec136873e3db642ba7fb1ade52dd399bc5a5cc2f07a96c6858a10565e12d2",
+   "output_len": 7329,
+   "output_sha256": "68e4d51762420eeea17c2063799afe43dc7fb9bf0455116a656cd6d68a9632f1"
+  },
+  {
+   "name": "fuzz_mixed_37",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1037,
+    "size": 22003
+   },
+   "input_len": 22003,
+   "input_sha256": "bce29152002aad40d57ba4acd4fed217a06fc6a3415d24943f9111bae0304669",
+   "output_len": 5638,
+   "output_sha256": "6a5cb74d5712beba3ead96d6e47b94f123ae3bbf92873ab5e16ebd207093a5e8"
+  },
+  {
+   "name": "fuzz_mixed_38",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1038,
+    "size": 29922
+   },
+   "input_len": 29922,
+   "input_sha256": "879bc4810da9189b0db506ba2d1e0272f82b788d23bf869a33caaa5679a7397c",
+   "output_len": 3672,
+   "output_sha256": "659b20f9141c3fa6c9bde3ea7d91ebcf562ba15cd4961842e4c5fa92276175f7"
+  },
+  {
+   "name": "fuzz_mixed_39",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1039,
+    "size": 37841
+   },
+   "input_len": 37841,
+   "input_sha256": "db32ca12c8a28a3551b5c6b6cb347ab8d1489519a62df98948db02e37f8c9abc",
+   "output_len": 4069,
+   "output_sha256": "d8da408756b6ae830ac68d1dc34ab336a716c4c47d31858f84919a4e45d8f48f"
+  },
+  {
+   "name": "fuzz_mixed_40",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1040,
+    "size": 45760
+   },
+   "input_len": 45760,
+   "input_sha256": "bace83c698bd80aa361689eafbd158074907c2d56afb40dce76bb0e15832ba4b",
+   "output_len": 15009,
+   "output_sha256": "abedd5bc6cee4c0bdf91f8bc3b4161518641242a4c176809cb8b9de11e6e8278"
+  },
+  {
+   "name": "fuzz_mixed_41",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1041,
+    "size": 53679
+   },
+   "input_len": 53679,
+   "input_sha256": "fb981f0402e2c72b4eaecb430653414858b93723c00cc9ef485b0457ebfec0d5",
+   "output_len": 12313,
+   "output_sha256": "4d4ecf466b157c5b471b41449854dcb97e154150d01d40ffeb2597f94c80bee8"
+  },
+  {
+   "name": "fuzz_mixed_42",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1042,
+    "size": 61598
+   },
+   "input_len": 61598,
+   "input_sha256": "6e1ef10210c0d627f5103a0937c4bbe639f3451207a9c99fa70f40b4f34397b8",
+   "output_len": 22931,
+   "output_sha256": "fed76cc76165efaae2ef2b3864d95bfb1a4a4eb7d0e9c6fd4b2a4bda71c6dfaf"
+  },
+  {
+   "name": "fuzz_mixed_43",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1043,
+    "size": 69517
+   },
+   "input_len": 69517,
+   "input_sha256": "6a40a3759aae57e6f363c7b36fc8869637267e80ee1e4bce00d1cd6981f6e367",
+   "output_len": 22895,
+   "output_sha256": "bfb83ba734d4d5aacd0d05d9acc0c3c3c98e3c27f1d085e94631d9aa19045512"
+  },
+  {
+   "name": "fuzz_mixed_44",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1044,
+    "size": 77436
+   },
+   "input_len": 77436,
+   "input_sha256": "bfad4a223214fcb6e2d1539c1065091f4babc1ffa7a15153274c83f75804401e",
+   "output_len": 11981,
+   "output_sha256": "883e1277f347f352379e6cfb7a9bad788729ae3ab8d2fe0b11146f7a363c91c5"
+  },
+  {
+   "name": "fuzz_mixed_45",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1045,
+    "size": 85355
+   },
+   "input_len": 85355,
+   "input_sha256": "8ef768c24aab3442c68adb09fb73e7e2f6efa6b990c737c6ce4e47b0583c502a",
+   "output_len": 26875,
+   "output_sha256": "32321575ada4b3efb2c39e93803e94302ac93dabaf394691d0dfb4ee44d5542e"
+  },
+  {
+   "name": "fuzz_mixed_46",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1046,
+    "size": 3274
+   },
+   "input_len": 3274,
+   "input_sha256": "cdb2818a7bcfbfa50c06deba8a2eaa32fcdc15084e927c365352718b3325e545",
+   "output_len": 21,
+   "output_sha256": "2df978945d8814c72bdedefaeedcf2b34bb30be65915262ef7f90835f1545f86",
+   "output_hex": "edc1310d000000c320ff4f354fc712a0000000de0c"
+  },
+  {
+   "name": "fuzz_mixed_47",
+   "recipe": {
+    "kind": "mixed",
+    "seed": 1047,
+    "size": 11193
+   },
+   "input_len": 11193,
+   "input_sha256": "df34fd20ea9822069423e214b6ff1d665accb1c342f83444a1f6a303933d5e3e",
+   "output_len": 31,
+   "output_sha256": "b4b64aca5184aea65ef3763c063015ae09b0c90007a5193f7d12fb3886f23ca7",
+   "output_hex": "edc2310d00000002a0fe05ac604d53f831680a00000000000000000000bc0d"
+  }
+ ]
+}

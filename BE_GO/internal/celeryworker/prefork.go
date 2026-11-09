@@ -285,6 +285,9 @@ func (w *Worker) RunChild(ctx context.Context, in io.Reader, events io.Writer) e
 		return err
 	}
 	request := &Request{Message: m, Hostname: w.options.Hostname}
+	if task.Cleanup != nil {
+		defer task.Cleanup(request)
+	}
 	if task.Plan != nil {
 		if err := task.Plan(ctx, request); errors.Is(err, ErrHandoff) {
 			w.handoff(ctx, d, "input")

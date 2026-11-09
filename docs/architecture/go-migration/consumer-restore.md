@@ -73,3 +73,99 @@ with `[null, null]`; a zero soft limit falling back to the default.
   `./internal/celery -run RepublishKeepsTimeLimits`.
 - Re-run after the shared changes (worker, `EncodeRepublish`): `celery_consumer_process.py`,
   `celery_consumer_email_process.py`, `celery_consumer_workflow_process.py` (receipts `consumer-restore-rerun-*`).
+
+## Step 2: `export_association_data`
+
+`BE/application/tasks.py` (`bind=True`, no retry policy, CoordinatedTask admission) with
+`AssociationExportService.export()` (`BE/application/services/export_service.py`) runs on the Go consumer when
+`GO_TASK_QUEUE_TASKS` lists it. Go: `internal/service/consumer_export_association.go` (task),
+`internal/associationexport` (model serialization from the generated plan), `internal/pyzip/filewriter.go` and
+`internal/pyzlib` (the archive), `internal/repository/consumer_restore_export.go` and `consumer_restore_cache.go`;
+registration in `cmd/celery-consumer/consumer_restore.go`.
+
+### What Django does (and Go reproduces)
+
+1. `ExportProgressPublisher.publish(1 %, preparing, force)`: `update_state(PROGRESS)` (TaskResult row), the active
+   snapshot in the cache (`:1:association-export-active:<id>`, 2 h, pickled dict), `group_send` to
+   `notifications_user_<user>` (channels_redis plus the Go mirror publish).
+2. `User.objects.get` (not deleted) and `SportAssociation.original_objects.get`: a missing row is the failure path —
+   FAILURE snapshot in `:1:association-export-last:<id>` (24 h) with `percent` = last published (1), the error e-mail
+   (`send_mail_async.delay`) when the user exists, result `{"success": false, "error": "<Model> matching query does not
+   exist."}` (task SUCCESS).
+3. `cleanup_old_exports(association, max_count=2)`: export archives (documents named `export_*`) older than 30 days,
+   then every export after the two newest by `date` (Django's own `ORDER BY date DESC OFFSET 2`): storage delete,
+   archive delete (audited, indexed), document delete (audited).
+4. The model files: for each `EXPORT_ORDER` entry, Django's queryset (`get_queryset_for_model`, iterated through a
+   server-side cursor in chunks of 1000 with the M2M prefetch per chunk) serialized by `serialize_record`
+   (`_meta.get_fields()` order, exclusions, FK ids as `str(id) if id else None`, reverse one-to-one as `None`, UUID/
+   Decimal as `str`, datetimes `isoformat()`, dates and times through DjangoJSONEncoder (times cut to milliseconds),
+   jsonb values in jsonb order with Python's float repr, `_m2m_<name>` lists, and the archived password of credential
+   accounts when `is_restorable_password_hash`), `json.dump(ensure_ascii=False)` joined by `,` inside `[` `]`.
+   `TESTS/adapters/go/association_export_plan.py` generates `internal/associationexport/plan.json` (keys, columns,
+   kinds, the compiled SQL with placeholder ids, prefetch queries, document attributes); Go runs the same statements
+   with the simple protocol, so rows keep PostgreSQL's unordered scan order. The harness fails when the plan is stale.
+5. Attachments: the collected documents (Django's annotated query; `filepath` or the reconstructed
+   `<str(creation_date.timestamp())>/<id>/<filename>`) copied to `files/<category>/<id>/<filename or 'file'>`, missing
+   objects counted failed (explicit path) or skipped (reconstructed), other errors listed; then the private
+   subscription signatures. Stats order: models, `signature_files_*`, `files_*`.
+6. `manifest.json` (`indent=2`), the ZIP of `os.walk` (the temporary directory's own listing order; Go walks the same
+   kind of directory with `Readdirnames`), `ZipFile.write` per file: `from_file` attributes (mode bits, mtime as DOS
+   time), local header rewritten after the data, zlib deflate at level 6 — reproduced byte for byte by `internal/pyzlib`
+   (82 golden cases against zlib 1.2.12), so every member's compressed bytes are identical.
+7. `save_to_storage`: `Document.objects.create(filename)` (audited), `default_storage.save('exports/<UTC
+   %Y%m%d_%H%M%S>/<id>/<name>')` (application/zip, CacheControl), `save(update_fields=[filepath, file_size_bytes])`
+   (audited update), the archive row (audited, indexed).
+8. The notification `send_mail_async.delay(...)` (subject, message with the stats and errors, `from_email` from
+   `core.settings`), published from the task (`root_id`/`parent_id`; with the separate-process worker its id is in the
+   stored `meta.children`), then the SUCCESS snapshot in the last-export key, the result
+   `{"success", "document_id", "filename", "stats"}`, and `clear_active_export` (delete when the task id matches).
+
+Go performs every read in `Plan` — lookups, credential hashes, cleanup candidates, the model files, the attachment
+copies, the manifest and the ZIP in a temporary directory, recording the progress events — and the effects in `Run`
+in Django's order (progress events replayed in sequence). `Task.Cleanup` (new, `internal/celeryworker`) removes the
+temporary files whatever happened to the message (handoff, deferral, completion).
+
+### Handed off to Django (before any effect)
+
+Arguments other than lowercase canonical UUID strings, other arities or keywords; a credential account whose stored
+password is not unusable/empty and not a `pbkdf2_sha256`/`pbkdf2_sha1` encoding with plain decimal iterations and a
+strict base64 digest (the configured `PASSWORD_HASHERS` would decide it); an export document that another row
+references (the delete would cascade); stored values outside the serialized subset (infinite or BC timestamps, years
+over 9999, unknown field kinds); archives needing ZIP64 or over 1 GiB; any read error during the preparation.
+
+### Documented differences
+
+- Progress events are throttled by wall-clock time in both (1 s within a phase); the intermediate PROGRESS rows, cache
+  snapshots and WebSocket events differ in number. The final TaskResult row, cache keys and values are compared.
+- Cache values are pickled by Go without CPython's memo references for repeated string objects; they unpickle to the
+  same dict (the harness compares the unpickled values and TTLs).
+- Errors after the first effect (database, broker or storage failures while writing) end the Go task with the
+  consumer's `OperationalError('database error')` FAILURE; Django records them in its own way (`str(e)` of the
+  botocore or driver error in the failure result).
+- Archives of 8 MiB or more: Django uploads them in multipart parts (different ETag); Go stores one `PutObject`.
+- zlib can emit different bytes for the same input when a `compress()` call ends exactly where the window slides with
+  the hash head at the oldest position; `internal/pyzlib` behaves as zlib given the whole input (CPython's zipfile feeds
+  8 KiB chunks). Not observed in the goldens or the differential.
+
+### Evidence
+
+`TESTS/adapters/go/celery_consumer_export_process.py` (private PostgreSQL, Redis, MinIO; the Django side is a real
+prefork worker subprocess with the production cache, channel layer and S3 storage). Compared: the managed-model state
+(TaskResult, Document, archive, LogEntry, AuditLogIndex), every cache key (unpickled value, TTL), every broker key
+(the `send_mail_async` child with its text), every bucket object, and the archive member by member (headers,
+compressed bytes and CRC of every member except `manifest.json`, whose JSON is compared with `export_date`
+normalized). 8 scenarios: a rich association (members, a deleted associate, tags, subscription with JSON data and a
+signature, payments with attachments and a deleted payment, invoice PDF, medical certificate, folder, reminder with a
+time, course with location, archived documents, a reconstructed path, a missing object, an empty file name, four old
+exports → two deleted); an association without other data; a missing user; a missing association (error e-mail); an
+MD5 credential hash handed off; an export document referenced by a payment handed off; a pending restore (RETRY Busy,
+deferral +15 s, the prepared files removed); an unknown keyword handed off.
+
+- Oracle: Django alone (`consumer-restore-export-oracle`).
+- RED: consumer without the registration; Django passed, Go timed out (`consumer-restore-export-process-red`).
+- GREEN: `consumer-restore-export-process/results.json`.
+- Mutation (CAUGHT): `serialize_record` without the archived password of credential accounts; the archive member
+  `data/02_users.json` differed (`consumer-restore-export-process-mutation`).
+- Unit tests: `go test ./internal/associationexport` (str(Decimal), float repr, JSON with and without indent, times,
+  timestamps, jsonb, the plan and the IN-list binding), `./internal/pyzlib` (82 zlib goldens, chunk invariance),
+  `./internal/service -run RestorablePasswordHash`.

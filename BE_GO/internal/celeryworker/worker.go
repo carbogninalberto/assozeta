@@ -103,6 +103,10 @@ type Task struct {
 	// an *Exception, or another error (stored as a database failure).
 	Run func(context.Context, *Request) (any, error)
 
+	// Cleanup, when set, runs after the message was handled (handed off,
+	// deferred, failed or completed) to release what Plan prepared.
+	Cleanup func(*Request)
+
 	// Prefork runs the task in a child process, as Celery's prefork pool
 	// does, which is what time limits and worker-loss handling need (see
 	// prefork.go). The options below require it.
@@ -410,6 +414,9 @@ func (w *Worker) execute(ctx context.Context, d *Delivery) {
 		return
 	}
 	request := &Request{Message: m, Hostname: w.options.Hostname}
+	if task.Cleanup != nil {
+		defer task.Cleanup(request)
+	}
 	if task.Plan != nil {
 		if err := task.Plan(ctx, request); errors.Is(err, ErrHandoff) {
 			w.handoff(ctx, d, "input")

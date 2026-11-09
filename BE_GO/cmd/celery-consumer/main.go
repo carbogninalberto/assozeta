@@ -109,6 +109,9 @@ func run(arguments []string) error {
 	if err = consumerPrintRegister(tasks, cfg, db, *envFile); err != nil {
 		return err
 	}
+	if err = consumerRestoreRegister(tasks, cfg, db, broker, producer); err != nil {
+		return errors.New("celery consumer cannot prepare the restore family tasks")
+	}
 	for _, register := range extraTasks {
 		register(tasks)
 	}
