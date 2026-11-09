@@ -249,6 +249,10 @@ func run() (runErr error) {
 	if err != nil {
 		return err
 	}
+	dataRestoreHandler, err := composeDataRestore(cfg, db, cache, tasks, instanceAdminHandler)
+	if err != nil {
+		return err
+	}
 	bakneySSOHandler, closeBakneySSO, err := composeBakneySSO(cfg, db, cache, tokens, accounts, identities, instanceService, images)
 	if err != nil {
 		return err
@@ -264,9 +268,13 @@ func run() (runErr error) {
 	// document/<kind>/<uid> PDF routes: the Puppeteer FastRender service (PUPPETEER_HOST/PORT) prints
 	// CURRENT_HOST_PUPPETEER/<view>; DOCUMENT_BYPASS_TOKEN is HasBypassAuthorizationHeader's token.
 	// document/<kind>/<uid>/view/ HTML views (the pages the renderer prints) and the subscription preview.
-	documentViewsHandler := handler.NewDocumentViewsHandler(service.NewDocumentViews(repository.NewDocumentViews(db),
+	documentViews := service.NewDocumentViews(repository.NewDocumentViews(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")),
-		os.Getenv("DOCUMENT_BYPASS_TOKEN"), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
+		os.Getenv("DOCUMENT_BYPASS_TOKEN"), time.Now)
+	documentViewsHandler := handler.NewDocumentViewsHandler(documentViews, service.NewActorAuthentication(accounts, tokens), identities)
+	// document/invoice/<uid>/view/ and document/einvoice/<uid>/view/ (the FatturaPA page of internal/fatturapa).
+	invoiceViewsHandler := handler.NewInvoiceViewsHandler(service.NewInvoiceViews(repository.NewInvoiceViews(db), documentViews),
+		service.NewActorAuthentication(accounts, tokens), identities)
 	documentRenderHandler := handler.NewDocumentRenderHandler(service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
 		documentRenderSettings(cfg), time.Now, uuid.NewString),
@@ -675,6 +683,8 @@ func run() (runErr error) {
 	e.Any("/document/subscription/:uid/view/", documentViewsHandler.Subscription, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/compensation/:uid/view/", documentViewsHandler.Compensation, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/template/:uid/view/", documentViewsHandler.Template, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/invoice/:uid/view/", invoiceViewsHandler.Invoice, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/einvoice/:uid/view/", invoiceViewsHandler.Einvoice, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/medical-appointment/:uid/view/", documentViewsHandler.MedicalAppointment, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/retrieve/:uid", docmanagerReadsHandler.Retrieve, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/:uid/delete", docmanagerReadsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -683,8 +693,16 @@ func run() (runErr error) {
 	e.Any("/folders/add", folderWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/update", folderWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/:uid/delete", invoiceDeletesHandler.Customer, middleware.DjangoSessionAudit(sessionAuthentication))
-	invoicePartiesHandler := handler.NewInvoicePartiesHandler(service.NewInvoiceParties(repository.NewInvoiceParties(db), time.Now, uuid.NewString),
+	// invoice-sync-print: the eager print tasks GET CURRENT_HOST/document/{e}invoice/<id> behind the CoordinatedTask restore gate.
+	invoiceSyncStore := repository.NewInvoiceSyncPrint(db)
+	invoiceSyncPrinter := service.NewInvoiceSyncPrint(service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
+		repository.NewRestoreStates(db), cfg.RestoreLockPath != ""), os.Getenv("CURRENT_HOST"))
+	invoicePartiesHandler := handler.NewInvoicePartiesHandler(service.NewInvoiceParties(repository.NewInvoiceParties(db), time.Now, uuid.NewString).
+		WithCustomerInvoiceSync(invoiceSyncStore, invoiceSyncPrinter),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	invoiceSyncHandler := handler.NewInvoiceSyncPrintHandler(paymentStatesHandler,
+		service.NewInvoiceSyncUpdates(invoiceSyncStore, invoiceSyncPrinter, time.Now))
+	e.Any("/invoice/:uid/update", invoiceSyncHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/list", invoicePartiesHandler.CustomerList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/add", invoicePartiesHandler.CustomerAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/:uid/update", invoicePartiesHandler.CustomerUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -739,6 +757,10 @@ func run() (runErr error) {
 	e.Any("/instance/admin/integrations/:provider/test", instanceOutboundHandler.IntegrationTest, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/email/test", instanceOutboundHandler.EmailTest, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/releases", instanceOutboundHandler.Releases, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/data-restore", dataRestoreHandler.Root, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/data-restore/backups", dataRestoreHandler.Backups, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/data-restore/:id/download", dataRestoreHandler.Download, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/data-restore/:id/:action", dataRestoreHandler.Action, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/diagnostics", instanceAdminHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/updates", instanceAdminHandler.Updates, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/restarts", instanceAdminHandler.Restarts, middleware.DjangoSessionAudit(sessionAuthentication))

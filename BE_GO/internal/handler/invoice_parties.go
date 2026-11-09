@@ -139,7 +139,7 @@ func (h *InvoicePartiesHandler) write(c echo.Context, method, operation, name, m
 	}
 	defer release()
 	err = run(admitted.Context, service.InvoicePartyRequest{Identity: *identity, Body: admitted.Body, Form: admitted.Form,
-		Group: request.Header.Get("X-Group-Id"), Audit: admitted.Audit})
+		Group: request.Header.Get("X-Group-Id"), Audit: admitted.Audit, Authorization: requestAuthorization(request)})
 	return h.answer(c, 200, map[string]string{"message": message}, err)
 }
 
