@@ -24,9 +24,10 @@ unmatched-URL answer (`DjangoFallbackRoutes` keeps Django's locale headers for i
   `User.sport_association` first: course-subscriptions, personas, personas-subscriptions).
 - Detail GET: stock `retrieve()` through `get_object()`; PUT: the viewset's `update()` (always
   partial); PATCH: `partial_update()` passes `partial=True`, which the custom `update(request,
-  pk=None)` rejects (500, nothing written); DELETE: stock `destroy()`.
+  pk=None)` rejects (500, nothing written); personas-subscriptions has no custom `update()`, so PUT and
+  PATCH are the stock update (non-partial and partial); DELETE: stock `destroy()`.
 - Format twins pass `format=`: the custom `list()`/`update()`/`create()` (templates)/
-  `bulk_delete()` reject it (500); stock create/retrieve/destroy accept it.
+  `bulk_delete()` reject it (500); stock create/retrieve/update/partial_update/destroy accept it.
 - OPTIONS: `<Name> List` / `<Name> Instance` (`Bulk delete` for the action), SimpleMetadata
   `actions.POST` on the list route and `actions.PUT` on the detail route when `get_object()`
   succeeds (an APIException/Http404 drops it; any other exception is a 500).
@@ -46,17 +47,15 @@ Per viewset:
 | subscription/memberships | client `sport_association` required, form bodies parse | serializer (query filters narrow) | as delete |
 | course-subscriptions | one item, `is_athlete=False`, not atomic, writes then 500 (`serializer.data` on the validated dict) | live rows only | soft delete, live rows only |
 | personas | validation, then association (athletes 403), `tutors_data` key → 500, else add without tutors | as info | **hard** `Associate.delete()` via the Collector |
-| personas-subscriptions | refused (below) | serializer (500 without an associate) | **hard** `Subscription.delete()` via the Collector |
+| personas-subscriptions | validation, then 500 in `SubscriptionManager.create`, nothing written ([persona-subs-writes](persona-subs-writes.md)) | serializer (500 without an associate) | **hard** `Subscription.delete()` via the Collector |
 
 Hard deletes reuse the Collector port of `collaborator-delete-go.md`
 (`repository/router_stock_deletes.go`, `service/router_stock.go`).
 
 ## Not ported (refused with a 500 before any write)
 
-- personas-subscriptions create, PUT and PATCH: the stock ModelSerializer write of every
-  Subscription field through `Subscription.save()` (Django writes the row; create then answers
-  500 because the serializer's `get_age` reads the unset associate). Only their admission
-  (401/403) is authored.
+- personas-subscriptions create, PUT and PATCH are ported in [persona-subs-writes](persona-subs-writes.md);
+  its input-level refusals are listed there.
 - Inherited from the explicit-route ports: document uploads in `documents_data`, primary-key
   changes, persona base64 pictures and unported date spellings, course-enrolment form bodies
   and non-canonical `X-Group-Id`; personas create form bodies.
@@ -68,7 +67,7 @@ Hard deletes reuse the Collector port of `collaborator-delete-go.md`
 Families (generator, contract, adapter under `TESTS/`): `router-root` 13, `router-course-locations`
 67, `router-folders` 52, `router-documents` 54, `router-templates` 45, `router-memberships` 49,
 `router-course-subscriptions` 45, `router-course-subscriptions-create` 29, `router-personas` 51,
-`router-persona-subscriptions` 39. Each RED (`red-r1`, `probe-r1` for course-locations) has Django
+`router-persona-subscriptions` 39 (73 after [persona-subs-writes](persona-subs-writes.md)). Each RED (`red-r1`, `probe-r1` for course-locations) has Django
 N/N and Go 404 with the routes unregistered; GREEN `green-r1` is N/N on native Django, native Go,
 Caddy `/api/v1` and `/api/v2` after merging `codex/go-backend-parity`. Mutation and re-runs are
 listed in the commit and the ledger patch.

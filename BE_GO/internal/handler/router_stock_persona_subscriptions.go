@@ -10,20 +10,32 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// errRouterStockSubscriptionWrite refuses the stock create, update and
-// partial_update of AssociateSubscriptionSerializer (a ModelSerializer write
-// of every Subscription field through Subscription.save()): not ported.
-var errRouterStockSubscriptionWrite = errors.New("AssociateSubscriptionSerializer writes are not ported")
-
 // RegisterPersonaSubscriptions adds router.register(r'personas-subscriptions',
 // AssociateSubscriptionViewSet): list(request) with pk None, the stock
-// retrieve, destroy (Subscription.delete() through the Collector), and the
-// viewset's delete() on the list route. The stock create, update and
-// partial_update are refused before any write.
+// retrieve, destroy (Subscription.delete() through the Collector), the
+// viewset's delete() on the list route, and the stock create, update and
+// partial_update over AssociateSubscriptionSerializer (persona-subs-writes.md).
 func (h *RouterStockHandler) RegisterPersonaSubscriptions(writes *PersonasWritesHandler, destroy *service.RouterStockDestroy) {
 	subscriptions := writes.subscriptions
-	refuse := func(c echo.Context, _ *domain.ResolvedIdentity, _ string) error {
-		return messageReadsError(c, errRouterStockSubscriptionWrite)
+	// update is UpdateModelMixin.update: get_object() before request.data.
+	update := func(partial bool) routerStockAction {
+		return func(c echo.Context, identity *domain.ResolvedIdentity, pk string) error {
+			header := c.Request().Header.Get("X-Group-Id")
+			row, err := subscriptions.Locate(c.Request().Context(), *identity, pk, header)
+			if err != nil {
+				return personaWriteError(c, err)
+			}
+			write, release, err := admitRESTWrite(c, writes.operations, writes.audit)
+			if write == nil {
+				return err
+			}
+			defer release()
+			body, err := subscriptions.RouterUpdate(write.Context, *identity, row.ID, header, write.Body, write.Form, partial, write.Audit)
+			if err != nil {
+				return personaWriteError(c, err)
+			}
+			return c.Blob(http.StatusOK, echo.MIMEApplicationJSON, dto.PythonJSONDumpsCompact(body))
+		}
 	}
 	render := func(c echo.Context, body any, err error) error {
 		if err != nil {
@@ -33,7 +45,7 @@ func (h *RouterStockHandler) RegisterPersonaSubscriptions(writes *PersonasWrites
 	}
 	h.register(&routerStockViewset{
 		prefix: "personas-subscriptions", name: "Associate Subscription",
-		formatted: map[string]bool{"retrieve": true, "destroy": true},
+		formatted: map[string]bool{"create": true, "retrieve": true, "update": true, "partial_update": true, "destroy": true},
 		list: func(c echo.Context, identity *domain.ResolvedIdentity, _ string) error {
 			request := c.Request()
 			body, err := subscriptions.RouterList(request.Context(), *identity, parseReferenceForm(request.URL.RawQuery), request.Header.Get("X-Group-Id"))
@@ -42,7 +54,16 @@ func (h *RouterStockHandler) RegisterPersonaSubscriptions(writes *PersonasWrites
 		listDelete: func(c echo.Context, identity *domain.ResolvedIdentity, _ string) error {
 			return personaWriteError(c, subscriptions.DeleteWithoutPK(c.Request().Context(), *identity))
 		},
-		create: refuse, update: refuse, partialUpdate: refuse,
+		create: func(c echo.Context, identity *domain.ResolvedIdentity, _ string) error {
+			write, release, err := admitRESTWrite(c, writes.operations, writes.audit)
+			if write == nil {
+				return err
+			}
+			defer release()
+			return personaWriteError(c, subscriptions.RouterCreate(write.Context, *identity, c.Request().Header.Get("X-Group-Id"), write.Body,
+				write.Form))
+		},
+		update: update(false), partialUpdate: update(true),
 		postFields: func(echo.Context, *domain.ResolvedIdentity) (map[string]any, error) {
 			return associateSubscriptionFields(), nil
 		},
