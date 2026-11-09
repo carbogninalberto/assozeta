@@ -55,6 +55,11 @@ type Task struct {
 	// options (@shared_task(time_limit=..., soft_time_limit=...)), which
 	// Celery copies into the timelimit header.
 	TimeLimit, SoftTimeLimit *int64
+	// RootID and ParentID are what send_task/apply_async take from the
+	// running worker task (current_worker_task): root_id is the request's
+	// root_id or id, parent_id the request's id. Empty outside a task: the
+	// root is the message's own id and the parent None.
+	RootID, ParentID string
 }
 
 // Envelope holds the per-publish random and clock values of one message.
@@ -109,10 +114,17 @@ func Encode(task Task, envelope Envelope) ([]byte, error) {
 		}
 		return pythonISOFormat(*value)
 	}
+	var rootID, parentID any = envelope.ID, nil
+	if task.RootID != "" {
+		rootID = task.RootID
+	}
+	if task.ParentID != "" {
+		parentID = task.ParentID
+	}
 	headers := Dict{
 		{"lang", "py"}, {"task", task.Name}, {"id", envelope.ID}, {"shadow", nil}, {"eta", optionalTime(task.ETA)},
 		{"expires", optionalTime(task.Expires)}, {"group", nil}, {"group_index", nil}, {"retries", 0}, {"timelimit", []any{optionalSeconds(task.TimeLimit), optionalSeconds(task.SoftTimeLimit)}},
-		{"root_id", envelope.ID}, {"parent_id", nil}, {"argsrepr", argsrepr}, {"kwargsrepr", kwargsrepr}, {"origin", envelope.Origin},
+		{"root_id", rootID}, {"parent_id", parentID}, {"argsrepr", argsrepr}, {"kwargsrepr", kwargsrepr}, {"origin", envelope.Origin},
 		{"ignore_result", false}, {"replaced_task_nesting", 0}, {"stamped_headers", nil}, {"stamps", Dict{}},
 	}
 	properties := Dict{{"correlation_id", envelope.ID}, {"reply_to", envelope.ReplyTo}, {"delivery_mode", 2}}
