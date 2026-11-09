@@ -76,8 +76,7 @@ In Django's order:
    characters — every validator's message is listed), password (`RegexField`, trimmed before the pattern). Errors:
    400 `{'msg': 'Invalid request.', 'details': {...}}`.
 6. The `UserPartial` with the same e-mail (`iexact`, first by key) is deleted (delete entry).
-7. Collaborators: `CollaborationInvites.objects.filter(token=str(value)).first()` (by key; a null token selects invites with a
-   null token); none 400 `Collaboration invite not found.`; the invite is deleted (delete entry), then a null expiration raises
+7. Collaborators: `CollaborationInvites.objects.filter(token=str(value)).first()` (by key); none 400 `Collaboration invite not found.`; the invite is deleted (delete entry), then a null expiration raises
    (500) and a past one is 400 `Collaboration invite expired.`.
 8. A missing first or last name raises (500). `create_user`: upper-cased username, `normalize_email`, the raw (untrimmed)
    password, role, and for collaborators the invite's owner, collaborator role and permissions; the validated phone is not
