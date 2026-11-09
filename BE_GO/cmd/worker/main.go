@@ -4,6 +4,8 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"flag"
 	"fmt"
@@ -15,15 +17,18 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -45,10 +50,10 @@ func run(arguments []string) error {
 	poll := flags.Duration("poll-interval", time.Second, "idle claim interval")
 	maintenance := flags.Duration("maintenance-interval", 15*time.Second, "restore deferral interval")
 	drain := flags.Duration("drain-timeout", 25*time.Second, "grace before cancelling admitted jobs")
-	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered email reset, associate age, token cleanup and audit retention task deadline")
+	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered email reset, associate age, token cleanup, audit retention and user deletion request task deadline")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup and audit log retention. Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
+			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention and user deletion requests (publishes send_email_text to the Celery broker). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
 			return nil
 		}
 		return errors.New("invalid worker arguments")
@@ -81,6 +86,13 @@ func run(arguments []string) error {
 	ages := service.NewAssociateAgeUpdate(repository.NewAssociateAgeUpdates(db), time.Now, logger)
 	tokens := service.NewSubscriptionTokenCleanup(repository.NewSubscriptionTokenCleanups(db), time.Now, logger)
 	retention := service.NewAuditRetention(repository.NewAuditRetentions(db), time.Now, logger)
+	broker, err := celeryBroker(cfg)
+	if err != nil {
+		return err
+	}
+	defer broker.Close()
+	tasks := celery.NewProducer(celery.RedisBroker{Client: broker})
+	deletions := service.NewUserDeletionRequests(repository.NewUserDeletionRequests(db), tasks, cfg.WhitelabelName, time.Now, logger)
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
 	jobs := repository.NewJobs(db)
@@ -90,6 +102,7 @@ func run(arguments []string) error {
 			domain.JobUpdateAssociateAge:             {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
 			domain.JobClearExpiredSubscriptionTokens: {Version: 1, Timeout: *taskTimeout, Run: tokens.Run},
 			domain.JobDeleteOldAuditLogs:             {Version: 1, Timeout: *taskTimeout, Run: retention.Run},
+			domain.JobDeleteUsersWithRequest:         {Version: 1, Timeout: *taskTimeout, Run: deletions.Run},
 		},
 		service.JobExecutorOptions{Owner: "worker-" + uuid.NewString(), Concurrency: *concurrency,
 			Lease: *lease, RenewInterval: *renew, StoreTimeout: *storeTimeout, PollInterval: *poll,
@@ -124,4 +137,30 @@ func run(arguments []string) error {
 	}
 	logger.Info("worker stopped")
 	return nil
+}
+
+// celeryBroker is the Redis client for Django's CELERY_BROKER_URL: the shared
+// Redis settings without a database number (DB 0), as in cmd/server.
+func celeryBroker(cfg config.Config) (*redis.Client, error) {
+	options := &redis.Options{Addr: cfg.RedisAddress, Username: cfg.RedisUsername, Password: cfg.RedisPassword,
+		DB: 0, MaxRetries: -1, DialTimeout: 2 * time.Second, ReadTimeout: 2 * time.Second, WriteTimeout: 2 * time.Second, ContextTimeoutEnabled: true}
+	if cfg.RedisTLS {
+		options.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+		if cfg.RedisRootCertificate != "" {
+			pem, err := os.ReadFile(cfg.RedisRootCertificate)
+			if err != nil {
+				return nil, errors.New("cannot read Redis root certificate")
+			}
+			roots, err := x509.SystemCertPool()
+			if err != nil {
+				roots = x509.NewCertPool()
+			}
+			if !roots.AppendCertsFromPEM(pem) {
+				return nil, errors.New("invalid Redis root certificate")
+			}
+			options.TLSConfig.RootCAs = roots
+		}
+	}
+	options.Dialer = redisclient.DialContext(options)
+	return redis.NewClient(options), nil
 }

@@ -74,6 +74,7 @@ var periodicJobKinds = map[string]string{
 	JobUpdateAssociateAge:             JobUpdateAssociateAge,
 	JobClearExpiredSubscriptionTokens: JobClearExpiredSubscriptionTokens,
 	JobDeleteOldAuditLogs:             JobDeleteOldAuditLogs,
+	JobDeleteUsersWithRequest:         JobDeleteUsersWithRequest,
 }
 
 // PeriodicJobKind returns the Go job kind for an exact persisted task name.

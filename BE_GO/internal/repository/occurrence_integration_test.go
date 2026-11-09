@@ -234,7 +234,7 @@ func TestPeriodicOccurrencesPostgres(t *testing.T) {
 		if e := db.GetContext(ctx, &everyMinute, `INSERT INTO django_celery_beat_crontabschedule(minute,hour,day_of_week,day_of_month,month_of_year,timezone) VALUES('*','*','*','*','*','UTC') RETURNING id`); e != nil {
 			t.Fatal(e)
 		}
-		for _, task := range []string{domain.JobUpdateAssociateAge, domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs} {
+		for _, task := range []string{domain.JobUpdateAssociateAge, domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest} {
 			seed()
 			exec(`UPDATE django_celery_beat_periodictask SET task=$2,interval_id=NULL,crontab_id=$3 WHERE id=$1`, sourceID, task, everyMinute)
 			result := publish()
@@ -250,7 +250,7 @@ func TestPeriodicOccurrencesPostgres(t *testing.T) {
 				t.Fatal("every-minute source published twice in one slot", task, e, second)
 			}
 		}
-		for _, task := range []string{"auto_archive_subscription", "clear_deleted_subscription", "renew_memberships_payments", "association_quote_assign", "cleanup_old_exports"} {
+		for _, task := range []string{"auto_archive_subscription", "clear_deleted_subscription", "renew_memberships_payments", "association_quote_assign", "cleanup_old_exports", "auto_mark_attendance", "send_reminders", "auto_delete_orphan_medical_certificate"} {
 			seed()
 			exec(`UPDATE django_celery_beat_periodictask SET task=$2 WHERE id=$1`, sourceID, task)
 			before := sourceState()

@@ -1078,6 +1078,36 @@
         "enabled": true,
         "count": 0
       }
+    },
+    "utc_daily_0730_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "7",
+        "now": "2026-10-22T07:29:30+00:00",
+        "last": "2026-10-21T07:30:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_0730_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "7",
+        "now": "2026-10-22T07:30:00+00:00",
+        "last": "2026-10-21T07:30:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
     }
   },
   "gaps": [

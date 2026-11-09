@@ -24,12 +24,13 @@ var scheduleSubset = []string{
 	"utc_every_minute_same_minute", "utc_every_minute_next_slot", "utc_every_minute_missed_slots",
 	"utc_every_minute_hour_rollover", "utc_every_minute_day_rollover", "utc_every_minute_previous_date",
 	"utc_every_minute_future_cursor", "utc_every_minute_start_future", "utc_every_minute_initial_cursor",
+	"utc_daily_0730_before_slot", "utc_daily_0730_at_slot",
 }
 
 // Timing is task-independent in ModelEntry; each published task must reach
 // the same decision as the daily reset for one persisted definition.
 var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateAssociateAge,
-	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs}
+	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest}
 
 type dueFixtureInput struct {
 	Kind        string  `json:"kind"`
@@ -171,6 +172,9 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 		"renewal task":              func(s *domain.PeriodicSchedule) { s.Task = "renew_memberships_payments" },
 		"quote task":                func(s *domain.PeriodicSchedule) { s.Task = "association_quote_assign" },
 		"export cleanup task":       func(s *domain.PeriodicSchedule) { s.Task = "cleanup_old_exports" },
+		"attendance task":           func(s *domain.PeriodicSchedule) { s.Task = "auto_mark_attendance" },
+		"orphan medical task":       func(s *domain.PeriodicSchedule) { s.Task = "auto_delete_orphan_medical_certificate" },
+		"partial registration task": func(s *domain.PeriodicSchedule) { s.Task = "send_user_partial_registration_email" },
 		"unregistered alias":        func(s *domain.PeriodicSchedule) { s.Task = "application.tasks.reset_communication_daily_email_balance" },
 		"one off":                   func(s *domain.PeriodicSchedule) { s.OneOff = true },
 		"absolute expiry":           func(s *domain.PeriodicSchedule) { s.ExpiresAt = &now },
