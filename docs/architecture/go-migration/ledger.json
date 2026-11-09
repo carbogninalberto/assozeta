@@ -19713,25 +19713,79 @@
         "target": "SavedReportViewSet.as_view({'post': 'run'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/module_templates.go",
+        "BE_GO/internal/dto/module_templates.go",
+        "BE_GO/internal/repository/module_templates.go",
+        "BE_GO/internal/service/module_templates.go",
+        "BE_GO/internal/handler/module_templates.go",
+        "BE_GO/internal/domain/saved_reports.go",
+        "BE_GO/internal/dto/saved_reports.go",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/repository/saved_reports.go",
+        "BE_GO/internal/service/saved_reports.go",
+        "BE_GO/internal/handler/saved_reports.go",
+        "BE_GO/internal/handler/message_mutations.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationmoduletemplates; auditlog LogEntry/AuditLogIndex resolvers",
+        "application_savedreport; application_tags, application_paymentcategory, application_carnet; instance_instanceconfiguration (AI integration settings)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/saved-reports/<pk>/run",
+          "/api/v2/saved-reports/<pk>/run",
+          "/api/saved-reports/<pk>/run"
+        ],
+        "request": "JSON object with optional overrides dict merged over the stored params (see templates-reports.md).",
+        "response": "200 {\"data\": tool result}; DELETE 204 empty.",
+        "errors": "400 Unknown tool or a tool result with error; 401; 403 unmapped or impersonation; 404 Report not found; 500 JSON tool exception; 500 HTML for lookup/merge exceptions and not-ported tool inputs.",
+        "authentication": "core.middleware.IsAuthenticated (identity resolution).",
+        "permissions": "Unmapped in the registry.",
+        "resource_scope": "Owner association and created_by=request.user; tool queries scoped by the association and soft-delete flags.",
+        "side_effects": "None for POST (read-only queries with the statement timeout); DELETE removes the report.",
+        "transaction": "Read-only queries; autocommit delete.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/templates_reports_http.json",
+        "TESTS/fixtures/generate_templates_reports_http.py",
+        "TESTS/contracts/test_templates_reports_http.py",
+        "TESTS/adapters/django/templates_reports_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/templates-reports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 84/84; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-native-r5/results.json",
+          "receipt_sha256": "c9d3723241f0cbaa14a9098b1ea92d811c0406fc113e3a748ba879db9d40ba5f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 84/84 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact template, audit, index and report effects.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-versioned-r1/results.json",
+          "receipt_sha256": "7e09698ab61c96f3c8dd6b1ce38272a7071a6cc99782986455bc5a047cf46aa4"
+        },
+        {
+          "revision": "committing change without the IS NOT NULL that exclude() adds for nullable columns (BE_GO/internal/dto/report_tools.go)",
+          "result": "Mutation control: fails Go on templates-reports-run-query-carnets-exclude-nullable (response.body:data:count).",
+          "artifact": "quality-reports/go-migration/templates-reports-http-mutation-r1/results.json",
+          "receipt_sha256": "94ccca09eec95522fe4c04c4c998570ec5acbaba1590070d7ec44fff7071e471"
+        }
+      ],
+      "notes": [
+        "Implementing: Not ported (refused with the HTML 500 page before any query): the export_data, export_multi_sheet and get_attendance_matrix tools (file generation), get_schema for whitelisted models and the full schema, whitelisted models other than Tags/PaymentCategory/Carnet, relation traversal, reverse relations, joins, date-part transforms, JSON field filters/values, relation ordering/grouping, lookups outside exact/iexact/contains/icontains/(i)startswith/(i)endswith/gt/gte/lt/lte/in/range/isnull, boolean/float limits, non-canonical UUID spellings, out-of-range integers and decimals, unusual aggregate aliases and HTML references other than common named ones. No mcp_definition entry is fully covered (query_data, count_data, get_field_values, aggregate_data and get_schema are partial)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:saved-reports/<str:pk>/update -> SavedReportViewSet.as_view({'patch': 'update'})",
@@ -24571,28 +24625,78 @@
         "target": "SportAssociationModuleTemplatesViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/module_templates.go",
+        "BE_GO/internal/dto/module_templates.go",
+        "BE_GO/internal/repository/module_templates.go",
+        "BE_GO/internal/service/module_templates.go",
+        "BE_GO/internal/handler/module_templates.go",
+        "BE_GO/internal/domain/saved_reports.go",
+        "BE_GO/internal/dto/saved_reports.go",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/repository/saved_reports.go",
+        "BE_GO/internal/service/saved_reports.go",
+        "BE_GO/internal/handler/saved_reports.go",
+        "BE_GO/internal/handler/message_mutations.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationmoduletemplates; auditlog LogEntry/AuditLogIndex resolvers",
+        "application_savedreport; application_tags, application_paymentcategory, application_carnet; instance_instanceconfiguration (AI integration settings)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/templates/<pk>/update",
+          "/api/v2/templates/<pk>/update",
+          "/api/templates/<pk>/update"
+        ],
+        "request": "Partial JSON or form object of SportAssociationModuleTemplatesSerializer fields (see templates-reports.md).",
+        "response": "200 serializer.data (the copy when a new pk is given); DELETE 204 empty.",
+        "errors": "400 field errors or non_field_errors; 401; 403 registry, impersonation or another tenant's sport_association; 404 Not found. (unparseable pk) or model 404; 405; 500 athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.templates.update (DELETE: the same route key).",
+        "resource_scope": "SportAssociation.objects.get(user=request.user) (ActiveManager); related sport_association through the tenant scope.",
+        "side_effects": "Full-row save with changed-field audit (direct index); a new pk inserts a copy with update+create audit entries; DELETE deletes with audit.",
+        "transaction": "Autocommit save with audit signals.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/templates_reports_http.json",
+        "TESTS/fixtures/generate_templates_reports_http.py",
+        "TESTS/contracts/test_templates_reports_http.py",
+        "TESTS/adapters/django/templates_reports_http.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/module-templates.md"
+        "docs/architecture/go-migration/templates-reports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 84/84; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-native-r5/results.json",
+          "receipt_sha256": "c9d3723241f0cbaa14a9098b1ea92d811c0406fc113e3a748ba879db9d40ba5f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 84/84 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact template, audit, index and report effects.",
+          "artifact": "quality-reports/go-migration/templates-reports-http-versioned-r1/results.json",
+          "receipt_sha256": "7e09698ab61c96f3c8dd6b1ce38272a7071a6cc99782986455bc5a047cf46aa4"
+        },
+        {
+          "revision": "committing change without the IS NOT NULL that exclude() adds for nullable columns (BE_GO/internal/dto/report_tools.go)",
+          "result": "Mutation control: fails Go on templates-reports-run-query-carnets-exclude-nullable (response.body:data:count).",
+          "artifact": "quality-reports/go-migration/templates-reports-http-mutation-r1/results.json",
+          "receipt_sha256": "94ccca09eec95522fe4c04c4c998570ec5acbaba1590070d7ec44fff7071e471"
+        }
       ],
       "notes": [
-        "Shares the family characterization; not ported."
+        "Implementing: Not ported (refused with the HTML 500 page before any query): the export_data, export_multi_sheet and get_attendance_matrix tools (file generation), get_schema for whitelisted models and the full schema, whitelisted models other than Tags/PaymentCategory/Carnet, relation traversal, reverse relations, joins, date-part transforms, JSON field filters/values, relation ordering/grouping, lookups outside exact/iexact/contains/icontains/(i)startswith/(i)endswith/gt/gte/lt/lte/in/range/isnull, boolean/float limits, non-canonical UUID spellings, out-of-range integers and decimals, unusual aggregate aliases and HTML references other than common named ones. No mcp_definition entry is fully covered (query_data, count_data, get_field_values, aggregate_data and get_schema are partial)."
       ]
     },
     {
