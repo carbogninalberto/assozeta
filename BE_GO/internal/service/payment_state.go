@@ -141,8 +141,8 @@ func (s *PaymentStates) save(ctx context.Context, tx domain.PaymentStateTransact
 // the association, then atomically the payment. A paid payment answers with
 // the message; an unpaid one is marked paid (an expense also pays its first
 // supplier invoice). Unpaid income payments with an associate, supplier or
-// instructor (invoice, notification and PDF task) and any payment with an
-// invoice (PDF task) are refused before any write.
+// instructor (invoice, notification and PDF task) and paid invoiced payments
+// with a truthy generate_invoice (PDF task) are refused before any write.
 func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIdentity, request PaymentStateRequest, body any) (map[string]any, error) {
 	id, err := messageReadsParseUUID(request.ID)
 	if err != nil {
@@ -171,10 +171,17 @@ func (s *PaymentStates) Approve(ctx context.Context, identity domain.ResolvedIde
 	if err != nil {
 		return nil, err
 	}
-	if row.InvoiceID != nil {
-		return nil, domain.ErrPaymentStateNotPorted
+	// generate_invoice (default True) only matters for a paid invoiced payment:
+	// unpaid expenses and payments without a party return before the task.
+	generate := true
+	if flag, present := object.Lookup("generate_invoice"); present {
+		generate = dto.PythonTruthy(flag)
 	}
 	if row.Paid {
+		if row.InvoiceID != nil && generate {
+			// print_document_invoice on commit: not ported.
+			return nil, domain.ErrPaymentStateNotPorted
+		}
 		item, err := s.render(ctx, tx, row.ID, group)
 		if err != nil {
 			return nil, err

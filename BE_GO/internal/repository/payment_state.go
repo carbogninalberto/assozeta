@@ -74,6 +74,23 @@ func (t *paymentStateTransaction) RenderPayment(ctx context.Context, id string, 
 			render.Instructor = &rows[0]
 		}
 	}
+	if payment.InvoiceID != nil {
+		// payment.invoice and its document go through the base managers.
+		invoices := []domain.PaymentReadsInvoice{}
+		if err = t.tx.SelectContext(ctx, &invoices, `SELECT v.invoice_id, v.document_pdf_id, d.token::text AS document_token,
+ v.sport_association_id, v.creation_date, v.membership_fee::text AS membership_fee, v.activity_fee::text AS activity_fee,
+ v.meta_payment_categories::text AS meta_payment_categories, v.description, v.number, v.archived, v.cancelled, v.selected_tutor_id,
+ v.meta::text AS meta, v.imported_from_associami, v.group_id, v.deleted,
+ COALESCE((SELECT json_agg(l.document_id ORDER BY l.id) FROM application_invoice_attached_documents l WHERE l.invoice_id=v.invoice_id),
+  '[]'::json)::text AS attached_documents
+ FROM application_invoice v LEFT JOIN docmanager_document d ON d.document_id=v.document_pdf_id WHERE v.invoice_id=$1`,
+			*payment.InvoiceID); err != nil {
+			return render, err
+		}
+		if len(invoices) == 1 {
+			render.Invoice = &invoices[0]
+		}
+	}
 	return render, nil
 }
 
