@@ -174,25 +174,138 @@ deferral +15 s, the prepared files removed); an unknown keyword handed off.
   timestamps, jsonb, the plan and the IN-list binding), `./internal/pyzlib` (82 zlib goldens, chunk invariance),
   `./internal/service -run RestorablePasswordHash`.
 
-## Steps 3 and 4: `import_association_data` and `instance.restore.execute` (not ported)
+## Step 3: `import_association_data`
 
-Both stay on Django's worker; with `GO_TASK_QUEUE_TASKS` not listing them nothing changes. What an exact port needs,
-beyond what steps 1 and 2 provide (prefork execution, the export, the archive writer):
+`BE/application/tasks.py` (`shared_task`, no `bind`, no retry policy, CoordinatedTask admission) with
+`AssociationImportService.validate()` and `import_all()` (`BE/application/services/import_service.py`,
+`legacy_backup.skipped_records`, `json_stream.iter_json_array`, `validators.is_restorable_password_hash`) runs on the Go
+consumer when `GO_TASK_QUEUE_TASKS` lists it. Go: `internal/service/consumer_import_association.go` (task, validation,
+the importer's passes), `consumer_import_archive.go` (`zipfile.is_zipfile`, the archive reader, Python's JSON
+semantics), `internal/importeffects` (the ORM effects, reusable), `internal/repository/import_effects_audit.go` (the
+LogEntry and its index); registration in `cmd/celery-consumer/consumer_restore.go`.
 
-- **Import** (`AssociationImportService`, ~1,800 lines, plus `ImportValidator`): every archived record is created through
-  the ORM (`model(**kwargs).save()`), so the database end state includes each model's `save()` override (3 models), the
-  `post_save`/`pre_delete` receivers of `application/signals.py` (12, including membership and payment cascades and
-  workflow triggers that publish Celery tasks), a django-auditlog create entry for every audited model (76 `auditlog.register` calls in `BE`, with
-  each field rendered by `str()`) and its `AuditLogIndex` row through `application/audit_resolvers.py`, MPTT tree fields
-  for folders, the raw-save path for messages, deferred FKs and M2M passes inside one `transaction.atomic`, deferred
-  constraint checks, then the media files written to storage. `validate()` reports Python `zipfile`/`json` exception texts
-  and identifies password hashers through `PASSWORD_HASHERS`. Go has generic helpers for audit rendering of stored rows,
-  but not the per-model save/signal semantics or resolver coverage the import needs.
-- **Restore** (`execute`): the exclusive operation lock, the Go-transaction barrier, the receipt state machine and
-  progress cache (these parts are small), the archive validation of `archive.py` against the export/import registry
-  and every field's `to_python`, a recovery export (step 2's service, with `RecoveryExport`'s exclusions), Django's
-  `Collector` deletion plan and cascades of the current association graph (`replacement.py`), the import above in
-  replacement mode, media staging and pruning. The deletion and import halves carry the same ORM side effects.
+### What Django does (and Go reproduces)
 
-A port at the bar of steps 1 and 2 needs the per-model ORM behaviour characterized first (save overrides, signals,
-audit rendering and index paths for all exported models), most likely as its own families.
+1. `_stage_stored_archive`: the stored object (`default_storage.open(zip_file_path)`) is downloaded to
+   `NamedTemporaryFile(suffix='.zip')` (`<tempdir>/tmpXXXXXXXX.zip`; the name appears in a validation error).
+2. `validate()`: `is_zipfile` (end-of-central-directory search), `manifest.json` present and decodable,
+   `skipped_records` (the retired sections, its `ValueError`s reported as `Error validating export file: ...`), the export
+   format, `_load_source_identity` (exactly one association record, its `user_id` matching exactly one user record, the
+   `ValueError` texts), an existing association with the same key, an existing owner account that owns another
+   association, and whether a usable owner hash or the recovery password is available. Errors give the result
+   `{"success": false, "error": "Validazione fallita: [...]"}` (Python list repr).
+3. `import_all()` inside one `transaction.atomic`: the owner (reused by key, its password replaced when unusable; or
+   created from the sanitized record), the association, every IMPORT_ORDER file (manifest file names first), with the
+   importer's own rules: keys preserved, non-User key collisions raising, existing users reused by key (adopting an
+   archived hash when theirs is unusable), FK resolution against imported objects and the flat key mapping, deferral of
+   FKs to models not imported yet and of pending self references, `references missing` warnings, M2M lists deferred,
+   `Associate.sport_association` forced, folders parent-first with django-mptt tree fields, messages through the raw
+   save. Pass 2 updates deferred FKs (`QuerySet.update`, no audit); pass 3 sets M2M relations; `check_constraints()`;
+   pass 4 writes the media: a `Document` per unknown file key (audited create), `default_storage.save` under
+   `<%Y%m%d_%H%M%S>/<document>/<file>` and `save(update_fields=['filepath'])` (audited update), signatures under
+   `subscriptions/<id>/imported_signature_<stamp>_<file>` with `signature_storage_key`/`signature_url` (audited update
+   through `Subscription.save`). The stats (insertion order, `User` overwritten by the user file's count),
+   `skipped_records` and the warnings form the result.
+4. A Python exception inside `import_all()` rolls back, removes the media written so far and gives
+   `{"success": false, "error": str(e)}`; the `finally` deletes the staged object from storage in every outcome.
+
+#### The ORM effects (`internal/importeffects`, reused by step 4)
+
+Characterized from Django rather than restated: `TESTS/adapters/go/association_import_plan.py` generates `plan.json`
+(every imported model's concrete fields in `_meta.get_fields()` order with kind, column, database type, nullability,
+default — constant or callable name —, `auto_now`/`auto_now_add`, decimal shape, FK target; the auditlog registration
+and what its create diff renders for reverse accessors; the auto-created through tables; the `__str__` and `save()` in
+effect; IMPORT_ORDER, PK_FIELDS, FK_MAPPINGS). The harness fails when the plan is stale. What a plain save reaches
+in this codebase: no model `post_save`/`pre_save` receiver exists besides auditlog's (the 12 receivers of
+`application/signals.py` are `pre_delete` handlers and custom signals that `save()` does not send), plus
+`create_audit_log_index` on every new LogEntry; three `save()` overrides (Payment, Subscription, Course) and
+`MPTTModel.save`.
+
+Interface (`importeffects.Effects{Plan, Tx, Audit, Now, NewUUID}`, all inside the caller's transaction):
+
+| Django | Go |
+|---|---|
+| `model(**kwargs)` (field defaults: `get_default()`, `dict`/`list`, `timezone.now`, `uuid4`, constants) | `NewInstance(model, kwargs)` |
+| `_parse_value` / FK target parsing of archived values | `ParseArchived(field, raw)`, `ParseRelated(field, raw)` |
+| `instance.save()` for a new row: save override, `auto_now(_add)`, INSERT, `log_create` + index | `Save(ctx, instance)` |
+| `save_base(raw=True)` (+ explicit `log_create`) | `RawSave(ctx, instance, logCreate)` |
+| `instance.save(update_fields=[...])`: override, `log_update` (old row, restricted diff), UPDATE | `SaveFields(ctx, instance, names...)` |
+| `user.save(update_fields=['password'])` (excluded from audit: no entry) | `UpdatePassword(ctx, model, pk, hash)` |
+| `<unfiltered manager>.filter(pk=).exists()` / `.update(field=value)` | `Exists`, `QuerysetUpdate` |
+| `related_manager.set(keys)` (fast add: CPython set order of the ids, one INSERT ... ON CONFLICT DO NOTHING) | `SetM2M` (`pySetOrder`, unit-tested against CPython goldens) |
+| `MPTTModel.save()` (root: max tree id + 1; child: `_create_space` then last child) | `SaveTreeNode` |
+| `connection.check_constraints()` | `CheckConstraints` |
+| auditlog `LogEntry` + `create_audit_log_index` | `AuditWriter` (`repository.ImportEffectsAudit`, the generic resolver) |
+
+Audit rendering follows `auditlog.diff.get_field_value` on the in-memory instance (not the stored row): FKs and
+`DateTimeField`s keep `None` (`['None', 'None']`), JSON fields `json.dumps(sort_keys=True)` (`null` included), other
+fields are kept when `str(value) != 'None'`, datetimes naive UTC, reverse accessors with a `related_name` render
+`app.Model.None`, `exclude_fields` apply; `object_repr` is `Model object (pk)` or `User.__str__`. Values whose in-memory
+form, stored form or text would differ in ways the package does not model return `importeffects.ErrUnsupported`
+(non-canonical UUID text, naive or non-ISO datetimes, decimals not already at the column's places, non-bool booleans,
+non-string text, `CourseSubscription.__str__` = `str(self.__dict__)`, Payment descriptions an account transfer derives,
+Subscriptions whose dates `save()` would fill, unknown defaults).
+
+### Handed off to Django (before any effect)
+
+Arguments other than a string path and a string recovery password (other arities, unknown keywords); a missing or
+unreadable staged object; an archive Go's reader or the checks above reject (ZIP64, duplicate or non-UTF-8 member
+names, encrypted or non-deflate members, a local header name differing from the directory, a CRC error, data files
+that are not UTF-8 JSON arrays Go decodes as Python does, a manifest that is not a dict); every value or path that
+returns `ErrUnsupported`; a media name `default_storage.save` would change (existing object, suspicious names); any
+database error. Plan stages the archive, validates it, reads every data file and media member, and then performs the
+database part of `import_all()` (passes 1–3, the constraint check and the database writes of pass 4) in one open
+transaction; any of the above rolls it back and hands the message off. Records of an audited model whose `__str__` is
+not reproduced (CourseSubscription) are found by the read pass and handed off before the transaction starts. The harness
+normalizes the `ModelState object at 0x...` address inside that repr, which differs between two Django processes. Run (after admission) uploads the media in
+Django's order, commits, deletes the staged object and returns the result; a deferral (pending restore) rolls back.
+
+### Documented differences
+
+- The database work runs before CoordinatedTask admission (uncommitted until admission succeeds; a deferral or a
+  stale-task failure rolls it back). Django runs it after admission. Only timing and lock order differ.
+- A handoff after the transaction started (a database error, e.g. the constraint check) has consumed sequence values
+  (Folder ids, through-table ids, LogEntry ids) that Django's run then skips.
+- Media are uploaded after the database writes of pass 4 (Django interleaves upload and row update); the storage stamp
+  comes from the moment the name was chosen. A storage failure in Run removes the written objects, rolls back and ends
+  with the consumer's FAILURE (Django stores `{"success": false, "error": str(e)}` with botocore's text).
+- Objects of 8 MiB or more: Django uploads them in multipart parts (different ETag); Go stores one `PutObject`.
+- Python `JSONDecodeError` and `zipfile` texts are not reproduced: those archives are handed off.
+
+### Evidence
+
+`TESTS/adapters/go/celery_consumer_import_process.py` (private PostgreSQL, Redis, MinIO; the Django side is a real prefork
+worker subprocess with the production cache and S3 storage and Django's default password hashers,
+`TESTS/adapters/go/consumer_import_settings.py`). The fixture archives are written by Django's own
+`AssociationExportService.export()` from a seeded source association (users with a reused athlete and a collaborator
+without a usable password, group, family, associates with a tutor relation and a deleted one, tags, medical certificate,
+subscription with JSON data, tags and a signature, VAT, category, signature, five payments covering the `Payment.save`
+description rules and the default category, invoice, a three-level folder tree plus a second root, reminder with a
+time, course with location, instructor with documents, message and message transaction, five media files) and
+rewritten for the variants. Compared: every row of every managed model and auto-created through table, the audit
+entries and index rows, the TaskResult, the broker and every bucket object. 17 scenarios: import into an instance with
+other data; an existing owner account reused; the recovery password hashing a new owner; validation failures (existing
+association, no hash and no recovery password, truncated archive, no manifest, no association file); rolled-back
+imports (circular folders, an existing tag key); handoffs (undecodable data file, course subscriptions, a key the
+constraint check rejects, a wrong media CRC, a missing staged object, an unknown keyword); a pending restore deferring
+the import.
+
+- Oracle: Django alone 17/17 (`consumer-import-oracle`).
+- RED: consumer with the task unregistered; Django passed, Go timed out on the first scenario
+  (`consumer-import-process-red`).
+- GREEN: 17/17 (`consumer-import-process/results.json`).
+- Mutation (CAUGHT): `Payment.save` without the `quota corso` → `meta['description']` replacement; the payment row and
+  its audit entry differed (`consumer-import-process-mutation`).
+- Re-run after the shared change (`cmd/celery-consumer/consumer_restore.go` registration): export 8/8, capabilities
+  13/13, `celery_consumer_process.py` 15/15 (receipts `consumer-import-rerun-*`).
+
+- Unit tests: `go test ./internal/importeffects` (CPython set order goldens, audit rendering, plan, season ranges).
+
+## Step 4: `instance.restore.execute` (not ported)
+
+It stays on Django's worker. What an exact port still needs beyond steps 1–3: the exclusive operation lock, the
+Go-transaction barrier, the receipt state machine and progress cache (small parts), the archive validation of
+`archive.py` against the export/import registry and every field's `to_python`, a recovery export (step 2's service with
+`RecoveryExport`'s exclusions), Django's `Collector` deletion plan and cascades of the current association graph
+(`replacement.py`, with the `pre_delete` receivers of `application/signals.py` and auditlog delete entries), the step 3
+import in replacement mode through `internal/importeffects`, media staging and pruning.

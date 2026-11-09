@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
 	"time"
 
@@ -29,7 +30,7 @@ func (o consumerRestoreObjects) Missing(err error) bool {
 	return errors.As(err, &response) && response.HTTPStatusCode() == 404
 }
 
-// consumerRestoreRegister adds export_association_data.
+// consumerRestoreRegister adds export_association_data and import_association_data.
 func consumerRestoreRegister(tasks map[string]celeryworker.Task, cfg config.Config, db *sqlx.DB, broker *redis.Client,
 	producer celery.Publisher) error {
 	cacheOptions := *broker.Options()
@@ -61,5 +62,26 @@ func consumerRestoreRegister(tasks map[string]celeryworker.Task, cfg config.Conf
 		return err
 	}
 	tasks[service.ConsumerExportAssociationTask] = export.Task()
+	imports, err := service.NewConsumerImportAssociation(db, consumerImportObjects{consumerRestoreObjects{consumerPrintStorage(cfg)}},
+		repository.ImportEffectsAudit, service.ConsumerImportSettings{TempDir: os.TempDir(), PublicBaseURL: cfg.Storage.PublicBaseURL,
+			Overwrite: cfg.Storage.FileOverwrite}, time.Now, uuid.NewString)
+	if err != nil {
+		return err
+	}
+	tasks[service.ConsumerImportAssociationTask] = imports.Task()
 	return nil
+}
+
+// consumerImportObjects adds the streaming read import_association_data's
+// _stage_stored_archive performs (download_fileobj into the temporary file).
+type consumerImportObjects struct{ consumerRestoreObjects }
+
+func (o consumerImportObjects) Download(ctx context.Context, key string, destination io.Writer) error {
+	object, err := o.Open(ctx, key)
+	if err != nil {
+		return err
+	}
+	defer object.Body.Close()
+	_, err = io.Copy(destination, object.Body)
+	return err
 }
