@@ -1,0 +1,1370 @@
+{
+ "matrix_version": 1,
+ "scope": "subscription/<uid>/medical-appointments/add",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "subscriptions": {
+  "own": {
+   "id": "a1000000-0000-4000-8000-000000983001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "number": "0",
+   "group": null,
+   "deleted": false
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000983002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "number": "0",
+   "group": null,
+   "deleted": true
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000983003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "number": "0",
+   "group": "own_group",
+   "deleted": false
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000983004",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "number": "0",
+   "group": null,
+   "deleted": false
+  }
+ },
+ "cases": [
+  {
+   "name": "medical-appointment-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "medical-appointment-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Medical Appointments Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null
+  },
+  {
+   "name": "medical-appointment-add-malformed-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/not-a-uuid/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-athlete-not-association",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-unknown-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983999/medical-appointments/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no subscription found."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-foreign-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983004/medical-appointments/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no subscription found."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-grouped-subscription-other-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983003/medical-appointments/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "data": "no subscription found."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-unknown-subscription-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983999/medical-appointments/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "data": "no subscription found."
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "medical-appointment-add-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": [
+    {
+     "region": "non-agonistica",
+     "date": "20/11/2026"
+    }
+   ]
+  },
+  {
+   "name": "medical-appointment-add-form-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "raw_body": "region=agonistica&date=20%2F11%2F2026",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "medical-appointment-add-empty-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "region": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {}
+  },
+  {
+   "name": "medical-appointment-add-null-region",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "region": [
+     "This field may not be null."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": null
+   }
+  },
+  {
+   "name": "medical-appointment-add-blank-region",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "region": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "  "
+   }
+  },
+  {
+   "name": "medical-appointment-add-long-region",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "region": [
+     "Ensure this field has no more than 100 characters."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+   }
+  },
+  {
+   "name": "medical-appointment-add-boolean-region",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "region": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": true
+   }
+  },
+  {
+   "name": "medical-appointment-add-iso-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "agonistica",
+    "date": "2026-11-20"
+   }
+  },
+  {
+   "name": "medical-appointment-add-integer-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "agonistica",
+    "date": 20112026
+   }
+  },
+  {
+   "name": "medical-appointment-add-blank-notes-long-sport",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "notes": [
+     "This field may not be blank."
+    ],
+    "sport": [
+     "Ensure this field has no more than 255 characters."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "agonistica",
+    "notes": "",
+    "sport": "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+   }
+  },
+  {
+   "name": "medical-appointment-add-bad-creation-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "creation_date": [
+     "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "agonistica",
+    "creation_date": "ieri"
+   }
+  },
+  {
+   "name": "medical-appointment-add-null-creation-date-dict-address",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "creation_date": [
+     "This field may not be null."
+    ],
+    "address": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "region": "agonistica",
+    "creation_date": null,
+    "address": {
+     "via": "Roma"
+    }
+   }
+  },
+  {
+   "name": "medical-appointment-add-several-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "region": [
+     "This field is required."
+    ],
+    "date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "restore": null,
+   "body": {
+    "date": "31/02/2026",
+    "notes": "x"
+   }
+  },
+  {
+   "name": "medical-appointment-add-frontend-agonistica",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "agonistica",
+     "document": null,
+     "notes": "Portare il documento",
+     "sport": "Calcio",
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {
+      "ecg": true,
+      "spirometria": true
+     },
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{\"ecg\": true, \"spirometria\": true}"
+     ],
+     "notes": [
+      "None",
+      "Portare il documento"
+     ],
+     "sport": [
+      "None",
+      "Calcio"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "agonistica",
+    "date": "20/11/2026",
+    "sport": "Calcio",
+    "meta": {
+     "ecg": true,
+     "spirometria": true
+    },
+    "notes": " Portare il documento "
+   }
+  },
+  {
+   "name": "medical-appointment-add-minimal-defaults",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "$default-date",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "$default-date"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica"
+   }
+  },
+  {
+   "name": "medical-appointment-add-piemonte-biella-creation-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "agonistica-piemonte-biella",
+     "document": null,
+     "notes": null,
+     "sport": "",
+     "address": "Via Roma 1",
+     "date": null,
+     "meta": null,
+     "creation_date": "2026-11-20T09:30:00+00:00"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "agonistica-piemonte-biella"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "meta": [
+      "None",
+      "null"
+     ],
+     "sport": [
+      "None",
+      ""
+     ],
+     "address": [
+      "None",
+      "Via Roma 1"
+     ],
+     "creation_date": [
+      "None",
+      "2026-11-20 09:30:00"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "agonistica-piemonte-biella",
+    "date": null,
+    "creation_date": "2026-11-20T09:30",
+    "address": "Via Roma 1",
+    "meta": null,
+    "sport": ""
+   }
+  },
+  {
+   "name": "medical-appointment-add-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": "7",
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": [
+      1,
+      "a",
+      null
+     ],
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "[1, \"a\", null]"
+     ],
+     "notes": [
+      "None",
+      "7"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026",
+    "notes": 7,
+    "meta": [
+     1,
+     "a",
+     null
+    ]
+   }
+  },
+  {
+   "name": "medical-appointment-add-admin-impersonating",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "admin",
+    "session": "admin_owner",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-deleted-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983002/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983002",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983002"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-grouped-subscription-own-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983003/medical-appointments/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983003",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983003"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-ignored-keys",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026",
+    "subscription": "a1000000-0000-4000-8000-000000983004",
+    "appointment_region": "x",
+    "document_token": "x",
+    "document": null,
+    "altro": 1
+   }
+  },
+  {
+   "name": "medical-appointment-add-print-failure-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "agonistica-toscana",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "agonistica-toscana"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 500,
+      "body": "renderer down"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "agonistica-toscana",
+    "date": "20/11/2026"
+   }
+  },
+  {
+   "name": "medical-appointment-add-completed-restore-still-prints",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": {
+    "state": "completed",
+    "completed_at": "2026-01-01T00:00:00Z"
+   },
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026"
+   }
+  }
+ ]
+}

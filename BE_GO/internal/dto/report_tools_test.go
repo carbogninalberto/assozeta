@@ -26,21 +26,19 @@ func TestReportToolOutcomes(t *testing.T) {
 		{"query_data", `{"model_name": "Tags", "sport_association_id": "x"}`, ErrReportFailed},
 		{"query_data", `{"fields": ["tag_name"]}`, ErrReportFailed},
 		{"query_data", `{"model_name": "User"}`, ErrReportFailed},
-		{"query_data", `{"model_name": "Payment"}`, ErrReportNotPorted},
+		{"query_data", `{"model_name": "Payment", "filters": {"type__regex": "x"}}`, ErrReportNotPorted},
 		{"query_data", `{"model_name": "Tags", "filters": {"colour": "x"}}`, ErrReportFailed},
-		{"query_data", `{"model_name": "Tags", "filters": {"subscription__name": "x"}}`, ErrReportNotPorted},
+		{"query_data", `{"model_name": "Tags", "exclude": {"subscription__status_flag": 1}}`, ErrReportNotPorted},
 		{"query_data", `{"model_name": "Tags", "filters": {"tag_name__regex": "x"}}`, ErrReportNotPorted},
 		{"query_data", `{"model_name": "Tags", "filters": {"tag_id": "nope"}}`, ErrReportFailed},
 		{"query_data", `{"model_name": "Tags", "order_by": ["?"]}`, ErrReportNotPorted},
-		{"query_data", `{"model_name": "Tags", "joins": ["subscription"]}`, ErrReportNotPorted},
+		{"query_data", `{"model_name": "Tags", "filters": {"creation_date__minute": 1}}`, ErrReportNotPorted},
 		{"query_data", `{"model_name": "Tags", "limit": true}`, ErrReportNotPorted},
 		{"query_data", `{"model_name": "Tags", "limit": "5"}`, ErrReportFailed},
-		{"query_data", `{"model_name": "Carnet", "filters": {"meta__colore": "blu"}}`, ErrReportNotPorted},
+		{"query_data", `{"model_name": "Carnet", "filters": {"meta__colore__icontains": "blu"}}`, ErrReportNotPorted},
 		{"get_field_values", `{"model_name": "Tags", "field_name": "password"}`, ErrReportFailed},
-		{"aggregate_data", `{"model_name": "Tags", "aggregations": [{"function": "count", "field": "*"}], "group_by": ["creation_date__year"]}`, ErrReportNotPorted},
+		{"aggregate_data", `{"model_name": "Tags", "aggregations": [{"function": "sum", "field": "tag_name"}]}`, ErrReportFailed},
 		{"export_data", `{"model_name": "Tags"}`, ErrReportNotPorted},
-		{"get_schema", `{"model_name": "Tags"}`, ErrReportNotPorted},
-		{"get_schema", `{}`, ErrReportNotPorted},
 	} {
 		_, err := PlanReportTool(tc.tool, reportParams(t, tc.params), "a1000000-0000-4000-8000-000000701001", settings)
 		if !errors.Is(err, tc.want) {
@@ -52,15 +50,20 @@ func TestReportToolOutcomes(t *testing.T) {
 func TestReportToolPlans(t *testing.T) {
 	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 50, QueryTimeout: 10}, nil }
 	plan, err := PlanReportTool("query_data", reportParams(t, `{"model_name": "Carnet", "fields": ["title"],
-		"exclude": {"title": "Cinque"}, "order_by": ["-fee"], "limit": 80}`), "own", settings)
+		"exclude": {"title": "Cinque"}, "order_by": ["-fee"], "limit": 80}`), "a1000000-0000-4000-8000-000000701001", settings)
 	if err != nil {
 		t.Fatal(err)
 	}
 	query := plan.Statements[1].SQL
-	for _, part := range []string{`NOT (("title" = $2::text AND "title" IS NOT NULL))`, `"fee" AS o0`, `ORDER BY o0 DESC`, `LIMIT 50`} {
+	for _, part := range []string{`NOT ("application_carnet"."title" = $2 AND "application_carnet"."title" IS NOT NULL)`,
+		`"application_carnet"."fee" AS "__o0"`, `ORDER BY "application_carnet"."fee" DESC`, `LIMIT 50`} {
 		if !strings.Contains(query, part) {
 			t.Errorf("query %q lacks %q", query, part)
 		}
+	}
+	if _, err = PlanReportTool("count_data", reportParams(t, `{"model_name": "Tags"}`), "own", settings); err == nil ||
+		err.Error() != `['"own" non è uno UUID valido.']` {
+		t.Errorf("association: %v", err)
 	}
 	plan, err = PlanReportTool("get_schema", reportParams(t, `{"model_name": 5}`), "own", settings)
 	if err != nil || plan.Immediate == nil || plan.Immediate.Message != "Model 5 not found" {

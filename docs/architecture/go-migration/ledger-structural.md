@@ -103,7 +103,7 @@ Mutation (user lookup including deleted users) CAUGHT on the deleted-user save.
   `sync-manual`). `pkg/manual/refresh.go` implements the synchronizer with
   cross-runtime lock evidence (manual-reader.md), but no Go command exists;
   left open.
-- `backfill_audit_log_index`: depends on the generic resolver below; left open.
+- `backfill_audit_log_index`: ported as `BE_GO/cmd/backfill-audit-log-index`; see audit-index.md.
 - `migrate_subscription_signatures_to_s3`: migration 0415 removes the field in
   state only, so older databases keep the column and the command still applies;
   it writes to configured storage. Left open.
@@ -125,4 +125,9 @@ the default manager, which for group-aware models filters by the request's
 thread-local `X-Group-Id`, so the outcome depends on request context a generic
 function does not receive; ~60 registered content types each need their
 manager and traversal characterised; and Django's handler swallows index
-errors outside the scoped atomic mutations. Status stays needs_review.
+errors outside the scoped atomic mutations. It stayed needs_review until the follow-up below.
+
+Follow-up: `repository.ResolveAuditLogIndex`/`IndexAuditLogEntry` reproduce the
+generic resolution for all 76 audited content types, with the request's
+`X-Group-Id` as an explicit argument; see audit-index.md for the evidence and the
+remaining differences (error handling, families still writing inline).

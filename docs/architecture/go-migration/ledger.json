@@ -18,26 +18,61 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/backfill-audit-log-index/main.go",
+        "BE_GO/internal/service/audit_index_backfill.go",
+        "BE_GO/internal/repository/audit_index_backfill.go",
+        "BE_GO/internal/repository/audit_index.go",
+        "BE_GO/internal/dto/audit_index.go"
+      ],
+      "dependencies": [
+        "BE/application/signals.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/models/audit_models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
+        "request": "CLI --batch-size N (500), --dry-run, --content-type app_label.model, --limit N (0 = none); --name value or --name=value.",
+        "response": "Same stdout lines as Django; invalid content type is a message with exit 0; negative --limit exit 1 before Found; --batch-size 0 exit 1 after Found; argparse errors exit 2.",
         "errors": null,
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "side_effects": "Creates AuditLogIndex rows for pending LogEntries (no request context); each batch re-evaluates the pending query at its offset after the previous inserts.",
+        "transaction": "One transaction per batch, ON CONFLICT DO NOTHING.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/audit_index.py",
+        "BE_GO/internal/repository/audit_index_integration_test.go",
+        "BE_GO/internal/dto/audit_index_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/audit-index.md",
+        {
+          "revision": "RED receipt, Go resolver and command files removed",
+          "result": "RED: Django 438 resolver + 23 command cases against authored expectations; Go driver and command absent.",
+          "artifact": "quality-reports/go-migration/audit-index-red/results.json",
+          "receipt_sha256": "9252426d9665e1663db131483eef115a42e8fd69a4d23c8cee1c134ad7c027e8"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 438/438 Django post_save index rows vs Go IndexAuditLogEntry (76 audited content types, with/without X-Group-Id) and 23/23 manage.py backfill_audit_log_index vs race-built Go binary (exit, stdout, index table).",
+          "artifact": "quality-reports/go-migration/audit-index/results.json",
+          "receipt_sha256": "1e3739f40d955de337a6d2bd29807d5d03d1c874f5ec7028b15e969445b2064a"
+        },
+        {
+          "revision": "committing change with every backfill batch read from offset 0",
+          "result": "Mutation control: fails Go on \"small batches re-evaluate the pending query\".",
+          "artifact": "quality-reports/go-migration/audit-index-mutation-backfill/results.json",
+          "receipt_sha256": "74f58c404de2f4b60aa5ec346034db3e0e706c8ef6a185442a627b26168f7f84"
+        }
+      ],
       "notes": [
-        "ledger-structural review: Needs the generic audit index resolver, which Go does not have (see create_audit_log_index and ledger-structural.md)."
+        "ledger-structural review: Needs the generic audit index resolver, which Go does not have (see create_audit_log_index and ledger-structural.md).",
+        "Not ported: Django global management options and argparse prefix abbreviations (exit 2), integer options beyond 64 bits, per-entry error lines (Go exits 1 on database errors without a traceback), terminal colours. Binary not yet added to the Go image."
       ]
     },
     {
@@ -498,15 +533,28 @@
           "BaseCommand"
         ]
       },
-      "status": "needs_review",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/Dockerfile"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/manuale/tools.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
         "request": "JSON-RPC 2.0 over stdio; --association-id supplies deployment scope. Exact manual schemas and 15-name tool registry retained.",
-        "response": "MCP initialize/list/call/ping envelopes; manual results are JSON text content. Full business-tool results remain uncharacterized.",
-        "errors": "Schema failures use isError=true text content; unknown tools return application error content; malformed method/params use -32602; malformed JSON emits error notification; cancellation uses code 0.",
+        "response": "MCP initialize/list/call/ping envelopes in the SDK field order; tools/list byte-identical (15 tools); business results are json.dumps text; manual results semantic (manual family).",
+        "errors": "Schema failures isError=true with jsonschema best_match text; unknown tools and _call binding TypeErrors as {\"error\": ...}; malformed lines emit the error notification (jsonrpc last); invalid invocations exit 2 (argparse texts not reproduced); refused inputs answer isError=true \"Tool execution failed\".",
         "authentication": "Stdio manual tools have public knowledge access; request arguments cannot provide trusted user identity.",
         "permissions": "Technical manual evidence and gaps denied to stdio clients. Business-tool permissions remain separate.",
         "resource_scope": "Manual context from live instance settings; CLI association ID does not grant owner authority.",
@@ -520,14 +568,40 @@
         "TESTS/mcp_client.py",
         "TESTS/adapters/django/manual_mcp.py",
         "TESTS/adapters/django/manual_mcp_settings.py",
-        "TESTS/adapters/django/manual_reader_http.py"
+        "TESTS/adapters/django/manual_reader_http.py",
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
       ],
       "evidence": [
-        "40 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
+        "40 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json.",
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
       ],
       "notes": [
         "Actual Django stdio protocol and manual subset characterized; no Go MCP transport/command or business-tool completion claim. SSE option and other management argument cases remain unverified.",
-        "ledger-structural review: Go now has three business tool functions (sanitize_text, list_reports, save_report) besides the manual tools, but no Go command composes them; MCP schema validation for business tools is not ported."
+        "ledger-structural review: Go now has three business tool functions (sanitize_text, list_reports, save_report) besides the manual tools, but no Go command composes them; MCP schema validation for business tools is not ported.",
+        "Implementing via mcp-server: BE_GO/cmd/mcp-server (/app/mcp-server in the Go image) composes the stdio transport, business tools and manual tools; sse prints Django's warning and exits 0. Not ported: argparse usage/error texts, Django global options, XLSX/PDF builds."
       ]
     },
     {
@@ -1028,25 +1102,73 @@
         "name": "aggregate_data",
         "schema": "{'name': 'aggregate_data', 'description': 'Run aggregation queries: count, sum, avg, min, max on fields. Supports GROUP BY with group_by parameter for breakdowns by field or date part (e.g. group_by=[\"payment_date__year\", \"payment_date__month\"] for monthly totals). Useful for totals, averages, statistics, and time-series breakdowns.', 'parameters': {'type': 'object', 'properties': {'model_name': {'type': 'string', 'description': 'Model to aggregate'}, 'filters': {'type': 'object', 'description': 'Filter conditions'}, 'exclude': {'type': 'object', 'description': 'Exclude conditions (NOT matching)'}, 'or_filters': {'type': 'array', 'items': {'type': 'object'}, 'description': 'List of filter dicts ORed together.'}, 'group_by': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Fields to group by. Supports date-part suffixes: field__year, field__month, field__day, field__quarter, field__week. E.g. [\"payment_date__year\", \"payment_date__month\"] for monthly breakdown.'}, 'aggregations': {'type': 'array', 'items': {'type': 'object', 'properties': {'function': {'type': 'string', 'enum': ['count', 'sum', 'avg', 'min', 'max']}, 'field': {'type': 'string', 'description': 'Field to aggregate (use \"*\" for count)'}, 'alias': {'type': 'string', 'description': 'Result key name'}}, 'required': ['function', 'field']}, 'description': 'List of aggregation operations'}, 'include_archived': {'type': 'boolean', 'description': 'Set to true to include archived/deleted records. Default: false.'}}, 'required': ['model_name', 'aggregations']}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/dto/mcp_prep.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/mcp_server/query_builder.py",
+        "BE/application/mcp_server/security.py",
+        "BE/application/models"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Arguments after the SDK jsonschema validation (byte-identical messages, best_match).",
+        "response": "Flat aggregate dict or {data, count} grouped; 400-style error dicts for missing/invalid aggregations or group_by.",
+        "errors": "Exact exception texts including annotation alias errors; aggregates PostgreSQL cannot compute refused.",
+        "authentication": "Stdio process scoped by --association-id; no user identity (arguments cannot provide one).",
+        "permissions": "None beyond the association scope and the field blacklist, as in Django.",
+        "resource_scope": "MODEL_WHITELIST tenant filters (including user__sportassociation and subscription__sport_association paths), default manager and soft-delete filters unless include_archived.",
+        "side_effects": "Read-only; rows unchanged (checked after every call).",
+        "transaction": "Autocommit reads; QueryBuilder statements under the configured statement timeout.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
+      ],
+      "notes": [
+        "Implementing via mcp-server: ORM inputs whose Django text carries difflib suggestions or SQL are refused (see mcp-server.md). Manual tools keep the manual family's semantic parity."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:count_data",
@@ -1062,25 +1184,73 @@
         "name": "count_data",
         "schema": "{'name': 'count_data', 'description': 'Count records matching filters. Faster than query_data for just getting counts.', 'parameters': {'type': 'object', 'properties': {'model_name': {'type': 'string', 'description': 'Model to count'}, 'filters': {'type': 'object', 'description': 'Filter conditions as {field__lookup: value}'}, 'exclude': {'type': 'object', 'description': 'Exclude conditions (NOT matching). Same format as filters.'}, 'or_filters': {'type': 'array', 'items': {'type': 'object'}, 'description': 'List of filter dicts ORed together.'}, 'include_archived': {'type': 'boolean', 'description': 'Set to true to include archived/deleted records. Default: false.'}}, 'required': ['model_name']}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/dto/mcp_prep.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/mcp_server/query_builder.py",
+        "BE/application/mcp_server/security.py",
+        "BE/application/models"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Arguments after the SDK jsonschema validation (byte-identical messages, best_match).",
+        "response": "{\"count\": n} of the distinct queryset.",
+        "errors": "Exact exception texts; unported inputs refused.",
+        "authentication": "Stdio process scoped by --association-id; no user identity (arguments cannot provide one).",
+        "permissions": "None beyond the association scope and the field blacklist, as in Django.",
+        "resource_scope": "MODEL_WHITELIST tenant filters (including user__sportassociation and subscription__sport_association paths), default manager and soft-delete filters unless include_archived.",
+        "side_effects": "Read-only; rows unchanged (checked after every call).",
+        "transaction": "Autocommit reads; QueryBuilder statements under the configured statement timeout.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
+      ],
+      "notes": [
+        "Implementing via mcp-server: ORM inputs whose Django text carries difflib suggestions or SQL are refused (see mcp-server.md). Manual tools keep the manual family's semantic parity."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:export_data",
@@ -1096,25 +1266,75 @@
         "name": "export_data",
         "schema": "{'name': 'export_data', 'description': 'Query and export data as CSV, XLSX, or PDF. Returns the file as base64-encoded data for download. Use column_labels to set Italian display names for columns.', 'parameters': {'type': 'object', 'properties': {'model_name': {'type': 'string', 'description': 'Model to export'}, 'format': {'type': 'string', 'enum': ['csv', 'xlsx', 'pdf'], 'description': 'Export format'}, 'fields': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Fields to include'}, 'filters': {'type': 'object', 'description': 'Filter conditions'}, 'exclude': {'type': 'object', 'description': 'Exclude conditions (NOT matching)'}, 'or_filters': {'type': 'array', 'items': {'type': 'object'}, 'description': 'List of filter dicts ORed together.'}, 'joins': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Related models to join'}, 'order_by': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Sort fields'}, 'limit': {'type': 'integer', 'description': 'Max rows'}, 'title': {'type': 'string', 'description': 'Title for the export document'}, 'column_labels': {'type': 'object', 'description': 'Mapping of field_name -> Italian display label'}, 'include_archived': {'type': 'boolean', 'description': 'Set to true to include archived/deleted records. Default: false.'}, 'header_text': {'type': 'string', 'description': 'Custom header text for PDF export (replaces title in header). Only for PDF.'}, 'footer_text': {'type': 'string', 'description': 'Custom footer text for PDF export (shown before page number). Only for PDF.'}, 'text_before': {'type': 'string', 'description': 'Introductory text to display above the table in PDF export. Only for PDF.'}, 'text_after': {'type': 'string', 'description': 'Notes or text to display below the table in PDF export. Only for PDF.'}}, 'required': ['model_name', 'format']}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/dto/mcp_prep.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/mcp_server/query_builder.py",
+        "BE/application/mcp_server/security.py",
+        "BE/application/models",
+        "BE/application/mcp_server/exporters/__init__.py",
+        "BE/application/mcp_server/exporters/csv_exporter.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Arguments after the SDK jsonschema validation (byte-identical messages, best_match).",
+        "response": "CSV export_ready dict (format_export_data, excel dialect, UTF-8 BOM, base64, save_info with date.today()).",
+        "errors": "All error dicts for every format; XLSX/PDF file building refused when there is data.",
+        "authentication": "Stdio process scoped by --association-id; no user identity (arguments cannot provide one).",
+        "permissions": "None beyond the association scope and the field blacklist, as in Django.",
+        "resource_scope": "MODEL_WHITELIST tenant filters (including user__sportassociation and subscription__sport_association paths), default manager and soft-delete filters unless include_archived.",
+        "side_effects": "Read-only; rows unchanged (checked after every call).",
+        "transaction": "Autocommit reads; QueryBuilder statements under the configured statement timeout.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
+      ],
+      "notes": [
+        "Implementing via mcp-server: XLSX/PDF file building refused explicitly; ORM inputs whose Django text carries difflib suggestions or SQL are refused (see mcp-server.md). Manual tools keep the manual family's semantic parity."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:export_multi_sheet",
@@ -1130,25 +1350,75 @@
         "name": "export_multi_sheet",
         "schema": "{'name': 'export_multi_sheet', 'description': 'Export multiple datasets as separate sheets in a single XLSX file. Each sheet can query a different model with its own fields, filters, and column labels. Use this when the user wants combined exports (e.g. members + payments in one file).', 'parameters': {'type': 'object', 'properties': {'sheets': {'type': 'array', 'items': {'type': 'object', 'properties': {'model_name': {'type': 'string', 'description': 'Model to query for this sheet'}, 'title': {'type': 'string', 'description': 'Sheet tab name (max 31 chars)'}, 'fields': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Fields to include'}, 'filters': {'type': 'object', 'description': 'Filter conditions'}, 'exclude': {'type': 'object', 'description': 'Exclude conditions'}, 'or_filters': {'type': 'array', 'items': {'type': 'object'}, 'description': 'OR filter conditions'}, 'joins': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Related models to join'}, 'order_by': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Sort fields'}, 'limit': {'type': 'integer', 'description': 'Max rows for this sheet'}, 'column_labels': {'type': 'object', 'description': 'Mapping of field_name -> display label'}, 'include_archived': {'type': 'boolean', 'description': 'Include archived/deleted records. Default: false.'}}, 'required': ['model_name']}, 'description': 'List of sheet specifications, each querying a different dataset'}, 'filename': {'type': 'string', 'description': 'Filename for the XLSX file (without extension)'}}, 'required': ['sheets']}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/dto/mcp_prep.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/mcp_server/query_builder.py",
+        "BE/application/mcp_server/security.py",
+        "BE/application/models",
+        "BE/application/mcp_server/exporters/__init__.py",
+        "BE/application/mcp_server/exporters/csv_exporter.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Arguments after the SDK jsonschema validation (byte-identical messages, best_match).",
+        "response": "Every error dict (No sheets specified, Sheet N model_name, query errors, No data to export from any sheet).",
+        "errors": "The XLSX workbook is refused (not built in Go) once any sheet has data.",
+        "authentication": "Stdio process scoped by --association-id; no user identity (arguments cannot provide one).",
+        "permissions": "None beyond the association scope and the field blacklist, as in Django.",
+        "resource_scope": "MODEL_WHITELIST tenant filters (including user__sportassociation and subscription__sport_association paths), default manager and soft-delete filters unless include_archived.",
+        "side_effects": "Read-only; rows unchanged (checked after every call).",
+        "transaction": "Autocommit reads; QueryBuilder statements under the configured statement timeout.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
+      ],
+      "notes": [
+        "Implementing via mcp-server: XLSX/PDF file building refused explicitly; ORM inputs whose Django text carries difflib suggestions or SQL are refused (see mcp-server.md). Manual tools keep the manual family's semantic parity."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:get_attendance_matrix",
@@ -1164,25 +1434,74 @@
         "name": "get_attendance_matrix",
         "schema": "{'name': 'get_attendance_matrix', 'description': 'Get the attendance register as a matrix: enrolled people (rows) x lesson dates (columns), with \"P\" for present. Use this when the user asks for attendance/presence data. Omit course_id and course_name to get ALL courses with attendance data in a single result. With export=false (default) returns a preview. With export=true returns a file for download. Supports both XLSX and PDF export via the format parameter. For PDF with multiple courses, creates one page per course.', 'parameters': {'type': 'object', 'properties': {'course_id': {'type': 'string', 'description': 'UUID of the course. Use this if you know the exact ID.'}, 'course_name': {'type': 'string', 'description': 'Partial course name for search (case insensitive). Used if course_id is not given.'}, 'date_from': {'type': 'string', 'description': 'Start date filter (YYYY-MM-DD). Optional.'}, 'date_to': {'type': 'string', 'description': 'End date filter (YYYY-MM-DD). Optional.'}, 'export': {'type': 'boolean', 'description': 'If true, returns the full matrix as a file for download. Default: false (preview only).'}, 'format': {'type': 'string', 'enum': ['xlsx', 'pdf'], 'description': 'Export format. Default: xlsx.'}, 'multi_sheet': {'type': 'boolean', 'description': 'If true and exporting multiple courses as XLSX, creates one sheet per course instead of a single flat sheet. Use with export=true and format=xlsx. Default: false.'}}}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/dto/mcp_prep.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/mcp_server/query_builder.py",
+        "BE/application/mcp_server/security.py",
+        "BE/application/models",
+        "BE/application/mcp_server/attendance.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Arguments after the SDK jsonschema validation (byte-identical messages, best_match).",
+        "response": "Course resolution, matrix, single and multi-course previews and every error dict.",
+        "errors": "export=true (XLSX/PDF) refused once the matrix exists.",
+        "authentication": "Stdio process scoped by --association-id; no user identity (arguments cannot provide one).",
+        "permissions": "None beyond the association scope and the field blacklist, as in Django.",
+        "resource_scope": "MODEL_WHITELIST tenant filters (including user__sportassociation and subscription__sport_association paths), default manager and soft-delete filters unless include_archived.",
+        "side_effects": "Read-only; rows unchanged (checked after every call).",
+        "transaction": "Autocommit reads; QueryBuilder statements under the configured statement timeout.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
+      ],
+      "notes": [
+        "Implementing via mcp-server: XLSX/PDF file building refused explicitly; ORM inputs whose Django text carries difflib suggestions or SQL are refused (see mcp-server.md). Manual tools keep the manual family's semantic parity."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:get_field_values",
@@ -1198,25 +1517,73 @@
         "name": "get_field_values",
         "schema": "{'name': 'get_field_values', 'description': 'Get distinct values for a specific field with optional filters. Useful for getting IDs or values matching conditions (e.g. all associate_ids with subscriptions in 2025). Use this to build exclude lists for comparative queries.', 'parameters': {'type': 'object', 'properties': {'model_name': {'type': 'string', 'description': 'Model name'}, 'field_name': {'type': 'string', 'description': 'Field to get distinct values for (e.g. \"associate_id\")'}, 'filters': {'type': 'object', 'description': 'Filter conditions to apply before getting values'}, 'exclude': {'type': 'object', 'description': 'Exclude conditions (NOT matching)'}, 'or_filters': {'type': 'array', 'items': {'type': 'object'}, 'description': 'List of filter dicts ORed together.'}, 'limit': {'type': 'integer', 'description': 'Max values to return (default: 100)'}, 'include_archived': {'type': 'boolean', 'description': 'Set to true to include archived/deleted records. Default: false.'}}, 'required': ['model_name', 'field_name']}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/dto/mcp_prep.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/mcp_server/query_builder.py",
+        "BE/application/mcp_server/security.py",
+        "BE/application/models"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Arguments after the SDK jsonschema validation (byte-identical messages, best_match).",
+        "response": "{values, total_distinct} with choice labels; default limit 100, null unlimited.",
+        "errors": "Exact exception texts including unhashable JSON values.",
+        "authentication": "Stdio process scoped by --association-id; no user identity (arguments cannot provide one).",
+        "permissions": "None beyond the association scope and the field blacklist, as in Django.",
+        "resource_scope": "MODEL_WHITELIST tenant filters (including user__sportassociation and subscription__sport_association paths), default manager and soft-delete filters unless include_archived.",
+        "side_effects": "Read-only; rows unchanged (checked after every call).",
+        "transaction": "Autocommit reads; QueryBuilder statements under the configured statement timeout.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
+      ],
+      "notes": [
+        "Implementing via mcp-server: ORM inputs whose Django text carries difflib suggestions or SQL are refused (see mcp-server.md). Manual tools keep the manual family's semantic parity."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:get_schema",
@@ -1232,25 +1599,75 @@
         "name": "get_schema",
         "schema": "{'name': 'get_schema', 'description': 'Get the database schema. Returns all available models with their fields, types, relations, and constraints. Call with no arguments to get all models, or pass model_name to get a specific model. Call this first to understand what data is available.', 'parameters': {'type': 'object', 'properties': {'model_name': {'type': 'string', 'description': 'Specific model name (e.g. \"Associate\", \"Payment\"). Omit to get all models.'}}}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/dto/mcp_prep.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/dto/mcp_schema.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/mcp_server/query_builder.py",
+        "BE/application/mcp_server/security.py",
+        "BE/application/models",
+        "BE/application/mcp_server/schema.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Arguments after the SDK jsonschema validation (byte-identical messages, best_match).",
+        "response": "Full schema or one model schema from generated _meta metadata; {\"error\": \"Model X not found\"}.",
+        "errors": "Unhashable model_name texts.",
+        "authentication": "Stdio process scoped by --association-id; no user identity (arguments cannot provide one).",
+        "permissions": "None beyond the association scope and the field blacklist, as in Django.",
+        "resource_scope": "MODEL_WHITELIST tenant filters (including user__sportassociation and subscription__sport_association paths), default manager and soft-delete filters unless include_archived.",
+        "side_effects": "Read-only; rows unchanged (checked after every call).",
+        "transaction": "Autocommit reads; QueryBuilder statements under the configured statement timeout.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
+      ],
+      "notes": [
+        "Implementing via mcp-server: ORM inputs whose Django text carries difflib suggestions or SQL are refused (see mcp-server.md). Manual tools keep the manual family's semantic parity."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:list_reports",
@@ -1269,7 +1686,12 @@
       "status": "implementing",
       "go": [
         "BE_GO/internal/service/business_mcp.go",
-        "BE_GO/internal/repository/business_mcp.go"
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
       ],
       "dependencies": [
         "BE/application/mcp_server/server.py",
@@ -1290,7 +1712,8 @@
       },
       "tests": [
         "TESTS/adapters/go/business_mcp_tools.py",
-        "BE_GO/internal/service/business_mcp_integration_test.go"
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "TESTS/adapters/go/mcp_server_tools.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/ledger-structural.md",
@@ -1314,7 +1737,8 @@
         }
       ],
       "notes": [
-        "Implementing via ledger-structural: Function-level port. Refused: user_id lists/objects/floats and invalid ids whose repr needs quoting. MCP schema validation and Go stdio composition for business tools not done."
+        "Implementing via ledger-structural: Function-level port. Refused: user_id lists/objects/floats and invalid ids whose repr needs quoting. MCP schema validation and Go stdio composition for business tools not done.",
+        "mcp-server: now composed by cmd/mcp-server with the SDK schema validation; results are ordered json.dumps text (business-mcp-tools re-run 25/25, stdio sessions byte-identical)."
       ]
     },
     {
@@ -1331,25 +1755,73 @@
         "name": "query_data",
         "schema": "{'name': 'query_data', 'description': 'Query data from the database. Returns rows as JSON. All queries are automatically scoped to the current sport association. Use filters for WHERE clauses, exclude for NOT conditions, joins for related data, order_by for sorting.', 'parameters': {'type': 'object', 'properties': {'model_name': {'type': 'string', 'description': 'Model to query (e.g. \"Associate\", \"Payment\", \"Course\")'}, 'fields': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Fields to select. Use related__field for joins. For FK fields use field_id (e.g. associate_id). Empty = all fields.'}, 'filters': {'type': 'object', 'description': 'Filter conditions as {field__lookup: value}. Lookups: exact, icontains, gt, gte, lt, lte, in, isnull, range, year, month, day, date. Date values as strings (YYYY-MM-DD) are auto-converted.'}, 'exclude': {'type': 'object', 'description': 'Exclude conditions (NOT matching). Same format as filters. E.g. {\"associate_id__in\": [\"id1\",\"id2\"]} to exclude specific records.'}, 'or_filters': {'type': 'array', 'items': {'type': 'object'}, 'description': 'List of filter dicts ORed together. Each dict is ANDed internally. E.g. [{\"status_flag\": 1}, {\"status_flag\": 4}] matches records with status 1 OR 4.'}, 'joins': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Related models to join (e.g. [\"associate\", \"course\"])'}, 'order_by': {'type': 'array', 'items': {'type': 'string'}, 'description': 'Fields to sort by. Prefix with \"-\" for descending.'}, 'limit': {'type': 'integer', 'description': 'Max rows to return (default/max: 5000)'}, 'offset': {'type': 'integer', 'description': 'Number of rows to skip (for pagination)'}, 'include_archived': {'type': 'boolean', 'description': 'Set to true to include archived/deleted records. Default: false. Use ONLY when the user explicitly asks for archived data.'}}, 'required': ['model_name']}}"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/mcp_query.go",
+        "BE_GO/internal/dto/mcp_prep.go",
+        "BE_GO/internal/dto/mcp_models.go",
+        "BE_GO/internal/dto/mcp_models.json",
+        "BE_GO/internal/dto/report_tools.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/mcp_server/server.py",
+        "BE/application/mcp_server/query_builder.py",
+        "BE/application/mcp_server/security.py",
+        "BE/application/models"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Arguments after the SDK jsonschema validation (byte-identical messages, best_match).",
+        "response": "Rows: count, has_more, data (values() keys, _serialize_value, Italian choice labels).",
+        "errors": "Exact exception texts as {\"error\": ...}; unported ORM inputs refused (doc list).",
+        "authentication": "Stdio process scoped by --association-id; no user identity (arguments cannot provide one).",
+        "permissions": "None beyond the association scope and the field blacklist, as in Django.",
+        "resource_scope": "MODEL_WHITELIST tenant filters (including user__sportassociation and subscription__sport_association paths), default manager and soft-delete filters unless include_archived.",
+        "side_effects": "Read-only; rows unchanged (checked after every call).",
+        "transaction": "Autocommit reads; QueryBuilder statements under the configured statement timeout.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/go/mcp_server_tools.py",
+        "TESTS/adapters/go/mcp_server_seed.py",
+        "TESTS/fixtures/generate_mcp_server_models.py",
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "BE_GO/internal/handler/businessmcp/validate_test.go",
+        "BE_GO/internal/dto/report_tools_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/mcp-server.md",
+        {
+          "revision": "base revision BE_GO (before the Go code)",
+          "result": "RED: Django 135/135 authored tool calls and 4 stdio sessions; Go driver rejects the calls and cmd/mcp-server is absent.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-red/results.json",
+          "receipt_sha256": "0838cdf4ef93ca49a174643924188d22e56adf38c148670278c3b22399004d41"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 135/135 actual Django tool functions vs race-built Go BusinessMCPTools on the same rows (132 byte-identical JSON texts, 3 refused XLSX builds, rows unchanged); 4/4 stdio sessions through manage.py run_mcp_server vs race-built cmd/mcp-server byte-identical after normalizing save_report's uuid4 and timestamps; CLI exit codes equal.",
+          "artifact": "quality-reports/go-migration/mcp-server-tools/results.json",
+          "receipt_sha256": "444ef44be64a61e772db56c4a989264f8b644bff1f2c3423adc51ad132ab429e"
+        },
+        {
+          "revision": "committing change with exclude() dropping the IS NOT NULL guard of nullable or outer-joined columns",
+          "result": "Mutation control: fails Go on case 030 (exclude across the nullable associate relation).",
+          "artifact": "quality-reports/go-migration/mcp-server-tools-mutation/results.json",
+          "receipt_sha256": "2694ffc14085807974991a291bea754ba1645d757c383de9607db0e8dcb7320d"
+        }
+      ],
+      "notes": [
+        "Implementing via mcp-server: ORM inputs whose Django text carries difflib suggestions or SQL are refused (see mcp-server.md). Manual tools keep the manual family's semantic parity."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/mcp_server/server.py:sanitize_text",
@@ -1368,7 +1840,12 @@
       "status": "implementing",
       "go": [
         "BE_GO/internal/service/business_mcp.go",
-        "BE_GO/internal/repository/business_mcp.go"
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
       ],
       "dependencies": [
         "BE/application/mcp_server/server.py",
@@ -1389,7 +1866,8 @@
       },
       "tests": [
         "TESTS/adapters/go/business_mcp_tools.py",
-        "BE_GO/internal/service/business_mcp_integration_test.go"
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "TESTS/adapters/go/mcp_server_tools.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/ledger-structural.md",
@@ -1413,7 +1891,8 @@
         }
       ],
       "notes": [
-        "Implementing via ledger-structural: Function-level port. Refused before work: replacements containing a backslash (re template escapes). MCP schema validation and Go stdio composition for business tools not done."
+        "Implementing via ledger-structural: Function-level port. Refused before work: replacements containing a backslash (re template escapes). MCP schema validation and Go stdio composition for business tools not done.",
+        "mcp-server: now composed by cmd/mcp-server with the SDK schema validation; results are ordered json.dumps text (business-mcp-tools re-run 25/25, stdio sessions byte-identical)."
       ]
     },
     {
@@ -1433,7 +1912,12 @@
       "status": "implementing",
       "go": [
         "BE_GO/internal/service/business_mcp.go",
-        "BE_GO/internal/repository/business_mcp.go"
+        "BE_GO/internal/repository/business_mcp.go",
+        "BE_GO/internal/handler/businessmcp/server.go",
+        "BE_GO/internal/handler/businessmcp/validate.go",
+        "BE_GO/internal/handler/businessmcp/tools.json",
+        "BE_GO/internal/handler/mcpstdio/server.go",
+        "BE_GO/cmd/mcp-server/main.go"
       ],
       "dependencies": [
         "BE/application/mcp_server/server.py",
@@ -1454,7 +1938,8 @@
       },
       "tests": [
         "TESTS/adapters/go/business_mcp_tools.py",
-        "BE_GO/internal/service/business_mcp_integration_test.go"
+        "BE_GO/internal/service/business_mcp_integration_test.go",
+        "TESTS/adapters/go/mcp_server_tools.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/ledger-structural.md",
@@ -1478,7 +1963,8 @@
         }
       ],
       "notes": [
-        "Implementing via ledger-structural: Function-level port; SavedReport is not audited. Refused before any write: user_id lists/objects/floats, ids needing repr quoting, name over 200 or tool name over 100 characters, NUL characters, missing server association. MCP schema validation and Go stdio composition for business tools not done."
+        "Implementing via ledger-structural: Function-level port; SavedReport is not audited. Refused before any write: user_id lists/objects/floats, ids needing repr quoting, name over 200 or tool name over 100 characters, NUL characters, missing server association. MCP schema validation and Go stdio composition for business tools not done.",
+        "mcp-server: now composed by cmd/mcp-server with the SDK schema validation; results are ordered json.dumps text (business-mcp-tools re-run 25/25, stdio sessions byte-identical)."
       ]
     },
     {
@@ -2283,25 +2769,80 @@
         "target": "views.chat_test",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/chat_page.go",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/handler/refresh.go",
+        "BE_GO/internal/middleware/csrf.go",
+        "BE_GO/internal/middleware/session_audit.go",
+        "BE_GO/internal/service/session_auth.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/chat/urls.py",
+        "BE/application/chat/views.py",
+        "BE/core/urls.py",
+        "BE/core/middleware.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/locking.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "external_paths": [
+          "/api/v1/chat/test/",
+          "/api/v2/chat/test/",
+          "/api/chat/test/"
+        ],
+        "request": "No body or query semantics; sessionid cookie (Django cache session); csrftoken cookie and X-CSRFToken for unsafe methods.",
+        "response": "302 Location /accounts/login/?next=<get_full_path quoted safe='/'>, text/html; charset=utf-8, empty body, without an authenticated session user; stable 500 page (TemplateDoesNotExist) with one. Vary: Cookie, origin, Accept-Language.",
+        "errors": "Unsafe methods failing CSRF: Django 403 csrf_403.html; Go refuses with the 500 page (not ported). /chat/test: 301 APPEND_SLASH.",
+        "authentication": "Django session (AuthenticationMiddleware via SessionMiddleware cache backend); Bearer tokens do not authenticate.",
+        "permissions": "login_required only.",
+        "resource_scope": "None.",
+        "side_effects": "None; an empty supplied session cookie is deleted in the response.",
+        "transaction": "Read-only session and user lookups.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/chat_test_http.json",
+        "TESTS/fixtures/generate_chat_test_http.py",
+        "TESTS/contracts/test_chat_test_http.py",
+        "TESTS/adapters/django/chat_test_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/chat-test.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 24/24; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/chat-test-http-native-r6/results.json",
+          "receipt_sha256": "622431dc5be5179c2750e11dc4389512bf8493e6835c21067971aa4bdefee12d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 24/24 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact Location, Set-Cookie, Vary and session/cache state.",
+          "artifact": "quality-reports/go-migration/chat-test-http-versioned-r2/results.json",
+          "receipt_sha256": "d76e5e6b4fb300a2869fd2dc6725c1ad0364dcd4ca1bd6785d37d06eb39a73bb"
+        },
+        {
+          "revision": "committing change with next quoted keeping ?=& (safe characters widened)",
+          "result": "Mutation control: fails Go on chat-test-anonymous-query (Location differs).",
+          "artifact": "quality-reports/go-migration/chat-test-http-mutation-r1/results.json",
+          "receipt_sha256": "dfefe201f3e8f6bddd107934ef308e1f3aa622b2ccb0f54dbd778cee3e00e9f4"
+        }
+      ],
+      "notes": [
+        "Implementing: chat-test family (docs/architecture/go-migration/chat-test.md): login_required page whose template chat/test.html does not exist; anonymous and non-authenticated sessions get the 302 to /accounts/login/?next=..., authenticated sessions the stable 500 page (TemplateDoesNotExist), /chat/test the APPEND_SLASH 301. Not ported: unsafe requests failing CSRF (Django's localized csrf_403.html page), refused with the 500 page."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:administration/impersonation -> impersonation_session",
@@ -11281,25 +11822,72 @@
         "target": "export_all_data",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/export_all_data.go",
+        "BE_GO/internal/repository/export_all_data.go",
+        "BE_GO/internal/service/export_all_data.go",
+        "BE_GO/internal/handler/export_all_data.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/stream_test.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "xlsxexport.OpenpyxlRowsResponse (wb.save(HttpResponse))",
+        "pdfrender.HeaderBytes (Django header bytes)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/export-all-data",
+          "/api/v2/export-all-data",
+          "/api/export-all-data"
+        ],
+        "request": "POST (body ignored).",
+        "response": "xlsx workbook (sheets Iscrizioni and Pagamenti), Content-Disposition 'attachment; filename=export_<denomination>.xlsx'.",
+        "errors": "401; 403 admin without session, association-scoped context, athletes ('User is not a sport association'); 405; 500 without a live association, out-of-range choice values, subscription without associate, several course subscriptions for a payment, illegal characters, header values with control characters.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry EXCLUDED_ENDPOINTS.",
+        "resource_scope": "request.user.sport_association (live); scoped, group-aware subscriptions and payments.",
+        "side_effects": "none",
+        "transaction": "read-only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/export_all_data_http.json",
+        "TESTS/fixtures/generate_export_all_data_http.py",
+        "TESTS/contracts/test_export_all_data_http.py",
+        "TESTS/adapters/django/export_all_data_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/export-all-data.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 17/17; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/export-all-data-http-native-r12/results.json",
+          "receipt_sha256": "1edcd18aad0c278adee460700c25fe6fd3805f855c343333530dcdaa7255bf21"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 17/17 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/export-all-data-http-versioned-r2/results.json",
+          "receipt_sha256": "565e8c355fc3e2d9b1bcab47bfa41e6280df59c2dccd862096cd6dde27e37084"
+        },
+        {
+          "revision": "keeping tutors without a group under an X-Group-Id header",
+          "result": "Mutation control: fails Go on export-all-data-group (sheet1.xml tutor columns)",
+          "artifact": "quality-reports/go-migration/export-all-data-http-mutation-r2/results.json",
+          "receipt_sha256": "b265667bfc3db8f1cbe084aeed353d803da3b32bdeb3378a619841beaf42d35b"
+        }
+      ],
+      "notes": [
+        "Implementing: str() of the subscription and payment fields with their related rows (choice labels with Python indexing, jsonb-ordered JSON reprs, '<Model> object (<pk>)' foreign keys). The streamed zip has data descriptors (flag 0x08). Content-Disposition values with control characters answer the 500 page. Unordered querysets keep Django's joins (the adapter analyzes the seeded tables so every transport plans them alike)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:folders/<str:pk>/delete -> FolderViewSet.as_view({'delete': 'delete'})",
@@ -17631,6 +18219,12 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
         "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -17648,7 +18242,14 @@
         "application_supplierandcustomers",
         "application_associate",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -17680,25 +18281,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 130/130; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
-          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
-          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
-          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
-          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
-          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -17723,6 +18324,12 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
         "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -17740,7 +18347,14 @@
         "application_supplierandcustomers",
         "application_associate",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -17772,25 +18386,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 130/130; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
-          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
-          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
-          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
-          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
-          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -17810,32 +18424,42 @@
       },
       "status": "implementing",
       "go": [
-        "BE_GO/internal/domain/payment_misc.go",
-        "BE_GO/internal/dto/payment_misc.go",
-        "BE_GO/internal/repository/payment_misc.go",
-        "BE_GO/internal/service/payment_misc.go",
-        "BE_GO/internal/handler/payment_misc.go",
         "BE_GO/internal/domain/payment_state.go",
         "BE_GO/internal/dto/payment_state.go",
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
-        "BE/application/views/payment_views.py",
-        "BE/application/utils/payments_utils.py",
-        "BE/application/tasks.py",
-        "BE/application/utils/api_utils.py",
-        "BE/application/serializers/payment_serializers.py",
-        "BE/application/serializers/subscriptions_serializers.py",
-        "BE/application/models/payment_models.py",
-        "BE/application/models/invoices_models.py",
-        "BE/application/models/subscriptions_models.py",
-        "BE/application/models/user_models.py",
-        "BE/application/mixin.py",
-        "BE/application/impersonation_scope.py",
-        "BE/application/audit_resolvers.py",
-        "BE/application/permissions_registry.py"
+        "Existing identity resolution, permission registry, scoped-request guard and audit index",
+        "payment-archive save defaults and course-subscriptions payment rendering and delete cascade",
+        "application_payment",
+        "application_payment_attachments",
+        "application_coursesubscription_membership_payments",
+        "application_coursesubscriptioninstallment",
+        "application_coursesubscription",
+        "application_carnetsubscription",
+        "application_invoicesuppliers",
+        "application_paymentcategory",
+        "application_instructor",
+        "application_supplierandcustomers",
+        "application_associate",
+        "application_subscription",
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -17847,45 +18471,45 @@
           "/api/v2/payment/<uid>/approve",
           "/api/payment/<uid>/approve"
         ],
-        "request": "Body payment_date, generate_invoice, send_receipt_email.",
-        "response": "{'data': {'payment': ...}} or {'data': {'msg': 'payment mark as payed.', 'payment': ...}} with the invoice rendered.",
-        "errors": "400 UUID; 403 'User not allowed.'; 500 refusals for the invoice task and unpaid income payments with a party.",
+        "request": "Body payment_date ('%Y-%m-%d'), generate_invoice (default True), send_receipt_email (default False); JSON, form or multipart.",
+        "response": "200 {'data': {'payment': ...}} for unpaid expenses and party-less payments; {'data': {'msg': 'payment mark as payed.', 'payment': ...}} for paid payments and the paid flow, with the invoice rendered and invoice_generating when the task is dispatched.",
+        "errors": "400 malformed uuid list; 401; 403 registry / scoped session / {'detail': 'User not allowed.'}; 500 non-dict body, bad payment_date, missing/deleted/other-group payment, athletes, no association, failing Payment.save(), non-numeric meta category amounts, carnet subscriptions without a carnet (rolled back).",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "bookeeping.payments.update",
-        "resource_scope": "Association of request.user; payment group-aware.",
-        "side_effects": "Marks unpaid expenses and party-less payments paid (supplier invoice for expenses), audited.",
-        "transaction": "Atomic payment update.",
+        "permissions": "Registry bookeeping.payments.update.",
+        "resource_scope": "The owner's live association; the payment through Payment.objects (live, X-Group-Id aware, session association); course subscriptions, installments and carnet subscriptions of the payment (impersonation adds the session's subscription and course/carnet association).",
+        "side_effects": "Payment paid with the date; expenses pay their first supplier invoice; the paid flow numbers and creates an invoice (associate or supplier), re-saves it, pays the first supplier invoice now, marks course subscriptions paid, writes validate_broadcast's rows and notifies request.user (Redis list, Channels push); print_document_invoice on commit when there is an invoice and generate_invoice is truthy. Audited.",
+        "transaction": "Atomic; the notification's Redis list and push and the task follow the commit in Go.",
         "execution_owner": "django"
       },
       "tests": [
-        "TESTS/fixtures/payment_misc_http.json",
-        "TESTS/fixtures/generate_payment_misc_http.py",
-        "TESTS/contracts/test_payment_misc_http.py",
-        "TESTS/adapters/django/payment_misc_http.py"
+        "TESTS/fixtures/payment_state_http.json",
+        "TESTS/fixtures/generate_payment_state_http.py",
+        "TESTS/contracts/test_payment_state_http.py",
+        "TESTS/adapters/django/payment_state_http.py"
       ],
       "evidence": [
-        "docs/architecture/go-migration/payment-misc.md",
+        "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 85/85; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-red-r4/results.json",
-          "receipt_sha256": "e0c6fda47fdda59641211cb861a3a8bb2cfdc0607720dace26c6fb7ca6956555"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects.",
-          "artifact": "quality-reports/go-migration/payment-misc-http-versioned-r1/results.json",
-          "receipt_sha256": "f430aa1150d76c334e433f7acf8a0648bac773974d4d767cd07604cf209078dc"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change without NOT s.archived in the simulation subscription selection",
-          "result": "Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length).",
-          "artifact": "quality-reports/go-migration/payment-misc-http-mutation-r1/results.json",
-          "receipt_sha256": "b82fb3037fe54d82b4a97d80d5e0931eba74c883dab0ffa1efe4309a2a00a593"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -17990,6 +18614,12 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
         "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -18007,7 +18637,14 @@
         "application_supplierandcustomers",
         "application_associate",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -18039,25 +18676,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 130/130; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
-          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
-          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
-          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
-          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
-          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -18082,6 +18719,12 @@
         "BE_GO/internal/repository/payment_state.go",
         "BE_GO/internal/service/payment_state.go",
         "BE_GO/internal/handler/payment_state.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -18099,7 +18742,14 @@
         "application_supplierandcustomers",
         "application_associate",
         "application_subscription",
-        "docmanager_document"
+        "docmanager_document",
+        "invoice-generate numbering lock, fees and generate_invoice_description",
+        "Celery producer (print_document_invoice on commit)",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "notifications_notificationsbroadcast",
+        "notifications_usernotificationsbroadcast",
+        "application_carnetsubscription_course_subscription"
       ],
       "contract": {
         "methods": [
@@ -18131,25 +18781,25 @@
         "docs/architecture/go-migration/payment-state.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 130/130; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
-          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+          "result": "RED: Django 147/147; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-pf1/results.json",
+          "receipt_sha256": "46e3d598b9f6cea4027113a5d742849a59c78e90f543fbb46f83072c455b358a"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/payment-state-http-versioned-r1/results.json",
-          "receipt_sha256": "c8e9d1029989d327dd3ab2eebb9d8212f1d8288bbaca9e6505673d07c1a186ca"
+          "result": "GREEN: 147/147 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, supplier invoice, reference, audit, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/payment-state-http-versioned-pf1/results.json",
+          "receipt_sha256": "ffe8f51f12e51a7ff289989e23b0c4a11daeb8442ec02fd74609fbaea0a3d011"
         },
         {
-          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
-          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
-          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
-          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+          "revision": "committing change numbering every approve invoice in the current balance year (payment date before it ignored)",
+          "result": "Mutation control: fails Go on payment-state-approve-paid-flow-old-date-no-print (number 2 instead of 1).",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-pf1/results.json",
+          "receipt_sha256": "900b5999a4a586764cff241027b7bfdf0a516b0da9cdb200124768e675c27448"
         }
       ],
       "notes": [
-        "Implementing: cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports; approve is routed in Go for paid payments, expenses (with the supplier invoice) and payments without a party, but its income path (invoice, notification, PDF task) is refused with a 500 and the route is not recorded; invoiced payments are refused (500) before any write on approve, cancel and delete."
+        "Implementing: Implementing: approve (paid payments, expenses with the supplier invoice, payments without a party, and the paid flow of unpaid income payments with a party: invoice numbering by payment date under the advisory lock, Invoice create and re-save, payment save, supplier invoice, course subscription paid flags, the owner's notification and print_document_invoice on commit), cancel (serialized before the unpaid save), delete (Payment and installment pre_delete cascade, SET_NULL and through rows) and bulk archive/delete (bulk_update, no audit) on four transports. Invoiced cancel/delete (PDF task) and paid-flow inputs outside the ported conversions (non-canonical X-Group-Id, float fee ties, unusual meta names) are refused (500) before any write. Approve's invoiced paths are also covered by payment-misc and invoice-generate."
       ]
     },
     {
@@ -20643,25 +21293,72 @@
         "target": "printing_generate",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/printing_generate.go",
+        "BE_GO/internal/repository/printing_generate.go",
+        "BE_GO/internal/service/printing_generate.go",
+        "BE_GO/internal/handler/printing_generate.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "xlsxexport.PandasOpenpyxl (get_excel_base64)",
+        "Existing identity, admission and audit helpers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/printing/generate",
+          "/api/v2/printing/generate",
+          "/api/printing/generate"
+        ],
+        "request": "JSON or form body {type: <builder>, format: excel|pdf, filters: {year?, status?, period?: {from_date, to_date}}}.",
+        "response": "{file: base64 xlsx (get_excel_base64), filename: '[dd/mm/YYYY] <title> - <denomination>.xlsx'}; athletes an empty 403.",
+        "errors": "401; 403 registry/association-scoped context; 405; 400 missing type/format, unknown type, any builder or association exception ('Errore nella generazione della stampa.'), malformed JSON; 500 body without .get; 500 refused pdf format and refused workbook inputs (before any write).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.read.",
+        "resource_scope": "request.user.sport_association (live); group-aware subscriptions and payments.",
+        "side_effects": "rows of minors promote and save the first tutor relation (audited) when none is primary.",
+        "transaction": "autocommit per promotion",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/printing_generate_http.json",
+        "TESTS/fixtures/generate_printing_generate_http.py",
+        "TESTS/contracts/test_printing_generate_http.py",
+        "TESTS/adapters/django/printing_generate_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/printing-generate.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 91/91; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/printing-generate-http-native-r12/results.json",
+          "receipt_sha256": "d9c220af805448f15a203171a42342b4c12fd51e76a829dfbca5352ac1d0211f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 91/91 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/printing-generate-http-versioned-r2/results.json",
+          "receipt_sha256": "92731058c5d2091f68e117fbc345ba2e7a45b712f9573352e6a3add80f677398"
+        },
+        {
+          "revision": "sorting the medical reports by descending days to expiry",
+          "result": "Mutation control: fails Go on printing-generate-expiring-medical (sheet1.xml row order)",
+          "artifact": "quality-reports/go-migration/printing-generate-http-mutation-r1/results.json",
+          "receipt_sha256": "6ad22f614d7e645a229491160a68e96c983912600634285d6108df3cb8134f1c"
+        }
+      ],
+      "notes": [
+        "Implementing: Excel format of the eleven builders ported with Python request-value semantics and Associate.main_tutor's audited promotions (kept when a later step raises). The pdf format (in-process reportlab) is refused with the 500 page before any write; requests failing earlier keep their 400. Unordered querysets keep Django's joins (the adapter analyzes the seeded tables so every transport plans them alike)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/associates/course/<str:uid> -> profile_associates_course",
@@ -22579,6 +23276,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22588,7 +23291,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22620,25 +23331,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -22664,6 +23375,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22673,7 +23390,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22705,25 +23430,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -22749,6 +23474,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22758,7 +23489,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22773,10 +23512,10 @@
         "request": "Body {'payments': [payment ids] | [objects with payment_id and sport_association]}.",
         "response": "200 {'data': {'client_secret': ..., 'info': {'checkout_info': ...}}, 'payments': <serialized or as sent>}",
         "errors": "400 {'data': {'msg': 'no payments provided.'}}; 409 offline; 500 page for non-dict bodies, payments without len, strings/dicts, unknown or malformed ids, missing keys, missing associates, Stripe errors; DRF parse errors.",
-        "authentication": "DRF AllowAny with ScopedJWTAuthentication (anonymous allowed; a supplied credential is authenticated and impersonation resolved).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "permission registry EXCLUDED_ENDPOINTS (no registry key); association-scoped sessions run enforce_scoped_request.",
         "resource_scope": "scoped_queryset(Payment.objects) and scoped SportAssociation.objects (live); first association group only.",
-        "side_effects": "Stripe retrieves and one PaymentIntent create (metadata payment_id -> amount); payment_intent_id saves (audited); supplier invoices of succeeded invoiced payments marked paid.",
+        "side_effects": "Stripe retrieves and one PaymentIntent create (metadata payment_id -> amount); payment_intent_id saves (audited); stored intents that succeeded are marked first. mark_payment_as_paid: first supplier invoice paid now; an unpaid payment without an invoice gets an invoice (Max number of the balance year's invoices + 1), is saved paid, marks its course subscription or installment paid, publishes print_document_invoice (request Authorization, or DOCUMENT_BYPASS_TOKEN from the webhook) and notifies payment.user (audited).",
         "transaction": "Not atomic.",
         "execution_owner": "django"
       },
@@ -22790,25 +23529,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -22834,6 +23573,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22843,7 +23588,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22875,25 +23628,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -22919,6 +23672,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -22928,7 +23687,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -22943,10 +23710,10 @@
         "request": "Path payment_id (is_valid_uuid); query payment_intent_id (last value); body not read.",
         "response": "200 {'data': {'client_secret': ...}} | {'data': {'msg': 'payment mark as payed.', 'status': 'paid'}} | {'data': {'msg': 'payment already paid.'}}",
         "errors": "400 ['badly formed hexadecimal UUID string']; 404 {'detail': 'payment not found'}; 409 {'error': 'Online payments are not configured.'}; 500 page for Stripe errors other than a caught retrieve InvalidRequestError, missing associate/user, payments without a user after a mark, bad metadata keys; scoped-session 403s; 405.",
-        "authentication": "DRF AllowAny with ScopedJWTAuthentication (anonymous allowed; a supplied credential is authenticated and impersonation resolved).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "permission registry EXCLUDED_ENDPOINTS (no registry key); association-scoped sessions run enforce_scoped_request.",
         "resource_scope": "scoped_queryset(Payment.objects) (live, X-Group-Id, session association); mark_payment_as_paid locks without the session scope.",
-        "side_effects": "Stripe PaymentIntent retrieve/create; payment_intent_id saves (Payment.save() defaults, audited); first supplier invoice marked paid (audited).",
+        "side_effects": "Stripe PaymentIntent retrieve/create; payment_intent_id saves (Payment.save() defaults, audited); mark_payment_as_paid: first supplier invoice paid now; an unpaid payment without an invoice gets an invoice (Max number of the balance year's invoices + 1), is saved paid, marks its course subscription or installment paid, publishes print_document_invoice (request Authorization, or DOCUMENT_BYPASS_TOKEN from the webhook) and notifies payment.user (audited).",
         "transaction": "Not atomic: each save commits; mark_payment_as_paid is atomic.",
         "execution_owner": "django"
       },
@@ -22960,25 +23727,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -23004,6 +23771,12 @@
         "BE_GO/internal/repository/stripe_routes.go",
         "BE_GO/internal/service/stripe_routes.go",
         "BE_GO/internal/handler/stripe_routes.go",
+        "BE_GO/internal/domain/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/invoice_generate.go",
+        "BE_GO/internal/service/invoice_generate.go",
         "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
@@ -23013,7 +23786,15 @@
         "StripeAvailability",
         "Payment.save() defaults (payment-archive)",
         "PaymentSerializer (payment-state)",
-        "InvoiceSuppliers save audit (payment-state)"
+        "InvoiceSuppliers save audit (payment-state)",
+        "generate_invoice_description and invoice creation (invoice-generate)",
+        "Celery producer (print_document_invoice.delay)",
+        "DOCUMENT_BYPASS_TOKEN",
+        "SubscriptionNotifier (validate_broadcast rows, Redis DB 0 list, Channels push)",
+        "application_invoice",
+        "application_coursesubscription",
+        "application_coursesubscriptioninstallment",
+        "application_carnetsubscription"
       ],
       "contract": {
         "methods": [
@@ -23028,11 +23809,11 @@
         "request": "Raw body and Stripe-Signature header (stripe.Webhook.construct_event, 300 s tolerance).",
         "response": "Empty 200 for handled and unhandled event types.",
         "errors": "503 {'error': 'Stripe webhook is not configured.'}; empty 400 for payload/signature errors and charge.succeeded without payments; 500 page for a missing type, non-object events, non-ASCII signatures.",
-        "authentication": "DRF AllowAny with ScopedJWTAuthentication (anonymous allowed; a supplied credential is authenticated and impersonation resolved).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "permission registry EXCLUDED_ENDPOINTS (no registry key); association-scoped sessions run enforce_scoped_request.",
         "resource_scope": "scoped_queryset(Payment.objects) by payment_intent_id (X-Group-Id).",
-        "side_effects": "charge.succeeded: first supplier invoice of each unpaid invoiced payment marked paid (audited, actor none).",
-        "transaction": "Each mark atomic; exceptions in charge.succeeded are swallowed (200).",
+        "side_effects": "charge.succeeded: each unpaid payment of the intent marked (mark_payment_as_paid: first supplier invoice paid now; an unpaid payment without an invoice gets an invoice (Max number of the balance year's invoices + 1), is saved paid, marks its course subscription or installment paid, publishes print_document_invoice (request Authorization, or DOCUMENT_BYPASS_TOKEN from the webhook) and notifies payment.user (audited).)",
+        "transaction": "Each mark atomic (the task is published inside it); exceptions in charge.succeeded are swallowed (200) and stop the loop.",
         "execution_owner": "django"
       },
       "tests": [
@@ -23045,25 +23826,25 @@
         "docs/architecture/go-migration/stripe-routes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 87/87; Go 404 on the first case.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-native-r1/results.json",
-          "receipt_sha256": "5ac3a815509b427e31f38f476517317520379a84e48bae3f442a06090c1647c7"
+          "result": "RED: Django 98/98; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-red-pf1/results.json",
+          "receipt_sha256": "37691cbc43c6bd52475c2f7c4c07efbcb8d11675ccee3243d7748fbe03187d80"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2.",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-r1/results.json",
-          "receipt_sha256": "a295629527a20807c2d852809c1297f5cc441b91adc90527bb99de46405d09d5"
+          "result": "GREEN: 98/98 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, course subscription, installment, supplier invoice, audit, outbound Stripe, Celery and notification effects.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-versioned-pf1/results.json",
+          "receipt_sha256": "58a80600316e71ed37d020e37b0fefce66a367d233a116b97f1dd4863266574b"
         },
         {
-          "revision": "stripe_pay treats only a 400 retrieve error as InvalidRequestError (a 404 becomes fatal)",
-          "result": "Mutation control: fails Go on stripe-routes-pay-missing-intent-recreates (500 instead of a new PaymentIntent).",
-          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-r1/results.json",
-          "receipt_sha256": "1c454bf8b6b31b9674438b499e5d9e52dfbc6ac0aa9c4ca28c5d378f328b4375"
+          "revision": "committing change marking an installment's course subscription instead of the installment in mark_payment_as_paid",
+          "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
+          "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
+          "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
         }
       ],
       "notes": [
-        "Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid for unpaid payments without an invoice (invoice creation, print_document_invoice, NotificationService) is refused with a 500 before any write; unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects and non-scalar webhook payment_intent values are refused too."
+        "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering)."
       ]
     },
     {
@@ -23946,25 +24727,69 @@
         "target": "subscription_medical_appointments_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/medical_appointment_add.go",
+        "BE_GO/internal/dto/medical_appointment_add.go",
+        "BE_GO/internal/repository/medical_appointment_add.go",
+        "BE_GO/internal/service/medical_appointment_add.go",
+        "BE_GO/internal/handler/medical_appointment_add.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "service.InvoiceSyncPrint (new MedicalAppointment method: direct CoordinatedTask call)",
+        "handler.SubscriptionMedicalHandler.failure, dispatchMedical"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/medical-appointments/add",
+          "/api/v2/subscription/<uid>/medical-appointments/add",
+          "/api/subscription/<uid>/medical-appointments/add"
+        ],
+        "request": "JSON: region, date (DD/MM/YYYY), notes, sport, address, meta, creation_date.",
+        "response": "200 {'data': 'medical appointment created.'}",
+        "errors": "401; 403 admin without session, restricted collaborator, association-scoped context, athletes; 405; 400 malformed uid, serializer field errors; 404 {'data': 'no subscription found.'}; 500 no association, list or form bodies, a busy/pending restore at print time (after the save).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.update.",
+        "resource_scope": "scoped, group-aware subscription of request.user.sport_association (deleted rows included).",
+        "side_effects": "MedicalAppointments create (audited, subscription.sport_association), GET CURRENT_HOST/document/medical-appointment/<id> with the request's Authorization.",
+        "transaction": "autocommit save, then the print request",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/medical_appointment_add_http.json",
+        "TESTS/fixtures/generate_medical_appointment_add_http.py",
+        "TESTS/contracts/test_medical_appointment_add_http.py",
+        "TESTS/adapters/django/medical_appointment_add_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/medical-appointment-add.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 37/37; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/medical-appointment-add-http-native-r1/results.json",
+          "receipt_sha256": "13c92de2ea0b5e749b76e86276576ebda39df9c19c80a2ee005304192a178980"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 37/37 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/medical-appointment-add-http-versioned-r1/results.json",
+          "receipt_sha256": "295564aa2e8402a7651bd7ed5d8f3123cdab2f6ccda6af36911451d77f817960"
+        },
+        {
+          "revision": "applying the eager completed-restore cutoff to the direct print call",
+          "result": "Mutation control: fails Go on medical-appointment-add-completed-restore-still-prints (no outbound request)",
+          "artifact": "quality-reports/go-migration/medical-appointment-add-http-mutation-r1/results.json",
+          "receipt_sha256": "8ad88667dbcffb4a514fe0c27ca73c3e47298b7fa05f6f4f30ab3075f108dce2"
+        }
+      ],
+      "notes": [
+        "Implementing: The print is a direct task call: restore lock and pending check only (no completed-restore cutoff); a non-null document and medical_appointments_id are refused before any write."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/medical-appointments/list -> subscription_medical_appointments_list",
@@ -25819,25 +26644,72 @@
         "target": "subscription_import_upload",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/pandascsv/pandascsv.go",
+        "BE_GO/internal/pandascsv/pandascsv_test.go",
+        "BE_GO/internal/domain/subscription_import_upload.go",
+        "BE_GO/internal/repository/subscription_import_upload.go",
+        "BE_GO/internal/service/subscription_import_upload.go",
+        "BE_GO/internal/handler/subscription_import_upload.go",
+        "BE_GO/cmd/server/subscription_import_upload.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "pandascsv.Columns (8,379 pandas 2.2.3 golden inputs, TESTS/adapters/go/pandas_csv_golden.py)",
+        "service.DocumentUploads (new storeImportFile: Document create + object save)",
+        "handler bufferMultipart/uploadBody/parseDjangoMultipart"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/import/upload",
+          "/api/v2/subscription/import/upload",
+          "/api/subscription/import/upload"
+        ],
+        "request": "multipart associates_file (CSV), or document_id + map (only its failure paths are ported).",
+        "response": "200 {'columns': [...], 'map': MAP, 'document_id': id}",
+        "errors": "401 (DRF and the view's bodiless 401 without an association); 403 admin without session, restricted collaborator, association-scoped context; 405; 400 [str(exception)] for an invalid document_id; 500 non-dict bodies, missing keys, non-file associates_file, unknown document, pandas errors and unknown extensions (after the writes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.create.",
+        "resource_scope": "scoped SportAssociation of request.user; Document resolved by id.",
+        "side_effects": "Document create (audited, actor's association) and S3 PutObject; process-wide MAP update.",
+        "transaction": "autocommit create, then storage",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_import_upload_http.json",
+        "TESTS/fixtures/generate_subscription_import_upload_http.py",
+        "TESTS/contracts/test_subscription_import_upload_http.py",
+        "TESTS/adapters/django/subscription_import_upload_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-import-upload.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-native-r5/results.json",
+          "receipt_sha256": "44b8c347a7fc66d46a7d6e356b94c577d6c19a68704ddaab9654546585414d0c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-versioned-r1/results.json",
+          "receipt_sha256": "047b20fe5cc7e3b570420632d5af45353bd1427e110afc514b84a7a07038e167"
+        },
+        {
+          "revision": "resetting the auto-mapped MAP on every request",
+          "result": "Mutation control: fails Go on subscription-import-upload-csv-keeps-earlier-map",
+          "artifact": "quality-reports/go-migration/subscription-import-upload-http-mutation-r1/results.json",
+          "receipt_sha256": "4a0d883a52ea9ce69daa8d4b922708d539b36e0ed05b323026108a3c4a67be9a"
+        }
+      ],
+      "notes": [
+        "Implementing: SubscriptionMaps.MAP is updated in place per process; Go keeps one process-wide map. Refused before any write: Excel uploads, the import of an existing document (codicefiscale, dateutil), CSV outside the pandascsv subset (invalid UTF-8, NUL, bare CR), columns with İ/Σ, a file as document_id."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/list -> subscription_list",
@@ -29364,25 +30236,72 @@
         "target": "configuration_send_email",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/communications_send_email.go",
+        "BE_GO/internal/dto/communications_send_email.go",
+        "BE_GO/internal/repository/communications_send_email.go",
+        "BE_GO/internal/service/communications_send_email.go",
+        "BE_GO/internal/service/communications_send_email_test.go",
+        "BE_GO/internal/handler/communications_send_email.go",
+        "BE_GO/cmd/server/communications_send_email.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "smtpsend.Verify/Send/Render (send_email's MIMEMultipart text/plain)",
+        "celery producer (core.tasks.send_mail_async)",
+        "repository communicationSMTPTransaction (embedded unchanged)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/send/email",
+          "/api/v2/communications/send/email",
+          "/api/communications/send/email"
+        ],
+        "request": "JSON or form: email (comma-separated), subject, message, or message_id of a stored message.",
+        "response": "200 {'msg': 'Ok', 'result': true} or {'msg': 'Daily email limit reached', 'result': false}.",
+        "errors": "401; 403 admin without session, unmapped collaborators, association-scoped context, athletes; 405; 400 ['<Field> is required'], ['Email is not valid.'], DRF field errors; 404 {'msg': 'message not found.'}; 500 non-dict bodies, non-string email, rejected message_id, immutable QueryDict, no association, no configuration (after the writes), send_email exceptions (after the writes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; path not in the registry (FULL collaborators only).",
+        "resource_scope": "request.user.sport_association; Message by id and association; first CommunicationConfiguration by key.",
+        "side_effects": "Message create (audited, direct), MessageTransaction per recipient, SMTP verify + delivery with audited balance save, or send_mail_async publish.",
+        "transaction": "autocommit per create/save (not atomic)",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/communications_send_email_http.json",
+        "TESTS/fixtures/generate_communications_send_email_http.py",
+        "TESTS/contracts/test_communications_send_email_http.py",
+        "TESTS/adapters/django/communications_send_email_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/communications-send-email.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 55/55; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-native-r4/results.json",
+          "receipt_sha256": "08d175c62f858884285159ff3e84e466d194c9a5431dd21e0ae68a119f25d5e6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 55/55 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-versioned-r1/results.json",
+          "receipt_sha256": "045a880fa1b1967e8c7a040ab31dc846f635f7eab765c7a85aaa687c57ad35a6"
+        },
+        {
+          "revision": "daily limit compared with > instead of >=",
+          "result": "Mutation control: fails Go on communications-send-email-limit-reached",
+          "artifact": "quality-reports/go-migration/communications-send-email-http-mutation-r1/results.json",
+          "receipt_sha256": "23f913fab72cd398a6894ddcd1accd00abd6543e8fdf3a208d840a1c070f0a17"
+        }
+      ],
+      "notes": [
+        "Implementing: Every create autocommits (Go: one transaction per step). SMTP deliveries outside smtpsend's subset are refused before any write whenever the configuration would take the SMTP path. send_email's (False, exception) is the 500 page after the writes."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/send/post -> configuration_send_post",
@@ -35617,32 +36536,66 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task instance.restore.cleanup with the declared 3600-second interval or another supported definition, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide instance.restore.cleanup version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic instance.restore.cleanup v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps instance.restore.cleanup to its registered version-1 worker job; the 3600-second interval is inside the evaluator subset. Four hourly interval cases added to TESTS/fixtures/scheduler-authority.json match actual Celery 5.6.2/Beat 2.8.1 (78 oracle cases); the Go differential runs every supported case for the task. RED: the evaluator rejected the task before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/restore-cleanup.md."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -38333,7 +39286,7 @@
       "declaration": {
         "call": "post_save.connect(create_audit_log_index, sender=LogEntry)"
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/service/login_preparation.go",
         "BE_GO/internal/repository/login_preparation.go",
@@ -38344,7 +39297,9 @@
         "BE_GO/internal/repository/model_audit.go",
         "BE_GO/internal/domain/login_finalization.go",
         "BE_GO/internal/service/login_finalization.go",
-        "BE_GO/internal/repository/login_finalization.go"
+        "BE_GO/internal/repository/login_finalization.go",
+        "BE_GO/internal/repository/audit_index.go",
+        "BE_GO/internal/dto/audit_index.go"
       ],
       "dependencies": [
         "BE/application/signals.py",
@@ -38360,8 +39315,8 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": "For username and final-login delete_on user-update audits, create one existing AuditLogIndex for the target directly owned non-deleted association, otherwise the actor directly owned association; no collaborator-owner traversal. Membership-card create audits now create one index for the configuration association with resolution_path direct.",
-        "transaction": "Username, final-login deletion cancellation and membership-card configuration event/index invariants are atomic in Go with at most three deadlock/serialization retries. Other audit workflows remain open; Django autocommit failure differences are recorded.",
+        "side_effects": "One AuditLogIndex per new LogEntry when none exists and resolution succeeds: registered resolver on the default manager (soft-delete, X-Group-Id), then changes sport_association (old, new), then the actor live association; otherwise none.",
+        "transaction": "Go runs inside the caller write transaction; index or resolution database errors roll it back (Django strict mode). Django best-effort suppression outside atomic_audit_mutation is not reproduced.",
         "execution_owner": "django"
       },
       "tests": [
@@ -38376,7 +39331,10 @@
         "BE/application/tests/test_atomic_profile_audit.py",
         "TESTS/adapters/go/server_fence.py",
         "TESTS/adapters/go/restore_drain_pooler.py",
-        "TESTS/adapters/django/restore_server_barrier.py"
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "TESTS/adapters/go/audit_index.py",
+        "BE_GO/internal/repository/audit_index_integration_test.go",
+        "BE_GO/internal/dto/audit_index_test.go"
       ],
       "evidence": [
         "20 actual Django login/audit-middleware versus composed Go password/preparation/OTP cases; exact username/event/index fields and Django readback, with all managed tables unchanged after fixture restoration. Real PostgreSQL checks prove atomic failure rollback, five queries for indexed normalization, one for unchanged names, 32 concurrent calls without duplicate events, and retry after a forced cross-actor deadlock.",
@@ -38384,7 +39342,26 @@
         "17 explicit actual Django password-login versus Go finalization cases cover UTC deletion-date boundaries, exact last_login and audit/index readback. Two/four/five-statement paths, 32 concurrent Go calls in 67 statements, real permission/FK failures, injected failures and cancellation verify atomicity and pool release. Django partial autocommit and stale-save overwrites are characterized separately; all managed tables match after restoration.",
         "The complete current accounts adapter passes on production Python 3.13.2 with restore/CORS/security composition, all existing account/scope/login/image/audit checks and managed-state readback. Evidence: quality-reports/go-migration/restore-admission/full-accounts-production.log and full-accounts-results.json. Bidirectional credentials, permissions, provider protocols, cache/rate/security adapters, Go race/vet, health/recovery and the non-root Linux image rehearsal also pass. Current-model fixtures do not prove historical migrations, browser switching or complete backend parity.",
         "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
-        "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md."
+        "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md.",
+        "docs/architecture/go-migration/audit-index.md",
+        {
+          "revision": "RED receipt, Go resolver and command files removed",
+          "result": "RED: Django 438 resolver + 23 command cases against authored expectations; Go driver and command absent.",
+          "artifact": "quality-reports/go-migration/audit-index-red/results.json",
+          "receipt_sha256": "9252426d9665e1663db131483eef115a42e8fd69a4d23c8cee1c134ad7c027e8"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 438/438 Django post_save index rows vs Go IndexAuditLogEntry (76 audited content types, with/without X-Group-Id) and 23/23 manage.py backfill_audit_log_index vs race-built Go binary (exit, stdout, index table).",
+          "artifact": "quality-reports/go-migration/audit-index/results.json",
+          "receipt_sha256": "1e3739f40d955de337a6d2bd29807d5d03d1c874f5ec7028b15e969445b2064a"
+        },
+        {
+          "revision": "committing change with the resolver ignoring the default manager soft-delete filter",
+          "result": "Mutation control: fails Go on \"application.associate soft-deleted row hidden by the default manager\".",
+          "artifact": "quality-reports/go-migration/audit-index-mutation/results.json",
+          "receipt_sha256": "db25618183050cf7c3b1ee282b0b479937daed5e97025d9da50eef08d5cec7df"
+        }
       ],
       "notes": [
         "Username-normalization, final-login deletion-cancellation and membership-card default-creation audits are currently implemented in Go. Other registered models, changes-JSON fallbacks, deletion and audit lifecycle operations remain open.",
@@ -38392,7 +39369,8 @@
         "Django concurrent missing configuration lookups can create two rows; denied audit/index inserts retain partial autocommit effects. Go serializes participating Go writers and atomically rolls back the invariant. These differences are explicit; the Go parent lock does not coordinate unmodified Django writers. Cross-runtime concurrent creation remains unimplemented/unverified before activation.",
         "Final-login writes are a separate, unwired service: last_login and qualifying delete_on cancellation with atomic audit/index. Django full-model saves overwrite concurrent password/name/active changes; Go preserves them. End-to-end revocation admission and mixed-runtime audit races remain open. See BE_GO/internal/service/login_finalization.md.",
         "Main-alignment audit review exposed pre-SQL index failures swallowed by Django despite transaction.atomic. Scoped atomic_audit_mutation now propagates index errors for profile, table preferences and 2FA only; unrelated legacy signal callers retain behavior. Six real-PostgreSQL regressions and JWT/fresh-connection fault readback pass; SQL-trigger coverage alone had not established this failure mode. See main-alignment.md and ignored audit-index-exceptions/green-results.json.",
-        "ledger-structural review: a generic Go resolver is not provably equivalent yet. model_class.objects is the default manager, which for group-aware models filters by the request thread-local X-Group-Id, so resolution depends on request context; about 60 registered content types each need their manager and traversal characterised; Django swallows index errors outside the scoped atomic mutations. Families keep their inline index writes; status stays needs_review."
+        "ledger-structural review: a generic Go resolver is not provably equivalent yet. model_class.objects is the default manager, which for group-aware models filters by the request thread-local X-Group-Id, so resolution depends on request context; about 60 registered content types each need their manager and traversal characterised; Django swallows index errors outside the scoped atomic mutations. Families keep their inline index writes; status stays needs_review.",
+        "Generic resolver: repository.ResolveAuditLogIndex/IndexAuditLogEntry reproduce resolve_sport_association_for_log_entry for all 76 audited content types (73 registered resolvers, 3 unregistered) plus stale/unaudited content types, with X-Group-Id passed explicitly. Differences kept explicit: Go returns database errors (caller transaction rolls back) where Django logs and continues outside atomic_audit_mutation; Go reads stored changes JSON, Django the in-memory value (equal for all jsonb round-tripping values). Existing Go families still write index rows inline; they are not rewired to the generic resolver."
       ]
     },
     {
@@ -40754,27 +41732,61 @@
           "name": "'instance.restore.cleanup'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/data_restore_cleanup.go",
+        "BE_GO/internal/repository/data_restore_cleanup.go",
+        "BE_GO/internal/service/data_restore_cleanup.go",
+        "BE_GO/internal/service/data_restore.go",
+        "BE_GO/internal/repository/data_restore.go",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/config/data_restore.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/cmd/worker/data_restore_cleanup.go",
+        "BE_GO/cmd/worker/export_cleanup.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/tasks.py",
+        "BE/instance/restore/execution.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/models.py",
+        "BE/docmanager/models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/job_ownership.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python arguments; exact Go kind instance.restore.cleanup, version 1, empty object payload, nil association and a running fenced job.",
+        "response": "Django None; completed Go job with a NULL result (also when the restore lock is busy, unset or unopenable).",
+        "errors": "Busy lock ends the run without effects (Go retries a held lock for up to one second first). Storage errors inside cleanup(op) end that receipt's cleanup; storage errors in prune_storage fail the job after the effects made, as the task raises. Refused before any effect (task_failed): completed media that is not a JSON object of strings, or a name pruning could delete outside AWS_LOCATION. Database errors go back to the executor where cleanup(op) swallows them.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "resource_scope": "DataRestore.objects.exclude(state__in=ACTIVE), unordered; prune reads completed receipts with media, terminal backups ordered -created_at,-id and the Document/Subscription references under restores/.",
+        "side_effects": "Expire review receipts older than 24h (state cancelled, stage expired); cleanup(op) for failed/cancelled/completed (upload object and prefix, media prefix and media={} for non-completed); prune unreferenced media keys, recovery archives beyond DATA_RESTORE_RECOVERY_BACKUPS (default 1) newest completed, and stray recovery files. Every save is one UPDATE with updated_at. The lock file is created when missing and never written.",
+        "transaction": "Exclusive DATA_RESTORE_LOCK_PATH flock held for the run; each save in its own fenced READ COMMITTED transaction (Django autocommit); completion fenced. Runs on a separate one-slot executor without ordinary restore admission, as CoordinatedTask bypasses instance.restore.* tasks.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/data_restore_cleanup_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py",
+        "TESTS/adapters/go/worker_process.py",
+        "TESTS/adapters/django/instance_logo.py"
+      ],
+      "evidence": [
+        "Native worker registration (version 1) on its own executor. TESTS/adapters/go/data_restore_cleanup_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private pinned MinIO and the restore lock file; the actual Django task runs first (S3Boto3Storage, DATA_RESTORE_LOCK_PATH) with authored assertions on eleven receipts, the bucket and the lock file; the Go job must leave the identical complete managed-model state (receipt updated_at normalized within the run window), bucket, lock file and NULL result. Groups: default Django owner, native parity, invalid version/payload/tenant, later run, held lock, DATA_RESTORE_RECOVERY_BACKUPS from the environment, media refusal. RED: the job is never claimed without the registration (ordinary admission defers claims while a receipt is queued). GREEN 7/7. Mutation caught: signature-URL references dropped. See docs/architecture/go-migration/restore-cleanup.md."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Ported by restore-cleanup; refusals and infrastructure differences in docs/architecture/go-migration/restore-cleanup.md."
       ]
     },
     {

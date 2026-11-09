@@ -27,7 +27,11 @@ the permission registry's EXCLUDED_ENDPOINTS (no registry key):
 
 mark_payment_as_paid with an invoice already linked only marks the payment's
 first supplier invoice paid (the payment itself is not saved); without an
-invoice it creates one, prints it and notifies: that path is not authored.
+invoice it creates one (numbered from the association's invoices created in
+the current balance year), saves the payment paid, marks the course
+subscription or installment paid, publishes print_document_invoice (the
+request's Authorization, DOCUMENT_BYPASS_TOKEN from the webhook) and notifies
+payment.user (see the paid flow section).
 Every outbound Stripe request is pinned (method, path, form body and the SDK's
 headers) against the run's private Stripe stub, whose authored replies are
 listed with the case.
@@ -66,10 +70,10 @@ SECRET_KEY, WEBHOOK_SECRET, PUBLIC_KEY = 'sk_test_placeholder', 'whsec_placehold
 
 def payment(amount='10.00', paid=False, *, association=OWN, subject=0, associate=True, user=True, intent=None, invoice=False,
             supplier_invoice=False, group=None, deleted=False, category=CATEGORY, description='Quota', created='2026-10-01T08:00:00Z',
-            paid_on=None):
+            paid_on=None, meta_categories=None):
     return {'id': next(ids), 'association': association, 'subject': subject, 'amount': amount, 'paid': paid, 'associate': associate,
             'user': user, 'intent': intent, 'invoice': invoice, 'supplier_invoice': supplier_invoice, 'group': group, 'deleted': deleted,
-            'category': category, 'description': description, 'created': created, 'payment_date': paid_on}
+            'category': category, 'description': description, 'created': created, 'payment_date': paid_on, 'meta_categories': meta_categories}
 
 
 # Keys ascend in insertion order, so key order and physical order agree for multi-payment reads.
@@ -115,7 +119,25 @@ PAYMENTS = {
     'wh_invoiced': payment(amount='50.00', intent='pi_stub_wh', invoice=True, supplier_invoice=True),
     'wh_paid': payment(amount='51.00', paid=True, paid_on='2026-04-03T00:00:00Z', intent='pi_stub_wh_paid'),
     'wh_group': payment(amount='52.00', intent='pi_stub_wh_group', group='own_group', invoice=True, supplier_invoice=True),
+    # paid flow (unpaid payments without an invoice), in the association without seeded invoices
+    'pf_wh_other': payment(amount='25.00', association=PLAIN['association'], intent='pi_stub_pf_other'),
+    'pf_pay_subscription': payment(amount='30.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_sub',
+                                   meta_categories=[{'amount': '4.50'}, {'amount': True}, {'amount': None}]),
+    'pf_wh_subscription_plain': payment(amount='12.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_sub_plain'),
+    'pf_wh_course': payment(amount='60.00', association=PLAIN['association'], subject=2, intent='pi_stub_pf_course'),
+    'pf_wh_installment': payment(amount='20.00', association=PLAIN['association'], subject=2, intent='pi_stub_pf_installment'),
+    'pf_wh_carnet': payment(amount='33.00', association=PLAIN['association'], subject=2, intent='pi_stub_pf_carnet'),
+    'pf_wh_course_none': payment(amount='14.00', association=PLAIN['association'], subject=2, intent='pi_stub_pf_none'),
+    'pf_wh_no_user': payment(amount='15.00', association=PLAIN['association'], user=False, intent='pi_stub_pf_nouser'),
+    'pf_pay_anonymous': payment(amount='16.00', association=PLAIN['association'], intent='pi_stub_pf_anon'),
+    'pf_mp': payment(amount='17.00', association=PLAIN['association'], intent='pi_stub_pf_mp'),
+    'pf_wh_group': payment(amount='18.00', association=PLAIN['association'], intent='pi_stub_pf_group', group='own_group'),
 }
+COURSE = {'id': next(ids), 'title': 'Corso Stripe'}
+CARNET = {'id': next(ids), 'title': 'Carnet Stripe'}
+COURSE_SUBSCRIPTIONS = {'cs_pf': {'id': next(ids), 'payment': 'pf_wh_course'}, 'cs_pf_parent': {'id': next(ids), 'payment': None}}
+INSTALLMENTS = {'i_pf': {'id': next(ids), 'payment': 'pf_wh_installment', 'cs': 'cs_pf_parent'}}
+HOLDINGS = {'h_pf': {'id': next(ids), 'payment': 'pf_wh_carnet'}}
 INVOICES = {label: {'id': next(ids), 'number': n} for n, label in enumerate((k for k, v in PAYMENTS.items() if v['invoice']), start=900)}
 SUPPLIER_INVOICES = {label: {'id': next(ids), 'identifier': f'FT-S{n}', 'amount': PAYMENTS[label]['amount']}
                      for n, label in enumerate(k for k, v in PAYMENTS.items() if v['supplier_invoice'])}
@@ -490,6 +512,143 @@ add('webhook-charge-marks-supplier-invoice', 'anonymous', WEBHOOK, 200, EMPTY, r
 add('webhook-charge-group', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_wh_group'), content_type=JSON, signature=VALID,
     headers=GROUP, effect=effect(invoices={'wh_group': {'paid': True, 'payment_date': '$now'}}, audit=[supplier_paid('wh_group', 'anonymous')]))
 
+# --- mark_payment_as_paid: paid flow -------------------------------------------------
+# An unpaid payment without an invoice, reached through the webhook (request
+# None: DOCUMENT_BYPASS_TOKEN), the pay route (a stored intent that succeeded)
+# and multiple-pay. Atomically: fees (float() of the meta payment category
+# amounts; the membership fee only recomputed with categories), number =
+# max(Max('number') of the association's live, group-aware, unarchived invoices
+# created in the current balance year, starting_number_invoices) + 1, the
+# description, Invoice.objects.create (raw X-Group-Id), payment.save() (paid,
+# payment date now, invoice), the course subscription / installment paid flag
+# (a carnet subscription's save changes nothing), print_document_invoice.delay
+# (published inside the block) and send_notification(payment.user,
+# association_id=payment.sport_association_id).
+
+PLAIN_DENOMINATION = PLAIN['denomination']
+STRIPE_NUMBERS = {'year': 0, 'group': 0}
+
+
+def escape(text):
+    return (str(text).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#x27;'))
+
+
+def pyfloat(value):
+    return repr(float(value))
+
+
+def stripe_fees(row):
+    """((membership str(), stored), (activity str(), stored)) of mark_payment_as_paid."""
+    from decimal import Decimal, ROUND_HALF_EVEN
+    drf = lambda value: str(Decimal(repr(float(value))).quantize(Decimal('0.01'), rounding=ROUND_HALF_EVEN))
+    amount = row['amount']
+    if row['subject'] != 1:
+        return ('0.0', '0.00'), (amount, amount)
+    activity = 0.0
+    membership = None
+    if row['meta_categories']:
+        for item in row['meta_categories']:
+            if item['amount']:
+                activity = activity + float(item['amount'])
+        if Decimal(amount) > 0:
+            membership = float(amount) - activity
+    membership_pair = (pyfloat(membership), drf(membership)) if membership is not None else (amount, amount)
+    return membership_pair, (pyfloat(activity), drf(activity))
+
+
+def paid_flow(label, actor, *, description, notified, token, course=None, installment=None, broadcast=False, group=None, rolled_back=False):
+    """(effect, celery) of mark_payment_as_paid for an unpaid payment without an invoice."""
+    row = STATE[label]
+    association = row['association']
+    if rolled_back:
+        celery = [{'task': 'print_document_invoice', 'args': ['$rolled_back_invoice', token], 'kwargs': []}]
+        return {**nothing(), 'celery': celery, 'invoice': None, 'notification': None, 'rolled_back': True}
+    key = 'group' if group else 'year'
+    STRIPE_NUMBERS[key] += 1
+    number = STRIPE_NUMBERS[key]
+    if group:
+        STRIPE_NUMBERS['year'] = max(STRIPE_NUMBERS['year'], number)
+    (membership_audit, membership), (activity_audit, activity) = stripe_fees(row)
+    meta = row['meta_categories']
+    create = {'invoice_id': ['None', '$invoice'], 'document_pdf': ['None', 'None'], 'sport_association': ['None', association],
+              'creation_date': ['None', '$now'], 'membership_fee': ['None', membership_audit], 'activity_fee': ['None', activity_audit],
+              'meta_payment_categories': ['None', json.dumps(meta, sort_keys=True)], 'description': ['None', description],
+              'number': ['None', str(number)], 'archived': ['None', 'False'], 'cancelled': ['None', 'False'], 'selected_tutor': ['None', 'None'],
+              'meta': ['None', 'null'], 'imported_from_associami': ['None', 'False'], 'group': ['None', IDS[group] if group else 'None'],
+              'deleted': ['None', 'False']}
+    audit = [{'model': 'invoice', 'label': '$invoice', 'action': 0, 'changes': create, 'actor': actor, 'index': [association, 'direct']},
+             audited('payment', label, {'paid': ['False', 'True'], 'payment_date': ['None', '$now'], 'invoice': ['None', '$invoice']}, actor)]
+    if course:
+        audit.append({'model': 'coursesubscription', 'label': course, 'action': 1, 'changes': {'paid': ['False', 'True']}, 'actor': actor,
+                      'index': [association, 'course.sport_association']})
+    if installment:
+        audit.append({'model': 'coursesubscriptioninstallment', 'label': installment, 'action': 1, 'changes': {'paid': ['False', 'True']},
+                      'actor': actor, 'index': [association, 'course_subscription.course.sport_association']})
+    if broadcast:
+        index = [OWN, 'actor.sport_association'] if actor == 'owner' else None
+        audit += [{'model': model, 'label': '$' + model, 'action': 0, 'changes': '$created', 'actor': actor, 'index': index}
+                  for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
+    msg = f"Pagamento di € {row['amount'].replace('.', ',')}" + (f"per {notified}" if notified else '') + '.'
+    msg += f" Pagamento dell'associato {ASSOCIATE['first']} {ASSOCIATE['last']}."
+    stored = {'sport_association_id': association, 'creation_date': '$now', 'membership_fee': membership, 'activity_fee': activity,
+              'meta_payment_categories': meta, 'description': description, 'number': number, 'group_id': IDS[group] if group else None}
+    row.update(paid=True, payment_date='$now')
+    result = effect(payments={label: {'paid': True, 'payment_date': '$now', 'invoice': '$invoice'}}, audit=audit)
+    result.update(invoice=stored, course_subscriptions_paid=[course] if course else [], installments_paid=[installment] if installment else [],
+                  celery=[{'task': 'print_document_invoice', 'args': ['$invoice', token], 'kwargs': []}],
+                  notification={'user': 'owner', 'msg': msg, 'association': association})
+    return result
+
+
+def other_text(reason):
+    return f"Ricevuta di pagamento con causale <b>{escape(reason)}</b> per l'associazione <b>{escape(PLAIN_DENOMINATION)}</b>."
+
+
+def course_text(title):
+    return (f"Ricevuta di pagamento di <b>{escape(ASSOCIATE['first'] + ' ' + ASSOCIATE['last'])}</b> per il corso <b>{escape(title)}</b> "
+            f"dell'associazione <b>{escape(PLAIN_DENOMINATION)}</b>.")
+
+
+SUBSCRIBED = (f"Ricevuta di pagamento per l'iscrizione di <b>{escape(ASSOCIATE['first'] + ' ' + ASSOCIATE['last'])}</b> all'associazione "
+              f"<b>{escape(PLAIN_DENOMINATION)}</b>.")
+add('webhook-charge-creates-invoice', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_other'), content_type=JSON, signature=VALID,
+    effect=paid_flow('pf_wh_other', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token='$bypass', broadcast=True))
+add('pay-succeeded-creates-invoice', 'owner', PAY('pf_pay_subscription'), 200, MARKED,
+    stripe=[retrieve('pi_stub_pf_sub', intent('pi_stub_pf_sub', 3000, status='succeeded'))],
+    effect=paid_flow('pf_pay_subscription', 'owner', description=SUBSCRIBED, notified="l'iscrizione all'associazione sportiva",
+                     token='$authorization'))
+add('webhook-charge-subscription-without-categories', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_sub_plain'),
+    content_type=JSON, signature=VALID,
+    effect=paid_flow('pf_wh_subscription_plain', 'anonymous', description=SUBSCRIBED, notified="l'iscrizione all'associazione sportiva",
+                     token='$bypass'))
+add('webhook-charge-course-subscription', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_course'), content_type=JSON,
+    signature=VALID, effect=paid_flow('pf_wh_course', 'anonymous', description=course_text(COURSE['title']),
+                                      notified=f'il corso "{COURSE["title"]}"', token='$bypass', course='cs_pf'))
+add('webhook-charge-installment', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_installment'), content_type=JSON,
+    signature=VALID, effect=paid_flow('pf_wh_installment', 'anonymous', description=course_text(COURSE['title']),
+                                      notified=f"rata del corso {COURSE['title']}", token='$bypass', installment='i_pf'))
+add('webhook-charge-carnet', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_carnet'), content_type=JSON, signature=VALID,
+    effect=paid_flow('pf_wh_carnet', 'anonymous', description=course_text(CARNET['title']), notified=f"carnet {CARNET['title']}", token='$bypass'))
+add('webhook-charge-course-without-link', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_none'), content_type=JSON,
+    signature=VALID, effect=paid_flow('pf_wh_course_none', 'anonymous', description='Quota', notified='carnet', token='$bypass'))
+# send_notification(None, ...) raises after the task was published: the block rolls back, the view swallows it.
+add('webhook-charge-without-user-rolls-back', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_nouser'), content_type=JSON,
+    signature=VALID, effect=paid_flow('pf_wh_no_user', 'anonymous', description=None, notified=None, token='$bypass', rolled_back=True))
+add('pay-succeeded-anonymous-creates-invoice', 'anonymous', PAY('pf_pay_anonymous'), 200, MARKED,
+    stripe=[retrieve('pi_stub_pf_anon', intent('pi_stub_pf_anon', 1600, status='succeeded'))],
+    effect=paid_flow('pf_pay_anonymous', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token=None))
+sent = [{'payment_id': P('pf_mp'), 'sport_association': PLAIN['association']}]
+add('multiple-pay-succeeded-creates-invoice', 'anonymous', MULTI, 200,
+    {'data': {'client_secret': 'pi_stub_pf_zero_secret_stub', 'info': {'checkout_info': PLAIN['checkout']}}, 'payments': sent},
+    body={'payments': sent},
+    stripe=[retrieve('pi_stub_pf_mp', intent('pi_stub_pf_mp', 1700, status='succeeded')),
+            create({'amount': 0, 'currency': 'eur', 'description': '', 'payment_method_types': ['card', 'sepa_debit'], 'metadata': {}},
+                   intent('pi_stub_pf_zero', 0), telemetry='req_stub_1')],
+    effect=paid_flow('pf_mp', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token=None))
+add('webhook-charge-group-invoice', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_pf_group'), content_type=JSON, signature=VALID,
+    headers=GROUP, effect=paid_flow('pf_wh_group', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token='$bypass',
+                                    group='own_group'))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'stripe/info, on-boarding, complete-on-boarding, pay/<payment_id>, multiple-pay, webhook', 'ids': IDS,
@@ -497,5 +656,6 @@ OUTPUT.write_text(json.dumps({
                'user_agent': 'Stripe/v1 PythonBindings/11.6.0'},
     'category': CATEGORY, 'category_name': CATEGORY_NAME, 'associate': ASSOCIATE, 'subscription': SUBSCRIPTION, 'supplier': SUPPLIER,
     'associations': EXTRA_ASSOCIATIONS, 'payments': PAYMENTS, 'invoices': INVOICES, 'supplier_invoices': SUPPLIER_INVOICES,
+    'course': COURSE, 'carnet': CARNET, 'course_subscriptions': COURSE_SUBSCRIPTIONS, 'installments': INSTALLMENTS, 'holdings': HOLDINGS,
     'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

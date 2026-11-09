@@ -11,9 +11,9 @@ The owner-only data-restore views of `BE/instance/restore/views.py` are implemen
 | `instance/admin/data-restore/<uuid>/<action>` | `DataRestoreActionView` | GET, POST |
 | `instance/admin/data-restore/<uuid>/download` | `DataRestoreDownloadView` | GET |
 
-Restore execution (`restore_instance_data`, `instance.restore.execute`) and the periodic
-`cleanup_data_restores` task stay with Django's worker. Go records receipts and publishes the
-execution message exactly as the view does.
+Restore execution (`restore_instance_data`, `instance.restore.execute`) stays with Django's worker.
+Go records receipts and publishes the execution message exactly as the view does. The periodic
+`cleanup_data_restores` task is registered in the Go worker ([restore-cleanup](restore-cleanup.md)).
 
 ## Shared behaviour
 

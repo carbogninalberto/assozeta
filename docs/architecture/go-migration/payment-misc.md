@@ -71,8 +71,8 @@ their invoice is rendered whatever `generate_invoice` says.
 - Apply quotes for users other than the association owner with an associate (`render_to_string` + `send_email_html`):
   the whole request is rolled back.
 - Sign with a signature to store (Signature row, payment save, synchronous `print_document_compensation` PDF).
-- Approve of unpaid income payments with a party (invoice numbering, notification via Redis/WebSocket, PDF task) —
-  unchanged from payment-state. A paid invoiced payment with a truthy `generate_invoice` is now ported (the
+- Approve of unpaid income payments with a party is now ported by payment-state's paid flow
+  ([payment-state](payment-state.md)). A paid invoiced payment with a truthy `generate_invoice` is now ported (the
   `print_document_invoice` dispatch, see [invoice-generate](invoice-generate.md)); a `send_receipt_email` other than
   None, a bool, a string or an int64 is refused.
 - Plan values outside the ported conversions: `int()` of non-ASCII digits or beyond int64, fees that are not a JSON

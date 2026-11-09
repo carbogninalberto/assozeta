@@ -432,6 +432,7 @@ func run() (runErr error) {
 	subscriptionMedicalHandler := handler.NewSubscriptionMedicalHandler(service.NewSubscriptionMedical(repository.NewSubscriptionMedical(db), time.Now,
 		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/medical-appointments/list", subscriptionMedicalHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/import/upload", composeSubscriptionImportUpload(cfg, db, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Upload, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/medical-appointments/:medical_appointments_id/delete", subscriptionMedicalHandler.Delete,
 		middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/medical-certificate/edit", subscriptionMedicalHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -443,7 +444,9 @@ func run() (runErr error) {
 	e.Any("/course-subscriptions/bulk-delete", courseSubscriptionsHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course-subscriptions/:pk/update", courseSubscriptionsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course-subscriptions/:pk/delete", courseSubscriptionsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
-	paymentStatesHandler := handler.NewPaymentStatesHandler(service.NewPaymentStates(repository.NewPaymentStates(db), time.Now).WithTasks(tasks),
+	// approve's and mark_payment_as_paid's paid flow notify through subscriptionNotifier (wired below).
+	paymentStates := service.NewPaymentStates(repository.NewPaymentStates(db), time.Now).WithTasks(tasks)
+	paymentStatesHandler := handler.NewPaymentStatesHandler(paymentStates,
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/payment/:uid/approve", paymentStatesHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
 	invoiceGenerateHandler := handler.NewInvoiceGenerateHandler(paymentStatesHandler,
@@ -452,10 +455,11 @@ func run() (runErr error) {
 	e.Any("/payment/:uid/cancel", paymentStatesHandler.Cancel, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/delete", paymentStatesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	// stripe/*: STRIPE_API_BASE (default https://api.stripe.com) is stripe.api_base.
-	stripeRoutesHandler := handler.NewStripeRoutesHandler(service.NewStripeRoutes(repository.NewStripeRoutes(db),
+	stripeRoutes := service.NewStripeRoutes(repository.NewStripeRoutes(db),
 		repository.NewSocialConfiguration(db), service.StripeEnvironmentKeys{PublicKey: cfg.InstanceAdmin.StripePublicKey,
 			SecretKey: cfg.InstanceAdmin.StripeKey, WebhookSecret: cfg.InstanceAdmin.StripeWebhookSecret}, cfg.SessionSecret,
-		stripeapi.NewClient(os.Getenv("STRIPE_API_BASE")), time.Now), service.NewActorAuthentication(accounts, tokens), identities,
+		stripeapi.NewClient(os.Getenv("STRIPE_API_BASE")), time.Now)
+	stripeRoutesHandler := handler.NewStripeRoutesHandler(stripeRoutes, service.NewActorAuthentication(accounts, tokens), identities,
 		middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/stripe/info", stripeRoutesHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/stripe/on-boarding", stripeRoutesHandler.OnBoarding, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -486,6 +490,12 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/list/export", miscExportsHandler.SubscriptionExport, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice/list/export", miscExportsHandler.InvoiceExport, middleware.DjangoSessionAudit(sessionAuthentication))
+	printingGenerateHandler := handler.NewPrintingGenerateHandler(service.NewPrintingGenerate(repository.NewPrintingGenerate(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/printing/generate", printingGenerateHandler.Generate, middleware.DjangoSessionAudit(sessionAuthentication))
+	exportAllDataHandler := handler.NewExportAllDataHandler(service.NewExportAllData(repository.NewExportAllData(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities)
+	e.Any("/export-all-data", exportAllDataHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionReadsHandler := handler.NewSubscriptionReadsHandler(service.NewSubscriptionReads(repository.NewSubscriptionReads(db),
 		repository.NewCourseSubscriptions(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/subscription/list", subscriptionReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -699,6 +709,8 @@ func run() (runErr error) {
 	invoiceSyncHandler := handler.NewInvoiceSyncPrintHandler(paymentStatesHandler,
 		service.NewInvoiceSyncUpdates(invoiceSyncStore, invoiceSyncPrinter, time.Now))
 	e.Any("/invoice/:uid/update", invoiceSyncHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	// medical-appointment-add: print_document_medical_appointment called directly after the save.
+	e.Any("/subscription/:uid/medical-appointments/add", handler.NewMedicalAppointmentAddHandler(service.NewMedicalAppointmentAdd(repository.NewMedicalAppointmentAdd(db), invoiceSyncPrinter, time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/list", invoicePartiesHandler.CustomerList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/add", invoicePartiesHandler.CustomerAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/:uid/update", invoicePartiesHandler.CustomerUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -726,6 +738,7 @@ func run() (runErr error) {
 	e.Any("/communications/settings/smtp/info", communicationSMTPHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/settings/smtp/update", communicationSMTPHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/settings/smtp/verify", communicationSMTPHandler.Verify, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/send/email", composeCommunicationSendEmail(cfg, db, tasks, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Send, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/list", staffBoardHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/add", staffBoardHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/:staff_board_message_id/update", staffBoardHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -746,6 +759,12 @@ func run() (runErr error) {
 		e.Any(path, apiSchemaHandler.AppendSlash, middleware.DjangoSessionAudit(sessionAuthentication))
 	}
 	e.Any("/instance/logo.png", instanceLogoHandler.Read, middleware.DjangoSessionAudit(sessionAuthentication))
+	// chat/test/ (application.chat.views.chat_test): login_required page whose
+	// template does not exist; CommonMiddleware's APPEND_SLASH for /chat/test.
+	chatTestHandler := handler.NewChatTestHandler(middleware.SessionAuditContext)
+	e.Any("/chat/test/", chatTestHandler.Page, middleware.DjangoSessionAudit(sessionAuthentication),
+		middleware.DjangoCSRFRejecting(cfg.CSRFTrustedOrigins, chatTestHandler.RefuseCSRF))
+	e.Any("/chat/test", apiSchemaHandler.AppendSlash, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/access", instanceHandler.Access, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin", instanceAdminHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/email", instanceAdminHandler.Email, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -820,6 +839,9 @@ func run() (runErr error) {
 	// and mirrored for Go sockets (internal/channels), on Redis database 0.
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
 		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
+	paymentPaidFlows := repository.NewPaymentPaidFlows(repository.NewPaymentStates(db))
+	paymentStates.WithPaidFlow(paymentPaidFlows, subscriptionNotifier)
+	stripeRoutes.WithPaidFlow(paymentPaidFlows, subscriptionNotifier, tasks, os.Getenv("DOCUMENT_BYPASS_TOKEN"))
 	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil)
 	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(subscriptionCreates, service.NewActorAuthentication(accounts, tokens),
 		identities, middleware.SessionAuditContext, paymentCategoryOperations)

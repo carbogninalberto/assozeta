@@ -1,0 +1,394 @@
+{
+ "matrix_version": 1,
+ "scope": "chat/test/ login_required page without its template",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "sessions": {
+  "owner": "chattestowner0000000000000000001",
+  "inactive": "chattestinactive0000000000000001",
+  "state": "chattestoauthstate00000000000001",
+  "missing": "chattestmissing00000000000000001"
+ },
+ "csrf": "chattestcsrfsecret00000000000001",
+ "cases": [
+  {
+   "name": "chat-test-anonymous-get",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-anonymous-head",
+   "actor": "anonymous",
+   "method": "HEAD",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-anonymous-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-anonymous-query",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test/?a=1&b=%2F&c=%C3%A8&d=x+y",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/%3Fa%3D1%26b%3D%252F%26c%3D%25C3%25A8%26d%3Dx%2By",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-anonymous-empty-query",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test/?",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-bearer-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-bearer-full_collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-bearer-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-bearer-admin",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-anonymous-post-csrf",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "chattestcsrfsecret00000000000001"
+   },
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-anonymous-put-csrf",
+   "actor": "anonymous",
+   "method": "PUT",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "chattestcsrfsecret00000000000001"
+   },
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-anonymous-patch-csrf",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "chattestcsrfsecret00000000000001"
+   },
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-anonymous-delete-csrf",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "chattestcsrfsecret00000000000001"
+   },
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-session-owner",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=chattestowner0000000000000000001"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-session-owner-head",
+   "actor": "anonymous",
+   "method": "HEAD",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=chattestowner0000000000000000001"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-session-owner-bearer",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=chattestowner0000000000000000001"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-session-owner-post-csrf",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=chattestowner0000000000000000001; csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "chattestcsrfsecret00000000000001"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-session-inactive",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=chattestinactive0000000000000001"
+   },
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-session-without-user",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=chattestoauthstate00000000000001"
+   },
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-session-missing",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=chattestmissing00000000000000001"
+   },
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": "sessionid=\"\"; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/; SameSite=Lax",
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-session-short-key",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=short"
+   },
+   "status": 302,
+   "response": "<empty>",
+   "location": "/accounts/login/?next=/chat/test/",
+   "set_cookie": "sessionid=\"\"; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/; SameSite=Lax",
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-append-slash",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test",
+   "headers": {},
+   "status": 301,
+   "response": "<empty>",
+   "location": "/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-append-slash-query",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test?a=1&b=%2F",
+   "headers": {},
+   "status": 301,
+   "response": "<empty>",
+   "location": "/chat/test/?a=1&b=%2F",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  },
+  {
+   "name": "chat-test-append-slash-session",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/chat/test",
+   "headers": {
+    "Cookie": "sessionid=chattestowner0000000000000000001"
+   },
+   "status": 301,
+   "response": "<empty>",
+   "location": "/chat/test/",
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language",
+   "effect": null
+  }
+ ]
+}

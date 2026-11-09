@@ -70,6 +70,10 @@ type Config struct {
 	// f"Il Team di {WHITELABEL_NAME} <{EMAIL_HOST_USER}>" (EMAIL_HOST_USER is
 	// os.environ.get: "None" when unset).
 	DefaultFromEmail, DefaultTeamEmail string `json:"-"`
+
+	// DataRestoreRecoveryBackups is os.environ.get('DATA_RESTORE_RECOVERY_BACKUPS'),
+	// read by prune_storage at each run; nil when unset.
+	DataRestoreRecoveryBackups *string
 }
 
 // String intentionally omits credentials (including database URLs).
@@ -287,7 +291,7 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{InstanceAdmin: instanceAdmin, DataRestoreMaxUploadBytes: dataRestoreMaxUpload, Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	return Config{InstanceAdmin: instanceAdmin, DataRestoreMaxUploadBytes: dataRestoreMaxUpload, DataRestoreRecoveryBackups: dataRestoreRecoveryBackups(values), Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: origins, CSRFCookieSecure: csrfCookieSecure, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),

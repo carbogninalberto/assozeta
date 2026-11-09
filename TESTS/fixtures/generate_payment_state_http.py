@@ -18,9 +18,8 @@ supplier invoice paid with the payment's date and answers
 instructor answers the same. A paid payment answers
 {'data': {'msg': 'payment mark as payed.', 'payment': ...}}. Payment.save()
 fills a null category and description and is audited (changed fields, indexed
-directly). Unpaid income payments with a party (invoice creation,
-notification, PDF task) and payments with an invoice are not ported and not
-authored.
+directly). Unpaid income payments with a party run the paid flow (see the
+paid flow section below).
 
 cancel: no UUID check (a malformed id is a 500), same lookup; an unpaid
 payment is 400 {'error': 'Payment not paid.'}; a paid one is serialized
@@ -69,11 +68,11 @@ CARNET = {'id': next(ids), 'title': 'Carnet pagamenti'}
 
 def payment(subject=2, amount='10.00', paid=False, *, association=OWN, expense=False, associate=False, user=False, supplier=False,
             instructor=False, group=None, deleted=False, archived=False, category=CATEGORY, created='2026-10-01T08:00:00Z', paid_on=None,
-            description='Quota', meta=None, attachment=False):
+            description='Quota', meta=None, attachment=False, meta_categories=None, linked=False):
     return {'id': next(ids), 'association': association, 'subject': subject, 'amount': amount, 'paid': paid, 'expense': expense,
             'associate': associate, 'user': user, 'supplier': supplier, 'instructor': instructor, 'group': group, 'deleted': deleted,
             'archived': archived, 'category': category, 'created': created, 'payment_date': paid_on, 'description': description,
-            'meta': meta, 'attachment': attachment}
+            'meta': meta, 'attachment': attachment, 'meta_categories': meta_categories, 'linked': linked}
 
 
 PAYMENTS = {
@@ -116,14 +115,38 @@ PAYMENTS = {
     'bd_a': payment(), 'bd_installment': payment(), 'bd_group': payment(group='own_group'), 'bd_plain': payment(),
     'bd_collab': payment(), 'bd_admin': payment(),
     'abroad': payment(association=FOREIGN, paid=True, paid_on='2026-01-01T00:00:00Z'),
+    # paid flow (unpaid income payments with a party)
+    'pf_other': payment(subject=0, amount='15.00', associate=True, user=True),
+    'pf_old': payment(subject=0, amount='20.00', associate=True),
+    'pf_subscription': payment(subject=1, amount='30.00', associate=True,
+                               meta_categories=[{'name': 'Corso', 'amount': '5.50'}, {'name': 'Gratis', 'amount': 0}, {'amount': 2}]),
+    'pf_course': payment(amount='50.00', associate=True, linked=True),
+    'pf_installment': payment(amount='18.00', associate=True, linked=True),
+    'pf_carnet': payment(amount='35.00', associate=True, linked=True),
+    'pf_course_none': payment(amount='11.00', associate=True),
+    'pf_supplier': payment(subject=0, amount='12.00', supplier=True, user=True),
+    'pf_instructor': payment(subject=0, amount='40.00', instructor=True),
+    'pf_collab': payment(subject=0, amount='16.00', associate=True),
+    'pf_admin': payment(subject=0, amount='17.00', associate=True),
+    'pf_group': payment(amount='19.00', associate=True, group='own_group'),
+    'pf_form': payment(subject=0, amount='21.00', associate=True),
+    'pf_scoped': payment(amount='22.00', associate=True, linked=True),
+    'pf_bad_meta': payment(subject=1, amount='23.00', associate=True, meta_categories=[{'amount': 'abc'}]),
+    'pf_carnet_null': payment(amount='24.00', associate=True),
 }
 SUPPLIER_INVOICES = {
     'si_approve': {'id': next(ids), 'payment': 'ap_supplier', 'identifier': 'FT-1', 'amount': '30.00'},
     'si_linked': {'id': next(ids), 'payment': 'de_plain', 'identifier': 'FT-2', 'amount': '10.00'},
+    'si_paid_flow': {'id': next(ids), 'payment': 'pf_supplier', 'identifier': 'FT-3', 'amount': '12.00'},
 }
 COURSE_SUBSCRIPTIONS = {
     'cs_linked': {'id': next(ids), 'payment': 'de_plain', 'memberships': ['de_plain']},
     'cs_installments': {'id': next(ids), 'payment': None, 'memberships': []},
+    'cs_pf': {'id': next(ids), 'payment': 'pf_course', 'memberships': []},
+    'cs_pf_parent': {'id': next(ids), 'payment': None, 'memberships': []},
+    'cs_pf_carnet': {'id': next(ids), 'payment': None, 'memberships': []},
+    'cs_pf_scoped': {'id': next(ids), 'payment': 'pf_scoped', 'memberships': []},
+    'cs_pf_null': {'id': next(ids), 'payment': None, 'memberships': []},
 }
 INSTALLMENTS = {
     'i1': {'id': next(ids), 'payment': 'de_installments', 'deleted': False, 'group': None},
@@ -136,7 +159,15 @@ INSTALLMENTS = {
 }
 for number, row in enumerate(INSTALLMENTS.values(), start=1):
     row.update(cs='cs_installments', number=number)
-HOLDINGS = {'h_linked': {'id': next(ids), 'payment': 'de_plain'}}
+INSTALLMENTS['i_pf'] = {'id': next(ids), 'payment': 'pf_installment', 'deleted': False, 'group': None, 'cs': 'cs_pf_parent', 'number': 1}
+HOLDINGS = {'h_linked': {'id': next(ids), 'payment': 'de_plain'},
+            'h_pf': {'id': next(ids), 'payment': 'pf_carnet', 'subscription': True, 'courses': ['cs_pf_carnet']},
+            'h_pf_null': {'id': next(ids), 'payment': 'pf_carnet_null', 'subscription': True, 'carnet': False, 'courses': ['cs_pf_null']}}
+FLAG = {'id': next(ids), 'association': next(ids), 'username': 'payment-state-flag', 'email': 'payment-state-flag@example.test',
+        'first': 'Flavia', 'last': 'Fiscale', 'denomination': 'Associazione flag è', 'starting_number': 40}
+FLAG_ASSOCIATE = {'id': next(ids), 'first': 'Giulia', 'last': 'Verdi'}
+PAYMENTS['pf_flag'] = payment(subject=0, amount='26.00', associate='flag', association=FLAG['association'], category=None,
+                              description='Quota flag')
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
 
@@ -176,7 +207,14 @@ def supplier():
             'state': None, 'country': 'Italia', 'nationality': 'Italiana', 'note': None, 'group': None, 'deleted': False}
 
 
-def payment_item(label):
+def flag_associate():
+    row = FLAG_ASSOCIATE
+    return {'associate_id': row['id'], 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None, 'born_date': '1991-02-03',
+            'email': None, 'sex': 'F', 'first_name': row['first'], 'last_name': row['last'], 'is_minor': False,
+            'sport_association': FLAG['association'], 'tax_code': None, 'user': FLAG['id'], 'phone': None, 'family': None, 'family_role': None}
+
+
+def payment_item(label, invoice=None):
     """PaymentSerializer of the payment's current authored state."""
     row = STATE[label]
     attachments = [{'document_id': DOCUMENT['id'], 'creation_date': DOCUMENT['created'], 'filepath': DOCUMENT['filepath'],
@@ -185,14 +223,16 @@ def payment_item(label):
     names = {None: None, CATEGORY: CATEGORY_NAME, '$default_category': '$default_category_name'}
     # get_subscription_id: subject 0 looks the associate's oldest live subscription up; the authored
     # subject 1 and 2 payments have no linked subscription, installment, course subscription or carnet.
-    subscription = SUBSCRIPTION['id'] if row['subject'] == 0 and row['associate'] else None
-    return {'payment_id': row['id'], 'user': OWNER_USER if row['user'] else None, 'associate': associate() if row['associate'] else None,
+    subscription = SUBSCRIPTION['id'] if (row['subject'] == 0 and row['associate'] is True) or row['linked'] else None
+    person = (flag_associate() if row['associate'] == 'flag' else associate()) if row['associate'] else None
+    return {'payment_id': row['id'], 'user': OWNER_USER if row['user'] else None, 'associate': person,
             'subscription_id': subscription, 'instructor_id': INSTRUCTOR['id'] if row['instructor'] else None,
             'instructor': instructor() if row['instructor'] else None, 'supplier': supplier() if row['supplier'] else None,
             'supplier_id': SUPPLIER['id'] if row['supplier'] else None, 'custom_account_type': None, 'custom_account_name': None,
-            'invoice': None, 'attachments': attachments, 'payment_category_name': names[category], 'type': 'default',
+            'invoice': invoice, 'attachments': attachments, 'payment_category_name': names[category], 'type': 'default',
             'subject': row['subject'], 'amount': row['amount'], 'creation_date': row['created'], 'payment_date': row['payment_date'],
-            'paid': row['paid'], 'expense': row['expense'], 'description': row['description'], 'meta_payment_categories': None,
+            'paid': row['paid'], 'expense': row['expense'], 'description': row['description'],
+            'meta_payment_categories': row['meta_categories'],
             'payment_intent_id': None, 'archived': row['archived'], 'invoice_fiscal_code': None, 'meta': row['meta'], 'notes': None,
             'deleted': row['deleted'], 'course': None, 'payment_category': category, 'sport_association': row['association'],
             'custom_accounts': None, 'signature': None, 'group': IDS[row['group']] if row['group'] else None}
@@ -366,6 +406,180 @@ add('approve-form-body', 'owner', APPROVE('ap_form'), 200, {'data': {'payment': 
     raw_body='payment_date=2026-03-09&generate_invoice=false', content_type='application/x-www-form-urlencoded',
     effect=effect('owner', changed={'ap_form': {'paid': True, 'payment_date': '2026-03-09T00:00:00Z'}}, audit=[updated('payment', 'ap_form', changes)]))
 
+# --- approve: paid flow --------------------------------------------------------
+# An unpaid income payment with an associate, supplier or instructor: the fees
+# (subscription payments sum their meta payment categories as floats), the next
+# invoice number by payment date (InvoiceService, use_payment_date=True: the
+# association's live, group-aware, unarchived, uncancelled invoices joined to a
+# payment dated in / before the current balance year), the description
+# (generate_invoice_description), Invoice.objects.create (associate or supplier
+# only) and invoice.save() (creation_date = payment date for owners with
+# payment_date_equal_invoice_date; the float fees differ from the stored
+# decimals), payment.save(), the first supplier invoice paid now, the course
+# subscription paid flags (subject 2: the payment's course subscription, else
+# the first installment's course subscription, else the first carnet
+# subscription's course subscriptions), then send_notification(request.user):
+# validate_broadcast's rows, the Redis list item and the Channels push. The
+# response carries the message; print_document_invoice runs on commit when the
+# payment has an invoice and generate_invoice is truthy.
+
+DENOMINATION = 'Message reads own'
+NUMBERS = {'year': 0, 'old': 0, 'group': 0, 'flag': FLAG['starting_number']}
+ACTOR_INDEX = {'owner': [OWN, 'actor.sport_association'], 'admin': [IDS['admin_association'], 'actor.sport_association'],
+               'flag_owner': [FLAG['association'], 'actor.sport_association'], 'full_collaborator': None}
+
+
+def escape(text):
+    return (str(text).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#x27;'))
+
+
+def pyfloat(value):
+    return repr(float(value))
+
+
+def drf(value):
+    from decimal import Decimal, ROUND_HALF_EVEN
+    return str(Decimal(repr(float(value))).quantize(Decimal('0.01'), rounding=ROUND_HALF_EVEN))
+
+
+def paid_fees(row):
+    """((membership str(), stored), (activity str(), stored)) of the approve view."""
+    amount = row['amount']
+    if row['subject'] == 1:
+        activity = 0.0
+        for item in row['meta_categories'] or []:
+            if item['amount']:
+                activity = activity + float(str(item['amount']))
+        membership = float(amount) - activity if float(amount) > 0 else None
+        return ((pyfloat(membership), drf(membership)) if membership is not None else (amount, amount)), (pyfloat(activity), drf(activity))
+    return ('0.0', '0.00'), (amount, amount)
+
+
+def person_name(row):
+    if row['associate'] == 'flag':
+        return f"{FLAG_ASSOCIATE['first']} {FLAG_ASSOCIATE['last']}"
+    return f"{ASSOCIATE['first']} {ASSOCIATE['last']}"
+
+
+def paid_flow(name, label, *, description, notified, actor='owner', body=None, raw_body=None, content_type=None, headers=None, sent=None,
+              number_key='year', generate=True, receipt=False, broadcast=False, courses=(), supplier_invoice=None, group=None):
+    row = STATE[label]
+    association = row['association']
+    flag = association == FLAG['association']
+    payment_date = sent or row['payment_date'] or '$now'
+    (membership_audit, membership), (activity_audit, activity) = paid_fees(row)
+    creates = bool(row['associate'] or row['supplier'])
+    audit, invoice, stored = [], None, None
+    if creates:
+        if number_key == 'group':
+            NUMBERS['group'] += 1
+            number = NUMBERS['group']
+            NUMBERS['year'] = max(NUMBERS['year'], number)
+        else:
+            NUMBERS[number_key] += 1
+            number = NUMBERS[number_key]
+        created = payment_date if flag else '$now'
+        meta = row['meta_categories']
+        invoice = {'invoice_id': '$invoice', 'document_token': None, 'creation_date': created, 'membership_fee': membership,
+                   'activity_fee': activity, 'meta_payment_categories': meta, 'description': description, 'number': number, 'archived': False,
+                   'cancelled': False, 'meta': None, 'imported_from_associami': False, 'deleted': False, 'document_pdf': None,
+                   'sport_association': association, 'selected_tutor': None, 'group': IDS[group] if group else None, 'attached_documents': []}
+        create = {'invoice_id': ['None', '$invoice'], 'document_pdf': ['None', 'None'], 'sport_association': ['None', association],
+                  'creation_date': ['None', '$now'], 'membership_fee': ['None', membership_audit], 'activity_fee': ['None', activity_audit],
+                  'meta_payment_categories': ['None', json.dumps(meta, sort_keys=True)],
+                  'description': ['None', description], 'number': ['None', str(number)], 'archived': ['None', 'False'],
+                  'cancelled': ['None', 'False'], 'selected_tutor': ['None', 'None'], 'meta': ['None', 'null'],
+                  'imported_from_associami': ['None', 'False'], 'group': ['None', IDS[group] if group else 'None'], 'deleted': ['None', 'False']}
+        audit.append({'model': 'invoice', 'label': '$invoice', 'action': 0, 'changes': create, 'index': [association, 'direct']})
+        update = {}
+        if flag:
+            update['creation_date'] = ['$now', audit_moment(payment_date)]
+        if membership != membership_audit:
+            update['membership_fee'] = [membership, membership_audit]
+        if activity != activity_audit:
+            update['activity_fee'] = [activity, activity_audit]
+        if update:
+            audit.append({'model': 'invoice', 'label': '$invoice', 'action': 1, 'changes': update, 'index': [association, 'direct']})
+        stored = {'sport_association_id': association, 'creation_date': created, 'membership_fee': membership, 'activity_fee': activity,
+                  'meta_payment_categories': meta, 'description': description, 'number': number, 'group_id': IDS[group] if group else None}
+    columns = {'paid': True, 'payment_date': payment_date}
+    if creates:
+        columns['invoice'] = '$invoice'
+    if row['category'] is None:
+        columns['category'] = '$default_category'
+    changes = save(label, {k: v for k, v in columns.items() if k != 'invoice'})
+    if creates:
+        changes['invoice'] = ['None', '$invoice']
+    audit.append(updated('payment', label, changes, [association, 'direct']))
+    invoices = {}
+    if supplier_invoice:
+        invoices[supplier_invoice] = {'paid': True, 'payment_date': '$now'}
+        audit.append(updated('invoicesuppliers', supplier_invoice, {'paid': ['False', 'True'], 'payment_date': ['None', '$now']}))
+    for course in courses:
+        audit.append(updated('coursesubscription', course, {'paid': ['False', 'True']}, [OWN, 'course.sport_association']))
+    if broadcast:
+        audit += [{'model': model, 'label': '$' + model, 'action': 0, 'changes': '$created', 'index': ACTOR_INDEX[actor]}
+                  for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
+    msg = f"Pagamento di € {row['amount'].replace('.', ',')}" + (f"per {notified}" if notified else '') + '.'
+    if row['associate']:
+        msg += f" Pagamento dell'associato {person_name(row)}."
+    elif row['user']:
+        msg += f" Pagamento dell'utente {OWNER_USER['first_name']} {OWNER_USER['last_name']}."
+    recipient = 'flag_owner' if flag else 'owner'
+    item = payment_item(label, invoice)
+    row['invoice'] = '$invoice' if creates else None
+    dispatch = creates and generate
+    if dispatch:
+        item['invoice_generating'] = True
+    celery = [{'task': 'print_document_invoice', 'args': ['$invoice', '$authorization', receipt], 'kwargs': [], 'args_list': True}] if dispatch else []
+    result = effect(actor, changed={label: columns}, invoices=invoices, audit=audit)
+    result.update(invoice=stored, course_subscriptions_paid=list(courses), celery=celery,
+                  notification={'user': recipient, 'msg': msg, 'association': association})
+    add(name, actor if actor != 'flag_owner' else 'flag_owner', APPROVE(label), 200, {'data': {'msg': 'payment mark as payed.', 'payment': item}},
+        body=body, raw_body=raw_body, content_type=content_type, headers=headers, effect=result)
+
+
+def other_text(reason, denomination=DENOMINATION):
+    return f"Ricevuta di pagamento con causale <b>{escape(reason)}</b> per l'associazione <b>{escape(denomination)}</b>."
+
+
+def course_text(title):
+    return (f"Ricevuta di pagamento di <b>{escape(person_name({'associate': True}))}</b> per il corso <b>{escape(title)}</b> "
+            f"dell'associazione <b>{escape(DENOMINATION)}</b>.")
+
+
+paid_flow('approve-paid-flow-other-now', 'pf_other', description=other_text(CATEGORY_NAME), notified='Quota', broadcast=True)
+paid_flow('approve-paid-flow-old-date-no-print', 'pf_old', description=other_text(CATEGORY_NAME), notified='Quota', sent='2020-02-03T00:00:00Z',
+          number_key='old', generate=False, body={'payment_date': '2020-02-03', 'generate_invoice': False})
+paid_flow('approve-paid-flow-subscription-fees', 'pf_subscription', notified="l'iscrizione all'associazione sportiva", receipt=True,
+          description=f"Ricevuta di pagamento per l'iscrizione di <b>{escape(person_name({'associate': True}))}</b> all'associazione "
+                      f"<b>{escape(DENOMINATION)}</b>.", body={'send_receipt_email': True})
+paid_flow('approve-paid-flow-course', 'pf_course', description=course_text(COURSE['title']), notified=f'il corso "{COURSE["title"]}"',
+          courses=['cs_pf'])
+paid_flow('approve-paid-flow-installment-course', 'pf_installment', description=course_text(COURSE['title']),
+          notified=f'il corso "{COURSE["title"]}"', courses=['cs_pf_parent'])
+paid_flow('approve-paid-flow-carnet', 'pf_carnet', description=course_text(CARNET['title']), notified=f"carnet {CARNET['title']}",
+          courses=['cs_pf_carnet'])
+paid_flow('approve-paid-flow-course-without-link', 'pf_course_none', description='Quota', notified='il corso')
+paid_flow('approve-paid-flow-supplier', 'pf_supplier', notified='Quota', supplier_invoice='si_paid_flow',
+          description=f"Ricevuta di pagamento di <b>{escape(SUPPLIER['name'])}</b> con causale <b>Quota</b> per l'associazione "
+                      f"<b>{escape(DENOMINATION)}</b>.")
+paid_flow('approve-paid-flow-instructor-without-invoice', 'pf_instructor', description=None, notified='Quota')
+paid_flow('approve-paid-flow-full-collaborator', 'pf_collab', actor='full_collaborator', description=other_text(CATEGORY_NAME), notified='Quota')
+paid_flow('approve-paid-flow-admin-impersonating-owner', 'pf_admin', actor='admin', headers=ADMIN_OWNER, description=other_text(CATEGORY_NAME),
+          notified='Quota')
+paid_flow('approve-paid-flow-group', 'pf_group', headers=GROUP, number_key='group', group='own_group', description='Quota', notified='il corso')
+paid_flow('approve-paid-flow-form-body', 'pf_form', description=other_text(CATEGORY_NAME), notified='Quota', sent='2020-02-04T00:00:00Z',
+          number_key='old', receipt='yes', raw_body='payment_date=2020-02-04&send_receipt_email=yes&generate_invoice=1',
+          content_type='application/x-www-form-urlencoded')
+paid_flow('approve-paid-flow-flag-owner-invoice-date', 'pf_flag', actor='flag_owner', description=other_text('Quota flag', FLAG['denomination']),
+          notified='Quota flag', sent='2021-03-04T00:00:00Z', number_key='flag', broadcast=True, body={'payment_date': '2021-03-04'})
+paid_flow('approve-paid-flow-scoped-session', 'pf_scoped', headers=OWNER_FULL, description=course_text(COURSE['title']),
+          notified=f'il corso "{COURSE["title"]}"', courses=['cs_pf_scoped'])
+# float(str('abc')) raises before any write; a carnet subscription without a carnet fails in the description: rolled back.
+add('approve-paid-flow-bad-meta-amount-server-error', 'owner', APPROVE('pf_bad_meta'), 500, SERVER)
+add('approve-paid-flow-carnet-without-carnet-server-error', 'owner', APPROVE('pf_carnet_null'), 500, SERVER)
+
 # --- cancel ------------------------------------------------------------------
 
 guards('cancel', CANCEL('ca_plain'), 'POST', 'update', 'Payment Cancel')
@@ -477,5 +691,6 @@ OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Payment approve, ca
                               'subscription': SUBSCRIPTION, 'instructor': INSTRUCTOR, 'supplier': SUPPLIER, 'course': COURSE, 'carnet': CARNET,
                               'payments': PAYMENTS, 'supplier_invoices': SUPPLIER_INVOICES, 'course_subscriptions': COURSE_SUBSCRIPTIONS,
                               'installments': {k: {key: v for key, v in row.items() if key != 'gone'} for k, row in INSTALLMENTS.items()},
-                              'holdings': HOLDINGS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'holdings': HOLDINGS, 'flag_owner': FLAG, 'flag_associate': FLAG_ASSOCIATE, 'cases': cases},
+                             ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
