@@ -31,7 +31,7 @@ def load_source(path=SOURCE):
 def allowed(path):
     path = path.split('?', 1)[0]
     if path == '/instance/admin/backups':
-        return {'GET', 'HEAD', 'OPTIONS'}
+        return {'GET', 'POST', 'HEAD', 'OPTIONS'}
     if path == '/instance/admin/backups/download-token':
         return {'POST', 'OPTIONS'}
     return {'GET', 'OPTIONS'}
