@@ -11,7 +11,9 @@ auto-marking and the partial registration, certificate and reminder e-mails
 ([tasks-db-c](../../docs/architecture/go-migration/tasks-db-c.md): native evidence only; they publish
 `send_mail_async` or send through an association's SMTP configuration with `internal/smtpsend`).
 It also registers old export cleanup ([tasks-db-e](../../docs/architecture/go-migration/tasks-db-e.md):
-native evidence only; deletes export files from the S3 default storage).
+native evidence only; deletes export files from the S3 default storage) and data restore cleanup
+([restore-cleanup](../../docs/architecture/go-migration/restore-cleanup.md): native evidence only; a
+one-slot executor without ordinary restore admission, holding the exclusive restore lock itself).
 Audit retention has [native evidence](../../docs/architecture/go-migration/tasks-db-a.md) only;
 user deletion requests ([tasks-db-b](../../docs/architecture/go-migration/tasks-db-b.md)) publish
 `send_email_text` to the Celery broker (Redis DB 0 from the shared Redis settings) and have native evidence only. Age update has separate

@@ -86,7 +86,7 @@ registries of equal physical order.
 - `instructor/report`: every success answer carries an XLSX report built in the request.
 - `communications/send/email`: every success path sends through SMTP synchronously (`configuration.send_email`) after its
   writes.
-- `chat/test/`: a Django-session (`login_required`) template page outside the API for testing the AI agent chat socket.
+- `chat/test/`: a Django-session (`login_required`) page outside the API; ported separately in [chat-test](chat-test.md).
 
 ## Evidence (TDD)
 

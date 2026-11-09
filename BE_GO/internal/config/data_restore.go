@@ -27,3 +27,14 @@ func parseDataRestoreMaxUpload(values map[string]string) (int64, error) {
 	}
 	return value.Int64(), nil
 }
+
+// dataRestoreRecoveryBackups is os.environ.get('DATA_RESTORE_RECOVERY_BACKUPS'):
+// the raw value (the deployment .env file is loaded into os.environ), parsed
+// by the cleanup task at each run.
+func dataRestoreRecoveryBackups(values map[string]string) *string {
+	value, present := values["DATA_RESTORE_RECOVERY_BACKUPS"]
+	if !present {
+		return nil
+	}
+	return &value
+}
