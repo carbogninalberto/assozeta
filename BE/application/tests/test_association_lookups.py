@@ -3,6 +3,7 @@ Course, attendance and instructor-hours lookups resolve rows within the
 caller's association: rows of another association behave like unknown ids.
 """
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 from rest_framework import status
@@ -112,7 +113,9 @@ class AttendanceLookupTests(OtherAssociationMixin, BaseAPITestCase):
         subscription = create_test_subscription(sport_association=self.sport_association, associate=associate)
         course = create_test_course(sport_association=self.sport_association)
         CourseSubscription.objects.create(course=course, subscription=subscription)
-        day = create_test_attendance_day(create_test_attendance_registry(course), date=timezone.now())
+        # The view matches today's date in Rome against the stored UTC date: midday in Rome is the same date in both.
+        rome_midday = timezone.now().astimezone(ZoneInfo('Europe/Rome')).replace(hour=12, minute=0, second=0, microsecond=0)
+        day = create_test_attendance_day(create_test_attendance_registry(course), date=rome_midday)
 
         response = self.client.post(f'/attendance/{subscription.subscription_id}/mark', {}, format='json')
 
