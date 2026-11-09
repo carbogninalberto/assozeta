@@ -233,6 +233,9 @@ func run() (runErr error) {
 	instanceAdminHandler := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	instanceManifestHandler := handler.NewInstanceManifestHandler(service.NewInstanceManifest(repository.NewInstanceManifest(db)))
 	instanceLogoHandler := composeInstanceLogo(cfg)
+	docmanagerReadsHandler := handler.NewDocmanagerReadsHandler(service.NewDocmanagerReads(repository.NewDocmanagerReads(db),
+		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities)
 
 	healthService := service.NewHealthService(repository.NewDatabaseProbe(db), repository.NewRedisProbe(cache), 2*time.Second)
 	healthHandler := handler.NewHealthHandler(healthService, cfg.Version)
@@ -514,6 +517,8 @@ func run() (runErr error) {
 	e.Any("/documents/bulk-delete", documentArchiveHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/move", documentArchiveHandler.Move, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/delete", documentArchiveHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/retrieve/:uid", docmanagerReadsHandler.Retrieve, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/:uid/delete", docmanagerReadsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/delete", foldersHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/move", foldersHandler.Move, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/add", folderWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))

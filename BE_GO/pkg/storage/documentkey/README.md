@@ -39,3 +39,12 @@ tests also cover submicrosecond/out-of-range dates, malformed names and location
 The package has no provider calls or mutable shared state. Evidence is under
 `quality-reports/go-migration/document-keys/`. This is key resolution evidence,
 not S3/MinIO protocol, file deletion or cleanup-task completion.
+
+## Retrieval keys
+
+`StoredName` and `S3Key` resolve the key `retrieve_document` streams. Unlike the medical upload/cleanup
+convention, retrieval uses a truthy `Document.filepath` as the name. `S3Key` applies `clean_name` and
+`safe_join` under `AWS_LOCATION` without the cross-document correction above, because reads match the
+legacy key exactly. A name outside the location returns `OutsideLocationError`, which carries Django's
+`SuspiciousOperation` text. Unit vectors come from django-storages 1.14.5. See
+`docs/architecture/go-migration/docmanager-reads.md`.

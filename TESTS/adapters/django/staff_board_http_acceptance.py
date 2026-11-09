@@ -9,6 +9,7 @@ server and shipped Caddy lifetimes. Each endpoint gets a fresh fixture and a
 verified cleanup receipt. Only the credential-free results.json is published.
 """
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -72,7 +73,11 @@ def execute(report, tools, private, log):
                               decode_responses=False, socket_timeout=5, socket_connect_timeout=5)
             poll(raw.ping, bool, timeout=15)
             guards = []
-            with _owned(reuse.django_application(report, versioned, None, liveness_observer=guards.append)) as (url, observer, http_port):
+            # Optional family-owned services (for example private object storage)
+            # that both servers must see from startup: entered before either starts.
+            services = getattr(runner, 'service_context', None)
+            with _owned(services(report, log) if services else contextlib.nullcontext()), \
+                    _owned(reuse.django_application(report, versioned, None, liveness_observer=guards.append)) as (url, observer, http_port):
                 with _owned(go_service(reuse, report, work, log, tools, port, versioned)) as native:
                     endpoints = [('django-native', 'django', url, guards[0]),
                                  ('go-native', 'go', native['base_url'], native[LIFECYCLE_GUARD])]
