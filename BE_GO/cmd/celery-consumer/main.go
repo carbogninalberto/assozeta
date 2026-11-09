@@ -54,7 +54,7 @@ func run(arguments []string) error {
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			fmt.Println("Go Celery consumer: --env-file PATH, --concurrency N, --drain-timeout D. Consumes the assozeta-go queue " +
-				"(GO_TASK_QUEUE_TASKS routing); runs core.tasks.send_mail_async, send_email_text, send_email_template, send_email_html, the automation workflow tasks, the print tasks, save_to_storage and export_invoices_to_zip and hands every other message to the celery queue.")
+				"(GO_TASK_QUEUE_TASKS routing); runs core.tasks.send_mail_async, send_email_text, send_email_template, send_email_html, the automation workflow tasks, the print tasks, save_to_storage, export_invoices_to_zip and instance.backups.notify_failures and hands every other message to the celery queue.")
 			return nil
 		}
 		return errors.New("invalid celery consumer arguments")
@@ -111,6 +111,9 @@ func run(arguments []string) error {
 	}
 	if err = consumerRestoreRegister(tasks, cfg, db, broker, producer); err != nil {
 		return errors.New("celery consumer cannot prepare the restore family tasks")
+	}
+	if err = consumerBackupFailuresRegister(tasks, cfg, db, broker, mail); err != nil {
+		return errors.New("celery consumer cannot prepare the backup failure notices")
 	}
 	for _, register := range extraTasks {
 		register(tasks)
