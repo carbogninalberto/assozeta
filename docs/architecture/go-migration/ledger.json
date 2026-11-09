@@ -11686,25 +11686,82 @@
         "target": "google_calendar_export_course",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/calendar/<course_id>/export",
+          "/api/v2/google/calendar/<course_id>/export",
+          "/api/google/calendar/<course_id>/export"
+        ],
+        "request": "No body.",
+        "response": "200 {'msg': 'exported.', 'google_calendar_id'}; 403 {'msg': 'quotaExceeded'}; 400 {'msg': 'Error creating calendar.'}; 404 {'msg': 'Course not found.'} / {'msg': 'Attendance Registry not found.'}.",
+        "errors": "401; 403 admin without session, 'Missing permission: association.calendar.read', owner scoped to an athlete; 405; 500 malformed course id, no credentials, missing colour (after the course save), list insert errors, event errors (after earlier inserts).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry google/calendar/*/export association.calendar.read.",
+        "resource_scope": "Course.objects.filter(course_id=...).first() (live, X-Group-Id); first AttendanceRegistry by key.",
+        "side_effects": "Calendar v3: stored calendar deleted, calendar inserted, calendar list entry deleted and inserted, events inserted; Course.save() with the new google_calendar_id for non-collaborators (audited); expired credentials refreshed and saved.",
+        "transaction": "Autocommit saves; not atomic (writes before a 404/500 stay).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/calendar/config -> google_calendar_config",
@@ -11721,25 +11778,83 @@
         "target": "google_calendar_config",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/calendar/config",
+          "/api/v2/google/calendar/config",
+          "/api/google/calendar/config"
+        ],
+        "request": "No body.",
+        "response": "GET 200 {'authorization_url'} (client secrets auth_uri, offline access, granted scopes, 30-character state) with a sessionid cookie; DELETE 200 {'msg': 'deleted'}.",
+        "errors": "401; 403 admin without session, 'Missing permission: other.settings.read' (GET) / 'other.settings.update' (DELETE), owner scoped to an athlete; 405; 500 DELETE without stored credentials, refresh failures, unreadable client secrets.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry ('GET') other.settings.read, ('DELETE') other.settings.update.",
+        "resource_scope": "acting_user(request) for collaborators, else request.user.",
+        "side_effects": "GET: User.save() of integration_google_state (audited) and a cache session {'state'} with Set-Cookie. DELETE: expired credentials refreshed and saved, POST to Google's revoke endpoint (answer ignored), then state, credentials and auto sync cleared (audited).",
+        "transaction": "Autocommit saves (each User.save() commits with its auditlog entry).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/calendar/list -> google_calendar_list",
@@ -11756,25 +11871,82 @@
         "target": "google_calendar_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/calendar/list",
+          "/api/v2/google/calendar/list",
+          "/api/google/calendar/list"
+        ],
+        "request": "No body.",
+        "response": "200 {'data': {'calendars': [every calendarList item]}}.",
+        "errors": "401; 403 admin without session, 'Missing permission: association.calendar.read'; 405; 500 no credentials, invalid stored credentials, refresh or API errors, a page without items.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.calendar.read.",
+        "resource_scope": "acting_user(request) for collaborators, else request.user.",
+        "side_effects": "Expired credentials refreshed and saved (audited); calendarList GETs with in-memory refresh and 401 retry.",
+        "transaction": "Autocommit save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/check -> google_check",
@@ -11791,25 +11963,82 @@
         "target": "google_check",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/check",
+          "/api/v2/google/check",
+          "/api/google/check"
+        ],
+        "request": "No body.",
+        "response": "200 {'google_sync_enabled': credentials stored} of the acting user (the collaborator itself for collaborators).",
+        "errors": "401; 403 admin without session, 'Missing permission: other.settings.read', owner scoped to an athlete; 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry other.settings.read.",
+        "resource_scope": "acting_user(request) for collaborators, else request.user.",
+        "side_effects": "None.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/oauth2callback -> google_oauth2callback",
@@ -11826,25 +12055,82 @@
         "target": "google_oauth2callback",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/googleapi/transport.go",
+        "BE_GO/internal/googleapi/python.go",
+        "BE_GO/internal/googleapi/credentials.go",
+        "BE_GO/internal/googleapi/flow.go",
+        "BE_GO/internal/googleapi/calendar.go",
+        "BE_GO/internal/googleapi/googleapi_test.go",
+        "BE_GO/internal/domain/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar.go",
+        "BE_GO/internal/repository/google_calendar_test.go",
+        "BE_GO/internal/service/google_calendar.go",
+        "BE_GO/internal/handler/google_calendar.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped-request guard",
+        "Calendar-export parse_datetime subset (misc-routes, calendarExportParse)",
+        "Django cache sessions in Redis DB 1 (django_redis pickle protocol 4)",
+        "Google OAuth2 token/revoke endpoints and Calendar v3 API (per-run stub in parity runs)",
+        "bakney_user",
+        "application_course",
+        "application_attendanceregistry",
+        "auditlog_logentry",
+        "application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/google/oauth2callback",
+          "/api/v2/google/oauth2callback",
+          "/api/google/oauth2callback"
+        ],
+        "request": "Query error | state, code.",
+        "response": "200 text/html cancel page for ?error; 200 text/html 'Autorizzato' page after storing the credentials.",
+        "errors": "400 {'msg': 'No user found for the integration flow.'}; 403 'Missing permission: other.settings.update' for restricted collaborators; 405; 500 missing state/code, token endpoint errors, changed scope, missing expiry.",
+        "authentication": "DRF AllowAny (JWT identity resolved when a token is sent).",
+        "permissions": "AllowAny; registry other.settings.update.",
+        "resource_scope": "User.objects.filter(integration_google_state=state).first() (live users, by key).",
+        "side_effects": "POST to the client secrets token_uri (authorization_code, Basic client authentication); User.save() of the credentials JSON and auto sync for non-collaborators (audited).",
+        "transaction": "Autocommit save.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/google_calendar_http.json",
+        "TESTS/fixtures/generate_google_calendar_http.py",
+        "TESTS/contracts/test_google_calendar_http.py",
+        "TESTS/adapters/django/google_calendar_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/google-calendar.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-native-r11/results.json",
+          "receipt_sha256": "f021c96807d35d698fba44958c44cc64e5b5b712418aa81c8965568ead24ed03"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact User, Course, auditlog, index, cache session and outbound Google request effects.",
+          "artifact": "quality-reports/go-migration/google-calendar-http-versioned-r1/results.json",
+          "receipt_sha256": "5e699dc5df4ce178e49f30b5e03345a5ac26e8f148df074d67fe296adf0fd668"
+        },
+        {
+          "revision": "committing change saving the new calendar id for collaborators too",
+          "result": "Mutation control: fails Go on google-calendar-export-full-collaborator-keeps-course-id (response google_calendar_id).",
+          "artifact": "quality-reports/go-migration/google-calendar-http-mutation-r1/results.json",
+          "receipt_sha256": "9d26bf5a59e3a21d558a8084a6aa773a86df2ed7240373724f777c87294264b4"
+        }
+      ],
+      "notes": [
+        "Implementing: google_views.py with a byte-exact Google client (google-auth 2.38.0, google-auth-oauthlib 1.2.1/oauthlib 4.0.0, google-auth-httplib2 0.2.0, google-api-python-client 2.164.0 on python-requests 2.34.2/httplib2 0.32.0): authorization URL with a stored state and a new cache session cookie, code exchange storing Credentials.to_json, refresh-and-save on load, in-memory refresh and 401 retry, revoke, calendarList pages and the course export (calendar delete/insert, quotaExceeded 403, list entry, events), audited User/Course saves, on four transports against a per-run Google stub with exact outbound requests; non-string credential fields, unusual client secrets, existing session cookies, unparsed event dates/labels/colours and unusual Google answers are refused with 500."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/delete -> instructor_delete",

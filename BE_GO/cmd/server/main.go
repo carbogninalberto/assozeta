@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	mathrand "math/rand/v2"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,6 +23,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/googleapi"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
@@ -243,6 +245,11 @@ func run() (runErr error) {
 	})
 	instanceHandler := handler.NewInstanceBootstrapHandler(instanceService, service.NewActorAuthentication(accounts, tokens), identities)
 	instanceAdminHandler := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	bakneySSOHandler, closeBakneySSO, err := composeBakneySSO(cfg, db, cache, tokens, accounts, identities, instanceService, images)
+	if err != nil {
+		return err
+	}
+	defer closeBakneySSO()
 	instanceManifestHandler := handler.NewInstanceManifestHandler(service.NewInstanceManifest(repository.NewInstanceManifest(db)))
 	instanceLogoHandler := composeInstanceLogo(cfg)
 	instanceSetupHandler := composeInstanceSetup(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
@@ -438,6 +445,17 @@ func run() (runErr error) {
 	e.Any("/stripe/pay/:payment_id", stripeRoutesHandler.Pay, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/stripe/multiple-pay", stripeRoutesHandler.MultiplePay, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/stripe/webhook", stripeRoutesHandler.Webhook, middleware.DjangoSessionAudit(sessionAuthentication))
+	// google/*: GOOGLE_OAUTH2_BASE / GOOGLE_API_BASE (unset in production) redirect the Google origins.
+	googleSettings, googleSecureCookie := service.GoogleCalendarSettingsFrom(os.Getenv)
+	googleCalendarHandler := handler.NewGoogleCalendarHandler(service.NewGoogleCalendar(repository.NewGoogleCalendars(db, cache),
+		googleapi.NewTransport(os.Getenv("GOOGLE_OAUTH2_BASE"), os.Getenv("GOOGLE_API_BASE"), mathrand.Float64), googleSettings, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations,
+		googleSecureCookie, time.Now)
+	e.Any("/google/check", googleCalendarHandler.Check, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/google/oauth2callback", googleCalendarHandler.Callback, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/google/calendar/config", googleCalendarHandler.Config, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/google/calendar/list", googleCalendarHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/google/calendar/:course_id/export", googleCalendarHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,
 		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -699,6 +717,12 @@ func run() (runErr error) {
 	e.Any("/instance/admin/diagnostics", instanceAdminHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/updates", instanceAdminHandler.Updates, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/restarts", instanceAdminHandler.Restarts, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/bakney-pairing", bakneySSOHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/pairing/challenge", bakneySSOHandler.Challenge, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/pairing/commit", bakneySSOHandler.Commit, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/login-start", bakneySSOHandler.LoginStart, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/callback", bakneySSOHandler.Callback, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/session", bakneySSOHandler.Session, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/setup-token/validate", instanceSetupHandler.Validate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/configure", instanceSetupHandler.Configure, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/reconfigure", instanceSetupHandler.Reconfigure, middleware.DjangoSessionAudit(sessionAuthentication))
