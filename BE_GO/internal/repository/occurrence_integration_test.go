@@ -236,7 +236,7 @@ func TestPeriodicOccurrencesPostgres(t *testing.T) {
 		}
 		for _, task := range []string{domain.JobUpdateAssociateAge, domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest,
 			domain.JobAutoMarkAttendance, domain.JobSendUserPartialRegistrationEmail, domain.JobSendExpiringCertificateEmail,
-			domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings} {
+			domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings, domain.JobCleanupOldExports} {
 			seed()
 			exec(`UPDATE django_celery_beat_periodictask SET task=$2,interval_id=NULL,crontab_id=$3 WHERE id=$1`, sourceID, task, everyMinute)
 			result := publish()
@@ -252,7 +252,7 @@ func TestPeriodicOccurrencesPostgres(t *testing.T) {
 				t.Fatal("every-minute source published twice in one slot", task, e, second)
 			}
 		}
-		for _, task := range []string{"auto_archive_subscription", "clear_deleted_subscription", "renew_memberships_payments", "association_quote_assign", "cleanup_old_exports", "generate_coupon_if_not_exists", "send_updated_certificate_email", "auto_delete_orphan_medical_certificate"} {
+		for _, task := range []string{"auto_archive_subscription", "clear_deleted_subscription", "renew_memberships_payments", "association_quote_assign", "generate_coupon_if_not_exists", "send_updated_certificate_email", "auto_delete_orphan_medical_certificate"} {
 			seed()
 			exec(`UPDATE django_celery_beat_periodictask SET task=$2 WHERE id=$1`, sourceID, task)
 			before := sourceState()
