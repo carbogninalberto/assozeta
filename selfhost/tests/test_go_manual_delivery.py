@@ -37,9 +37,12 @@ def instructions(path):
     return result
 
 
-def github_condition(expression, name, event):
+def github_condition(expression, name, event, manual='skipped', origin='', release_tag=''):
     expression = expression.removeprefix('${{').removesuffix('}}').strip()
     expression = expression.replace('matrix.name', repr(name)).replace('github.event_name', repr(event))
+    expression = expression.replace('needs.manual-release.result', repr(manual))
+    expression = expression.replace('steps.carried.outputs.origin', repr(origin))
+    expression = expression.replace('env.RELEASE_TAG', repr(release_tag))
     expression = expression.replace('&&', ' and ').replace('||', ' or ')
     parsed = ast.parse(expression.strip(), mode='eval')
     allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.Eq, ast.NotEq, ast.Constant)
@@ -64,19 +67,31 @@ class GoManualDeliveryTests(unittest.TestCase):
         matrix = self.workflow.split('        include:', 1)[1].split('    steps:', 1)[0]
         contexts = dict(re.findall(r'- name: ([^\n]+).*?\n            context: ([^\n]+)', matrix, re.S))
         self.assertEqual(set(contexts), {'backend', 'backend-go', 'web', 'renderer', 'updater'})
+        carry_start = self.workflow.index('      - name: Carry the manual of the previous release')
+        carry = self.workflow[carry_start:self.workflow.index('\n      - name:', carry_start + 1)]
+        carry_condition = re.search(r'^        if: (.+)$', carry, re.M).group(1)
+        required = re.search(r'^            REQUIRE_MANUAL=(.+)$', self.workflow, re.M).group(1)
         for name in contexts:
             for event in ('push', 'release', 'workflow_dispatch'):
-                with self.subTest(name=name, event=event):
-                    expected = name in ('backend', 'backend-go') and event != 'push'
-                    self.assertEqual(github_condition(condition, name, event), expected)
-                    if expected:
-                        context = contexts[name]
-                        self.assertEqual(context, './BE' if name == 'backend' else './BE_GO')
-                        path = destination.replace('${{ matrix.context }}', context)
-                        self.assertEqual((ROOT/path).resolve(), (ROOT/context/'release-manual').resolve())
+                for manual in ('success', 'skipped'):
+                    for release_tag in ('', 'v1.0.99'):
+                        with self.subTest(name=name, event=event, manual=manual, release_tag=release_tag):
+                            # The verified artifact reaches exactly the two backend contexts.
+                            expected = name in ('backend', 'backend-go') and manual == 'success'
+                            self.assertEqual(github_condition(condition, name, event, manual), expected)
+                            # Only the Django image carries a previous release manual: the Go
+                            # checker accepts no carried origin, so the Go image never gets one.
+                            carried = github_condition(carry_condition, name, event, manual, release_tag=release_tag)
+                            self.assertEqual(carried, name == 'backend' and manual != 'success' and release_tag != '')
+                            if name == 'backend-go':
+                                self.assertEqual(github_condition(required, name, event, manual), expected)
+                            if expected:
+                                context = contexts[name]
+                                self.assertEqual(context, './BE' if name == 'backend' else './BE_GO')
+                                path = destination.replace('${{ matrix.context }}', context)
+                                self.assertEqual((ROOT/path).resolve(), (ROOT/context/'release-manual').resolve())
         self.assertLess(start, self.workflow.index('      - name: Build and publish'))
         self.assertIn("needs.manual-release.result == 'success'", self.workflow)
-        self.assertIn("REQUIRE_MANUAL=${{ github.event_name != 'push' }}", self.workflow)
 
     def test_runtime_preserves_all_binaries_codec_licenses_and_server_health(self):
         for name in ('server', 'worker', 'scheduler', 'migrate', 'check-manual'):
