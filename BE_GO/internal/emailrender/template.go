@@ -42,6 +42,10 @@ const (
 	AccountWelcome      = "email/account/email_welcome_message.html"
 	AccountReset        = "email/account/email_reset_message.html"
 	AccountResetConfirm = "email/account/email_confirm_reset_message.html"
+	PartialRegistration = "email/account/email_user_partial_registration.html"
+	CertificateExpiring = "email/account/email_subscription_medical_certificate_expiring.html"
+	CertificateExpired  = "email/account/email_subscription_medical_certificate_expired.html"
+	ReminderEvent       = "email/reminders/event.html"
 )
 
 type node interface{}
@@ -377,7 +381,8 @@ var (
 )
 
 // Names lists the embedded templates.
-var names = []string{"email/_base.html", CollaboratorInvite, PaymentPending, PaymentReceipt, AccountWelcome, AccountReset, AccountResetConfirm}
+var names = []string{"email/_base.html", CollaboratorInvite, PaymentPending, PaymentReceipt, AccountWelcome, AccountReset, AccountResetConfirm,
+	PartialRegistration, CertificateExpiring, CertificateExpired, ReminderEvent}
 
 func templates() (map[string]*template, error) {
 	loadOnce.Do(func() {

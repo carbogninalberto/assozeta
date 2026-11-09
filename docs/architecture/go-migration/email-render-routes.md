@@ -11,7 +11,9 @@ workers send the mail.
 ## The renderer (`internal/emailrender`)
 
 A small port of the Django 5.2 template language for exactly the templates these views use: `email/_base.html`,
-`email/account/email_welcome_collaborator_message.html`, `email/payment/pending.html`, `email/payment/payment_receipt.html`
+`email/account/email_welcome_collaborator_message.html`, `email/payment/pending.html`, `email/payment/payment_receipt.html`,
+and for the periodic tasks of [tasks-db-c](tasks-db-c.md) `email/account/email_user_partial_registration.html`,
+`email/account/email_subscription_medical_certificate_expiring.html`, `..._expired.html` and `email/reminders/event.html`
 (embedded copies; a test requires them byte-identical to `BE/templates`).
 
 - Supported: `{% extends %}` with `{% block %}` overrides (text outside the child's blocks is dropped), `{% load instance_branding %}`
@@ -35,8 +37,8 @@ A small port of the Django 5.2 template language for exactly the templates these
   types, non-finite floats, Decimal text outside plain notation, unknown languages, `updated_at` before year 1000.
 
 Golden evidence: `TESTS/adapters/go/email_render_golden.py` sets Django up with `core.settings` (no database: the configuration is
-an unsaved instance per case) and records in `BE_GO/internal/emailrender/testdata/django_renders.json` 25 `render_to_string`
-outputs (all three mails; five configurations including none, a non-self-hosted one, logos by path and by URL, an invalid colour,
+an unsaved instance per case) and records in `BE_GO/internal/emailrender/testdata/django_renders.json` 36 `render_to_string`
+outputs (all seven mails, the four task templates with escaping, None values and three configurations; five configurations including none, a non-self-hosted one, logos by path and by URL, an invalid colour,
 a dark colour; languages it, en, de, fr, es, nl, pt-br, en-gb; Decimal, int and float amounts, half-up and negative rounding,
 `-0.0`, exponents, None values, escaping, `\r\n` line breaks, missing variables), the whitelabel logo branch, every language's
 decimal separator, 3,259 palettes, the hover table, the linear channel table and a SHA-256 of the text colour over all 2^24

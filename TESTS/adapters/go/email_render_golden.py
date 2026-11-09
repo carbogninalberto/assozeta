@@ -81,6 +81,30 @@ def receipt(amount, number, description, name='Mario Rossi', association=s('ASD 
             'association_name': association}
 
 
+PARTIAL = 'email/account/email_user_partial_registration.html'
+EXPIRING = 'email/account/email_subscription_medical_certificate_expiring.html'
+EXPIRED = 'email/account/email_subscription_medical_certificate_expired.html'
+REMINDER = 'email/reminders/event.html'
+WHITELABEL_SETTINGS = obj(WHITELABEL_NAME=s('Bakney Sport'), IS_WHITELABEL={'t': 'bool', 'v': False})
+
+
+def partial(email, host=APP):
+    # send_user_partial_registration_email
+    return {'email': s(email), 'app_host': s(host), 'settings': WHITELABEL_SETTINGS}
+
+
+def certificate(first, last, denomination, date):
+    # send_expiring/expired_certificate_email (the association is read by attribute)
+    return {'athlete_first_name': first, 'athlete_last_name': last, 'sport_association': obj(denomination=denomination),
+            'certificate_expiring_date': s(date), 'app_host': s(APP), 'settings': WHITELABEL_SETTINGS}
+
+
+def reminder(title, text, description, association):
+    # send_reminders
+    return {'event_title': title, 'event_reminder_text': text, 'event_description': description,
+            'association_name': association, 'application_name': s('Bakney Sport')}
+
+
 CASES = [
     ('collaborator-cloud', COLLABORATOR, collaborator(s('ASD Esempio')), 'it', 'cloud'),
     ('collaborator-none-config', COLLABORATOR, collaborator(s("L'Aquila & <Co>")), 'it', 'none'),
@@ -107,6 +131,17 @@ CASES = [
     ('receipt-decimal', RECEIPT, receipt(dec('12.345'), {'t': 'int', 'v': 2}, s('d')), 'it', 'cloud'),
     ('receipt-int', RECEIPT, receipt({'t': 'int', 'v': 40}, {'t': 'int', 'v': 2}, s('i')), 'it', 'cloud'),
     ('receipt-missing', RECEIPT, {'recipient_name': s('Solo nome')}, 'it', 'cloud'),
+    ('partial-registration', PARTIAL, partial('new.user@example.test'), 'it', 'cloud'),
+    ('partial-registration-escaped', PARTIAL, partial("o'neil&<x>@example.test", host='http://h/x?a=1&b=2'), 'it', 'self-logo'),
+    ('partial-registration-none', PARTIAL, partial('n@example.test'), 'it', 'none'),
+    ('expiring', EXPIRING, certificate(s('Anna'), s('Rossi'), s('ASD Esempio'), '09/11/2026'), 'it', 'cloud'),
+    ('expiring-escaped', EXPIRING, certificate(s("D'Amico"), s('<b>&</b>'), s('Società "Uno"'), '01/01/2027'), 'it', 'self-dark'),
+    ('expiring-none', EXPIRING, certificate(s(''), NONE, NONE, '31/12/2026'), 'it', 'none'),
+    ('expired', EXPIRED, certificate(s('Luca'), s('Bianchi'), s('ASD Esempio'), '08/11/2026'), 'it', 'self-default'),
+    ('expired-escaped', EXPIRED, certificate(s('Zoë'), s("O'Neil"), s('A & B <c>'), '08/11/2026'), 'it', 'self-url-logo'),
+    ('reminder', REMINDER, reminder(s('Allenamento'), s('1 ora'), s('Porta le scarpe'), s('ASD Esempio')), 'it', 'cloud'),
+    ('reminder-escaped', REMINDER, reminder(s('"Gara" & <festa>'), NONE, s('Nessun dettaglio.'), s("L'Aquila")), 'it', 'self-logo'),
+    ('reminder-none', REMINDER, reminder(s('x'), s(''), s('a\nb'), NONE), 'it', 'none'),
 ]
 
 

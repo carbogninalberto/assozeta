@@ -70,11 +70,16 @@ type ScheduleDue struct {
 // instance-wide version 1 Go job it publishes. Every listed kind is registered
 // by the native worker; no other Beat task name is published.
 var periodicJobKinds = map[string]string{
-	JobResetDailyEmailBalance:         JobResetDailyEmailBalance,
-	JobUpdateAssociateAge:             JobUpdateAssociateAge,
-	JobClearExpiredSubscriptionTokens: JobClearExpiredSubscriptionTokens,
-	JobDeleteOldAuditLogs:             JobDeleteOldAuditLogs,
-	JobDeleteUsersWithRequest:         JobDeleteUsersWithRequest,
+	JobResetDailyEmailBalance:           JobResetDailyEmailBalance,
+	JobUpdateAssociateAge:               JobUpdateAssociateAge,
+	JobClearExpiredSubscriptionTokens:   JobClearExpiredSubscriptionTokens,
+	JobDeleteOldAuditLogs:               JobDeleteOldAuditLogs,
+	JobDeleteUsersWithRequest:           JobDeleteUsersWithRequest,
+	JobAutoMarkAttendance:               JobAutoMarkAttendance,
+	JobSendUserPartialRegistrationEmail: JobSendUserPartialRegistrationEmail,
+	JobSendExpiringCertificateEmail:     JobSendExpiringCertificateEmail,
+	JobSendExpiredCertificateEmail:      JobSendExpiredCertificateEmail,
+	JobSendReminders:                    JobSendReminders,
 }
 
 // PeriodicJobKind returns the Go job kind for an exact persisted task name.

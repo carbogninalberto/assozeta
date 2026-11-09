@@ -55,9 +55,11 @@ task executes. This transport does not prove Redis persistence or recovery.
 The pure Go evaluator in `BE_GO/internal/service/schedule_due.go` implements a
 restricted persisted definition: an exact task name registered by the native worker
 (`reset_communication_daily_email_balance`, `update_age_of_associates`,
-`clear_expired_subscription_tokens`, `delete_old_audit_logs` or `delete_users_with_request`;
-see [tasks-db-a](tasks-db-a.md) and [tasks-db-b](tasks-db-b.md)), seconds-based intervals, a daily UTC cron with scalar
-hour/minute, or the UTC every-minute cron (`*` minute and hour), each with
+`clear_expired_subscription_tokens`, `delete_old_audit_logs`, `delete_users_with_request`,
+`auto_mark_attendance`, `send_user_partial_registration_email`, `send_expiring_certificate_email`,
+`send_expired_certificate_email` or `send_reminders`; see [tasks-db-a](tasks-db-a.md), [tasks-db-b](tasks-db-b.md)
+and [tasks-db-c](tasks-db-c.md)), seconds-based intervals, a daily UTC cron with scalar
+hour/minute, the UTC every-minute cron (`*` minute and hour) or a `*/N` minute step with `*` hour, each with
 wildcard weekday/day/month fields. It accepts empty arguments, kwargs and headers
 with default transport settings. Other tasks, cron syntax or timezones, solar or
 clocked definitions, mixed schedule types, custom routing/priority, expiry and

@@ -1108,6 +1108,188 @@
         "enabled": true,
         "count": 0
       }
+    },
+    "utc_every_15_minutes_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T12:14:30+00:00",
+        "last": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T12:15:00+00:00",
+        "last": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 900,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_missed_slots": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T13:02:20+00:00",
+        "last": "2026-10-22T12:15:10+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 760,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_hour_rollover": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T13:00:00+00:00",
+        "last": "2026-10-22T12:45:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 900,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_day_rollover": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T00:00:00+00:00",
+        "last": "2026-10-21T23:45:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 900,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_previous_date": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T12:20:00+00:00",
+        "last": "2026-10-21T12:05:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_off_slot_cursor": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T12:10:00+00:00",
+        "last": "2026-10-22T12:07:30+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 300,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_future_cursor": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-22T12:30:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 2700,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_start_future": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T12:05:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 900,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_15_minutes_initial_cursor": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/15",
+        "hour": "*",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": null,
+        "date_changed": "2026-10-22T11:59:30+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 900,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_45_minutes_hour_rollover": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/45",
+        "hour": "*",
+        "now": "2026-10-22T13:00:00+00:00",
+        "last": "2026-10-22T12:45:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 2700,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_45_minutes_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/45",
+        "hour": "*",
+        "now": "2026-10-22T12:30:00+00:00",
+        "last": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 900,
+        "enabled": true,
+        "count": 0
+      }
     }
   },
   "gaps": [
