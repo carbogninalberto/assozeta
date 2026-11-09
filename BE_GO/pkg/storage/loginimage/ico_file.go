@@ -103,10 +103,10 @@ func readICODirectory(ctx context.Context, b []byte, maxBytes int) (icoEntry, er
 }
 
 func (p *ICOFileProcessor) Process(ctx context.Context, b []byte) (ICOFileResult, error) {
-	return p.processSize(ctx, b, 200)
+	return p.processSize(ctx, b, squareBound(200))
 }
 
-func (p *ICOFileProcessor) processSize(ctx context.Context, b []byte, maxSize int) (ICOFileResult, error) {
+func (p *ICOFileProcessor) processSize(ctx context.Context, b []byte, maxSize sizeBound) (ICOFileResult, error) {
 	empty := ICOFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()

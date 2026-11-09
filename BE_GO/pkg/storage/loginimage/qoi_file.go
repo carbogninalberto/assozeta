@@ -40,10 +40,10 @@ func NewQOIFileProcessor(path string, limits QOIFileLimits) (*QOIFileProcessor, 
 	return &QOIFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *QOIFileProcessor) Process(ctx context.Context, input []byte) (QOIFileResult, error) {
-	return p.processSize(ctx, input, 200)
+	return p.processSize(ctx, input, squareBound(200))
 }
 
-func (p *QOIFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (QOIFileResult, error) {
+func (p *QOIFileProcessor) processSize(ctx context.Context, input []byte, maxSize sizeBound) (QOIFileResult, error) {
 	empty := QOIFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()

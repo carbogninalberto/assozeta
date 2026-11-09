@@ -20,7 +20,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["BMP"] = imageFormat{name: "BMP", accepts: bmpSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadBMPHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := bmp.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -31,7 +31,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["GIF"] = imageFormat{name: "GIF", accepts: gifSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadGIFHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := gif.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -39,7 +39,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	if err != nil {
 		return nil, err
 	}
-	supported["JPEG"] = imageFormat{name: "JPEG", accepts: func(b []byte) bool { return bytes.HasPrefix(b, []byte{255, 216, 255}) }, probe: func(ctx context.Context, b []byte) error { _, err := InspectJPEG(ctx, b, l.MaxHeaderBytes); return err }, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	supported["JPEG"] = imageFormat{name: "JPEG", accepts: func(b []byte) bool { return bytes.HasPrefix(b, []byte{255, 216, 255}) }, probe: func(ctx context.Context, b []byte) error { _, err := InspectJPEG(ctx, b, l.MaxHeaderBytes); return err }, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := jpeg.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -50,7 +50,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["PPM"] = imageFormat{name: "PPM", accepts: ppmSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadPPMHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := ppm.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -61,7 +61,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["PNG"] = imageFormat{name: "PNG", accepts: func(b []byte) bool { return bytes.HasPrefix(b, []byte("\x89PNG\r\n\x1a\n")) }, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadPNGHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := png.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -72,7 +72,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["PCX"] = imageFormat{name: "PCX", accepts: pcxSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadPCXHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := pcx.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -83,7 +83,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["GBR"] = imageFormat{name: "GBR", rejected: ErrGBRHeader, terminal: ErrGBRPixelLimit, accepts: gbrSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadGBRHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := gbr.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -94,7 +94,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["MSP"] = imageFormat{name: "MSP", accepts: mspSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadMSPHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := msp.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -105,7 +105,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["QOI"] = imageFormat{name: "QOI", accepts: qoiSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadQOIHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := qoi.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -116,7 +116,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["SGI"] = imageFormat{name: "SGI", accepts: sgiSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadSGIHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := sgi.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -127,7 +127,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["SUN"] = imageFormat{name: "SUN", accepts: sunSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadSUNHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := sun.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -138,7 +138,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["TGA"] = imageFormat{name: "TGA", accepts: tgaSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadTGAHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := tga.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -149,7 +149,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["XBM"] = imageFormat{name: "XBM", accepts: xbmSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadXBMHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := xbm.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -157,7 +157,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	if err != nil {
 		return nil, err
 	}
-	supported["ICO"] = imageFormat{name: "ICO", accepts: icoSignature, probe: func(ctx context.Context, b []byte) error { _, err := ico.decode(ctx, b); return err }, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	supported["ICO"] = imageFormat{name: "ICO", accepts: icoSignature, probe: func(ctx context.Context, b []byte) error { _, err := ico.decode(ctx, b); return err }, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := ico.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -165,7 +165,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	if err != nil {
 		return nil, err
 	}
-	supported["WEBP"] = imageFormat{name: "WEBP", accepts: webpSignature, probe: func(ctx context.Context, b []byte) error { _, err := webp.decoder.Inspect(ctx, b); return err }, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	supported["WEBP"] = imageFormat{name: "WEBP", accepts: webpSignature, probe: func(ctx context.Context, b []byte) error { _, err := webp.decoder.Inspect(ctx, b); return err }, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := webp.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -176,7 +176,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["CUR"] = imageFormat{name: "CUR", rejected: ErrCURRejected, terminal: ErrCURTerminal, accepts: curSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadCURHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := cur.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -187,7 +187,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["PCD"] = imageFormat{name: "PCD", rejected: ErrPCDHeader, accepts: pcdSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadPCDHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := pcd.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}
@@ -198,7 +198,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 	supported["PIXAR"] = imageFormat{name: "PIXAR", rejected: ErrPIXARHeader, terminal: ErrPIXARPixelLimit, accepts: pixarSignature, probe: func(ctx context.Context, b []byte) error {
 		_, err := ReadPIXARHeader(ctx, b, l.MaxHeaderBytes)
 		return err
-	}, process: func(ctx context.Context, b []byte, maxSize int) (imageFileResult, error) {
+	}, process: func(ctx context.Context, b []byte, maxSize sizeBound) (imageFileResult, error) {
 		v, err := pixar.processSize(ctx, b, maxSize)
 		return imageFileResult(v), err
 	}}

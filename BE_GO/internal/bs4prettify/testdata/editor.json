@@ -1,0 +1,596 @@
+[
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "",
+  "output": ""
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "",
+  "output": ""
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "",
+  "output": ""
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p></p>",
+  "output": "<p>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n</p>\n",
+  "output": "<p>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n</p>\n",
+  "output": "<p>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>Regolamento</p>",
+  "output": "<p>\n Regolamento\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n Regolamento\n</p>\n",
+  "output": "<p>\n Regolamento\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n Regolamento\n</p>\n",
+  "output": "<p>\n Regolamento\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>Il socio si impegna a rispettare lo statuto.</p><p>Seconda riga</p>",
+  "output": "<p>\n Il socio si impegna a rispettare lo statuto.\n</p>\n<p>\n Seconda riga\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n Il socio si impegna a rispettare lo statuto.\n</p>\n<p>\n Seconda riga\n</p>\n",
+  "output": "<p>\n Il socio si impegna a rispettare lo statuto.\n</p>\n<p>\n Seconda riga\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n Il socio si impegna a rispettare lo statuto.\n</p>\n<p>\n Seconda riga\n</p>\n",
+  "output": "<p>\n Il socio si impegna a rispettare lo statuto.\n</p>\n<p>\n Seconda riga\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<h1>Titolo</h1><h2>Sottotitolo</h2><h3>Sezione</h3><p>Testo</p>",
+  "output": "<h1>\n Titolo\n</h1>\n<h2>\n Sottotitolo\n</h2>\n<h3>\n Sezione\n</h3>\n<p>\n Testo\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<h1>\n Titolo\n</h1>\n<h2>\n Sottotitolo\n</h2>\n<h3>\n Sezione\n</h3>\n<p>\n Testo\n</p>\n",
+  "output": "<h1>\n Titolo\n</h1>\n<h2>\n Sottotitolo\n</h2>\n<h3>\n Sezione\n</h3>\n<p>\n Testo\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<h1>\n Titolo\n</h1>\n<h2>\n Sottotitolo\n</h2>\n<h3>\n Sezione\n</h3>\n<p>\n Testo\n</p>\n",
+  "output": "<h1>\n Titolo\n</h1>\n<h2>\n Sottotitolo\n</h2>\n<h3>\n Sezione\n</h3>\n<p>\n Testo\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p><strong>grassetto</strong> <em>corsivo</em> <u>sottolineato</u> <s>barrato</s> <code>codice</code></p>",
+  "output": "<p>\n <strong>\n  grassetto\n </strong>\n <em>\n  corsivo\n </em>\n <u>\n  sottolineato\n </u>\n <s>\n  barrato\n </s>\n <code>\n  codice\n </code>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n <strong>\n  grassetto\n </strong>\n <em>\n  corsivo\n </em>\n <u>\n  sottolineato\n </u>\n <s>\n  barrato\n </s>\n <code>\n  codice\n </code>\n</p>\n",
+  "output": "<p>\n <strong>\n  grassetto\n </strong>\n <em>\n  corsivo\n </em>\n <u>\n  sottolineato\n </u>\n <s>\n  barrato\n </s>\n <code>\n  codice\n </code>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n <strong>\n  grassetto\n </strong>\n <em>\n  corsivo\n </em>\n <u>\n  sottolineato\n </u>\n <s>\n  barrato\n </s>\n <code>\n  codice\n </code>\n</p>\n",
+  "output": "<p>\n <strong>\n  grassetto\n </strong>\n <em>\n  corsivo\n </em>\n <u>\n  sottolineato\n </u>\n <s>\n  barrato\n </s>\n <code>\n  codice\n </code>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>Prima<br>Seconda<br><br>Terza</p>",
+  "output": "<p>\n Prima\n <br/>\n Seconda\n <br/>\n <br/>\n Terza\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n Prima\n <br/>\n Seconda\n <br/>\n <br/>\n Terza\n</p>\n",
+  "output": "<p>\n Prima\n <br/>\n Seconda\n <br/>\n <br/>\n Terza\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n Prima\n <br/>\n Seconda\n <br/>\n <br/>\n Terza\n</p>\n",
+  "output": "<p>\n Prima\n <br/>\n Seconda\n <br/>\n <br/>\n Terza\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p style=\"text-align: center\">Centrato</p><p style=\"text-align: right\">Destra</p><h2 style=\"text-align: justify\">G</h2>",
+  "output": "<p style=\"text-align: center\">\n Centrato\n</p>\n<p style=\"text-align: right\">\n Destra\n</p>\n<h2 style=\"text-align: justify\">\n G\n</h2>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p style=\"text-align: center\">\n Centrato\n</p>\n<p style=\"text-align: right\">\n Destra\n</p>\n<h2 style=\"text-align: justify\">\n G\n</h2>\n",
+  "output": "<p style=\"text-align: center\">\n Centrato\n</p>\n<p style=\"text-align: right\">\n Destra\n</p>\n<h2 style=\"text-align: justify\">\n G\n</h2>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p style=\"text-align: center\">\n Centrato\n</p>\n<p style=\"text-align: right\">\n Destra\n</p>\n<h2 style=\"text-align: justify\">\n G\n</h2>\n",
+  "output": "<p style=\"text-align: center\">\n Centrato\n</p>\n<p style=\"text-align: right\">\n Destra\n</p>\n<h2 style=\"text-align: justify\">\n G\n</h2>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<ul><li><p>uno</p></li><li><p>due</p><ul><li><p>annidato</p></li></ul></li></ul>",
+  "output": "<ul>\n <li>\n  <p>\n   uno\n  </p>\n </li>\n <li>\n  <p>\n   due\n  </p>\n  <ul>\n   <li>\n    <p>\n     annidato\n    </p>\n   </li>\n  </ul>\n </li>\n</ul>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<ul>\n <li>\n  <p>\n   uno\n  </p>\n </li>\n <li>\n  <p>\n   due\n  </p>\n  <ul>\n   <li>\n    <p>\n     annidato\n    </p>\n   </li>\n  </ul>\n </li>\n</ul>\n",
+  "output": "<ul>\n <li>\n  <p>\n   uno\n  </p>\n </li>\n <li>\n  <p>\n   due\n  </p>\n  <ul>\n   <li>\n    <p>\n     annidato\n    </p>\n   </li>\n  </ul>\n </li>\n</ul>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<ul>\n <li>\n  <p>\n   uno\n  </p>\n </li>\n <li>\n  <p>\n   due\n  </p>\n  <ul>\n   <li>\n    <p>\n     annidato\n    </p>\n   </li>\n  </ul>\n </li>\n</ul>\n",
+  "output": "<ul>\n <li>\n  <p>\n   uno\n  </p>\n </li>\n <li>\n  <p>\n   due\n  </p>\n  <ul>\n   <li>\n    <p>\n     annidato\n    </p>\n   </li>\n  </ul>\n </li>\n</ul>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<ol start=\"3\"><li><p>tre</p></li><li><p>quattro</p></li></ol>",
+  "output": "<ol start=\"3\">\n <li>\n  <p>\n   tre\n  </p>\n </li>\n <li>\n  <p>\n   quattro\n  </p>\n </li>\n</ol>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<ol start=\"3\">\n <li>\n  <p>\n   tre\n  </p>\n </li>\n <li>\n  <p>\n   quattro\n  </p>\n </li>\n</ol>\n",
+  "output": "<ol start=\"3\">\n <li>\n  <p>\n   tre\n  </p>\n </li>\n <li>\n  <p>\n   quattro\n  </p>\n </li>\n</ol>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<ol start=\"3\">\n <li>\n  <p>\n   tre\n  </p>\n </li>\n <li>\n  <p>\n   quattro\n  </p>\n </li>\n</ol>\n",
+  "output": "<ol start=\"3\">\n <li>\n  <p>\n   tre\n  </p>\n </li>\n <li>\n  <p>\n   quattro\n  </p>\n </li>\n</ol>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<ul data-type=\"taskList\"><li data-checked=\"true\" data-type=\"taskItem\"><label><input type=\"checkbox\" checked=\"checked\"><span></span></label><div><p>fatto</p></div></li><li data-checked=\"false\" data-type=\"taskItem\"><label><input type=\"checkbox\"><span></span></label><div><p>da fare</p></div></li></ul>",
+  "output": "<ul data-type=\"taskList\">\n <li data-checked=\"true\" data-type=\"taskItem\">\n  <label>\n   <input checked=\"checked\" type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    fatto\n   </p>\n  </div>\n </li>\n <li data-checked=\"false\" data-type=\"taskItem\">\n  <label>\n   <input type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    da fare\n   </p>\n  </div>\n </li>\n</ul>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<ul data-type=\"taskList\">\n <li data-checked=\"true\" data-type=\"taskItem\">\n  <label>\n   <input checked=\"checked\" type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    fatto\n   </p>\n  </div>\n </li>\n <li data-checked=\"false\" data-type=\"taskItem\">\n  <label>\n   <input type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    da fare\n   </p>\n  </div>\n </li>\n</ul>\n",
+  "output": "<ul data-type=\"taskList\">\n <li data-checked=\"true\" data-type=\"taskItem\">\n  <label>\n   <input checked=\"checked\" type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    fatto\n   </p>\n  </div>\n </li>\n <li data-checked=\"false\" data-type=\"taskItem\">\n  <label>\n   <input type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    da fare\n   </p>\n  </div>\n </li>\n</ul>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<ul data-type=\"taskList\">\n <li data-checked=\"true\" data-type=\"taskItem\">\n  <label>\n   <input checked=\"checked\" type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    fatto\n   </p>\n  </div>\n </li>\n <li data-checked=\"false\" data-type=\"taskItem\">\n  <label>\n   <input type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    da fare\n   </p>\n  </div>\n </li>\n</ul>\n",
+  "output": "<ul data-type=\"taskList\">\n <li data-checked=\"true\" data-type=\"taskItem\">\n  <label>\n   <input checked=\"checked\" type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    fatto\n   </p>\n  </div>\n </li>\n <li data-checked=\"false\" data-type=\"taskItem\">\n  <label>\n   <input type=\"checkbox\"/>\n   <span>\n   </span>\n  </label>\n  <div>\n   <p>\n    da fare\n   </p>\n  </div>\n </li>\n</ul>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p><a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://example.test/statuto?a=1&amp;b=2\">Statuto</a></p>",
+  "output": "<p>\n <a href=\"https://example.test/statuto?a=1&amp;b=2\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">\n  Statuto\n </a>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n <a href=\"https://example.test/statuto?a=1&amp;b=2\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">\n  Statuto\n </a>\n</p>\n",
+  "output": "<p>\n <a href=\"https://example.test/statuto?a=1&amp;b=2\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">\n  Statuto\n </a>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n <a href=\"https://example.test/statuto?a=1&amp;b=2\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">\n  Statuto\n </a>\n</p>\n",
+  "output": "<p>\n <a href=\"https://example.test/statuto?a=1&amp;b=2\" rel=\"noopener noreferrer nofollow\" target=\"_blank\">\n  Statuto\n </a>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<blockquote><p>Citazione</p></blockquote><hr><p>Dopo</p>",
+  "output": "<blockquote>\n <p>\n  Citazione\n </p>\n</blockquote>\n<hr/>\n<p>\n Dopo\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<blockquote>\n <p>\n  Citazione\n </p>\n</blockquote>\n<hr/>\n<p>\n Dopo\n</p>\n",
+  "output": "<blockquote>\n <p>\n  Citazione\n </p>\n</blockquote>\n<hr/>\n<p>\n Dopo\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<blockquote>\n <p>\n  Citazione\n </p>\n</blockquote>\n<hr/>\n<p>\n Dopo\n</p>\n",
+  "output": "<blockquote>\n <p>\n  Citazione\n </p>\n</blockquote>\n<hr/>\n<p>\n Dopo\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<pre><code>riga 1\n  riga 2\n\tfine</code></pre><p>dopo</p>",
+  "output": "<pre><code>riga 1\n  riga 2\n\tfine</code></pre>\n<p>\n dopo\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<pre><code>riga 1\n  riga 2\n\tfine</code></pre>\n<p>\n dopo\n</p>\n",
+  "output": "<pre><code>riga 1\n  riga 2\n\tfine</code></pre>\n<p>\n dopo\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<pre><code>riga 1\n  riga 2\n\tfine</code></pre>\n<p>\n dopo\n</p>\n",
+  "output": "<pre><code>riga 1\n  riga 2\n\tfine</code></pre>\n<p>\n dopo\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<pre><code class=\"language-js\">if (a &lt; b &amp;&amp; c &gt; d) {\n  x = \"y\";\n}</code></pre>",
+  "output": "<pre><code class=\"language-js\">if (a &lt; b &amp;&amp; c &gt; d) {\n  x = \"y\";\n}</code></pre>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<pre><code class=\"language-js\">if (a &lt; b &amp;&amp; c &gt; d) {\n  x = \"y\";\n}</code></pre>\n",
+  "output": "<pre><code class=\"language-js\">if (a &lt; b &amp;&amp; c &gt; d) {\n  x = \"y\";\n}</code></pre>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<pre><code class=\"language-js\">if (a &lt; b &amp;&amp; c &gt; d) {\n  x = \"y\";\n}</code></pre>\n",
+  "output": "<pre><code class=\"language-js\">if (a &lt; b &amp;&amp; c &gt; d) {\n  x = \"y\";\n}</code></pre>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<table style=\"min-width: 75px\"><colgroup><col style=\"min-width: 25px\"><col style=\"min-width: 25px\"><col style=\"min-width: 25px\"></colgroup><tbody><tr><th colspan=\"1\" rowspan=\"1\"><p>A</p></th><th colspan=\"1\" rowspan=\"1\"><p>B</p></th><th colspan=\"1\" rowspan=\"1\"><p>C</p></th></tr><tr><td colspan=\"1\" rowspan=\"1\"><p>1</p></td><td colspan=\"1\" rowspan=\"1\"><p>2</p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td></tr></tbody></table>",
+  "output": "<table style=\"min-width: 75px\">\n <colgroup>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n </colgroup>\n <tbody>\n  <tr>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     A\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     B\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     C\n    </p>\n   </th>\n  </tr>\n  <tr>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     1\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     2\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n    </p>\n   </td>\n  </tr>\n </tbody>\n</table>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<table style=\"min-width: 75px\">\n <colgroup>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n </colgroup>\n <tbody>\n  <tr>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     A\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     B\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     C\n    </p>\n   </th>\n  </tr>\n  <tr>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     1\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     2\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n    </p>\n   </td>\n  </tr>\n </tbody>\n</table>\n",
+  "output": "<table style=\"min-width: 75px\">\n <colgroup>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n </colgroup>\n <tbody>\n  <tr>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     A\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     B\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     C\n    </p>\n   </th>\n  </tr>\n  <tr>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     1\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     2\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n    </p>\n   </td>\n  </tr>\n </tbody>\n</table>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<table style=\"min-width: 75px\">\n <colgroup>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n </colgroup>\n <tbody>\n  <tr>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     A\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     B\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     C\n    </p>\n   </th>\n  </tr>\n  <tr>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     1\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     2\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n    </p>\n   </td>\n  </tr>\n </tbody>\n</table>\n",
+  "output": "<table style=\"min-width: 75px\">\n <colgroup>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n  <col style=\"min-width: 25px\"/>\n </colgroup>\n <tbody>\n  <tr>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     A\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     B\n    </p>\n   </th>\n   <th colspan=\"1\" rowspan=\"1\">\n    <p>\n     C\n    </p>\n   </th>\n  </tr>\n  <tr>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     1\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n     2\n    </p>\n   </td>\n   <td colspan=\"1\" rowspan=\"1\">\n    <p>\n    </p>\n   </td>\n  </tr>\n </tbody>\n</table>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p><img src=\"data:image/png;base64,iVBORw0KGgo=\" alt=\"logo\" title=\"Logo &quot;ASD&quot;\"></p>",
+  "output": "<p>\n <img alt=\"logo\" src=\"data:image/png;base64,iVBORw0KGgo=\" title='Logo \"ASD\"'/>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n <img alt=\"logo\" src=\"data:image/png;base64,iVBORw0KGgo=\" title='Logo \"ASD\"'/>\n</p>\n",
+  "output": "<p>\n <img alt=\"logo\" src=\"data:image/png;base64,iVBORw0KGgo=\" title='Logo \"ASD\"'/>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n <img alt=\"logo\" src=\"data:image/png;base64,iVBORw0KGgo=\" title='Logo \"ASD\"'/>\n</p>\n",
+  "output": "<p>\n <img alt=\"logo\" src=\"data:image/png;base64,iVBORw0KGgo=\" title='Logo \"ASD\"'/>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>Gentile <span class=\"mention\" data-type=\"mention\" data-id=\"first_name\" data-label=\"Nome\">@Nome</span>, benvenuto</p>",
+  "output": "<p>\n Gentile\n <span class=\"mention\" data-id=\"first_name\" data-label=\"Nome\" data-type=\"mention\">\n  @Nome\n </span>\n , benvenuto\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n Gentile\n <span class=\"mention\" data-id=\"first_name\" data-label=\"Nome\" data-type=\"mention\">\n  @Nome\n </span>\n , benvenuto\n</p>\n",
+  "output": "<p>\n Gentile\n <span class=\"mention\" data-id=\"first_name\" data-label=\"Nome\" data-type=\"mention\">\n  @Nome\n </span>\n , benvenuto\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n Gentile\n <span class=\"mention\" data-id=\"first_name\" data-label=\"Nome\" data-type=\"mention\">\n  @Nome\n </span>\n , benvenuto\n</p>\n",
+  "output": "<p>\n Gentile\n <span class=\"mention\" data-id=\"first_name\" data-label=\"Nome\" data-type=\"mention\">\n  @Nome\n </span>\n , benvenuto\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>Spazi&nbsp;non&nbsp;separabili&nbsp;</p><p>&nbsp;</p>",
+  "output": "<p>\n Spazi non separabili\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n Spazi non separabili\n</p>\n<p>\n</p>\n",
+  "output": "<p>\n Spazi non separabili\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n Spazi non separabili\n</p>\n<p>\n</p>\n",
+  "output": "<p>\n Spazi non separabili\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>Simboli &amp; &lt;tag&gt; \"doppi\" 'singoli' € ©</p>",
+  "output": "<p>\n Simboli &amp; &lt;tag&gt; \"doppi\" 'singoli' € ©\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n Simboli &amp; &lt;tag&gt; \"doppi\" 'singoli' € ©\n</p>\n",
+  "output": "<p>\n Simboli &amp; &lt;tag&gt; \"doppi\" 'singoli' € ©\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n Simboli &amp; &lt;tag&gt; \"doppi\" 'singoli' € ©\n</p>\n",
+  "output": "<p>\n Simboli &amp; &lt;tag&gt; \"doppi\" 'singoli' € ©\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>Accenti: perché, città, più, così</p>",
+  "output": "<p>\n Accenti: perché, città, più, così\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n Accenti: perché, città, più, così\n</p>\n",
+  "output": "<p>\n Accenti: perché, città, più, così\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n Accenti: perché, città, più, così\n</p>\n",
+  "output": "<p>\n Accenti: perché, città, più, così\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>   spazi   multipli   </p>\n\n<p>\n  a capo\n</p>",
+  "output": "<p>\n spazi   multipli\n</p>\n<p>\n a capo\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n spazi   multipli\n</p>\n<p>\n a capo\n</p>\n",
+  "output": "<p>\n spazi   multipli\n</p>\n<p>\n a capo\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n spazi   multipli\n</p>\n<p>\n a capo\n</p>\n",
+  "output": "<p>\n spazi   multipli\n</p>\n<p>\n a capo\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<h4>Quote</h4><p>Quota annuale: <strong>€ 50,00</strong></p><p><em><strong>nidificato</strong></em></p>",
+  "output": "<h4>\n Quote\n</h4>\n<p>\n Quota annuale:\n <strong>\n  € 50,00\n </strong>\n</p>\n<p>\n <em>\n  <strong>\n   nidificato\n  </strong>\n </em>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<h4>\n Quote\n</h4>\n<p>\n Quota annuale:\n <strong>\n  € 50,00\n </strong>\n</p>\n<p>\n <em>\n  <strong>\n   nidificato\n  </strong>\n </em>\n</p>\n",
+  "output": "<h4>\n Quote\n</h4>\n<p>\n Quota annuale:\n <strong>\n  € 50,00\n </strong>\n</p>\n<p>\n <em>\n  <strong>\n   nidificato\n  </strong>\n </em>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<h4>\n Quote\n</h4>\n<p>\n Quota annuale:\n <strong>\n  € 50,00\n </strong>\n</p>\n<p>\n <em>\n  <strong>\n   nidificato\n  </strong>\n </em>\n</p>\n",
+  "output": "<h4>\n Quote\n</h4>\n<p>\n Quota annuale:\n <strong>\n  € 50,00\n </strong>\n</p>\n<p>\n <em>\n  <strong>\n   nidificato\n  </strong>\n </em>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p><mark>evidenziato</mark> e <sup>apice</sup> <sub>pedice</sub></p>",
+  "output": "<p>\n <mark>\n  evidenziato\n </mark>\n e\n <sup>\n  apice\n </sup>\n <sub>\n  pedice\n </sub>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n <mark>\n  evidenziato\n </mark>\n e\n <sup>\n  apice\n </sup>\n <sub>\n  pedice\n </sub>\n</p>\n",
+  "output": "<p>\n <mark>\n  evidenziato\n </mark>\n e\n <sup>\n  apice\n </sup>\n <sub>\n  pedice\n </sub>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n <mark>\n  evidenziato\n </mark>\n e\n <sup>\n  apice\n </sup>\n <sub>\n  pedice\n </sub>\n</p>\n",
+  "output": "<p>\n <mark>\n  evidenziato\n </mark>\n e\n <sup>\n  apice\n </sup>\n <sub>\n  pedice\n </sub>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<div class=\"  a   b\tc \"><p class=\"\">vuoto</p></div>",
+  "output": "<div class=\"a b c\">\n <p class=\"\">\n  vuoto\n </p>\n</div>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<div class=\"a b c\">\n <p class=\"\">\n  vuoto\n </p>\n</div>\n",
+  "output": "<div class=\"a b c\">\n <p class=\"\">\n  vuoto\n </p>\n</div>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<div class=\"a b c\">\n <p class=\"\">\n  vuoto\n </p>\n</div>\n",
+  "output": "<div class=\"a b c\">\n <p class=\"\">\n  vuoto\n </p>\n</div>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>emoji 😀 e cinese 中文</p>",
+  "output": "<p>\n emoji 😀 e cinese 中文\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n emoji 😀 e cinese 中文\n</p>\n",
+  "output": "<p>\n emoji 😀 e cinese 中文\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n emoji 😀 e cinese 中文\n</p>\n",
+  "output": "<p>\n emoji 😀 e cinese 中文\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<ul><li><p>a</p></li></ul><ol><li><p>b</p></li></ol><p></p><p></p>",
+  "output": "<ul>\n <li>\n  <p>\n   a\n  </p>\n </li>\n</ul>\n<ol>\n <li>\n  <p>\n   b\n  </p>\n </li>\n</ol>\n<p>\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<ul>\n <li>\n  <p>\n   a\n  </p>\n </li>\n</ul>\n<ol>\n <li>\n  <p>\n   b\n  </p>\n </li>\n</ol>\n<p>\n</p>\n<p>\n</p>\n",
+  "output": "<ul>\n <li>\n  <p>\n   a\n  </p>\n </li>\n</ul>\n<ol>\n <li>\n  <p>\n   b\n  </p>\n </li>\n</ol>\n<p>\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<ul>\n <li>\n  <p>\n   a\n  </p>\n </li>\n</ul>\n<ol>\n <li>\n  <p>\n   b\n  </p>\n </li>\n</ol>\n<p>\n</p>\n<p>\n</p>\n",
+  "output": "<ul>\n <li>\n  <p>\n   a\n  </p>\n </li>\n</ul>\n<ol>\n <li>\n  <p>\n   b\n  </p>\n </li>\n</ol>\n<p>\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "Testo senza tag",
+  "output": "Testo senza tag\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "Testo senza tag\n",
+  "output": "Testo senza tag\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "Testo senza tag\n",
+  "output": "Testo senza tag\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>senza chiusura",
+  "output": "<p>\n senza chiusura\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n senza chiusura\n</p>\n",
+  "output": "<p>\n senza chiusura\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n senza chiusura\n</p>\n",
+  "output": "<p>\n senza chiusura\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>a</p></div><p>b</p>",
+  "output": "<p>\n a\n</p>\n<p>\n b\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n a\n</p>\n<p>\n b\n</p>\n",
+  "output": "<p>\n a\n</p>\n<p>\n b\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n a\n</p>\n<p>\n b\n</p>\n",
+  "output": "<p>\n a\n</p>\n<p>\n b\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<P CLASS=\"x\">Maiuscolo</P><BR>",
+  "output": "<p class=\"x\">\n Maiuscolo\n</p>\n<br/>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p class=\"x\">\n Maiuscolo\n</p>\n<br/>\n",
+  "output": "<p class=\"x\">\n Maiuscolo\n</p>\n<br/>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p class=\"x\">\n Maiuscolo\n</p>\n<br/>\n",
+  "output": "<p class=\"x\">\n Maiuscolo\n</p>\n<br/>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<p>auto<br/>chiuso<br /></p><p/>",
+  "output": "<p>\n auto\n <br/>\n chiuso\n <br/>\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<p>\n auto\n <br/>\n chiuso\n <br/>\n</p>\n<p>\n</p>\n",
+  "output": "<p>\n auto\n <br/>\n chiuso\n <br/>\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<p>\n auto\n <br/>\n chiuso\n <br/>\n</p>\n<p>\n</p>\n",
+  "output": "<p>\n auto\n <br/>\n chiuso\n <br/>\n</p>\n<p>\n</p>\n"
+ },
+ {
+  "kind": "editor",
+  "subset": true,
+  "input": "<input disabled type=\"text\" value=\"a&amp;b\"><label for=\"x\">L</label>",
+  "output": "<input disabled=\"\" type=\"text\" value=\"a&amp;b\"/>\n<label for=\"x\">\n L\n</label>\n"
+ },
+ {
+  "kind": "stored",
+  "subset": true,
+  "input": "<input disabled=\"\" type=\"text\" value=\"a&amp;b\"/>\n<label for=\"x\">\n L\n</label>\n",
+  "output": "<input disabled=\"\" type=\"text\" value=\"a&amp;b\"/>\n<label for=\"x\">\n L\n</label>\n"
+ },
+ {
+  "kind": "stored-twice",
+  "subset": true,
+  "input": "<input disabled=\"\" type=\"text\" value=\"a&amp;b\"/>\n<label for=\"x\">\n L\n</label>\n",
+  "output": "<input disabled=\"\" type=\"text\" value=\"a&amp;b\"/>\n<label for=\"x\">\n L\n</label>\n"
+ }
+]

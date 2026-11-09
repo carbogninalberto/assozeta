@@ -195,6 +195,10 @@ func run() (runErr error) {
 	workflowReadsHandler := handler.NewAutomationWorkflowReadsHandler(service.NewAutomationWorkflowReads(repository.NewAutomationWorkflows(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	profileMiscHandler := handler.NewProfileMiscHandler(service.NewProfileMisc(repository.NewProfileMisc(db), repository.NewProfileMisc(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	profileTemplateHandler := handler.NewProfileTemplateHandler(service.NewProfileTemplate(repository.NewProfileTemplate(db),
+		service.NewLoginProfiles(repository.NewLoginProfiles(db), time.Now), service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now),
+		images, domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled}, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	associationTransferHandler := handler.NewAssociationTransferHandler(service.NewAssociationTransfer(repository.NewAssociationTransfer(db, cache),
 		cfg.SessionSecret, time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	testimonialsHandler := handler.NewTestimonialsHandler(service.NewTestimonials(repository.NewTestimonials(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations, cfg.SenjaWebhookSecret)
@@ -794,6 +798,7 @@ func run() (runErr error) {
 	e.Any("/manuale/assets/*", manualHandler.Asset, handler.ManualResponseEncoding(), middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/info", profileHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/update/password", profilePasswordHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/profile/update/subscription/template", profileTemplateHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/update", profileUpdateHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/settings/tables", profileTablesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/settings", profileSettingsHandler.Settings, middleware.DjangoSessionAudit(sessionAuthentication))

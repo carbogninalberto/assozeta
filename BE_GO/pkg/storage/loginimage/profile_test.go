@@ -24,7 +24,7 @@ func TestProfileImageSizePolicy(t *testing.T) {
 		{1, 1000000, 1 << 20, 1, 1000000, false, false},
 		{1, 1000000, 1<<20 + 1, 0, 0, false, true},
 	} {
-		got, err := decideSize(tc.w, tc.h, tc.bytes, 512)
+		got, err := decideSize(tc.w, tc.h, tc.bytes, squareBound(512))
 		if tc.invalid {
 			if !errors.Is(err, ErrDimensions) {
 				t.Fatalf("%+v: %v", tc, err)
@@ -71,5 +71,37 @@ func TestProfileImageLazyPolicyAndSharedAdmission(t *testing.T) {
 	}
 	if got, err := p.CompressProfileImage(context.Background(), strings.Repeat("x", p.limits.MaxURIBytes+1)); got != "" || !errors.Is(err, ErrWorkingLimit) {
 		t.Fatal("profile upload bypassed URI budget", err)
+	}
+}
+
+// The subscription-template logo bound is rectangular: each axis has its own limit.
+func TestTemplateLogoSizePolicy(t *testing.T) {
+	bound := sizeBound{590, 130}
+	for _, tc := range []struct {
+		w, h, bytes, wantW, wantH int
+		keep, invalid             bool
+	}{
+		{590, 130, 1 << 20, 590, 130, true, false},
+		{295, 130, 1, 295, 130, true, false},
+		{590, 65, 1, 590, 65, true, false},
+		{590, 131, 1, 590, 131, false, false},
+		{1180, 260, 1<<20 + 1, 590, 130, false, false},
+		{2000, 300, 1<<20 + 1, 590, 88, false, false},
+		{300, 2000, 1<<20 + 1, 19, 130, false, false},
+		{640, 141, 1<<20 + 1, 590, 129, false, false},
+		{97, 31, 1<<20 + 1, 406, 130, false, false},
+		{3, 1000, 1<<20 + 1, 0, 0, false, true},
+	} {
+		got, err := decideSize(tc.w, tc.h, tc.bytes, bound)
+		if tc.invalid {
+			if !errors.Is(err, ErrDimensions) {
+				t.Fatalf("%+v: %v", tc, err)
+			}
+		} else if err != nil || got != (Plan{tc.wantW, tc.wantH, tc.keep}) {
+			t.Fatalf("%+v: %+v, %v", tc, got, err)
+		}
+	}
+	if _, err := decideSize(10, 10, 1, sizeBound{10, 0}); !errors.Is(err, ErrDimensions) {
+		t.Fatal("non-positive bound accepted")
 	}
 }

@@ -42,10 +42,10 @@ func NewSUNFileProcessor(path string, limits SUNFileLimits) (*SUNFileProcessor, 
 	return &SUNFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *SUNFileProcessor) Process(ctx context.Context, input []byte) (SUNFileResult, error) {
-	return p.processSize(ctx, input, 200)
+	return p.processSize(ctx, input, squareBound(200))
 }
 
-func (p *SUNFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (SUNFileResult, error) {
+func (p *SUNFileProcessor) processSize(ctx context.Context, input []byte, maxSize sizeBound) (SUNFileResult, error) {
 	empty := SUNFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
