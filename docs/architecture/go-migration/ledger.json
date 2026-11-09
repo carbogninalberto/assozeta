@@ -47136,96 +47136,128 @@
           "max_retries": "None"
         }
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
-        "BE_GO/internal/celeryworker/prefork.go",
+        "BE_GO/internal/service/consumer_restore_instance.go",
+        "BE_GO/internal/service/consumer_restore_archive.go",
+        "BE_GO/internal/repository/consumer_restore_instance.go",
+        "BE_GO/internal/repository/restore_deletion.go",
+        "BE_GO/internal/repository/restore_deletion_graph.json",
+        "BE_GO/internal/repository/collaborator_delete_collector.go",
+        "BE_GO/internal/repository/consumer_restore_cache.go",
+        "BE_GO/internal/service/data_restore_cleanup.go",
+        "BE_GO/internal/service/consumer_import_association.go",
+        "BE_GO/internal/service/consumer_export_association.go",
+        "BE_GO/internal/importeffects/force_update.go",
+        "BE_GO/internal/associationexport/plan.go",
+        "BE_GO/internal/associationexport/plan.json",
         "BE_GO/internal/celeryworker/worker.go",
-        "BE_GO/internal/celery/message.go",
-        "BE_GO/internal/celery/transport.go",
-        "BE_GO/cmd/celery-consumer/main.go"
+        "BE_GO/internal/celeryworker/prefork.go",
+        "BE_GO/internal/config/data_restore.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/celery-consumer/consumer_restore.go"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "BE/instance/tasks.py",
+        "BE/instance/restore/execution.py",
+        "BE/instance/restore/archive.py",
+        "BE/instance/restore/replacement.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/restore/progress.py",
+        "BE/instance/restore/server_barrier.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/services/import_service.py",
+        "BE/application/services/export_service.py",
+        "BE/application/services/legacy_backup.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists instance.restore.execute), args [operation_id], task_id the operation id, timelimit [3600, 3300]; acks_late, reject_on_worker_lost, max_retries=None.",
+        "response": "TaskResult SUCCESS None (completed, failed or untouched receipt); FAILURE DataRestore.DoesNotExist for a missing receipt; RETRY Busy with the message republished +10 s (lock held, unset or unopenable, busy Go transaction barrier).",
+        "errors": "RestoreErrors and other Python errors become the failed receipt with Django's messages (generic text for non-RestoreError); inputs outside the reproduced subset and database errors before the commit are handed off before any effect; storage/database failures after the first effect end in the generic failed receipt.",
+        "authentication": "Internal task message.",
+        "permissions": "Exclusive DATA_RESTORE_LOCK_PATH flock; the receipt owner must still administer the self-hosted single-association instance.",
+        "resource_scope": "The receipt, its uploaded archive, the primary association's exported graph (the recovery export's keys) and its users, restores/<op>/ storage prefixes and earlier terminal receipts' recovery archives and staged media.",
+        "side_effects": "Receipt saves (running, attempts, backup, files, media, restoring, completed or failed), progress cache and WebSocket events, recovery archive upload, attachment staging, the Collector delete with pre_delete receivers and auditlog delete entries, the replacement import through internal/importeffects, detachment rows and deactivated collaborators, cache.clear(), cleanup and prune_storage.",
+        "transaction": "Replacement (delete, import, user links, completed receipt) in one transaction prepared during Plan and committed after the staging; other receipt saves autocommit.",
         "execution_owner": "django"
       },
       "tests": [
-        "TESTS/adapters/go/celery_consumer_capabilities_process.py",
-        "TESTS/adapters/go/consumer_restore_probe_tasks.py",
-        "BE_GO/internal/celeryworker/prefork_test.go",
-        "BE_GO/internal/celery/consumer_test.go"
+        "TESTS/adapters/go/celery_consumer_restore_process.py",
+        "TESTS/adapters/go/restore_deletion_graph.py",
+        "TESTS/adapters/go/association_export_plan.py",
+        "TESTS/adapters/go/association_import_plan.py",
+        "BE_GO/internal/service/consumer_restore_archive_test.go"
       ],
       "evidence": [
         {
-          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_capabilities_process.py",
-          "revision": "go/consumer-restore de7900fb, merged codex/go-backend-parity c0c22b7a as cd25a425",
-          "result": "oracle: Django prefork worker alone passed all 13 capability scenarios",
-          "artifact": "quality-reports/go-migration/consumer-restore-capabilities-oracle/results.json",
-          "receipt_sha256": "a5d7dd06cbd5b9992ecfbe357acf41c0f3ce07a72c3c6060c095e915d61340bf"
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_restore_process.py",
+          "revision": "go/consumer-restore-instance e90be510 (merged codex/go-backend-parity e1e81f3a as d44cd859)",
+          "result": "oracle: Django prefork worker alone passed all 22 restore scenarios",
+          "artifact": "quality-reports/go-migration/consumer-restore-instance-oracle/results.json",
+          "receipt_sha256": "897ad8bf4fef77fbf6054d991b96a314a7baae1fd2f5b1b28a1ff345f365f620"
         },
         {
-          "command": "python -I TESTS/adapters/go/celery_consumer_capabilities_process.py (probe tasks registered without the prefork options)",
-          "revision": "go/consumer-restore working tree before de7900fb",
-          "result": "red: Django passed, Go handed the time-limited message off and timed out on the first scenario",
-          "artifact": "quality-reports/go-migration/consumer-restore-capabilities-process-red/results.json",
-          "receipt_sha256": "b6f220b17aeffb3d65c683745e19e7fed5d5635c49434c0ff349a0ea1820c2ad"
+          "command": "CELERY_CONSUMER_ONLY='an archive replaces' python -I TESTS/adapters/go/celery_consumer_restore_process.py (consumer without the instance.restore.execute registration)",
+          "revision": "go/consumer-restore-instance e90be510 (merged codex/go-backend-parity e1e81f3a as d44cd859) working tree",
+          "result": "red: Django passed, Go did not consume the message and timed out",
+          "artifact": "quality-reports/go-migration/consumer-restore-instance-process-red/results.json",
+          "receipt_sha256": "8e8f44ee3b21451ef98883b6601830676b82161680140230dd6d72b25505c453"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_restore_process.py",
+          "revision": "go/consumer-restore-instance e90be510 (merged codex/go-backend-parity e1e81f3a as d44cd859)",
+          "result": "passed: 22 differential scenarios against a prefork Django worker (race-built consumer): every managed row and through table, audit entries and index rows, TaskResult, broker, cache and bucket objects, the recovery archive member by member",
+          "artifact": "quality-reports/go-migration/consumer-restore-instance-process/results.json",
+          "receipt_sha256": "42724e05fecec6e87ebddc38d1c7edd0d7ed5ccdb347ec624150645715c8c5f7"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='an archive replaces' python -I TESTS/adapters/go/celery_consumer_restore_process.py with restore_user_links not deactivating detached collaborators",
+          "revision": "go/consumer-restore-instance e90be510 (merged codex/go-backend-parity e1e81f3a as d44cd859) working tree",
+          "result": "caught: Go differs from Django (application.User row of the detached collaborator)",
+          "artifact": "quality-reports/go-migration/consumer-restore-instance-process-mutation/mutation.json",
+          "receipt_sha256": "59ea89b71d821c5752510555ed82f896e1cf852bec7cef7b3fcabe186768ec04"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_import_process.py",
+          "revision": "go/consumer-restore-instance e90be510 (merged codex/go-backend-parity e1e81f3a as d44cd859)",
+          "result": "re-run after the shared changes: passed 17/17",
+          "artifact": "quality-reports/go-migration/consumer-restore-instance-rerun-import/results.json",
+          "receipt_sha256": "2db3e20ddaaa3dc69e80e8021c15082a79e0bd0b87fb22f73bd7c5575c9d6133"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_export_process.py",
+          "revision": "go/consumer-restore-instance e90be510 (merged codex/go-backend-parity e1e81f3a as d44cd859)",
+          "result": "re-run after the shared changes: passed 8/8",
+          "artifact": "quality-reports/go-migration/consumer-restore-instance-rerun-export/results.json",
+          "receipt_sha256": "6e94e75f8727ba37c2346ab188e99957bcbf385f802c69bcbc672ed20568efcf"
         },
         {
           "command": "python -I TESTS/adapters/go/celery_consumer_capabilities_process.py",
-          "revision": "go/consumer-restore de7900fb, merged codex/go-backend-parity c0c22b7a as cd25a425",
-          "result": "passed: 13 differential scenarios against a real Django prefork worker (race-built consumer, -tags consumerprobe)",
-          "artifact": "quality-reports/go-migration/consumer-restore-capabilities-process/results.json",
-          "receipt_sha256": "ce7be522ab44703cf9d1b13ac4b215a85359841a586353a1a5f72426b45ca3af"
-        },
-        {
-          "command": "CELERY_CONSUMER_ONLY='acks_late keeps the message' python -I TESTS/adapters/go/celery_consumer_capabilities_process.py with prefork.go acknowledging at acceptance",
-          "revision": "go/consumer-restore working tree before de7900fb",
-          "result": "caught: Go differs from Django (unacked during the run: Django 1, Go 0)",
-          "artifact": "quality-reports/go-migration/consumer-restore-capabilities-process-mutation/mutation.json",
-          "receipt_sha256": "272be1df15523a25b4f240fe5716260cffed99b695d2fd171ff0d3bfc55cfbda"
+          "revision": "go/consumer-restore-instance e90be510 (merged codex/go-backend-parity e1e81f3a as d44cd859)",
+          "result": "re-run after the shared changes: passed 13/13",
+          "artifact": "quality-reports/go-migration/consumer-restore-instance-rerun-capabilities/results.json",
+          "receipt_sha256": "ba5d7447c4fab5c259933905c6938c18649607a8d291b3c0161dd777c1421678"
         },
         {
           "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
-          "revision": "go/consumer-restore de7900fb, merged codex/go-backend-parity c0c22b7a as cd25a425",
-          "result": "re-run after the shared worker/EncodeRepublish changes: passed 15/15",
-          "artifact": "quality-reports/go-migration/consumer-restore-rerun-celery-consumer-process/results.json",
-          "receipt_sha256": "eaf4bbdbd9640eb4b3955599a012af0e513e354a99e4c47f349adcb3564b972e"
-        },
-        {
-          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py",
-          "revision": "go/consumer-restore de7900fb, merged codex/go-backend-parity c0c22b7a as cd25a425",
-          "result": "re-run after the shared worker/EncodeRepublish changes: passed 25/25",
-          "artifact": "quality-reports/go-migration/consumer-restore-rerun-celery-consumer-email-process/results.json",
-          "receipt_sha256": "18d7ed63a6c464c09d48990f603294240152c1df4e8a9da93d997934bef73e54"
-        },
-        {
-          "command": "python -I TESTS/adapters/go/celery_consumer_workflow_process.py",
-          "revision": "go/consumer-restore de7900fb, merged codex/go-backend-parity c0c22b7a as cd25a425",
-          "result": "re-run after the shared worker/EncodeRepublish changes: passed 20/20",
-          "artifact": "quality-reports/go-migration/consumer-restore-rerun-consumer-workflow-process/results.json",
-          "receipt_sha256": "e06513c5792ef2130d917659a818b0a32fad7333e489124194529c3edb60dcaf"
-        },
-        {
-          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
-          "revision": "go/consumer-restore de7900fb, merged codex/go-backend-parity c0c22b7a as cd25a425",
-          "result": "re-run after the shared worker/EncodeRepublish changes: passed 30/30",
-          "artifact": "quality-reports/go-migration/consumer-restore-rerun-celery-consumer-print-process/results.json",
-          "receipt_sha256": "349f4ca1bacf63e7c8503b3ca6d99628f6cad1682f509f9b222cad4c614c2d6a"
+          "revision": "go/consumer-restore-instance e90be510 (merged codex/go-backend-parity e1e81f3a as d44cd859)",
+          "result": "re-run after the shared changes: passed 15/15",
+          "artifact": "quality-reports/go-migration/consumer-restore-instance-rerun-celery-consumer-process/results.json",
+          "receipt_sha256": "518447bb995312cccfe3707bad8aec58821b816a1a8907f91af4b538e19ba66d"
         }
       ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "consumer-restore step 1 (capabilities): cmd/celery-consumer runs tasks marked Prefork in a child process of its own binary, as Celery's prefork pool: acks_late acknowledges after the outcome, reject_on_worker_lost requeues (redelivered, far end of the queue) a message whose child died, otherwise WorkerLostError('Worker exited prematurely: <status> Job: <n>.'); SIGUSR1 soft limit stored as SoftTimeLimitExceeded when unhandled; hard limit stores TimeLimitExceeded(hard), acks, SIGTERM/SIGKILL; header limits win when truthy; retries keep timelimit; instance.restore.* skips CoordinatedTask admission. The task body itself is not ported yet (execution_owner stays django). See docs/architecture/go-migration/consumer-restore.md."
+        "consumer-restore step 1 (capabilities): cmd/celery-consumer runs tasks marked Prefork in a child process of its own binary, as Celery's prefork pool: acks_late acknowledges after the outcome, reject_on_worker_lost requeues (redelivered, far end of the queue) a message whose child died, otherwise WorkerLostError('Worker exited prematurely: <status> Job: <n>.'); SIGUSR1 soft limit stored as SoftTimeLimitExceeded when unhandled; hard limit stores TimeLimitExceeded(hard), acks, SIGTERM/SIGKILL; header limits win when truthy; retries keep timelimit; instance.restore.* skips CoordinatedTask admission. The task body itself is not ported yet (execution_owner stays django). See docs/architecture/go-migration/consumer-restore.md.",
+        "consumer-restore step 4: cmd/celery-consumer runs instance.restore.execute when GO_TASK_QUEUE_TASKS routes it to assozeta-go (prefork, acks_late, reject_on_worker_lost). Plan takes the lock, drains Go transactions, validates the upload and the recovery export, computes the deletion plan and runs the replacement's database work in an open transaction; Run performs Django's effects in order and commits after staging. Handed off before any effect: non-UUID arguments, archives Go's reader/JSON decoder or to_python emulation does not decide, legacy invoices, tutor reassignments, unsupported importeffects values (CourseSubscription), taken storage names, database errors. Documented differences: sequence values consumed by a killed or handed-off Plan transaction; throttled progress counts; recovery archive times/digest. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-restore.md (Step 4)."
       ]
     },
     {
