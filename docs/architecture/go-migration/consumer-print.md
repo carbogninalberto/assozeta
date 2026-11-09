@@ -146,3 +146,9 @@ id; a malformed association; a missing bucket; StaleDataTask; an integer file id
 - Unit and golden tests: `go test ./internal/pyzip` (Python zipfile golden), `./pkg/storage/documentkey -run SaveName`,
   `./internal/service -run 'ConsumerPrint|ConsumerB64|ConsumerPython|ConsumerStorage'` (binding, handoffs, base64,
   UUID parsing, botocore exception mapping).
+- `smtpsend.FQDN` (DNS_NAME): macOS's `gethostbyaddr` also lists the reverse lookup name (`…ip6.arpa`/`…in-addr.arpa`) as an
+  alias, so `socket.getfqdn()` returns it when the host name has no dot (seen when the host name first resolves to `::1`);
+  Go now adds that alias on darwin only (glibc does not), and `celery_consumer_process.py` normalizes a Message-ID that
+  compat32 folds onto its own line. Re-run on the tree merged with `codex/go-backend-parity` 1d50a56e:
+  `celery_consumer_process` 15/15, `celery_consumer_email_process` 25/25, `celery_consumer_workflow_process` 20/20,
+  `celery_consumer_print_process` 30/30, `email_tasks_worker_process` 7/7, `communications-send-email` 55/55 (native).
