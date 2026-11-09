@@ -16,8 +16,7 @@ type CollaboratorUpdateService interface {
 }
 
 // CollaboratorWritesHandler serves collaborators/<uid>/update
-// (@api_view(['PATCH'])). collaborators/add is not routed: every success
-// path dispatches the invitation e-mail through Celery.
+// (@api_view(['PATCH'])). collaborators/add is EmailRenderHandler.Add.
 type CollaboratorWritesHandler struct {
 	updates    CollaboratorUpdateService
 	actors     *service.ActorAuthentication

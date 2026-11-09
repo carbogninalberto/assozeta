@@ -321,6 +321,13 @@ func run() (runErr error) {
 		tasks, service.MedicalReminderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, IsWhitelabel: cfg.IsWhitelabel}),
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	e.Any("/subscription/:uid/medical-certificate/send-email-reminder", subscriptionReminderHandler.Send, middleware.DjangoSessionAudit(sessionAuthentication))
+	emailRenderHandler := handler.NewEmailRenderHandler(service.NewEmailRenderRoutes(repository.NewEmailRenderRoutes(db), tasks,
+		service.EmailRenderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
+			DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/collaborators/add", emailRenderHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/payment/:uid/request", emailRenderHandler.Request, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/invoice/:uid/send", emailRenderHandler.Send, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionWritesHandler := handler.NewSubscriptionWritesHandler(service.NewSubscriptionEdits(repository.NewSubscriptionEdits(db), time.Now, uuid.NewString),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/edit", subscriptionWritesHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))

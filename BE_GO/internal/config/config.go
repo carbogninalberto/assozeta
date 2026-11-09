@@ -62,6 +62,11 @@ type Config struct {
 	RedisTLS                      bool
 	RedisRootCertificate          string
 	InstanceAdmin                 InstanceAdminSettings
+	// DefaultFromEmail and DefaultTeamEmail are core.settings'
+	// f"{WHITELABEL_NAME} <{EMAIL_HOST_USER}>" and
+	// f"Il Team di {WHITELABEL_NAME} <{EMAIL_HOST_USER}>" (EMAIL_HOST_USER is
+	// os.environ.get: "None" when unset).
+	DefaultFromEmail, DefaultTeamEmail string `json:"-"`
 }
 
 // String intentionally omits credentials (including database URLs).
@@ -221,6 +226,10 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	emailHostUser, present := values["EMAIL_HOST_USER"]
+	if !present {
+		emailHostUser = "None"
+	}
 	var senjaSecret *string
 	if _, exists := values["SENJA_WEBHOOK_SECRET"]; exists {
 		// django-environ resolves "$NAME" proxies for env.str as well.
@@ -266,7 +275,7 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{InstanceAdmin: instanceAdmin, Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	return Config{InstanceAdmin: instanceAdmin, Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: origins, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
