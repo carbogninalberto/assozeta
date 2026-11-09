@@ -60,11 +60,12 @@ SMTP timeouts are 10 s per socket operation (`SMTP_TIMEOUT_SECONDS`); the system
 
 `apply_async` inside a running task publishes with `root_id = request.root_id or request.id` and `parent_id = request.id`
 (Go: `celery.Task.RootID/ParentID`, encoded in place of the defaults). From the `send_email_html` Timer thread there is
-no current task: `root_id` is the message's own id and `parent_id` None. `add_to_parent` appends the result to
-`task.request`, but Celery 5.6's tracer stores SUCCESS from the request copy it pushed, so the stored `meta` keeps
-`{"children": []}`; Go records no children for these publishes. (The recipe in celery-consumer.md step 3 assumed the
-opposite; the Django oracle shows `[]`.) The publisher follows `GO_TASK_QUEUE_TASKS` like Django's producer, so a listed
-`send_mail_async` goes back to `assozeta-go`.
+no current task: `root_id` is the message's own id and `parent_id` None. `add_to_parent` appends a body publish to
+`task.request.children`, and the production worker (prefork) stores it in the result's `meta.children`; Go records it
+with `Request.AddChild` (`consumerEmailPublish`). A Timer publish has no parent and is not recorded. A `Task.retry`
+message is recorded the same way (its own id). The publisher follows `GO_TASK_QUEUE_TASKS` like Django's producer, so a
+listed `send_mail_async` goes back to `assozeta-go`. (The first oracle ran the Django worker in a thread of the harness,
+where `Task.__call__` pushes a fresh request and no child reaches the stored meta; see "Prefork re-check" below.)
 
 ## Go
 
@@ -99,8 +100,7 @@ opposite; the Django oracle shows `[]`.) The publisher follows `GO_TASK_QUEUE_TA
 - Production runs the Django worker with the prefork pool; a pool child that exits (shutdown, recycling) drops pending
   Timer threads. Go waits for every pending `send_email_html` send before the consumer exits.
 - Infrastructure failures inside a swallowing task (database read in the plan) end SUCCESS with no effect; Django would
-  have done the effects up to the failing statement. A failure of the EmailLog insert after a configuration-path child
-  publish retries in both, but Celery's RETRY row then lists the child (it stores `task.request`), Go's does not.
+  have done the effects up to the failing statement.
 - `send_email` failures are logged, not printed.
 
 ## Evidence
@@ -135,3 +135,25 @@ and parent ids, kwargs and kwargsrepr exact). 25 scenarios:
   `email_tasks_worker_process.py` 7/7, HTTP families natively green: `email-render-routes` (82), `celery-routes-a` (76),
   `communications-send-email` (55); `go test` for celery (incl. `TestEncodeChildIDs`), emailrender (46 renders), smtpsend
   and `-race` for the service plans (`SendMailAsync|ConsumerEmail|EmailTask`).
+
+### Prefork re-check (`consumer-prefork-recheck`)
+
+Production starts the worker with `celery -A core worker` and no `-P` (`selfhost/compose.yml`), so Linux uses prefork.
+The harness now runs the Django oracle as a `celery worker -P prefork -c 1` subprocess by default
+(`consumer_prefork_oracle_settings.py`; `CELERY_CONSUMER_ORACLE=thread` keeps the earlier in-thread solo worker).
+The only difference it showed was `meta.children`: the prefork worker records every message the task body publishes and
+the retry message; Go recorded none (it only recorded the maintenance deferral).
+
+- Django prefork oracle alone: 25/25 (`consumer-prefork-recheck-email-oracle`).
+- RED: `go test -run 'TestConsumerEmailChild|TestWorkflowTasks'` failed (`children []`, receipt
+  `consumer-prefork-recheck-unit-red`); the harness failed on the first scenario with only `meta.children` differing
+  (Django `[[<child>, null], null]`, Go `[]`; `consumer-prefork-recheck-email-red`).
+- GREEN: 25/25 (`consumer-prefork-recheck-email-green`); unit tests `consumer-prefork-recheck-unit-green`.
+- Mutation (CAUGHT): the retry child recorded only in a prefork child again (`celeryworker/worker.go`); the child
+  `send_mail_async` RETRY row lost its own id in `meta.children` (`consumer-prefork-recheck-email-mutation`).
+- Re-run on the final tree (receipts `consumer-prefork-recheck-rerun-*`): `celery_consumer_process.py` 15/15, now on the
+  prefork oracle (its retry rows list their own id, the configuration fallback row its child),
+  `celery_consumer_print_process.py` 30/30, `celery_consumer_capabilities_process.py` 13/13,
+  `celery_consumer_export_process.py` 8/8; `go test ./internal/celeryworker ./internal/celery` and
+  `-race ./internal/service -run 'SendMailAsync|ConsumerEmail|EmailTask|WorkflowTasks'`.
+

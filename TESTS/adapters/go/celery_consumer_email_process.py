@@ -10,16 +10,18 @@ fallback publish under the association's name), the instance email source
 (``instance.email_configuration.effective_email``) and ``fail_silently=True``.
 
 Each scenario publishes one message with Django's producer, routed with the
-scenario's ``GO_TASK_QUEUE_TASKS`` names, runs it on a real Django worker and,
+scenario's ``GO_TASK_QUEUE_TASKS`` names, runs it on a real Django worker (the
+production prefork pool in a subprocess; CELERY_CONSUMER_ORACLE=thread selects
+the earlier in-thread solo worker, see celery_consumer_process.py) and,
 after re-seeding, on the race-built Go consumer, and compares the SMTP
 transcripts, the complete managed-model state (TaskResult, EmailLog,
 CommunicationConfiguration, auditlog rows; run-window timestamps
 normalized), and every broker key. Messages the task publishes (children)
 are compared field by field with their random id, origin, reply_to and
 publish stamp normalized; their root and parent ids are compared against the
-original (Celery 5.6 stores a successful task's result from the trace's
-request copy, so the children such a publish appends to ``task.request`` do
-not reach the stored meta). ``send_email_html``'s Timer send (1-30 s after the task) is waited
+original. In the prefork worker a message published from the task body (and a
+Task.retry message) is recorded in the stored ``meta.children``; one published
+from send_email_html's Timer thread is not. ``send_email_html``'s Timer send (1-30 s after the task) is waited
 for on both sides; one scenario stops Go right after the task result so the
 consumer's shutdown must wait for the pending send. Handoff scenarios require
 Go to move the message unchanged to the ``celery`` queue, where a Django
@@ -171,15 +173,15 @@ SCENARIOS = [
     # -- send_email_text ------------------------------------------------------------------------
     Scenario('send_email_text publishes send_mail_async with the team address', TEXT,
              {'message': 'Il tuo account è stato eliminato.', 'subject': f'{BRAND} | Account eliminato', 'recipient_list': TO},
-             celery_left=1, expect={'status': 'SUCCESS', 'rows': 1, 'children': 0, 'emaillog': [], 'mails': 0, 'celery': 1}),
+             celery_left=1, expect={'status': 'SUCCESS', 'rows': 1, 'children': 1, 'emaillog': [], 'mails': 0, 'celery': 1}),
     Scenario('send_email_text child routed to Go sends with the association and reply-to', TEXT,
              {'message': 'Testo', 'subject': SUBJECT, 'recipient_list': TO, 'sport_association_id': ASSOCIATION,
               'reply_to': ['owner1@example.test']}, routes=(TEXT, MAIL),
-             expect={'status': 'SUCCESS', 'rows': 2, 'children': 0, 'emaillog': [('socio@example.test', SUBJECT, 'Sent', ASSOCIATION)],
+             expect={'status': 'SUCCESS', 'rows': 2, 'children': 1, 'emaillog': [('socio@example.test', SUBJECT, 'Sent', ASSOCIATION)],
                      'mails': 1}),
     Scenario('send_email_text child SMTP failure retries after 180 s', TEXT,
              {'message': 'Testo', 'subject': SUBJECT, 'recipient_list': TO}, routes=(TEXT, MAIL), smtp='auth', done='held',
-             expect={'status': 'SUCCESS', 'rows': 2, 'children': 0, 'emaillog': [], 'mails': 0, 'child': 'RETRY',
+             expect={'status': 'SUCCESS', 'rows': 2, 'children': 1, 'emaillog': [], 'mails': 0, 'child': 'RETRY',
                      'child_exc': 'SMTPAuthenticationError'}),
     Scenario('send_email_text without subject is handed off', TEXT, {'message': 'Testo', 'recipient_list': TO}, unchecked=True,
              handoff=True, expect={'status': 'FAILURE', 'exc': 'TypeError', 'rows': 1, 'children': 0, 'emaillog': [], 'mails': 0}),
@@ -187,7 +189,7 @@ SCENARIOS = [
     Scenario('send_email_template renders and publishes with the team address', TEMPLATE,
              {'recipient_list': ['owner1@example.test'], 'subject': "[ASD Uno] Ricordati di approvare l'iscrizione di Giulia Rossi",
               'template': NEW_SUBSCRIPTION, 'data': subscription_data(), 'sport_association_id': ASSOCIATION},
-             celery_left=1, expect={'status': 'SUCCESS', 'rows': 1, 'children': 0, 'emaillog': [], 'mails': 0, 'celery': 1}),
+             celery_left=1, expect={'status': 'SUCCESS', 'rows': 1, 'children': 1, 'emaillog': [], 'mails': 0, 'celery': 1}),
     Scenario('send_email_template with a configuration sends through its SMTP server and saves the balance', TEMPLATE,
              {'recipient_list': ['socio@example.test'], 'subject': '[ASD Quattro] Certificato in scadenza', 'template': NEW_SUBSCRIPTION,
               'data': subscription_data('Lùca', "D'Amico", 'ASD Quattro'), 'sport_association_id': SMTP_OK,
@@ -200,12 +202,12 @@ SCENARIOS = [
     Scenario('send_email_template with a failing SMTP login publishes under the association name', TEMPLATE,
              {'recipient_list': TO, 'subject': 'Ripiego', 'template': NEW_SUBSCRIPTION, 'data': subscription_data(),
               'sport_association_id': SMTP_BAD}, routes=(TEMPLATE, MAIL),
-             expect={'status': 'SUCCESS', 'rows': 2, 'children': 0, 'emaillog': [('socio@example.test', 'Ripiego', 'Sent', SMTP_BAD)],
+             expect={'status': 'SUCCESS', 'rows': 2, 'children': 1, 'emaillog': [('socio@example.test', 'Ripiego', 'Sent', SMTP_BAD)],
                      'mails': 1, 'balance': {CONFIG_BAD: 0}}),
     Scenario('send_email_template with a configuration without SMTP publishes under the association name', TEMPLATE,
              {'recipient_list': TO, 'subject': 'Senza SMTP', 'template': NEW_SUBSCRIPTION, 'data': subscription_data(),
               'sport_association_id': CONFIGURED, 'reply_to': 'owner2@example.test'},
-             celery_left=1, expect={'status': 'SUCCESS', 'rows': 1, 'children': 0, 'emaillog': [], 'mails': 0, 'celery': 1}),
+             celery_left=1, expect={'status': 'SUCCESS', 'rows': 1, 'children': 1, 'emaillog': [], 'mails': 0, 'celery': 1}),
     Scenario('send_email_template refused after a completed restore', TEMPLATE,
              {'recipient_list': TO, 'subject': 'Ripristino', 'template': NEW_SUBSCRIPTION, 'data': subscription_data()},
              setup='restore-completed', expect={'status': 'FAILURE', 'exc': 'StaleDataTask', 'rows': 1, 'children': 0, 'emaillog': [],
@@ -214,12 +216,12 @@ SCENARIOS = [
              {'recipient_list': TO, 'subject': 'Certificato aggiornato', 'template': CHANGED,
               'data': {**subscription_data(), 'certificate_expiring_date': '01/02/2027'}, 'sport_association_id': ASSOCIATION},
              routes=(TEMPLATE, MAIL), handoff=True,
-             expect={'status': 'SUCCESS', 'rows': 2, 'children': 0, 'emaillog': [('socio@example.test', 'Certificato aggiornato', 'Sent',
+             expect={'status': 'SUCCESS', 'rows': 2, 'children': 1, 'emaillog': [('socio@example.test', 'Certificato aggiornato', 'Sent',
                                                                                     ASSOCIATION)], 'mails': 1}),
     # -- send_email_html ------------------------------------------------------------------------
     Scenario('send_email_html publishes with the default sender', HTML,
              {'html_message': '<p>Promemoria</p>', 'subject': f'{BRAND} | Promemoria', 'recipient_list': TO},
-             celery_left=1, expect={'status': 'SUCCESS', 'rows': 1, 'children': 0, 'emaillog': [], 'mails': 0, 'celery': 1}),
+             celery_left=1, expect={'status': 'SUCCESS', 'rows': 1, 'children': 1, 'emaillog': [], 'mails': 0, 'celery': 1}),
     Scenario('send_email_html with a configuration sends after the Timer delay, also across a consumer stop', HTML,
              {'html_message': '<p>Promemoria <b>evento</b></p>', 'subject': 'Promemoria evento', 'recipient_list': ['uno@example.test'],
               'sport_association_id': SMTP_OK, 'reply_to': ['owner4@example.test']},
@@ -248,13 +250,13 @@ SCENARIOS = [
                      'mails': 0, 'smtp': 0, 'balance': {CONFIG_LIMITED: 3}}),
     Scenario('send_mail_async configuration login failure falls back to a child message', MAIL,
              mail(sport_association_id=SMTP_BAD, html_message='<p>ok</p>'),
-             expect={'status': 'SUCCESS', 'rows': 2, 'children': 0, 'mails': 1,
+             expect={'status': 'SUCCESS', 'rows': 2, 'children': 1, 'mails': 1,
                      'emaillog': [('socio@example.test', SUBJECT, 'Sent', SMTP_BAD)] * 2}),
     Scenario('send_mail_async through the instance email settings', MAIL, mail(html_message='<p>istanza</p>'), setup='instance',
              expect={'status': 'SUCCESS', 'rows': 1, 'children': 0, 'emaillog': [('socio@example.test', SUBJECT, 'Sent', None)],
                      'mails': 1}),
     Scenario('send_mail_async with an undecryptable instance password retries', MAIL, mail(), setup='instance-bad-password',
-             done='held', expect={'status': 'RETRY', 'exc': 'ImproperlyConfigured', 'rows': 1, 'children': 0, 'emaillog': [],
+             done='held', expect={'status': 'RETRY', 'exc': 'ImproperlyConfigured', 'rows': 1, 'children': 'self', 'emaillog': [],
                                   'mails': 0, 'retry': (1, 180)}),
     Scenario('fail_silently with an SMTP login failure logs Sent', MAIL, mail(fail_silently=True), smtp='auth',
              expect={'status': 'SUCCESS', 'rows': 1, 'children': 0, 'emaillog': [('socio@example.test', SUBJECT, 'Sent', None)],
@@ -345,34 +347,12 @@ class Stack(base.Stack):
 
 
 class Harness(base.Harness):
-    def django_context(self, scenario, queues):
-        from contextlib import ExitStack
-        from unittest.mock import patch
-        from django.test import override_settings
-        from core.celery import app
-        from core.task_routing import go_task_routes
-        from core import settings as core_settings
-        from TESTS.adapters.django.family_harness import _reset_celery_app
-        stack = ExitStack()
-        keys = ('CELERY_BROKER_URL', 'CELERY_TASK_DEFAULT_QUEUE', 'CELERY_TASK_ROUTES', 'CELERY_RESULT_BACKEND')
-        saved = {key: app.conf[key] for key in keys}
-        app.conf.update(dict(zip(keys, (f'redis://default:{REDIS_PASSWORD}@127.0.0.1:{self.stack.redis_port}', DJANGO_QUEUE,
-                                        go_task_routes(','.join(scenario.routes)), 'django-db'))))
-        _reset_celery_app(app)
-
-        def restore():
-            app.conf.update(saved)
-            _reset_celery_app(app)
-        stack.callback(restore)
-        smtp = self.stack.smtp_settings(scenario)
-        smtp['EMAIL_PORT'] = int(smtp['EMAIL_PORT'])
-        for name, value in (('WHITELABEL_NAME', BRAND), ('DEFAULT_FROM_EMAIL', f'{BRAND} <{HOST_USER}>'),
-                            ('DEFAULT_TEAM_EMAIL', f'Il Team di {BRAND} <{HOST_USER}>'), ('APP_URL', APP_URL)):
-            stack.enter_context(patch.object(core_settings, name, value))
-        stack.enter_context(override_settings(EMAIL_BACKEND='instance.email_configuration.EmailBackend',
-            DATA_RESTORE_LOCK_PATH=str(self.stack.work / 'operations.lock'), WHITELABEL_NAME=BRAND, APP_URL=APP_URL,
-            IS_WHITELABEL=False, SECRET_KEY=SECRET, SECRET_KEY_FALLBACKS=[], DEFAULT_FROM_EMAIL=f'{BRAND} <{HOST_USER}>', **smtp))
-        return stack, app
+    def oracle_settings(self, scenario):
+        config = super().oracle_settings(scenario)
+        config['routes'] = ','.join(scenario.routes)
+        config['settings'].update(APP_URL=APP_URL, IS_WHITELABEL=False, SECRET_KEY=SECRET, SECRET_KEY_FALLBACKS=[])
+        config['core'].update(DEFAULT_TEAM_EMAIL=f'Il Team di {BRAND} <{HOST_USER}>', APP_URL=APP_URL)
+        return config
 
     def env_file(self, scenario):
         path = super().env_file(scenario)
@@ -463,10 +443,12 @@ class Harness(base.Harness):
         others = [row for row in results if row['task_id'] != own_id]
         assert len(results) == expect['rows'] and len(own) == 1 and own[0]['status'] == expect['status'], results
         children = json.loads(own[0]['meta'])['children']
-        if expect['children'] == 'self':
+        # 'children' is the prefork worker's count; the thread oracle records only the maintenance deferral.
+        expected = expect['children'] if base.ORACLE == 'prefork' or expect.get('exc') == 'Busy' else 0
+        if expected == 'self':
             assert children == [[[own_id, None], None]], children
         else:
-            assert len(children) == expect['children'], children
+            assert children == [[['<child-task-id>', None], None]] * expected, children
         if 'exc' in expect:
             assert json.loads(own[0]['result'])['exc_type'] == expect['exc'], own
         else:
@@ -570,13 +552,14 @@ def main():
                     report.write_text(json.dumps(result, indent=2) + '\n')
     expected = [s.name for s in SCENARIOS if not only or only in s.name]
     assert harness.completed == expected, 'not every scenario completed'
-    paths = ['TESTS/adapters/go/celery_consumer_email_process.py', 'TESTS/adapters/go/celery_consumer_process.py', 'BE/core/tasks.py',
+    paths = ['TESTS/adapters/go/celery_consumer_email_process.py', 'TESTS/adapters/go/celery_consumer_process.py', *base.ORACLE_SOURCES,
+             'BE/core/tasks.py',
              'BE/application/tasks.py', 'BE/communications/models.py', 'BE/instance/email_configuration.py',
              'BE/instance/restore/task_base.py', 'BE/templates/email/account/email_new_subscription.html']
     paths += sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'BE_GO').rglob('*.go')
                     if any(part in str(p) for part in ('internal/celery/', 'internal/celeryworker/', 'cmd/celery-consumer/', 'celery_consumer',
                                                        'send_mail_async', 'consumer_email', 'internal/smtpsend/', 'internal/emailrender/')))
-    result.update(success=True, partial=bool(only), race_instrumented=not DJANGO_ONLY,
+    result.update(success=True, partial=bool(only), race_instrumented=not DJANGO_ONLY, oracle=base.ORACLE,
                   source_hashes={p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths})
     report.write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps({k: v for k, v in result.items() if k != 'source_hashes'}))

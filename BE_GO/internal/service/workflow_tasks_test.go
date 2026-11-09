@@ -140,6 +140,10 @@ func TestWorkflowTasks(t *testing.T) {
 			}
 		}
 		result, err := task.Run(context.Background(), request)
+		// The prefork worker stores every published message, in order, in the task's meta.children.
+		if err == nil && len(request.Children()) != len(out) {
+			t.Fatalf("%s children %v, published %d", name, request.Children(), len(out))
+		}
 		return out, result, err
 	}
 	// Email block for a minor: tutor promoted, recipients deduplicated in order, same countdown for both messages.

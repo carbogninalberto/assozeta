@@ -7,8 +7,12 @@ Each scenario builds one message with Django's own producer
 ``assozeta-go`` queue) and then:
 
 1. pushes the identical bytes to a real worker of the Django Celery app
-   (celery.contrib.testing worker, solo pool, ``-Q assozeta-go``, django-db
-   result backend, CoordinatedTask, the production EmailBackend);
+   (a ``celery worker -P prefork -c 1 -Q assozeta-go`` subprocess, as
+   production starts it; django-db result backend, CoordinatedTask, the
+   production EmailBackend; consumer_prefork_oracle_settings.py). With
+   CELERY_CONSUMER_ORACLE=thread the earlier oracle runs instead: a
+   celery.contrib.testing solo worker in a thread of the harness process,
+   which does not record the messages a task publishes in ``meta.children``;
 2. resets the same seed and pushes the identical bytes to the native Go
    consumer (``cmd/celery-consumer``, race-built).
 
@@ -57,6 +61,12 @@ DJANGO_QUEUE = 'celery'
 OUTPUT = ROOT / 'quality-reports/go-migration/celery-consumer-process'
 # Read before initialize_current_schema replaces the process environment.
 DJANGO_ONLY = bool(os.environ.get('CELERY_CONSUMER_DJANGO_ONLY'))
+# The Django oracle: 'prefork' (default; a worker subprocess as in production) or 'thread' (testing worker, solo pool).
+ORACLE = os.environ.get('CELERY_CONSUMER_ORACLE', 'prefork')
+if ORACLE not in ('prefork', 'thread'):
+    raise RuntimeError('CELERY_CONSUMER_ORACLE must be prefork or thread')
+ORACLE_SOURCES = ['TESTS/adapters/go/consumer_prefork_oracle_settings.py', 'TESTS/adapters/go/consumer_restore_settings.py',
+                  'TESTS/adapters/go/consumer_restore_worker.py', 'BE/core/celery.py']
 # A long DNS_NAME makes compat32 fold the header onto its own line ('Message-ID: \r\n <...>'):
 # the separator is kept so that a folding difference still shows.
 MESSAGE_ID = re.compile(r'Message-ID:( | \r\n )<[^>\r\n]+>')
@@ -121,7 +131,7 @@ SCENARIOS = [
     Scenario('association with a configuration without SMTP publishes a child the consumer executes',
              base_kwargs(sport_association_id=CONFIGURED, html_message='<p>via associazione</p>'),
              expect={'rows': 2, 'status': 'SUCCESS', 'emaillog': [('socio@example.test', 'Conferma iscrizione', 'Sent', CONFIGURED)] * 2,
-                     'mails': 1}),
+                     'mails': 1, 'children': 1}),
     Scenario('fail_silently=True with a refused connection logs Sent', base_kwargs(fail_silently=True), smtp='refused',
              expect={'status': 'SUCCESS', 'emaillog': [('socio@example.test', 'Conferma iscrizione', 'Sent', None)], 'mails': 0}),
     Scenario('an unknown keyword argument is handed off to the Django queue', base_kwargs(auth_user=None), handoff=True,
@@ -271,34 +281,81 @@ class Harness:
         self.completed, self.observations = [], {}
 
     # -- Django worker ------------------------------------------------------------------------
+    def oracle_settings(self, scenario):
+        """The routes, Django settings and core.settings attributes the Django worker runs the scenario with."""
+        smtp = self.stack.smtp_settings(scenario)
+        smtp['EMAIL_PORT'] = int(smtp['EMAIL_PORT'])
+        return {'routes': TASK,
+                'settings': dict(EMAIL_BACKEND='instance.email_configuration.EmailBackend',
+                                 DATA_RESTORE_LOCK_PATH=str(self.stack.work / 'operations.lock'), WHITELABEL_NAME=BRAND,
+                                 DEFAULT_FROM_EMAIL=f'{BRAND} <{HOST_USER}>', **smtp),
+                'core': {'WHITELABEL_NAME': BRAND, 'DEFAULT_FROM_EMAIL': f'{BRAND} <{HOST_USER}>'}}
+
     def django_context(self, scenario, queues):
+        """The harness process's Celery app and settings for the scenario (the producer; the thread oracle)."""
         from contextlib import ExitStack
+        from unittest.mock import patch
         from django.test import override_settings
+        from core import settings as core_settings
         from core.celery import app
         from core.task_routing import go_task_routes
         from TESTS.adapters.django.family_harness import _reset_celery_app
+        config = self.oracle_settings(scenario)
         stack = ExitStack()
         keys = ('CELERY_BROKER_URL', 'CELERY_TASK_DEFAULT_QUEUE', 'CELERY_TASK_ROUTES', 'CELERY_RESULT_BACKEND')
         saved = {key: app.conf[key] for key in keys}
         app.conf.update(dict(zip(keys, (f'redis://default:{REDIS_PASSWORD}@127.0.0.1:{self.stack.redis_port}', DJANGO_QUEUE,
-                                        go_task_routes(TASK), 'django-db'))))
+                                        go_task_routes(config['routes']), 'django-db'))))
         _reset_celery_app(app)
         def restore():
             app.conf.update(saved)
             _reset_celery_app(app)
         stack.callback(restore)
-        smtp = self.stack.smtp_settings(scenario)
-        smtp['EMAIL_PORT'] = int(smtp['EMAIL_PORT'])
-        from unittest.mock import patch
-        from core import settings as core_settings
-        for name, value in (('WHITELABEL_NAME', BRAND), ('DEFAULT_FROM_EMAIL', f'{BRAND} <{HOST_USER}>')):
+        for name, value in config['core'].items():
             stack.enter_context(patch.object(core_settings, name, value))
-        stack.enter_context(override_settings(EMAIL_BACKEND='instance.email_configuration.EmailBackend',
-            DATA_RESTORE_LOCK_PATH=str(self.stack.work / 'operations.lock'), WHITELABEL_NAME=BRAND,
-            DEFAULT_FROM_EMAIL=f'{BRAND} <{HOST_USER}>', **smtp))
+        stack.enter_context(override_settings(**config['settings']))
         return stack, app
 
     def run_django(self, scenario, payload, queues=(GO_QUEUE,), push=True, wait=None):
+        if ORACLE == 'thread':
+            return self.run_django_thread(scenario, payload, queues, push, wait)
+        message = json.loads(payload)
+        task_id = message['headers']['id']
+        if push:
+            self.stack.push(scenario, payload)
+        config = self.oracle_settings(scenario)
+        assert config['routes'] and config['settings'], 'oracle settings'
+        log = OUTPUT / f'django-{len(self.stack.children) + 1}.log'
+        stream = log.open('w')
+        environment = dict(os.environ, DJANGO_SETTINGS_MODULE='TESTS.adapters.go.consumer_prefork_oracle_settings',
+                           CONSUMER_RESTORE_BROKER_URL=f'redis://default:{REDIS_PASSWORD}@127.0.0.1:{self.stack.redis_port}',
+                           CONSUMER_PREFORK_ORACLE=json.dumps(config), PYTHONPATH=f'{ROOT / "BE"}:{ROOT}',
+                           OBJC_DISABLE_INITIALIZE_FORK_SAFETY='YES')
+        environment.pop('CONSUMER_RESTORE_PRODUCTION_SERVICES', None)
+        process = subprocess.Popen([sys.executable, '-m', 'TESTS.adapters.go.consumer_restore_worker', '-P', 'prefork', '-c', '1',
+                                    '-Q', ','.join(queues), '-n', 'oracle@%h', '--without-heartbeat', '--without-gossip',
+                                    '--without-mingle', '-l', 'WARNING'], cwd=ROOT / 'BE', env=environment, stdout=stream,
+                                   stderr=subprocess.STDOUT)
+        self.stack.children.append((process, stream, log))
+        try:
+            predicate = wait or (lambda: self.stack.quiescent(scenario, task_id))
+            self.wait(lambda: predicate() or process.poll() is not None, 'Django worker: ' + scenario.name)
+            assert process.poll() is None, 'Django worker exited: ' + log.read_text()[-3000:]
+            time.sleep(0.3)
+        finally:
+            if process.poll() is None:
+                process.send_signal(signal.SIGTERM)
+            try:
+                code = process.wait(timeout=90)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                code = process.wait(timeout=10)
+            stream.close()
+        assert code == 0, f'Django worker exit status {code}: {log.read_text()[-3000:]}'
+        time.sleep(0.5)  # the SMTP server records a connection when the worker's socket closes
+        return task_id
+
+    def run_django_thread(self, scenario, payload, queues=(GO_QUEUE,), push=True, wait=None):
         import io
         from contextlib import redirect_stdout
         from celery.contrib.testing.worker import start_worker
@@ -513,9 +570,13 @@ class Harness:
         else:
             own = [row for row in results if row['task_id'] == json.loads(payload)['headers']['id']]
             assert len(results) == expect.get('rows', 1) and len(own) == 1 and own[0]['status'] == expect['status'], results
-            # The maintenance deferral publishes with apply_async (added to the request's children);
-            # Task.retry does not add its own message.
-            children = [[[own[0]['task_id'], None], None]] if expect.get('exc') == 'Busy' else []
+            # The maintenance deferral publishes with apply_async (added to the request's children). In the
+            # prefork worker the retry message and the messages the body publishes are children as well; the
+            # thread oracle records neither.
+            own_child = expect.get('exc') == 'Busy' or (ORACLE == 'prefork' and expect['status'] == 'RETRY')
+            children = [[[own[0]['task_id'], None], None]] if own_child else []
+            if ORACLE == 'prefork':
+                children += [[['<child-task-id>', None], None]] * expect.get('children', 0)
             assert own[0]['meta'] == json.dumps({'children': children}), results
             assert all(row['meta'] == '{"children": []}' for row in results if row is not own[0]), results
             if 'exc' in expect:
@@ -607,11 +668,11 @@ def main():
                     report.write_text(json.dumps(result, indent=2) + '\n')
     expected = [s.name for s in SCENARIOS if not only or only in s.name]
     assert harness.completed == expected, 'not every scenario completed'
-    paths = ['TESTS/adapters/go/celery_consumer_process.py', 'BE/core/tasks.py', 'BE/core/task_routing.py', 'BE/core/settings.py',
+    paths = ['TESTS/adapters/go/celery_consumer_process.py', *ORACLE_SOURCES, 'BE/core/tasks.py', 'BE/core/task_routing.py', 'BE/core/settings.py',
              'BE/instance/restore/task_base.py', 'BE/instance/email_configuration.py']
     paths += sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'BE_GO').rglob('*.go')
                     if any(part in str(p) for part in ('internal/celery/', 'cmd/celery-consumer/', 'celery_consumer', 'send_mail_async', 'internal/smtpsend/')))
-    result.update(success=True, partial=bool(only), race_instrumented=True,
+    result.update(success=True, partial=bool(only), race_instrumented=True, oracle=ORACLE,
                   source_hashes={p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths})
     report.write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps({k: v for k, v in result.items() if k != 'source_hashes'}))
