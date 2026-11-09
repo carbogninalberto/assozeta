@@ -6,7 +6,7 @@
   family.py scaffold FAMILY             generator, contract and adapter skeletons (never overwrites)
   family.py run FAMILY [--versioned] [--label L]
   family.py mutation FAMILY --file F --old TEXT --new TEXT [--label L]
-  family.py record FAMILY --spec SPEC.json [--from-worktree PATH]
+  family.py record FAMILY --spec SPEC.json [--from-worktree PATH] [--ledger PATH]
 
 Runs use the parent-only acceptance driver (TESTS.adapters.django.staff_board_http_acceptance)
 with the migration interpreter (GO_MIGRATION_PYTHON, default
@@ -33,6 +33,9 @@ FAMILY = re.compile(r'[a-z]+(-[a-z]+)*\Z')
 
 def module_name(family):
     return family.replace('-', '_') + '_http'
+
+
+NON_ROUTE_KINDS = ('serializer_hook', 'model_hook', 'signal', 'signal_connection')
 
 
 def load_ledger():
@@ -271,6 +274,54 @@ def mutation(args):
 # record
 # ---------------------------------------------------------------------------
 
+def family_doc(ledger, fixture):
+    """The family doc recorded as the first evidence item of the family's route entries."""
+    for entry in ledger['entries']:
+        if entry['kind'] == 'route' and fixture in entry.get('tests', []) and entry.get('evidence') \
+                and isinstance(entry['evidence'][0], str):
+            return entry['evidence'][0]
+    return None
+
+
+def credit_non_route(ledger, family, non_route, green, count, tests, evidence):
+    """Mark hook/signal entries implementing with the family's receipts, merged into their current content."""
+    fixture = json.loads((ROOT / tests[0]).read_text())['cases']
+    names = {case['name'] for case in fixture}
+    passed = [{case['case'] for case in item.get('cases', [])} for item in green['workloads']]
+    if any(len(cases) != count for cases in passed):
+        sys.exit(f'GREEN must cover all {count} fixture cases on every transport')
+    entries = {entry['id']: entry for entry in ledger['entries']}
+    for identifier, credit in non_route.items():
+        entry = entries.get(identifier)
+        if entry is None or entry['kind'] not in NON_ROUTE_KINDS:
+            sys.exit('Unknown non-route entry: ' + identifier)
+        cases = credit.get('cases') or []
+        if not cases:
+            sys.exit('No cases exercise ' + identifier)
+        missing = [case for case in cases if case not in names]
+        if missing:
+            sys.exit(f'{identifier}: cases not in {tests[0]}: ' + ', '.join(missing))
+        unpassed = [case for case in cases if any(case not in transport for transport in passed)]
+        if unpassed:
+            sys.exit(f'{identifier}: cases missing from the GREEN receipt: ' + ', '.join(unpassed))
+        go = credit.get('go') or []
+        for relative in go:
+            if not (ROOT / relative).is_file():
+                sys.exit('Missing file: ' + relative)
+        unknown = set(credit.get('contract') or {}) - set(entry['contract'])
+        if unknown:
+            sys.exit(f'{identifier}: unknown contract keys: ' + ', '.join(sorted(unknown)))
+        merge = lambda current, extra: current + [item for item in extra if item not in current]
+        entry['status'] = 'implementing'
+        entry['go'] = merge(entry['go'], go)
+        entry['tests'] = merge(entry['tests'], tests)
+        doc, red, green_item, mutation = evidence
+        green_item = {**green_item, 'result': green_item['result'].rstrip('.') + '; exercised by ' + ', '.join(cases) + '.'}
+        entry['evidence'] = merge(entry['evidence'], [doc, red, green_item, mutation])
+        entry['contract'].update({key: value for key, value in (credit.get('contract') or {}).items() if value is not None})
+        entry['notes'] = merge(entry['notes'], [f'Implementing via {family}: ' + credit['notes']] if credit.get('notes') else [])
+
+
 def receipt(label, family):
     path = REPORTS / f'{family}-http-{label}/results.json'
     report = json.loads(path.read_text())
@@ -286,6 +337,13 @@ def record(args):
     "mutation_change": "committing change without ...", "mutation_result": "fails Go on ...",
     "routes": {"<declaration path>": {"methods": [...], "request": ..., "response": ..., "errors": ...,
     "permissions": ..., "resource_scope": ..., "side_effects": ..., "transaction": ...}}}
+
+    A spec may also (or only) carry "non_route": {"<ledger id>": {"go": [...], "contract": {partial contract},
+    "cases": ["<fixture case>", ...], "notes": "..."}} for serializer_hook, model_hook, signal and
+    signal_connection entries the family's cases exercise. Each named case must be in the fixture and pass
+    on all four GREEN transports; the entry becomes implementing with the family's tests and receipts merged
+    into what it already has. A spec with only non_route needs just red, green, mutation (and optionally
+    doc, mutation_change, mutation_result); doc defaults to the one recorded on the family's routes.
     """
     family = args.family
     module = module_name(family)
@@ -317,22 +375,38 @@ def record(args):
         sys.exit('The mutation run must fail')
     tests = [f'TESTS/fixtures/{module}.json', f'TESTS/fixtures/generate_{module}.py', f'TESTS/contracts/test_{module}.py',
              f'TESTS/adapters/django/{module}.py']
-    for relative in [spec['doc'], *spec['go'], *tests]:
-        if not (ROOT / relative).is_file():
-            sys.exit('Missing file: ' + relative)
+    routes = dict(spec.get('routes') or {})
+    non_route = dict(spec.get('non_route') or {})
+    if not routes and not non_route:
+        sys.exit('The spec names no routes and no non_route entries')
+    ledger = load_ledger()
+    doc = spec.get('doc') or (family_doc(ledger, tests[0]) if not routes else None)
+    for relative in [doc, *(spec['go'] if routes else []), *tests]:
+        if not relative or not (ROOT / relative).is_file():
+            sys.exit('Missing file: ' + str(relative))
     relative = lambda path: str(path.relative_to(ROOT))
     first = (red.get('errors') or [{}])[0]
     failure = str(first.get('actual_status')) if first.get('actual_status') else 'fails ' + str(first.get('check', ''))
-    evidence = [spec['doc'],
-                {'revision': 'committing change, before Go code', 'result': f'RED: Django {count}/{count}; Go {failure} on the first case.',
+    red_count = len(red['workloads'][0].get('cases', [])) if not routes else count
+    red_revision = 'committing change, before Go code' if routes else 'family RED receipt, before its Go code'
+    evidence = [doc,
+                {'revision': red_revision, 'result': f'RED: Django {red_count}/{red_count}; Go {failure} on the first case.',
                  'artifact': relative(red_path), 'receipt_sha256': red_sha},
                 {'revision': 'committing change',
                  'result': f'GREEN: {count}/{count} on native Django, native Go, Caddy /api/v1 and /api/v2' + spec.get('green_note', '') + '.',
                  'artifact': relative(green_path), 'receipt_sha256': green_sha},
-                {'revision': spec['mutation_change'], 'result': 'Mutation control: ' + spec['mutation_result'],
+                {'revision': spec.get('mutation_change') if not routes else spec['mutation_change'],
+                 'result': 'Mutation control: ' + str(spec.get('mutation_result') if not routes else spec['mutation_result']),
                  'artifact': relative(mutation_path), 'receipt_sha256': mutation_sha}]
-    ledger = load_ledger()
-    routes = dict(spec['routes'])
+    if not routes and 'mutation_change' not in spec:
+        # Reuse the family's recorded wording for the same mutation receipt.
+        recorded = [item for entry in ledger['entries'] if entry['kind'] == 'route' and tests[0] in entry.get('tests', [])
+                    for item in entry.get('evidence', []) if isinstance(item, dict) and item.get('artifact') == evidence[3]['artifact']]
+        if not recorded:
+            sys.exit('mutation_change and mutation_result are required for a mutation receipt the family has not recorded')
+        evidence[3] = {**recorded[0], 'receipt_sha256': mutation_sha}
+    if non_route:
+        credit_non_route(ledger, family, non_route, green, count, tests, evidence)
     for entry in ledger['entries']:
         path = route_path(entry)
         if entry['kind'] != 'route' or path not in routes:
@@ -385,8 +459,12 @@ def main():
     command.add_argument('family')
     command.add_argument('--spec', required=True)
     command.add_argument('--from-worktree', help="copy this family's reports from another worktree first")
+    command.add_argument('--ledger', type=Path, help='ledger file to update (default: the repository ledger)')
     command.set_defaults(func=record)
     args = parser.parse_args()
+    if getattr(args, 'ledger', None):
+        global LEDGER
+        LEDGER = args.ledger.resolve()
     args.func(args)
 
 
