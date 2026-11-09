@@ -259,6 +259,10 @@ func run() (runErr error) {
 
 	// document/<kind>/<uid> PDF routes: the Puppeteer FastRender service (PUPPETEER_HOST/PORT) prints
 	// CURRENT_HOST_PUPPETEER/<view>; DOCUMENT_BYPASS_TOKEN is HasBypassAuthorizationHeader's token.
+	// document/<kind>/<uid>/view/ HTML views (the pages the renderer prints) and the subscription preview.
+	documentViewsHandler := handler.NewDocumentViewsHandler(service.NewDocumentViews(repository.NewDocumentViews(db),
+		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")),
+		os.Getenv("DOCUMENT_BYPASS_TOKEN"), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	documentRenderHandler := handler.NewDocumentRenderHandler(service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
 		documentRenderSettings(cfg), time.Now, uuid.NewString),
@@ -654,6 +658,11 @@ func run() (runErr error) {
 	e.Any("/document/compensation/:uid", documentRenderHandler.Compensation, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/template/:uid", documentRenderHandler.Template, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/medical-appointment/:uid", documentRenderHandler.MedicalAppointment, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/subscription/preview/", documentViewsHandler.Preview, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/subscription/:uid/view/", documentViewsHandler.Subscription, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/compensation/:uid/view/", documentViewsHandler.Compensation, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/template/:uid/view/", documentViewsHandler.Template, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/medical-appointment/:uid/view/", documentViewsHandler.MedicalAppointment, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/retrieve/:uid", docmanagerReadsHandler.Retrieve, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/:uid/delete", docmanagerReadsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/delete", foldersHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))

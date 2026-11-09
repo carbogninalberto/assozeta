@@ -25,7 +25,7 @@ const viewAssociationColumns = `sa.sport_association_id::text AS id, sa.user_id:
  sa.invoice_footer, sa.subscription_template, sa.federation, sa.enroll_number, sa.iban, sa.website, sa.abbreviated, sa.vat_number,
  sa.whatsapp, sa.sport, sa.show_regulation_to_members, sa.show_regulation_to_both, sa.show_regulation_to_athletes,
  sa.show_demand_to_members, sa.show_demand_to_both, sa.show_demand_to_athletes
- FROM application_sportassociation sa JOIN application_user u ON u.user_id=sa.user_id`
+ FROM application_sportassociation sa JOIN bakney_user u ON u.user_id=sa.user_id`
 
 type viewAssociationRow struct {
 	ID                   string  `db:"id"`
@@ -206,21 +206,21 @@ func (r *DocumentViews) Subscription(ctx context.Context, id string, scope domai
 // CoursesList is ", ".join(course.title) over the live course subscriptions
 // (CourseSubscription.objects, select_related('course')), in the database's order.
 func (r *DocumentViews) CoursesList(ctx context.Context, subscription string) (string, error) {
-	titles := []*string{}
+	titles := []sql.NullString{}
 	if err := r.db.SelectContext(ctx, &titles, `SELECT c.title FROM application_coursesubscription cs
- JOIN application_course c ON c.course_id=cs.course_id WHERE cs.subscription_id=$1::uuid AND NOT cs.deleted AND NOT cs.deleted`,
+ JOIN application_course c ON c.course_id=cs.course_id WHERE cs.subscription_id=$1::uuid AND NOT cs.deleted`,
 		subscription); err != nil {
 		return "", err
 	}
 	joined := ""
 	for i, title := range titles {
-		if title == nil {
+		if !title.Valid {
 			return "", domain.ErrViewCourseTitle
 		}
 		if i > 0 {
 			joined += ", "
 		}
-		joined += *title
+		joined += title.String
 	}
 	return joined, nil
 }

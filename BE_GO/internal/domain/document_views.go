@@ -41,16 +41,16 @@ type ViewAssociation struct {
 
 // ViewAssociate is an Associate.
 type ViewAssociate struct {
-	ID                                       string
-	FirstName, LastName                      *string
-	Sex                                      string
-	TaxCode                                  *string
-	BornDate                                 *time.Time
-	BornCity, Address, AddressCity           *string
-	AddressCap, Nationality, NationalityRes  *string
-	Email, Phone, Phone2, Phone3, Phone4     *string
-	PhoneLabel, Phone2Label, Phone3Label     *string
-	Phone4Label, Notes                       *string
+	ID                                      string
+	FirstName, LastName                     *string
+	Sex                                     string
+	TaxCode                                 *string
+	BornDate                                *time.Time
+	BornCity, Address, AddressCity          *string
+	AddressCap, Nationality, NationalityRes *string
+	Email, Phone, Phone2, Phone3, Phone4    *string
+	PhoneLabel, Phone2Label, Phone3Label    *string
+	Phone4Label, Notes                      *string
 }
 
 // ViewSubscription is a Subscription with its payment's meta.
@@ -79,13 +79,13 @@ type ViewPayment struct {
 
 // ViewInstructor is an Instructor.
 type ViewInstructor struct {
-	IsVolunteer                                     bool
-	FirstName, LastName                             string
-	TaxCode, Address, CivicNumber, AddressCity      *string
-	BornDate                                        *time.Time
+	IsVolunteer                                      bool
+	FirstName, LastName                              string
+	TaxCode, Address, CivicNumber, AddressCity       *string
+	BornDate                                         *time.Time
 	BornCity, BornProvince, Phone, Email, StudyTitle *string
-	Role                                            *string
-	StipulatedContractIn                            *time.Time
+	Role                                             *string
+	StipulatedContractIn                             *time.Time
 }
 
 // ViewHours is an InstructorHours row's period data.
@@ -97,10 +97,10 @@ type ViewHours struct {
 
 // ViewTemplate is a SportAssociationModuleTemplates row.
 type ViewTemplate struct {
-	Association                       string
-	Template                          *string
+	Association                        string
+	Template                           *string
 	Footer, Header, CustomFooterHeader bool
-	CustomFooter, CustomHeader        *string
+	CustomFooter, CustomHeader         *string
 }
 
 // ViewAppointment is a MedicalAppointments row with its subscription.
