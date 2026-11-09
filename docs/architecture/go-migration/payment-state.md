@@ -5,8 +5,9 @@
 `payment_bulk_delete` in `BE/application/views/payment_views.py`, with `Payment.save()`, Payment's and the installments'
 `pre_delete` signals) are implemented in Go (`BE_GO/internal/{domain,dto,repository,service,handler}/payment_state.go`).
 Registry: approve and cancel `bookeeping.payments.update`, delete and bulk delete `bookeeping.payments.delete`, bulk
-archive `bookeeping.payments.archive.update`. Django remains the execution owner. Cancel, delete and the bulk routes are
-recorded; approve is routed in Go with its ported paths but not recorded (its income path is not ported, see below).
+archive `bookeeping.payments.archive.update`. Django remains the execution owner. All five routes are recorded; approve's
+paid flow (unpaid income payments with a party) is ported in `BE_GO/internal/{domain,repository,service}/payment_paid_flow.go`,
+shared with Stripe's `mark_payment_as_paid` ([stripe-routes](stripe-routes.md)).
 `payment/list`, `payment/stats` and the email, PDF, sign, add, simulation and export routes are not part of this family.
 
 ## Shared behaviour
@@ -32,6 +33,48 @@ recorded; approve is routed in Go with its ported paths but not recorded (its in
   without description) rolls back.
 - PaymentSerializer renders user, associate, instructor (InstructorSerializer), supplier, attachments, category name,
   custom account and `get_subscription_id` (shared with course-subscriptions).
+
+## Approve: the paid flow
+
+An unpaid income payment with an associate, supplier or instructor, in the atomic block:
+
+1. payment date: the sent one, else the stored one, else now;
+2. fees (invoice-generate's arithmetic): a subscription payment (subject 1) sums `float(str(amount))` of the truthy
+   `meta_payment_categories` amounts into the activity fee and, for a positive amount, the membership fee is
+   `float(amount) - activity`; other subjects have membership `0.0` and the amount as activity fee (a non-numeric amount
+   is a 500, rolled back);
+3. `InvoiceService.get_next_invoice_number(use_payment_date=True)` with request.user's settings: the advisory lock
+   (`InvoiceLockKey`, shared with invoice-generate), the balance year of now; invoices of the association that are live,
+   `X-Group-Id`-aware, not archived and not cancelled, joined to a payment dated before the balance year when this
+   payment is, otherwise dated from its start; `ORDER BY number DESC` (a NULL top number counts as 0);
+   `max(that, starting_number_invoices) + 1`. Instructor-only payments take the lock and compute the number too;
+4. `generate_invoice_description` (before the save, the payment's own associate);
+5. associate or supplier only: `Invoice.objects.create` (raw `X-Group-Id`, created now; audited create with the float
+   fees) and `invoice.save()`: `creation_date` becomes the payment date for owners with
+   `payment_date_equal_invoice_date`; the update entry carries that date and the float fees whose `str()` differs from
+   the stored decimals (`['0.00', '0.0']`), so it is written on every approve that creates an invoice;
+6. `payment.save()`: `paid`, `payment_date`, `invoice` and `Payment.save()`'s defaults, audited directly;
+7. the first supplier invoice paid with now;
+8. subject 2: the payment's first live course subscription (impersonation adds the session's subscription and course
+   association), else the first live, group-aware installment's course subscription (the installment itself is not
+   changed), else the first carnet subscription's live course subscriptions: each saved `paid=True` (an entry only when it
+   changes; `object_repr` is `str(self.__dict__)`, indexed through `course.sport_association`);
+9. the notification text: `carnet <title>` (a carnet subscription without carnet is a 500, rolled back),
+   `il corso "<title>"` (`il corso` when nothing is linked), `l'iscrizione all'associazione sportiva` (subject 1) or the
+   saved description; `Pagamento di € <amount with a comma>` + `per <text>` (no space) + `.` + ` Pagamento
+   dell'associato <full name>.` or ` Pagamento dell'utente <full name>.`;
+10. `NotificationService.send_notification(request.user, ...)`: request.user is an association owner, so the association id
+    is its association. `validate_broadcast` writes the `broadcast_<user>` NotificationsBroadcast and the
+    UserNotificationsBroadcast on the first notification (audited, indexed through the actor's association); the item
+    (`type 'payment'`) is appended to the Redis DB 0 list and pushed to `notifications_user_<user>`.
+
+The answer is `{'data': {'msg': 'payment mark as payed.', 'payment': ...}}` with the in-memory invoice (DRF's two-place
+fees). A truthy `generate_invoice` with an invoice publishes `print_document_invoice` on commit with
+`[invoice, Authorization, send_receipt_email]` and adds `invoice_generating: true`.
+
+Go keeps one transaction for the request: `validate_broadcast`'s rows are written in it, the Redis list and the push follow
+the commit (`SubscriptionNotifier.DeliverValidated`), then the task. Django writes the list and pushes before its commit;
+only a failing commit would tell the two apart.
 
 ## Cancel
 
@@ -61,11 +104,11 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
 
 ## Not ported (refused with a 500 before any write)
 
-- Approve of an unpaid income payment with an associate, supplier or instructor (invoice numbering and creation, course
-  subscription and carnet paid flags, notification, PDF/e-mail task on commit).
-- Approve of a paid invoiced payment with a truthy `generate_invoice` (`print_document_invoice` on commit); paid cancel
-  or delete of a payment with an invoice (invoice cancellation and the PDF task, synchronous for delete). Approve of
-  other invoiced payments renders the invoice (see payment-misc.md).
+- Paid flow inputs outside the ported conversions: a non-canonical `X-Group-Id` spelling when an invoice is created,
+  float fees whose two-place rounding is an exact tie, `meta.subscription_data.name` values other than strings, booleans
+  and integers (invoice-generate's limits), a request.user that is not an owner or collaborator (no association id).
+- Paid cancel or delete of a payment with an invoice (invoice cancellation and the PDF task, synchronous for delete).
+  Approve of paid invoiced payments renders the invoice and dispatches the task (payment-misc.md, invoice-generate.md).
 - A `payment_date` containing non-ASCII decimal digits (accepted by `strptime`).
 
 ## Evidence

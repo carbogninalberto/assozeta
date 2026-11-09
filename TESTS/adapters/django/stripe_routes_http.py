@@ -23,6 +23,14 @@ only payment_intent_id (and Payment.save()'s default category) of the authored
 payments and paid/payment_date of the authored supplier invoices change, and
 the new auditlog entries match the authored ones in order, with their index
 rows. A '$now' payment date must be recent and equal in the row and the entry.
+
+The paid flow (an unpaid payment without an invoice) is checked with
+payment_paid_flow: the created invoice, the payment's paid/payment_date/invoice,
+the course subscription or installment marked paid, the broadcast rows, the
+owner's notification and the print_document_invoice messages on the run's
+private Celery broker ('$bypass' is DOCUMENT_BYPASS_TOKEN, '$rolled_back_invoice'
+the id of an invoice the rolled-back block never kept). A course, a carnet,
+course subscriptions, an installment and a carnet subscription are seeded for it.
 """
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
@@ -37,6 +45,7 @@ import types
 
 from TESTS.contracts import test_stripe_routes_http as base_contract
 from TESTS.adapters.django import family_harness as harness
+from TESTS.adapters.django import payment_paid_flow as paid
 from TESTS.adapters.django.workflow_writes_http import keyed
 
 SOURCES = ('TESTS/fixtures/stripe_routes_http.json', 'TESTS/contracts/test_stripe_routes_http.py',
@@ -46,9 +55,12 @@ SOURCES = ('TESTS/fixtures/stripe_routes_http.json', 'TESTS/contracts/test_strip
            'BE/application/models/invoices_models.py', 'BE/application/models/user_models.py', 'BE/application/impersonation_scope.py',
            'BE/application/impersonation.py', 'BE/application/mixin.py', 'BE/application/audit_resolvers.py',
            'BE/application/utils/api_utils.py', 'BE/application/permissions_registry.py', 'BE/core/settings.py',
-           'BE/core/middleware.py') + harness.SOURCES
+           'BE/core/middleware.py', 'BE/application/models/courses_models.py', 'BE/application/models/carnet_models.py',
+           'BE/application/views/payment_views.py') + paid.SOURCES + harness.SOURCES
 PAYMENT, SUPPLIER_INVOICE = 'application.Payment', 'application.InvoiceSuppliers'
-MANAGED = (PAYMENT, SUPPLIER_INVOICE, harness.AUDIT, harness.INDEX)
+COURSE_SUBSCRIPTION, INSTALLMENT = 'application.CourseSubscription', 'application.CourseSubscriptionInstallment'
+MANAGED = (PAYMENT, SUPPLIER_INVOICE, COURSE_SUBSCRIPTION, INSTALLMENT, *paid.MANAGED, harness.AUDIT, harness.INDEX)
+STATE = {}
 UUID4 = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\Z')
 CLIENT_AGENT_KEYS = ['bindings_version', 'lang', 'publisher', 'httplib', 'lang_version', 'platform', 'uname']
 STUB = {}
@@ -103,7 +115,8 @@ def service_context(report, log):
     try:
         stripe.api_base = base
         os.environ['STRIPE_API_BASE'] = base
-        yield
+        with paid.channel_layers():
+            yield
     finally:
         stripe.api_base = saved_base
         if saved_env is None:
@@ -194,8 +207,9 @@ def moment(text):
 
 
 def seed_rows(source, created):
-    from application.models import (Associate, Invoice, InvoiceSuppliers, Payment, PaymentCategory, SportAssociation, SupplierAndCustomers,
-                                    Subscription, User)
+    from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, Invoice, InvoiceSuppliers, Payment,
+                                    PaymentCategory, SportAssociation, SupplierAndCustomers, Subscription, User)
+    from application.models.carnet_models import Carnet, CarnetSubscription
     from instance.integration_configuration import encrypt_secret
     from instance.models import InstanceConfiguration
     ids = source['ids']
@@ -241,14 +255,46 @@ def seed_rows(source, created):
             paid=row['paid'], associate_id=person['id'] if row['associate'] else None, user_id=owner if row['user'] else None,
             payment_intent_id=row['intent'], invoice_id=source['invoices'][label]['id'] if row['invoice'] else None,
             group_id=ids[row['group']] if row['group'] else None, deleted=row['deleted'], payment_category_id=row['category'],
-            creation_date=moment(row['created']), payment_date=moment(row['payment_date']), description=row['description']))
+            creation_date=moment(row['created']), payment_date=moment(row['payment_date']), description=row['description'],
+            meta_payment_categories=row.get('meta_categories')))
     for label, row in source['supplier_invoices'].items():
         insert(InvoiceSuppliers, InvoiceSuppliers(invoice_supplier_id=row['id'], invoice_identifier=row['identifier'],
                                                   amount=Decimal(row['amount']), sport_association_id=payments[label]['association'],
                                                   supplier_id=vendor['id'], payment_id=payments[label]['id']))
+    plain = source['associations']['plain']['association']
+    insert(Course, Course(course_id=source['course']['id'], sport_association_id=plain, course_type=1, title=source['course']['title'],
+                          fee=Decimal('50.00')))
+    insert(Carnet, Carnet(carnet_id=source['carnet']['id'], title=source['carnet']['title'], sport_association_id=plain, fee=Decimal('1.00')))
+    for row in source['course_subscriptions'].values():
+        insert(CourseSubscription, CourseSubscription(course_subscription_id=row['id'], course_id=source['course']['id'],
+                                                      subscription_id=source['subscription']['id'],
+                                                      payment_id=payments[row['payment']]['id'] if row['payment'] else None))
+    for row in source['installments'].values():
+        insert(CourseSubscriptionInstallment, CourseSubscriptionInstallment(
+            course_subscription_installment_id=row['id'], course_subscription_id=source['course_subscriptions'][row['cs']]['id'], id=1,
+            amount=Decimal('20.00'), paid=False, payment_date=moment('2026-09-15T08:30:00Z'), payment_id=payments[row['payment']]['id']))
+    for row in source['holdings'].values():
+        insert(CarnetSubscription, CarnetSubscription(carnet_subscription_id=row['id'], carnet_id_id=source['carnet']['id'],
+                                                      subscription_id=source['subscription']['id'], payment_id=payments[row['payment']]['id']))
 
 
-base_fixture_context = harness.fixture_context_for(contract, seed_rows)
+def invoices():
+    from application.models import Invoice
+    return Invoice
+
+
+def broadcasts():
+    from notifications.models import NotificationsBroadcast
+    return NotificationsBroadcast
+
+
+def user_broadcasts():
+    from notifications.models import UserNotificationsBroadcast
+    return UserNotificationsBroadcast
+
+
+base_fixture_context = paid.with_notifications(harness.with_celery_broker(harness.fixture_context_for(
+    contract, seed_rows, purge=(invoices, user_broadcasts, broadcasts))), lambda fixture: {'owner': base_contract.load_source()['ids']['owner']})
 
 
 def default_category():
@@ -262,7 +308,11 @@ def default_category():
 def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
         fixture['default_category'] = default_category()
-        yield fixture
+        STATE['fixture'] = fixture
+        try:
+            yield fixture
+        finally:
+            STATE.pop('fixture', None)
 
 
 # ---------------------------------------------------------------------------
@@ -288,29 +338,85 @@ def recent(when):
     return isinstance(when, datetime) and abs(datetime.now(timezone.utc) - when) < timedelta(minutes=10)
 
 
+def side_channels(case, effect, fixture, context, binding, until):
+    """The Celery messages and the notification of the case."""
+    import base64
+    from django.conf import settings
+    since = context['prepared']['started']
+    values = {**binding, '$bypass': settings.DOCUMENT_BYPASS_TOKEN,
+              '$authorization': None if case['actor'] == 'anonymous' else 'Bearer ' + fixture['tokens'][case['actor']]}
+    specs = effect.get('celery', [])
+    messages = harness.drain_celery(fixture)
+    if effect.get('rolled_back') and len(messages) == 1:
+        # The rolled-back invoice's id is only known from the published task.
+        body = json.loads(base64.b64decode(json.loads(messages[0])['body']))
+        values['$rolled_back_invoice'] = body[0][0] if body and body[0] else None
+        from application.models import Invoice
+        contract.require(isinstance(values['$rolled_back_invoice'], str) and UUID4.match(values['$rolled_back_invoice'])
+                         and not Invoice._base_manager.filter(pk=values['$rolled_back_invoice']).exists(), 'celery.rolled-back-invoice')
+    contract.require(len(messages) == len(specs), 'celery.count')
+    for index, (raw, spec) in enumerate(zip(messages, specs)):
+        args = [values.get(item, item) if isinstance(item, str) else item for item in spec['args']]
+        harness.check_celery_message(contract, raw, {**spec, 'args': args}, since=since, until=until, where=f':{index}')
+    if specs:
+        key, member = harness.CELERY_BINDING
+        contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
+    created = any(item['model'] == 'notificationsbroadcast' for item in effect['audit'])
+    paid.check_notification(contract, effect.get('notification'), fixture, context['prepared'], created, until)
+
+
 def assert_effect(case, before, after, source, context):
+    effect = case['effect']
+    fixture = context['fixture']
+    until = datetime.now(timezone.utc).timestamp()
+    binding = {}
+    try:
+        check_state(case, effect, before, after, source, context, binding)
+    except BaseException:
+        try:  # drain the side channels, keeping the first failure
+            side_channels(case, effect, fixture, context, binding, until)
+        except BaseException:
+            pass
+        raise
+    side_channels(case, effect, fixture, context, binding, until)
+
+
+def check_state(case, effect, before, after, source, context, binding):
     require = contract.require
     check_stripe(case, source)
     harness.require_unmanaged_unchanged(contract, before, after, MANAGED)
-    effect = case['effect']
     fixture, ids = context['fixture'], source['ids']
-    bindings = {'$default_category': fixture['default_category']}
+    notification = effect.get('notification')
+    if notification is not None:
+        notification = {**notification, 'user_id': ids[notification['user']]}
+    created_broadcast = any(item['model'] == 'notificationsbroadcast' for item in effect['audit'])
+    paid.check_broadcasts(contract, before, after, notification, created_broadcast, binding)
+    invoice_now = paid.check_invoice(contract, before, after, effect.get('invoice'), [], binding)
+    bindings = {'$default_category': fixture['default_category'], **binding}
 
+    after_payments = {str(row['payment_id']): row for row in map(flat, after[PAYMENT])}
+    now_text = {}
     expected_payments, changed = [], effect['payments_changed']
     by_id = {row['id']: label for label, row in source['payments'].items()}
     for row in map(flat, before[PAYMENT]):
         label = by_id.get(str(row['payment_id']))
         if label in changed:
-            row = {**row, 'payment_intent_id': changed[label]['intent']}
-            if source['payments'][label]['category'] is None and row['payment_category_id'] is None:
-                row['payment_category_id'] = bindings['$default_category']
+            spec = changed[label]
+            if 'intent' in spec:
+                row = {**row, 'payment_intent_id': spec['intent']}
+                if source['payments'][label]['category'] is None and row['payment_category_id'] is None:
+                    row['payment_category_id'] = bindings['$default_category']
+            if spec.get('paid'):
+                stored = after_payments.get(str(row['payment_id']), {}).get('payment_date')
+                require(recent(stored), 'state.payment-date-now')
+                now_text[label] = audit_text(stored)
+                row = {**row, 'paid': True, 'payment_date': stored, 'invoice_id': bindings.get(spec['invoice'], spec['invoice'])}
         expected_payments.append(row)
     actual_payments = [flat(row) for row in after[PAYMENT]]
-    normalize = lambda rows: [{**row, 'payment_category_id': None if row['payment_category_id'] is None else str(row['payment_category_id'])}
-                              for row in rows]
+    normalize = lambda rows: [{**row, 'payment_category_id': None if row['payment_category_id'] is None else str(row['payment_category_id']),
+                               'invoice_id': None if row['invoice_id'] is None else str(row['invoice_id'])} for row in rows]
     require(normalize(actual_payments) == normalize(expected_payments), 'state.payments')
 
-    now_text = {}
     by_invoice = {row['id']: label for label, row in source['supplier_invoices'].items()}
     after_invoices = {str(row['invoice_supplier_id']): row for row in map(flat, after[SUPPLIER_INVOICE])}
     expected_invoices = []
@@ -319,32 +425,76 @@ def assert_effect(case, before, after, source, context):
         if label in effect['supplier_invoices_changed']:
             stored = after_invoices.get(str(row['invoice_supplier_id']), {}).get('payment_date')
             require(recent(stored), 'state.supplier-invoice-now')
-            now_text[label] = audit_text(stored)
+            now_text['si:' + label] = audit_text(stored)
             row = {**row, 'paid': True, 'payment_date': stored}
         expected_invoices.append(row)
     require([flat(row) for row in after[SUPPLIER_INVOICE]] == expected_invoices, 'state.supplier-invoices')
+    for table, key, spec_key, field in ((COURSE_SUBSCRIPTION, 'course_subscription_id', 'course_subscriptions', 'course_subscriptions_paid'),
+                                        (INSTALLMENT, 'course_subscription_installment_id', 'installments', 'installments_paid')):
+        marked = {source[spec_key][label]['id'] for label in effect.get(field, [])}
+        require([flat(row) for row in after[table]] == [{**row, 'paid': True} if str(row[key]) in marked else row
+                                                        for row in map(flat, before[table])], 'state.' + spec_key)
 
     added, indexes = harness.audit_delta(contract, before, after)
     added.sort(key=lambda row: row['id'])
     require(len(added) == len(effect['audit']), 'audit.count')
-    types_ = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
+    types_ = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
     users = keyed(before['application.User'], 'user_id')
     keys = {'payment': lambda label: source['payments'][label]['id'],
-            'invoicesuppliers': lambda label: source['supplier_invoices'][label]['id']}
-    names = {'payment': 'Payment', 'invoicesuppliers': 'InvoiceSuppliers'}
+            'invoicesuppliers': lambda label: source['supplier_invoices'][label]['id'],
+            'coursesubscription': lambda label: source['course_subscriptions'][label]['id'],
+            'coursesubscriptioninstallment': lambda label: source['installments'][label]['id']}
+    names = {'payment': 'Payment', 'invoicesuppliers': 'InvoiceSuppliers', 'invoice': 'Invoice',
+             'coursesubscriptioninstallment': 'CourseSubscriptionInstallment'}
+    created_now = []
     for event, spec in zip(added, effect['audit']):
-        key = keys[spec['model']](spec['label'])
-        require(event['content_type_id'] == types_[spec['model']] and event['action'] == spec['action'] and event['object_pk'] == key
-                and event['object_repr'] == f"{names[spec['model']]} object ({key})", 'audit.identity')
-        changes = {name: [now_text.get(spec['label'], '<missing now>') if item == '$now' else bindings.get(item, item) for item in pair]
-                   for name, pair in spec['changes'].items()}
-        require(event['changes'] == changes, 'audit.changes')
+        where = f":{spec['model']}:{spec['label']}"
+        app = 'notifications' if spec['model'] in ('notificationsbroadcast', 'usernotificationsbroadcast') else 'application'
+        key = keys[spec['model']](spec['label']) if spec['model'] in keys else binding['$' + spec['model']]
+        representation = f"{names.get(spec['model'])} object ({key})"
+        if spec['changes'] == '$created':
+            changes, representation = paid.broadcast_changes(spec['model'], key)
+        else:
+            changes = {}
+            for name, pair in spec['changes'].items():
+                items = []
+                for item in pair:
+                    if item == '$now' and spec['model'] == 'invoice':
+                        value = event['changes'].get(name, [None, None])[len(items)]
+                        require(isinstance(value, str) and recent(datetime.fromisoformat(value).replace(tzinfo=timezone.utc)), 'audit.now' + where)
+                        created_now.append(value)
+                        items.append(value)
+                    elif item == '$now':
+                        items.append(now_text.get(spec['label'], now_text.get('si:' + spec['label'], '<missing now>')))
+                    else:
+                        items.append(bindings.get(item, item))
+                changes[name] = items
+        if spec['model'] == 'coursesubscription':
+            # CourseSubscription.__str__ is str(self.__dict__) (the ModelState address varies).
+            text = event['object_repr']
+            require(text.startswith("{'_state': <django.db.models.base.ModelState object at 0x")
+                    and f"'course_subscription_id': UUID('{key}')" in text and "'paid': True" in text, 'audit.repr' + where)
+            representation = text
+        require(event['content_type_id'] == types_[(app, spec['model'])] and event['action'] == spec['action'] and event['object_pk'] == key
+                and event['object_repr'] == representation, 'audit.identity' + where)
+        require(event['changes'] == changes, 'audit.changes' + where + repr((event['changes'], changes)))
         actor = None if spec['actor'] == 'anonymous' else ids[spec['actor']]
         require(event['actor_id'] == actor and event['actor_email'] == (users[actor]['email'] if actor else None), 'audit.actor')
         require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
         ipaddress.ip_address(event['remote_addr'])
-        index = indexes[str(event['id'])]
-        require(index['sport_association_id'] == spec['index'][0] and index['resolution_path'] == spec['index'][1], 'index.fields')
+        index = indexes.get(str(event['id']))
+        if spec['index'] is None:
+            require(index is None, 'index.absent' + where)
+        else:
+            require(index is not None and index['sport_association_id'] == spec['index'][0]
+                    and index['resolution_path'] == spec['index'][1], 'index.fields' + where)
+    require(len(set(created_now)) <= 1, 'audit.now-consistent')
+    if created_now and invoice_now is not None:
+        require(created_now[0] == invoice_now, 'audit.now-stored')
 
 
-run_workload = harness.run_workload_for(contract, assert_effect)
+def prepare(source):
+    return paid.prepare(STATE['fixture'])
+
+
+run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)

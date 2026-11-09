@@ -433,7 +433,9 @@ func run() (runErr error) {
 	e.Any("/course-subscriptions/bulk-delete", courseSubscriptionsHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course-subscriptions/:pk/update", courseSubscriptionsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course-subscriptions/:pk/delete", courseSubscriptionsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
-	paymentStatesHandler := handler.NewPaymentStatesHandler(service.NewPaymentStates(repository.NewPaymentStates(db), time.Now).WithTasks(tasks),
+	// approve's and mark_payment_as_paid's paid flow notify through subscriptionNotifier (wired below).
+	paymentStates := service.NewPaymentStates(repository.NewPaymentStates(db), time.Now).WithTasks(tasks)
+	paymentStatesHandler := handler.NewPaymentStatesHandler(paymentStates,
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/payment/:uid/approve", paymentStatesHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
 	invoiceGenerateHandler := handler.NewInvoiceGenerateHandler(paymentStatesHandler,
@@ -442,10 +444,11 @@ func run() (runErr error) {
 	e.Any("/payment/:uid/cancel", paymentStatesHandler.Cancel, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/delete", paymentStatesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	// stripe/*: STRIPE_API_BASE (default https://api.stripe.com) is stripe.api_base.
-	stripeRoutesHandler := handler.NewStripeRoutesHandler(service.NewStripeRoutes(repository.NewStripeRoutes(db),
+	stripeRoutes := service.NewStripeRoutes(repository.NewStripeRoutes(db),
 		repository.NewSocialConfiguration(db), service.StripeEnvironmentKeys{PublicKey: cfg.InstanceAdmin.StripePublicKey,
 			SecretKey: cfg.InstanceAdmin.StripeKey, WebhookSecret: cfg.InstanceAdmin.StripeWebhookSecret}, cfg.SessionSecret,
-		stripeapi.NewClient(os.Getenv("STRIPE_API_BASE")), time.Now), service.NewActorAuthentication(accounts, tokens), identities,
+		stripeapi.NewClient(os.Getenv("STRIPE_API_BASE")), time.Now)
+	stripeRoutesHandler := handler.NewStripeRoutesHandler(stripeRoutes, service.NewActorAuthentication(accounts, tokens), identities,
 		middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/stripe/info", stripeRoutesHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/stripe/on-boarding", stripeRoutesHandler.OnBoarding, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -796,6 +799,9 @@ func run() (runErr error) {
 	// and mirrored for Go sockets (internal/channels), on Redis database 0.
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
 		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
+	paymentPaidFlows := repository.NewPaymentPaidFlows(repository.NewPaymentStates(db))
+	paymentStates.WithPaidFlow(paymentPaidFlows, subscriptionNotifier)
+	stripeRoutes.WithPaidFlow(paymentPaidFlows, subscriptionNotifier, tasks, os.Getenv("DOCUMENT_BYPASS_TOKEN"))
 	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil)
 	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(subscriptionCreates, service.NewActorAuthentication(accounts, tokens),
 		identities, middleware.SessionAuditContext, paymentCategoryOperations)

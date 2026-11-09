@@ -59,6 +59,18 @@ func (n *SubscriptionNotifier) SendValidated(ctx context.Context, user, kind, me
 	return n.push(ctx, user, message, association)
 }
 
+// DeliverValidated is Deliver once validate_broadcast's rows were written by
+// the caller's transaction: storing errors propagate, push errors are logged.
+func (n *SubscriptionNotifier) DeliverValidated(ctx context.Context, user, kind, message, association string, subscribed bool) error {
+	if err := n.append(ctx, user, kind, message, association, subscribed); err != nil {
+		return err
+	}
+	if err := n.push(ctx, user, message, association); err != nil {
+		slog.WarnContext(ctx, "notification push failed", "error", err)
+	}
+	return nil
+}
+
 // Deliver is send_notification called inline by a view: storing errors
 // propagate, _push_to_websocket's are logged and swallowed.
 func (n *SubscriptionNotifier) Deliver(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {

@@ -5,11 +5,14 @@ Bearer challenge, exact JSON), with two runner bindings substituted anywhere
 in the expected body: '$default_category' / '$default_category_name' (the
 first 'entrate e proventi da attività tipiche' category by key) and '$now'
 (a payment date set from timezone.now(): a UTC 'Z' timestamp within ten
-minutes of the request, which the runner also matches against the saved row).
+minutes of the request, which the runner also matches against the saved row)
+and '$invoice' (a uuid4 string, recorded in LAST['invoices']; the runner checks
+it is the invoice the request created).
 """
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
+import re
 
 from TESTS.http_client import Client
 from TESTS.contracts import http_family as family
@@ -19,6 +22,7 @@ from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, differen
 SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/payment_state_http.json'
 # The last parsed response body, for the runner's '$now' cross-check.
 LAST = {}
+UUID4 = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\Z')
 
 
 def load_source(path=SOURCE):
@@ -46,6 +50,11 @@ def resolve(expected, actual, bindings):
     """expected with the bindings filled and '$now' replaced by the actual recent timestamp."""
     if expected == '$now':
         return actual if recent(actual) else '<not a recent UTC timestamp>'
+    if expected == '$invoice':
+        if isinstance(actual, str) and UUID4.match(actual):
+            LAST.setdefault('invoices', []).append(actual)
+            return actual
+        return '<not a uuid4 invoice id>'
     if isinstance(expected, str):
         return bindings.get(expected, expected)
     if isinstance(expected, dict):

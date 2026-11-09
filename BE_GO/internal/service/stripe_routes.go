@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
@@ -45,6 +46,12 @@ type StripeRoutes struct {
 	client       *stripeapi.Client
 	now          func() time.Time
 	log          *slog.Logger
+	// paid, notifier and publisher run mark_payment_as_paid's invoice flow;
+	// bypassToken is DOCUMENT_BYPASS_TOKEN (the task's token without a request).
+	paid        domain.PaymentPaidFlowStore
+	notifier    *SubscriptionNotifier
+	publisher   celery.Publisher
+	bypassToken string
 }
 
 func NewStripeRoutes(store domain.StripeRoutesStore, config domain.SocialConfigurationReader, env StripeEnvironmentKeys, secretKey string,
@@ -55,10 +62,20 @@ func NewStripeRoutes(store domain.StripeRoutesStore, config domain.SocialConfigu
 		now: now, log: slog.Default()}
 }
 
+// WithPaidFlow lets mark_payment_as_paid create the invoice of an unpaid
+// payment, publish print_document_invoice and notify payment.user.
+func (s *StripeRoutes) WithPaidFlow(store domain.PaymentPaidFlowStore, notifier *SubscriptionNotifier, publisher celery.Publisher,
+	bypassToken string) *StripeRoutes {
+	s.paid, s.notifier, s.publisher, s.bypassToken = store, notifier, publisher, bypassToken
+	return s
+}
+
 // StripeRequest carries the request values the views read.
 type StripeRequest struct {
 	GroupHeader string
 	Audit       domain.LoginAuditContext
+	// Authorization is request.headers.get('authorization') (the invoice task's token).
+	Authorization *string
 }
 
 func (s *StripeRoutes) at() time.Time { return s.now().UTC().Truncate(time.Microsecond) }
@@ -311,26 +328,29 @@ func methodsValue(raw *string) (any, error) {
 // mark_payment_as_paid
 // ---------------------------------------------------------------------------
 
-// markable reports whether mark_payment_as_paid on this payment stays within
-// the ported path: an unpaid payment without an invoice creates one, prints it
-// and notifies (not ported).
-func markable(payment *domain.StripePayment) error {
-	if !payment.Paid && payment.InvoiceID == nil {
-		return domain.ErrStripeNotPorted
-	}
-	return nil
+// stripeMarkTransaction is what mark reads and writes in its transaction.
+type stripeMarkTransaction interface {
+	domain.PaymentStateTransaction
+	LockStripePayment(ctx context.Context, id string, group *string) (*domain.StripePayment, error)
 }
 
-// mark is mark_payment_as_paid(request or None, payment, ...) for a payment
-// with an invoice: atomically the locked payment's first supplier invoice is
-// marked paid now (the payment itself is not saved); afterwards
+// mark is mark_payment_as_paid(request or None, payment, ...): atomically the
+// locked payment's first supplier invoice is marked paid now; an unpaid
+// payment without an invoice runs the invoice flow (stripePaidFlow) while one
+// with an invoice is not saved; afterwards the notification is delivered and
 // payment.user.user_id is read for the log (no user: an error after the commit).
 func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentity, request StripeRequest, payment *domain.StripePayment,
 	withRequest bool) error {
 	if withRequest && payment.UserID == nil && payment.AssociateID == nil {
 		return domain.ErrStripeServer
 	}
-	tx, err := s.store.BeginStripe(ctx)
+	var tx stripeMarkTransaction
+	var err error
+	if s.paid != nil && s.notifier != nil && s.publisher != nil {
+		tx, err = s.paid.BeginPaymentPaidFlow(ctx)
+	} else {
+		tx, err = s.store.BeginStripe(ctx)
+	}
 	if err != nil {
 		return err
 	}
@@ -342,15 +362,12 @@ func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentit
 	if row == nil {
 		return domain.ErrStripeServer
 	}
-	if err := markable(row); err != nil {
-		return err
-	}
 	invoice, err := tx.SupplierInvoice(ctx, row.ID)
 	if err != nil {
 		return err
 	}
+	now := s.at()
 	if invoice != nil {
-		now := s.at()
 		changes := map[string][2]string{}
 		if !invoice.Paid {
 			changes["paid"] = [2]string{"False", "True"}
@@ -365,29 +382,26 @@ func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentit
 			return err
 		}
 	}
+	var notification *paymentPaidFlowNotification
+	if !row.Paid && row.InvoiceID == nil {
+		flow, ok := tx.(domain.PaymentPaidFlowTransaction)
+		if !ok {
+			return domain.ErrStripeNotPorted
+		}
+		if notification, err = s.stripePaidFlow(ctx, flow, identity, request, row.ID, now, withRequest); err != nil {
+			return err
+		}
+	}
 	if err := tx.Commit(); err != nil {
+		return err
+	}
+	if err := notification.deliver(ctx, s.notifier); err != nil {
 		return err
 	}
 	if row.UserID == nil {
 		return domain.ErrStripeServer
 	}
 	return nil
-}
-
-// marks runs planned marks in order, then the error that stopped the planning.
-func (s *StripeRoutes) marks(ctx context.Context, identity domain.ResolvedIdentity, request StripeRequest, targets []*domain.StripePayment,
-	withRequest bool, stopped error) error {
-	for _, target := range targets {
-		if err := markable(target); err != nil {
-			return err
-		}
-	}
-	for _, target := range targets {
-		if err := s.mark(ctx, identity, request, target, withRequest); err != nil {
-			return err
-		}
-	}
-	return stopped
 }
 
 // saveIntent is payment.payment_intent_id = value; payment.save() (with
@@ -461,37 +475,34 @@ func (s *StripeRoutes) Pay(ctx context.Context, identity domain.ResolvedIdentity
 					return nil, err
 				}
 				if metadata != nil {
-					var targets []*domain.StripePayment
 					if !payment.Paid {
-						targets = append(targets, payment)
+						if err := s.mark(ctx, identity, request, payment, true); err != nil {
+							return nil, err
+						}
 					}
-					stopped := func() error {
-						keys, ok := metadata.(domain.RequestObject)
-						if !ok {
-							return domain.ErrStripeServer
+					keys, ok := metadata.(domain.RequestObject)
+					if !ok {
+						return nil, domain.ErrStripeServer
+					}
+					for _, field := range keys {
+						id, err := paymentInfoParseUUID(field.Name)
+						if err != nil {
+							return nil, domain.ErrStripeServer
 						}
-						for _, field := range keys {
-							id, err := paymentInfoParseUUID(field.Name)
-							if err != nil {
-								return domain.ErrStripeServer
-							}
-							row, err := s.store.PaymentByID(ctx, id.String(), query)
-							if err != nil {
-								return err
-							}
-							if row != nil && !row.Paid {
-								targets = append(targets, row)
+						row, err := s.store.PaymentByID(ctx, id.String(), query)
+						if err != nil {
+							return nil, err
+						}
+						if row != nil && !row.Paid {
+							if err := s.mark(ctx, identity, request, row, true); err != nil {
+								return nil, err
 							}
 						}
-						return nil
-					}()
-					if err := s.marks(ctx, identity, request, targets, true, stopped); err != nil {
-						return nil, err
 					}
 					return map[string]any{"data": map[string]any{"msg": "payment already paid."}}, nil
 				}
 				if !payment.Paid {
-					if err := s.marks(ctx, identity, request, []*domain.StripePayment{payment}, true, nil); err != nil {
+					if err := s.mark(ctx, identity, request, payment, true); err != nil {
 						return nil, err
 					}
 					return stripeMarked, nil
@@ -543,7 +554,7 @@ func (s *StripeRoutes) Pay(ctx context.Context, identity domain.ResolvedIdentity
 				return nil, err
 			}
 			if done {
-				if err := s.marks(ctx, identity, request, []*domain.StripePayment{payment}, true, nil); err != nil {
+				if err := s.mark(ctx, identity, request, payment, true); err != nil {
 					return nil, err
 				}
 				return stripeMarked, nil
@@ -733,9 +744,8 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 	}
 	var stripe *stripeapi.Session
 	var methods any = []any{"card", "sepa_debit"}
-	var targets []*domain.StripePayment
 	var ids []string
-	stopped := func() error {
+	err := func() error {
 		for _, item := range firstGroup {
 			value, present := item.Lookup("payment_id")
 			if !present {
@@ -785,13 +795,16 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 					return err
 				}
 				if done {
-					targets = append(targets, payment)
+					// mark_payment_as_paid(...); continue
+					if err := s.mark(ctx, identity, request, payment, true); err != nil {
+						return err
+					}
 				}
 			}
 		}
 		return nil
 	}()
-	if err := s.marks(ctx, identity, request, targets, true, stopped); err != nil {
+	if err != nil {
 		return nil, err
 	}
 	unpaidIDs, err := s.store.PaymentIDs(ctx, ids, true, query)
@@ -917,18 +930,19 @@ func (s *StripeRoutes) Webhook(ctx context.Context, identity domain.ResolvedIden
 	if len(payments) == 0 {
 		return ErrStripeWebhookRejected
 	}
-	var targets []*domain.StripePayment
 	for index := range payments {
-		if !payments[index].Paid {
-			targets = append(targets, &payments[index])
+		if payments[index].Paid {
+			continue
 		}
-	}
-	err = s.marks(ctx, identity, request, targets, false, nil)
-	if errors.Is(err, domain.ErrStripeNotPorted) {
-		return err
-	}
-	if err != nil {
-		s.log.Error("stripe webhook: charge.succeeded", "error", err)
+		err = s.mark(ctx, identity, request, &payments[index], false)
+		if errors.Is(err, domain.ErrStripeNotPorted) {
+			return err
+		}
+		if err != nil {
+			// The view's except Exception: logged, the loop stops, 200.
+			s.log.Error("stripe webhook: charge.succeeded", "error", err)
+			return nil
+		}
 	}
 	return nil
 }

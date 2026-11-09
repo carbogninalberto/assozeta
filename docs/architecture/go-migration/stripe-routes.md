@@ -71,21 +71,43 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
   every unpaid payment holding `data.object.payment_intent` (`scoped_queryset`, `X-Group-Id`; none: empty 400); any
   exception there is swallowed (empty 200). `checkout.session.completed`, `invoice.payment_succeeded`,
   `invoice.payment_failed`, `customer.subscription.updated` and other types: empty 200.
-- **mark_payment_as_paid** (ported part): with a request, a payment without user and associate is a 500 before anything.
-  Atomically the payment is locked (`Payment.objects`, `X-Group-Id`; the scope is not applied because the view passes the
-  Django request) and its first supplier invoice marked paid with `timezone.now()` (audited, indexed directly). For a
-  payment that already has an invoice, the payment itself is **not** saved (paid stays false). After the commit,
-  `payment.user.user_id` is read for the log: no user is a 500 with the supplier invoice already saved.
+- **mark_payment_as_paid**: with a request, a payment without user and associate is a 500 before anything. Atomically the
+  payment is locked (`Payment.objects`, `X-Group-Id`; the scope is not applied because the view passes the Django request)
+  and its first supplier invoice marked paid with `timezone.now()` (audited, indexed directly). A payment that already has
+  an invoice is **not** saved (paid stays false). An unpaid payment without an invoice runs the paid flow (shared with
+  payment-state's approve in `payment_paid_flow.go`):
+  1. fees: subject 1 keeps the amount (Decimal) as membership fee and `0.0` as activity fee; with truthy
+     `meta_payment_categories` the activity fee is the sum of `float(amount)` of the truthy amounts (booleans count as
+     1/0, unlike approve's `float(str())`) and a positive amount's membership fee becomes `float(amount) - activity`;
+     other subjects have membership `0.0` and the amount as activity fee;
+  2. number: `Max('number')` of the association's live, `X-Group-Id`-aware, unarchived invoices created in the current
+     balance year (start inclusive, end exclusive: the end is the day before the next start, so its last day is left out),
+     `max(that or 0, starting_number_invoices) + 1`; no advisory lock;
+  3. `generate_invoice_description`, `Invoice.objects.create` (raw `X-Group-Id`, created now, audited create with the
+     float fees; no second save), `payment.save()` (`paid`, `payment_date` now, `invoice`, `Payment.save()` defaults);
+  4. subject 2: the first live course subscription (`paid=True`, entry through `course.sport_association`), else the first
+     live group-aware installment (`paid=True` on the installment, entry through
+     `course_subscription.course.sport_association`), else the first carnet subscription (its save changes nothing);
+  5. `print_document_invoice.delay(str(invoice), token)` inside the block (args as a tuple): the request's
+     `Authorization` (pay and multiple-pay; None when anonymous) or `DOCUMENT_BYPASS_TOKEN` (webhook, request None);
+  6. the notification text (`rata del corso <title>` for an installment, `il corso "<title>"`, `carnet <title>` or
+     `carnet` when no carnet title resolves, the subscription text, else the saved description) and
+     `send_notification(payment.user, ..., association_id=payment.sport_association_id)`. A payment without user raises
+     there: the block rolls back after the task was published (Go publishes, then rolls back too).
+  After the commit `payment.user.user_id` is read for the log: no user is a 500 with the supplier invoice already saved.
+  Go writes `validate_broadcast`'s rows in the transaction and the Redis list and push after the commit.
+- Marks run where the view calls them: pay marks the intent's payment, then each metadata key's payment fetched afresh
+  (one already marked in the loop is skipped); multiple-pay marks inside the per-payment loop (a repeated id is fetched
+  again and seen paid); the webhook marks each unpaid payment of the queryset in order and stops at the first exception
+  (200).
 - Saves are `Payment.save()` (default category and description hook, audited changed fields, indexed directly, actor
   the authenticated user or none). Requests are not atomic: every save commits on its own.
 
 ## Not ported (refused before any write, 500)
 
-- `mark_payment_as_paid` for an unpaid payment without an invoice: it creates the invoice (numbering per fiscal year),
-  dispatches `print_document_invoice` and sends a notification through `NotificationService` (Redis list and Channels
-  push), which has no Go producer. Every path that would reach it is checked before the first mark: pay (stored intent
-  or query intent succeeded, metadata payments), multiple-pay (stored intents that succeeded) and the webhook
-  (`charge.succeeded` for such payments — Django answers 200 after creating the invoice; Go answers 500 so Stripe retries).
+- Paid flow inputs outside the ported conversions (a non-canonical `X-Group-Id` spelling, float fee ties, unusual
+  `meta.subscription_data.name` values; see payment-state.md). These are found inside the mark's transaction, which rolls
+  back, so a request that marks several payments keeps the marks committed before it.
 - `stripe_available_methods` values the client does not encode (floats, nested lists), `payments` lists mixing ids with
   non-strings, objects whose `sport_association`/`payment_id` are not strings or null, a webhook `payment_intent` that is
   not a string, integer, bool or null, a created intent without a string `id`, and amounts outside int64 cents.
@@ -98,7 +120,9 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
   makes the body straightforward; it still needs the worker registration, scheduler allowlist and a task-level stub
   harness (a tasks-db style follow-up).
 - `mark_as_paid_payments_checking_stripe` (every 20 min): a 10-thread pool retrieves every unpaid payment's intent and
-  runs the full mark-as-paid (invoice creation, PDF task, notification): blocked on the notification producer.
+  runs the full mark-as-paid. The flow itself is now ported (shared `stripePaidFlow`), but the task needs the worker
+  registration, the scheduler allowlist and a task-level Stripe stub harness, and its invoice numbers follow thread
+  completion order: left for a tasks-db family.
 - `generate_coupon_if_not_exists` (every 15 min): `Coupon.create(percent_off=10.0, …)` and `PromotionCode.create` per
   association without an affiliate code, errors swallowed. Needs float encoding (`10.0`) and generic POSTs in the client
   plus the task harness.
