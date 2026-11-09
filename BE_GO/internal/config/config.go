@@ -49,6 +49,7 @@ type Config struct {
 	JWTSigningKey                 string `json:"-"`
 	JWTVerifyingKey               string `json:"-"`
 	CSRFTrustedOrigins            []string
+	CSRFCookieSecure              bool
 	CORSAllowAll                  bool
 	CORSAllowedOrigins            []string
 	RestoreLockPath               string
@@ -169,6 +170,11 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	// CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', not DEBUG)
+	csrfCookieSecure, err := registrationFlag(values, "CSRF_COOKIE_SECURE", !debug)
+	if err != nil {
+		return Config{}, err
+	}
 	sessionSecret, err := environmentString(values, "SECRET_KEY", "", true)
 	if err != nil {
 		return Config{}, err
@@ -268,7 +274,7 @@ func Parse(values map[string]string) (Config, error) {
 	}
 	return Config{InstanceAdmin: instanceAdmin, Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
-		CSRFTrustedOrigins: origins, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
+		CSRFTrustedOrigins: origins, CSRFCookieSecure: csrfCookieSecure, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
 		RedisUsername: get("REDIS_USERNAME", "default"), RedisPassword: values["REDIS_PASSWORD"],
 		// Existing Django code uses string truthiness, not env.bool, for this flag.

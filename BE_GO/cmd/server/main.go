@@ -247,6 +247,7 @@ func run() (runErr error) {
 		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
 
+	apiSchemaHandler := handler.NewAPISchemaHandler(service.NewActorAuthentication(accounts, tokens), identities, cfg.CSRFCookieSecure)
 	documentUploadsHandler := composeDocumentUploads(cfg, db, sessions, service.NewActorAuthentication(accounts, tokens), identities,
 		middleware.SessionAuditContext, paymentCategoryOperations)
 	healthService := service.NewHealthService(repository.NewDatabaseProbe(db), repository.NewRedisProbe(cache), 2*time.Second)
@@ -614,6 +615,12 @@ func run() (runErr error) {
 	e.Any("/instance/status", instanceHandler.Status, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/config", instanceHandler.Config, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/manifest.json", instanceManifestHandler.Read, handler.ManualResponseEncoding(), middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/schema/", apiSchemaHandler.Schema, handler.ManualResponseEncoding(), middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/schema/swagger-ui/", apiSchemaHandler.Swagger, handler.ManualResponseEncoding(), middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/schema/redoc/", apiSchemaHandler.Redoc, handler.ManualResponseEncoding(), middleware.DjangoSessionAudit(sessionAuthentication))
+	for _, path := range []string{"/schema", "/schema/swagger-ui", "/schema/redoc"} {
+		e.Any(path, apiSchemaHandler.AppendSlash, middleware.DjangoSessionAudit(sessionAuthentication))
+	}
 	e.Any("/instance/logo.png", instanceLogoHandler.Read, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/access", instanceHandler.Access, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin", instanceAdminHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))
