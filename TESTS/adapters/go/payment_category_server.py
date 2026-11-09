@@ -55,6 +55,9 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
         **{name: os.environ[name] for name in INSTANCE_ADMIN_ENVIRONMENT if name in os.environ},
         # A family-owned Stripe API stub (stripe-routes service_context); unset in production.
         **({'STRIPE_API_BASE': os.environ['STRIPE_API_BASE']} if 'STRIPE_API_BASE' in os.environ else {}),
+        # Family-owned outbound stubs (instance-outbound service_context): the
+        # HTTPS proxy and the private certificate authority; unset in production.
+        **{name: os.environ[name] for name in ('HTTPS_PROXY', 'NO_PROXY', 'SSL_CERT_FILE') if name in os.environ},
         # The PDF renderer (a family-owned stub in document-render) and the document settings Django reads.
         **{name: os.environ[name] for name in DOCUMENT_RENDER_ENVIRONMENT if name in os.environ},
         # The google-calendar family's client secrets file and private Google stub; unset in production.
