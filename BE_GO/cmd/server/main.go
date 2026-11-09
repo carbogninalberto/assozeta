@@ -27,6 +27,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/stripeapi"
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/manual"
@@ -394,6 +395,18 @@ func run() (runErr error) {
 	e.Any("/payment/:uid/generate-invoice", invoiceGenerateHandler.Generate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/cancel", paymentStatesHandler.Cancel, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/delete", paymentStatesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	// stripe/*: STRIPE_API_BASE (default https://api.stripe.com) is stripe.api_base.
+	stripeRoutesHandler := handler.NewStripeRoutesHandler(service.NewStripeRoutes(repository.NewStripeRoutes(db),
+		repository.NewSocialConfiguration(db), service.StripeEnvironmentKeys{PublicKey: cfg.InstanceAdmin.StripePublicKey,
+			SecretKey: cfg.InstanceAdmin.StripeKey, WebhookSecret: cfg.InstanceAdmin.StripeWebhookSecret}, cfg.SessionSecret,
+		stripeapi.NewClient(os.Getenv("STRIPE_API_BASE")), time.Now), service.NewActorAuthentication(accounts, tokens), identities,
+		middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/stripe/info", stripeRoutesHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/stripe/on-boarding", stripeRoutesHandler.OnBoarding, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/stripe/complete-on-boarding", stripeRoutesHandler.CompleteOnBoarding, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/stripe/pay/:payment_id", stripeRoutesHandler.Pay, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/stripe/multiple-pay", stripeRoutesHandler.MultiplePay, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/stripe/webhook", stripeRoutesHandler.Webhook, middleware.DjangoSessionAudit(sessionAuthentication))
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,
 		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))

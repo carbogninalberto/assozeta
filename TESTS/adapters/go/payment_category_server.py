@@ -50,6 +50,8 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
         # The process environment Django read for instance administration
         # (core.settings reads these with env.str/env.bool/os.environ.get).
         **{name: os.environ[name] for name in INSTANCE_ADMIN_ENVIRONMENT if name in os.environ},
+        # A family-owned Stripe API stub (stripe-routes service_context); unset in production.
+        **({'STRIPE_API_BASE': os.environ['STRIPE_API_BASE']} if 'STRIPE_API_BASE' in os.environ else {}),
     }
     command = [str(executable)]
     observation_path = work / "query-observations.jsonl" if query_observation else None
