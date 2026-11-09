@@ -113,12 +113,15 @@ consumer with no Go counterpart.
   creation with its own numbering, `print_document_invoice.delay(invoice, None)`,
   course subscription and carnet saves, `NotificationService`). The invoice
   numbers depend on thread completion order, so the outcome is not
-  deterministic for a parity proof; it needs its own family.
+  deterministic for a parity proof; it needs its own family. Now ported in
+  [tasks-db-f](tasks-db-f.md) (payments processed in key order, compared with
+  a one-thread Django run).
 - `association_quote_assign`: creates quota payments from
   `subscription_fee_plans` and sends `email/payment/fee_assigned.html` through
   `send_email_html` (SMTP timer thread or `send_mail_async`). It needs the
   template in `emailrender` and a generalized `send_email_html` in the shared
-  e-mail task service; left to a follow-up.
+  e-mail task service; left to a follow-up. Now ported in
+  [tasks-db-f](tasks-db-f.md).
 - `check_workflows_trigger`, `check_workflows_trigger_cron`,
   `workflow_block_execute`: no Beat declaration or persisted
   `django_celery_beat` row names them. Django publishes them as Celery messages

@@ -1392,6 +1392,96 @@
         "enabled": true,
         "count": 0
       }
+    },
+    "utc_daily_0300_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "3",
+        "now": "2026-10-22T02:59:30+00:00",
+        "last": "2026-10-21T03:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_0300_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "3",
+        "now": "2026-10-22T03:00:00+00:00",
+        "last": "2026-10-21T03:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_0300_missed_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "3",
+        "now": "2026-10-22T05:00:00+00:00",
+        "last": "2026-10-21T03:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 79200,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_20_minutes_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/20",
+        "hour": "*",
+        "now": "2026-10-22T12:19:30+00:00",
+        "last": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_20_minutes_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/20",
+        "hour": "*",
+        "now": "2026-10-22T12:20:00+00:00",
+        "last": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 1200,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_every_20_minutes_hour_rollover": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/20",
+        "hour": "*",
+        "now": "2026-10-22T13:00:00+00:00",
+        "last": "2026-10-22T12:40:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 1200,
+        "enabled": true,
+        "count": 0
+      }
     }
   },
   "gaps": [

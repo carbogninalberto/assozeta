@@ -1,5 +1,7 @@
 # Collaborator deletion reference correction
 
+Go port: [collaborator-delete-go.md](collaborator-delete-go.md) (family `collaborator-delete-go`).
+
 Status: **needs review; Go DELETE is not implemented**. This is a corrected Django
 reference contract for the complete [migration requirements](requirements.md),
 not backend parity or approval to activate Go.
