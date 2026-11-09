@@ -10,6 +10,7 @@
     import BackupSchedule from './BackupSchedule.svelte';
     import DataTransfer from './DataTransfer.svelte';
     import {formatSize, formatDate, formatRelative} from './instanceFormat.js';
+    import {RESTORE_WORD, uploadProblem, uploadArchive, sessionToken} from './backupUpload.js';
 
     // request(path, options) is the owner page helper rooted at /instance.
     export let request;
@@ -23,10 +24,15 @@
     export let onReload = () => {};
     export let onOperation = () => {};
 
-    const origins = {manual: 'Manuale', scheduled: 'Pianificato', 'pre-upgrade': 'Prima dell’aggiornamento', 'pre-restore': 'Prima del ripristino'};
+    const origins = {manual: 'Manuale', scheduled: 'Pianificato', 'pre-upgrade': 'Prima dell’aggiornamento', 'pre-restore': 'Prima del ripristino', uploaded: 'Caricato'};
 
-    let dialog = null; // {kind: 'download'|'delete'|'create', archive}
+    let dialog = null; // {kind: 'download'|'delete'|'create'|'restore'|'upload', archive}
     let password = '';
+    let confirmWord = '';
+    let file = null;
+    let fileInput;
+    let progress = null; // 0..1 while uploading
+    let upload = null;
     let dialogError = '';
     let working = false;
     let pending = {};
@@ -57,13 +63,24 @@
         return [
             {label: 'Scarica', disabled: !!active, hint: active ? busyReason : '', onSelect: () => openDialog('download', archive)},
             actions.keep && {label: archive.keep ? 'Non conservare più' : 'Conserva', hint: archive.keep ? 'Torna nella rotazione automatica.' : 'Mai eliminato in automatico.', disabled: !!active || pending[archive.name], onSelect: () => toggleKeep(archive)},
+            actions.restore && {label: 'Ripristina', disabled: !!active || !!locked || !!blockedReason, hint: locked || (active ? busyReason : blockedReason), onSelect: () => openDialog('restore', archive)},
             actions.delete && {label: 'Elimina', danger: true, disabled: !!active || !!locked, hint: locked || (active ? busyReason : ''), onSelect: () => openDialog('delete', archive)},
         ];
     }
 
+    $: menuItems = [
+        {label: loading ? 'Aggiornamento…' : 'Aggiorna elenco', disabled: loading, onSelect: () => onReload(true)},
+        actions.upload && {label: 'Carica backup', disabled: !!active, hint: active ? busyReason : '', onSelect: () => openDialog('upload')},
+    ];
+    $: fileProblem = uploadProblem(file, disk?.free ?? null);
+    $: restoreReady = !!password && confirmWord.trim() === RESTORE_WORD;
+
     function openDialog(kind, archive = null) {
         dialog = {kind, archive};
         password = '';
+        confirmWord = '';
+        file = null;
+        progress = null;
         dialogError = '';
     }
 
@@ -71,6 +88,43 @@
         if (working) return;
         dialog = null;
         password = '';
+        confirmWord = '';
+    }
+
+    async function confirmRestore() {
+        if (!restoreReady || working) return;
+        working = true;
+        dialogError = '';
+        try {
+            const result = await request(`/admin/backups/${encodeURIComponent(dialog.archive.name)}/restore`, {method: 'POST', body: JSON.stringify({password, confirm: RESTORE_WORD})});
+            working = false;
+            closeDialog();
+            onOperation(result.operation);
+        } catch (e) { dialogError = e.message; }
+        finally { password = ''; working = false; }
+    }
+
+    async function startUpload() {
+        if (!file || fileProblem || working) return;
+        working = true;
+        dialogError = '';
+        progress = 0;
+        upload = uploadArchive(`${getApiHost()}/instance/admin/backups/upload`, file, {token: sessionToken(), onProgress: value => progress = value});
+        try {
+            await upload.done;
+            working = false;
+            closeDialog();
+            toast.success('Backup caricato.');
+            onReload();
+        } catch (e) {
+            if (!e.aborted) dialogError = e.message;
+            progress = null;
+        } finally { upload = null; working = false; }
+    }
+
+    function cancelUpload() {
+        if (upload) upload.abort();
+        else closeDialog();
     }
 
     async function confirmDownload() {
@@ -151,7 +205,7 @@
                 {#if actions.create}
                     <button type="button" class="btn btn-primary" disabled={!!active || !!blockedReason || tooSmall} title={busyReason || (tooSmall ? 'Spazio su disco insufficiente.' : '')} on:click={() => openDialog('create')}>Crea backup</button>
                 {/if}
-                <InstanceMenu label="Altre azioni backup" items={[{label: loading ? 'Aggiornamento…' : 'Aggiorna elenco', disabled: loading, onSelect: () => onReload(true)}]} />
+                <InstanceMenu label="Altre azioni backup" items={menuItems} />
             </div>
         </div>
 
@@ -262,6 +316,49 @@
     </svelte:fragment>
 </InstanceDialog>
 
+<InstanceDialog open={dialog?.kind === 'restore'} title="Ripristinare questo backup?" locked={working} on:close={closeDialog}>
+    {#if dialog?.archive}
+        <form id="backup-restore-form" class="si-stack" on:submit|preventDefault={confirmRestore}>
+            <p class="mb-0"><strong>{formatDate(dialog.archive.created_at)}</strong> {[dialog.archive.version && `v${dialog.archive.version}`, formatSize(dialog.archive.size)].filter(Boolean).map(part => `· ${part}`).join(' ')}</p>
+            <p class="mb-0">I dati attuali vengono sostituiti. Prima viene creato un backup di sicurezza.</p>
+            <label class="si-field" for="backup-restore-password">Conferma la tua password
+                <input id="backup-restore-password" class="form-control" type="password" autocomplete="current-password" bind:value={password} disabled={working} />
+            </label>
+            <label class="si-field" for="backup-restore-word">Scrivi {RESTORE_WORD}
+                <input id="backup-restore-word" class="form-control" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" bind:value={confirmWord} disabled={working} />
+            </label>
+            {#if dialogError}<p class="text-danger mb-0" role="alert">{dialogError}</p>{/if}
+        </form>
+    {/if}
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" data-autofocus disabled={working} on:click={closeDialog}>Annulla</button>
+        <button type="submit" form="backup-restore-form" class="btn btn-danger" disabled={!restoreReady || working}>{working ? 'Avvio…' : 'Ripristina'}</button>
+    </svelte:fragment>
+</InstanceDialog>
+
+<InstanceDialog open={dialog?.kind === 'upload'} title="Carica backup" locked={working} on:close={closeDialog}>
+    <form id="backup-upload-form" class="si-stack" on:submit|preventDefault={startUpload}>
+        <label class="si-field" for="backup-upload-file">File di backup (.tar.gz)
+            <input id="backup-upload-file" class="form-control" type="file" accept=".gz,application/gzip" bind:this={fileInput} disabled={working} on:change={() => { file = fileInput.files?.[0] || null; dialogError = ''; }} />
+        </label>
+        {#if file}
+            <p class="mb-0 si-muted">Dimensione {formatSize(file.size)}</p>
+        {/if}
+        {#if progress !== null}
+            <div class="upload-bar" role="progressbar" aria-label="Caricamento" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(progress * 100)}>
+                <span style={`width:${progress * 100}%`}></span>
+            </div>
+            <p class="si-muted si-small mb-0" aria-live="polite">{progress < 1 ? `Caricamento ${Math.round(progress * 100)}%` : 'Verifica del file…'}</p>
+        {/if}
+        {#if fileProblem}<p class="text-danger mb-0" role="alert">{fileProblem}</p>{/if}
+        {#if dialogError}<p class="text-danger mb-0" role="alert">{dialogError}</p>{/if}
+    </form>
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" on:click={cancelUpload}>Annulla</button>
+        <button type="submit" form="backup-upload-form" class="btn btn-primary" disabled={!file || !!fileProblem || working}>{working ? 'Caricamento…' : 'Carica'}</button>
+    </svelte:fragment>
+</InstanceDialog>
+
 <style>
     .disk { margin-bottom: 1.25rem; }
     .disk-bar { position: relative; display: flex; height: .625rem; border-radius: 999px; background: var(--bg-active); }
@@ -290,6 +387,8 @@
     .kept { display: inline-flex; color: var(--primary-text, var(--primary)); }
     .row-menu { width: 1%; padding-right: 0 !important; text-align: right; }
     .empty { display: flex; flex-direction: column; align-items: center; gap: .75rem; padding: 2rem 1rem; color: var(--text-secondary); text-align: center; }
+    .upload-bar { height: .5rem; border-radius: 999px; background: var(--bg-active); overflow: hidden; }
+    .upload-bar span { display: block; height: 100%; background: var(--primary); transition: width .2s ease-out; }
     .note { padding: .625rem .875rem; border-radius: .5rem; background: var(--light-warning); }
     @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
     @media (max-width: 767px) {

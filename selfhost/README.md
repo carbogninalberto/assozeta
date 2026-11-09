@@ -241,6 +241,12 @@ The following full-server restore replaces the current database and object-stora
   selfhost/backups/assozeta-20260101T120000Z.tar.gz
 ```
 
+Before anything changes, the current data are backed up to a new archive with
+origin `pre-restore`, and the services stay stopped until the restore ends. Pass
+`--no-backup` only on a fresh server with nothing to keep. The owner page runs
+the same command ("Ripristina") and can add an archive from another machine
+("Carica backup"); uploaded archives are checked and stored under a new name.
+
 Always test restores on a separate host before relying on a backup policy.
 Restore uses the current `selfhost/.env` only; it does not restore or trust the
 archive's `config.env` snapshot. Before live data is changed, the PostgreSQL

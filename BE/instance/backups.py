@@ -2,8 +2,8 @@
 
 The independent runner owns the backup directory and runs every backup; the
 API measures the data that the next backup will contain, relays the owner's
-actions and archive downloads, and records each action in the audit log. A
-download needs the owner's password again.
+actions, archive downloads and uploads, and records each action in the audit
+log. A download or a restore needs the owner's password again.
 """
 import json
 import logging
@@ -26,7 +26,8 @@ from application.utils.printing import _AsyncStreamingBody
 
 from .models import InstanceConfiguration
 from .permissions import IsInstanceOwner, is_instance_administrator
-from .updater_client import UpdaterRejected, UpdaterUnavailable, call_runner, open_runner_stream
+from .updater_client import UpdaterRejected, UpdaterUnavailable, call_runner, open_runner_stream, send_runner_stream
+from .upload_stream import UploadAborted, body_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -197,6 +198,19 @@ class DownloadTokenSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=256, trim_whitespace=False)
 
 
+def password_refusal(actor, password):
+    """A refusal response when the re-entered password is wrong or tried too often."""
+    attempts_key = f'instance:backup-download-attempts:{actor.pk}'
+    if cache.get(attempts_key, 0) >= PASSWORD_ATTEMPTS:
+        return Response({'error': 'Troppi tentativi. Riprova tra qualche minuto.'}, status=429)
+    if not actor.check_password(password):
+        cache.add(attempts_key, 0, timeout=PASSWORD_WINDOW)
+        cache.incr(attempts_key)
+        return Response({'error': 'Password non corretta.'}, status=400)
+    cache.delete(attempts_key)
+    return None
+
+
 class BackupDownloadTokenView(APIView):
     permission_classes = [IsInstanceOwner]
 
@@ -205,20 +219,72 @@ class BackupDownloadTokenView(APIView):
         serializer.is_valid(raise_exception=True)
         actor = actor_of(request)
         name = serializer.validated_data['name']
-        attempts_key = f'instance:backup-download-attempts:{actor.pk}'
-        if cache.get(attempts_key, 0) >= PASSWORD_ATTEMPTS:
-            return Response({'error': 'Troppi tentativi. Riprova tra qualche minuto.'}, status=429)
-        if not actor.check_password(serializer.validated_data['password']):
-            cache.add(attempts_key, 0, timeout=PASSWORD_WINDOW)
-            cache.incr(attempts_key)
-            return Response({'error': 'Password non corretta.'}, status=400)
-        cache.delete(attempts_key)
+        refusal = password_refusal(actor, serializer.validated_data['password'])
+        if refusal:
+            return refusal
         LogEntry.objects.log_create(
             InstanceConfiguration.get_config(), action=LogEntry.Action.ACCESS, actor=actor,
             changes={'backup_download': ['', name]},
             additional_data={'backup': name, 'actor_id': str(actor.pk)}, force_log=True)
         token = signing.dumps({'name': name, 'actor': str(actor.pk), 'id': uuid4().hex}, salt=TOKEN_SALT)
         return Response({'download_token': token, 'expires_in': TOKEN_MAX_AGE})
+
+
+class RestoreSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=256, trim_whitespace=False)
+    confirm = serializers.CharField(max_length=32)
+
+
+class BackupRestoreView(APIView):
+    """Restore one server archive; the runner backs up the current data first."""
+    permission_classes = [IsInstanceOwner]
+
+    def post(self, request, name):
+        if not ARCHIVE.fullmatch(name):
+            return Response({'error': 'Backup non trovato.'}, status=404)
+        serializer = RestoreSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if serializer.validated_data['confirm'] != 'RIPRISTINA':
+            return Response({'error': 'Scrivi RIPRISTINA per confermare.'}, status=400)
+        actor = actor_of(request)
+        refusal = password_refusal(actor, serializer.validated_data['password'])
+        if refusal:
+            return refusal
+        response = relay('POST', f'/backups/{name}/restore', {
+            'request_id': str(uuid4()), 'actor_id': str(actor.pk), 'confirm': 'RIPRISTINA'}, success=202)
+        if response.status_code == 202:
+            audit(actor, 'backup_restore', name, backup=name, operation=response.data['operation'].get('id', ''))
+        return response
+
+
+class BackupUploadView(APIView):
+    """Add an archive from the owner's computer, streamed to the runner as it arrives.
+
+    The body is the raw .tar.gz (not a form): core.asgi hands it over unread,
+    so a large file never sits in memory or in a temporary file of the API.
+    """
+    permission_classes = [IsInstanceOwner]
+
+    def post(self, request):
+        try:
+            length = int(request.META.get('CONTENT_LENGTH') or 0)
+        except ValueError:
+            length = 0
+        if length <= 0:
+            return Response({'error': 'Seleziona un file da caricare.'}, status=411)
+        try:
+            result = send_runner_stream('/backups/upload', body_chunks(request, length), length)
+        except UploadAborted:
+            return Response({'error': 'Caricamento interrotto. Riprova.'}, status=400)
+        except UpdaterUnavailable as exc:
+            return Response({'error': str(exc)}, status=503)
+        except UpdaterRejected as exc:
+            if exc.status == 404:
+                return Response({'error': 'Il servizio di aggiornamento richiede una versione più recente.'}, status=409)
+            return Response({'error': str(exc)}, status=exc.status if 400 <= exc.status < 500 else 503)
+        archive = result.get('archive') or {}
+        audit(actor_of(request), 'backup_upload', archive.get('name', ''), backup=archive.get('name', ''), size=length)
+        return Response(result, status=201)
 
 
 class BackupDownloadView(APIView):

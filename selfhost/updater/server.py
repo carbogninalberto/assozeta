@@ -17,6 +17,7 @@ from backups import BackupNotFound, inventory, open_archive
 from diagnostics import backup_readiness
 from backup_jobs import (BackupRejected, create_backup, delete_archive, run_backup, schedule_payload,
                          schedule_tick, set_keep, update_schedule)
+from restore_jobs import ArchiveInvalid, UploadIncomplete, receive_upload, run_restore, start_restore
 from engine import Engine
 from journal import Journal, Conflict
 from release_catalog import version_tuple
@@ -152,7 +153,7 @@ def serve(root, env_file, engine_class=Engine):
             if self.path == '/backups':
                 try:
                     self.respond(200, {**inventory(root, env_file), 'schedule': schedule_payload(root, env_file),
-                                       'actions': {'create': True, 'keep': True, 'delete': True}})
+                                       'actions': {'create': True, 'keep': True, 'delete': True, 'restore': True, 'upload': True}})
                 except OSError:
                     self.respond(503, {'error': 'La cartella dei backup non è leggibile. Verifica i permessi sul server.'})
                 return
@@ -187,6 +188,33 @@ def serve(root, env_file, engine_class=Engine):
             except OSError:
                 self.respond(503, {'error': 'La cartella dei backup non è accessibile. Verifica i permessi sul server.'})
 
+        def upload(self):
+            """Stream an uploaded archive into the backup directory."""
+            if not self.authorized():
+                return
+            # An early refusal must not leave the unread body on a reused connection.
+            self.close_connection = True
+            try:
+                length = int(self.headers.get('Content-Length', ''))
+                if length <= 0 or stop.is_set():
+                    raise ValueError('Request cannot be accepted.')
+                # The API forwards at the browser's pace; allow slow clients.
+                self.request.settimeout(300)
+                self.respond(201, {'archive': receive_upload(root, env_file, journal, self.rfile, length)})
+            except BackupRejected as exc:
+                self.respond(exc.status, {'error': str(exc)})
+            except ArchiveInvalid as exc:
+                self.respond(400, {'error': str(exc)})
+            except UploadIncomplete:
+                self.respond(400, {'error': 'Caricamento interrotto. Riprova.'})
+            except (ValueError, TypeError):
+                self.respond(400, {'error': 'Richiesta non valida.'})
+            except OSError:
+                try:
+                    self.respond(503, {'error': 'Caricamento non riuscito. Verifica lo spazio e i permessi sul server.'})
+                except OSError:
+                    pass
+
         def archive_name(self):
             return self.path[len('/backups/'):] if self.path.startswith('/backups/') and self.path != '/backups/schedule' else None
 
@@ -214,6 +242,13 @@ def serve(root, env_file, engine_class=Engine):
         def do_POST(self):
             if self.path == '/backups':
                 self.backup_action(lambda body: (202, {'operation': create_backup(root, env_file, journal, body)}))
+                return
+            if self.path == '/backups/upload':
+                self.upload()
+                return
+            if self.path.startswith('/backups/') and self.path.endswith('/restore'):
+                name = self.path[len('/backups/'):-len('/restore')]
+                self.backup_action(lambda body: (202, {'operation': start_restore(root, env_file, journal, name, body)}))
                 return
             if not self.authorized():
                 return
@@ -284,6 +319,8 @@ def serve(root, env_file, engine_class=Engine):
                     launch_restart(root, env_file, journal, pending)
                 elif pending.get('kind') == 'backup':
                     run_backup(root, env_file, journal, pending)
+                elif pending.get('kind') == 'restore':
+                    run_restore(root, env_file, journal, pending)
                 else:
                     engine.execute(pending)
             else:
