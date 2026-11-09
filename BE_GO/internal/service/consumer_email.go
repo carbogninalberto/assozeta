@@ -149,9 +149,9 @@ func consumerEmailReplyTo(value any) (list []string, ok bool) {
 
 // consumerEmailPublish is send_mail_async.apply_async(kwargs=...): from a
 // running task (request non-nil) the message carries its root and parent
-// ids; from a Timer thread it does not. add_to_parent appends the result to
-// task.request, a copy of the request the tracer stores a SUCCESS with, so
-// the stored meta keeps no children (Celery 5.6 trace.build_tracer).
+// ids, and add_to_parent records it in request.children, which the prefork
+// worker stores in the result's meta; from a Timer thread there is no
+// current task, so neither applies.
 func (s *SendMailAsync) consumerEmailPublish(ctx context.Context, request *celeryworker.Request, kwargs celery.Dict) error {
 	task := celery.Task{Name: SendMailAsyncTask, Kwargs: kwargs}
 	if request != nil {
@@ -160,7 +160,10 @@ func (s *SendMailAsync) consumerEmailPublish(ctx context.Context, request *celer
 			task.RootID = request.ID
 		}
 	}
-	_, err := s.publisher.Publish(ctx, task)
+	id, err := s.publisher.Publish(ctx, task)
+	if err == nil && request != nil {
+		request.AddChild(id)
+	}
 	return err
 }
 

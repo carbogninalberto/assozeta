@@ -92,6 +92,9 @@ type Request struct {
 // request.children, stored in the result meta).
 func (r *Request) AddChild(id string) { r.children = append(r.children, id) }
 
+// Children are the ids recorded with AddChild, in order.
+func (r *Request) Children() []string { return append([]string(nil), r.children...) }
+
 // Task is one registered task implementation.
 type Task struct {
 	// MaxRetries is the task's max_retries; negative means None.
@@ -438,9 +441,9 @@ func (w *Worker) coordinated(name string) bool {
 
 // perform is CoordinatedTask admission, the task body and the stored
 // outcome; the body runs with taskCtx (cancelled by a soft time limit in a
-// prefork child). In a prefork child (child true) a retry also records its own
-// message among the request's children, as the Django prefork worker stores
-// it.
+// prefork child). A retry records its own message among the request's
+// children (Task.retry publishes with add_to_parent), as the Django prefork
+// worker stores it.
 func (w *Worker) perform(ctx, taskCtx context.Context, request *Request, task Task, child bool) {
 	m := request.Message
 	if w.coordinated(m.Task) {
@@ -489,9 +492,7 @@ func (w *Worker) perform(ctx, taskCtx context.Context, request *Request, task Ta
 		if !w.republish(ctx, request, m.Retries+1, retry.Countdown, false) {
 			return // Reject(requeue=False): no result is stored
 		}
-		if child {
-			request.AddChild(m.ID)
-		}
+		request.AddChild(m.ID)
 		w.store(ctx, m.ID, "RETRY", retry.Exc, request.children)
 	case errors.As(err, &exc):
 		w.store(ctx, m.ID, "FAILURE", exc, request.children)

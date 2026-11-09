@@ -183,6 +183,10 @@ func TestConsumerEmailChild(t *testing.T) {
 		recorder.Tasks[0].ParentID != "p" {
 		t.Fatalf("%+v", recorder.Tasks)
 	}
+	// The prefork worker stores the published message in the task's meta.children.
+	if children := request.Children(); len(children) != 1 || children[0] == "" {
+		t.Fatalf("children %v", children)
+	}
 	keys := []string{}
 	for _, item := range recorder.Tasks[0].Kwargs {
 		keys = append(keys, item.Key)

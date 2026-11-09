@@ -106,10 +106,8 @@ func (p *workflowTasksPlan) finish(request *celeryworker.Request, err error) err
 
 // run performs the planned effects in order. Messages are published like
 // send_task inside a worker task: root_id from the request (or its id),
-// parent_id the request's id. They are not added to request.children:
-// CoordinatedTask.__call__ runs the body through Task.__call__, which pushes
-// a fresh request whose children the stored result never sees, so Django's
-// SUCCESS row keeps meta {"children": []}.
+// parent_id the request's id, and each one is recorded in request.children
+// (add_to_parent), which the prefork worker stores in the result's meta.
 func (s *WorkflowTasks) run(ctx context.Context, request *celeryworker.Request) (any, error) {
 	plan, _ := request.State.(*workflowTasksPlan)
 	if plan == nil {
@@ -135,9 +133,11 @@ func (s *WorkflowTasks) run(ctx context.Context, request *celeryworker.Request) 
 			eta := s.now().UTC().Add(time.Duration(action.countdown) * time.Second)
 			task.ETA = &eta
 		}
-		if _, err := s.publisher.Publish(ctx, task); err != nil {
+		id, err := s.publisher.Publish(ctx, task)
+		if err != nil {
 			return nil, err
 		}
+		request.AddChild(id)
 	}
 	return plan.result, nil
 }
