@@ -100,6 +100,11 @@ Each item was confirmed by an authored family passing on Django. Cite the family
   the Django multipart parse (`parseDjangoMultipart`, files as `domain.RequestFile`); write
   families with storage effects own a MinIO through the runner's `service_context` hook.
 
+- XLSX workbooks (`xlsx-exports.md`): `xlsxexport.PandasOpenpyxl` (`get_excel_base64`), `xlsxexport.PandasXlsxwriter`
+  (pandas' xlsxwriter `to_excel` + `set_column`), `xlsxexport.OpenpyxlRows` (plain openpyxl); contracts opt in with
+  `{'$xlsx': spec}` and `TESTS/contracts/xlsx.py` `resolve` (entries, order, method, flags and parts identical except the
+  core.xml times, which must fall within the request window).
+
 ## Not portable yet (refuse explicitly before any write)
 
 Printing tasks (`print_document_*` called synchronously), Celery

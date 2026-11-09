@@ -82,6 +82,9 @@ var periodicJobKinds = map[string]string{
 	JobSendReminders:                    JobSendReminders,
 	JobMaintainBakneyPairings:           JobMaintainBakneyPairings,
 	JobCleanupOldExports:                JobCleanupOldExports,
+	JobChangeTypeOfStripePayments:       JobChangeTypeOfStripePayments,
+	JobGenerateCouponIfNotExists:        JobGenerateCouponIfNotExists,
+	JobRenewMembershipsPayments:         JobRenewMembershipsPayments,
 }
 
 // PeriodicJobKind returns the Go job kind for an exact persisted task name.

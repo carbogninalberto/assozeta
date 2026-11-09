@@ -801,6 +801,377 @@
      "event_id": "f2"
     }
    ]
+  },
+  "reg_report": {
+   "id": "a1000000-0000-4000-8000-000000967412",
+   "course": "ca",
+   "status": 2,
+   "events": [
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": [
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000967004"
+       },
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000967003"
+       }
+      ],
+      "description": "Descrizione & <b>"
+     },
+     "title": "Doppia",
+     "event_id": "a1000000-0000-4000-8000-000000967401"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967009"
+      },
+      "description": 42
+     },
+     "title": "Numero",
+     "event_id": "a1000000-0000-4000-8000-000000967402"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967010"
+      }
+     },
+     "title": "Estero",
+     "event_id": "a1000000-0000-4000-8000-000000967403"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967005"
+      },
+      "description": [
+       "a",
+       1
+      ]
+     },
+     "title": "Lista",
+     "event_id": "a1000000-0000-4000-8000-000000967404"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "http://example.test/lezione"
+     },
+     "title": "Collegamento",
+     "event_id": "a1000000-0000-4000-8000-000000967405"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": "stringa"
+     },
+     "title": "Testo",
+     "event_id": "a1000000-0000-4000-8000-000000967406"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": [
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000967003"
+       },
+       "x"
+      ]
+     },
+     "title": "Misto",
+     "event_id": "a1000000-0000-4000-8000-000000967407"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "event_id": "a1000000-0000-4000-8000-000000967408"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      }
+     },
+     "title": "Malformato",
+     "event_id": "a1000000-0000-4000-8000-000000967409"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": 0
+     },
+     "title": "Vuota",
+     "event_id": "a1000000-0000-4000-8000-000000967410"
+    }
+   ]
+  }
+ },
+ "people": {
+  "mario": {
+   "id": "a1000000-0000-4000-8000-000000967413",
+   "first_name": "Mario",
+   "last_name": "Rossi"
+  },
+  "luisa": {
+   "id": "a1000000-0000-4000-8000-000000967414",
+   "first_name": "Luisa",
+   "last_name": null
+  },
+  "paolo": {
+   "id": "a1000000-0000-4000-8000-000000967415",
+   "first_name": "Paolo",
+   "last_name": "Bianchi"
+  }
+ },
+ "course_subscriptions": {
+  "cs_mario": {
+   "id": "a1000000-0000-4000-8000-000000967416",
+   "person": "mario",
+   "deleted": false
+  },
+  "cs_luisa": {
+   "id": "a1000000-0000-4000-8000-000000967417",
+   "person": "luisa",
+   "deleted": false
+  },
+  "cs_deleted": {
+   "id": "a1000000-0000-4000-8000-000000967418",
+   "person": "paolo",
+   "deleted": true
+  },
+  "cs_nosub": {
+   "id": "a1000000-0000-4000-8000-000000967419",
+   "person": null,
+   "deleted": false
+  }
+ },
+ "days": {
+  "r1": {
+   "id": "a1000000-0000-4000-8000-000000967420",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967401",
+   "date": "2026-09-14T22:30:00Z",
+   "title": "Lezione doppia",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967416"
+    },
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967499"
+    }
+   ],
+   "expected_absences": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967417"
+    }
+   ]
+  },
+  "r1b": {
+   "id": "a1000000-0000-4000-8000-000000967421",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967401",
+   "date": "2026-09-14T21:59:00Z",
+   "title": "Prima",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967419"
+    }
+   ],
+   "expected_absences": []
+  },
+  "r2": {
+   "id": "a1000000-0000-4000-8000-000000967422",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967402",
+   "date": "2026-09-16T06:00:00Z",
+   "title": null,
+   "attendees": [],
+   "expected_absences": null
+  },
+  "r3": {
+   "id": "a1000000-0000-4000-8000-000000967423",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967403",
+   "date": "2026-09-17T06:00:00Z",
+   "title": "Estero",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "r4": {
+   "id": "a1000000-0000-4000-8000-000000967424",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967404",
+   "date": "2026-09-18T06:00:00Z",
+   "title": "Lista",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967418"
+    },
+    {
+     "course_subscription_id": null
+    }
+   ],
+   "expected_absences": null
+  },
+  "r5": {
+   "id": "a1000000-0000-4000-8000-000000967425",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967405",
+   "date": "2026-09-19T06:00:00Z",
+   "title": "Maiuscolo",
+   "attendees": [
+    {
+     "course_subscription_id": "A1000000-0000-4000-8000-000000967416"
+    }
+   ],
+   "expected_absences": null
+  },
+  "r10": {
+   "id": "a1000000-0000-4000-8000-000000967426",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967410",
+   "date": "2026-09-20T06:00:00Z",
+   "title": "Zero",
+   "attendees": {},
+   "expected_absences": null
+  },
+  "nothing": {
+   "id": "a1000000-0000-4000-8000-000000967427",
+   "registry": "reg_report",
+   "event": null,
+   "date": "2026-09-20T07:00:00Z",
+   "title": "Senza evento",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "b1": {
+   "id": "a1000000-0000-4000-8000-000000967428",
+   "registry": "reg_b",
+   "event": "a1000000-0000-4000-8000-000000967411",
+   "date": "2026-09-21T15:00:00Z",
+   "title": "Basket",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967417"
+    },
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967416"
+    }
+   ],
+   "expected_absences": null
+  },
+  "err6": {
+   "id": "a1000000-0000-4000-8000-000000967429",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967406",
+   "date": "2026-10-05T06:00:00Z",
+   "title": null,
+   "attendees": null,
+   "expected_absences": null
+  },
+  "err7": {
+   "id": "a1000000-0000-4000-8000-000000967430",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967407",
+   "date": "2026-10-06T06:00:00Z",
+   "title": null,
+   "attendees": null,
+   "expected_absences": null
+  },
+  "err8": {
+   "id": "a1000000-0000-4000-8000-000000967431",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967408",
+   "date": "2026-10-07T06:00:00Z",
+   "title": null,
+   "attendees": null,
+   "expected_absences": null
+  },
+  "err9": {
+   "id": "a1000000-0000-4000-8000-000000967432",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967409",
+   "date": "2026-10-08T06:00:00Z",
+   "title": null,
+   "attendees": [
+    {
+     "course_subscription_id": "non-un-uuid"
+    }
+   ],
+   "expected_absences": null
+  },
+  "err_b2": {
+   "id": "a1000000-0000-4000-8000-000000967433",
+   "registry": "reg_b",
+   "event": "a1000000-0000-4000-8000-000000967411",
+   "date": "2026-10-12T06:00:00Z",
+   "title": null,
+   "attendees": null,
+   "expected_absences": null
+  },
+  "err_e14": {
+   "id": "a1000000-0000-4000-8000-000000967434",
+   "registry": "reg_a",
+   "event": "a1000000-0000-4000-8000-000000967411",
+   "date": "2026-10-13T06:00:00Z",
+   "title": null,
+   "attendees": null,
+   "expected_absences": null
+  },
+  "err_dict": {
+   "id": "a1000000-0000-4000-8000-000000967435",
+   "registry": "reg_dict",
+   "event": "a1000000-0000-4000-8000-000000967411",
+   "date": "2026-10-14T06:00:00Z",
+   "title": null,
+   "attendees": null,
+   "expected_absences": null
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000967436",
+   "registry": "reg_foreign",
+   "event": "a1000000-0000-4000-8000-000000967411",
+   "date": "2026-09-25T06:00:00Z",
+   "title": null,
+   "attendees": null,
+   "expected_absences": null
   }
  },
  "cases": [
@@ -2004,6 +2375,1870 @@
    "response": {
     "name": "Instructor Lessons Hours",
     "description": "Lesson hours computed from the course calendar for one instructor (uid)\nor for all instructors of the current association (no uid).\n\nAuthorization:\n    - association admins and collaborators may query any instructor\n      of their association or the whole list\n    - a user tied to an instructor profile (Instructor.associated_user_id)\n      may only query their own hours\n\nQuery params:\n    start_date, end_date: optional Europe/Rome DD/MM/YYYY period filter\n    include_lessons: true adds event details in single-instructor mode",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/09/2026&end_date=30/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/09/2026&end_date=30/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/09/2026&end_date=30/09/2026",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-separators",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14-09-2026&end_date=30.09.2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-unpadded",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=%2014/9/2026&end_date=30/9/2026%20",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Zero",
+       "description": "",
+       "date": "20/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Bruno",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lista",
+       "description": [
+        "a",
+        1
+       ],
+       "date": "18/09/2026 08:00",
+       "attendees_count": 2,
+       "attendees": "Atleta cancellato, Atleta cancellato",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Carlo",
+       "last_name": "Verdi",
+       "course": "Corso A",
+       "title": null,
+       "description": 42,
+       "date": "16/09/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ],
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Zero",
+         "",
+         "20/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Bruno",
+         "Rossi",
+         "Corso A",
+         "Lista",
+         {
+          "list": [
+           "a",
+           {
+            "int": "1"
+           }
+          ]
+         },
+         "18/09/2026 08:00",
+         {
+          "int": "2"
+         },
+         "Atleta cancellato, Atleta cancellato",
+         ""
+        ],
+        [
+         "Carlo",
+         "Verdi",
+         "Corso A",
+         null,
+         {
+          "int": "42"
+         },
+         "16/09/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        29,
+        18,
+        24,
+        38,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-rome-midnight",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=15/09/2026&end_date=15/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Lezione doppia",
+       "description": "Descrizione & <b>",
+       "date": "15/09/2026 00:30",
+       "attendees_count": 2,
+       "attendees": "Mario Rossi, Atleta cancellato",
+       "expected_absences": "Luisa "
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Lezione doppia",
+         "Descrizione & <b>",
+         "15/09/2026 00:30",
+         {
+          "int": "2"
+         },
+         "Mario Rossi, Atleta cancellato",
+         "Luisa "
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        16,
+        19,
+        18,
+        24,
+        32,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-day-before",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/09/2026&end_date=14/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      },
+      {
+       "first_name": "Paolo",
+       "last_name": "Neri",
+       "course": "Corso A",
+       "title": "Prima",
+       "description": "Descrizione & <b>",
+       "date": "14/09/2026 23:59",
+       "attendees_count": 1,
+       "attendees": " ",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ],
+        [
+         "Paolo",
+         "Neri",
+         "Corso A",
+         "Prima",
+         "Descrizione & <b>",
+         "14/09/2026 23:59",
+         {
+          "int": "1"
+         },
+         " ",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        8,
+        19,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-one-day-uppercase-id",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=19/09/2026&end_date=19/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Maiuscolo",
+       "description": "http://example.test/lezione",
+       "date": "19/09/2026 08:00",
+       "attendees_count": 1,
+       "attendees": "Atleta cancellato",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Maiuscolo",
+         "http://example.test/lezione",
+         "19/09/2026 08:00",
+         {
+          "int": "1"
+         },
+         "Atleta cancellato",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        29,
+        18,
+        24,
+        19,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-empty-period",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=01/11/2026&end_date=30/11/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [],
+       "rows": [],
+       "index": false,
+       "widths": []
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-inverted-period",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=30/09/2026&end_date=14/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [],
+       "rows": [],
+       "index": false,
+       "widths": []
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-foreign-owner-empty",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=01/11/2026&end_date=30/11/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [],
+       "rows": [],
+       "index": false,
+       "widths": []
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-instructor-text-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=05/10/2026&end_date=05/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-instructor-list-text-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=06/10/2026&end_date=06/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-event-without-title-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=07/10/2026&end_date=07/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-attendee-malformed-id-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=08/10/2026&end_date=08/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-events-text-before-match-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=13/10/2026&end_date=13/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-events-object-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/10/2026&end_date=14/10/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-unmatched-event",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=12/10/2026&end_date=12/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [],
+       "rows": [],
+       "index": false,
+       "widths": []
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=01/09/2026&end_date=30/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [],
+       "rows": [],
+       "index": false,
+       "widths": []
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-missing-both",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Entrambe le date sono richieste."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-missing-end",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/09/2026",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Entrambe le date sono richieste."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-missing-start",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?end_date=14/09/2026",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Entrambe le date sono richieste."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-nonexistent-date",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=31/02/2026&end_date=30/09/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-text-date",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=ieri&end_date=30/09/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-empty-date",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=&end_date=30/09/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/instructor/report",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/instructor/report?start_date=14/09/2026&end_date=30/09/2026",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instructor/report",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instructor/report",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/instructor/report",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/report",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "instructor-writes-report-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/report",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Report",
+    "description": "",
     "renders": [
      "application/json"
     ],

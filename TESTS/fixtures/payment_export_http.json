@@ -1941,6 +1941,2320 @@
      "filename": "[$today] PAGAMENTI a Message reads own.csv"
     }
    }
+  },
+  {
+   "name": "payment-export-xlsx",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "Mario Rossi",
+         "Arrotondamento",
+         "Mario Rossi",
+         "Mario Rossi",
+         "Mario Rossi",
+         "None Verdi",
+         "Chiusura",
+         "Palestre \"Riunite\"",
+         "Giulia Bianchi",
+         "Giroconto cassa",
+         "Mario Rossi",
+         "Quota gruppo",
+         "Centesimi",
+         "Senza conto",
+         "Quota finanziaria"
+        ],
+        [
+         "Pagato",
+         "Pagato",
+         "In Attesa",
+         "Pagato",
+         "In Attesa",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "In Attesa",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "In Attesa"
+        ],
+        [
+         "cash",
+         "pos",
+         "transfer",
+         "pos",
+         "online",
+         "-",
+         "cash",
+         "transfer",
+         "cash",
+         "-",
+         "-",
+         "-",
+         "cash",
+         "-",
+         "-"
+        ],
+        [
+         "2024-02-01",
+         "2024-02-28",
+         "2024-03-02",
+         "2024-04-01",
+         "2024-05-02",
+         "2024-06-01",
+         "2024-06-20",
+         "2024-07-01",
+         "2024-08-15",
+         "2024-09-01",
+         "2024-10-01",
+         "2024-10-02",
+         "2025-01-05",
+         "2025-01-06",
+         "2025-02-01"
+        ],
+        [
+         "2024-02-10",
+         "2024-03-01",
+         "2024-03-05",
+         "2024-04-15",
+         "2024-05-20",
+         "2024-06-03",
+         "2024-07-01",
+         "2024-07-02",
+         "2024-08-20",
+         "2024-09-01",
+         "2024-10-05",
+         "2024-10-06",
+         "2025-01-10",
+         "2025-01-20",
+         ""
+        ],
+        [
+         {
+          "int": "7"
+         },
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Iscrizione",
+         "Altro",
+         "Corso",
+         "Corso",
+         "Corso",
+         "Altro",
+         "Altro",
+         "Quote sociali",
+         "Altro",
+         "Giroconto",
+         "Iscrizione",
+         "Altro",
+         "Altro",
+         "Altro",
+         "Altro"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "",
+         "Quote sociali,Globale",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Quote sociali",
+         "-",
+         "Quote sociali",
+         "-",
+         "-",
+         "-",
+         "-",
+         "Quote sociali",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "Cassa sede",
+         "Banca, Intesa",
+         "-",
+         "Banca, Intesa",
+         "-",
+         "Cassa sede",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Cassa sede",
+         "-",
+         "Cassa sede",
+         "Cassa sede",
+         "-",
+         "-"
+        ],
+        [
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Uscita",
+         "Uscita",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "",
+         "",
+         "Corso nuoto",
+         "Corso vecchio",
+         "Carnet JSON",
+         "",
+         "",
+         "",
+         null,
+         {
+          "int": "7"
+         },
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         {
+          "decimal": "50.00"
+         },
+         {
+          "decimal": "1.00"
+         },
+         {
+          "decimal": "120.00"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "15.50"
+         },
+         {
+          "decimal": "3.00"
+         },
+         {
+          "decimal": "200.00"
+         },
+         {
+          "decimal": "60.00"
+         },
+         {
+          "decimal": "25.00"
+         },
+         {
+          "decimal": "12.00"
+         },
+         {
+          "decimal": "8.25"
+         },
+         {
+          "decimal": "0.10"
+         },
+         {
+          "decimal": "4.00"
+         },
+         {
+          "decimal": "10.00"
+         }
+        ],
+        [
+         "riga uno\nriga due",
+         null,
+         null,
+         null,
+         null,
+         "nota, contanti",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "Mario Rossi",
+         "Arrotondamento",
+         "Mario Rossi",
+         "Mario Rossi",
+         "Mario Rossi",
+         "None Verdi",
+         "Chiusura",
+         "Palestre \"Riunite\"",
+         "Giulia Bianchi",
+         "Giroconto cassa",
+         "Mario Rossi",
+         "Quota gruppo",
+         "Centesimi",
+         "Senza conto",
+         "Quota finanziaria"
+        ],
+        [
+         "Pagato",
+         "Pagato",
+         "In Attesa",
+         "Pagato",
+         "In Attesa",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "In Attesa",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "In Attesa"
+        ],
+        [
+         "cash",
+         "pos",
+         "transfer",
+         "pos",
+         "online",
+         "-",
+         "cash",
+         "transfer",
+         "cash",
+         "-",
+         "-",
+         "-",
+         "cash",
+         "-",
+         "-"
+        ],
+        [
+         "2024-02-01",
+         "2024-02-28",
+         "2024-03-02",
+         "2024-04-01",
+         "2024-05-02",
+         "2024-06-01",
+         "2024-06-20",
+         "2024-07-01",
+         "2024-08-15",
+         "2024-09-01",
+         "2024-10-01",
+         "2024-10-02",
+         "2025-01-05",
+         "2025-01-06",
+         "2025-02-01"
+        ],
+        [
+         "2024-02-10",
+         "2024-03-01",
+         "2024-03-05",
+         "2024-04-15",
+         "2024-05-20",
+         "2024-06-03",
+         "2024-07-01",
+         "2024-07-02",
+         "2024-08-20",
+         "2024-09-01",
+         "2024-10-05",
+         "2024-10-06",
+         "2025-01-10",
+         "2025-01-20",
+         ""
+        ],
+        [
+         {
+          "int": "7"
+         },
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Iscrizione",
+         "Altro",
+         "Corso",
+         "Corso",
+         "Corso",
+         "Altro",
+         "Altro",
+         "Quote sociali",
+         "Altro",
+         "Giroconto",
+         "Iscrizione",
+         "Altro",
+         "Altro",
+         "Altro",
+         "Altro"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "",
+         "Quote sociali,Globale",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Quote sociali",
+         "-",
+         "Quote sociali",
+         "-",
+         "-",
+         "-",
+         "-",
+         "Quote sociali",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "Cassa sede",
+         "Banca, Intesa",
+         "-",
+         "Banca, Intesa",
+         "-",
+         "Cassa sede",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Cassa sede",
+         "-",
+         "Cassa sede",
+         "Cassa sede",
+         "-",
+         "-"
+        ],
+        [
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Uscita",
+         "Uscita",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "",
+         "",
+         "Corso nuoto",
+         "Corso vecchio",
+         "Carnet JSON",
+         "",
+         "",
+         "",
+         null,
+         {
+          "int": "7"
+         },
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         {
+          "decimal": "50.00"
+         },
+         {
+          "decimal": "1.00"
+         },
+         {
+          "decimal": "120.00"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "15.50"
+         },
+         {
+          "decimal": "3.00"
+         },
+         {
+          "decimal": "200.00"
+         },
+         {
+          "decimal": "60.00"
+         },
+         {
+          "decimal": "25.00"
+         },
+         {
+          "decimal": "12.00"
+         },
+         {
+          "decimal": "8.25"
+         },
+         {
+          "decimal": "0.10"
+         },
+         {
+          "decimal": "4.00"
+         },
+         {
+          "decimal": "10.00"
+         }
+        ],
+        [
+         "riga uno\nriga due",
+         null,
+         null,
+         null,
+         null,
+         "nota, contanti",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-foreign",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "Estero"
+        ],
+        [
+         "Pagato"
+        ],
+        [
+         "-"
+        ],
+        [
+         "2024-01-25"
+        ],
+        [
+         "2024-01-25"
+        ],
+        [
+         ""
+        ],
+        [
+         "Altro"
+        ],
+        [
+         ""
+        ],
+        [
+         "-"
+        ],
+        [
+         "Cassa sede"
+        ],
+        [
+         "Entrata"
+        ],
+        [
+         ""
+        ],
+        [
+         {
+          "decimal": "99.00"
+         }
+        ],
+        [
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "Mario Rossi",
+         "Quota gruppo"
+        ],
+        [
+         "In Attesa",
+         "Pagato"
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "2024-10-01",
+         "2024-10-02"
+        ],
+        [
+         "2024-10-05",
+         "2024-10-06"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "Iscrizione",
+         "Altro"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "-",
+         "Cassa sede"
+        ],
+        [
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         {
+          "decimal": "12.00"
+         },
+         {
+          "decimal": "8.25"
+         }
+        ],
+        [
+         null,
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-archived-shifted",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx&archived=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "Soggetto sconosciuto",
+         "Mario Rossi",
+         "Mario Rossi",
+         "Archiviato"
+        ],
+        [
+         "In Attesa",
+         "Pagato",
+         "Pagato",
+         "Pagato"
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "2024-01-10",
+         "2024-01-11",
+         "2024-01-12",
+         "2024-01-13"
+        ],
+        [
+         "2024-01-14",
+         "2024-01-15",
+         "2024-01-16",
+         "2024-01-17"
+        ],
+        [
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Altro",
+         "Iscrizione",
+         "Giroconto"
+        ],
+        [
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "-",
+         "Cassa sede",
+         "-",
+         "Cassa sede"
+        ],
+        [
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         {
+          "decimal": "2.00"
+         },
+         {
+          "decimal": "5.00"
+         },
+         {
+          "decimal": "6.00"
+         },
+         {
+          "decimal": "7.00"
+         }
+        ],
+        [
+         null,
+         null,
+         null,
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-paid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx&query[paid]=true",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "Mario Rossi",
+         "Arrotondamento",
+         "Mario Rossi",
+         "None Verdi",
+         "Chiusura",
+         "Palestre \"Riunite\"",
+         "Giulia Bianchi",
+         "Giroconto cassa",
+         "Quota gruppo",
+         "Centesimi",
+         "Senza conto"
+        ],
+        [
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato"
+        ],
+        [
+         "cash",
+         "pos",
+         "pos",
+         "-",
+         "cash",
+         "transfer",
+         "cash",
+         "-",
+         "-",
+         "cash",
+         "-"
+        ],
+        [
+         "2024-02-01",
+         "2024-02-28",
+         "2024-04-01",
+         "2024-06-01",
+         "2024-06-20",
+         "2024-07-01",
+         "2024-08-15",
+         "2024-09-01",
+         "2024-10-02",
+         "2025-01-05",
+         "2025-01-06"
+        ],
+        [
+         "2024-02-10",
+         "2024-03-01",
+         "2024-04-15",
+         "2024-06-03",
+         "2024-07-01",
+         "2024-07-02",
+         "2024-08-20",
+         "2024-09-01",
+         "2024-10-06",
+         "2025-01-10",
+         "2025-01-20"
+        ],
+        [
+         {
+          "int": "7"
+         },
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Iscrizione",
+         "Altro",
+         "Corso",
+         "Altro",
+         "Altro",
+         "Quote sociali",
+         "Altro",
+         "Giroconto",
+         "Altro",
+         "Altro",
+         "Altro"
+        ],
+        [
+         "",
+         "",
+         "",
+         "Quote sociali,Globale",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Quote sociali",
+         "-",
+         "-",
+         "-",
+         "-",
+         "Quote sociali",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "Cassa sede",
+         "Banca, Intesa",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Cassa sede",
+         "Cassa sede",
+         "Cassa sede",
+         "-"
+        ],
+        [
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Uscita",
+         "Uscita",
+         "Entrata",
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "",
+         "",
+         "Corso vecchio",
+         "",
+         "",
+         "",
+         null,
+         {
+          "int": "7"
+         },
+         "",
+         "",
+         ""
+        ],
+        [
+         {
+          "decimal": "50.00"
+         },
+         {
+          "decimal": "1.00"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "15.50"
+         },
+         {
+          "decimal": "3.00"
+         },
+         {
+          "decimal": "200.00"
+         },
+         {
+          "decimal": "60.00"
+         },
+         {
+          "decimal": "25.00"
+         },
+         {
+          "decimal": "8.25"
+         },
+         {
+          "decimal": "0.10"
+         },
+         {
+          "decimal": "4.00"
+         }
+        ],
+        [
+         "riga uno\nriga due",
+         null,
+         null,
+         "nota, contanti",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-search",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx&query[generalSearch]=rossi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "Mario Rossi",
+         "Mario Rossi",
+         "Mario Rossi",
+         "Mario Rossi",
+         "Mario Rossi"
+        ],
+        [
+         "Pagato",
+         "In Attesa",
+         "Pagato",
+         "In Attesa",
+         "In Attesa"
+        ],
+        [
+         "cash",
+         "transfer",
+         "pos",
+         "online",
+         "-"
+        ],
+        [
+         "2024-02-01",
+         "2024-03-02",
+         "2024-04-01",
+         "2024-05-02",
+         "2024-10-01"
+        ],
+        [
+         "2024-02-10",
+         "2024-03-05",
+         "2024-04-15",
+         "2024-05-20",
+         "2024-10-05"
+        ],
+        [
+         {
+          "int": "7"
+         },
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Iscrizione",
+         "Corso",
+         "Corso",
+         "Corso",
+         "Iscrizione"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Quote sociali",
+         "Quote sociali",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "Cassa sede",
+         "-",
+         "Banca, Intesa",
+         "-",
+         "-"
+        ],
+        [
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "",
+         "Corso nuoto",
+         "Corso vecchio",
+         "Carnet JSON",
+         ""
+        ],
+        [
+         {
+          "decimal": "50.00"
+         },
+         {
+          "decimal": "120.00"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "12.00"
+         }
+        ],
+        [
+         "riga uno\nriga due",
+         null,
+         null,
+         null,
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-petty-spring",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?export_type=petty_cash_book&m=xlsx&query[payment_range]=2024/03/01%20al%202024/06/30",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note",
+        "Saldo progressivo"
+       ],
+       "data": [
+        [
+         "Arrotondamento",
+         "Mario Rossi",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "None Verdi",
+         "Trasferimento da Banca, Intesa a Cassa sede",
+         "Trasferimento da Banca, Intesa a Cassa sede",
+         "Chiusura"
+        ],
+        [
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato"
+        ],
+        [
+         "pos",
+         "pos",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "cash"
+        ],
+        [
+         "2024-02-28",
+         "2024-04-01",
+         "2024-05-10",
+         "2024-05-10",
+         "2024-06-01",
+         "2024-06-15",
+         "2024-06-15",
+         "2024-06-20"
+        ],
+        [
+         "2024-03-01",
+         "2024-04-15",
+         "2024-05-10",
+         "2024-05-10",
+         "2024-06-03",
+         "2024-06-15",
+         "2024-06-15",
+         "2024-07-01"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Altro",
+         "Corso",
+         "Giroconto",
+         "Giroconto",
+         "Altro",
+         "Giroconto",
+         "Giroconto",
+         "Altro"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "Quote sociali,Globale",
+         "",
+         "",
+         ""
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "Banca, Intesa",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Cassa sede"
+        ],
+        [
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "",
+         "Corso vecchio",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         {
+          "decimal": "1.00"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "15.50"
+         },
+         {
+          "decimal": "12.34"
+         },
+         {
+          "decimal": "12.34"
+         },
+         {
+          "decimal": "3.00"
+         }
+        ],
+        [
+         null,
+         null,
+         null,
+         null,
+         "nota, contanti",
+         null,
+         null,
+         null
+        ],
+        [
+         {
+          "float": "1007.5"
+         },
+         {
+          "float": "1047.5"
+         },
+         {
+          "float": "233.0"
+         },
+         {
+          "float": "1077.5"
+         },
+         {
+          "float": "248.5"
+         },
+         {
+          "float": "1065.16"
+         },
+         {
+          "float": "260.84"
+         },
+         {
+          "float": "263.84"
+         }
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-petty-year",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?export_type=petty_cash_book&m=xlsx&query[payment_range]=01/01/2024%20al%2031/12/2024",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note",
+        "Saldo progressivo"
+       ],
+       "data": [
+        [
+         "Mario Rossi",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "Arrotondamento",
+         "Mario Rossi",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "None Verdi",
+         "Trasferimento da Banca, Intesa a Cassa sede",
+         "Trasferimento da Banca, Intesa a Cassa sede",
+         "Chiusura",
+         "Palestre \"Riunite\"",
+         "Giulia Bianchi",
+         "Giroconto cassa",
+         "Quota gruppo"
+        ],
+        [
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato"
+        ],
+        [
+         "cash",
+         "-",
+         "-",
+         "pos",
+         "pos",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "cash",
+         "transfer",
+         "cash",
+         "-",
+         "-"
+        ],
+        [
+         "2024-02-01",
+         "2024-02-20",
+         "2024-02-20",
+         "2024-02-28",
+         "2024-04-01",
+         "2024-05-10",
+         "2024-05-10",
+         "2024-06-01",
+         "2024-06-15",
+         "2024-06-15",
+         "2024-06-20",
+         "2024-07-01",
+         "2024-08-15",
+         "2024-09-01",
+         "2024-10-02"
+        ],
+        [
+         "2024-02-10",
+         "2024-02-20",
+         "2024-02-20",
+         "2024-03-01",
+         "2024-04-15",
+         "2024-05-10",
+         "2024-05-10",
+         "2024-06-03",
+         "2024-06-15",
+         "2024-06-15",
+         "2024-07-01",
+         "2024-07-02",
+         "2024-08-20",
+         "2024-09-01",
+         "2024-10-06"
+        ],
+        [
+         {
+          "int": "7"
+         },
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Iscrizione",
+         "Giroconto",
+         "Giroconto",
+         "Altro",
+         "Corso",
+         "Giroconto",
+         "Giroconto",
+         "Altro",
+         "Giroconto",
+         "Giroconto",
+         "Altro",
+         "Quote sociali",
+         "Altro",
+         "Giroconto",
+         "Altro"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "Quote sociali,Globale",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Quote sociali",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "Quote sociali",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "Cassa sede",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Banca, Intesa",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Cassa sede",
+         "Cassa sede"
+        ],
+        [
+         "Entrata",
+         "Uscita",
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Uscita",
+         "Uscita",
+         "Entrata"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "Corso vecchio",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         null,
+         {
+          "int": "7"
+         },
+         ""
+        ],
+        [
+         {
+          "decimal": "50.00"
+         },
+         {
+          "decimal": "5.00"
+         },
+         {
+          "decimal": "5.00"
+         },
+         {
+          "decimal": "1.00"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "15.50"
+         },
+         {
+          "decimal": "12.34"
+         },
+         {
+          "decimal": "12.34"
+         },
+         {
+          "decimal": "3.00"
+         },
+         {
+          "decimal": "200.00"
+         },
+         {
+          "decimal": "60.00"
+         },
+         {
+          "decimal": "25.00"
+         },
+         {
+          "decimal": "8.25"
+         }
+        ],
+        [
+         "riga uno\nriga due",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "nota, contanti",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null
+        ],
+        [
+         {
+          "float": "150.0"
+         },
+         {
+          "float": "145.0"
+         },
+         {
+          "float": "1005.5"
+         },
+         {
+          "float": "1006.5"
+         },
+         {
+          "float": "1046.5"
+         },
+         {
+          "float": "115.0"
+         },
+         {
+          "float": "1076.5"
+         },
+         {
+          "float": "130.5"
+         },
+         {
+          "float": "1064.16"
+         },
+         {
+          "float": "142.84"
+         },
+         {
+          "float": "145.84"
+         },
+         {
+          "float": "864.1600000000001"
+         },
+         {
+          "float": "85.84"
+         },
+         {
+          "float": "60.84"
+         },
+         {
+          "float": "69.09"
+         }
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-petty-archived-row-without-account",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?export_type=petty_cash_book&m=xlsx&archived=True",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note",
+        "Saldo progressivo"
+       ],
+       "data": [
+        [
+         "Mario Rossi",
+         "Mario Rossi",
+         "Archiviato",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "Trasferimento da Cassa sede a Banca, Intesa",
+         "Trasferimento da Banca, Intesa a Cassa sede",
+         "Trasferimento da Banca, Intesa a Cassa sede"
+        ],
+        [
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato",
+         "Pagato"
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "2024-01-11",
+         "2024-01-12",
+         "2024-01-13",
+         "2024-02-20",
+         "2024-02-20",
+         "2024-05-10",
+         "2024-05-10",
+         "2024-06-15",
+         "2024-06-15"
+        ],
+        [
+         "2024-01-15",
+         "2024-01-16",
+         "2024-01-17",
+         "2024-02-20",
+         "2024-02-20",
+         "2024-05-10",
+         "2024-05-10",
+         "2024-06-15",
+         "2024-06-15"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "Altro",
+         "Iscrizione",
+         "Giroconto",
+         "Giroconto",
+         "Giroconto",
+         "Giroconto",
+         "Giroconto",
+         "Giroconto",
+         "Giroconto"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-",
+         "-"
+        ],
+        [
+         "Cassa sede",
+         "-",
+         "Cassa sede",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Cassa sede",
+         "Banca, Intesa",
+         "Banca, Intesa",
+         "Cassa sede"
+        ],
+        [
+         "Entrata",
+         "Entrata",
+         "Entrata",
+         "Uscita",
+         "Entrata",
+         "Uscita",
+         "Entrata",
+         "Uscita",
+         "Entrata"
+        ],
+        [
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         {
+          "decimal": "5.00"
+         },
+         {
+          "decimal": "6.00"
+         },
+         {
+          "decimal": "7.00"
+         },
+         {
+          "decimal": "5.00"
+         },
+         {
+          "decimal": "5.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "30.00"
+         },
+         {
+          "decimal": "12.34"
+         },
+         {
+          "decimal": "12.34"
+         }
+        ],
+        [
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null
+        ],
+        [
+         {
+          "float": "105.0"
+         },
+         {
+          "float": "112.0"
+         },
+         {
+          "float": "107.0"
+         },
+         {
+          "float": "1005.5"
+         },
+         {
+          "float": "77.0"
+         },
+         {
+          "float": "1035.5"
+         },
+         {
+          "float": "1023.16"
+         },
+         {
+          "float": "89.34"
+         }
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-petty-last-row-without-account",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?export_type=petty_cash_book&m=xlsx&query[payment_range]=2025/01/01%20al%202025/01/31",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note",
+        "Saldo progressivo"
+       ],
+       "data": [
+        [
+         "Centesimi",
+         "Senza conto"
+        ],
+        [
+         "Pagato",
+         "Pagato"
+        ],
+        [
+         "cash",
+         "-"
+        ],
+        [
+         "2025-01-05",
+         "2025-01-06"
+        ],
+        [
+         "2025-01-10",
+         "2025-01-20"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "Altro",
+         "Altro"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "Cassa sede",
+         "-"
+        ],
+        [
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         {
+          "decimal": "0.10"
+         },
+         {
+          "decimal": "4.00"
+         }
+        ],
+        [
+         null,
+         null
+        ],
+        [
+         {
+          "float": "187.19"
+         }
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads own.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-xlsx-petty-transfer-without-account",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?export_type=petty_cash_book&m=xlsx",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "payment-export-xlsx-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "payment-export-xlsx-range-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?m=xlsx&query[payment_range]=",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
   }
  ]
 }

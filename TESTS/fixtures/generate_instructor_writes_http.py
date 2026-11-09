@@ -148,6 +148,62 @@ REGISTRIES = {
         timed(one('abroad'), '2026-09-15T08:00:00Z', '2026-09-15T09:30:00Z', event_id='f1'),
         timed(one('full'), '2026-09-15T08:00:00Z', '2026-09-15T09:00:00Z', event_id='f2')]},
 }
+# instructor/report: a registry of all-day events (lessons-hours skips them),
+# attendance days and the course subscriptions their attendees name.
+rids = iter(f'a1000000-0000-4000-8000-{967401 + n:012d}' for n in range(80))
+told = lambda who, title=None, **extra: {'start': '2026-09-01', 'end': '2026-09-02', 'allDay': True,
+                                         'extendedProps': {'instructor': who, **extra.pop('props', {})},
+                                         **({} if title is None else {'title': title}), **extra}
+# AttendanceDay.associated_event is a UUID: report events carry UUID event ids.
+EV = {name: next(rids) for name in ('r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'missing')}
+REGISTRIES['reg_report'] = {'id': next(rids), 'course': 'ca', 'status': 2, 'events': [
+    told([one('plain'), one('full')], 'Doppia', event_id=EV['r1'], props={'description': 'Descrizione & <b>'}),
+    told(one('comp'), 'Numero', event_id=EV['r2'], props={'description': 42}),
+    told(one('abroad'), 'Estero', event_id=EV['r3']),
+    told(one('draft'), 'Lista', event_id=EV['r4'], props={'description': ['a', 1]}),
+    told(one('full'), 'Collegamento', event_id=EV['r5'], props={'description': 'http://example.test/lezione'}),
+    told('stringa', 'Testo', event_id=EV['r6']),
+    told([one('full'), 'x'], 'Misto', event_id=EV['r7']),
+    told(one('full'), event_id=EV['r8']),
+    told(one('full'), 'Malformato', event_id=EV['r9']),
+    told(one('full'), 'Vuota', event_id=EV['r10'], props={'description': 0}),
+]}
+PEOPLE = {'mario': {'id': next(rids), 'first_name': 'Mario', 'last_name': 'Rossi'},
+          'luisa': {'id': next(rids), 'first_name': 'Luisa', 'last_name': None},
+          'paolo': {'id': next(rids), 'first_name': 'Paolo', 'last_name': 'Bianchi'}}
+COURSE_SUBSCRIPTIONS = {'cs_mario': {'id': next(rids), 'person': 'mario', 'deleted': False},
+                        'cs_luisa': {'id': next(rids), 'person': 'luisa', 'deleted': False},
+                        'cs_deleted': {'id': next(rids), 'person': 'paolo', 'deleted': True},
+                        'cs_nosub': {'id': next(rids), 'person': None, 'deleted': False}}
+CS = lambda label: {'course_subscription_id': COURSE_SUBSCRIPTIONS[label]['id']}
+UNKNOWN_CS = {'course_subscription_id': 'a1000000-0000-4000-8000-000000967499'}
+
+
+def attendance(registry, event, date, title=None, attendees=None, expected=None):
+    return {'id': next(rids), 'registry': registry, 'event': EV.get(event, event), 'date': date, 'title': title, 'attendees': attendees,
+            'expected_absences': expected}
+
+
+DAYS = {
+    'r1': attendance('reg_report', 'r1', '2026-09-14T22:30:00Z', 'Lezione doppia', [CS('cs_mario'), UNKNOWN_CS], [CS('cs_luisa')]),
+    'r1b': attendance('reg_report', 'r1', '2026-09-14T21:59:00Z', 'Prima', [CS('cs_nosub')], []),
+    'r2': attendance('reg_report', 'r2', '2026-09-16T06:00:00Z', None, [], None),
+    'r3': attendance('reg_report', 'r3', '2026-09-17T06:00:00Z', 'Estero'),
+    'r4': attendance('reg_report', 'r4', '2026-09-18T06:00:00Z', 'Lista', [CS('cs_deleted'), {'course_subscription_id': None}]),
+    'r5': attendance('reg_report', 'r5', '2026-09-19T06:00:00Z', 'Maiuscolo',
+                     [{'course_subscription_id': COURSE_SUBSCRIPTIONS['cs_mario']['id'].upper()}]),
+    'r10': attendance('reg_report', 'r10', '2026-09-20T06:00:00Z', 'Zero', {}),
+    'nothing': attendance('reg_report', None, '2026-09-20T07:00:00Z', 'Senza evento'),
+    'b1': attendance('reg_b', 'missing', '2026-09-21T15:00:00Z', 'Basket', [CS('cs_luisa'), CS('cs_mario')]),
+    'err6': attendance('reg_report', 'r6', '2026-10-05T06:00:00Z'),
+    'err7': attendance('reg_report', 'r7', '2026-10-06T06:00:00Z'),
+    'err8': attendance('reg_report', 'r8', '2026-10-07T06:00:00Z'),
+    'err9': attendance('reg_report', 'r9', '2026-10-08T06:00:00Z', None, [{'course_subscription_id': 'non-un-uuid'}]),
+    'err_b2': attendance('reg_b', 'missing', '2026-10-12T06:00:00Z'),
+    'err_e14': attendance('reg_a', 'missing', '2026-10-13T06:00:00Z'),
+    'err_dict': attendance('reg_dict', 'missing', '2026-10-14T06:00:00Z'),
+    'foreign': attendance('reg_foreign', 'missing', '2026-09-25T06:00:00Z'),
+}
 NEW_ADD, NEW_COPY = next(ids), next(ids)
 cases = []
 
@@ -299,6 +355,113 @@ add('lessons-owner-without-association-one-not-allowed', 'owner_without_associat
 authorization('lessons', LESSONS, 'GET', 'read', 'Instructor Lessons Hours', 'POST', LESSONS_DOC)
 add('lessons-one-restricted-missing-permission', 'restricted_collaborator', ONE('full'), 403, missing('read'))
 add('lessons-one-options', 'owner', ONE('full'), 200, options('Instructor Lessons Hours', LESSONS_DOC), method='OPTIONS')
+
+# --- report (a read: the seeded state) ---------------------------------------------------
+REPORT = '/instructor/report'
+SCHEMA = [('first_name', 'Nome'), ('last_name', 'Cognome'), ('course', 'Corso'), ('title', 'Titolo'), ('description', 'Descrizione'),
+          ('date', 'Data'), ('attendees_count', 'Numero di partecipanti'), ('attendees', 'Partecipanti'), ('expected_absences', 'Assenti previsti')]
+
+
+def names_of(entries):
+    """', '.join(lookup.get(str(id), 'Atleta cancellato')): live course subscriptions by their canonical id."""
+    lookup = {}
+    for row in COURSE_SUBSCRIPTIONS.values():
+        if row['deleted']:
+            continue
+        person = PEOPLE[row['person']] if row['person'] else {'first_name': None, 'last_name': None}
+        lookup[row['id']] = f"{person['first_name'] or ''} {person['last_name'] or ''}"
+    return ', '.join(lookup.get(str(entry['course_subscription_id']), 'Atleta cancellato') for entry in entries)
+
+
+def report(association, start, end):
+    """get_report over the seeded registries (registry seed order, days by date)."""
+    low = datetime.strptime(start, '%d/%m/%Y').replace(tzinfo=ROME).astimezone(timezone.utc)
+    high = datetime.strptime(end, '%d/%m/%Y').replace(hour=23, minute=59, second=59, tzinfo=ROME).astimezone(timezone.utc)
+    mine = {row['id']: row for row in INSTRUCTORS.values() if IDS[row['owner']] == IDS['owner']} if association == OWN else \
+        {row['id']: row for row in INSTRUCTORS.values() if row['owner'] == 'foreign_owner'}
+    rows = []
+    for label, registry in REGISTRIES.items():
+        if COURSES[registry['course']]['association'] != association:
+            continue
+        days = sorted((d for d in DAYS.values() if d['registry'] == label
+                       and low <= datetime.fromisoformat(d['date'].replace('Z', '+00:00')) <= high), key=lambda d: d['date'])
+        for day in days:
+            assert isinstance(registry['events'], list), 'iterating a dict of events raises'
+            event = None
+            for candidate in registry['events']:
+                assert isinstance(candidate, dict) and 'event_id' in candidate, "e['event_id'] raises"
+                if candidate['event_id'] == str(day['event']):
+                    event = candidate
+                    break
+            if event is None:
+                continue
+            assert 'title' in event, 'a matched event without a title is a 500'
+            props = event.get('extendedProps') if isinstance(event.get('extendedProps'), dict) else {}
+            who, description = props.get('instructor'), props.get('description')
+            assert isinstance(who, (list, dict)), 'a str instructor is a 500'
+            candidates = [w.get('instructor_id') for w in who] if isinstance(who, list) else [str(who.get('instructor_id'))]
+            for candidate in candidates:
+                if candidate not in mine:
+                    continue
+                person = mine[candidate]
+                when = datetime.fromisoformat(day['date'].replace('Z', '+00:00')).astimezone(ROME)
+                rows.append({'first_name': person['first_name'], 'last_name': person['last_name'],
+                             'course': COURSES[registry['course']]['title'], 'title': day['title'],
+                             'description': description if description else '', 'date': when,
+                             'attendees_count': len(day['attendees']) if day['attendees'] else 0,
+                             'attendees': names_of(day['attendees'] or []), 'expected_absences': names_of(day['expected_absences'] or [])})
+    rows.sort(key=lambda row: (row['first_name'], row['last_name'], row['date']))
+    for row in rows:
+        row['date'] = row['date'].strftime('%d/%m/%Y %H:%M')
+    columns = [label for _, label in SCHEMA] if rows else []
+    table = [[typed(row[key]) for key, _ in SCHEMA] for row in rows]
+    widths = [max(max(len(text_of(row[key])) for row in rows), len(label)) + 2 for key, label in SCHEMA] if rows else []
+    spec = {'engine': 'xlsxwriter', 'sheet': 'Sheet1', 'columns': columns, 'rows': table, 'index': False, 'widths': widths}
+    return {'data': {'results': rows, 'report_file': {'$xlsx': spec}}}
+
+
+def typed(value):
+    if isinstance(value, bool):
+        return {'bool': value}
+    if isinstance(value, int):
+        return {'int': str(value)}
+    if isinstance(value, list):
+        return {'list': [typed(item) for item in value]}
+    return value
+
+
+def text_of(value):
+    """str() of a cell for astype(str) (the authored columns keep their object or int64 dtype)."""
+    return 'None' if value is None else str(value)
+
+
+RQ = lambda start, end: REPORT + q(start_date=start, end_date=end)
+MAIN = report(OWN, '14/09/2026', '30/09/2026')
+add('report-owner', 'owner', RQ('14/09/2026', '30/09/2026'), 200, MAIN)
+add('report-full-collaborator', 'full_collaborator', RQ('14/09/2026', '30/09/2026'), 200, MAIN)
+add('report-admin-impersonating-owner', 'admin', RQ('14/09/2026', '30/09/2026'), 200, MAIN, headers=IMPERSONATED)
+add('report-separators', 'owner', RQ('14-09-2026', '30.09.2026'), 200, MAIN)
+add('report-unpadded', 'owner', RQ(' 14/9/2026', '30/9/2026 '), 200, MAIN)
+add('report-rome-midnight', 'owner', RQ('15/09/2026', '15/09/2026'), 200, report(OWN, '15/09/2026', '15/09/2026'))
+add('report-day-before', 'owner', RQ('14/09/2026', '14/09/2026'), 200, report(OWN, '14/09/2026', '14/09/2026'))
+add('report-one-day-uppercase-id', 'owner', RQ('19/09/2026', '19/09/2026'), 200, report(OWN, '19/09/2026', '19/09/2026'))
+add('report-empty-period', 'owner', RQ('01/11/2026', '30/11/2026'), 200, report(OWN, '01/11/2026', '30/11/2026'))
+add('report-inverted-period', 'owner', RQ('30/09/2026', '14/09/2026'), 200, report(OWN, '30/09/2026', '14/09/2026'))
+add('report-foreign-owner-empty', 'foreign_owner', RQ('01/11/2026', '30/11/2026'), 200, report(FOREIGN, '01/11/2026', '30/11/2026'))
+for name, day in (('instructor-text', '05/10/2026'), ('instructor-list-text', '06/10/2026'), ('event-without-title', '07/10/2026'),
+                  ('attendee-malformed-id', '08/10/2026'), ('events-text-before-match', '13/10/2026'), ('events-object', '14/10/2026')):
+    add(f'report-{name}-server-error', 'owner', RQ(day, day), 500, SERVER)
+add('report-unmatched-event', 'owner', RQ('12/10/2026', '12/10/2026'), 200, report(OWN, '12/10/2026', '12/10/2026'))
+add('report-foreign-owner', 'foreign_owner', RQ('01/09/2026', '30/09/2026'), 200, report(FOREIGN, '01/09/2026', '30/09/2026'))
+add('report-missing-both', 'owner', REPORT, 400, {'msg': 'Entrambe le date sono richieste.'})
+add('report-missing-end', 'owner', REPORT + q(start_date='14/09/2026'), 400, {'msg': 'Entrambe le date sono richieste.'})
+add('report-missing-start', 'owner', REPORT + q(end_date='14/09/2026'), 400, {'msg': 'Entrambe le date sono richieste.'})
+add('report-nonexistent-date', 'owner', RQ('31/02/2026', '30/09/2026'), 500, SERVER)
+add('report-text-date', 'owner', RQ('ieri', '30/09/2026'), 500, SERVER)
+add('report-empty-date', 'owner', RQ('', '30/09/2026'), 500, SERVER)
+add('report-athlete-denied', 'athlete', REPORT, 403, {'detail': 'User is not a sport association'})
+add('report-owner-without-association', 'owner_without_association', RQ('14/09/2026', '30/09/2026'), 500, SERVER)
+authorization('report', REPORT, 'GET', 'read', 'Instructor Report', 'POST')
 
 # --- add -------------------------------------------------------------------------------
 ADD = '/instructor/add'
@@ -513,6 +676,7 @@ add('delete-orphan-no-index', 'owner_without_association', DEL('orphan'), 200, D
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Instructor writes and lesson hours authored sequence', 'ids': IDS,
                               'documents': DOCUMENTS, 'instructors': INSTRUCTORS, 'hours': HOURS, 'payments': PAYMENTS, 'reminders': REMINDERS,
-                              'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'registries': REGISTRIES, 'cases': cases},
+                              'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'registries': REGISTRIES, 'people': PEOPLE,
+                              'course_subscriptions': COURSE_SUBSCRIPTIONS, 'days': DAYS, 'cases': cases},
                              ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

@@ -1,9 +1,9 @@
 // Package documentobjects reads stored documents from the S3 default storage
 // the way PrintingService does: default_storage.exists (HeadObject, 404 means
 // absent) and a direct GetObject stream, and stores uploads the way
-// S3Storage._save does (one PutObject). Delete is S3Storage.delete (the
-// export cleanup task and the data-restore cleanup); List is one
-// S3Storage.listdir listing.
+// S3Storage._save does (one PutObject). Delete is S3Storage.delete (the export
+// cleanup task, the signature upload, the data-restore cleanup); PutACL
+// (acl.go) is the signature's object ACL; List is one S3Storage.listdir listing.
 package documentobjects
 
 import (
