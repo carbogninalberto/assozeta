@@ -54,16 +54,26 @@ func (f *Failure) Error() string { return f.Text }
 // Payload is json.dumps(FastRender.get_pdf's payload) for the view path and
 // the request's Authorization header (nil: JSON null).
 func Payload(currentHost, url string, authorization *string) []byte {
+	var headers bytes.Buffer
+	headers.WriteString(`{"Authorization": `)
+	if authorization == nil {
+		headers.WriteString("null")
+	} else {
+		writeString(&headers, *authorization)
+	}
+	headers.WriteString(`}`)
+	return payload(currentHost, url, headers.String())
+}
+
+// PayloadWithoutHeaders is the payload of FastRender.get_pdf(url, {}).
+func PayloadWithoutHeaders(currentHost, url string) []byte { return payload(currentHost, url, "{}") }
+
+func payload(currentHost, url, headers string) []byte {
 	var b bytes.Buffer
 	b.WriteString(`{"type": "pdf", "url": `)
 	writeString(&b, currentHost+"/"+url)
-	b.WriteString(`, "async": false, "headers": {"Authorization": `)
-	if authorization == nil {
-		b.WriteString("null")
-	} else {
-		writeString(&b, *authorization)
-	}
-	b.WriteString(`}, "device": {"userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ` +
+	b.WriteString(`, "async": false, "headers": ` + headers)
+	b.WriteString(`, "device": {"userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ` +
 		`Chrome/91.0.4472.124 Safari/537.36", "scale": 1, "width": 1920, "height": 1080}, "render": {"block": {"cookies": false, ` +
 		`"ads": false, "trackers": false, "banners": false}, "waitTime": 0, "timeout": 30000, "fullPage": false, ` +
 		`"triggerLazyAnimations": false, "scroll": {"position": 0, "animate": false, "duration": 0, "animation": ""}, ` +
@@ -108,7 +118,15 @@ func writeString(b *bytes.Buffer, s string) {
 // the PDF bytes, or *Failure with the exception text Django wraps in
 // 'PDF rendering failed: ...'.
 func (c *Client) Render(ctx context.Context, url string, authorization *string) ([]byte, error) {
-	body := Payload(c.currentHost, url, authorization)
+	return c.post(ctx, Payload(c.currentHost, url, authorization))
+}
+
+// RenderWithoutHeaders is Puppeteer.pdf_from_url(url, headers={}).
+func (c *Client) RenderWithoutHeaders(ctx context.Context, url string) ([]byte, error) {
+	return c.post(ctx, PayloadWithoutHeaders(c.currentHost, url))
+}
+
+func (c *Client) post(ctx context.Context, body []byte) ([]byte, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.renderURL, bytes.NewReader(body))
 	if err != nil {
 		return nil, &Failure{Text: err.Error()}
