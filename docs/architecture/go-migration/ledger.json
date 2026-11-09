@@ -32682,25 +32682,74 @@
         "target": "EmailTestView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/instanceprobe/http.go",
+        "BE_GO/internal/instanceprobe/pyjson.go",
+        "BE_GO/internal/instanceprobe/probes.go",
+        "BE_GO/internal/instanceprobe/releases.go",
+        "BE_GO/internal/dto/instance_outbound.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/repository/instance_outbound.go",
+        "BE_GO/internal/repository/instance_release_cache.go",
+        "BE_GO/internal/smtpsend/backend.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/email/test",
+          "/api/v2/instance/admin/email/test",
+          "/api/instance/admin/email/test"
+        ],
+        "request": "POST {revision, action: connect|send, recipient?} (JSON).",
+        "response": "{status, level, message, checked_at} of the probe.",
+        "errors": "401; 403; 405; 400 serializer errors; 409 stale revision (before and after the probe); 429 Retry-After 20 leased; 500 configuration missing or settings outside the ported subset (before the lease).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsInstanceOwner; Cache-Control: no-store on every DRF response.",
+        "resource_scope": "Singleton InstanceConfiguration email settings.",
+        "side_effects": "claim_operation lease (operation_leases.email_test = now + 20); SMTP connection (STARTTLS/SSL verified, login) and for send one message; diagnostic_results.email_test stored.",
+        "transaction": "Lease in its own NOWAIT transaction; result stored under select_for_update after a revision recheck; the request is not atomic.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_outbound_http.json",
+        "TESTS/fixtures/generate_instance_outbound_http.py",
+        "TESTS/contracts/test_instance_outbound_http.py",
+        "TESTS/adapters/django/instance_outbound_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-outbound.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-native-r2/results.json",
+          "receipt_sha256": "9b432ec0cd51a780a1ed88a360188fdd669bec2288217472defbe03c4dd9388b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json",
+          "receipt_sha256": "731c3953110604168bbbdda077f3798356130dc2f164d6f5b8e02164d2084f8f"
+        },
+        {
+          "revision": "keeping the first value of a release id repeated in the feed (instead of Python's dict assignment, last value)",
+          "result": "Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name).",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json",
+          "receipt_sha256": "72fa18aef0cf297800b5a41d68a0e1ada4a3ff5edd8f50514b49952d6c3bb67c"
+        }
+      ],
+      "notes": [
+        "Implementing: GitHub release feed with the catalog in Django's cache (byte-identical protocol 4 pickle), SMTP connection/send test through Django's SMTP backend semantics and provider checks (Google/Apple keys, Stripe balance, AI models) through the proxy environment and SSL_CERT_FILE; leases via claim_operation. Unsupported stored shapes, AI base URLs requests would rewrite and test messages outside the rendered subset are refused with a 500 before the lease; UTF-16/32 provider or feed bodies and unsupported feed values after it. Diagnostics POST and data-restore stay on Django. See docs/architecture/go-migration/instance-outbound.md."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/integrations/<str:provider> -> IntegrationSettingsView.as_view()",
@@ -32807,25 +32856,74 @@
         "target": "IntegrationTestView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/instanceprobe/http.go",
+        "BE_GO/internal/instanceprobe/pyjson.go",
+        "BE_GO/internal/instanceprobe/probes.go",
+        "BE_GO/internal/instanceprobe/releases.go",
+        "BE_GO/internal/dto/instance_outbound.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/repository/instance_outbound.go",
+        "BE_GO/internal/repository/instance_release_cache.go",
+        "BE_GO/internal/smtpsend/backend.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/integrations/<provider>/test",
+          "/api/v2/instance/admin/integrations/<provider>/test",
+          "/api/instance/admin/integrations/<provider>/test"
+        ],
+        "request": "POST {revision} (JSON).",
+        "response": "{status, level, message, checked_at} of the provider probe.",
+        "errors": "401; 403; 405 (GET/PUT); 404 unknown provider; 400 revision errors (list); 400 disabled; 409 stale revision (before and after the probe); 429 Retry-After 20 leased; 500 list body, stored shapes or AI URLs outside the ported subset.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsInstanceOwner; Cache-Control: no-store.",
+        "resource_scope": "Singleton InstanceConfiguration integration settings of the provider.",
+        "side_effects": "claim_operation lease (integration_<provider>); outbound GET to Google/Apple keys, Stripe balance or the AI models endpoint; diagnostic_results.integration_tests[provider] stored.",
+        "transaction": "Lease in its own NOWAIT transaction; result stored under select_for_update after a revision recheck.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_outbound_http.json",
+        "TESTS/fixtures/generate_instance_outbound_http.py",
+        "TESTS/contracts/test_instance_outbound_http.py",
+        "TESTS/adapters/django/instance_outbound_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-outbound.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-native-r2/results.json",
+          "receipt_sha256": "9b432ec0cd51a780a1ed88a360188fdd669bec2288217472defbe03c4dd9388b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json",
+          "receipt_sha256": "731c3953110604168bbbdda077f3798356130dc2f164d6f5b8e02164d2084f8f"
+        },
+        {
+          "revision": "keeping the first value of a release id repeated in the feed (instead of Python's dict assignment, last value)",
+          "result": "Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name).",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json",
+          "receipt_sha256": "72fa18aef0cf297800b5a41d68a0e1ada4a3ff5edd8f50514b49952d6c3bb67c"
+        }
+      ],
+      "notes": [
+        "Implementing: GitHub release feed with the catalog in Django's cache (byte-identical protocol 4 pickle), SMTP connection/send test through Django's SMTP backend semantics and provider checks (Google/Apple keys, Stripe balance, AI models) through the proxy environment and SSL_CERT_FILE; leases via claim_operation. Unsupported stored shapes, AI base URLs requests would rewrite and test messages outside the rendered subset are refused with a 500 before the lease; UTF-16/32 provider or feed bodies and unsupported feed values after it. Diagnostics POST and data-restore stay on Django. See docs/architecture/go-migration/instance-outbound.md."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/logo -> OwnerLogoView.as_view()",
@@ -32933,25 +33031,75 @@
         "target": "InstanceReleasesView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/instanceprobe/http.go",
+        "BE_GO/internal/instanceprobe/pyjson.go",
+        "BE_GO/internal/instanceprobe/probes.go",
+        "BE_GO/internal/instanceprobe/releases.go",
+        "BE_GO/internal/dto/instance_outbound.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/repository/instance_outbound.go",
+        "BE_GO/internal/repository/instance_release_cache.go",
+        "BE_GO/internal/smtpsend/backend.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/releases",
+          "/api/v2/instance/admin/releases",
+          "/api/instance/admin/releases"
+        ],
+        "request": "GET ?page=<int, last value, default 1>&refresh=1 (last value).",
+        "response": "release_summary: {repository, latest, relation, pending, history (10 per page), page, next_page, total}.",
+        "errors": "401; 403 Only the instance owner or an administrator...; 405; 400 [\"Invalid release history page.\"]; 503 {error} rate limit / HTTP <code> / unavailable / invalid catalog; 500 feed items Django does not catch.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsInstanceOwner on the authenticated actor (administration path, no impersonation).",
+        "resource_scope": "Installation-wide release catalog.",
+        "side_effects": "Outbound GET api.github.com release pages on a cache miss or an admitted refresh; cache.set(catalog, 600) after a fetch; cache.add(refresh bound, True, 30) for refresh=1 on a hit.",
+        "transaction": "No database writes.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_outbound_http.json",
+        "TESTS/fixtures/generate_instance_outbound_http.py",
+        "TESTS/contracts/test_instance_outbound_http.py",
+        "TESTS/adapters/django/instance_outbound_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-outbound.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-native-r2/results.json",
+          "receipt_sha256": "9b432ec0cd51a780a1ed88a360188fdd669bec2288217472defbe03c4dd9388b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json",
+          "receipt_sha256": "731c3953110604168bbbdda077f3798356130dc2f164d6f5b8e02164d2084f8f"
+        },
+        {
+          "revision": "keeping the first value of a release id repeated in the feed (instead of Python's dict assignment, last value)",
+          "result": "Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name).",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json",
+          "receipt_sha256": "72fa18aef0cf297800b5a41d68a0e1ada4a3ff5edd8f50514b49952d6c3bb67c"
+        }
+      ],
+      "notes": [
+        "Implementing: GitHub release feed with the catalog in Django's cache (byte-identical protocol 4 pickle), SMTP connection/send test through Django's SMTP backend semantics and provider checks (Google/Apple keys, Stripe balance, AI models) through the proxy environment and SSL_CERT_FILE; leases via claim_operation. Unsupported stored shapes, AI base URLs requests would rewrite and test messages outside the rendered subset are refused with a 500 before the lease; UTF-16/32 provider or feed bodies and unsupported feed values after it. Diagnostics POST and data-restore stay on Django. See docs/architecture/go-migration/instance-outbound.md."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/restarts -> InstanceRestartsView.as_view()",
