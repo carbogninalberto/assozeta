@@ -309,9 +309,9 @@ func (t *modulesResponsesTransaction) DocumentReferencedElsewhere(ctx context.Co
 	return false, nil
 }
 
-// documentReverse is Document's reverse accessor with a related_name, which
+// moduleDocumentReverse is Document's reverse accessor with a related_name, which
 // auditlog renders as its empty manager.
-var documentReverse = instructorHoursDocumentReverse
+var moduleDocumentReverse = instructorHoursDocumentReverse
 
 // DeleteDocument is module_response.attachments.remove(document) and
 // document.delete(): every attachment link of the document goes, then the row
@@ -324,7 +324,7 @@ func (t *modulesResponsesTransaction) DeleteDocument(ctx context.Context, respon
 	if _, err := t.tx.ExecContext(ctx, `DELETE FROM application_moduleresponses_attachments WHERE document_id=$1`, document); err != nil {
 		return err
 	}
-	changes, _, err := deleteModelWithAuditReverse(ctx, t.tx, "docmanager_document", "document_id", document, documentReverse)
+	changes, _, err := deleteModelWithAuditReverse(ctx, t.tx, "docmanager_document", "document_id", document, moduleDocumentReverse)
 	if err != nil {
 		return err
 	}
@@ -342,7 +342,7 @@ func (t *modulesResponsesTransaction) CreateDocument(ctx context.Context, row do
 	if err != nil {
 		return err
 	}
-	for name, manager := range documentReverse {
+	for name, manager := range moduleDocumentReverse {
 		changes[name] = [2]string{"None", manager}
 	}
 	return t.appendResponseAudit(ctx, "docmanager", "document", row.ID, 0, changes, nil, audit)
