@@ -21,6 +21,8 @@ from restore_jobs import ArchiveInvalid, UploadIncomplete, receive_upload, run_r
 from engine import Engine
 from journal import Journal, Conflict
 from release_catalog import version_tuple
+import remote_backups
+from remote_backups import RemoteError, Uploader
 from common import read_env, update_eligibility_reason
 from status_access import AccessDenied, OwnershipUnavailable, authenticate_access_token, require_current_owner
 from restart import launch_restart, reconcile_restarts
@@ -80,6 +82,7 @@ def serve(root, env_file, engine_class=Engine):
     journal.interrupt_running()
     reconcile_restarts(journal)
     engine = engine_class(root, env_file, journal)
+    uploader = Uploader(root, env_file)
     stop = threading.Event()
     wake = threading.Event()
 
@@ -152,10 +155,15 @@ def serve(root, env_file, engine_class=Engine):
                 return
             if self.path == '/backups':
                 try:
-                    self.respond(200, {**inventory(root, env_file), 'schedule': schedule_payload(root, env_file),
-                                       'actions': {'create': True, 'keep': True, 'delete': True, 'restore': True, 'upload': True}})
+                    value = remote_backups.merge_inventory(root, inventory(root, env_file))
+                    self.respond(200, {**value, 'schedule': schedule_payload(root, env_file),
+                                       'actions': {'create': True, 'keep': True, 'delete': True, 'restore': True,
+                                                   'upload': True, 'remote': True}})
                 except OSError:
                     self.respond(503, {'error': 'La cartella dei backup non è leggibile. Verifica i permessi sul server.'})
+                return
+            if self.path == '/backups/remote':
+                self.respond(200, remote_backups.public_config(root))
                 return
             if self.path.startswith('/backups/'):
                 self.send_archive(self.path[len('/backups/'):])
@@ -179,7 +187,7 @@ def serve(root, env_file, engine_class=Engine):
                 status, value = action(self.read_body())
                 self.respond(status, value)
                 wake.set()
-            except BackupRejected as exc:
+            except (BackupRejected, RemoteError) as exc:
                 self.respond(exc.status, {'error': str(exc)})
             except Conflict as exc:
                 self.respond(409, {'error': str(exc)})
@@ -216,7 +224,8 @@ def serve(root, env_file, engine_class=Engine):
                     pass
 
         def archive_name(self):
-            return self.path[len('/backups/'):] if self.path.startswith('/backups/') and self.path != '/backups/schedule' else None
+            reserved = self.path == '/backups/schedule' or self.path.startswith('/backups/remote')
+            return self.path[len('/backups/'):] if self.path.startswith('/backups/') and not reserved else None
 
         def do_PATCH(self):
             name = self.archive_name()
@@ -233,6 +242,9 @@ def serve(root, env_file, engine_class=Engine):
             self.backup_action(lambda body: (200, delete_archive(root, env_file, journal, name, body)))
 
         def do_PUT(self):
+            if self.path == '/backups/remote':
+                self.backup_action(lambda body: (200, remote_backups.update_config(root, body)))
+                return
             if self.path != '/backups/schedule':
                 self.respond(404, {'error': 'Unknown endpoint.'})
                 return
@@ -249,6 +261,15 @@ def serve(root, env_file, engine_class=Engine):
             if self.path.startswith('/backups/') and self.path.endswith('/restore'):
                 name = self.path[len('/backups/'):-len('/restore')]
                 self.backup_action(lambda body: (202, {'operation': start_restore(root, env_file, journal, name, body)}))
+                return
+            remote_actions = {
+                '/backups/remote/test': lambda body: (200, remote_backups.test_connection(root, body)),
+                '/backups/remote/key': lambda body: (201, remote_backups.create_key(root, body)),
+                '/backups/remote/key/confirm': lambda body: (200, remote_backups.confirm_key(root, body)),
+                '/backups/remote/fetch': lambda body: (202, {'operation': remote_backups.start_fetch(root, env_file, journal, body)}),
+            }
+            if self.path in remote_actions:
+                self.backup_action(remote_actions[self.path])
                 return
             if not self.authorized():
                 return
@@ -313,14 +334,24 @@ def serve(root, env_file, engine_class=Engine):
                 except Exception:
                     # A broken schedule file must never stop updates or restarts.
                     traceback.print_exc()
+                try:
+                    # Uploads run in their own thread: nothing here waits for them.
+                    uploader.kick()
+                except Exception:
+                    traceback.print_exc()
             pending = next((item for item in journal.records() if item['status'] == 'queued'), None)
             if pending:
                 if pending.get('kind') == 'restart':
                     launch_restart(root, env_file, journal, pending)
                 elif pending.get('kind') == 'backup':
                     run_backup(root, env_file, journal, pending)
+                    uploader.kick()
                 elif pending.get('kind') == 'restore':
                     run_restore(root, env_file, journal, pending)
+                    # The restore takes a pre-restore backup: copy it off-site too.
+                    uploader.kick()
+                elif pending.get('kind') == 'fetch':
+                    remote_backups.run_fetch(root, env_file, journal, pending)
                 else:
                     engine.execute(pending)
             else:

@@ -377,6 +377,127 @@ try {
         await expect(scheduleCard.getByRole('button', {name: 'Salva pianificazione'})).toBeDisabled();
         await shot('backups-schedule');
 
+        // Copia remota: S3 drawer, key wizard, location icons and recovering a remote-only copy.
+        // Self-contained: its own routes and state, removed at the end.
+        {
+            const remoteKey = 'AGE-SECRET-KEY-1' + 'QPZRY9X8GF2TVDW0S3JN54KHCE6MUA7L'.repeat(2).slice(0, 58);
+            const savedHistory = runnerHistory;
+            const remoteCalls = [];
+            let remoteConfig = {configured: false, enabled: false, endpoint: '', region: '', bucket: '', prefix: '', access_key: '', path_style: false,
+                retention: 3, secret_configured: false, key: null, pending_key: null, previous_keys: [], last_upload: null, last_failure: null, uploading: null};
+            const remoteOnly = {name: 'assozeta-20261020T020000Z.tar.gz', size: 2 * GIB, created_at: hoursAgo(24 * 20), version: '1.0.2', origin: 'scheduled',
+                keep: false, last_upgrade: false, pending_upgrade: false, location: 'remote', key_id: 'abcd1234'};
+            const remoteSummary = () => ({configured: remoteConfig.configured, enabled: remoteConfig.enabled, key_id: remoteConfig.key?.id || null,
+                last_upload: remoteConfig.enabled ? {at: hoursAgo(2), name: backupArchive} : null, last_failure: null, uploading: null,
+                status: remoteConfig.configured ? 'ok' : 'off', error: null});
+            const remoteArchives = () => remoteConfig.enabled
+                ? [...backupArchives.map((item, index) => ({...item, location: index === 0 ? 'both' : 'local', key_id: index === 0 ? 'abcd1234' : undefined})), remoteOnly]
+                : backupArchives;
+            const remotePattern = /\/api\/instance\/admin\/backups(\/remote(\/.*)?|\?.*)?$/;
+            const remoteRoute = async route => {
+                const request = route.request();
+                const method = request.method();
+                const endpoint = new URL(request.url()).pathname.replace('/api/instance', '');
+                let value;
+                let status = 200;
+                if (endpoint === '/admin/backups') {
+                    if (method !== 'GET') return route.fallback();
+                    value = {...backupOverview(), remote: remoteSummary(), archives: remoteArchives()};
+                } else if (endpoint === '/admin/backups/remote' && method === 'GET') value = remoteConfig;
+                else if (endpoint === '/admin/backups/remote' && method === 'PUT') {
+                    const {secret_key: secret, ...input} = request.postDataJSON();
+                    remoteCalls.push(`put:${Object.keys(input).sort().join(',')}${secret ? ':secret' : ''}`);
+                    remoteConfig = {...remoteConfig, ...input, secret_configured: remoteConfig.secret_configured || !!secret};
+                    remoteConfig.configured = !!(remoteConfig.bucket && remoteConfig.access_key && remoteConfig.secret_configured);
+                    value = remoteConfig;
+                } else if (endpoint === '/admin/backups/remote/test') {
+                    remoteCalls.push(`test:${request.postDataJSON().bucket}`);
+                    value = {ok: true, message: 'Connessione riuscita: scrittura, lettura ed eliminazione funzionano.'};
+                } else if (endpoint === '/admin/backups/remote/key') {
+                    remoteCalls.push('key');
+                    remoteConfig = {...remoteConfig, pending_key: {id: 'abcd1234'}};
+                    value = {key_id: 'abcd1234', recovery_key: remoteKey};
+                    status = 201;
+                } else if (endpoint === '/admin/backups/remote/key/confirm') {
+                    const input = request.postDataJSON();
+                    if (input.tail.toUpperCase() !== remoteKey.slice(-6)) {status = 400; value = {error: 'I caratteri non corrispondono alla chiave.'};}
+                    else {
+                        remoteCalls.push('confirm');
+                        remoteConfig = {...remoteConfig, key: {id: 'abcd1234', created_at: new Date().toISOString()}, pending_key: null, enabled: true};
+                        value = remoteConfig;
+                    }
+                } else if (endpoint === '/admin/backups/remote/fetch') {
+                    const input = request.postDataJSON();
+                    remoteCalls.push(`fetch:${input.name}`);
+                    assert.equal(input.recovery_key, remoteKey);
+                    runnerActive = {id: 'fixture-fetch', kind: 'fetch', stage: 'downloading', status: 'running', target_version: '1.0.3', created_at: new Date().toISOString()};
+                    value = {operation: runnerActive};
+                    status = 202;
+                } else return route.fallback();
+                await route.fulfill({status, contentType: 'application/json', body: JSON.stringify(value)});
+            };
+            await page.route(remotePattern, remoteRoute);
+            await page.getByRole('button', {name: 'Altre azioni backup'}).click();
+            await page.getByRole('menuitem', {name: 'Aggiorna elenco'}).click();
+            const remoteCard = page.getByRole('region', {name: 'Copia remota'});
+            await expect(remoteCard.getByText('Non configurata', {exact: true})).toBeVisible();
+            await expect(page.locator('table.backups th.where')).toHaveCount(0);
+            await remoteCard.getByRole('button', {name: 'Configura'}).click();
+            const remoteDrawer = page.getByRole('dialog', {name: 'Copia remota'});
+            await remoteDrawer.getByLabel('Endpoint').fill('https://s3.example.test');
+            await remoteDrawer.getByLabel('Bucket').fill('club-backups');
+            await remoteDrawer.getByLabel('Access key').fill('AKIAFIXTURE');
+            await remoteDrawer.getByLabel('Secret key').fill('fixture-s3-secret');
+            await remoteDrawer.getByRole('button', {name: 'Prova connessione'}).click();
+            await expect(remoteDrawer.getByText(/^Connessione riuscita/)).toBeVisible();
+            await noOverflow('remote-drawer');
+            await shot('remote-drawer');
+            await remoteDrawer.getByRole('button', {name: 'Salva', exact: true}).click();
+            const wizard = page.getByRole('dialog', {name: 'Chiave di ripristino'});
+            await expect(wizard.getByRole('note')).toContainText('Senza questa chiave');
+            await expect(wizard.getByLabel('Chiave abcd1234')).toHaveValue(remoteKey);
+            const keyDownload = page.waitForEvent('download');
+            await wizard.getByRole('button', {name: 'Scarica file'}).click();
+            assert.equal((await keyDownload).suggestedFilename(), 'assozeta-chiave-abcd1234.txt');
+            await shot('remote-key');
+            await wizard.getByRole('button', {name: 'Avanti'}).click();
+            await wizard.getByLabel('Ultimi 6 caratteri della chiave').fill('AAAAAA');
+            await wizard.getByRole('button', {name: 'Conferma'}).click();
+            await expect(wizard.getByText('I caratteri non corrispondono alla chiave.')).toBeVisible();
+            await wizard.getByLabel('Ultimi 6 caratteri della chiave').fill(remoteKey.slice(-6).toLowerCase());
+            await wizard.getByRole('button', {name: 'Conferma'}).click();
+            await expect(wizard.getByText('Chiave abcd1234 attiva.')).toBeVisible();
+            await wizard.getByRole('button', {name: 'Fine'}).click();
+            await expect(wizard).toHaveCount(0);
+            await expect(remoteCard.getByRole('switch', {name: 'Attiva copia remota'})).toBeChecked();
+            await expect(remoteCard.getByText(/^Ultima copia/)).toBeVisible();
+            const remoteRows = page.locator('table.backups tbody tr');
+            await expect(remoteRows).toHaveCount(3);
+            await expect(remoteRows.nth(0).getByText('Locale e remoto', {exact: true})).toBeAttached();
+            await expect(remoteRows.nth(1).getByText('Solo locale', {exact: true})).toBeAttached();
+            await expect(remoteRows.nth(2).getByText('Solo remoto', {exact: true})).toBeAttached();
+            await noOverflow('backups-remote');
+            await shot('backups-remote');
+            await remoteRows.nth(2).getByRole('button', {name: /^Azioni backup del/}).click();
+            await expect(page.getByRole('menuitem', {name: 'Scarica', exact: true})).toHaveCount(0);
+            await page.getByRole('menuitem', {name: 'Recupera sul server'}).click();
+            const fetchDialog = page.getByRole('dialog', {name: 'Recupera dalla copia remota'});
+            await expect(fetchDialog.getByLabel('Chiave di ripristino')).toBeFocused();
+            await expect(fetchDialog.getByRole('button', {name: 'Recupera', exact: true})).toBeDisabled();
+            await fetchDialog.getByLabel('Chiave di ripristino').fill(remoteKey);
+            await shot('remote-fetch');
+            await fetchDialog.getByRole('button', {name: 'Recupera', exact: true}).click();
+            await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText(/Recupero dalla copia remota\s+Download e decifratura/);
+            await expect(page.getByText('Recupero dalla copia remota…')).toBeVisible();
+            runnerActive = null;
+            runnerHistory = [{id: 'fixture-fetch', kind: 'fetch', stage: 'completed', status: 'succeeded', target_version: '1.0.3', created_at: new Date().toISOString(), updated_at: new Date().toISOString()}, ...savedHistory];
+            // The idle status poll runs every 15 s.
+            await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Backup recuperato sul server', {timeout: 20000});
+            assert.deepEqual(remoteCalls, ['test:club-backups', 'put:access_key,bucket,endpoint,path_style,prefix,region,retention:secret', 'key', 'confirm', `fetch:${remoteOnly.name}`]);
+            await page.unroute(remotePattern, remoteRoute);
+            runnerHistory = savedHistory;
+        }
+
         backupArchives = backupArchives.map(item => ({...item, created_at: item === backupArchives[0] ? hoursAgo(1) : item.created_at}));
         await page.reload();
         await navigate('Backup');

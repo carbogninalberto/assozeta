@@ -3,11 +3,13 @@
     // Actions appear only when the runner reports them (overview.actions).
     import {toast} from 'svelte-sonner';
     import {getApiHost} from 'store/instanceStore.js';
-    import {Archive, PushPin, WarningCircle, SpinnerGap} from 'phosphor-svelte';
+    import {Archive, PushPin, WarningCircle, SpinnerGap, HardDrive, CloudCheck, Cloud} from 'phosphor-svelte';
     import InstanceDialog from './InstanceDialog.svelte';
     import InstanceMenu from './InstanceMenu.svelte';
     import DiagnosticResult from './DiagnosticResult.svelte';
     import BackupSchedule from './BackupSchedule.svelte';
+    import RemoteBackup from './RemoteBackup.svelte';
+    import {locationLabel, recoveryKeyLine} from './remoteBackup.js';
     import DataTransfer from './DataTransfer.svelte';
     import {formatSize, formatDate, formatRelative} from './instanceFormat.js';
     import {RESTORE_WORD, uploadProblem, uploadArchive, sessionToken} from './backupUpload.js';
@@ -26,8 +28,9 @@
 
     const origins = {manual: 'Manuale', scheduled: 'Pianificato', 'pre-upgrade': 'Prima dell’aggiornamento', 'pre-restore': 'Prima del ripristino', uploaded: 'Caricato'};
 
-    let dialog = null; // {kind: 'download'|'delete'|'create'|'restore'|'upload', archive}
+    let dialog = null; // {kind: 'download'|'delete'|'create'|'restore'|'upload'|'fetch', archive}
     let password = '';
+    let recoveryKey = '';
     let confirmWord = '';
     let file = null;
     let fileInput;
@@ -48,7 +51,9 @@
     ] : [];
     $: marker = disk?.total > 0 && overview?.next_backup ? Math.min(100, (disk.used + overview.next_backup.estimated) / disk.total * 100) : null;
     $: tooSmall = overview?.next_backup && !overview.next_backup.fits;
-    $: running = active && ['backup', 'restore'].includes(active.kind) ? active : null;
+    $: running = active && ['backup', 'restore', 'fetch'].includes(active.kind) ? active : null;
+    $: located = !!overview?.remote?.configured;
+    const runningLabels = {backup: 'Backup in corso…', restore: 'Ripristino in corso…', fetch: 'Recupero dalla copia remota…'};
     $: busyReason = active ? 'Attendi la fine dell’operazione in corso.' : blockedReason;
     $: problems = checks.filter(check => ['failed', 'warning'].includes(check.status));
 
@@ -59,6 +64,9 @@
     }
 
     function rowActions(archive) {
+        if (archive.location === 'remote') {
+            return [{label: 'Recupera sul server', hint: active ? busyReason : archive.key_id ? `Serve la chiave ${archive.key_id}.` : '', disabled: !!active || !!blockedReason, onSelect: () => openDialog('fetch', archive)}];
+        }
         const locked = archive.pending_upgrade ? 'Serve all’aggiornamento in sospeso.' : '';
         return [
             {label: 'Scarica', disabled: !!active, hint: active ? busyReason : '', onSelect: () => openDialog('download', archive)},
@@ -88,6 +96,7 @@
         if (working) return;
         dialog = null;
         password = '';
+        recoveryKey = '';
         confirmWord = '';
     }
 
@@ -125,6 +134,27 @@
     function cancelUpload() {
         if (upload) upload.abort();
         else closeDialog();
+    }
+
+    async function confirmFetch() {
+        if (working || !recoveryKeyLine(recoveryKey)) return;
+        working = true;
+        dialogError = '';
+        try {
+            const result = await request('/admin/backups/remote/fetch', {method: 'POST', body: JSON.stringify({name: dialog.archive.name, recovery_key: recoveryKeyLine(recoveryKey)})});
+            working = false;
+            closeDialog();
+            onOperation(result.operation);
+        } catch (e) { dialogError = e.message; }
+        finally { recoveryKey = ''; working = false; }
+    }
+
+    async function readKeyFile(event) {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (file && file.size < 4096) recoveryKey = recoveryKeyLine(await file.text()) || '';
+        if (!recoveryKey) dialogError = 'Il file non contiene una chiave di ripristino.';
+        else dialogError = '';
     }
 
     async function confirmDownload() {
@@ -235,16 +265,16 @@
             {/if}
 
             {#if running}
-                <div class="running" role="status"><span class="spin"><SpinnerGap size={18} weight="bold" /></span>{running.kind === 'restore' ? 'Ripristino in corso…' : 'Backup in corso…'}</div>
+                <div class="running" role="status"><span class="spin"><SpinnerGap size={18} weight="bold" /></span>{runningLabels[running.kind]}</div>
             {/if}
 
             {#if archives.length}
                 <table class="backups">
-                    <thead><tr><th scope="col">Data</th><th scope="col">Origine</th><th scope="col">Versione</th><th scope="col" class="num">Dimensione</th><th scope="col"><span class="si-sr-only">Azioni</span></th></tr></thead>
+                    <thead><tr><th scope="col">Data</th><th scope="col">Origine</th><th scope="col">Versione</th><th scope="col" class="num">Dimensione</th>{#if located}<th scope="col" class="where"><span class="si-sr-only">Posizione</span></th>{/if}<th scope="col"><span class="si-sr-only">Azioni</span></th></tr></thead>
                     <tbody>
                         {#each archives as archive (archive.name)}
                             {@const tag = badge(archive)}
-                            <tr>
+                            <tr class:remote-only={archive.location === 'remote'}>
                                 <td><div class="when">
                                     <span class="date">{formatDate(archive.created_at)}{#if archive.keep}<span class="kept" title="Conservato: mai eliminato in automatico"><PushPin size={14} weight="fill" /><span class="si-sr-only">Conservato</span></span>{/if}</span>
                                     <span class="si-muted si-small">{formatRelative(archive.created_at)}</span>
@@ -253,6 +283,14 @@
                                 <td data-label="Origine">{origins[archive.origin] || '—'}</td>
                                 <td data-label="Versione">{archive.version || '—'}</td>
                                 <td data-label="Dimensione" class="num">{formatSize(archive.size)}</td>
+                                {#if located}
+                                    <td data-label="Posizione" class="where">
+                                        <span class="place place-{archive.location || 'local'}" title={`${locationLabel(archive)}${archive.key_id ? ` · chiave ${archive.key_id}` : ''}`}>
+                                            {#if archive.location === 'both'}<CloudCheck size={18} weight="duotone" />{:else if archive.location === 'remote'}<Cloud size={18} weight="duotone" />{:else}<HardDrive size={18} weight="duotone" />{/if}
+                                            <span class="si-sr-only">{locationLabel(archive)}</span>
+                                        </span>
+                                    </td>
+                                {/if}
                                 <td class="row-menu"><InstanceMenu label={`Azioni backup del ${formatDate(archive.created_at)}`} items={rowActions(archive)} /></td>
                             </tr>
                         {/each}
@@ -271,6 +309,9 @@
 
     {#if overview?.available && overview.schedule}
         <BackupSchedule {request} schedule={overview.schedule} retention={overview.retention} disabled={!!active} onSaved={() => onReload()} />
+    {/if}
+    {#if overview?.available && overview.remote}
+        <RemoteBackup {request} remote={overview.remote} disabled={!!active} onSaved={() => onReload()} />
     {/if}
 
     <!-- Bakney ZIP export/import, self-hosted only: this page exists only there. -->
@@ -359,6 +400,22 @@
     </svelte:fragment>
 </InstanceDialog>
 
+<InstanceDialog open={dialog?.kind === 'fetch'} title="Recupera dalla copia remota" locked={working} on:close={closeDialog}>
+    {#if dialog?.archive}
+        <form id="backup-fetch-form" on:submit|preventDefault={confirmFetch}>
+            <p><strong>{formatDate(dialog.archive.created_at)}</strong> · {formatSize(dialog.archive.size)}{#if dialog.archive.key_id}{` · chiave ${dialog.archive.key_id}`}{/if}</p>
+            <label class="si-field" for="backup-fetch-key">Chiave di ripristino</label>
+            <input id="backup-fetch-key" class="form-control" type="password" autocomplete="off" spellcheck="false" bind:value={recoveryKey} disabled={working} placeholder="AGE-SECRET-KEY-1…" />
+            <label class="si-link key-file mt-2">Carica file chiave<input type="file" accept=".txt,text/plain" class="si-sr-only" on:change={readKeyFile} disabled={working} /></label>
+            {#if dialogError}<p class="text-danger mt-2 mb-0" role="alert">{dialogError}</p>{/if}
+        </form>
+    {/if}
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" disabled={working} on:click={closeDialog}>Annulla</button>
+        <button type="submit" form="backup-fetch-form" class="btn btn-primary" disabled={!recoveryKeyLine(recoveryKey) || working}>{working ? 'Verifica…' : 'Recupera'}</button>
+    </svelte:fragment>
+</InstanceDialog>
+
 <style>
     .disk { margin-bottom: 1.25rem; }
     .disk-bar { position: relative; display: flex; height: .625rem; border-radius: 999px; background: var(--bg-active); }
@@ -386,6 +443,12 @@
     .date { display: inline-flex; align-items: center; gap: .35rem; font-weight: 600; }
     .kept { display: inline-flex; color: var(--primary-text, var(--primary)); }
     .row-menu { width: 1%; padding-right: 0 !important; text-align: right; }
+    .where { width: 1%; text-align: center; }
+    .place { display: inline-flex; vertical-align: middle; color: var(--text-secondary); }
+    .place-both { color: var(--primary-text, var(--primary)); }
+    .remote-only .date { color: var(--text-secondary); }
+    .key-file { display: inline-block; cursor: pointer; font-size: .875rem; }
+    .key-file:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
     .empty { display: flex; flex-direction: column; align-items: center; gap: .75rem; padding: 2rem 1rem; color: var(--text-secondary); text-align: center; }
     .upload-bar { height: .5rem; border-radius: 999px; background: var(--bg-active); overflow: hidden; }
     .upload-bar span { display: block; height: 100%; background: var(--primary); transition: width .2s ease-out; }
