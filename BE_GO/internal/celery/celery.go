@@ -175,6 +175,7 @@ type Producer struct {
 	sleep   func(context.Context, time.Duration) error
 	origin  string
 	replyTo string
+	routes  map[string]string
 }
 
 // NewProducer returns a producer for broker with the process's origin and
@@ -208,6 +209,8 @@ func (p *Producer) Publish(ctx context.Context, task Task) (string, error) {
 	}
 	envelope := Envelope{ID: id, DeliveryTag: p.newID(), ReplyTo: p.replyTo, Origin: p.origin,
 		PublishedAt: float64(now.UnixNano()) / 1e9}
+	queue := p.queueFor(task)
+	task.Queue = queue
 	if task.Expires != nil {
 		seconds := task.Expires.Sub(now).Seconds()
 		millis := int64(0)
@@ -219,10 +222,6 @@ func (p *Producer) Publish(ctx context.Context, task Task) (string, error) {
 	payload, err := Encode(task, envelope)
 	if err != nil {
 		return "", err
-	}
-	queue := task.Queue
-	if queue == "" {
-		queue = DefaultQueue
 	}
 	err = p.broker.Push(ctx, queue, payload)
 	for _, delay := range retryDelays {

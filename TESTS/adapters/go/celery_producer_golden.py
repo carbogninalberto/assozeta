@@ -63,6 +63,10 @@ CASES = [
     {'name': 'task-id-time-limits', 'task': 'instance.restore.execute', 'args': [s('d7000000-0000-4000-8000-000000000101')],
      'kwargs': [], 'args_list': True, 'task_id': 'd7000000-0000-4000-8000-000000000101',
      'task_options': {'time_limit': 3600, 'soft_time_limit': 3300}},
+    # GO_TASK_QUEUE_TASKS routing (core.task_routing.go_task_routes): the named task goes to the Go consumer's queue.
+    {'name': 'routed-to-go-queue', 'task': 'core.tasks.send_mail_async', 'args': [],
+     'kwargs': [['subject', s('Oggetto')], ['recipient_list', {'t': 'list', 'v': [s('a@example.test')]}]],
+     'routes': 'core.tasks.send_mail_async, other.task'},
 ]
 
 
@@ -92,6 +96,7 @@ def main():
     # The origin header is gen<pid>@<hostname>; keep the machine name out of the tracked file.
     nodenames.gethostname = lambda: 'golden-host'
     from instance.restore.task_base import CoordinatedTask  # connects stamp_published_task
+    from core.task_routing import go_task_routes, GO_TASK_QUEUE
     import redis
 
     binary = shutil.which('redis-server')
@@ -134,7 +139,13 @@ def main():
         for case in CASES:
             def body(*args, **kwargs):
                 return None
-            task = app.task(name=case['task'], **case.get('task_options', {}))(body)
+            target = app
+            if case.get('routes'):
+                # BE/core/settings.py defines CELERY_TASK_ROUTES only when GO_TASK_QUEUE_TASKS is set.
+                target = Celery('core', task_cls=CoordinatedTask, set_as_current=False)
+                target.conf.broker_url = app.conf.broker_url
+                target.conf.task_routes = go_task_routes(case['routes'])
+            task = target.task(name=case['task'], **case.get('task_options', {}))(body)
             options = {'task_id': case['task_id']} if 'task_id' in case else {}
             if 'countdown' in case:
                 options['countdown'] = case['countdown']
@@ -142,13 +153,16 @@ def main():
                 options['expires'] = datetime.now(timezone.utc) + timedelta(seconds=case['expires_in'])
             before = len(commands)
             args = [value(a) for a in case['args']]
+            queue = GO_TASK_QUEUE if case.get('routes') else 'celery'
             task.apply_async(args=args if case.get('args_list') else tuple(args), kwargs={k: value(v) for k, v in case['kwargs']}, **options)
-            raw = client.rpop('celery')
-            assert raw is not None and client.llen('celery') == 0, case['name']
+            raw = client.rpop(queue)
+            assert raw is not None and client.llen('celery') == 0 and client.llen(GO_TASK_QUEUE) == 0, case['name']
             time.sleep(0.2)
             results.append({**case, 'payload': raw.decode('utf-8'),
                             'broker_commands': [c if c.startswith('SADD') else ' '.join(c.split(' ')[:2])
                                                 for c in commands[before:] if c.split(' ')[0] in ('SADD', 'LPUSH')]})
+            if target is not app:
+                target.close()
         stop.set()
         client.ping()
         binding = sorted(m.decode() for m in client.smembers('_kombu.binding.celery'))

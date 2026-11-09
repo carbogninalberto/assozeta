@@ -48,6 +48,8 @@ func appendJSON(b []byte, value any) ([]byte, error) {
 		return strconv.AppendInt(b, int64(v), 10), nil
 	case int64:
 		return strconv.AppendInt(b, v, 10), nil
+	case Number:
+		return appendNumber(b, v)
 	case string:
 		return appendJSONString(b, v)
 	case uuid.UUID:
@@ -209,6 +211,12 @@ func (s *reprStream) value(value any) error {
 		s.tokens = append(s.tokens, reprToken{kind: reprPlain, text: strconv.Itoa(v)})
 	case int64:
 		s.tokens = append(s.tokens, reprToken{kind: reprPlain, text: strconv.FormatInt(v, 10)})
+	case Number:
+		// Integers only: a decoded float's repr is not reproduced here.
+		if strings.ContainsAny(string(v), ".eE") {
+			return fmt.Errorf("%w: float", ErrUnsupportedValue)
+		}
+		s.tokens = append(s.tokens, reprToken{kind: reprPlain, text: string(v)})
 	case string:
 		if !utf8.ValidString(v) {
 			return fmt.Errorf("%w: invalid UTF-8 text", ErrUnsupportedValue)

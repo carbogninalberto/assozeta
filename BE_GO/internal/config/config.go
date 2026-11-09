@@ -71,6 +71,10 @@ type Config struct {
 	// os.environ.get: "None" when unset).
 	DefaultFromEmail, DefaultTeamEmail string `json:"-"`
 
+	// GoTaskQueueTasks is GO_TASK_QUEUE_TASKS (core.task_routing): task names
+	// both producers route to the Go consumer's queue; empty by default.
+	GoTaskQueueTasks string
+
 	// DataRestoreRecoveryBackups is os.environ.get('DATA_RESTORE_RECOVERY_BACKUPS'),
 	// read by prune_storage at each run; nil when unset.
 	DataRestoreRecoveryBackups *string
@@ -291,7 +295,7 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{InstanceAdmin: instanceAdmin, DataRestoreMaxUploadBytes: dataRestoreMaxUpload, DataRestoreRecoveryBackups: dataRestoreRecoveryBackups(values), Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	return Config{GoTaskQueueTasks: values["GO_TASK_QUEUE_TASKS"], InstanceAdmin: instanceAdmin, DataRestoreMaxUploadBytes: dataRestoreMaxUpload, DataRestoreRecoveryBackups: dataRestoreRecoveryBackups(values), Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: origins, CSRFCookieSecure: csrfCookieSecure, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),

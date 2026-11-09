@@ -10,6 +10,10 @@
 //	manuale compare-captures --run RUN --output OUTPUT
 //	    compare_manuale_captures: measure screenshot drift between
 //	    RUN/capture-baseline and RUN and write the variance report.
+//	manuale evaluate --association-id ID --output OUTPUT [--query QUERY] [--env-file PATH] [--mcp-server PATH]
+//	    evaluate_manuale: check the manual tools through the Go MCP server
+//	    (default: the mcp-server binary next to this one) and the Go agent
+//	    without a model, then write the evaluation report (evaluate.go).
 //
 // Option values may be given as "--name value" or "--name=value". Django's
 // global management options, argparse prefix abbreviations and -h are not
@@ -35,7 +39,7 @@ import (
 
 func main() { os.Exit(run(os.Args[1:], os.Stdout, os.Stderr)) }
 
-const usage = "usage: manuale {sync-corpus [--env-file PATH] | compare-captures --run RUN --output OUTPUT}"
+const usage = "usage: manuale {sync-corpus [--env-file PATH] | compare-captures --run RUN --output OUTPUT | evaluate --association-id ID --output OUTPUT [--query QUERY]}"
 
 // argparse treats a value that looks like a negative number as a value.
 var negativeNumber = regexp.MustCompile(`^-\d+$|^-\d*\.\d+$`)
@@ -101,6 +105,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 		return compareCaptures(values["--run"], values["--output"], stdout, stderr)
+	case "evaluate":
+		return evaluateMain(args, stdout, stderr)
 	}
 	fmt.Fprintln(stderr, usage)
 	return 2

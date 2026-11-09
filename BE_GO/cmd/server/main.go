@@ -128,7 +128,7 @@ func run() (runErr error) {
 	brokerOptions.Dialer = redisclient.DialContext(&brokerOptions)
 	broker := redis.NewClient(&brokerOptions)
 	defer broker.Close()
-	tasks := celery.NewProducer(celery.RedisBroker{Client: broker})
+	tasks := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
 	tokens, err := jwt.New([]byte(cfg.JWTSigningKey), []byte(cfg.JWTVerifyingKey), time.Now)
 	if err != nil {
 		return errors.New("invalid JWT signing or verification configuration")

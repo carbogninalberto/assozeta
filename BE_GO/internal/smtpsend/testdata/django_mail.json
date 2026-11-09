@@ -1,0 +1,271 @@
+{
+ "date": "Mon, 09 Nov 2026 08:43:54 -0000",
+ "message_id": "<179000000000.4242.1234567890123456789@golden.example.test>",
+ "boundary": "===============1234567890123456789==",
+ "cases": [
+  {
+   "name": "plain-ascii",
+   "subject": "Conferma",
+   "body": "Ciao\nok\n",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Conferma\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nCiao\r\nok\r\n"
+  },
+  {
+   "name": "plain-utf8",
+   "subject": "Conferma iscrizione",
+   "body": "Ciao,\nla tua iscrizione è confermata.\n",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: Conferma iscrizione\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nCiao,\r\nla tua iscrizione Ã¨ confermata.\r\n"
+  },
+  {
+   "name": "plain-no-trailing-newline",
+   "subject": "S",
+   "body": "riga",
+   "from": "noreply@example.test",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: noreply@example.test\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nriga"
+  },
+  {
+   "name": "crlf-and-lone-cr",
+   "subject": "S",
+   "body": "uno\r\ndue\rtre\n\nquattro",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nuno\r\ndue\r\ntre\r\n\r\nquattro"
+  },
+  {
+   "name": "empty-body",
+   "subject": "S",
+   "body": "",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n"
+  },
+  {
+   "name": "html-alternative",
+   "subject": "Promemoria: quota già scaduta",
+   "body": "Testo semplice",
+   "html": "<p>Quota <b>già</b> scaduta</p>",
+   "from": "Il Team di Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "uno@example.test",
+    "due@example.test"
+   ],
+   "reply_to": [
+    "owner@example.test"
+   ],
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==\"\r\nMIME-Version: 1.0\r\nSubject: =?utf-8?q?Promemoria=3A_quota_gi=C3=A0_scaduta?=\r\nFrom: Il Team di Assozeta Fixture <noreply@example.test>\r\nTo: uno@example.test, due@example.test\r\nReply-To: owner@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\nTesto semplice\r\n--===============1234567890123456789==\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\n\r\n<p>Quota <b>giÃ </b> scaduta</p>\r\n--===============1234567890123456789==--\r\n"
+  },
+  {
+   "name": "html-only",
+   "subject": "Solo HTML",
+   "body": null,
+   "html": "<p>ok</p>\n",
+   "from": "Società Tre <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==\"\r\nMIME-Version: 1.0\r\nSubject: Solo HTML\r\nFrom: =?utf-8?q?Societ=C3=A0_Tre?= <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<p>ok</p>\r\n\r\n--===============1234567890123456789==--\r\n"
+  },
+  {
+   "name": "html-ascii-two-reply-to",
+   "subject": "Reply",
+   "body": "x",
+   "html": "<i>y</i>",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "reply_to": [
+    "r1@example.test",
+    "r2@example.test"
+   ],
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==\"\r\nMIME-Version: 1.0\r\nSubject: Reply\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nReply-To: r1@example.test, r2@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\nx\r\n--===============1234567890123456789==\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<i>y</i>\r\n--===============1234567890123456789==--\r\n"
+  },
+  {
+   "name": "long-to-list",
+   "subject": "Molti destinatari",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "destinatario.numero0@example.test",
+    "destinatario.numero1@example.test",
+    "destinatario.numero2@example.test",
+    "destinatario.numero3@example.test",
+    "destinatario.numero4@example.test",
+    "destinatario.numero5@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Molti destinatari\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: destinatario.numero0@example.test, destinatario.numero1@example.test,\r\n destinatario.numero2@example.test, destinatario.numero3@example.test,\r\n destinatario.numero4@example.test, destinatario.numero5@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-70",
+   "subject": "Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcdefghij abcd",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcdefghij Abcdefghij\r\n abcd\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-76",
+   "subject": "Avviso importante per tutti i soci della associazione sportiva Uno Due Tre Q",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Avviso importante per tutti i soci della associazione sportiva Uno\r\n Due Tre Q\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-77",
+   "subject": "Avviso importante per tutti i soci della associazione sportiva Uno Due Tre Qu",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "unsupported": true,
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Avviso importante per tutti i soci della associazione sportiva Uno\r\n Due Tre Qu\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-short",
+   "subject": "Città",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: =?utf-8?b?Q2l0dMOg?=\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-base64",
+   "subject": "àèìòù€€€",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: =?utf-8?b?w6DDqMOsw7LDueKCrOKCrOKCrA==?=\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-limit",
+   "subject": "Il certificato medico è in scadenza tra 30 gg",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: =?utf-8?q?Il_certificato_medico_=C3=A8_in_scadenza_tra_30_gg?=\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-utf8-long",
+   "subject": "Il tuo certificato medico è in scadenza: rinnovalo prima della prossima lezione",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "unsupported": true,
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: \r\n =?utf-8?q?Il_tuo_certificato_medico_=C3=A8_in_scadenza=3A_rinnovalo_prima_de?=\r\n =?utf-8?q?lla_prossima_lezione?=\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "subject-double-space",
+   "subject": "Due  spazi",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "unsupported": true,
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: Due  spazi\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-quoted-name",
+   "subject": "S",
+   "body": "x",
+   "from": "\"Cinque, SMTP\" <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "unsupported": true,
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: \"Cinque, SMTP\" <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "from-long-name",
+   "subject": "S",
+   "body": "x",
+   "from": "Associazione Sportiva Dilettantistica Polisportiva Unione Di Prova <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Unione Di Prova\r\n <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "line-998",
+   "subject": "S",
+   "body": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\n"
+  },
+  {
+   "name": "line-999",
+   "subject": "S",
+   "body": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "unsupported": true,
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\nSubject: S\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=\r\naaaaaaaaaaaaaaaaaaaaaaaa\r\n"
+  },
+  {
+   "name": "boundary-in-body",
+   "subject": "S",
+   "body": "--===============1234567890123456789==\n",
+   "html": "<p>x</p>",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "a@example.test"
+   ],
+   "bytes": "Content-Type: multipart/alternative;\r\n boundary=\"===============1234567890123456789==.0\"\r\nMIME-Version: 1.0\r\nSubject: S\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: a@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\n--===============1234567890123456789==.0\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\n--===============1234567890123456789==\r\n\r\n--===============1234567890123456789==.0\r\nContent-Type: text/html; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<p>x</p>\r\n--===============1234567890123456789==.0--\r\n"
+  },
+  {
+   "name": "display-name-recipient",
+   "subject": "S",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "Mario <m@example.test>"
+   ],
+   "unsupported": true,
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: Mario <m@example.test>\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  },
+  {
+   "name": "utf8-recipient",
+   "subject": "S",
+   "body": "x",
+   "from": "Assozeta Fixture <noreply@example.test>",
+   "to": [
+    "çağla@example.test"
+   ],
+   "unsupported": true,
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 7bit\r\nSubject: S\r\nFrom: Assozeta Fixture <noreply@example.test>\r\nTo: =?utf-8?b?w6dhxJ9sYQ==?=@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179000000000.4242.1234567890123456789@golden.example.test>\r\n\r\nx"
+  }
+ ]
+}

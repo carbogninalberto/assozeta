@@ -270,28 +270,68 @@
           "BaseCommand"
         ]
       },
-      "status": "needs_review",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/manuale/evaluate.go",
+        "BE_GO/cmd/manuale/main.go",
+        "BE_GO/internal/service/evaluate_manuale.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/management/commands/run_mcp_server.py",
+        "BE/application/agent/core.py",
+        "BE/application/agent/routing.py",
+        "BE/application/manuale/answers.py",
+        "BE/application/manuale/tools.py",
+        "BE/application/manuale/index.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
+        "request": "CLI --association-id ID --output OUTPUT [--query QUERY] (required pair; --name value or --name=value). Go-only: --env-file, --mcp-server.",
+        "response": "stdout \"Existing MCP and agent manual evaluation passed.\"; CommandError with the failed check (report written first, status failed + error); \"No evaluation cases for the verified corpus\" without a report; traceback paths (unknown/malformed association, unreadable index) exit 1 without a report; argparse errors exit 2.",
         "errors": null,
         "authentication": null,
         "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
+        "resource_scope": "One SportAssociation (non-deleted); MCP server started for str(pk); agent with the owner user_id.",
+        "side_effects": "Starts the MCP server over stdio; reads MANUAL_INDEX_PATH; no database writes; no model requests (NoModel / no provider); writes OUTPUT as json.dumps(report, ensure_ascii=False, indent=2) + newline, parent directories created.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/adapters/go/evaluate_manuale.py",
+        "TESTS/fixtures/evaluate-manuale-corpus.json",
+        "TESTS/adapters/django/evaluate_manuale_settings.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/manuale-commands.md"
+        "docs/architecture/go-migration/evaluate-manuale.md",
+        {
+          "revision": "RED receipt, base revision 3adc9ced BE_GO",
+          "result": "RED: Django 16/16 authored cases; Go 0/16 (no evaluate subcommand).",
+          "artifact": "quality-reports/go-migration/evaluate-manuale-red/results.json",
+          "receipt_sha256": "8d422b9cd3e8f3b5cfd1e417315fd0bcf4f03777039445e615ae79f81d930245"
+        },
+        {
+          "revision": "047feed4",
+          "result": "GREEN: 16/16 actual manage.py evaluate_manuale (Python MCP server + agent) vs race-built manuale evaluate (Go mcp-server + agent): exit status, stdout, CommandError/argparse message, stderr, report bytes, rows and model stub requests (none) identical.",
+          "artifact": "quality-reports/go-migration/evaluate-manuale/results.json",
+          "receipt_sha256": "5c7436e2940eec7abb38cb6fc9ea6351340039c42768d3e16364561fae8c22c9"
+        },
+        {
+          "revision": "047feed4 with the medical-certificate case gate requiring scenario and sections (|| to &&)",
+          "result": "Mutation control: CAUGHT, 4 cases differ.",
+          "artifact": "quality-reports/go-migration/evaluate-manuale-mutation/results.json",
+          "receipt_sha256": "60bdcd4fa8c108c3f80a8de00639cb765e8941aa4d2f543bf0ef415799973aef"
+        },
+        {
+          "revision": "047feed4",
+          "result": "Re-run of the shared cmd/manuale: manuale-commands 81/81 (2 Go refusals).",
+          "artifact": "quality-reports/go-migration/manuale-commands-evaluate-rerun/results.json",
+          "receipt_sha256": "f7a4f8194b2d6e562ab77b55f85920ceef78f99ad96f8a82e65c37f8f294d49c"
+        }
       ],
       "notes": [
-        "Not ported (manuale-commands.md): CI runs it via docs/scripts/manuale.py evaluate (manuale.yml), so not deprecable. It evaluates the Python stack itself (manage.py run_mcp_server over stdio, application.agent.core.Agent with NoModel, application.manuale.answers); Go has no agent, so a Go command would evaluate a different system. Left open."
+        "Implementing: Go manuale evaluate drives the Go MCP server and agent like the Django command drives the Python ones; docs/scripts/manuale.py still runs the Django command (manuale binary not in the Go image). Refused before the report (exit 1): non-JSON tool texts, non-object/non-string/non-integer tool values, agent inputs the Go agent refuses, corpora whose chunks/scenario_ids are not lists, lone surrogates. Not reproduced: tracebacks, argparse texts, Django global options and system-check warnings, MCP launch errno texts, multi-error exception groups; timeout path implemented but not exercised."
       ]
     },
     {
@@ -19282,7 +19322,7 @@
         "target": "payment_info",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_info.go",
         "BE_GO/internal/repository/payment_info.go",
@@ -19343,7 +19383,13 @@
         "quality-reports/go-migration/payment-info/http-results.json",
         "quality-reports/go-migration/payment-info-parent-review/parent-final-acceptance.json",
         "quality-reports/go-migration/payment-info-image-parent/parent-acceptance.json",
-        "quality-reports/go-migration/payment-info-browser-parent-review/acceptance.json"
+        "quality-reports/go-migration/payment-info-browser-parent-review/acceptance.json",
+        {
+          "command": "python -m TESTS.adapters.django.accounts --only payment-info",
+          "artifact": "quality-reports/go-migration/payment-info/results.json",
+          "sha256": "91602091dbb17a6c37ff698032ebbb5c0f998352cc9886fd14936766c5dd3b84",
+          "result": "137 authored HTTP cases per backend green on the current tree (2026-11-09)"
+        }
       ],
       "notes": [
         "Status remains needs_review despite implementation: public UUID-wide disclosure, malformed group fail-open and unscoped category metadata are explicitly unapproved baseline concerns. Enabled checkout, historical and installed lifecycle acceptance remain open; complete_payment_info_parity=false.",
@@ -19353,7 +19399,8 @@
         "Intentional scoped installment correction retains Django-red, Go-red and final green scope evidence plus 190 existing Django regressions. Five manual recipe dependency bindings still need review.",
         "Parent packaged image c742cd2 / sha256:6ce77683d8f3f0f0b958faf2646df34781b298b22f806ef6d48d9f3d0047538c passes 4x137 HTTP cases with actual PostgreSQL/Redis, UID10001, read-only root, no mounted executable, runtime observer and fallback rejection, exact state and cleanup. Six native repository groups are explicitly not run in image mode and remain a separate mandatory gate. Old-image actual route404 is retained as red evidence. Native receipts are preserved by isolated image output.",
         "Hosted c742 quality failed the former whole-database counter after HTTP/repository cases passed. Parent reproduction attributes exact114/145/1 to pg_statistic108/145/0 and its TOAST6/0/1, with128 user tables unchanged. New guard samples every user schema/relation after client drain, rejects relation replacement/statistics reset and retains system diagnostics. Seven actual private-PostgreSQL regression cases pass, including committed and rolled-back business/operational writes and held-client rejection. New hosted acceptance remains pending; no verified promotion.",
-        "Parent independently passes unchanged browser four authored OTHER/meta/subscription/course/carnet summaries plus revisits (eight checks/version),16 actual disabledStripe409 responses and final anonymous#/404 navigation. A transparent request gate exposes real loading-state rendering without mocking business responses. Independent Django observer16/0, actual200 misroute rejection and unknownroute502/no-fallback checks pass. All 128 managed models including auto-created M2M tables, exact audits, source/artifact hashes and four ownedcleanup flags pass. No enabled checkout, literal reload, provider, installed or approved-policy claim; explicit Django Stripe/manifest/logo/health coexistence retained. See payment-info.md and parent source-bound acceptance."
+        "Parent independently passes unchanged browser four authored OTHER/meta/subscription/course/carnet summaries plus revisits (eight checks/version),16 actual disabledStripe409 responses and final anonymous#/404 navigation. A transparent request gate exposes real loading-state rendering without mocking business responses. Independent Django observer16/0, actual200 misroute rejection and unknownroute502/no-fallback checks pass. All 128 managed models including auto-created M2M tables, exact audits, source/artifact hashes and four ownedcleanup flags pass. No enabled checkout, literal reload, provider, installed or approved-policy claim; explicit Django Stripe/manifest/logo/health coexistence retained. See payment-info.md and parent source-bound acceptance.",
+        "Credited with parity to current Django by product decision (2026-11-09): the three unapproved behaviours (public UUID lookup, malformed X-Group-Id accepted, unscoped category metadata) are reproduced in Go and tracked privately for a Django fix; Go will follow that fix."
       ]
     },
     {
@@ -38622,7 +38669,7 @@
         "file": "BE/core/settings.py",
         "line": 177,
         "symbol": "bakney-pairing-maintenance",
-        "sha256": "90267c8503cf7d8c620f1c5d9df0dca3d7b9d18d05fe8c96a5e8385969fb3db7"
+        "sha256": "c6d2a9d8539abfd76752ed61d6ab9cd21321ffe35c1fb76911ebdd36ff92dbe3"
       },
       "source_present": true,
       "declaration": {
@@ -38691,6 +38738,10 @@
           "result": "passed: schedule_due differential",
           "artifact": "quality-reports/go-migration/schedule-due/results.json",
           "receipt_sha256": "63f29c1f7caae26a91ef15a0593dab6f97903bd054caf0e424577d66f3be7c6f"
+        },
+        {
+          "command": "TESTS.adapters.go.schedule_due + occurrence + bakney_maintenance_worker_process",
+          "result": "green on the current tree after BE/core/settings.py gained the env-gated task routing (2026-11-09); schedule definition unchanged"
         }
       ],
       "notes": [
@@ -42913,28 +42964,85 @@
           "max_retries": "3"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/send_mail_async.go",
+        "BE_GO/internal/repository/celery_consumer.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/pyjson.go",
+        "BE_GO/internal/celery/routes.go",
+        "BE_GO/internal/smtpsend/django_message.go",
+        "BE_GO/cmd/celery-consumer/main.go"
+      ],
+      "dependencies": [
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/email_configuration.py",
+        "BE/application/models/user_models.py",
+        "BE/communications/models.py",
+        "BE/instance/models.py",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/repository/restore_admission.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/smtpsend/backend.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message (JSON, base64 body) on the assozeta-go queue, routed there only when GO_TASK_QUEUE_TASKS lists core.tasks.send_mail_async (empty by default); kwargs or up to five positional args bound to (subject, message, from_email, recipient_list, sport_association_id) plus fail_silently, html_message, reply_to, skip_association_check.",
+        "response": "TaskResult row as django_celery_results writes it with result_extended off: SUCCESS result null meta {\"children\": []}; RETRY/FAILURE with the kombu-JSON exception; REVOKED TaskRevokedError('expired').",
+        "errors": "Any exception in the body: self.retry(exc, countdown=int(180 * 2 ** retries)) republishing the same id with retries+1, root/parent ids, origin, reply_to and the restore stamp; on the fourth failure the original exception fails the task. CoordinatedTask: busy lock or pending restore defers 15 s (same retries, RETRY Busy, itself as child); a restore completed after assozeta_published_at fails with StaleDataTask before any effect.",
+        "authentication": "Internal task message without an HTTP actor.",
+        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "SportAssociation.objects (deleted excluded) by pk; CommunicationConfiguration existence for that association; InstanceConfiguration.objects.first() for the email source.",
+        "side_effects": "EmailMultiAlternatives through instance.email_configuration.EmailBackend with the environment source (Django SMTP backend dialogue, MIME bytes per smtpsend.RenderDjangoMessage), then EmailLog(recipient_list[0], subject, 'Sent', association). kombu ack emulation: unacked hash/index, early ack, visibility restore under unacked_mutex, warm-shutdown restore of held eta messages.",
+        "transaction": "Autocommit statements as in Django; the result row is stored after the retry message is published.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_process.py",
+        "TESTS/adapters/go/django_mail_golden.py",
+        "TESTS/adapters/go/celery_producer_golden.py",
+        "BE/instance/tests/test_celery_task_routing.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/celery/celery_test.go",
+        "BE_GO/internal/smtpsend/django_message_test.go",
+        "BE_GO/internal/service/send_mail_async_test.go"
+      ],
+      "evidence": [
+        "Differential consumer harness: each message built by Django's routed producer is executed once by a real Django Celery worker (-Q assozeta-go, django-db, CoordinatedTask, production EmailBackend) and once by the race-built cmd/celery-consumer on the same seed (private PostgreSQL current schema, private Redis, fake SMTP); SMTP transcripts, complete managed-model state incl. TaskResult/EmailLog, and every broker key compared. 14 scenarios: system-backend sends (plain, html+reply-to+two recipients, skip check with configuration, deleted association), auth failure retry (+180 s), connection refused retry (+360 s), last-retry FAILURE, StaleDataTask, pending-restore deferral (+15 s), future eta held and restored, expired REVOKED, visibility-timeout restore, and two handoffs to the celery queue (configuration path with its child executed by Go; fail_silently). RED: consumer without the registration (Timed out: Go consumer: plain text without association). GREEN 14/14. Mutation caught: retry message without assozeta_published_at. See docs/architecture/go-migration/celery-consumer.md.",
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/celery-consumer on 85888791 (merged codex/go-backend-parity 3adc9ced)",
+          "result": "passed: 14 differential scenarios against the actual Django worker",
+          "artifact": "quality-reports/go-migration/celery-consumer-process/results.json",
+          "receipt_sha256": "04f26e47c9bb6e13105543ef2fa1842beba72483337b47bc2db818545c816bc1"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py (consumer without the send_mail_async registration)",
+          "revision": "go/celery-consumer on 85888791",
+          "result": "red: Django oracle passed, Go timed out (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-process-red/results.json",
+          "receipt_sha256": "8c216e0003e485c8636f9ea149a7ceee9862f86541504e7e94fb8e5a40aea2cd"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='SMTP authentication failure' python -I TESTS/adapters/go/celery_consumer_process.py with BE_GO/internal/celery/message.go dropping assozeta_published_at from republished headers",
+          "revision": "go/celery-consumer on 85888791",
+          "result": "caught: Go differs from Django on the held retry message",
+          "artifact": "quality-reports/go-migration/celery-consumer-process-mutation/results.json",
+          "receipt_sha256": "1d6a7eed38db47ebbb7bbe59d52b51a35deec29a9da79fb0658ea900a6dd15e3"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Registered as core.tasks.send_mail_async; without a configuration it sends through Django EmailMultiAlternatives and instance.email_configuration.EmailBackend, writes EmailLog and retries with self.retry (max 3, countdown 180*2**retries)."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Registered as core.tasks.send_mail_async; without a configuration it sends through Django EmailMultiAlternatives and instance.email_configuration.EmailBackend, writes EmailLog and retries with self.retry (max 3, countdown 180*2**retries).",
+        "celery-consumer: Go consumption is opt-in per task name through GO_TASK_QUEUE_TASKS (Django task_routes and the Go producer route listed names to assozeta-go; empty by default, no routes, payloads unchanged). cmd/celery-consumer runs send_mail_async for the system-backend path; the CommunicationConfiguration.send_email path, the instance email source, fail_silently, other keyword arguments and messages outside the rendered MIME subset are handed off unchanged to the celery queue before any effect. Documented differences: no prefetch beyond free slots, no remote control/revoke-by-id, database errors stored as OperationalError('database error'), approximate messages for SMTPServerDisconnected/SMTPRecipientsRefused/SMTPNotSupportedError/TLS errors, TLS trust via Go system roots. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/celery-consumer.md."
       ]
     },
     {
