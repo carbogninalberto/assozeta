@@ -804,6 +804,10 @@ func run() (runErr error) {
 			IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug}, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/transfer", subscriptionTransferHandler.Transfer, middleware.DjangoSessionAudit(sessionAuthentication))
+	// subscription/sign: signature upload, then subscription_signed and the print task after commit.
+	subscriptionSignHandler := composeSubscriptionSign(cfg, db, tasks, service.NewActorAuthentication(accounts, tokens), identities,
+		middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/sign", subscriptionSignHandler.Sign, middleware.DjangoSessionAudit(sessionAuthentication))
 	realtimeHub := service.NewRealtimeHub()
 	pubsubOptions := storeOptions
 	pubsubOptions.ReadTimeout = -1
