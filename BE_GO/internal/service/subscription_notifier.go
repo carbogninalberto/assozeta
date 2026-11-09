@@ -50,6 +50,15 @@ func (n *SubscriptionNotifier) Send(ctx context.Context, user, kind, message, as
 	return n.push(ctx, user, message, association)
 }
 
+// SendValidated is Send once validate_broadcast's rows were written by the
+// caller's transaction (subscribed: it created the user's subscription).
+func (n *SubscriptionNotifier) SendValidated(ctx context.Context, user, kind, message, association string, subscribed bool) error {
+	if err := n.append(ctx, user, kind, message, association, subscribed); err != nil {
+		return err
+	}
+	return n.push(ctx, user, message, association)
+}
+
 // Deliver is send_notification called inline by a view: storing errors
 // propagate, _push_to_websocket's are logged and swallowed.
 func (n *SubscriptionNotifier) Deliver(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
@@ -64,13 +73,18 @@ func (n *SubscriptionNotifier) Deliver(ctx context.Context, user, kind, message,
 
 // store is validate_broadcast and add_notification_role_broadcast.
 func (n *SubscriptionNotifier) store(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
-	broadcast := "broadcast_" + user
-	subscribed, err := n.rows.ValidateBroadcast(ctx, user, broadcast, audit, n.now().UTC())
+	subscribed, err := n.rows.ValidateBroadcast(ctx, user, "broadcast_"+user, audit, n.now().UTC())
 	if err != nil {
 		return err
 	}
+	return n.append(ctx, user, kind, message, association, subscribed)
+}
+
+// append is add_notification_role_broadcast (the store reset first for a new subscription).
+func (n *SubscriptionNotifier) append(ctx context.Context, user, kind, message, association string, subscribed bool) error {
+	broadcast := "broadcast_" + user
 	if subscribed {
-		if err = n.redis.ResetNotifications(ctx, broadcast); err != nil {
+		if err := n.redis.ResetNotifications(ctx, broadcast); err != nil {
 			return err
 		}
 	}
