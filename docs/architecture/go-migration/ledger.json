@@ -42902,45 +42902,110 @@
           "name": "'import_association_data'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_import_association.go",
+        "BE_GO/internal/service/consumer_import_archive.go",
+        "BE_GO/internal/importeffects/plan.go",
+        "BE_GO/internal/importeffects/plan.json",
+        "BE_GO/internal/importeffects/values.go",
+        "BE_GO/internal/importeffects/effects.go",
+        "BE_GO/internal/importeffects/overrides.go",
+        "BE_GO/internal/importeffects/pyset.go",
+        "BE_GO/internal/repository/import_effects_audit.go",
+        "BE_GO/cmd/celery-consumer/consumer_restore.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/application/services/import_service.py",
+        "BE/application/services/legacy_backup.py",
+        "BE/application/services/json_stream.py",
+        "BE/application/services/validators.py",
+        "BE/application/signals.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/utils/api_utils.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists import_association_data); args/kwargs bound to (zip_file_path, owner_email='', owner_password='', preserve_uuids=True, skip_files=False).",
+        "response": "TaskResult SUCCESS {success: true, sport_association_id, denomination, owner_email, stats, skipped_records, warnings}, or {success: false, error} for validation failures ('Validazione fallita: [...]') and Python errors raised inside import_all (rolled back); StaleDataTask FAILURE or RETRY Busy from CoordinatedTask admission.",
+        "errors": "Validation and importer ValueErrors reproduced with Django's texts; archives whose errors are Python zipfile/json texts, database errors and unsupported values are handed off before any effect. Storage failures after the media upload starts: consumer FAILURE (documented difference).",
+        "authentication": "Internal task message.",
+        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "The staged archive object; the archived association graph (new rows by archived key, existing users reused by key).",
+        "side_effects": "Creates the archived rows through the ORM semantics of internal/importeffects (save overrides, MPTT folders, raw message history, auditlog entries with AuditLogIndex rows, deferred FK updates, M2M through rows, constraint check), uploads media to S3 with Document/Subscription updates (audited), deletes the staged archive object.",
+        "transaction": "One transaction for the database part, as Django's transaction.atomic; media uploaded before the commit.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_import_message_timestamps.py",
-        "TESTS/test_historical_message_mutation_fixture.py",
-        "BE/instance/tests/test_message_historical_restore.py"
+        "TESTS/adapters/go/celery_consumer_import_process.py",
+        "TESTS/adapters/go/association_import_plan.py",
+        "TESTS/adapters/go/consumer_import_settings.py",
+        "BE_GO/internal/importeffects/importeffects_test.go"
       ],
       "evidence": [
         {
-          "revision": "a694aa16 plus exact source-bound importer correction and independent fixed legacy message fixture",
-          "result": "Parent actual PostgreSQL RED reproduced nine explicit timestamp overwrites after successful full archive import. Final GREEN41 covers exact/null timestamps, malformed-value rollback, actor/veto/disable/raw audit behavior, real index-hook failure rollback and existing identity/media/folder/streaming imports. Source stable, no skips and owned cleanup passed. This is service-reference evidence only: queued task, scheduler, replacement restore and Go orchestration remain uncharacterized.",
-          "artifact": "quality-reports/go-migration/message-import-timestamps-green-r4/results.json",
-          "receipt_sha256": "e9ae8ac8e273cca1a5a8a811acb4851c03085031fd2ceacb09c0c9cb617912e7"
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_import_process.py",
+          "revision": "go/consumer-import working tree before bc718a93",
+          "result": "oracle: Django prefork worker alone passed all 17 import scenarios",
+          "artifact": "quality-reports/go-migration/consumer-import-oracle/results.json",
+          "receipt_sha256": "21936b7d5740d0ac9ded026e6c0dea8261f840f755f065b71cce2eaaa6694d6f"
         },
         {
-          "revision": "44dfa053 plus bounded historical-message replacement tests;424 exact Python/fixture input hashes",
-          "result": "Parent actual PostgreSQL5-case reference execution passes historical replacement, repeated replacement/completed-operation redelivery, recovery export/reimport, real audit/index hook rollback and exact sent_on constraint rollback with staged-media cleanup. Separate17-case module passes fractional/offset/audit preservation. No queued task, crash/resume, dual-runtime admission or Go restore acceptance; status remains uncharacterized.",
-          "artifact": "quality-reports/go-migration/message-historical-restore-r1/results.json",
-          "receipt_sha256": "e618f01c8d6b4838370f867de708b9dd3163b554b4cfff9f8c14b4aa0bb43fbd"
+          "command": "CELERY_CONSUMER_ONLY='imported into an instance' python -I TESTS/adapters/go/celery_consumer_import_process.py (consumer without the import registration)",
+          "revision": "go/consumer-import working tree before bc718a93",
+          "result": "red: Django passed, Go did not consume the message and timed out",
+          "artifact": "quality-reports/go-migration/consumer-import-process-red/results.json",
+          "receipt_sha256": "5196978204ce746b69c4a222bfe5269549cdc48a2ee270e6e04b4724380a207c"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_import_process.py",
+          "revision": "go/consumer-import a9932953 (merged codex/go-backend-parity 240ad576)",
+          "result": "passed: 17 differential scenarios against a prefork Django worker with production cache and S3 storage (race-built consumer): every managed row and through table, audit entries and index rows, TaskResult, broker and bucket objects",
+          "artifact": "quality-reports/go-migration/consumer-import-process/results.json",
+          "receipt_sha256": "dc5a4225fd68efa3010e4f6ecda5ea0ca66a83b71ed2430b9e9d506514aae09e"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='imported into an instance' python -I TESTS/adapters/go/celery_consumer_import_process.py with overrides.go not applying meta['description'] to a 'quota corso' payment",
+          "revision": "go/consumer-import a9932953 working tree",
+          "result": "caught: Go differs from Django (application.Payment description and its audit entry)",
+          "artifact": "quality-reports/go-migration/consumer-import-process-mutation/mutation.json",
+          "receipt_sha256": "e360de7a600f34d453c6f1390f36153ce3a6bd9559952cf9c72cc20d384f7358"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_export_process.py",
+          "revision": "go/consumer-import a9932953 (merged codex/go-backend-parity 240ad576)",
+          "result": "re-run after the shared change (consumer_restore.go registration): passed 8/8",
+          "artifact": "quality-reports/go-migration/consumer-import-rerun-export/results.json",
+          "receipt_sha256": "f0d63b30abf8d5e75342bac9620aca6565c7c4d7f1cdeb7f1b20cbc4d5855fd3"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_capabilities_process.py",
+          "revision": "go/consumer-import a9932953 (merged codex/go-backend-parity 240ad576)",
+          "result": "re-run after the shared change: passed 13/13",
+          "artifact": "quality-reports/go-migration/consumer-import-rerun-capabilities/results.json",
+          "receipt_sha256": "cf1ea59a7c333834e7c258374b01d675438449a61b918eb493ff3aabd4ead499"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/consumer-import a9932953 (merged codex/go-backend-parity 240ad576)",
+          "result": "re-run after the shared change: passed 15/15",
+          "artifact": "quality-reports/go-migration/consumer-import-rerun-celery-consumer-process/results.json",
+          "receipt_sha256": "471e96d4c806f7ae69f7b107ac906ec737d7c98ee0bd0e526e09a07d2b75ee5b"
         }
       ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Bounded message timestamp preservation reference correction documented in message_import_timestamps.md. No task-status promotion: actual queue/job/recovery lifecycle and other historical automatic fields remain open."
+        "Bounded message timestamp preservation reference correction documented in message_import_timestamps.md. No task-status promotion: actual queue/job/recovery lifecycle and other historical automatic fields remain open.",
+        "consumer-restore step 3: cmd/celery-consumer runs the message-consumed import_association_data when GO_TASK_QUEUE_TASKS routes it to assozeta-go: staging, validate(), and import_all()'s database part in one transaction during Plan (internal/importeffects reproduces the ORM effects from Django-generated model metadata), media upload, commit, staged-object delete and the result in Run. Handed off before any effect: non-string arguments, missing staged objects, archives Go's reader or Python-JSON checks reject, CourseSubscription records (repr), values outside the reproduced subset, any database error. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-restore.md (Step 3)."
       ]
     },
     {
