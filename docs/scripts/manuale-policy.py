@@ -24,7 +24,15 @@ FULL_INPUTS = ('BE/application/manuale/', 'BE/application/mcp_server/',
                'TESTS/browser/manual-release.mjs', 'TESTS/mcp/manual.py',
                'docs/manuale/requirements-offline.txt', '.github/actions/prepare-storage/',
                '.github/workflows/manuale', '.github/workflows/publish-images.yml')
-SHA = re.compile(r'[a-f0-9]{40}\Z')
+# The historical appliance rehearsal upgrades an older packaged release, so only
+# packaging, upgrade, schema and verifier inputs need it. Releases and the weekly
+# schedule always rehearse (see manuale-verify.yml).
+APPLIANCE_INPUTS = ('selfhost/', 'BE/Dockerfile', 'BE/entrypoint.sh', 'BE/requirements', 'UI/Dockerfile',
+                    'UI/Caddyfile', 'BE/application/management/commands/run_manuale_instance.py',
+                    'BE/application/management/commands/seed_', 'docs/scripts/manuale',
+                    '.github/actions/prepare-storage/', '.github/workflows/manuale',
+                    '.github/workflows/publish-images.yml')
+SHA =re.compile(r'[a-f0-9]{40}\Z')
 # Only runs of trusted refs may produce a whole-run baseline. Pull request runs
 # (merged or not) never do: their artifacts are diagnostics, never admitted.
 TRUSTED_EVENTS = ('push', 'release', 'workflow_dispatch', 'schedule')
@@ -46,6 +54,12 @@ def pinned_source(path=ROOT / 'docs/manuale/source.json', override=None):
     return {'repository': source['repository'], 'path': source['path']}
 
 
+def needs_historical_rehearsal(paths):
+    """True when a changed path can affect upgrading an older packaged release."""
+    return any('/migrations/' in path or (path.startswith(APPLIANCE_INPUTS)
+               and not path.startswith('docs/scripts/tests/')) for path in paths)
+
+
 def verification_decision(state, *, force_full=False):
     registry = json.loads((Path(state['application']) / 'docs/manuale/recipes.json').read_text())
     all_ids = [item['id'] for item in registry['recipes']]
@@ -60,12 +74,14 @@ def verification_decision(state, *, force_full=False):
                                                     'unknown-tooling', 'unknown-manual-input'))
     selected = list(state['selected_recipes'])
     reused = list(state.get('evidence_reuse', {}).get('reused_recipes', []))
+    rehearse = needs_historical_rehearsal(changed)
     if force_full or infrastructure:
         mode = 'full'
         reasons = ['explicit or scheduled full verification'] if force_full else [
             'verification or appliance compatibility changed: ' + path for path in infrastructure]
     elif not any(item.get('result') == 'checked' for item in cache):
         mode = 'full'
+        rehearse = True
         reasons = ['No complete compatible trusted baseline; verify fresh content and appliance compatibility.']
     elif selected:
         mode = 'affected'
@@ -73,7 +89,7 @@ def verification_decision(state, *, force_full=False):
     else:
         mode = 'reuse'
         reasons = ['Every workflow has compatible retained evidence; Git SHA/release alone does not invalidate it.']
-    return {'format': 1, 'mode': mode, 'historical_rehearsal': mode == 'full',
+    return {'format': 1, 'mode': mode, 'historical_rehearsal': mode == 'full' and rehearse,
             'fresh_workflows': all_ids if mode == 'full' else selected,
             'reused_workflows': [] if mode == 'full' else reused,
             'reasons': reasons, 'changed_inputs': changed, 'cache_decisions': candidates,
