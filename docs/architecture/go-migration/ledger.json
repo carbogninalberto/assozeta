@@ -1463,8 +1463,15 @@
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/handler/course_subscriptions.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -1475,13 +1482,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "Soft delete: the live group-aware installments are deleted through the collector (with their pre_delete signals), then deleted=True is saved and audited.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_subscriptions_http.json",
+        "TESTS/fixtures/generate_course_subscriptions_http.py",
+        "TESTS/contracts/test_course_subscriptions_http.py",
+        "TESTS/adapters/django/course_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 107/107; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-red-r2/results.json",
+          "receipt_sha256": "31592bdb101ced76518e9e6e0443e9be06e97c09c7f4b72159ded49c189130a1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by course-subscriptions-delete-owner-with-installments, course-subscriptions-delete-collaborator-unpaid-installment, course-subscriptions-delete-group-installments, course-subscriptions-delete-again-already-deleted, course-subscriptions-update-route-delete-deletes.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-hook-course-subscriptions/results.json",
+          "receipt_sha256": "6d51a4f5ebf8fcacd56c35fc8141917e1cc8d766cc4f62536dafaa23b507576a"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the soft delete's installment query",
+          "result": "Mutation control: fails Go on course-subscriptions-delete-group-installments.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json",
+          "receipt_sha256": "15a4209b3f2b4288f1a1f85aa5f68bb0e968b343847a6dedb1ffa84f09d29da3"
+        }
+      ],
+      "notes": [
+        "Implementing via course-subscriptions: Exercised by the viewset delete on both mapped routes, with installments (unpaid, paid and payment-less), an X-Group-Id, and a row that is already deleted. course-writes (overview delete) and subscription-lifecycle (delete) reuse the same semantics with their own recorded cases."
+      ]
     },
     {
       "id": "model_hook:BE/application/models/payment_models.py:Payment.save",
@@ -30577,8 +30611,15 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/balance_account_write.go",
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_account_writes.go",
+        "BE_GO/internal/handler/balance_account_writes.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -30589,14 +30630,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then accounts/add (save(sport_association=...)) through the overridden create() (Model.objects.create) and the partial update through ModelSerializer.update() on accounts/<uid>/update; no other effect.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/balance_account_writes_http.json",
+        "TESTS/fixtures/generate_balance_account_writes_http.py",
+        "TESTS/contracts/test_balance_account_writes_http.py",
+        "TESTS/adapters/django/balance_account_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-red-r2/results.json",
+          "receipt_sha256": "c91d8a6ad1779c5e2fb8b845997c209897151165271188661b3de75b5530e1bb"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by balance-account-writes-add-minimal, balance-account-writes-add-full-collaborator-explicit, balance-account-writes-add-form, balance-account-writes-update-name, balance-account-writes-update-same-value-no-audit, balance-account-writes-update-initial-balance.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-hook-balance-account-writes/results.json",
+          "receipt_sha256": "8f4bb38d2534d4322770747bd5f72e3927a5ae530448bf6c5078bea67fe747e4"
+        },
+        {
+          "revision": "committing change without the form boolean defaults",
+          "result": "Mutation control: fails Go on the form case.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "9c7eb6bfc48a39f949a486c15e151f2a81782f07be68d496c67322e9c9306cb8"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified.",
+        "Implementing via balance-account-writes: Pass-through save; accounts add (create with sport_association) and update (partial) are exercised with exact row, audit and index effects. The serializer is also instantiated read-only by balance-sheet and payment views (no save)."
       ]
     },
     {
@@ -30612,7 +30679,142 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/balance_account_write.go",
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_account_writes.go",
+        "BE_GO/internal/handler/balance_account_writes.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then accounts-transfer/add (save(sport_association=...)) through the overridden create() (Model.objects.create) and the partial update through ModelSerializer.update() on accounts-transfer/<uid>/update (save(sport_association=...)); no other effect.",
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/fixtures/balance_transfer_writes_http.json",
+        "TESTS/fixtures/generate_balance_transfer_writes_http.py",
+        "TESTS/contracts/test_balance_transfer_writes_http.py",
+        "TESTS/adapters/django/balance_transfer_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 30/30; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-red-r1/results.json",
+          "receipt_sha256": "f25f13b3b27d8a3db6e869e6143b492a5f24dd93f6c5d9958afdab655ae19695"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 30/30 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by balance-transfer-writes-add-owner, balance-transfer-writes-add-full-collaborator-default-date, balance-transfer-writes-add-form-naive-date, balance-transfer-writes-update-amount, balance-transfer-writes-update-same-value-no-audit, balance-transfer-writes-update-clear-and-move.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-hook-balance-transfer-writes/results.json",
+          "receipt_sha256": "2f0aeb2af920889eb042d95e1c3631f4ccd01bdee987143c102e3255db32119d"
+        },
+        {
+          "revision": "committing change without the association account check",
+          "result": "Mutation control: fails Go on the invalid-fields case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "b131ff0bcf2f29df2c2a3c20e172d683b45d488691d40fba205e19c09a37750f"
+        }
+      ],
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified.",
+        "Implementing via balance-transfer-writes: Pass-through save; transfer add and update are its only callers and both are exercised with exact effects."
+      ]
+    },
+    {
+      "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsPeriodSerializer.save",
+      "kind": "serializer_hook",
+      "django": {
+        "file": "BE/application/serializers/camps_and_retreats_serializers.py",
+        "line": 29,
+        "symbol": "CampsAndRetreatsPeriodSerializer.save",
+        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
+      },
+      "source_present": true,
+      "declaration": {
+        "arguments": "self, **kwargs"
+      },
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_periods.go",
+        "BE_GO/internal/dto/camps_period_write.go",
+        "BE_GO/internal/dto/camps_service_payments.go",
+        "BE_GO/internal/repository/camps_periods.go",
+        "BE_GO/internal/service/camps_periods.go",
+        "BE_GO/internal/handler/camps_periods.go"
+      ],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then camps-and-retreats/periods/add through the overridden create() (Model.objects.create) and the partial update through ModelSerializer.update() on camps-and-retreats/periods/<uid>/update; no other effect.",
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [
+        "TESTS/fixtures/camps_periods_http.json",
+        "TESTS/fixtures/generate_camps_periods_http.py",
+        "TESTS/contracts/test_camps_periods_http.py",
+        "TESTS/adapters/django/camps_periods_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 108/108; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-red-r1/results.json",
+          "receipt_sha256": "68804040722f8fe4c0f851b1885b65c9d5ad2bd36536cd46b8ef685813849977"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by camps-periods-add-owner, camps-periods-add-full-collaborator-defaults, camps-periods-add-explicit-id-and-created, camps-periods-update-owner, camps-periods-update-same-values-no-audit, camps-periods-update-move-camp-and-nulls, camps-periods-update-form.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-hook-camps-periods/results.json",
+          "receipt_sha256": "9333fb83ee6f3e571c376a60791c64dd6720776c1738b8ce6f6453e6a805a99c"
+        },
+        {
+          "revision": "committing change with the services update rolled back when the payment walk fails",
+          "result": "Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-mutation-r2/results.json",
+          "receipt_sha256": "16db1b2a04d59dc16e449411c0c90a9bbe86700b3d194d7ddab41140d57c4147"
+        }
+      ],
+      "notes": [
+        "Implementing via camps-periods: Pass-through save; period add and update are its only callers."
+      ]
+    },
+    {
+      "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsPeriodsServiceSerializer.save",
+      "kind": "serializer_hook",
+      "django": {
+        "file": "BE/application/serializers/camps_and_retreats_serializers.py",
+        "line": 84,
+        "symbol": "CampsAndRetreatsPeriodsServiceSerializer.save",
+        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
+      },
+      "source_present": true,
+      "declaration": {
+        "arguments": "self, **kwargs"
+      },
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -30631,74 +30833,8 @@
       "tests": [],
       "evidence": [],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Unreachable in Django: the serializer is only instantiated read-only (many=True .data) inside other serializers, so save() never runs. No Go port is needed; revisit if a caller starts saving through it."
       ]
-    },
-    {
-      "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsPeriodSerializer.save",
-      "kind": "serializer_hook",
-      "django": {
-        "file": "BE/application/serializers/camps_and_retreats_serializers.py",
-        "line": 29,
-        "symbol": "CampsAndRetreatsPeriodSerializer.save",
-        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
-      },
-      "source_present": true,
-      "declaration": {
-        "arguments": "self, **kwargs"
-      },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
-      "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
-      },
-      "tests": [],
-      "evidence": [],
-      "notes": []
-    },
-    {
-      "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsPeriodsServiceSerializer.save",
-      "kind": "serializer_hook",
-      "django": {
-        "file": "BE/application/serializers/camps_and_retreats_serializers.py",
-        "line": 84,
-        "symbol": "CampsAndRetreatsPeriodsServiceSerializer.save",
-        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
-      },
-      "source_present": true,
-      "declaration": {
-        "arguments": "self, **kwargs"
-      },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
-      "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
-      },
-      "tests": [],
-      "evidence": [],
-      "notes": []
     },
     {
       "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsSerializer.save",
@@ -30713,8 +30849,14 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_core.go",
+        "BE_GO/internal/dto/camps_core_write.go",
+        "BE_GO/internal/repository/camps_core.go",
+        "BE_GO/internal/service/camps_core.go",
+        "BE_GO/internal/handler/camps_core.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -30725,13 +30867,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then camps-and-retreats/add through the overridden create() (Model.objects.create) and the partial update through ModelSerializer.update() on camps-and-retreats/<uid>/update; no other effect.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_core_http.json",
+        "TESTS/fixtures/generate_camps_core_http.py",
+        "TESTS/contracts/test_camps_core_http.py",
+        "TESTS/adapters/django/camps_core_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-core.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 88/88; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-core-http-red-r1/results.json",
+          "receipt_sha256": "18c28e06032e78ff299c667af612cbef09d6648e9d0f98e66b1cee2549c14f9a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 88/88 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by camps-core-add-owner, camps-core-add-full-collaborator-defaults, camps-core-add-explicit-id, camps-core-update-owner, camps-core-update-collaborator-form, camps-core-update-own-association-unchanged.",
+          "artifact": "quality-reports/go-migration/camps-core-http-hook-camps-core/results.json",
+          "receipt_sha256": "f8baf042e708e2e32261de63024fea34d5a742c8087f4371c98138c30d97c07e"
+        },
+        {
+          "revision": "committing change with the camp's delete entry indexed through the actor instead of changes_json.sport_association",
+          "result": "Mutation control: fails Go on delete-owner-cascade (index.fields); a second control skipping the camp subscriptions' cascade (mutation-r2) fails the same case (500).",
+          "artifact": "quality-reports/go-migration/camps-core-http-mutation-r1/results.json",
+          "receipt_sha256": "c05ad19fe1cc529277e267a07aa9f435856561be4e4a7734620c148c71e5e9ce"
+        }
+      ],
+      "notes": [
+        "Implementing via camps-core: Pass-through save; camp add and update are its only save callers (list only renders it)."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsSubscriptionInfoSerializer.save",
@@ -30746,8 +30915,14 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/camps_subscriptions.go",
+        "BE_GO/internal/dto/camps_subscriptions.go",
+        "BE_GO/internal/repository/camps_subscriptions.go",
+        "BE_GO/internal/service/camps_subscriptions.go",
+        "BE_GO/internal/handler/camps_subscriptions.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -30758,13 +30933,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then camps-and-retreats/<uid>/subscriptions/add inside its atomic block through the overridden create() (Model.objects.create) (no update caller); no other effect.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/camps_subscriptions_http.json",
+        "TESTS/fixtures/generate_camps_subscriptions_http.py",
+        "TESTS/contracts/test_camps_subscriptions_http.py",
+        "TESTS/adapters/django/camps_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/camps-subscriptions.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 111/111; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-red-r3/results.json",
+          "receipt_sha256": "77da92ef53cb4bb7314659788c33656c39a7369c2d99bb24b10f0b840b439d4f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 111/111 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by camps-subscriptions-add-owner-two-periods, camps-subscriptions-add-owner-without-periods, camps-subscriptions-add-collaborator-explicit-values, camps-subscriptions-add-athlete-own-registration, camps-subscriptions-add-owner-form.",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-hook-camps-subscriptions/results.json",
+          "receipt_sha256": "3348d4bc74aa7f8b1fe61c5910c9d4db41cb08254ad0a16cdcb58b9062543ece"
+        },
+        {
+          "revision": "committing change with the deleted subscription period's entry rendered from the stored row (after the shared payment's SET_NULL) instead of the instance as loaded",
+          "result": "Mutation control: fails Go on update-owner-replace-periods (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-subscriptions-http-mutation-r1/results.json",
+          "receipt_sha256": "3c114ae94e854612ed8b2e590c9c2959f784bb99bf30e464b1ed973d70d35720"
+        }
+      ],
+      "notes": [
+        "Implementing via camps-subscriptions: Pass-through save (the TODO in its body is a comment); camps-and-retreats/<uid>/subscriptions/add is its only caller."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsSubscriptionPeriodSerializer.save",
@@ -30779,7 +30981,7 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -30797,7 +30999,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Unreachable in Django: the serializer is only instantiated read-only (many=True .data) inside CampsAndRetreatsSubscriptionInfoSerializer, so save() never runs. No Go port is needed; revisit if a caller starts saving through it."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsSubscriptionSerializer.save",
@@ -30812,7 +31016,7 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -30830,7 +31034,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Unreachable in Django: the serializer is not referenced by any view, serializer or task, so save() never runs. No Go port is needed; revisit if a caller starts saving through it."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/carnet_serializers.py:CarnetAddSerializer.save",
@@ -30845,8 +31051,15 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/dto/carnet_update.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -30857,13 +31070,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then carnet/add through the overridden create() (Model.objects.create) (no update caller); no other effect.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_add_http.json",
+        "TESTS/fixtures/generate_carnet_add_http.py",
+        "TESTS/contracts/test_carnet_add_http.py",
+        "TESTS/adapters/django/carnet_add_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 21/21; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-add-http-red-r2/results.json",
+          "receipt_sha256": "941ff34ec9657f9cd24bf0fb61d68107f742cb66c393424efe2e3bf0e8ca7572"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 21/21 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by carnet-add-owner-without-subscriptions, carnet-add-owner-assigns-subscriptions, carnet-add-full-collaborator-meta, carnet-add-falsy-list-meta-kept, carnet-add-form-empty-subscriptions.",
+          "artifact": "quality-reports/go-migration/carnet-add-http-hook-carnet-add/results.json",
+          "receipt_sha256": "fedd555449b2d136760e2ae9778383f436f0b7088fe6adb7aafe4885fa8d36ad"
+        },
+        {
+          "revision": "committing change indexing the association save directly",
+          "result": "Mutation control: fails Go on the carnet update index.",
+          "artifact": "quality-reports/go-migration/carnet-add-http-mutation-r2/results.json",
+          "receipt_sha256": "ec93b48eba2a66d78058a1faad8b13693d9552a1ad9733f6ec76df9872af4781"
+        }
+      ],
+      "notes": [
+        "Implementing via carnet-add: Pass-through save; carnet/add is its only caller."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/carnet_serializers.py:CarnetSubscriptionAddSerializer.save",
@@ -30878,7 +31118,7 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -30896,7 +31136,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Unreachable in Django: the serializer is not referenced by any view, serializer or task, so save() never runs. No Go port is needed; revisit if a caller starts saving through it."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/courses_serializers.py:CourseAddSerializer.save",
@@ -30911,8 +31153,15 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_writes.go",
+        "BE_GO/internal/dto/course_writes.go",
+        "BE_GO/internal/repository/course_writes.go",
+        "BE_GO/internal/service/course_writes.go",
+        "BE_GO/internal/service/course_writes_overview.go",
+        "BE_GO/internal/handler/course_writes.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -30923,13 +31172,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then course/add (Course.objects.create through the group-aware manager) through the overridden create() (Model.objects.create) (no update caller); no other effect.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_writes_http.json",
+        "TESTS/fixtures/generate_course_writes_http.py",
+        "TESTS/contracts/test_course_writes_http.py",
+        "TESTS/adapters/django/course_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-writes.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 104/104; Go fails state.unchanged:application.Payment on the first case.",
+          "artifact": "quality-reports/go-migration/course-writes-http-red-sync1/results.json",
+          "receipt_sha256": "e9db6e94769f75437389defe7ac8d0f51f9f8eec7c56f6deb1945eee16e4f966"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 104/104 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by course-writes-add-course-fee, course-writes-add-installments, course-writes-add-grouped-defaults, course-writes-add-default-fee-payment.",
+          "artifact": "quality-reports/go-migration/course-writes-http-hook-course-writes/results.json",
+          "receipt_sha256": "8e6e866277e338de19f5eee6a8502fa6ec0e952457478a6466d301244e458a89"
+        },
+        {
+          "revision": "committing change without the association filter in the title rewrite payment lookup",
+          "result": "Mutation control: fails Go on course-writes-update-full (state.unchanged:application.Payment).",
+          "artifact": "quality-reports/go-migration/course-writes-http-mutation-sync1/results.json",
+          "receipt_sha256": "84700865eafb5161b4e2240656f17686a3682de5e2aa3eb3d738af6bb2f176b3"
+        }
+      ],
+      "notes": [
+        "Implementing via course-writes: Pass-through save; course/add is its only caller."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/invoice_serializers.py:InvoiceSuppliersSerializer.save",
@@ -30944,8 +31220,15 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_parties.go",
+        "BE_GO/internal/dto/invoice_party_items.go",
+        "BE_GO/internal/repository/invoice_parties.go",
+        "BE_GO/internal/service/invoice_parties.go",
+        "BE_GO/internal/handler/invoice_parties.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -30956,13 +31239,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then invoice-suppliers/add through the overridden create() (Model.objects.create) and the partial update through ModelSerializer.update() on invoice-suppliers/<uid>/update; no other effect.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_parties_http.json",
+        "TESTS/fixtures/generate_invoice_parties_http.py",
+        "TESTS/contracts/test_invoice_parties_http.py",
+        "TESTS/adapters/django/invoice_parties_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-parties.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 136/136; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-red-r2/results.json",
+          "receipt_sha256": "7fe6a53ec2aebfec771b314b30c8ea9bcc40795387bf8750de46dd19fe4341ac"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 136/136 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by invoice-parties-supplier-add-owner, invoice-parties-supplier-add-collaborator-unpaid-now, invoice-parties-supplier-update-without-payment, invoice-parties-supplier-update-same-values-no-audit, invoice-parties-supplier-update-paid-updates-payment, invoice-parties-supplier-update-unlink-payment, invoice-parties-supplier-update-form.",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-hook-invoice-parties/results.json",
+          "receipt_sha256": "04e67225708918c30a2b5bd2da0a032bcbf04719666b8414ce6152503d4c7630"
+        },
+        {
+          "revision": "committing change without the supplier lookup's soft-delete filter",
+          "result": "Mutation control: fails Go on invoice-parties-supplier-add-deleted-supplier (200 instead of 400).",
+          "artifact": "quality-reports/go-migration/invoice-parties-http-mutation-r1/results.json",
+          "receipt_sha256": "c65fa0498e5d703c4fd7f863ac95d85bb710c3456c37894ceb86d223c68295a5"
+        }
+      ],
+      "notes": [
+        "Implementing via invoice-parties: Pass-through save; supplier invoice add and update are its only save callers. Nested payment/supplier writes and a new invoice_supplier_id on update are refused in Go before any write (invoice-parties.md)."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/payment_serializers.py:PaymentEntrySerializer.save",
@@ -30977,8 +31287,14 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_writes.go",
+        "BE_GO/internal/dto/payment_writes.go",
+        "BE_GO/internal/repository/payment_writes.go",
+        "BE_GO/internal/service/payment_writes.go",
+        "BE_GO/internal/handler/payment_writes.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -30989,13 +31305,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "A non-None meta_payment_categories sets amount to float(initial amount) plus the float sum of the meta amounts (a missing amount is a 500), then create/update; create and update run _handle_documents after the row is saved (an item without document/filename is a 400 with the row kept).",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_writes_http.json",
+        "TESTS/fixtures/generate_payment_writes_http.py",
+        "TESTS/contracts/test_payment_writes_http.py",
+        "TESTS/adapters/django/payment_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 120/120; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-red-r1/results.json",
+          "receipt_sha256": "cee774d1d15246681ecb4e727b8d93bf00f55b9714ec5e2414e51b61d1f79d09"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 120/120 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by payment-writes-add-minimal, payment-writes-add-every-field, payment-writes-add-meta-float-amount, payment-writes-add-meta-half-even-response, payment-writes-add-meta-without-amount-server-error, payment-writes-add-meta-item-without-amount-server-error, payment-writes-add-attachment-without-keys, payment-writes-update-fields, payment-writes-update-meta-float-amount, payment-writes-update-meta-without-amount-server-error, payment-writes-update-unchanged-no-audit, payment-writes-update-attachment-without-keys.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-hook-payment-writes/results.json",
+          "receipt_sha256": "ac611fddf0cfac31b9204a4a30743b34b4d38b2b9b46a1c248157c81af23c081"
+        },
+        {
+          "revision": "committing change keeping the instructor and supplier on update",
+          "result": "Mutation control: fails Go on payment-writes-update-empty-body-clears-parties.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "04fb5c637f457b81e572b765583e81695463fee36f069c199ebd88e5cde4fe51"
+        }
+      ],
+      "notes": [
+        "Implementing via payment-writes: The meta_payment_categories branch (sum, float rounding, missing amounts) and the plain branch are exercised on add and update. Attachment items carrying document and filename (base64 decode, Document row and storage save) are refused in Go with a 500 before any write (payment-writes.md). invoice-suppliers/add also saves it without meta (invoice-parties)."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/payment_serializers.py:SupplierSerializer.save",
@@ -31010,8 +31353,15 @@
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/supplier_write.go",
+        "BE_GO/internal/domain/supplier_writes.go",
+        "BE_GO/internal/repository/supplier_writes.go",
+        "BE_GO/internal/service/supplier_writes.go",
+        "BE_GO/internal/handler/supplier_writes.go",
+        "BE_GO/internal/handler/payment_categories.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -31022,13 +31372,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "ModelSerializer.save pass-through: is_valid assertions, then supplier/add through the overridden create() (Model.objects.create) and the partial update through ModelSerializer.update() on supplier/<uid>/update; no other effect.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/supplier_writes_http.json",
+        "TESTS/fixtures/generate_supplier_writes_http.py",
+        "TESTS/contracts/test_supplier_writes_http.py",
+        "TESTS/adapters/django/supplier_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 31/31; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-red-r1/results.json",
+          "receipt_sha256": "f996f26bec78af31685dbde151053c8b0192c0b8150a8ab1acf2553ba3e6e10d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 31/31 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by supplier-writes-add-minimal, supplier-writes-add-full-own-references, supplier-writes-add-group-header, supplier-writes-add-full-collaborator-form, supplier-writes-update-city, supplier-writes-update-same-value-no-audit, supplier-writes-update-clear-and-set.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-hook-supplier-writes/results.json",
+          "receipt_sha256": "ac5aecccdc0552182b318733f4801f0e584c76ccb44000ca847a398f6ff9162c"
+        },
+        {
+          "revision": "committing change without the deleted-row audit diff",
+          "result": "Mutation control: fails Go on the full add case.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "9dd07c91ce4bcbfe923f098b6d2db5424215fb7716d607af87a4dafd2cd61130"
+        }
+      ],
+      "notes": [
+        "Implementing via supplier-writes: Pass-through save; supplier add and update are its only save callers. As a nested field of InvoiceSuppliersSerializer it is never saved (nested writes are refused there)."
+      ]
     },
     {
       "id": "signal:BE/application/signals.py:delete_installment_of_payment",
@@ -31044,8 +31421,14 @@
         "decorator": "receiver(pre_delete, sender=Payment)",
         "arguments": "sender, instance, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -31056,13 +31439,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "pre_delete of a payment: its live group-aware installments are deleted with the receiver disconnected; each installment's own pre_delete deletes the still-unpaid payment first (trail P, I, P).",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_state_http.json",
+        "TESTS/fixtures/generate_payment_state_http.py",
+        "TESTS/contracts/test_payment_state_http.py",
+        "TESTS/adapters/django/payment_state_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-state.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 130/130; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
+          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by payment-state-delete-clears-references, payment-state-delete-unpaid-installments, payment-state-delete-paid-installment, payment-state-delete-group-installments, payment-state-delete-full-collaborator.",
+          "artifact": "quality-reports/go-migration/payment-state-http-hook-payment-state/results.json",
+          "receipt_sha256": "3f677497cf37ecb489a637cd1cb0ec4b97e66bcf5c3bd67f5e6148c27a930689"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
+          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
+          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+        }
+      ],
+      "notes": [
+        "Implementing via payment-state: Exercised by payment/<uid>/delete with no installments, unpaid and paid installment payments and an X-Group-Id."
+      ]
     },
     {
       "id": "signal:BE/application/signals.py:delete_related_course_payment",
@@ -31112,8 +31522,15 @@
         "decorator": "receiver(pre_delete, sender=CourseSubscriptionInstallment)",
         "arguments": "sender, instance, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscriptions.go",
+        "BE_GO/internal/service/course_subscription_update.go",
+        "BE_GO/internal/handler/course_subscriptions.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -31124,13 +31541,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "pre_delete of an installment: no payment, nothing; an unpaid payment is deleted (its own pre_delete deleting its live installments first); a paid payment is kept.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_subscriptions_http.json",
+        "TESTS/fixtures/generate_course_subscriptions_http.py",
+        "TESTS/contracts/test_course_subscriptions_http.py",
+        "TESTS/adapters/django/course_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-subscriptions.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 107/107; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-red-r2/results.json",
+          "receipt_sha256": "31592bdb101ced76518e9e6e0443e9be06e97c09c7f4b72159ded49c189130a1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by course-subscriptions-delete-owner-with-installments, course-subscriptions-delete-collaborator-unpaid-installment, course-subscriptions-delete-group-installments, course-subscriptions-bulk-owner.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-hook-course-subscriptions/results.json",
+          "receipt_sha256": "6d51a4f5ebf8fcacd56c35fc8141917e1cc8d766cc4f62536dafaa23b507576a"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the soft delete's installment query",
+          "result": "Mutation control: fails Go on course-subscriptions-delete-group-installments.",
+          "artifact": "quality-reports/go-migration/course-subscriptions-http-mutation-r2/results.json",
+          "receipt_sha256": "15a4209b3f2b4288f1a1f85aa5f68bb0e968b343847a6dedb1ffa84f09d29da3"
+        }
+      ],
+      "notes": [
+        "Implementing via course-subscriptions: All three branches (payment-less, unpaid, paid installment payments) are exercised by the soft delete and the bulk hard delete. Payment.DoesNotExist is unreachable through the foreign key."
+      ]
     },
     {
       "id": "signal:BE/application/signals.py:medical_certificate_expired_callback",
@@ -31214,8 +31658,15 @@
         "decorator": "receiver(membership_created)",
         "arguments": "sender, instance, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_enrolment.go",
+        "BE_GO/internal/dto/course_enrolment.go",
+        "BE_GO/internal/repository/course_enrolment.go",
+        "BE_GO/internal/service/course_enrolment.go",
+        "BE_GO/internal/service/course_enrolment_overview.go",
+        "BE_GO/internal/handler/course_enrolment.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -31226,13 +31677,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "For a membership row with a positive fee: one Payment (course owner, Abbonamento description and meta, billed_from dates, COURSE subject) linked through membership_payments and the row saved; zero/default fee: nothing.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_enrolment_http.json",
+        "TESTS/fixtures/generate_course_enrolment_http.py",
+        "TESTS/contracts/test_course_enrolment_http.py",
+        "TESTS/adapters/django/course_enrolment_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-enrolment.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 80/80; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-red-r2/results.json",
+          "receipt_sha256": "c57b814f02e261024a296fa5d227a5c6bcfc29fa788d855156eb5d285451de49"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 80/80 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by course-enrolment-add-membership, course-enrolment-add-membership-without-fee, course-enrolment-add-athlete-membership-list.",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-hook-course-enrolment/results.json",
+          "receipt_sha256": "df6a0fb76003552fc9bb0ed275d139fcffa49cb52ea5d5b02587ae19039f620a"
+        },
+        {
+          "revision": "committing change without the X-Group-Id filter on the installment lookup",
+          "result": "Mutation control: fails Go on course-enrolment-make-payment-group-header-hides (200 instead of 500).",
+          "artifact": "quality-reports/go-migration/course-enrolment-http-mutation-r1/results.json",
+          "receipt_sha256": "2c31e29686b59893f75da7cbc5d45aea702426b6bd47cba5ff01317091b7a886"
+        }
+      ],
+      "notes": [
+        "Implementing via course-enrolment: Both branches are exercised through course-subscriptions/add (positive fee, explicit zero fee, float default fee of an athlete list item). The receiver dispatches no task."
+      ]
     },
     {
       "id": "signal:BE/application/signals.py:new_course_subscription_callback",
@@ -31525,8 +32003,14 @@
       "declaration": {
         "call": "pre_delete.connect(delete_installment_of_payment, sender=Payment)"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/internal/handler/payment_state.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -31537,13 +32021,40 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "The receiver is reconnected after the nested installment delete, so the next payment delete runs it again; the nested payment delete does not recurse.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_state_http.json",
+        "TESTS/fixtures/generate_payment_state_http.py",
+        "TESTS/contracts/test_payment_state_http.py",
+        "TESTS/adapters/django/payment_state_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-state.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 130/130; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-state-http-red-r1/results.json",
+          "receipt_sha256": "c434ac09fb328e0907c83f62e47dac75c0354165a2b34f71e218618ea37e94f6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 130/130 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by payment-state-delete-unpaid-installments, payment-state-delete-paid-installment, payment-state-delete-group-installments.",
+          "artifact": "quality-reports/go-migration/payment-state-http-hook-payment-state/results.json",
+          "receipt_sha256": "3f677497cf37ecb489a637cd1cb0ec4b97e66bcf5c3bd67f5e6148c27a930689"
+        },
+        {
+          "revision": "committing change dropping the X-Group-Id filter from the bulk update",
+          "result": "Mutation control: fails Go on payment-state-bulk-archive-group.",
+          "artifact": "quality-reports/go-migration/payment-state-http-mutation-r1/results.json",
+          "receipt_sha256": "d972d6d78dc285450d5db4bfd635be30331b10712ef6e800d49892686b36546d"
+        }
+      ],
+      "notes": [
+        "Implementing via payment-state: Sequential payment deletes in one run each show the full cascade, and the nested delete shows no recursion."
+      ]
     },
     {
       "id": "signal_connection:BE/instance/restore/task_base.py:before_task_publish.connect:stamp_published_task",
