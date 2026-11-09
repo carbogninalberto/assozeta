@@ -970,6 +970,414 @@
    "language": "it",
    "config": "cloud",
    "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Ricevuta di pagamento Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Ricevuta di pagamento n. </div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Ricevuta di pagamento\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://bakney.com\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://bakney.com/images/logo.png\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Ciao <b>Solo nome</b>,</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000\">Ecco la tua ricevuta di € n.  del .</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\"></p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\"><a href=\"\" class=\"email-button\" style=\"background-color: #351dc2; color: #ffffff; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-size: 16px; font-weight: 600\">Scarica la ricevuta</a></p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 16px\">Se non riesci a scaricare la ricevuta, copia e incolla il seguente link nel tuo browser:</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px; word-break: break-all\"></p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0\">Cordiali saluti,<br></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "partial-registration",
+   "template": "email/account/email_user_partial_registration.html",
+   "context": {
+    "email": {
+     "t": "str",
+     "v": "new.user@example.test"
+    },
+    "app_host": {
+     "t": "str",
+     "v": "https://app.example.test"
+    },
+    "settings": {
+     "t": "dict",
+     "v": {
+      "WHITELABEL_NAME": {
+       "t": "str",
+       "v": "Bakney Sport"
+      },
+      "IS_WHITELABEL": {
+       "t": "bool",
+       "v": false
+      }
+     }
+    }
+   },
+   "language": "it",
+   "config": "cloud",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Benvenuto su Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Completa la registrazione su Bakney Sport</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Completa la registrazione su Bakney Sport\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://bakney.com\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://bakney.com/images/logo.png\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p>Ciao nuovo utente,</p>\n<p class=\"sm-leading-8\" style=\"margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000\">Completa subito la registrazione su <b>Bakney Sport</b> per attivare la prova gratuita.</p>\n<p><a href=\"https://app.example.test\" class=\"email-button hover-bg-indigo-500\" style=\"background-color: #351dc2; color: #ffffff; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600\">Completa la registrazione &rarr;</a></p>\n<hr style=\"border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0\">\n<p>Se hai problemi, copia ed incolla il seguente link:</p>\n<p>https://app.example.test</p>\n<p>Se hai ricevuto per errore questa email, ignorala.</p>\n<p>Un saluto,<br>Il team di <b>Bakney Sport</b></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "partial-registration-escaped",
+   "template": "email/account/email_user_partial_registration.html",
+   "context": {
+    "email": {
+     "t": "str",
+     "v": "o'neil&<x>@example.test"
+    },
+    "app_host": {
+     "t": "str",
+     "v": "http://h/x?a=1&b=2"
+    },
+    "settings": {
+     "t": "dict",
+     "v": {
+      "WHITELABEL_NAME": {
+       "t": "str",
+       "v": "Bakney Sport"
+      },
+      "IS_WHITELABEL": {
+       "t": "bool",
+       "v": false
+      }
+     }
+    }
+   },
+   "language": "it",
+   "config": "self-logo",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Benvenuto su Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #ffd700; color: #000000; }\n    .hover-bg-indigo-500:hover { background-color: #ffdc1f !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Completa la registrazione su Bakney Sport</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Completa la registrazione su Bakney Sport\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://app.example.test\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://app.example.test/media/logo.png?v=20260506070809123456\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p>Ciao nuovo utente,</p>\n<p class=\"sm-leading-8\" style=\"margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000\">Completa subito la registrazione su <b>Bakney Sport</b> per attivare la prova gratuita.</p>\n<p><a href=\"http://h/x?a=1&amp;b=2\" class=\"email-button hover-bg-indigo-500\" style=\"background-color: #ffd700; color: #000000; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600\">Completa la registrazione &rarr;</a></p>\n<hr style=\"border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0\">\n<p>Se hai problemi, copia ed incolla il seguente link:</p>\n<p>http://h/x?a=1&amp;b=2</p>\n<p>Se hai ricevuto per errore questa email, ignorala.</p>\n<p>Un saluto,<br>Il team di <b>Bakney Sport</b></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "partial-registration-none",
+   "template": "email/account/email_user_partial_registration.html",
+   "context": {
+    "email": {
+     "t": "str",
+     "v": "n@example.test"
+    },
+    "app_host": {
+     "t": "str",
+     "v": "https://app.example.test"
+    },
+    "settings": {
+     "t": "dict",
+     "v": {
+      "WHITELABEL_NAME": {
+       "t": "str",
+       "v": "Bakney Sport"
+      },
+      "IS_WHITELABEL": {
+       "t": "bool",
+       "v": false
+      }
+     }
+    }
+   },
+   "language": "it",
+   "config": "none",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Benvenuto su Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Completa la registrazione su Bakney Sport</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Completa la registrazione su Bakney Sport\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://bakney.com\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://bakney.com/images/logo.png\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p>Ciao nuovo utente,</p>\n<p class=\"sm-leading-8\" style=\"margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000\">Completa subito la registrazione su <b>Bakney Sport</b> per attivare la prova gratuita.</p>\n<p><a href=\"https://app.example.test\" class=\"email-button hover-bg-indigo-500\" style=\"background-color: #351dc2; color: #ffffff; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600\">Completa la registrazione &rarr;</a></p>\n<hr style=\"border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0\">\n<p>Se hai problemi, copia ed incolla il seguente link:</p>\n<p>https://app.example.test</p>\n<p>Se hai ricevuto per errore questa email, ignorala.</p>\n<p>Un saluto,<br>Il team di <b>Bakney Sport</b></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "expiring",
+   "template": "email/account/email_subscription_medical_certificate_expiring.html",
+   "context": {
+    "athlete_first_name": {
+     "t": "str",
+     "v": "Anna"
+    },
+    "athlete_last_name": {
+     "t": "str",
+     "v": "Rossi"
+    },
+    "sport_association": {
+     "t": "dict",
+     "v": {
+      "denomination": {
+       "t": "str",
+       "v": "ASD Esempio"
+      }
+     }
+    },
+    "certificate_expiring_date": {
+     "t": "str",
+     "v": "09/11/2026"
+    },
+    "app_host": {
+     "t": "str",
+     "v": "https://app.example.test"
+    },
+    "settings": {
+     "t": "dict",
+     "v": {
+      "WHITELABEL_NAME": {
+       "t": "str",
+       "v": "Bakney Sport"
+      },
+      "IS_WHITELABEL": {
+       "t": "bool",
+       "v": false
+      }
+     }
+    }
+   },
+   "language": "it",
+   "config": "cloud",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Abbiamo un aggiornamento importante su Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Abbiamo un aggiornamento importante su Bakney Sport</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Abbiamo un aggiornamento importante su Bakney Sport\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://bakney.com\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://bakney.com/images/logo.png\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"margin: 0 0 24px\">Ciao,<br>Abbiamo un aggiornamento per te su <b>Bakney Sport</b>.<br>Il certificato medico dell'atleta <b>Anna Rossi</b> iscritto all'associazione <b>ASD Esempio</b> scade il:<br><br><b>09/11/2026</b><br><br>Ricordati di rinnovare il certificato il prima possibile.</p>\n<p><a href=\"https://app.example.test\" class=\"email-button hover-bg-indigo-500\" style=\"background-color: #351dc2; color: #ffffff; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600\">Accedi a Bakney Sport</a></p>\n<hr style=\"border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0\">\n<p>Se hai problemi, copia ed incolla il seguente link:</p>\n<p>https://app.example.test</p>\n<p>Se hai ricevuto per errore questa email, ignorala.</p>\n<p>Un saluto,<br>Il team di <b>Bakney Sport</b></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "expiring-escaped",
+   "template": "email/account/email_subscription_medical_certificate_expiring.html",
+   "context": {
+    "athlete_first_name": {
+     "t": "str",
+     "v": "D'Amico"
+    },
+    "athlete_last_name": {
+     "t": "str",
+     "v": "<b>&</b>"
+    },
+    "sport_association": {
+     "t": "dict",
+     "v": {
+      "denomination": {
+       "t": "str",
+       "v": "Società \"Uno\""
+      }
+     }
+    },
+    "certificate_expiring_date": {
+     "t": "str",
+     "v": "01/01/2027"
+    },
+    "app_host": {
+     "t": "str",
+     "v": "https://app.example.test"
+    },
+    "settings": {
+     "t": "dict",
+     "v": {
+      "WHITELABEL_NAME": {
+       "t": "str",
+       "v": "Bakney Sport"
+      },
+      "IS_WHITELABEL": {
+       "t": "bool",
+       "v": false
+      }
+     }
+    }
+   },
+   "language": "it",
+   "config": "self-dark",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Abbiamo un aggiornamento importante su Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #0a0b0c; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #090a0b !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Abbiamo un aggiornamento importante su Bakney Sport</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Abbiamo un aggiornamento importante su Bakney Sport\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://app.example.test\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://app.example.test/logo.svg?v=20260203040506000000\" width=\"200\" alt=\"Club\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"margin: 0 0 24px\">Ciao,<br>Abbiamo un aggiornamento per te su <b>Bakney Sport</b>.<br>Il certificato medico dell'atleta <b>D&#x27;Amico &lt;b&gt;&amp;&lt;/b&gt;</b> iscritto all'associazione <b>Società &quot;Uno&quot;</b> scade il:<br><br><b>01/01/2027</b><br><br>Ricordati di rinnovare il certificato il prima possibile.</p>\n<p><a href=\"https://app.example.test\" class=\"email-button hover-bg-indigo-500\" style=\"background-color: #0a0b0c; color: #ffffff; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600\">Accedi a Bakney Sport</a></p>\n<hr style=\"border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0\">\n<p>Se hai problemi, copia ed incolla il seguente link:</p>\n<p>https://app.example.test</p>\n<p>Se hai ricevuto per errore questa email, ignorala.</p>\n<p>Un saluto,<br>Il team di <b>Bakney Sport</b></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "expiring-none",
+   "template": "email/account/email_subscription_medical_certificate_expiring.html",
+   "context": {
+    "athlete_first_name": {
+     "t": "str",
+     "v": ""
+    },
+    "athlete_last_name": {
+     "t": "none"
+    },
+    "sport_association": {
+     "t": "dict",
+     "v": {
+      "denomination": {
+       "t": "none"
+      }
+     }
+    },
+    "certificate_expiring_date": {
+     "t": "str",
+     "v": "31/12/2026"
+    },
+    "app_host": {
+     "t": "str",
+     "v": "https://app.example.test"
+    },
+    "settings": {
+     "t": "dict",
+     "v": {
+      "WHITELABEL_NAME": {
+       "t": "str",
+       "v": "Bakney Sport"
+      },
+      "IS_WHITELABEL": {
+       "t": "bool",
+       "v": false
+      }
+     }
+    }
+   },
+   "language": "it",
+   "config": "none",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Abbiamo un aggiornamento importante su Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Abbiamo un aggiornamento importante su Bakney Sport</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Abbiamo un aggiornamento importante su Bakney Sport\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://bakney.com\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://bakney.com/images/logo.png\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"margin: 0 0 24px\">Ciao,<br>Abbiamo un aggiornamento per te su <b>Bakney Sport</b>.<br>Il certificato medico dell'atleta <b> None</b> iscritto all'associazione <b>None</b> scade il:<br><br><b>31/12/2026</b><br><br>Ricordati di rinnovare il certificato il prima possibile.</p>\n<p><a href=\"https://app.example.test\" class=\"email-button hover-bg-indigo-500\" style=\"background-color: #351dc2; color: #ffffff; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600\">Accedi a Bakney Sport</a></p>\n<hr style=\"border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0\">\n<p>Se hai problemi, copia ed incolla il seguente link:</p>\n<p>https://app.example.test</p>\n<p>Se hai ricevuto per errore questa email, ignorala.</p>\n<p>Un saluto,<br>Il team di <b>Bakney Sport</b></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "expired",
+   "template": "email/account/email_subscription_medical_certificate_expired.html",
+   "context": {
+    "athlete_first_name": {
+     "t": "str",
+     "v": "Luca"
+    },
+    "athlete_last_name": {
+     "t": "str",
+     "v": "Bianchi"
+    },
+    "sport_association": {
+     "t": "dict",
+     "v": {
+      "denomination": {
+       "t": "str",
+       "v": "ASD Esempio"
+      }
+     }
+    },
+    "certificate_expiring_date": {
+     "t": "str",
+     "v": "08/11/2026"
+    },
+    "app_host": {
+     "t": "str",
+     "v": "https://app.example.test"
+    },
+    "settings": {
+     "t": "dict",
+     "v": {
+      "WHITELABEL_NAME": {
+       "t": "str",
+       "v": "Bakney Sport"
+      },
+      "IS_WHITELABEL": {
+       "t": "bool",
+       "v": false
+      }
+     }
+    }
+   },
+   "language": "it",
+   "config": "self-default",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Abbiamo un aggiornamento importante su Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Abbiamo un aggiornamento importante su Bakney Sport</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Abbiamo un aggiornamento importante su Bakney Sport\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <span style=\"font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; color: #351dc2\">Polisportiva &lt;Sud&gt;</span>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"margin: 0 0 24px\">Ciao,<br>Abbiamo un aggiornamento per te su <b>Bakney Sport</b>.<br>Il certificato medico dell'atleta <b>Luca Bianchi</b> iscritto all'associazione <b>ASD Esempio</b> è scaduto il:<br><br><b>08/11/2026</b><br><br>Aggiorna il certificato medico il prima possibile.</p>\n<p><a href=\"https://app.example.test\" class=\"email-button hover-bg-indigo-500\" style=\"background-color: #351dc2; color: #ffffff; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600\">Accedi a Bakney Sport</a></p>\n<hr style=\"border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0\">\n<p>Se hai problemi, copia ed incolla il seguente link:</p>\n<p>https://app.example.test</p>\n<p>Se hai ricevuto per errore questa email, ignorala.</p>\n<p>Un saluto,<br>Il team di <b>Bakney Sport</b></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "expired-escaped",
+   "template": "email/account/email_subscription_medical_certificate_expired.html",
+   "context": {
+    "athlete_first_name": {
+     "t": "str",
+     "v": "Zoë"
+    },
+    "athlete_last_name": {
+     "t": "str",
+     "v": "O'Neil"
+    },
+    "sport_association": {
+     "t": "dict",
+     "v": {
+      "denomination": {
+       "t": "str",
+       "v": "A & B <c>"
+      }
+     }
+    },
+    "certificate_expiring_date": {
+     "t": "str",
+     "v": "08/11/2026"
+    },
+    "app_host": {
+     "t": "str",
+     "v": "https://app.example.test"
+    },
+    "settings": {
+     "t": "dict",
+     "v": {
+      "WHITELABEL_NAME": {
+       "t": "str",
+       "v": "Bakney Sport"
+      },
+      "IS_WHITELABEL": {
+       "t": "bool",
+       "v": false
+      }
+     }
+    }
+   },
+   "language": "it",
+   "config": "self-url-logo",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Abbiamo un aggiornamento importante su Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Abbiamo un aggiornamento importante su Bakney Sport</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Abbiamo un aggiornamento importante su Bakney Sport\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://app.example.test\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://cdn.example.test/l.png?a=1&amp;b=2?v=20251231235959999999\" width=\"200\" alt=\"ASD &quot;Tre&quot;\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"margin: 0 0 24px\">Ciao,<br>Abbiamo un aggiornamento per te su <b>Bakney Sport</b>.<br>Il certificato medico dell'atleta <b>Zoë O&#x27;Neil</b> iscritto all'associazione <b>A &amp; B &lt;c&gt;</b> è scaduto il:<br><br><b>08/11/2026</b><br><br>Aggiorna il certificato medico il prima possibile.</p>\n<p><a href=\"https://app.example.test\" class=\"email-button hover-bg-indigo-500\" style=\"background-color: #351dc2; color: #ffffff; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600\">Accedi a Bakney Sport</a></p>\n<hr style=\"border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0\">\n<p>Se hai problemi, copia ed incolla il seguente link:</p>\n<p>https://app.example.test</p>\n<p>Se hai ricevuto per errore questa email, ignorala.</p>\n<p>Un saluto,<br>Il team di <b>Bakney Sport</b></p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "reminder",
+   "template": "email/reminders/event.html",
+   "context": {
+    "event_title": {
+     "t": "str",
+     "v": "Allenamento"
+    },
+    "event_reminder_text": {
+     "t": "str",
+     "v": "1 ora"
+    },
+    "event_description": {
+     "t": "str",
+     "v": "Porta le scarpe"
+    },
+    "association_name": {
+     "t": "str",
+     "v": "ASD Esempio"
+    },
+    "application_name": {
+     "t": "str",
+     "v": "Bakney Sport"
+    }
+   },
+   "language": "it",
+   "config": "cloud",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Promemoria evento Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Promemoria evento Allenamento</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Promemoria evento\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://bakney.com\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://bakney.com/images/logo.png\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Ciao ASD Esempio,</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000\">Il tuo evento &quot;Allenamento&quot; inizierà tra 1 ora.</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 8px; font-weight: 600\">Descrizione dell'evento:</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Porta le scarpe</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Per maggiori informazioni, visita il tuo profilo su Bakney Sport.</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0\">Lo staff di Bakney Sport</p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "reminder-escaped",
+   "template": "email/reminders/event.html",
+   "context": {
+    "event_title": {
+     "t": "str",
+     "v": "\"Gara\" & <festa>"
+    },
+    "event_reminder_text": {
+     "t": "none"
+    },
+    "event_description": {
+     "t": "str",
+     "v": "Nessun dettaglio."
+    },
+    "association_name": {
+     "t": "str",
+     "v": "L'Aquila"
+    },
+    "application_name": {
+     "t": "str",
+     "v": "Bakney Sport"
+    }
+   },
+   "language": "it",
+   "config": "self-logo",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Promemoria evento Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #ffd700; color: #000000; }\n    .hover-bg-indigo-500:hover { background-color: #ffdc1f !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Promemoria evento &quot;Gara&quot; &amp; &lt;festa&gt;</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Promemoria evento\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://app.example.test\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://app.example.test/media/logo.png?v=20260506070809123456\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Ciao L&#x27;Aquila,</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000\">Il tuo evento &quot;&quot;Gara&quot; &amp; &lt;festa&gt;&quot; inizierà tra None.</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 8px; font-weight: 600\">Descrizione dell'evento:</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Nessun dettaglio.</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Per maggiori informazioni, visita il tuo profilo su Bakney Sport.</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0\">Lo staff di Bakney Sport</p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
+  },
+  {
+   "name": "reminder-none",
+   "template": "email/reminders/event.html",
+   "context": {
+    "event_title": {
+     "t": "str",
+     "v": "x"
+    },
+    "event_reminder_text": {
+     "t": "str",
+     "v": ""
+    },
+    "event_description": {
+     "t": "str",
+     "v": "a\nb"
+    },
+    "association_name": {
+     "t": "none"
+    },
+    "application_name": {
+     "t": "str",
+     "v": "Bakney Sport"
+    }
+   },
+   "language": "it",
+   "config": "none",
+   "html": "\n<!DOCTYPE html>\n<html lang=\"it\" xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"font-family: 'Poppins', sans-serif\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"x-apple-disable-message-reformatting\">\n  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\">\n  <meta name=\"color-scheme\" content=\"light dark\">\n  <meta name=\"supported-color-schemes\" content=\"light dark\">\n  <!--[if mso]><style>td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: \"Segoe UI\", sans-serif; mso-line-height-rule: exactly;}</style><![endif]-->\n  <title>Promemoria evento Bakney Sport</title>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');\n    * { font-family: 'Poppins', sans-serif; }\n    .email-button { background-color: #351dc2; color: #ffffff; }\n    .hover-bg-indigo-500:hover { background-color: #2f1aab !important; }\n    @media (max-width: 600px) {\n      .sm-w-full { width: 100% !important; }\n      .sm-py-8 { padding-top: 32px !important; padding-bottom: 32px !important; }\n      .sm-px-6 { padding-left: 24px !important; padding-right: 24px !important; }\n      .sm-leading-8 { line-height: 32px !important; }\n    }\n  </style>\n</head>\n<body style=\"font-family: 'Poppins', sans-serif; word-break: break-word; -webkit-font-smoothing: antialiased; margin: 0; width: 100%; background-color: #f8fafc; padding: 0\">\n  <div style=\"font-family: 'Poppins', sans-serif; display: none\">Promemoria evento x</div>\n  <div role=\"article\" aria-roledescription=\"email\" aria-label=\"Promemoria evento\" lang=\"it\" style=\"font-family: 'Poppins', sans-serif\">\n    <table style=\"width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n      <tr><td align=\"center\" style=\"font-family: 'Poppins', sans-serif; background-color: #f8fafc\">\n        <table class=\"sm-w-full\" style=\"font-family: 'Poppins', sans-serif; width: 600px\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n          \n          <tr><td class=\"sm-py-8 sm-px-6\" style=\"font-family: 'Poppins', sans-serif; padding: 48px; text-align: center\">\n            \n            <a href=\"https://bakney.com\" style=\"font-family: 'Poppins', sans-serif\"><img src=\"https://bakney.com/images/logo.png\" width=\"200\" alt=\"Bakney Sport\" style=\"font-family: 'Poppins', sans-serif; border: 0; max-width: 100%; vertical-align: middle\"></a>\n            \n          </td></tr>\n          \n          <tr><td align=\"center\" class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif\">\n            <table style=\"font-family: 'Poppins', sans-serif; width: 100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n              <tr><td class=\"sm-px-6\" style=\"font-family: 'Poppins', sans-serif; border-radius: 4px; background-color: #fff; padding: 48px; text-align: left; font-size: 16px; line-height: 24px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)\">\n                \n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Ciao None,</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000\">Il tuo evento &quot;x&quot; inizierà tra .</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 8px; font-weight: 600\">Descrizione dell'evento:</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">a\nb</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0 0 24px\">Per maggiori informazioni, visita il tuo profilo su Bakney Sport.</p>\n<p style=\"font-family: 'Poppins', sans-serif; margin: 0\">Lo staff di Bakney Sport</p>\n\n              </td></tr>\n              <tr><td style=\"font-family: 'Poppins', sans-serif; height: 48px\"></td></tr>\n            </table>\n          </td></tr>\n        </table>\n      </td></tr>\n    </table>\n  </div>\n</body>\n</html>\n"
   }
  ],
  "whitelabel_logo": [

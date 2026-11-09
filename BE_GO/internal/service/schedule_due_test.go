@@ -25,12 +25,18 @@ var scheduleSubset = []string{
 	"utc_every_minute_hour_rollover", "utc_every_minute_day_rollover", "utc_every_minute_previous_date",
 	"utc_every_minute_future_cursor", "utc_every_minute_start_future", "utc_every_minute_initial_cursor",
 	"utc_daily_0730_before_slot", "utc_daily_0730_at_slot",
+	"utc_every_15_minutes_before_slot", "utc_every_15_minutes_at_slot", "utc_every_15_minutes_missed_slots",
+	"utc_every_15_minutes_hour_rollover", "utc_every_15_minutes_day_rollover", "utc_every_15_minutes_previous_date",
+	"utc_every_15_minutes_off_slot_cursor", "utc_every_15_minutes_future_cursor", "utc_every_15_minutes_start_future",
+	"utc_every_15_minutes_initial_cursor", "utc_every_45_minutes_hour_rollover", "utc_every_45_minutes_same_hour",
 }
 
 // Timing is task-independent in ModelEntry; each published task must reach
 // the same decision as the daily reset for one persisted definition.
 var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateAssociateAge,
-	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest}
+	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest,
+	domain.JobAutoMarkAttendance, domain.JobSendUserPartialRegistrationEmail, domain.JobSendExpiringCertificateEmail,
+	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders}
 
 type dueFixtureInput struct {
 	Kind        string  `json:"kind"`
@@ -166,15 +172,14 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 	now := time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
 	integer := 0
 	cases := map[string]func(*domain.PeriodicSchedule){
-		"other task":                func(s *domain.PeriodicSchedule) { s.Task = "send_reminders" },
+		"other task":                func(s *domain.PeriodicSchedule) { s.Task = "generate_coupon_if_not_exists" },
 		"archive task":              func(s *domain.PeriodicSchedule) { s.Task = "auto_archive_subscription" },
 		"deleted subscription task": func(s *domain.PeriodicSchedule) { s.Task = "clear_deleted_subscription" },
 		"renewal task":              func(s *domain.PeriodicSchedule) { s.Task = "renew_memberships_payments" },
 		"quote task":                func(s *domain.PeriodicSchedule) { s.Task = "association_quote_assign" },
 		"export cleanup task":       func(s *domain.PeriodicSchedule) { s.Task = "cleanup_old_exports" },
-		"attendance task":           func(s *domain.PeriodicSchedule) { s.Task = "auto_mark_attendance" },
 		"orphan medical task":       func(s *domain.PeriodicSchedule) { s.Task = "auto_delete_orphan_medical_certificate" },
-		"partial registration task": func(s *domain.PeriodicSchedule) { s.Task = "send_user_partial_registration_email" },
+		"updated certificate task":  func(s *domain.PeriodicSchedule) { s.Task = "send_updated_certificate_email" },
 		"unregistered alias":        func(s *domain.PeriodicSchedule) { s.Task = "application.tasks.reset_communication_daily_email_balance" },
 		"one off":                   func(s *domain.PeriodicSchedule) { s.OneOff = true },
 		"absolute expiry":           func(s *domain.PeriodicSchedule) { s.ExpiresAt = &now },
@@ -211,10 +216,23 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 		})
 	}
 	cronCases := map[string]func(*domain.PeriodicCron){
-		"timezone":        func(c *domain.PeriodicCron) { c.Timezone = "Europe/Rome" },
-		"minute steps":    func(c *domain.PeriodicCron) { c.Minute = "*/15" },
-		"minute wildcard": func(c *domain.PeriodicCron) { c.Minute = "*" },
-		"hour wildcard":   func(c *domain.PeriodicCron) { c.Hour = "*" },
+		"timezone":     func(c *domain.PeriodicCron) { c.Timezone = "Europe/Rome" },
+		"minute steps": func(c *domain.PeriodicCron) { c.Minute = "*/15" },
+		"minute steps in Rome": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.Timezone = "*/15", "*", "Europe/Rome"
+		},
+		"minute steps on one weekday": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.DayOfWeek = "*/15", "*", "1"
+		},
+		"zero minute step":       func(c *domain.PeriodicCron) { c.Minute, c.Hour = "*/0", "*" },
+		"oversized minute step":  func(c *domain.PeriodicCron) { c.Minute, c.Hour = "*/60", "*" },
+		"offset minute step":     func(c *domain.PeriodicCron) { c.Minute, c.Hour = "5/15", "*" },
+		"ranged minute step":     func(c *domain.PeriodicCron) { c.Minute, c.Hour = "0-30/15", "*" },
+		"signed minute step":     func(c *domain.PeriodicCron) { c.Minute, c.Hour = "*/+5", "*" },
+		"scalar minute any hour": func(c *domain.PeriodicCron) { c.Minute, c.Hour = "15", "*" },
+		"hour steps":             func(c *domain.PeriodicCron) { c.Minute, c.Hour = "0", "*/2" },
+		"minute wildcard":        func(c *domain.PeriodicCron) { c.Minute = "*" },
+		"hour wildcard":          func(c *domain.PeriodicCron) { c.Hour = "*" },
 		"every minute on one weekday": func(c *domain.PeriodicCron) {
 			c.Minute, c.Hour, c.DayOfWeek = "*", "*", "1"
 		},
@@ -316,7 +334,7 @@ func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
 			t.Fatalf("%s mapped to %q %v", task, kind, ok)
 		}
 	}
-	for _, task := range []string{"", "send_reminders", "auto_archive_subscription", "clear_deleted_subscription",
+	for _, task := range []string{"", "generate_coupon_if_not_exists", "auto_archive_subscription", "clear_deleted_subscription",
 		"application.tasks.delete_old_audit_logs", "Delete_old_audit_logs"} {
 		if kind, ok := domain.PeriodicJobKind(task); ok || kind != "" {
 			t.Fatalf("%q unexpectedly mapped to %q", task, kind)

@@ -6,7 +6,10 @@ Kuayle layout. The single image contains `/app/server`, `/app/worker`,
 `/app/migrate` and the separately documented [scheduler](../../docs/architecture/go-migration/scheduler-process.md);
 its default entrypoint and HTTP readiness check remain the server.
 The worker registers version-1 daily email balance reset, associate age update,
-expired subscription token cleanup, audit log retention and user deletion requests.
+expired subscription token cleanup, audit log retention, user deletion requests, attendance
+auto-marking and the partial registration, certificate and reminder e-mails
+([tasks-db-c](../../docs/architecture/go-migration/tasks-db-c.md): native evidence only; they publish
+`send_mail_async` or send through an association's SMTP configuration with `internal/smtpsend`).
 Audit retention has [native evidence](../../docs/architecture/go-migration/tasks-db-a.md) only;
 user deletion requests ([tasks-db-b](../../docs/architecture/go-migration/tasks-db-b.md)) publish
 `send_email_text` to the Celery broker (Redis DB 0 from the shared Redis settings) and have native evidence only. Age update has separate

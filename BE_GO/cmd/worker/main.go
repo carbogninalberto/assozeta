@@ -50,10 +50,10 @@ func run(arguments []string) error {
 	poll := flags.Duration("poll-interval", time.Second, "idle claim interval")
 	maintenance := flags.Duration("maintenance-interval", 15*time.Second, "restore deferral interval")
 	drain := flags.Duration("drain-timeout", 25*time.Second, "grace before cancelling admitted jobs")
-	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered email reset, associate age, token cleanup, audit retention and user deletion request task deadline")
+	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered task deadline")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention and user deletion requests (publishes send_email_text to the Celery broker). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
+			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention, user deletion requests (publishes send_email_text to the Celery broker), attendance auto-marking, partial registration, certificate and reminder e-mails (publish send_mail_async or send through the association SMTP configuration). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
 			return nil
 		}
 		return errors.New("invalid worker arguments")
@@ -93,16 +93,25 @@ func run(arguments []string) error {
 	defer broker.Close()
 	tasks := celery.NewProducer(celery.RedisBroker{Client: broker})
 	deletions := service.NewUserDeletionRequests(repository.NewUserDeletionRequests(db), tasks, cfg.WhitelabelName, time.Now, logger)
+	attendance := service.NewAutoMarkAttendance(repository.NewAutoMarkAttendance(db), time.Now, logger)
+	emails := service.NewEmailTasks(repository.NewEmailTasks(db), tasks, service.SMTPMailer{}, service.EmailTaskSettings{
+		AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
+		DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now, logger)
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
 	jobs := repository.NewJobs(db)
 	executor, err := service.NewJobExecutor(jobs, admission,
 		map[string]service.JobDefinition{
-			domain.JobResetDailyEmailBalance:         {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
-			domain.JobUpdateAssociateAge:             {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
-			domain.JobClearExpiredSubscriptionTokens: {Version: 1, Timeout: *taskTimeout, Run: tokens.Run},
-			domain.JobDeleteOldAuditLogs:             {Version: 1, Timeout: *taskTimeout, Run: retention.Run},
-			domain.JobDeleteUsersWithRequest:         {Version: 1, Timeout: *taskTimeout, Run: deletions.Run},
+			domain.JobResetDailyEmailBalance:           {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
+			domain.JobUpdateAssociateAge:               {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
+			domain.JobClearExpiredSubscriptionTokens:   {Version: 1, Timeout: *taskTimeout, Run: tokens.Run},
+			domain.JobDeleteOldAuditLogs:               {Version: 1, Timeout: *taskTimeout, Run: retention.Run},
+			domain.JobDeleteUsersWithRequest:           {Version: 1, Timeout: *taskTimeout, Run: deletions.Run},
+			domain.JobAutoMarkAttendance:               {Version: 1, Timeout: *taskTimeout, Run: attendance.Run},
+			domain.JobSendUserPartialRegistrationEmail: {Version: 1, Timeout: *taskTimeout, Run: emails.RunPartialRegistrations},
+			domain.JobSendExpiringCertificateEmail:     {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiringCertificates},
+			domain.JobSendExpiredCertificateEmail:      {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiredCertificates},
+			domain.JobSendReminders:                    {Version: 1, Timeout: *taskTimeout, Run: emails.RunReminders},
 		},
 		service.JobExecutorOptions{Owner: "worker-" + uuid.NewString(), Concurrency: *concurrency,
 			Lease: *lease, RenewInterval: *renew, StoreTimeout: *storeTimeout, PollInterval: *poll,
@@ -129,7 +138,11 @@ func run(arguments []string) error {
 		return errors.New("worker operational schema unavailable or incompatible")
 	}
 	logger.Info("worker ready", "concurrency", *concurrency)
-	if err = executor.Run(ctx); err != nil {
+	err = executor.Run(ctx)
+	// send_reminders leaves delayed sends running after its completion, as
+	// Django's Timer threads keep the worker process alive until they end.
+	emails.Wait()
+	if err != nil {
 		if errors.Is(err, domain.ErrJobDrainTimeout) {
 			return errors.New("worker drain deadline exceeded")
 		}
