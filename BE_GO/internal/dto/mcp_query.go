@@ -2,7 +2,9 @@ package dto
 
 import (
 	"errors"
+
 	"fmt"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"sort"
 	"strconv"
 	"strings"
@@ -931,7 +933,12 @@ type mcpWhitelistEntry = struct {
 func mcpResolveModel(value any) (*mcpModel, *mcpWhitelistEntry, error) {
 	name, ok := value.(string)
 	if !ok {
-		return nil, nil, mcpNotPorted("model_name type")
+		switch value.(type) {
+		case []any, domain.RequestObject:
+			// '.' in value is False; no whitelist label equals it.
+			return nil, nil, mcpRaise("Model '%s' is not whitelisted", PythonStr(value))
+		}
+		return nil, nil, mcpRaise("argument of type '%s' is not iterable", pythonTypeName(value))
 	}
 	if strings.Contains(name, ".") {
 		for i := range mcpWhitelist {

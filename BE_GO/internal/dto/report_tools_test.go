@@ -37,7 +37,7 @@ func TestReportToolOutcomes(t *testing.T) {
 		{"query_data", `{"model_name": "Tags", "limit": "5"}`, ErrReportFailed},
 		{"query_data", `{"model_name": "Carnet", "filters": {"meta__colore__icontains": "blu"}}`, ErrReportNotPorted},
 		{"get_field_values", `{"model_name": "Tags", "field_name": "password"}`, ErrReportFailed},
-		{"aggregate_data", `{"model_name": "Tags", "aggregations": [{"function": "sum", "field": "tag_name"}]}`, ErrReportNotPorted},
+		{"aggregate_data", `{"model_name": "Tags", "aggregations": [{"function": "sum", "field": "tag_name"}]}`, ErrReportFailed},
 		{"export_data", `{"model_name": "Tags"}`, ErrReportNotPorted},
 	} {
 		_, err := PlanReportTool(tc.tool, reportParams(t, tc.params), "a1000000-0000-4000-8000-000000701001", settings)

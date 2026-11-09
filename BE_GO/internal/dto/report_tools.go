@@ -711,13 +711,13 @@ func (a mcpAggregate) sql(argument string) (string, error) {
 	case "count":
 	case "sum", "avg":
 		if a.expr.kind != "int" && a.expr.kind != "decimal" && a.expr.kind != "float" {
-			return "", mcpNotPorted("SUM/AVG of " + a.expr.kind)
+			return "", fmt.Errorf("%w: PostgreSQL has no SUM/AVG of %s", ErrReportFailed, a.expr.kind) // a database error
 		}
 	default:
 		switch a.expr.kind {
 		case "int", "decimal", "float", "text", "date", "datetime":
 		default:
-			return "", mcpNotPorted("MIN/MAX of " + a.expr.kind)
+			return "", fmt.Errorf("%w: PostgreSQL has no MIN/MAX of %s", ErrReportFailed, a.expr.kind) // a database error
 		}
 	}
 	return strings.ToUpper(a.function) + "(" + argument + ")", nil

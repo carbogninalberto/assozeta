@@ -97,7 +97,8 @@ answers `isError: true` "Tool execution failed". Nothing is written before.
   iso_year/iso_week_day/minute/second/time transforms, `exclude()` across
   many-valued relations (split_exclude subquery), `?` ordering, ordering by
   a relation whose model has Meta.ordering, SUM/AVG/MIN/MAX of
-  non-numeric/unsupported types (database errors), integers outside the
+  non-numeric/unsupported types (database errors; the saved-report route
+  answers its generic 500 for them, as Django does), integers outside the
   column range, non-integral floats for integers/limits, non-canonical UUID
   spellings `int()` could accept, ISO date/datetime forms only
   `fromisoformat` accepts, non-ASCII digits, HTML references other than the
@@ -117,8 +118,8 @@ private PostgreSQL with the current schema:
    exception handling and `json.dumps`) versus the race-built Go driver;
    texts byte identical, rows unchanged; 56 calls also carry authored
    expectations checked on Django first (one was corrected by Django: the
-   attendance list counts archived, non-deleted enrolments). Five calls are
-   refusals (XLSX/PDF files).
+   attendance list counts archived, non-deleted enrolments). Three calls are
+   refusals (XLSX files).
 2. stdio: four sessions (initialize with three protocol versions, tools/list
    byte equal to the SDK, validation errors, binding errors, unknown tool,
    malformed line notification, ping, every tool, save/list reports, an
@@ -130,9 +131,10 @@ private PostgreSQL with the current schema:
 3. The generated metadata and declarations are regenerated and must be
    unchanged.
 
-RED: the same adapter on the base revision's BE_GO (no command, no tools):
-Django 135/135 and 4 sessions, Go missing. GREEN: 135/135 (130 identical,
-5 refused) and 4/4 sessions identical. Mutation: dropping the negated
-`IS NOT NULL` of `exclude()` is caught. The templates-reports and
-ledger-structural (business MCP tools) families were re-run on the shared
-engine.
+RED: the same adapter on the base revision's BE_GO (no command; its driver rejects these calls):
+Django 135/135 and 4 sessions, Go missing. GREEN: 135/135 (132 identical,
+3 refused) and 4/4 sessions identical. Mutation: dropping the negated
+`IS NOT NULL` of `exclude()` is caught. Re-run on the shared code: templates-reports
+(native and versioned; the run first caught a non-string `model_name`
+override and an impossible SUM, now Django's generic 500), the business MCP
+tool adapter of ledger-structural (25/25) and the manual MCP Go transport.
