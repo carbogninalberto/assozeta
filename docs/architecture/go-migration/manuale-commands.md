@@ -1,15 +1,15 @@
 # Manual management commands
 
 Four Django commands in `BE/application/management/commands/` build, check and
-install the manual corpus. Two are ported to the Go binary `BE_GO/cmd/manuale`;
-one is proposed deprecated and one stays open.
+install the manual corpus. Three are ported to the Go binary `BE_GO/cmd/manuale`
+and one is proposed deprecated.
 
 | Django command | Callers | Go |
 | --- | --- | --- |
 | `sync_manuale_corpus` | `selfhost/bin/assozeta` start and `sync-manual` | `manuale sync-corpus` |
 | `compare_manuale_captures` | `docs/scripts/manuale.py` capture step (CI `manuale.yml`) | `manuale compare-captures` |
 | `build_manuale_index` | none | proposed deprecated |
-| `evaluate_manuale` | `docs/scripts/manuale.py` evaluate step (CI `manuale.yml`) | not ported |
+| `evaluate_manuale` | `docs/scripts/manuale.py` evaluate step (CI `manuale.yml`) | `manuale evaluate` ([evaluate-manuale](evaluate-manuale.md)) |
 
 ## sync-corpus
 
@@ -62,12 +62,8 @@ than 900 levels are refused. Pillow's decompression-bomb limit is kept.
   values differ in the last digit between BLAS platforms (the reason
   `reproduces()` compares semantics with a tolerance), so a byte-identical Go
   port is not possible. Proposed deprecated.
-- `evaluate_manuale`: CI runs it through `docs/scripts/manuale.py evaluate`
-  inside the Django container, so it is not deprecated. Its subject is the
-  Python stack itself: it starts `manage.py run_mcp_server` over stdio and
-  drives `application.agent.core.Agent` (with `NoModel`) and
-  `application.manuale.answers`. Go has its own MCP server but no agent, so a
-  Go command would evaluate a different system. Left open (`needs_review`).
+- `evaluate_manuale`: ported as `manuale evaluate`, driving the Go MCP
+  server and the Go agent; see [evaluate-manuale](evaluate-manuale.md).
 - Common to both ported commands: Django global options (`--settings`,
   `--verbosity`, ...), argparse prefix abbreviations and `-h`; traceback text;
   the publisher user agent (Python-urllib versus Go-http-client). The Go
