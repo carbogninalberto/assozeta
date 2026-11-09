@@ -182,6 +182,107 @@ class BackupSpaceTests(unittest.TestCase):
         self.prune()
         self.assertEqual(self.remaining(), [names[4]])
 
+    # Free space grows by TEST_EACH_KIB for every archive removed since the start.
+    SPACE = """
+df() {
+    count=$(ls "$destination" | grep -c '\\.tar\\.gz$')
+    printf 'Filesystem 1024-blocks Used Available Capacity Mounted\\n/dev/x 1 1 %s 1%% /\\n' $(( TEST_BASE_KIB + (TEST_INITIAL - count) * TEST_EACH_KIB ))
+}
+"""
+
+    def free(self, needed_gib, base_gib, each_gib, initial):
+        return self.run_cli(self.SPACE + f'destination="{self.backups}"; backup_free_space {needed_gib * 1024 * 1024}; df',
+                            TEST_BASE_KIB=str(base_gib * 1024 * 1024), TEST_EACH_KIB=str(each_gib * 1024 * 1024),
+                            TEST_INITIAL=str(initial))
+
+    def test_scheduled_backups_record_their_origin_and_rotate(self):
+        self.archives(['scheduled'] * 3)
+        result = self.run_cli('backup_prod --scheduled', ASSOZETA_BACKUP_KEEP='2')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        newest = self.remaining()[-1]
+        self.assertTrue((self.backups / (newest + '.meta')).read_text().startswith('origin=scheduled\n'))
+        self.assertEqual(len(self.remaining()), 2)
+        self.assertNotEqual(self.run_cli('backup_prod --weekly').returncode, 0)
+
+    def test_pre_upgrade_backup_waits_for_the_upgrade_before_rotating(self):
+        self.archives(['scheduled'] * 4)
+        result = self.run_cli('backup_origin=pre-upgrade; backup_prod', ASSOZETA_BACKUP_KEEP='1')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(self.remaining()), 5)
+
+    def test_runner_stages_are_printed_only_when_requested(self):
+        quiet = self.run_cli('backup_prod')
+        self.assertNotIn('@@ASSOZETA_STAGE', quiet.stdout)
+        staged = self.run_cli('backup_prod', ASSOZETA_BACKUP_STAGES='1')
+        self.assertIn('@@ASSOZETA_STAGE backup\n', staged.stdout)
+        self.assertIn('@@ASSOZETA_STAGE restarting\n', staged.stdout)
+
+    def test_low_space_removes_uploaded_copies_then_oldest_automatic_backups(self):
+        # 1 uploaded manual, 2 scheduled, 3 kept scheduled, 4 manual, 5 last upgrade, 6 scheduled, 7 newest scheduled.
+        names = self.archives(['manual', 'scheduled', 'scheduled', 'manual', 'pre-upgrade', 'scheduled', 'scheduled'],
+                              extra={1: {'remote': 'uploaded'}, 3: {'keep': 'true'}, 5: {'upgrade': 'completed'}})
+        result = self.free(needed_gib=3, base_gib=0, each_gib=1, initial=7)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        # The uploaded copy goes first, then the oldest unprotected automatic
+        # archives (days 2 and 6): kept day 3, last upgrade day 5 and the newest stay.
+        self.assertEqual(self.remaining(), sorted(names[i] for i in (2, 3, 4, 6)))
+        self.assertFalse((self.backups / (names[0] + '.meta')).exists())
+        self.assertIn('removed ' + names[0], result.stdout)
+
+    def test_low_space_never_removes_protected_archives(self):
+        names = self.archives(['manual', 'scheduled', 'pre-upgrade', 'scheduled'],
+                              extra={2: {'keep': 'true'}, 3: {'upgrade': 'completed'}})
+        result = self.free(needed_gib=100, base_gib=0, each_gib=1, initial=4)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        # Manual, kept, last upgrade and the newest archive all stay.
+        self.assertEqual(self.remaining(), names)
+
+    def test_backup_fails_with_a_clear_reason_when_cleanup_is_not_enough(self):
+        self.archives(['scheduled', 'scheduled'])
+        result = self.run_cli(self.SPACE + f'destination="{self.backups}"; backup_prod',
+                              TEST_BASE_KIB=str(2 * 1024 * 1024), TEST_EACH_KIB=str(1024 * 1024), TEST_INITIAL='2')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('anche dopo aver eliminato i backup automatici più vecchi', result.stdout)
+        # The oldest automatic archive went; the newest always stays.
+        self.assertEqual(len(self.remaining()), 1)
+
+    # restore_prod itself needs Docker: record how it is called instead.
+    RESTORE = """
+restore_prod() { printf 'restore_prod %s safety=%s\\n' "$*" "${restore_safety_stopped:-}"; }
+prod_app_services_running() { return 0; }
+"""
+
+    def test_restore_takes_a_pre_restore_backup_first_and_keeps_its_source(self):
+        names = self.archives(['scheduled'] * 3)
+        source = self.backups / names[0]
+        result = self.run_cli(self.RESTORE + f'restore_command_prod "{source}" --yes', ASSOZETA_BACKUP_KEEP='1')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        lines = [line for line in result.stdout.splitlines() if line.startswith(('@@', 'restore_prod'))]
+        safety = sorted(set(self.remaining()) - set(names))
+        self.assertEqual(len(safety), 1)
+        self.assertEqual(lines, ['@@ASSOZETA_STAGE checking', '@@ASSOZETA_STAGE backup', f'@@ASSOZETA_BACKUP {safety[0]}',
+                                 '@@ASSOZETA_STAGE restoring', f'restore_prod {source} --yes safety=true'])
+        self.assertTrue((self.backups / (safety[0] + '.meta')).read_text().startswith('origin=pre-restore\n'))
+        # No rotation right before the restore: the archive to restore stays.
+        self.assertEqual(sorted(set(self.remaining()) & set(names)), names)
+
+    def test_restore_space_check_never_removes_the_archive_to_restore(self):
+        names = self.archives(['scheduled', 'scheduled', 'manual'])
+        result = self.run_cli(self.RESTORE + self.SPACE + f'destination="{self.backups}"; backup_protected={names[0]}; backup_free_space {50 * 1024 * 1024}',
+                              TEST_BASE_KIB='0', TEST_EACH_KIB=str(1024 * 1024), TEST_INITIAL='3')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.remaining(), [names[0], names[2]])
+
+    def test_restore_without_backup_or_archive(self):
+        names = self.archives(['manual'])
+        result = self.run_cli(self.RESTORE + f'restore_command_prod "{self.backups / names[0]}" --yes --no-backup')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn('@@ASSOZETA_STAGE backup', result.stdout)
+        self.assertEqual(self.remaining(), names)
+        self.assertNotEqual(self.run_cli(self.RESTORE + 'restore_command_prod --yes').returncode, 0)
+        self.assertNotEqual(self.run_cli(self.RESTORE + f'restore_command_prod "{self.root}/missing.tar.gz" --yes').returncode, 0)
+        self.assertNotEqual(self.run_cli(self.RESTORE + f'restore_command_prod "{self.backups / names[0]}" --force').returncode, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

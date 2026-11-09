@@ -5,7 +5,10 @@ from django.urls import path
 from .sso.views import PairingAdminView
 from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView, InstanceReleasesView, InstanceUpdatesView, InstanceRestartsView
 
-from .backups import BackupDownloadTokenView, BackupDownloadView, BackupOverviewView
+from .backups import (BackupDownloadTokenView, BackupDownloadView, BackupItemView, BackupOverviewView, BackupRestoreView,
+                      BackupScheduleView, BackupUploadView)
+from .remote_backups import (RemoteBackupFetchView, RemoteBackupKeyConfirmView, RemoteBackupKeyView,
+                             RemoteBackupSettingsView, RemoteBackupTestView)
 from .diagnostics import DiagnosticsView
 from .operations import EmailSettingsView, EmailTestView
 from .integrations import IntegrationSettingsView, IntegrationTestView
@@ -34,6 +37,15 @@ urlpatterns = [
     path('admin/backups', BackupOverviewView.as_view(), name='instance-backups'),
     path('admin/backups/download-token', BackupDownloadTokenView.as_view(), name='instance-backup-download-token'),
     path('admin/backups/<str:name>/download', BackupDownloadView.as_view(), name='instance-backup-download'),
+    path('admin/backups/schedule', BackupScheduleView.as_view(), name='instance-backup-schedule'),
+    path('admin/backups/upload', BackupUploadView.as_view(), name='instance-backup-upload'),
+    path('admin/backups/<str:name>/restore', BackupRestoreView.as_view(), name='instance-backup-restore'),
+    path('admin/backups/remote', RemoteBackupSettingsView.as_view(), name='instance-backup-remote'),
+    path('admin/backups/remote/test', RemoteBackupTestView.as_view(), name='instance-backup-remote-test'),
+    path('admin/backups/remote/key', RemoteBackupKeyView.as_view(), name='instance-backup-remote-key'),
+    path('admin/backups/remote/key/confirm', RemoteBackupKeyConfirmView.as_view(), name='instance-backup-remote-key-confirm'),
+    path('admin/backups/remote/fetch', RemoteBackupFetchView.as_view(), name='instance-backup-remote-fetch'),
+    path('admin/backups/<str:name>', BackupItemView.as_view(), name='instance-backup-item'),
     path('admin/diagnostics', DiagnosticsView.as_view(), name='instance-diagnostics'),
     path('admin/email', EmailSettingsView.as_view(), name='instance-email-settings'),
     path('admin/email/test', EmailTestView.as_view(), name='instance-email-test'),

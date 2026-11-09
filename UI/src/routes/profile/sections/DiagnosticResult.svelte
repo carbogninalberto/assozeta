@@ -1,32 +1,39 @@
 <script>
+    import {CheckCircle, WarningCircle, XCircle, Circle} from 'phosphor-svelte';
+    import {formatRelative, formatDate} from './instanceFormat.js';
     export let check;
+    export let compact = false;
     const states = {
-        passed: ['✓', 'Verificato'], warning: ['⚠', 'Da verificare'], failed: ['✕', 'Non riuscito'],
-        not_configured: ['○', 'Non configurato'], not_applicable: ['—', 'Non applicabile'], not_checked: ['○', 'Non verificato'],
+        passed: ['ok', CheckCircle, 'Verificato'], warning: ['warn', WarningCircle, 'Da controllare'], failed: ['bad', XCircle, 'Non riuscito'],
+        not_configured: ['neutral', Circle, 'Non configurato'], not_applicable: ['neutral', Circle, 'Non applicabile'], not_checked: ['neutral', Circle, 'Non verificato'],
     };
-    const levels = {configuration: 'Configurazione', connectivity: 'Connessione', functional: 'Prova funzionale'};
-    $: state = states[check?.status] || states.not_checked;
+    $: [tone, icon, label] = states[check?.status] || states.not_checked;
 </script>
 
-<article class="diagnostic-result" class:failed={check?.status === 'failed'} class:warning={check?.status === 'warning'}>
-    <div class="result-heading">
-        <strong>{check?.label || 'Risultato'}</strong>
-        <span class:verified={check?.status === 'passed'}><span aria-hidden="true">{state[0]}</span> {state[1]}</span>
+<div class="diagnostic-result {tone}" class:compact>
+    <span class="si-icon {tone}" aria-hidden="true"><svelte:component this={icon} size={20} weight="fill" /></span>
+    <div class="result-main">
+        <div class="result-heading">
+            <strong>{check?.label || 'Risultato'}</strong>
+            <span class="result-state" class:verified={check?.status === 'passed'}>{label}</span>
+        </div>
+        {#if check?.message}<p>{check.message}</p>{/if}
+        <p class="result-meta">
+            {#if check?.core === false}{'Facoltativo · '}{/if}
+            {#if check?.checked_at}<time datetime={check.checked_at} title={formatDate(check.checked_at)}>{formatRelative(check.checked_at)}</time>{:else}Mai verificato{/if}
+        </p>
     </div>
-    <p>{check?.message || 'Esegui una verifica per vedere il risultato.'}</p>
-    <div class="evidence">
-        <span>{levels[check?.level] || 'Connessione'}{check?.core === false ? ' · Facoltativo' : ''}</span>
-        {#if check?.checked_at}<time datetime={check.checked_at}>{new Date(check.checked_at).toLocaleString('it-IT')}</time>{:else}<span>Mai verificato</span>{/if}
-    </div>
-</article>
+</div>
 
 <style>
-    .diagnostic-result { border: 1px solid #dce1e7; border-radius: .65rem; padding: 1rem; min-width: 0; overflow-wrap: anywhere; }
-    .diagnostic-result.failed { border-left: 4px solid #b42318; }
-    .diagnostic-result.warning { border-left: 4px solid #936000; }
-    .result-heading, .evidence { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; }
-    .result-heading { margin-bottom: .6rem; }
-    .verified { color: #146c43; }
-    p { margin-bottom: .6rem; }
-    .evidence { font-size: .9rem; color: #536171; }
+    .diagnostic-result { display: flex; gap: .75rem; padding: .875rem 1rem; border: 1px solid var(--border-color); border-radius: .625rem; background: var(--bg-card); min-width: 0; overflow-wrap: anywhere; }
+    .diagnostic-result.compact { padding: .75rem 0; border: 0; border-radius: 0; background: none; }
+    .result-main { flex: 1; min-width: 0; }
+    .result-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem 1rem; }
+    .result-state { font-size: .8125rem; font-weight: 600; color: var(--text-secondary); }
+    .ok .result-state { color: #0f8a65; }
+    .warn .result-state { color: #a86b00; }
+    .bad .result-state { color: var(--danger, #d92d20); }
+    p { margin: .2rem 0 0; }
+    .result-meta { font-size: .8125rem; color: var(--text-secondary); }
 </style>

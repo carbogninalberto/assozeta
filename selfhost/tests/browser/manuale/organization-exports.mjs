@@ -171,12 +171,16 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
             const before = (await read('association/export/list')).exports;
             expect(before.length).toBeLessThan(3);
             await open('Impostazioni', '/#/profile');
-            await page.getByText('Gestione Dati', {exact: true}).first().click();
-            await expect(page.getByRole('button', {name: 'Avvia Export', exact: true})).toBeEnabled();
+            // Bakney: Gestione Dati. Self-hosted owner: Istanza → Backup → Trasferisci dati.
+            const management = page.getByText('Gestione Dati', {exact: true}).first();
+            if (await management.isVisible().catch(() => false)) await management.click();
+            else await page.goto(new URL('/#/profile?page=self-instance&tab=backups', page.url()).href);
+            const startExport = page.getByRole('button', {name: 'Esporta dati', exact: true});
+            await expect(startExport).toBeEnabled();
             await take('export-management-before-start');
             const started = page.waitForResponse(res => new URL(res.url()).pathname.replace(/\/$/, '') === '/api/association/export/start'
                 && res.request().method() === 'POST');
-            await page.getByRole('button', {name: 'Avvia Export', exact: true}).click();
+            await startExport.click();
             const res = await started; expect(res.status()).toBe(202); const task = (await res.json()).task_id;
             expect(task).toBeTruthy();
             await expect.poll(async () => {
@@ -188,11 +192,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
             const fresh = after.filter(item => !before.some(old => old.document_id === item.document_id));
             expect(fresh).toHaveLength(1); ownedDocuments.push(fresh[0].document_id);
             await page.reload();
-            const row = page.locator('.border.rounded-lg').filter({hasText: fresh[0].filename});
+            const row = page.locator(`li.export-row[data-document-id="${fresh[0].document_id}"]`);
             await expect(row).toBeVisible();
             proof('zip_persists_after_reload', (await read('association/export/list')).exports.some(item => item.document_id === fresh[0].document_id));
             await take('export-completed-after-reload', row);
-            const zip = await downloadBytes(() => row.locator('button:is([title="Scarica"],[data-original-title="Scarica"])').click(), 'zip');
+            const zip = await downloadBytes(() => row.getByRole('button', {name: /^Scarica export/}).click(), 'zip');
             const parts = zipParts(zip); const manifest = JSON.parse(parts['manifest.json'].toString());
             expect(manifest.export_format).toBe('bakney_sport_export_v1');
             const records = model => {
@@ -220,8 +224,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
             }
             proof('reader_export_denials', denials.length);
             expect((await read('association/export/list')).exports.some(item => item.document_id === fresh[0].document_id)).toBe(true);
-            await row.locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
-            const confirmation = page.locator('.swal2-popup');
+            await row.getByRole('button', {name: /^Azioni export/}).click();
+            await page.getByRole('menuitem', {name: 'Elimina', exact: true}).click();
+            const confirmation = page.getByRole('dialog', {name: 'Eliminare l’export?'});
             await confirmation.getByRole('button', {name: 'Elimina', exact: true}).click();
             await expect(row).toHaveCount(0);
             proof('owned_export_removed', !(await read('association/export/list')).exports.some(item => item.document_id === fresh[0].document_id));

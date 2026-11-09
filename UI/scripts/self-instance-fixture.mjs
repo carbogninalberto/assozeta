@@ -15,7 +15,8 @@ const server = await createServer({
     resolve: {alias: {store: `${root}/src/store`, utils: `${root}/src/utils`, components: `${root}/src/components`}},
     plugins: [{name: 'self-instance-fixture', enforce: 'pre',
         resolveId(id) {
-            if (id === 'utils/ApiMiddleware.js' || id.endsWith('/utils/ApiMiddleware.js')) return '\0fixture-api';
+            // Also relative imports (NotificationService uses ./ApiMiddleware.js).
+            if (id === 'utils/ApiMiddleware.js' || id.endsWith('/ApiMiddleware.js')) return '\0fixture-api';
             if (id === '/fixture-entry.js') return '\0fixture-entry';
         },
         load(id) {

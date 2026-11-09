@@ -29,3 +29,10 @@ export function profileTab(page, allowed, fallback) {
     const location = readProfileLocation();
     return location.page === page && allowed.includes(location.tab) ? location.tab : fallback;
 }
+
+// Self-hosted installs keep the association export/import in Istanza → Backup;
+// an old Gestione Dati link (or a remembered sub-page) lands there.
+export function legacyProfileTarget(page, current, selfHosted) {
+    return selfHosted && (page === 'data-management' || (!page && current === 'data-management'))
+        ? {page: 'self-instance', tab: 'backups'} : null;
+}

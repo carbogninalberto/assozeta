@@ -11,10 +11,11 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/components/modals/CurrentViewPrintingModal.svelte": "89cd17ec6bc9c60c50579a72a88ce83ef716dbd4ffa2719f5c0d3bd064b9be7a",
     "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
     "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
-    "UI/src/routes/profile/sections/DataManagement.svelte": "61580c5f7d859db52d040771236952ecb61ac4cf1b22b37951103a9337682395",
+    "UI/src/routes/profile/sections/DataManagement.svelte": "349a510108fde62e09cd746c5934f445f3c176efe43946541a59a50cd1890bbd",
+    "UI/src/routes/profile/sections/DataExports.svelte": "55fd9c417dab5ddc9a26c7e760a8eef2db555b22be1b26e6803946069ec5446a",
     "BE/application/views/export_views.py": "1620991baa696f9ea410edc33fe11a612c8dd9d7d9d5ef8ceb9b0b3cce55544a",
     "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
-    "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
+    "UI/src/routes/profile/ProfileMenu.svelte": "c083936170965608775be53540477754b033d3940313bfce54b09a9dfe426847",
     // Reviewed: association scope is retained for both endpoints; links to
     // soft-deleted associates now survive export and repeated restore.
     "BE/application/services/export_service.py": "d0fcd5140e8054d66dc50083d943a9020ad7f40592c96ddf9206dcf78d842238",
@@ -108,7 +109,7 @@ export const organizationAdditionalSourceContracts = Object.freeze([
         207
     ],
     [
-        "UI/src/routes/profile/sections/DataManagement.svelte",
+        "UI/src/routes/profile/sections/DataExports.svelte",
         "async function startExport()",
         285
     ],

@@ -12,10 +12,8 @@
     $: changes = Object.values(changed).some(Boolean);
     $: busy = Object.values(pending).some(Boolean);
 </script>
-<section aria-labelledby="instance-integrations">
-    <h2 id="instance-integrations">Integrazioni</h2>
-    <p>I valori iniziali provengono dall’ambiente del server. Le modifiche salvate qui hanno precedenza e restano disponibili dopo riavvii e aggiornamenti. Puoi ripristinare .env per ogni integrazione.</p>
-    <p>I controlli indicano la configurazione presente: pagamenti e accessi reali richiedono una verifica separata.</p>
+<section class="si-stack" aria-labelledby="instance-integrations">
+    <h2 id="instance-integrations" class="si-sr-only">Integrazioni</h2>
     {#each providers as provider}
         <InstanceIntegration provider={provider.id} title={provider.title} check={checks.find(value => value.id === provider.id)} {request} {disabled} {onSaved} bind:changes={changed[provider.id]} bind:busy={pending[provider.id]} />
     {/each}

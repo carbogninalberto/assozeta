@@ -9,7 +9,7 @@ export const memberAdditionalReviewedSources = Object.freeze({
     "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
     "BE/application/utils/subscriptions_utils.py": "01555509691b282190e09a21771aa920c19a677c63823a01ab7a73602273554e",
     "UI/src/routes/association/Members/subscription/partials/QuoteIscrizione.svelte": "c9d41719a3ec8cff5fd5d7896564d7a6c471f8904cae7d3765ceb36ae2d0351c",
-    "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
+    "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
     "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
     "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
     "UI/src/components/modals/ShareModuleSubscriptionLink.svelte": "999bf9e16be7b8389a0181cd7f5c45f383dcb9c690925b653b9bf7d3333261ea",

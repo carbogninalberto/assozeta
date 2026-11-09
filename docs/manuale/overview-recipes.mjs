@@ -4,7 +4,7 @@ const reviewed = {
   "UI/src/App.svelte": "fa45b87b4a3d2daa5f430852ce81dd5843719e0d5b5942304893731fa7322720",
   "UI/src/components/Header.svelte": "0273165f624534e66e53888c62f7f405f5efd0f1cd85bc65664ffb214f88e972",
   "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
-  "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
+  "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
   "UI/src/routes/manuale/Manuale.svelte": "e6981a17b7bef6bf32a798f5d469d9acdfa78ea9eff9b8bb081e649f51138b7d",
   "UI/src/routes/manuale/ManualContent.svelte": "b3d31df4c3d47770c335078e7edd89026b423e2ccdd160b767cb3f8d885e84c8",
   "UI/src/routes/manuale/manualPresentation.js": "c52433eb377246d5e3a05093b78af3b8c1197ab0751b062e7644835c99cf63f4",

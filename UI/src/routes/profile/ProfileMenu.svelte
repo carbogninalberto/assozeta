@@ -6,6 +6,7 @@
 
     import {User, Sliders, FingerprintSimple, Password, StripeLogo, Plugs, Database, GearSix, UserSwitch} from 'phosphor-svelte';
     import {canPerformAction} from 'utils/Permissions';
+    import {isSelfHostedMode} from 'store/instanceStore.js';
 
     sessionToken.useLocalStorage();
     refreshToken.useLocalStorage();
@@ -18,6 +19,8 @@
     const pages = profilePages;
     export let changes = false;
     export let instanceOwner = false;
+    // Self-hosted: Gestione Dati lives in Istanza → Backup → Trasferisci dati.
+    export let selfHosted = isSelfHostedMode();
 
     let navigationReady = false;
     let previousTab = null;
@@ -27,7 +30,7 @@
         const {page, tab} = readProfileLocation();
         if ($role === 'administrator') {
             const requested = page || $subPage;
-            subPage.set(['self-instance', 'data-management'].includes(requested) ? requested : 'self-instance');
+            subPage.set(['self-instance', ...(selfHosted ? [] : ['data-management'])].includes(requested) ? requested : 'self-instance');
             return;
         }
         if (navigationReady && page && page !== $subPage && changes && $subPage !== 'stripe'
@@ -73,7 +76,7 @@
         <div class="card-body {$isMobile ? '' : 'position-fixed'} navi-body-settings p-0 px-md-8 py-md-4">
             {#if $role === 'administrator'}
                 <nav aria-label="Amministrazione" class="navi navi-bold navi-hover navi-active navi-link-rounded py-4">
-                    {#each [{page:'self-instance',label:'Self Instance',icon:GearSix},{page:'data-management',label:'Gestione Dati',icon:Database}] as item}
+                    {#each [{page:'self-instance',label:'Istanza',icon:GearSix},...(selfHosted ? [] : [{page:'data-management',label:'Gestione Dati',icon:Database}])] as item}
                         <div class="navi-item mb-2">
                             <a href={`/#/profile?page=${item.page}`} on:click|preventDefault={() => changeSubPage(item.page)} class="navi-link py-4" class:active={$subPage === item.page}>
                                 <span class="menu-icon mr-3"><svelte:component this={item.icon} size={24} weight="duotone" /></span>
@@ -210,7 +213,7 @@
                         <a href="/#/profile?page=self-instance" on:click|preventDefault={() => changeSubPage('self-instance')}
                             class="navi-link py-4 {$subPage === 'self-instance' ? 'active' : ''}">
                             <span class="menu-icon m-0 mr-md-3"><Database size="24" weight="duotone" /></span>
-                            <span class="navi-text font-size-lg">Self Instance</span>
+                            <span class="navi-text font-size-lg">Istanza</span>
                         </a>
                     </div>
                 {/if}
@@ -285,6 +288,7 @@
                             <span class="navi-text font-size-lg">Integrazioni</span>
                         </a>
                     </div>
+                    {#if !selfHosted || !instanceOwner}
                     <div class="navi-item mb-2">
                         <a
                             href="/#/profile?page=data-management"
@@ -296,6 +300,7 @@
                             <span class="navi-text font-size-lg">Gestione Dati</span>
                         </a>
                     </div>
+                    {/if}
                 {/if}
             </div>
             <!--end::Nav-->
