@@ -55,6 +55,11 @@ func (h *DocumentArchiveHandler) List(c echo.Context) error {
 	default:
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	return h.list(c, identity)
+}
+
+func (h *DocumentArchiveHandler) list(c echo.Context, identity *domain.ResolvedIdentity) error {
+	request := c.Request()
 	last := func(name, fallback string) string {
 		values := request.URL.Query()[name]
 		if len(values) == 0 {
@@ -107,6 +112,12 @@ func (h *DocumentArchiveHandler) write(c echo.Context, allow, method, operation 
 	if request.Method != method && request.Method != http.MethodDelete {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	return h.run(c, identity, bulk, c.Param("pk"))
+}
+
+// run performs move, delete or bulk_delete after dispatch.
+func (h *DocumentArchiveHandler) run(c echo.Context, identity *domain.ResolvedIdentity, bulk bool, pk string) error {
+	request := c.Request()
 	tracked, err := h.operations.Track(request.Context())
 	if err != nil {
 		return paymentCategoryError(c, err)
@@ -138,9 +149,9 @@ func (h *DocumentArchiveHandler) write(c echo.Context, allow, method, operation 
 			return restError(c, &domain.PermissionDenied{Detail: err.Error()})
 		}
 	} else if request.Method == http.MethodDelete {
-		err = h.writes.Delete(ctx, *identity, c.Param("pk"), audit)
+		err = h.writes.Delete(ctx, *identity, pk, audit)
 	} else {
-		err = h.writes.Move(ctx, *identity, c.Param("pk"), body, audit)
+		err = h.writes.Move(ctx, *identity, pk, body, audit)
 	}
 	switch {
 	case errors.Is(err, service.ErrArchiveLookup):
@@ -160,6 +171,14 @@ func (h *DocumentArchiveHandler) write(c echo.Context, allow, method, operation 
 
 // archiveMoveOptions is SimpleMetadata with DocumentArchiveSerializer's POST fields.
 func archiveMoveOptions(c echo.Context) error {
+	return c.JSON(200, map[string]any{
+		"name": "Document Archive", "description": "", "renders": []string{"application/json"}, "parses": []string{"application/json"},
+		"actions": map[string]any{"POST": archiveFields()},
+	})
+}
+
+// archiveFields is SimpleMetadata's description of DocumentArchiveSerializer.
+func archiveFields() map[string]any {
 	info := func(kind, label string, required, readOnly bool, extra ...any) map[string]any {
 		field := map[string]any{"type": kind, "required": required, "read_only": readOnly, "label": label}
 		for i := 0; i+1 < len(extra); i += 2 {
@@ -175,12 +194,9 @@ func archiveMoveOptions(c echo.Context) error {
 	}
 	child := map[string]any{"type": "nested object", "required": false, "read_only": true, "children": document}
 	nested := info("field", "Document", false, true, "child", child)
-	return c.JSON(200, map[string]any{
-		"name": "Document Archive", "description": "", "renders": []string{"application/json"}, "parses": []string{"application/json"},
-		"actions": map[string]any{"POST": map[string]any{
-			"sport_association_documents_archive_id": info("string", "Sport association documents archive id", false, false),
-			"sport_association":                      info("field", "Sport association", true, false), "document": nested,
-			"date": info("date", "Date", false, false), "folder": info("field", "Folder", false, false),
-		}},
-	})
+	return map[string]any{
+		"sport_association_documents_archive_id": info("string", "Sport association documents archive id", false, false),
+		"sport_association":                      info("field", "Sport association", true, false), "document": nested,
+		"date": info("date", "Date", false, false), "folder": info("field", "Folder", false, false),
+	}
 }

@@ -81,6 +81,12 @@ func (h *ModuleTemplatesHandler) serve(c echo.Context, action, method, allow str
 		// delete() without a pk: get_object raises an AssertionError.
 		return messageReadsError(c, errors.New("module template delete without pk"))
 	}
+	return h.run(c, identity, action, c.Param("pk"))
+}
+
+// run performs one viewset action after dispatch.
+func (h *ModuleTemplatesHandler) run(c echo.Context, identity *domain.ResolvedIdentity, action, pk string) error {
+	request := c.Request()
 	if action == "list" {
 		rows, err := h.templates.List(request.Context(), *identity)
 		if err != nil {
@@ -116,7 +122,7 @@ func (h *ModuleTemplatesHandler) serve(c echo.Context, action, method, allow str
 		if action == "add" {
 			row, err = h.templates.Add(ctx, *identity, body, form, audit)
 		} else {
-			row, err = h.templates.Update(ctx, *identity, c.Param("pk"), body, form, audit)
+			row, err = h.templates.Update(ctx, *identity, pk, body, form, audit)
 			status = 200
 		}
 		var invalid *service.ModuleTemplateValidation
@@ -134,7 +140,7 @@ func (h *ModuleTemplatesHandler) serve(c echo.Context, action, method, allow str
 		}
 		return c.JSON(status, row)
 	case "delete":
-		err = h.templates.Delete(ctx, *identity, c.Param("pk"), audit)
+		err = h.templates.Delete(ctx, *identity, pk, audit)
 	default:
 		err = h.templates.BulkDelete(ctx, *identity, body, audit)
 		if errors.Is(err, dto.ErrModuleTemplatesNoInstances) {
@@ -156,26 +162,32 @@ func (h *ModuleTemplatesHandler) serve(c echo.Context, action, method, allow str
 // moduleTemplatesAddOptions is SimpleMetadata for the create action,
 // including the serializer's POST field descriptions.
 func moduleTemplatesAddOptions(c echo.Context) error {
+	return c.JSON(200, map[string]any{
+		"name": moduleTemplatesView, "description": "",
+		"renders": []string{"application/json"},
+		"parses":  []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"},
+		"actions": map[string]any{"POST": moduleTemplatesFields()},
+	})
+}
+
+// moduleTemplatesFields is SimpleMetadata's description of
+// SportAssociationModuleTemplatesSerializer.
+func moduleTemplatesFields() map[string]any {
 	text := func(label string) map[string]any {
 		return map[string]any{"type": "string", "required": false, "read_only": false, "label": label}
 	}
 	flag := func(label string) map[string]any {
 		return map[string]any{"type": "boolean", "required": false, "read_only": false, "label": label}
 	}
-	return c.JSON(200, map[string]any{
-		"name": moduleTemplatesView, "description": "",
-		"renders": []string{"application/json"},
-		"parses":  []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"},
-		"actions": map[string]any{"POST": map[string]any{
-			"sport_association_module_templates_id": text("Sport association module templates id"),
-			"name":                                  map[string]any{"type": "string", "required": true, "read_only": false, "label": "Name", "max_length": 150},
-			"template":                              text("Template"),
-			"footer":                                flag("Footer"),
-			"header":                                flag("Header"),
-			"custom_footer_header":                  flag("Custom footer header"),
-			"custom_footer":                         text("Custom footer"),
-			"custom_header":                         text("Custom header"),
-			"sport_association":                     map[string]any{"type": "field", "required": true, "read_only": false, "label": "Sport association"},
-		}},
-	})
+	return map[string]any{
+		"sport_association_module_templates_id": text("Sport association module templates id"),
+		"name":                                  map[string]any{"type": "string", "required": true, "read_only": false, "label": "Name", "max_length": 150},
+		"template":                              text("Template"),
+		"footer":                                flag("Footer"),
+		"header":                                flag("Header"),
+		"custom_footer_header":                  flag("Custom footer header"),
+		"custom_footer":                         text("Custom footer"),
+		"custom_header":                         text("Custom header"),
+		"sport_association":                     map[string]any{"type": "field", "required": true, "read_only": false, "label": "Sport association"},
+	}
 }

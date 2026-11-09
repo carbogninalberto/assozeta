@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -227,7 +228,8 @@ func (s *FolderWrites) related(ctx context.Context, tx domain.FolderWriteTransac
 	if folder == nil {
 		return missing()
 	}
-	if folder.AssociationID != association {
+	// An empty association is no current tenant (tenant_scope does not enforce).
+	if association != "" && folder.AssociationID != association {
 		return nil, domain.ErrFolderForeignReference
 	}
 	return &folder.ID, nil
@@ -238,4 +240,121 @@ func sameFolder(left, right *int64) bool {
 		return left == right
 	}
 	return *left == *right
+}
+
+// Create is the router list route's stock CreateModelMixin.create: request.data
+// is not written, so the serializer validates the client's sport_association
+// (required; the tenant scope applies only with a current association) and
+// any dict or QueryDict body; the unique-together check (skipped for a None
+// parent) uses that association; perform_create's
+// SportAssociation.objects.get(user=request.user) then replaces it.
+func (s *FolderWrites) Create(ctx context.Context, identity domain.ResolvedIdentity, body FolderBody) (dto.FolderNode, error) {
+	if err := ctx.Err(); err != nil {
+		return dto.FolderNode{}, err
+	}
+	tx, err := s.store.BeginFolderWrite(ctx)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	defer tx.Rollback()
+	tenant, associationErr := tx.AssociationForOwner(ctx, identity.ScopeUser.ID, nil)
+	if associationErr != nil && !errors.Is(associationErr, domain.ErrAssociationNotFound) {
+		return dto.FolderNode{}, associationErr
+	}
+	if body.Err != nil {
+		return dto.FolderNode{}, body.Err
+	}
+	object, ok := body.Value.(domain.RequestObject)
+	if !ok && body.Value != nil {
+		return dto.FolderNode{}, &FolderValidationError{Fields: map[string][]string{"non_field_errors": {"dictionary:" + dto.FolderBodyType(body.Value)}}}
+	}
+	write, invalid, err := dto.ParseFolderWrite(object, false, body.Form)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	related, relatedInvalid, err := dto.ParseFolderWrite(object, true, body.Form)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	write.AssociationPresent, write.Association, write.AssociationRaw = related.AssociationPresent, related.Association, related.AssociationRaw
+	if codes := relatedInvalid["sport_association"]; codes != nil {
+		invalid["sport_association"] = codes
+	} else if !write.AssociationPresent {
+		invalid["sport_association"] = []string{dto.PaymentCategoryValidationRequired}
+	}
+	parent, err := s.related(ctx, tx, write, tenant, invalid)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	if write.AssociationPresent && invalid["sport_association"] == nil {
+		exists, err := tx.AssociationExists(ctx, write.Association)
+		if err != nil {
+			return dto.FolderNode{}, err
+		}
+		if !exists {
+			invalid["sport_association"] = []string{"related-does-not-exist:" + dto.PythonStr(write.AssociationRaw)}
+		} else if tenant != "" && write.Association != tenant {
+			return dto.FolderNode{}, domain.ErrFolderForeignReference
+		}
+	}
+	if len(invalid) > 0 {
+		return dto.FolderNode{}, &FolderValidationError{Fields: invalid}
+	}
+	if parent != nil {
+		taken, err := tx.FolderNameTaken(ctx, *write.Name, parent, write.Association, nil)
+		if err != nil {
+			return dto.FolderNode{}, err
+		}
+		if taken {
+			return dto.FolderNode{}, &FolderValidationError{Fields: map[string][]string{"non_field_errors": {dto.FolderValidationUnique}}}
+		}
+	}
+	if associationErr != nil {
+		return dto.FolderNode{}, associationErr
+	}
+	createdAt := s.now().UTC().Truncate(time.Microsecond)
+	if write.CreatedAt != nil {
+		createdAt = *write.CreatedAt
+	}
+	folder, err := tx.InsertFolder(ctx, *write.Name, parent, tenant, createdAt)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	if err = ctx.Err(); err != nil {
+		return dto.FolderNode{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return dto.FolderNode{}, err
+	}
+	return dto.FolderNodeOf(folder, nil), nil
+}
+
+// Retrieve is the router detail route's stock retrieve: get_object() over the
+// association's folders, then FolderSerializer with the nested children.
+func (s *FolderWrites) Retrieve(ctx context.Context, identity domain.ResolvedIdentity, raw string) (dto.FolderNode, error) {
+	tx, err := s.store.BeginFolderWrite(ctx)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	defer tx.Rollback()
+	association, err := tx.AssociationForOwner(ctx, identity.ScopeUser.ID, nil)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	pk, ok := dto.FolderLookupPK(raw)
+	if !ok {
+		return dto.FolderNode{}, ErrFolderLookup
+	}
+	if pk.Missing {
+		return dto.FolderNode{}, domain.ErrFolderNotFound
+	}
+	node, err := tx.OwnedFolder(ctx, pk.ID, association)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	descendants, err := tx.Descendants(ctx, node)
+	if err != nil {
+		return dto.FolderNode{}, err
+	}
+	return dto.FolderNodeOf(node, descendants), nil
 }

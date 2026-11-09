@@ -248,6 +248,10 @@ func (h *CourseSubscriptionsHandler) List(c echo.Context) error {
 
 // remove admits a DELETE without reading its body (delete() never reads it).
 func (h *CourseSubscriptionsHandler) remove(c echo.Context, identity domain.ResolvedIdentity, includeDeleted bool) error {
+	return h.removePK(c, identity, c.Param("pk"), includeDeleted)
+}
+
+func (h *CourseSubscriptionsHandler) removePK(c echo.Context, identity domain.ResolvedIdentity, pk string, includeDeleted bool) error {
 	request := c.Request()
 	tracked, err := h.operations.Track(request.Context())
 	if err != nil {
@@ -262,7 +266,7 @@ func (h *CourseSubscriptionsHandler) remove(c echo.Context, identity domain.Reso
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
-	if err := h.subscriptions.Delete(ctx, identity, c.Param("pk"), includeDeleted, h.request(c), auditContext); err != nil {
+	if err := h.subscriptions.Delete(ctx, identity, pk, includeDeleted, h.request(c), auditContext); err != nil {
 		return h.failure(c, err)
 	}
 	return c.NoContent(http.StatusNoContent)
