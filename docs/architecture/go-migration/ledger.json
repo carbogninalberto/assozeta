@@ -31112,7 +31112,8 @@
         "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
+        "Task is not ported (member email); Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md."
       ]
     },
     {
@@ -31156,7 +31157,8 @@
         "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
+        "Task is not registered in the Go worker and its calendar (day_of_month 1-4, month_of_year 1,6,9) is outside the evaluator subset; Go rejects such rows as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md."
       ]
     },
     {
@@ -31376,7 +31378,8 @@
         "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
+        "Task is not ported (storage file deletion); Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md."
       ]
     },
     {
@@ -31420,7 +31423,8 @@
         "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
+        "Task is not ported; Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md."
       ]
     },
     {
@@ -31439,32 +31443,67 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task clear_expired_subscription_tokens with the UTC every-minute cron (declared minute=*), a scalar daily UTC cron or seconds interval and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide clear_expired_subscription_tokens version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic clear_expired_subscription_tokens v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; the static declaration is not the effective fresh schedule and is never seeded. Go publishes only from a persisted row with a supported definition. Persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete.",
+        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The clear_expired_subscription_tokens worker registration is a separate task entry; installed scheduler/worker ownership is not activated."
       ]
     },
     {
@@ -31483,32 +31522,67 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task delete_old_audit_logs with a scalar daily UTC cron (declared 00:00) or seconds interval and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide delete_old_audit_logs version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic delete_old_audit_logs v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; the static declaration is not the effective fresh schedule and is never seeded. Go publishes only from a persisted row with a supported definition. Persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete.",
+        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The delete_old_audit_logs worker registration is a separate task entry; installed scheduler/worker ownership is not activated."
       ]
     },
     {
@@ -31684,7 +31758,8 @@
         "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
+        "Task is not ported (email and self-scheduled Celery retry); Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md."
       ]
     },
     {
@@ -31764,7 +31839,8 @@
         "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
         "Bounded inert schedule pages: eleven service and nine actual-Beat PostgreSQL/race groups pass. Primary-key seek uses a frozen high-water ID to finish rotations under continuous inserts; metadata discovery requires two statements for a new rotation and one thereafter, with a maximum of 64 rows. Disabled/unrelated rows are skipped, recognized rows are reread under publication locks, and error/cancellation preserves the last attempted cursor. Unforced plans at 100/1000/10000 rows are recorded; sixteen publications use 194 statements including one shared server-drain fence per publication. Cooperative context deadlines stop admission, but required driver cleanup can extend elapsed return. No installed scheduler, production cardinality/backlog guarantee or Celery handoff is claimed. See BE_GO/internal/service/schedule_page.md and ignored schedule-page evidence.",
         "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md.",
-        "Native scheduler delivery: ten loop groups, twelve actual-Beat native process cases and four non-root/read-only image cases pass. The bounded serial loop retains cursors on ambiguous errors and joins shutdown; preflight checks operational and Beat schema, publication rechecks ownership/restore. Same scheduler image also passes seven existing worker-image cases. Source hashes and immutable image are in isolated scheduler-command/handoff.json; copied increment hashes are retained under quality-reports/go-migration/background-process-integration/. See docs/architecture/go-migration/scheduler-process.md. This dirty-source proof does not activate installed scheduling, broaden the daily-reset allowlist or close full handoff/Beat replacement."
+        "Native scheduler delivery: ten loop groups, twelve actual-Beat native process cases and four non-root/read-only image cases pass. The bounded serial loop retains cursors on ambiguous errors and joins shutdown; preflight checks operational and Beat schema, publication rechecks ownership/restore. Same scheduler image also passes seven existing worker-image cases. Source hashes and immutable image are in isolated scheduler-command/handoff.json; copied increment hashes are retained under quality-reports/go-migration/background-process-integration/. See docs/architecture/go-migration/scheduler-process.md. This dirty-source proof does not activate installed scheduling, broaden the daily-reset allowlist or close full handoff/Beat replacement.",
+        "Shared evaluator/publisher extension for three more registered tasks and the UTC every-minute cron leaves every daily-reset differential, publication, page, loop and native scheduler case green; see docs/architecture/go-migration/tasks-db-a.md."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. The timing component is implementing; no verified status or automatic reseeding of lower-priority static declarations.",
@@ -31963,32 +32039,67 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task update_age_of_associates with a scalar daily UTC cron (declared 00:00) or seconds interval and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide update_age_of_associates version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic update_age_of_associates v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "Scheduler subset extension: domain.PeriodicJobKind now maps exactly four persisted task names (daily reset, associate age, expired token cleanup, audit retention) to their registered version-1 worker jobs, and the evaluator adds the UTC every-minute cron. Nine new authored every-minute cases match actual Celery 5.6.2/Beat 2.8.1 (57 oracle cases); the Go differential passes all 32 supported cases for each of the four tasks under race detection, with 46 rejection cases including auto_archive_subscription, clear_deleted_subscription, renew_memberships_payments, association_quote_assign, cleanup_old_exports and non-wildcard calendars. RED: the previous evaluator fails every differential case for the new tasks/cron. Actual-Beat PostgreSQL publication passes 18 groups, including exact v1 intent per new task from an every-minute source, no second publication in one slot and no effect for the five unsupported tasks. Mutations caught: next every-minute slot +2 minutes (differential mismatch) and audit retention mapped to the age job (wrong durable intent). schedule_page, scheduler_process, worker_process, age_worker_process and token_worker_process re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/, schedule-due/ and occurrence/."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; the static declaration is not the effective fresh schedule and is never seeded. Go publishes only from a persisted row with a supported definition. Persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete.",
+        "Publication shares the reset publisher: retained per-source sequence keys and three operational attempts, not Celery retry parity. The update_age_of_associates worker registration is a separate task entry; installed scheduler/worker ownership is not activated."
       ]
     },
     {
@@ -33879,7 +33990,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Not ported by tasks-db-a: each created fee payment for a member sends a templated email."
       ]
     },
     {
@@ -33948,7 +34060,8 @@
       "notes": [
         "See BE_GO/internal/service/subscription_auto_archive.md for explicit supported behavior and confirmed legacy corrections. This is the automatic primary-link archive, not the manual archive/delete workflows.",
         "Preserves the literal strict UTC-midnight fiscal threshold; execution time is frozen once. Custom subscription ends affect defaults, not fiscal selection. Keyset READ COMMITTED pages may observe later committed rows after the cursor; inserts behind it await a later occurrence.",
-        "Actual Celery policy is captured separately from static/initialized/persisted schedules. No production registration, publisher, retry schedule, worker command or ownership switch has been activated. Django retains ownership. Current-model fixtures are not historical migration or frontend/activation proof."
+        "Actual Celery policy is captured separately from static/initialized/persisted schedules. No production registration, publisher, retry schedule, worker command or ownership switch has been activated. Django retains ownership. Current-model fixtures are not historical migration or frontend/activation proof.",
+        "Not registered in the Go worker by tasks-db-a: the Go body implements the twice-repaired behaviour, while the actual task returns None before any write at the first eligible subscription (naive/aware comparison). Registration would begin archiving the current task does not perform; it needs an explicit product decision. See docs/architecture/go-migration/tasks-db-a.md."
       ]
     },
     {
@@ -34288,7 +34401,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Not ported by tasks-db-a: deletes export files from default storage before deleting rows."
       ]
     },
     {
@@ -34328,7 +34442,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Not ported by tasks-db-a: hard-deletes linked invoices/payments and installments through the collector and three pre_delete handlers, soft-deletes course subscriptions, then calls delete() on the iterator, which raises AttributeError caught by the task, so Subscription rows remain and are reprocessed every run. Exact parity needs a dedicated Payment/Invoice/installment deletion characterization. See docs/architecture/go-migration/tasks-db-a.md."
       ]
     },
     {
@@ -34397,7 +34512,8 @@
         "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
         "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md.",
         "Native worker registration now includes version-1 token cleanup. Twelve actual Django/Go PostgreSQL body groups pass under race detection, including early owner/generation/live-lease checks before business SQL and completion-only admission after handled failure. Meaningful old-behavior RED demonstrates stale attempts reaching business SQL; the successful current body costs six statements including both fences and transaction control. Nine race-instrumented native process groups on actual current Django models pass, checking exact cutoff/audit/readback, invalid envelopes, replay, maintenance, crash recovery, final-attempt exhaustion, cancellation and handled rollback. Existing fourteen native worker groups also pass. See docs/architecture/go-migration/token-worker-process.md and ignored token-worker-process/ and token-worker-review/ receipts. The subsequent packaged slice is recorded below; installed activation remains unproven.",
-        "Seven packaged token cases pass against actual current Django models using immutable image 78582cbf3f053023ac68666137cfa5d070f44662c39cf56c725cf9e9384f897a built from clean BE_GO source 14919ba. Cases verify UID10001/read-only execution, migration and default-owner inertness, pending restore/lifecycle deferral, two-worker exact token/audit readback, SIGTERM cancellation, SIGKILL rollback before replacement and handled audit failure. PostgreSQL alone joins an additional loopback fixture bridge; runtime containers remain on the internal network. All label-owned containers/networks and private temporary state are removed before success. Old pre-token image fails registration; initial internal-network port failure is retained separately. CI now requires this adapter on its current image/revision. Existing seven packaged-worker cases pass on the same image. See docs/architecture/go-migration/token-worker-image.md; this is not historical migration, installed handoff or full release proof."
+        "Seven packaged token cases pass against actual current Django models using immutable image 78582cbf3f053023ac68666137cfa5d070f44662c39cf56c725cf9e9384f897a built from clean BE_GO source 14919ba. Cases verify UID10001/read-only execution, migration and default-owner inertness, pending restore/lifecycle deferral, two-worker exact token/audit readback, SIGTERM cancellation, SIGKILL rollback before replacement and handled audit failure. PostgreSQL alone joins an additional loopback fixture bridge; runtime containers remain on the internal network. All label-owned containers/networks and private temporary state are removed before success. Old pre-token image fails registration; initial internal-network port failure is retained separately. CI now requires this adapter on its current image/revision. Existing seven packaged-worker cases pass on the same image. See docs/architecture/go-migration/token-worker-image.md; this is not historical migration, installed handoff or full release proof.",
+        "The Go scheduler can now publish this registered version-1 job from a supported persisted row (schedule:BE/core/celery.py:clear-expired-subscription-tokens); exact intent and single publication per slot pass on actual Beat PostgreSQL. No installed scheduler or worker ownership activation. See docs/architecture/go-migration/tasks-db-a.md."
       ],
       "notes": [
         "The concrete task body is registered in the native worker command; no installed ownership activation or scheduler publication is included. Celery policy captured from the actual task: acks_late=false, max_retries=3, default_retry_delay=180, rate_limit=60/m, no hard/soft timeout; body never calls retry. Go rate limiting, publication/occurrence deduplication, scheduler ownership and production attempt/timeout policy remain open.",
@@ -34427,7 +34543,8 @@
         "BE_GO/internal/domain/audit_retention.go",
         "BE_GO/internal/repository/audit_retention.go",
         "BE_GO/internal/service/audit_retention.go",
-        "BE_GO/internal/service/job_executor.go"
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go"
       ],
       "dependencies": [
         "BE/application/models/audit_models.py",
@@ -34455,7 +34572,9 @@
         "BE_GO/internal/service/audit_retention_integration_test.go",
         "TESTS/adapters/go/server_fence.py",
         "TESTS/adapters/go/restore_drain_pooler.py",
-        "TESTS/adapters/django/restore_server_barrier.py"
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "TESTS/adapters/go/audit_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py"
       ],
       "evidence": [
         "Actual Django oracle covers exact 365-day leap-year cutoff, equality/microseconds, indexed/unindexed logs, deleted association and index-age scope, replay and both collector failure stages. Missing Go scenarios and undefined service initially fail; the initial ten-group PostgreSQL implementation passes under race detection; the current twelve-group extension is recorded below. Exact complete managed-table readback/cleanup is asserted. Evidence: quality-reports/go-migration/audit-retention/.",
@@ -34463,11 +34582,12 @@
         "Stale ownership, replay preserving later records, two observed overlapping SQL commands, blocked cancellation/pool recovery and actual executor heartbeat pass. Django query counts 5/5/6 at 1/16/128 indexed logs; The initial pre-drain/pre-admission Go count was four at 0/1/16/128/512 excluding executor overhead; the current six includes restore and early ownership fences. Actual executed plan over 4096 logs/indexes deletes 128 each and scans both tables. No index/latency improvement claim.",
         "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
         "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md.",
-        "Early ownership/generation/token/unexpired-lease admission now precedes deletion and handled completion-only transactions. Removing it reproduces stale attempts sending business SQL; the restored implementation passes all twelve mandatory actual Django/Go PostgreSQL groups under race detection. Late token/expiry changes after successful deletion force completion rollback. The real concurrent-index deferred-FK race also varies authority immediately after failed COMMIT23503: unchanged authority records handled NULL completion, while changed owner or token rejects fallback before its completion SQL and preserves all log/index rows and the running job. Current success budget is six statements. Independent Astra review checked callback ordering and failure-path assertions. Evidence: quality-reports/go-migration/audit-admission-review/. No native registration, installed handoff or scheduler activation is added."
+        "Early ownership/generation/token/unexpired-lease admission now precedes deletion and handled completion-only transactions. Removing it reproduces stale attempts sending business SQL; the restored implementation passes all twelve mandatory actual Django/Go PostgreSQL groups under race detection. Late token/expiry changes after successful deletion force completion rollback. The real concurrent-index deferred-FK race also varies authority immediately after failed COMMIT23503: unchanged authority records handled NULL completion, while changed owner or token rejects fallback before its completion SQL and preserves all log/index rows and the running job. Current success budget is six statements. Independent Astra review checked callback ordering and failure-path assertions. Evidence: quality-reports/go-migration/audit-admission-review/. No native registration, installed handoff or scheduler activation is added.",
+        "Native worker registration now includes version-1 audit retention. TESTS/adapters/go/audit_worker_process.py builds race-instrumented worker/migrate commands on actual current Django models in private PostgreSQL; each fixture is first processed by the actual Django delete_old_audit_logs task, and every Go completion must reproduce that complete managed-model state on the reseeded rows (three logs and two indexes removed, four logs retained). RED: the previous worker leaves the job pending (durable completion timeout) after the Django oracle and default-owner cases pass. GREEN: nine groups pass (default/missing owner, two workers one effect, envelope denials, replay after later records, maintenance/pending restore, SIGKILL reclaim, final-attempt exhaustion, SIGTERM drain, handled deletion failure with NULL completion). Mutation caught: cutoff 365 to 364 days makes Go differ from the Django task on the same seed. Existing native worker, age and token process groups re-run green. See docs/architecture/go-migration/tasks-db-a.md; receipts under ignored quality-reports/go-migration/tasks-db-a/ and audit-worker-process/. Packaged image and installed activation remain unproven."
       ],
       "notes": [
-        "Concrete task body is not registered/published by production Go processes. Celery policy: acks_late=false, max_retries=3, default_retry_delay=180, no rate or hard/soft timeout; no body retry. Go production timeout/attempt policy and occurrence identity remain open.",
-        "Static midnight schedule is absent from initialized app configuration and persisted Beat rows in the fresh fixture. Historical schedule reconciliation and single scheduling ownership remain required.",
+        "The concrete task body is registered (version 1) in the native worker command; the Go scheduler can publish it from a supported persisted row. No installed ownership activation. Celery policy: acks_late=false, max_retries=3, default_retry_delay=180, no rate or hard/soft timeout; no body retry. Go production timeout/attempt policy remains open.",
+        "Static midnight schedule is absent from initialized app configuration and persisted Beat rows in the fresh fixture. Go publishes only from a persisted supported row (see schedule:BE/core/celery.py:delete-old-audit-logs); historical schedule reconciliation and single scheduling ownership remain required.",
         "See BE_GO/internal/service/audit_retention.md. Current-model fixtures do not prove historical schema/import/rollback, realistic scale/contention, complete mixed-runtime lifecycle, restore/backend switching or normal release delivery. Django retains ownership."
       ]
     },
@@ -34851,7 +34971,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Not ported by tasks-db-a: uses a Django cache lock, sends an email to support for skipped subscriptions and reschedules itself with apply_async."
       ]
     },
     {
@@ -35347,11 +35468,12 @@
         "Django uses 9/114/898 statements at 1/16/128 eligible rows; Go uses four at 0/1/16/128/512 excluding executor overhead. Executed actual-SQL plan over 4096 rows updates/audits/indexes 128 and uses the existing birth-date bitmap and content-type unique indexes. No latency or constant database-work claim.",
         "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
         "Server transaction drain: each owned Go transaction acquires a separate acknowledged shared transaction advisory lock before effects; all five standalone queue mutations now use that boundary. In-app Django restore and CLI backup/migration take its exclusive form under the file lease before operation/export/snapshot work, with bounded fail-closed waits. Fifteen actual queue cases, five real transaction-mode PgBouncer/CLI cases, three Go-to-Django restore cases and 88 Django restore/operations tests pass. Failed cancellation delivery cannot make a fenced remote COMMIT cross the drain barrier. This covers cooperating Go transactions, not every Django writer, provider or older binary. Query totals include the fixed per-transaction protocol cost; prior evidence retains its original source scope. See docs/architecture/go-migration/transaction-drain.md and transaction-query-costs.md.",
-        "Native age-worker registration: early ownership/generation/live-lease admission now precedes business SQL in both normal and handled-failure completion-only transactions. Eleven actual PostgreSQL body groups pass after meaningful stale-admission RED; current success/no-op SQL budget is six including transaction control, server fence and early owner fence. Nine native current-Django-model process cases and five packaged cases pass, preserving three promotions/three audits/two indexes in the nine-row fixture. Existing native worker fourteen and packaged worker seven also pass. The two image adapters use positive private PostgreSQL statement records after a retained idle-COMMIT sampling failure; product/image unchanged. Immutable age image aabe018e2d87de7a5dd900114559f392869ada7e20e6357a0ff223ea2a6b572f has dirty f97975a snapshot provenance, not clean aligned release proof. See docs/architecture/go-migration/age-worker-process.md and isolated age-worker-process/handoff.json. No scheduler allowlist expansion or installed ownership activation."
+        "Native age-worker registration: early ownership/generation/live-lease admission now precedes business SQL in both normal and handled-failure completion-only transactions. Eleven actual PostgreSQL body groups pass after meaningful stale-admission RED; current success/no-op SQL budget is six including transaction control, server fence and early owner fence. Nine native current-Django-model process cases and five packaged cases pass, preserving three promotions/three audits/two indexes in the nine-row fixture. Existing native worker fourteen and packaged worker seven also pass. The two image adapters use positive private PostgreSQL statement records after a retained idle-COMMIT sampling failure; product/image unchanged. Immutable age image aabe018e2d87de7a5dd900114559f392869ada7e20e6357a0ff223ea2a6b572f has dirty f97975a snapshot provenance, not clean aligned release proof. See docs/architecture/go-migration/age-worker-process.md and isolated age-worker-process/handoff.json. No scheduler allowlist expansion or installed ownership activation.",
+        "The Go scheduler can now publish this registered version-1 job from a supported persisted row (schedule:BE/core/celery.py:update-age-of-associates); exact intent and single publication per slot pass on actual Beat PostgreSQL. No installed scheduler or worker ownership activation. See docs/architecture/go-migration/tasks-db-a.md."
       ],
       "notes": [
         "Concrete body is not registered/published by production Go processes. Captured Celery policy: acks_late=false, max_retries=3, default_retry_delay=180, no rate limit or hard/soft timeout; no explicit retry in body. Go production attempt/timeout policy remains open.",
-        "Static midnight schedule is absent from both initialized app configuration and persisted Beat rows in the fresh fixture. Historical schedule ownership/reconciliation remains required. No Go scheduler activation.",
+        "Static midnight schedule is absent from both initialized app configuration and persisted Beat rows in the fresh fixture. Go publishes only from a persisted supported row; historical schedule ownership/reconciliation remains required. No Go scheduler activation.",
         "See BE_GO/internal/service/associate_age_update.md. Current-model fixtures do not prove historical migrations/imports, mixed-runtime races, realistic contention, restore/switching or ordinary release delivery. Django retains ownership.",
         "Django reads date.today per candidate; Go fixes the UTC date at invocation for the atomic command. Long-running work crossing midnight needs an explicit lifecycle contract before verification."
       ]
