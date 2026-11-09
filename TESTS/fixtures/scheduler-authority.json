@@ -1482,6 +1482,223 @@
         "enabled": true,
         "count": 0
       }
+    },
+    "utc_archive_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-06-04T01:00:00+00:00",
+        "now": "2026-09-01T00:59:30+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-06-04T01:00:00+00:00",
+        "now": "2026-09-01T01:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_last_listed_day": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-09-04T01:00:00+00:00",
+        "now": "2026-09-04T01:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 10281600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_missed_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-06-04T01:00:00+00:00",
+        "now": "2026-09-03T05:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 72000,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_unlisted_month_cursor": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-10-15T12:00:00+00:00",
+        "now": "2026-10-20T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 6267600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_listed_day_after_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-01-02T03:00:00+00:00",
+        "now": "2026-01-02T04:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 75600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_initial_cursor": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": null,
+        "date_changed": "2026-05-31T12:00:00+00:00",
+        "now": "2026-06-01T01:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_future_cursor": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-09-02T01:00:00+00:00",
+        "now": "2026-09-01T01:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 172800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_start_future": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-01-04T01:00:00+00:00",
+        "start": "2026-06-02T00:30:00+00:00",
+        "now": "2026-06-01T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 46800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_archive_year_rollover": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "1",
+        "day_of_month": "1-4",
+        "month_of_year": "1,6,9",
+        "last": "2026-12-31T23:00:00+00:00",
+        "now": "2027-01-01T01:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_0015_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "15",
+        "hour": "0",
+        "last": "2026-10-21T00:15:00+00:00",
+        "now": "2026-10-22T00:14:30+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_0015_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "15",
+        "hour": "0",
+        "last": "2026-10-21T00:15:00+00:00",
+        "now": "2026-10-22T00:15:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_0015_missed_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "15",
+        "hour": "0",
+        "last": "2026-10-21T00:15:00+00:00",
+        "now": "2026-10-22T06:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 65700,
+        "enabled": true,
+        "count": 0
+      }
     }
   },
   "gaps": [

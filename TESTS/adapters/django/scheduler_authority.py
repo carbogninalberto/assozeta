@@ -160,7 +160,7 @@ def observe(fixture):
                 fields['crontab'] = CrontabSchedule.objects.create(
                     minute=data['minute'], hour=data.get('hour', '*'),
                     timezone=data.get('timezone', 'UTC'), day_of_month=data.get('day_of_month', '*'),
-                    day_of_week=data.get('day_of_week', '*'))
+                    month_of_year=data.get('month_of_year', '*'), day_of_week=data.get('day_of_week', '*'))
             else:
                 fields['clocked'] = ClockedSchedule.objects.create(clocked_time=timestamp(data['clocked']))
             for source, target in [('start', 'start_time'), ('expires', 'expires')]:

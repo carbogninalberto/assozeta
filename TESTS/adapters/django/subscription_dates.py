@@ -1,11 +1,8 @@
 """Calendar rules and actual Subscription.save date defaults; not full write parity."""
-from contextlib import redirect_stdout
 from datetime import date, datetime, timedelta, timezone
-import io
 import json
 import subprocess
 from types import SimpleNamespace
-from unittest.mock import patch
 
 from .accounts import ROOT
 from .scoped_resources import uid
@@ -17,7 +14,6 @@ def run(work, log, tool_env):
     from django.apps import apps
     from django.conf import settings
     from django.contrib.contenttypes.models import ContentType
-    from application import tasks
     from application.models import User, SportAssociation, Subscription
     from application.models.audit_models import AuditLogIndex
     from application.utils.api_utils import BalanceSheetData
@@ -138,23 +134,11 @@ def run(work, log, tool_env):
         except ValueError as error: assert str(error)=='Month must be between 1 and 12'
         else: raise AssertionError('existing dates bypassed calendar validation')
         assert snapshot()==before
-        # Characterize the real automatic archive task before correcting it.
-        User.original_objects.filter(pk=owner.pk).update(auto_archive=True)
-        archive_errors=[]
-        for clock_value,expected_error in ((datetime(2030,1,1),"can't compare offset-naive and offset-aware datetimes"),
-                                           (datetime(2030,1,1,tzinfo=timezone.utc),"has no attribute 'id'")):
-            before=snapshot();captured=io.StringIO()
-            with patch.object(tasks,'datetime',wraps=datetime) as clock,redirect_stdout(captured):
-                clock.now.return_value=clock_value
-                assert tasks.auto_archive_subscription.run() is None
-            assert expected_error in captured.getvalue(),captured.getvalue()
-            assert snapshot()==before,'broken automatic archive changed managed records'
-            archive_errors.append(expected_error)
         fixture=work/'subscription-dates.json'
         fixture.write_text(json.dumps(dict(Ranges=ranges,Defaults=defaults)))
         (output/'django-oracle.json').write_text(json.dumps(dict(success=True,range_cases=len(ranges),model_default_cases=len(defaults),
-            auto_archive_errors=archive_errors,scope='calendar/default calculation; complete save/archive parity remains open'),indent=2)+'\n')
-        print(f'Django calendar: {len(ranges)} explicit range cases, {len(defaults)} actual model saves and two automatic-archive failures verified',flush=True)
+            scope='calendar/default calculation; complete save/archive parity remains open'),indent=2)+'\n')
+        print(f'Django calendar: {len(ranges)} explicit range cases, {len(defaults)} actual model saves verified',flush=True)
         completed=subprocess.run(['go','test','-race','-tags=subscriptiondatesintegration','./internal/service','-run','^TestSubscriptionDatesDjangoOracle$','-json'],cwd=ROOT/'BE_GO',
             env={**tool_env,'ASSOZETA_SUBSCRIPTION_DATES_FIXTURE':str(fixture)},capture_output=True,text=True,timeout=120)
         (output/'go-test.jsonl').write_text(completed.stdout)
