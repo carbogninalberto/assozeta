@@ -19,13 +19,14 @@
     import {getApiHost, isSelfHostedMode} from 'store/instanceStore.js';
     role.useLocalStorage();
 
-    // Gestione Dati exists only on Bakney (see legacyProfileTarget).
+    // On self-hosted the owner finds Gestione Dati in Istanza → Backup
+    // (see legacyProfileTarget); other staff with permission keep the page.
     const selfHosted = isSelfHostedMode();
     function syncProfilePage() {
         // Hash listeners may run before the router destroys this component.
         if (!isProfileLocation()) return;
         const {page} = readProfileLocation();
-        const legacy = legacyProfileTarget(page, $subPage, selfHosted);
+        const legacy = instanceOwner || $role === 'administrator' ? legacyProfileTarget(page, $subPage, selfHosted) : null;
         if (legacy) {
             subPage.set(legacy.page);
             navigateProfile(legacy.page, legacy.tab, true);
@@ -44,6 +45,8 @@
     let changes = false;
     let instanceOwner = false;
     let checkingOwner = true;
+    // Re-route an old Gestione Dati link once ownership is known.
+    $: if (instanceOwner) syncProfilePage();
     let ownerError = '';
     let dataAssociation = null;
     onMount(async () => {
@@ -117,7 +120,7 @@
 
                 {/if}
 
-                {#if $subPage == 'data-management' && !selfHosted}
+                {#if $subPage == 'data-management' && !(selfHosted && (checkingOwner || instanceOwner || $role === 'administrator'))}
                     {#if $role === 'administrator'}
                         <p class="p-4" role="status">I dati gestiti appartengono all’associazione principale: <strong>{dataAssociation?.name || 'non configurata'}</strong>.</p>
                     {/if}

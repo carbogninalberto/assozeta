@@ -288,7 +288,7 @@
                             <span class="navi-text font-size-lg">Integrazioni</span>
                         </a>
                     </div>
-                    {#if !selfHosted}
+                    {#if !selfHosted || !instanceOwner}
                     <div class="navi-item mb-2">
                         <a
                             href="/#/profile?page=data-management"

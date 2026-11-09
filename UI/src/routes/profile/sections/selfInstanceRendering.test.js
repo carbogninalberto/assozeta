@@ -78,6 +78,10 @@ test('Gestione Dati is only in the Bakney profile menu; self-hosted owners use t
             assert.match(html, /href="\/#\/profile\?page=self-instance"/);
         }
     }
+    // Staff who are not the owner keep their export page on self-hosted.
+    cache.set('role', JSON.stringify('association'));
+    const {html} = ProfileMenu.render({instanceOwner: false, selfHosted: true});
+    assert.equal(html.includes('page=data-management'), true);
 });
 
 test('profile navigation renders while user details are still loading', async () => {
