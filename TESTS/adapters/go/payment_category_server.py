@@ -17,6 +17,7 @@ INSTANCE_ADMIN_ENVIRONMENT = (
     'EMAIL_HOST_USER', 'EMAIL_HOST_PASSWORD', 'EMAIL_USE_TLS', 'EMAIL_USE_SSL', 'AI_MODEL', 'AI_CHEAP_MODEL', 'AI_BASE_URL',
     'MCP_AGENT_MAX_ITERATIONS', 'MCP_AGENT_MAX_RESULTS', 'MCP_AGENT_QUERY_TIMEOUT', 'MCP_AGENT_WS_RATE_LIMIT',
     'MCP_AGENT_WS_TIMEOUT', 'MCP_AGENT_HISTORY_CAP')
+GOOGLE_ENVIRONMENT = ('GOOGLE_CLIENT_SECRET_FILE', 'GOOGLE_CALENDAR_REDIRECT_URL', 'GOOGLE_OAUTH2_BASE', 'GOOGLE_API_BASE')
 
 
 @contextmanager
@@ -52,6 +53,10 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
         **{name: os.environ[name] for name in INSTANCE_ADMIN_ENVIRONMENT if name in os.environ},
         # A family-owned Stripe API stub (stripe-routes service_context); unset in production.
         **({'STRIPE_API_BASE': os.environ['STRIPE_API_BASE']} if 'STRIPE_API_BASE' in os.environ else {}),
+        # The google-calendar family's client secrets file and private Google stub; unset in production.
+        **{name: os.environ[name] for name in GOOGLE_ENVIRONMENT if name in os.environ},
+        # SessionMiddleware's cookie flag as this Django process resolved it (env.bool, default not DEBUG).
+        'SESSION_COOKIE_SECURE': str(settings.SESSION_COOKIE_SECURE),
     }
     command = [str(executable)]
     observation_path = work / "query-observations.jsonl" if query_observation else None
