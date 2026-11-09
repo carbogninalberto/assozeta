@@ -57,7 +57,9 @@ DJANGO_QUEUE = 'celery'
 OUTPUT = ROOT / 'quality-reports/go-migration/celery-consumer-process'
 # Read before initialize_current_schema replaces the process environment.
 DJANGO_ONLY = bool(os.environ.get('CELERY_CONSUMER_DJANGO_ONLY'))
-MESSAGE_ID = re.compile(r'Message-ID: <[^>\r\n]+>')
+# A long DNS_NAME makes compat32 fold the header onto its own line ('Message-ID: \r\n <...>'):
+# the separator is kept so that a folding difference still shows.
+MESSAGE_ID = re.compile(r'Message-ID:( | \r\n )<[^>\r\n]+>')
 DATE = re.compile(r'Date: [A-Z][a-z]{2}, \d\d [A-Z][a-z]{2} \d{4} \d\d:\d\d:\d\d -0000')
 SIZE = re.compile(r' size=(\d+)\r\n\Z')
 
@@ -128,7 +130,7 @@ SCENARIOS = [
 
 
 def normalize_unit(unit):
-    unit = MESSAGE_ID.sub('Message-ID: <message-id>', DATE.sub('Date: <date>', unit))
+    unit = MESSAGE_ID.sub(lambda match: 'Message-ID:' + match.group(1) + '<message-id>', DATE.sub('Date: <date>', unit))
     return unit
 
 

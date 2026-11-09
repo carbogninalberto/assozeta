@@ -54,7 +54,7 @@ func run(arguments []string) error {
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			fmt.Println("Go Celery consumer: --env-file PATH, --concurrency N, --drain-timeout D. Consumes the assozeta-go queue " +
-				"(GO_TASK_QUEUE_TASKS routing); runs core.tasks.send_mail_async, send_email_text, send_email_template, send_email_html and the automation workflow tasks and hands every other message to the celery queue.")
+				"(GO_TASK_QUEUE_TASKS routing); runs core.tasks.send_mail_async, send_email_text, send_email_template, send_email_html, the automation workflow tasks, the print tasks, save_to_storage and export_invoices_to_zip and hands every other message to the celery queue.")
 			return nil
 		}
 		return errors.New("invalid celery consumer arguments")
@@ -105,6 +105,9 @@ func run(arguments []string) error {
 	producer := celery.NewProducer(celery.RedisBroker{Client: broker}).WithRoutes(celery.ParseRoutes(cfg.GoTaskQueueTasks))
 	for name, task := range service.NewWorkflowTasks(repository.NewWorkflowTaskStore(db), producer, time.Now).Tasks() {
 		tasks[name] = task
+	}
+	if err = consumerPrintRegister(tasks, cfg, db, *envFile); err != nil {
+		return err
 	}
 	for _, register := range extraTasks {
 		register(tasks)

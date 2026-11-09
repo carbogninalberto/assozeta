@@ -41,6 +41,8 @@ func FQDN(name string) string {
 	for i := range names {
 		names[i] = strings.TrimSuffix(names[i], ".")
 	}
+	// gethostbyaddr's aliases that net.LookupAddr does not return.
+	names = append(names, fqdnPlatformAliases(ips[0])...)
 	for _, candidate := range names {
 		if strings.Contains(candidate, ".") {
 			return candidate
