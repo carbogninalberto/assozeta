@@ -36,7 +36,7 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "BE/instance/integrations.py": "c7bb11e0eb4e587b5334b2661c6ca2def5118b93c4dcb12373cc399e83a8ef59",
     "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
     "BE/application/utils/stripe_utils.py": "5eb9238ba059bd0e2247235dc33cbd2502c38d8cb1e81f793583b34e270b9bab",
-    "BE/application/views/stripe_views.py": "d35f1a6f13dcec42d032fe77eb01547f71543dffc8ae1e66e8407524119def40",
+    "BE/application/views/stripe_views.py": "eaf4b2f4bdd43c12bb90c15096c6bbfac4de1997432fd6b72bf2f1a734f4565f",
     "UI/src/routes/activities/payment/PaymentList.svelte": "9f913de33eea435d9a5c0487f28b1df466ee8198d66564fd7ffdeee817256151",
     "UI/src/routes/stripe/Checkout.svelte": "3c619dd299432dadf62a76649f9f55318f526ea477835618d32457c0a8f776b2",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa"
