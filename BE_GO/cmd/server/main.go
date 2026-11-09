@@ -463,6 +463,12 @@ func run() (runErr error) {
 	e.Any("/modules/:module_id/update", modulesWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/duplicate", modulesWritesHandler.Duplicate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/delete", modulesWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	modulesResponsesHandler := composeModulesResponses(cfg, db, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	e.Any("/modules/:module_id/info", modulesResponsesHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/modules/:module_id/response/add", modulesResponsesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/modules/response/:module_response_id/approve", modulesResponsesHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/modules/response/:module_response_id/delete", modulesResponsesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/modules/response/:module_response_id/add-attachment", modulesResponsesHandler.Attachment, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	instructorHoursHandler := handler.NewInstructorHoursHandler(service.NewInstructorHoursService(repository.NewInstructorHours(db), time.Now,
 		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
