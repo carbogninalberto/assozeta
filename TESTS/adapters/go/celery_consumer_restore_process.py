@@ -401,6 +401,11 @@ class Stack:
         self.s3.put_object(Bucket=BUCKET, Key=f'{LOCATION}/{PRIOR_BACKUP}', Body=b'old backup', ContentType='application/zip')
         self.s3.put_object(Bucket=BUCKET, Key=f'{LOCATION}/{PRIOR_MEDIA}', Body=PDF + b'old', ContentType='application/pdf')
         self.s3.put_object(Bucket=BUCKET, Key=f'{LOCATION}/{UPLOAD}', Body=archive, ContentType='application/zip')
+        from django.db import connection
+        with connection.cursor() as cursor:
+            # Planner statistics fixed per seed: unordered queries (the export's M2M prefetches) take the same plan on
+            # both sides; autovacuum is off in the private server.
+            cursor.execute('ANALYZE')
         self.cache.flushdb()
         self.cache.set(':1:unrelated-cache-key', pickle.dumps('kept until cache.clear()'))
         self.seeding = (started, datetime.now(timezone.utc))
@@ -701,6 +706,8 @@ class Harness:
             return labels[text]
 
         def text(value):
+            # CourseSubscription.__str__ is str(self.__dict__): its ModelState address differs per process.
+            value = re.sub(r'object at 0x[0-9a-f]+>', 'object at <address>>', value)
             naive = NAIVE.fullmatch(value)
             if naive:
                 moment = datetime.fromisoformat(value).replace(tzinfo=timezone.utc)
@@ -999,7 +1006,7 @@ def main():
             run([binaries / 'initdb', '-D', work / 'postgres', '-A', 'trust', '-U', 'contracts', '--no-sync', '--no-locale',
                  '-E', 'UTF8'])
             attempted = True
-            run([binaries / 'pg_ctl', '-D', work / 'postgres', '-l', work / 'postgres.log', '-o', f"-k {work} -h '' -F", '-w',
+            run([binaries / 'pg_ctl', '-D', work / 'postgres', '-l', work / 'postgres.log', '-o', f"-k {work} -h '' -F -c autovacuum=off", '-w',
                  'start'])
             run([binaries / 'createdb', '-h', work, '-U', 'contracts', DATABASE])
             initialize_current_schema(work, work, '5432', DATABASE, log)

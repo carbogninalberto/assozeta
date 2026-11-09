@@ -607,7 +607,7 @@ func (s *ConsumerRestoreInstance) run(ctx context.Context, request *celeryworker
 			Args: []any{call.busy}}, Countdown: restoreBusyCountdown, Maintenance: true}
 	}
 	if call.missing {
-		return nil, &celeryworker.Exception{Type: "DoesNotExist", Module: "instance.models",
+		return nil, &celeryworker.Exception{Type: "DataRestore.DoesNotExist", Module: "instance.models",
 			Args: []any{"DataRestore matching query does not exist."}}
 	}
 	op := call.op
