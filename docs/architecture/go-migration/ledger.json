@@ -589,25 +589,43 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Go migration 4 outbox table public.assozeta_go_realtime_events"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
+        "request": "manage.py relay_go_realtime [--once] [--poll-seconds 2.0]; LISTEN assozeta_go_realtime plus polling.",
+        "response": "Claims pending version-1 rows FOR UPDATE SKIP LOCKED (limit 100) and group_sends allowlisted kinds (staff_board_changed -> staff_board_<target>); marks delivered_at, retries up to 30, then failed_code.",
+        "errors": "Unknown kind/version -> failed_code unsupported_event; layer failures retry, then delivery_exhausted.",
         "authentication": null,
         "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "resource_scope": "Outbox rows only.",
+        "side_effects": "Channels group_send through Django's configured layer, which now also mirrors the message to Go sockets.",
+        "transaction": "One transaction per batch; at least once.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/notifications/tests/test_go_realtime.py",
+        "TESTS/fixtures/websockets_http.json",
+        "TESTS/fixtures/generate_websockets_http.py",
+        "TESTS/contracts/test_websockets_http.py",
+        "TESTS/adapters/django/websockets_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/websockets.md",
+        {
+          "revision": "committing change",
+          "result": "Relay delivery observed on all four transports: an outbox row relayed by relay_once() reaches Django-connected and Go-connected sockets (websockets-notifications-owner-events, websockets-notifications-staff-board-recheck).",
+          "artifact": "quality-reports/go-migration/websockets-http-versioned-r1/results.json",
+          "receipt_sha256": "c6c250de8631e836ab41a8665a2d6388c17c586b52206733540e6d2bac0c8246"
+        }
+      ],
+      "notes": [
+        "Stays Django-owned by design: the relay must send through Django's channel layer and Go never writes the Channels encoding. Go sockets receive its output through the mirrored layer (websockets.md). No Go port intended while Django owns the channel layer."
+      ]
     },
     {
       "id": "mcp_definition:BE/application/manuale/tools.py:get_manual_evidence",
@@ -36043,8 +36061,12 @@
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/websockets.md"
+      ],
+      "notes": [
+        "Not ported (websockets.md): user_message runs the agent loop and calls the configured LLM provider whenever AI is enabled; the other paths depend on the same agent core, manual search, throttle, concurrency guard and AI integration configuration. Go treats ws/agent/ as unrouted (500 before accept, after the middleware); Caddy must keep routing it to Django."
+      ]
     },
     {
       "id": "websocket:BE/application/routing.py:ws/health/ -> HealthConsumer.as_asgi()",
@@ -36061,25 +36083,74 @@
         "target": "HealthConsumer.as_asgi()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/wsproto/handshake.go",
+        "BE_GO/internal/wsproto/conn.go",
+        "BE_GO/internal/handler/websocket.go",
+        "BE_GO/internal/handler/websocket_consumers.go",
+        "BE_GO/internal/service/websocket_identity.go",
+        "BE_GO/internal/dto/websocket_json.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing JWT verification, account lookup and impersonation resolve_target (identity service)",
+        "Caddy routes /ws/* and /api/v1/ws/* to Django and /api/v2/ws/* to Go; switching /ws/* is a separate activation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET (WebSocket upgrade)"
+        ],
+        "external_paths": [
+          "/ws/health/",
+          "/api/v1/ws/health/",
+          "/api/v2/ws/health/"
+        ],
+        "request": "uvicorn 0.35 + websockets 14.1 legacy handshake: GET, one Upgrade: websocket, one Sec-WebSocket-Key (strict base64, 16 bytes), Sec-WebSocket-Version 13, else 400 text/plain bodies with the exception chain; no subprotocol selected; permessage-deflate negotiated by the unconfigured server factory (Go never compresses outgoing frames). Client JSON text: {\"type\": \"ping\"|\"check\"|other, \"timestamp\"?}.",
+        "response": "On accept {\"type\": \"health\", \"status\": \"ok\", \"msg\": \"I am good\", \"version\": RUNNING_VERSION}; ping -> {\"type\": \"pong\", \"timestamp\": <value or null>}; check -> health; other -> {\"type\": \"error\", \"message\": \"Unknown message type: <str(type)>\"}. Python json.dumps text frames; client close payload echoed; ping answered; fragments joined; unmasked/reserved-bit frames 1002, invalid UTF-8 1007, over 16 MiB 1009 (empty reasons, TCP half-close); an application exception after accept closes TCP without a close frame; keepalive 20 s/20 s.",
+        "errors": "Binary, empty or invalid JSON frames and non-object JSON raise (TCP close, no close frame). Failed impersonation 403 before accept; revoked session 4003.",
+        "authentication": "JWTAuthMiddleware: first non-blank ?token= else BKN_AUTH from the last Cookie header; access token with iss https://bakney.com and aud bakney, active non-deleted user, otherwise anonymous. ?impersonation= resolve_target with the actor: denial closes 4003 before accept (HTTP 403); rechecked on every received data frame and every send.",
+        "permissions": "None (anonymous allowed).",
+        "resource_scope": "None.",
+        "side_effects": "None.",
+        "transaction": "No database or Redis access except identity checks.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/websockets_http.json",
+        "TESTS/fixtures/generate_websockets_http.py",
+        "TESTS/contracts/test_websockets_http.py",
+        "TESTS/adapters/django/websockets_http.py",
+        "TESTS/ws_client.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/wsproto/handshake_test.go",
+        "BE_GO/internal/repository/notification_store_test.go",
+        "BE_GO/internal/handler/websocket_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/websockets.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 75/75; Go 404 on the first handshake (go-native:websockets-health-connect).",
+          "artifact": "quality-reports/go-migration/websockets-http-red-r1/results.json",
+          "receipt_sha256": "6e9c450747f8be565ca08074d617e2ab61884db4daa17074324cd3ad3f07a7ef"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 75/75 sessions on native Django (Channels core.asgi under uvicorn), native Go, Caddy /api/v1 and /api/v2, with exact handshake responses, frames and close codes, unchanged model state, exact Redis store and user_broadcasts cache bytes; exercised by websockets-health-connect, websockets-health-subprotocol-not-selected, websockets-health-deflate-negotiated, websockets-health-deflate-parameters, websockets-handshake-missing-key, websockets-handshake-short-key, websockets-handshake-version, websockets-handshake-missing-version, websockets-unrouted-without-slash, websockets-unrouted-similar-path, websockets-health-ping-pong, websockets-health-unknown-types, websockets-health-control-frames, websockets-health-close-reason-echo, websockets-health-close-empty-echo, websockets-health-binary-crash, websockets-health-invalid-json-crash, websockets-health-array-crash, websockets-health-empty-text-crash, websockets-health-nan-literal, websockets-health-huge-integer-crash, websockets-health-invalid-utf8, websockets-health-unmasked-frame, websockets-health-oversized-frame, websockets-health-blank-token-query, websockets-notifications-health-session-revoked.",
+          "artifact": "quality-reports/go-migration/websockets-http-versioned-r1/results.json",
+          "receipt_sha256": "c6c250de8631e836ab41a8665a2d6388c17c586b52206733540e6d2bac0c8246"
+        },
+        {
+          "revision": "committing change with the association-scope filter in notificationConsumer.visible() replaced by true",
+          "result": "Mutation control: fails Go on go-native:websockets-notifications-scoped-messages (step1 notifications frame lists a foreign-association item); file restored byte for byte.",
+          "artifact": "quality-reports/go-migration/websockets-http-mutation-r1/results.json",
+          "receipt_sha256": "fa8eef87fb152764da3f026d21bccce288878d2573842268e86ee9d5927bf9b4"
+        }
+      ],
+      "notes": [
+        "Implementing: Go serves ws/health/ with session parity on four transports; Django remains the execution owner (Caddy /ws/* still routes to Django). Shutdown 1012 close and Server/Date headers are not reproduced (websockets.md)."
+      ]
     },
     {
       "id": "websocket:BE/application/routing.py:ws/updates/ -> consumers.UpdateConsumer.as_asgi()",
@@ -36096,25 +36167,74 @@
         "target": "consumers.UpdateConsumer.as_asgi()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/wsproto/handshake.go",
+        "BE_GO/internal/wsproto/conn.go",
+        "BE_GO/internal/handler/websocket.go",
+        "BE_GO/internal/handler/websocket_consumers.go",
+        "BE_GO/internal/service/websocket_identity.go",
+        "BE_GO/internal/dto/websocket_json.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing JWT verification, account lookup and impersonation resolve_target (identity service)",
+        "Caddy routes /ws/* and /api/v1/ws/* to Django and /api/v2/ws/* to Go; switching /ws/* is a separate activation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET (WebSocket upgrade)"
+        ],
+        "external_paths": [
+          "/ws/updates/",
+          "/api/v1/ws/updates/",
+          "/api/v2/ws/updates/"
+        ],
+        "request": "uvicorn 0.35 + websockets 14.1 legacy handshake: GET, one Upgrade: websocket, one Sec-WebSocket-Key (strict base64, 16 bytes), Sec-WebSocket-Version 13, else 400 text/plain bodies with the exception chain; no subprotocol selected; permessage-deflate negotiated by the unconfigured server factory (Go never compresses outgoing frames). Client JSON text with a \"message\" key.",
+        "response": "Echo {\"message\": <message>} per text frame. Python json.dumps text frames; client close payload echoed; ping answered; fragments joined; unmasked/reserved-bit frames 1002, invalid UTF-8 1007, over 16 MiB 1009 (empty reasons, TCP half-close); an application exception after accept closes TCP without a close frame; keepalive 20 s/20 s.",
+        "errors": "Missing key, non-object JSON, invalid JSON or a binary frame raise (TCP close, no close frame). Failed impersonation 403 before accept.",
+        "authentication": "JWTAuthMiddleware: first non-blank ?token= else BKN_AUTH from the last Cookie header; access token with iss https://bakney.com and aud bakney, active non-deleted user, otherwise anonymous. ?impersonation= resolve_target with the actor: denial closes 4003 before accept (HTTP 403); rechecked on every received data frame and every send.",
+        "permissions": "None (anonymous allowed).",
+        "resource_scope": "None.",
+        "side_effects": "None.",
+        "transaction": "No database or Redis access except identity checks.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/websockets_http.json",
+        "TESTS/fixtures/generate_websockets_http.py",
+        "TESTS/contracts/test_websockets_http.py",
+        "TESTS/adapters/django/websockets_http.py",
+        "TESTS/ws_client.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/wsproto/handshake_test.go",
+        "BE_GO/internal/repository/notification_store_test.go",
+        "BE_GO/internal/handler/websocket_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/websockets.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 75/75; Go 404 on the first handshake (go-native:websockets-health-connect).",
+          "artifact": "quality-reports/go-migration/websockets-http-red-r1/results.json",
+          "receipt_sha256": "6e9c450747f8be565ca08074d617e2ab61884db4daa17074324cd3ad3f07a7ef"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 75/75 sessions on native Django (Channels core.asgi under uvicorn), native Go, Caddy /api/v1 and /api/v2, with exact handshake responses, frames and close codes, unchanged model state, exact Redis store and user_broadcasts cache bytes; exercised by websockets-updates-echo, websockets-updates-missing-message-crash, websockets-updates-string-crash, websockets-updates-binary-crash, websockets-updates-anonymous-impersonation.",
+          "artifact": "quality-reports/go-migration/websockets-http-versioned-r1/results.json",
+          "receipt_sha256": "c6c250de8631e836ab41a8665a2d6388c17c586b52206733540e6d2bac0c8246"
+        },
+        {
+          "revision": "committing change with the association-scope filter in notificationConsumer.visible() replaced by true",
+          "result": "Mutation control: fails Go on go-native:websockets-notifications-scoped-messages (step1 notifications frame lists a foreign-association item); file restored byte for byte.",
+          "artifact": "quality-reports/go-migration/websockets-http-mutation-r1/results.json",
+          "receipt_sha256": "fa8eef87fb152764da3f026d21bccce288878d2573842268e86ee9d5927bf9b4"
+        }
+      ],
+      "notes": [
+        "Implementing: Go serves ws/updates/ with session parity on four transports; Django remains the execution owner."
+      ]
     },
     {
       "id": "websocket:BE/notifications/routing.py:ws/notifications/ -> consumers.NotificationConsumer.as_asgi()",
@@ -36131,25 +36251,81 @@
         "target": "consumers.NotificationConsumer.as_asgi()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/wsproto/handshake.go",
+        "BE_GO/internal/wsproto/conn.go",
+        "BE_GO/internal/handler/websocket.go",
+        "BE_GO/internal/handler/websocket_consumers.go",
+        "BE_GO/internal/service/websocket_identity.go",
+        "BE_GO/internal/dto/websocket_json.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/notification_consumer.go",
+        "BE_GO/internal/service/realtime_hub.go",
+        "BE_GO/internal/repository/notification_store.go",
+        "BE/notifications/realtime_layer.py"
+      ],
+      "dependencies": [
+        "Existing JWT verification, account lookup and impersonation resolve_target (identity service)",
+        "Caddy routes /ws/* and /api/v1/ws/* to Django and /api/v2/ws/* to Go; switching /ws/* is a separate activation",
+        "Django channel layer notifications.realtime_layer.GoMirroredRedisChannelLayer (publishes every group_send on Redis pub/sub assozeta:realtime:v1)",
+        "NotificationManager JSON lists in Redis database 0 and the user_broadcasts Django cache (pickle protocol 4)",
+        "Go realtime outbox relayed by Django relay_go_realtime (unchanged)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET (WebSocket upgrade)"
+        ],
+        "external_paths": [
+          "/ws/notifications/",
+          "/api/v1/ws/notifications/",
+          "/api/v2/ws/notifications/"
+        ],
+        "request": "uvicorn 0.35 + websockets 14.1 legacy handshake: GET, one Upgrade: websocket, one Sec-WebSocket-Key (strict base64, 16 bytes), Sec-WebSocket-Version 13, else 400 text/plain bodies with the exception chain; no subprotocol selected; permessage-deflate negotiated by the unconfigured server factory (Go never compresses outgoing frames). Client JSON text: ping, fetch, mark_read {id}, mark_all_read.",
+        "response": "pong; {\"type\": \"notifications\", \"data\": [{id, type, read, msg, association_id, issued, date}], \"unread\": N} (newest first, stable); {\"type\": \"read_confirmed\", \"id\": <as sent>}; {\"type\": \"all_read_confirmed\"}; errors \"Missing 'id' for mark_read\", \"Unknown message type: ...\", \"Internal server error\". Group events: notification_push, staff_board_changed, restore/export progress as {\"type\": name, **payload}. Python json.dumps text frames; client close payload echoed; ping answered; fragments joined; unmasked/reserved-bit frames 1002, invalid UTF-8 1007, over 16 MiB 1009 (empty reasons, TCP half-close); an application exception after accept closes TCP without a close frame; keepalive 20 s/20 s.",
+        "errors": "Anonymous: close 4001 before accept (HTTP 403). Store failures -> Internal server error (mark_all_read unscoped swallows and confirms). Unknown group event types, missing notification/payload, non-object JSON raise (TCP close).",
+        "authentication": "JWTAuthMiddleware: first non-blank ?token= else BKN_AUTH from the last Cookie header; access token with iss https://bakney.com and aud bakney, active non-deleted user, otherwise anonymous. ?impersonation= resolve_target with the actor: denial closes 4003 before accept (HTTP 403); rechecked on every received data frame and every send.",
+        "permissions": "Authenticated user; staff-board group only when readable_association_id allows it (rechecked per event).",
+        "resource_scope": "User group, staff-board association group, subscribed broadcast groups. Owner impersonation scopes notifications to that association and suppresses progress events; administrator sessions are unscoped.",
+        "side_effects": "mark_read/mark_all_read rewrite NotificationManager JSON lists (Django json.dumps); broadcast lists cached 300 s in user_broadcasts:<id>. No database writes.",
+        "transaction": "Redis writes per broadcast, not atomic, as Django (partial writes kept on failure).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/websockets_http.json",
+        "TESTS/fixtures/generate_websockets_http.py",
+        "TESTS/contracts/test_websockets_http.py",
+        "TESTS/adapters/django/websockets_http.py",
+        "TESTS/ws_client.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/wsproto/handshake_test.go",
+        "BE_GO/internal/repository/notification_store_test.go",
+        "BE_GO/internal/handler/websocket_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/websockets.md",
+        {
+          "revision": "family RED receipt, before its Go code",
+          "result": "RED: Django 75/75; Go 404 on the first handshake (go-native:websockets-health-connect).",
+          "artifact": "quality-reports/go-migration/websockets-http-red-r1/results.json",
+          "receipt_sha256": "6e9c450747f8be565ca08074d617e2ab61884db4daa17074324cd3ad3f07a7ef"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 75/75 sessions on native Django (Channels core.asgi under uvicorn), native Go, Caddy /api/v1 and /api/v2, with exact handshake responses, frames and close codes, unchanged model state, exact Redis store and user_broadcasts cache bytes; exercised by websockets-handshake-duplicate-key, websockets-notifications-anonymous, websockets-notifications-token-without-issuer, websockets-notifications-wrong-issuer, websockets-notifications-list-audience, websockets-notifications-refresh-token, websockets-notifications-expired-token, websockets-notifications-garbage-token, websockets-notifications-inactive-user, websockets-notifications-deleted-user, websockets-notifications-query-before-cookie, websockets-notifications-session-forged, websockets-notifications-session-expired, websockets-notifications-session-revoked, websockets-notifications-session-ineligible, websockets-notifications-session-association-mismatch, websockets-notifications-session-owner-owner, websockets-notifications-session-wrong-actor, websockets-notifications-cookie-fetch, websockets-notifications-last-cookie-header, websockets-notifications-first-query-token, websockets-notifications-stale-broadcast-cache, websockets-notifications-owner-messages, websockets-notifications-owner-mark-read, websockets-notifications-owner-mark-all, websockets-notifications-athlete-store-errors, websockets-notifications-invalid-json-crash, websockets-notifications-array-crash, websockets-notifications-binary-crash, websockets-notifications-scoped-messages, websockets-notifications-scoped-mark-all, websockets-notifications-admin-session-unscoped, websockets-notifications-session-revoked-on-receive, websockets-notifications-session-revoked-on-push, websockets-notifications-owner-events, websockets-notifications-scoped-events, websockets-notifications-admin-session-events, websockets-notifications-staff-board-recheck, websockets-notifications-staff-board-not-joined, websockets-notifications-not-joined-after-grant, websockets-notifications-unknown-event-crash, websockets-notifications-push-without-notification-crash.",
+          "artifact": "quality-reports/go-migration/websockets-http-versioned-r1/results.json",
+          "receipt_sha256": "c6c250de8631e836ab41a8665a2d6388c17c586b52206733540e6d2bac0c8246"
+        },
+        {
+          "revision": "committing change with the association-scope filter in notificationConsumer.visible() replaced by true",
+          "result": "Mutation control: fails Go on go-native:websockets-notifications-scoped-messages (step1 notifications frame lists a foreign-association item); file restored byte for byte.",
+          "artifact": "quality-reports/go-migration/websockets-http-mutation-r1/results.json",
+          "receipt_sha256": "fa8eef87fb152764da3f026d21bccce288878d2573842268e86ee9d5927bf9b4"
+        }
+      ],
+      "notes": [
+        "Implementing: Go serves ws/notifications/ with session parity on four transports, receiving Django group_send messages (and relayed Go outbox events) through the mirrored layer envelope; Go never reads the Channels encoding. Not ported: NotificationManager per-process bootstrap write of the all_notifications broadcast; Channels dispatch to non-event consumer methods. Django remains the execution owner."
+      ]
     }
   ]
 }
