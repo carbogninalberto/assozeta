@@ -83,6 +83,7 @@ SUBSCRIPTIONS = {
     'd_tags': subscription('carla', tags=['t1', 't2']),
     'd_pay': subscription('mario', payment='dsp', start='2023-01-01', end='2023-12-31'),
     'd_cs': subscription('paolo'),
+    'd_mem': subscription('anna'),
 }
 
 
@@ -113,6 +114,8 @@ PAYMENTS = {
     'drp_archived': payment(associate='mario', created='2023-03-03T10:00:00Z', archived=True, subject=0),
     # delete d_cs
     'dcp1': payment(), 'dip1': payment(), 'dip2': payment(True), 'dcp2': payment(True), 'dop1': payment(),
+    # delete d_mem: membership payments of a payment-less membership row
+    'dmp_u': payment(amount='25.00'), 'dmp_p': payment(True, amount='25.00'),
 }
 
 
@@ -133,6 +136,8 @@ CS = {
     'dc1': course_subscription('d_cs', payment='dcp1', multi_payments=True),
     'dc2': course_subscription('d_cs', payment='dcp2', paid=True),
     'dc_old': course_subscription('d_cs', deleted=True),
+    'dm_member': course_subscription('d_mem', type=3, membership_payments=['dmp_u', 'dmp_p']),
+    'dm_old': course_subscription('d_mem', deleted=True),
 }
 
 
@@ -145,6 +150,7 @@ INSTALLMENTS = {
     'ia1': installment('ca1', 0, 'ip1'), 'ia2': installment('ca1', 1, 'ip2'), 'ia3': installment('ca1', 2, 'ip3', deleted=True),
     'ig_own': installment('cg', 0, group='own_group'), 'ig_none': installment('cg', 1),
     'di1': installment('dc1', 0, 'dip1'), 'di2': installment('dc1', 1, 'dip2'), 'do1': installment('dc_old', 0, 'dop1'),
+    'dmi_old': installment('dm_old', 0),
 }
 UNKNOWN = 'a1000000-0000-4000-8000-000000619999'
 STATE = {'cs': copy.deepcopy(CS)}
@@ -357,6 +363,23 @@ cascade = [
 add('delete-course-subscriptions', 'owner', route('d_cs', 'delete'), 200, DELETED, effect=effect('owner', cascade,
     subscriptions={'deleted': ['d_cs']}, payments={'deleted': ['dcp1', 'dip1', 'dop1']},
     cs={'deleted': ['dc1', 'dc2', 'dc_old']}, installments={'deleted': ['di1', 'di2', 'do1']}))
+
+# subscription.delete() runs delete_related_course_payment for every collected row: the
+# payment-less membership row (soft-deleted by the service just before) deletes its unpaid
+# live membership payments, the soft-deleted row its remaining live installment.
+STATE['cs']['dm_member'].update(deleted=True)
+dm_saved = cs_repr('dm_member')
+add('delete-membership-and-deleted-rows', 'owner', route('d_mem', 'delete'), 200, DELETED, effect=effect('owner', [
+    dict(updated('coursesubscription', 'dm_member', {'deleted': ['False', 'True']}, COURSE_INDEX), repr=dm_saved),
+    updated('subscription', 'd_mem', FLIP, DIRECT),
+    removed('payment', 'dmp_u', CHANGES_JSON),
+    removed('coursesubscriptioninstallment', 'dmi_old', ACTOR),
+    removed('subscription', 'd_mem', CHANGES_JSON, GONE),
+    removed('coursesubscriptioninstallment', 'dmi_old', ACTOR),
+    removed('coursesubscription', 'dm_old', ACTOR),
+    dict(removed('coursesubscription', 'dm_member', ACTOR, {'deleted': ['True', 'None']}), repr=dm_saved),
+], subscriptions={'deleted': ['d_mem']}, payments={'deleted': ['dmp_u']}, cs={'deleted': ['dm_member', 'dm_old']},
+    installments={'deleted': ['dmi_old']}))
 add('delete-owner-scoped-athlete-denied', 'owner', route('d_cs', 'delete'), 403,
     {'detail': 'Operazione non disponibile nel contesto dell’associazione.'}, headers={'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']})
 add('delete-restricted-missing-permission', 'restricted_collaborator', route('d_cs', 'delete'), 403,

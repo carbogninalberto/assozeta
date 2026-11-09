@@ -314,11 +314,26 @@
    "deleted": false,
    "payment": null,
    "tags": []
+  },
+  "d_mem": {
+   "id": "a1000000-0000-4000-8000-000000610026",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "anna",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": null,
+   "tags": []
   }
  },
  "payments": {
   "sp": {
-   "id": "a1000000-0000-4000-8000-000000610026",
+   "id": "a1000000-0000-4000-8000-000000610027",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "10.00",
@@ -332,20 +347,6 @@
    "description": "Quota fixture"
   },
   "cp1": {
-   "id": "a1000000-0000-4000-8000-000000610027",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "subject": 2,
-   "amount": "10.00",
-   "paid": false,
-   "archived": false,
-   "deleted": false,
-   "associate": null,
-   "group": null,
-   "category": true,
-   "created": "2026-04-01T10:00:00Z",
-   "description": "Quota fixture"
-  },
-  "ip1": {
    "id": "a1000000-0000-4000-8000-000000610028",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
@@ -359,8 +360,22 @@
    "created": "2026-04-01T10:00:00Z",
    "description": "Quota fixture"
   },
-  "ip2": {
+  "ip1": {
    "id": "a1000000-0000-4000-8000-000000610029",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture"
+  },
+  "ip2": {
+   "id": "a1000000-0000-4000-8000-000000610030",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -374,7 +389,7 @@
    "description": "Quota fixture"
   },
   "ip3": {
-   "id": "a1000000-0000-4000-8000-000000610030",
+   "id": "a1000000-0000-4000-8000-000000610031",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -388,7 +403,7 @@
    "description": "Quota fixture"
   },
   "cp2": {
-   "id": "a1000000-0000-4000-8000-000000610031",
+   "id": "a1000000-0000-4000-8000-000000610032",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -402,7 +417,7 @@
    "description": "Quota fixture"
   },
   "cp3": {
-   "id": "a1000000-0000-4000-8000-000000610032",
+   "id": "a1000000-0000-4000-8000-000000610033",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -416,7 +431,7 @@
    "description": "Quota fixture"
   },
   "rp_in": {
-   "id": "a1000000-0000-4000-8000-000000610033",
+   "id": "a1000000-0000-4000-8000-000000610034",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -430,7 +445,7 @@
    "description": "Quota fixture"
   },
   "rp_start": {
-   "id": "a1000000-0000-4000-8000-000000610034",
+   "id": "a1000000-0000-4000-8000-000000610035",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -444,7 +459,7 @@
    "description": "Quota fixture"
   },
   "rp_paid": {
-   "id": "a1000000-0000-4000-8000-000000610035",
+   "id": "a1000000-0000-4000-8000-000000610036",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -458,7 +473,7 @@
    "description": "Quota fixture"
   },
   "rp_out": {
-   "id": "a1000000-0000-4000-8000-000000610036",
+   "id": "a1000000-0000-4000-8000-000000610037",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -472,7 +487,7 @@
    "description": "Quota fixture"
   },
   "rp_end": {
-   "id": "a1000000-0000-4000-8000-000000610037",
+   "id": "a1000000-0000-4000-8000-000000610038",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -486,7 +501,7 @@
    "description": "Quota fixture"
   },
   "rp_archived": {
-   "id": "a1000000-0000-4000-8000-000000610038",
+   "id": "a1000000-0000-4000-8000-000000610039",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -500,7 +515,7 @@
    "description": "Quota fixture"
   },
   "rp_deleted": {
-   "id": "a1000000-0000-4000-8000-000000610039",
+   "id": "a1000000-0000-4000-8000-000000610040",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -514,7 +529,7 @@
    "description": "Quota fixture"
   },
   "rp_g_own": {
-   "id": "a1000000-0000-4000-8000-000000610040",
+   "id": "a1000000-0000-4000-8000-000000610041",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -528,7 +543,7 @@
    "description": "Quota fixture"
   },
   "rp_g_none": {
-   "id": "a1000000-0000-4000-8000-000000610041",
+   "id": "a1000000-0000-4000-8000-000000610042",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -542,7 +557,7 @@
    "description": "Quota fixture"
   },
   "dsp": {
-   "id": "a1000000-0000-4000-8000-000000610042",
+   "id": "a1000000-0000-4000-8000-000000610043",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 1,
    "amount": "10.00",
@@ -556,7 +571,7 @@
    "description": "Quota fixture"
   },
   "drp_in": {
-   "id": "a1000000-0000-4000-8000-000000610043",
+   "id": "a1000000-0000-4000-8000-000000610044",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -570,7 +585,7 @@
    "description": "Quota fixture"
   },
   "drp_paid": {
-   "id": "a1000000-0000-4000-8000-000000610044",
+   "id": "a1000000-0000-4000-8000-000000610045",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -584,7 +599,7 @@
    "description": "Quota fixture"
   },
   "drp_archived": {
-   "id": "a1000000-0000-4000-8000-000000610045",
+   "id": "a1000000-0000-4000-8000-000000610046",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 0,
    "amount": "10.00",
@@ -598,20 +613,6 @@
    "description": "Quota fixture"
   },
   "dcp1": {
-   "id": "a1000000-0000-4000-8000-000000610046",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "subject": 2,
-   "amount": "10.00",
-   "paid": false,
-   "archived": false,
-   "deleted": false,
-   "associate": null,
-   "group": null,
-   "category": true,
-   "created": "2026-04-01T10:00:00Z",
-   "description": "Quota fixture"
-  },
-  "dip1": {
    "id": "a1000000-0000-4000-8000-000000610047",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
@@ -625,12 +626,12 @@
    "created": "2026-04-01T10:00:00Z",
    "description": "Quota fixture"
   },
-  "dip2": {
+  "dip1": {
    "id": "a1000000-0000-4000-8000-000000610048",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
-   "paid": true,
+   "paid": false,
    "archived": false,
    "deleted": false,
    "associate": null,
@@ -639,7 +640,7 @@
    "created": "2026-04-01T10:00:00Z",
    "description": "Quota fixture"
   },
-  "dcp2": {
+  "dip2": {
    "id": "a1000000-0000-4000-8000-000000610049",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
@@ -653,8 +654,22 @@
    "created": "2026-04-01T10:00:00Z",
    "description": "Quota fixture"
   },
-  "dop1": {
+  "dcp2": {
    "id": "a1000000-0000-4000-8000-000000610050",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": true,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture"
+  },
+  "dop1": {
+   "id": "a1000000-0000-4000-8000-000000610051",
    "association": "a1000000-0000-4000-8000-000000701001",
    "subject": 2,
    "amount": "10.00",
@@ -666,11 +681,39 @@
    "category": true,
    "created": "2026-04-01T10:00:00Z",
    "description": "Quota fixture"
+  },
+  "dmp_u": {
+   "id": "a1000000-0000-4000-8000-000000610052",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "25.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture"
+  },
+  "dmp_p": {
+   "id": "a1000000-0000-4000-8000-000000610053",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "25.00",
+   "paid": true,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture"
   }
  },
  "course_subscriptions": {
   "ca1": {
-   "id": "a1000000-0000-4000-8000-000000610051",
+   "id": "a1000000-0000-4000-8000-000000610054",
    "course": "yoga",
    "subscription": "a_full",
    "paid": false,
@@ -691,7 +734,7 @@
    "deleted": false
   },
   "ca2": {
-   "id": "a1000000-0000-4000-8000-000000610052",
+   "id": "a1000000-0000-4000-8000-000000610055",
    "course": "yoga",
    "subscription": "a_full",
    "paid": true,
@@ -712,7 +755,7 @@
    "deleted": false
   },
   "ca3": {
-   "id": "a1000000-0000-4000-8000-000000610053",
+   "id": "a1000000-0000-4000-8000-000000610056",
    "course": "yoga",
    "subscription": "a_full",
    "paid": false,
@@ -733,7 +776,7 @@
    "deleted": true
   },
   "cg": {
-   "id": "a1000000-0000-4000-8000-000000610054",
+   "id": "a1000000-0000-4000-8000-000000610057",
    "course": "yoga",
    "subscription": "a_group",
    "paid": false,
@@ -754,7 +797,7 @@
    "deleted": false
   },
   "dc1": {
-   "id": "a1000000-0000-4000-8000-000000610055",
+   "id": "a1000000-0000-4000-8000-000000610058",
    "course": "yoga",
    "subscription": "d_cs",
    "paid": false,
@@ -775,7 +818,7 @@
    "deleted": false
   },
   "dc2": {
-   "id": "a1000000-0000-4000-8000-000000610056",
+   "id": "a1000000-0000-4000-8000-000000610059",
    "course": "yoga",
    "subscription": "d_cs",
    "paid": true,
@@ -796,9 +839,55 @@
    "deleted": false
   },
   "dc_old": {
-   "id": "a1000000-0000-4000-8000-000000610057",
+   "id": "a1000000-0000-4000-8000-000000610060",
    "course": "yoga",
    "subscription": "d_cs",
+   "paid": false,
+   "created": "2026-02-01T08:00:00Z",
+   "payment": null,
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": true
+  },
+  "dm_member": {
+   "id": "a1000000-0000-4000-8000-000000610061",
+   "course": "yoga",
+   "subscription": "d_mem",
+   "paid": false,
+   "created": "2026-02-01T08:00:00Z",
+   "payment": null,
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 3,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false,
+   "membership_payments": [
+    "dmp_u",
+    "dmp_p"
+   ]
+  },
+  "dm_old": {
+   "id": "a1000000-0000-4000-8000-000000610062",
+   "course": "yoga",
+   "subscription": "d_mem",
    "paid": false,
    "created": "2026-02-01T08:00:00Z",
    "payment": null,
@@ -819,7 +908,7 @@
  },
  "installments": {
   "ia1": {
-   "id": "a1000000-0000-4000-8000-000000610058",
+   "id": "a1000000-0000-4000-8000-000000610063",
    "cs": "ca1",
    "number": 0,
    "amount": "5.00",
@@ -830,7 +919,7 @@
    "archived": false
   },
   "ia2": {
-   "id": "a1000000-0000-4000-8000-000000610059",
+   "id": "a1000000-0000-4000-8000-000000610064",
    "cs": "ca1",
    "number": 1,
    "amount": "5.00",
@@ -841,7 +930,7 @@
    "archived": false
   },
   "ia3": {
-   "id": "a1000000-0000-4000-8000-000000610060",
+   "id": "a1000000-0000-4000-8000-000000610065",
    "cs": "ca1",
    "number": 2,
    "amount": "5.00",
@@ -852,7 +941,7 @@
    "archived": false
   },
   "ig_own": {
-   "id": "a1000000-0000-4000-8000-000000610061",
+   "id": "a1000000-0000-4000-8000-000000610066",
    "cs": "cg",
    "number": 0,
    "amount": "5.00",
@@ -863,7 +952,7 @@
    "archived": false
   },
   "ig_none": {
-   "id": "a1000000-0000-4000-8000-000000610062",
+   "id": "a1000000-0000-4000-8000-000000610067",
    "cs": "cg",
    "number": 1,
    "amount": "5.00",
@@ -874,7 +963,7 @@
    "archived": false
   },
   "di1": {
-   "id": "a1000000-0000-4000-8000-000000610063",
+   "id": "a1000000-0000-4000-8000-000000610068",
    "cs": "dc1",
    "number": 0,
    "amount": "5.00",
@@ -885,7 +974,7 @@
    "archived": false
   },
   "di2": {
-   "id": "a1000000-0000-4000-8000-000000610064",
+   "id": "a1000000-0000-4000-8000-000000610069",
    "cs": "dc1",
    "number": 1,
    "amount": "5.00",
@@ -896,11 +985,22 @@
    "archived": false
   },
   "do1": {
-   "id": "a1000000-0000-4000-8000-000000610065",
+   "id": "a1000000-0000-4000-8000-000000610070",
    "cs": "dc_old",
    "number": 0,
    "amount": "5.00",
    "payment": "dop1",
+   "group": null,
+   "deleted": false,
+   "payment_date": "2026-03-01T00:00:00Z",
+   "archived": false
+  },
+  "dmi_old": {
+   "id": "a1000000-0000-4000-8000-000000610071",
+   "cs": "dm_old",
+   "number": 0,
+   "amount": "5.00",
+   "payment": null,
    "group": null,
    "deleted": false,
    "payment_date": "2026-03-01T00:00:00Z",
@@ -1769,7 +1869,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610051'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610021'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610027'), 'multi_payments': True, 'one_fee_payment': False, 'archived': True, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610054'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610021'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610028'), 'multi_payments': True, 'one_fee_payment': False, 'archived': True, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
      },
      {
       "model": "coursesubscription",
@@ -1786,7 +1886,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610052'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': True, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610021'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610031'), 'multi_payments': False, 'one_fee_payment': False, 'archived': True, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610055'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': True, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610021'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610032'), 'multi_payments': False, 'one_fee_payment': False, 'archived': True, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
      },
      {
       "model": "payment",
@@ -1963,7 +2063,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610054'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610022'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': True, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610057'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610022'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': True, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
      },
      {
       "model": "subscription",
@@ -2490,7 +2590,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610055'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610058'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      },
      {
       "model": "coursesubscription",
@@ -2507,7 +2607,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610056'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': True, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610049'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610059'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': True, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610050'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      },
      {
       "model": "subscription",
@@ -2601,7 +2701,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "actor.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610057'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610060'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      },
      {
       "model": "coursesubscription",
@@ -2618,7 +2718,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "actor.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610056'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': True, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610049'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610059'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': True, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610050'), 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      },
      {
       "model": "coursesubscription",
@@ -2639,7 +2739,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "actor.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610055'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610058'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610025'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      }
     ],
     "subscriptions": {
@@ -2670,6 +2770,165 @@
       "di1",
       "di2",
       "do1"
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-lifecycle-delete-membership-and-deleted-rows",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610026/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription delete."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "label": "dm_member",
+      "action": 1,
+      "changes": {
+       "deleted": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610061'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610026'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 3, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     },
+     {
+      "model": "subscription",
+      "label": "d_mem",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "label": "dmp_u",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "dmi_old",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "subscription",
+      "label": "d_mem",
+      "action": 2,
+      "changes": null,
+      "overrides": {
+       "archived": [
+        "True",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "dmi_old",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "label": "dm_old",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610062'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610026'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     },
+     {
+      "model": "coursesubscription",
+      "label": "dm_member",
+      "action": 2,
+      "changes": null,
+      "overrides": {
+       "deleted": [
+        "True",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610061'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610026'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 3, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     }
+    ],
+    "subscriptions": {
+     "changed": {},
+     "deleted": [
+      "d_mem"
+     ]
+    },
+    "payments": {
+     "changed": {},
+     "deleted": [
+      "dmp_u"
+     ]
+    },
+    "cs": {
+     "changed": {},
+     "deleted": [
+      "dm_member",
+      "dm_old"
+     ]
+    },
+    "installments": {
+     "changed": {},
+     "deleted": [
+      "dmi_old"
      ]
     }
    }
