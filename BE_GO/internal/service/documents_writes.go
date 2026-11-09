@@ -722,3 +722,115 @@ func draftWithCertificate(draft domain.MedicalDraft, certificate, filename strin
 	}
 	return nil, "'" + pythonTypeNameOf(entry) + "' object does not support item assignment", nil
 }
+
+// archiveLookup is get_object() over the owner's archive rows.
+func (s *DocumentUploads) archiveLookup(ctx context.Context, tx domain.DocumentUploadTransaction, identity domain.ResolvedIdentity,
+	raw string) (domain.ArchiveRecord, error) {
+	association, err := tx.AssociationForOwner(ctx, identity.ScopeUser.ID, nil)
+	if err != nil {
+		return domain.ArchiveRecord{}, err
+	}
+	id, err := paymentInfoParseUUID(raw)
+	if err != nil {
+		return domain.ArchiveRecord{}, ErrArchiveLookup
+	}
+	return tx.Archive(ctx, id.String(), association)
+}
+
+// Retrieve is the router detail route's stock retrieve: get_object(), then
+// DocumentArchiveSerializer, whose document field (many=True on a foreign
+// key) iterates a Document instance: a TypeError (500) for every row found.
+func (s *DocumentUploads) Retrieve(ctx context.Context, identity domain.ResolvedIdentity, raw string) error {
+	tx, err := s.store.BeginDocumentUpload(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = s.archiveLookup(ctx, tx, identity, raw); err != nil {
+		return err
+	}
+	return domain.ErrDocumentWritesFailed
+}
+
+// Create is the router list route's stock CreateModelMixin.create: the
+// JSON-only request.data, DocumentArchiveSerializer validation (the
+// sport_association is required; it and the folder are tenant-scoped), then
+// perform_create's SportAssociation.objects.get(user=request.user) and the
+// insert, whose document column (read-only in the serializer, NOT NULL in
+// the table) fails: a 500 with nothing written once the input is valid.
+func (s *DocumentUploads) Create(ctx context.Context, identity domain.ResolvedIdentity, read func() (any, error)) error {
+	body, err := read()
+	if err != nil {
+		return err
+	}
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		return &DocumentValidationError{Fields: map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeNameOf(body)}}}
+	}
+	update, codes, err := dto.ParseArchiveUpdate(object)
+	if err != nil {
+		return err
+	}
+	invalid := map[string]any{}
+	for name, list := range codes {
+		invalid[name] = list
+	}
+	if _, present := object.Lookup("sport_association"); !present {
+		invalid["sport_association"] = []string{dto.PaymentCategoryValidationRequired}
+	}
+	tx, err := s.store.BeginDocumentUpload(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if update.ID != nil {
+		except := "00000000-0000-0000-0000-000000000000"
+		if *update.ID == except {
+			except = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+		}
+		taken, err := tx.ArchiveIDTaken(ctx, *update.ID, except)
+		if err != nil {
+			return err
+		}
+		if taken {
+			invalid["sport_association_documents_archive_id"] = []string{dto.ArchiveUpdateUnique}
+		}
+	}
+	current, err := tx.CurrentAssociation(ctx, identity.ScopeUser.ID)
+	if err != nil {
+		return err
+	}
+	denied := &domain.PermissionDenied{Detail: "You do not have permission to perform this action."}
+	if update.Association != nil {
+		exists, err := tx.AssociationExists(ctx, *update.Association)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			invalid["sport_association"] = []string{"related-does-not-exist:" + dto.PythonStr(update.AssociationRaw)}
+		} else if current != nil && *current != *update.Association {
+			return denied // tenant_scope
+		}
+	}
+	if update.Folder != nil {
+		found := false
+		var owner string
+		if !update.Folder.Missing {
+			if owner, found, err = tx.FolderExists(ctx, update.Folder.ID); err != nil {
+				return err
+			}
+		}
+		if !found {
+			invalid["folder"] = []string{"related-does-not-exist:" + dto.PythonStr(update.Folder.Raw)}
+		} else if current != nil && *current != owner {
+			return denied
+		}
+	}
+	if len(invalid) > 0 {
+		return &DocumentValidationError{Fields: invalid}
+	}
+	if _, err = tx.AssociationForOwner(ctx, identity.ScopeUser.ID, nil); err != nil {
+		return err
+	}
+	return domain.ErrDocumentWritesFailed
+}

@@ -743,6 +743,20 @@ func run() (runErr error) {
 	e.Any("/templates/bulk-delete", moduleTemplatesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/templates/:pk/delete", moduleTemplatesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/templates/:pk/update", moduleTemplatesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	// include(router.urls): DefaultRouter list/detail/format routes and the API root (router-stock.md).
+	routerStock := handler.NewRouterStockHandler(service.NewActorAuthentication(accounts, tokens), identities, handler.DjangoNotFound)
+	routerStock.RegisterCourseLocations(courseLocationListHandler, courseLocationWritesHandler)
+	routerStock.RegisterFolders(foldersHandler, folderWritesHandler)
+	routerStock.RegisterDocuments(documentArchiveHandler, documentUploadsHandler)
+	routerStock.RegisterTemplates(moduleTemplatesHandler)
+	routerStock.RegisterMemberships(subscriptionMembershipsHandler)
+	routerStock.RegisterCourseSubscriptions(courseSubscriptionsHandler, courseEnrolmentHandler)
+	routerStockDestroy := service.NewRouterStockDestroy(repository.NewRouterStockDeletes(db, time.Now))
+	routerStock.RegisterPersonas(personasHandler, personasWritesHandler, routerStockDestroy)
+	for _, path := range routerStock.Routes() {
+		e.Any(path, routerStock.Serve, middleware.DjangoSessionAudit(sessionAuthentication))
+	}
+	handler.DjangoFallbackRoutes(routerStock.Routes())
 	e.Any("/communications/workflows/:workflow_id/delete", workflowWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/:workflow_id/update", workflowWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/list", workflowReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))

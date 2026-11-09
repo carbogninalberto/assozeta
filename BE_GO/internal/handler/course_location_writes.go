@@ -83,17 +83,30 @@ func (h *CourseLocationWritesHandler) serve(c echo.Context, method, operation st
 	if request.Method != method && request.Method != http.MethodDelete {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	if request.Method == http.MethodDelete {
+		return h.write(c, func(write *restWrite) (int, any, error) {
+			return http.StatusNoContent, nil, remove(write.Context, *identity, write.Audit)
+		})
+	}
+	return h.write(c, func(write *restWrite) (int, any, error) {
+		return run(write.Context, *identity, write.Body, write.Form, write.Audit)
+	})
+}
+
+// write admits a write and answers its result with the viewset's error
+// mapping.
+func (h *CourseLocationWritesHandler) write(c echo.Context, run func(write *restWrite) (int, any, error)) error {
 	write, release, err := admitRESTWrite(c, h.operations, h.audit)
 	if write == nil {
 		return err
 	}
 	defer release()
-	status, result := http.StatusNoContent, any(nil)
-	if request.Method == http.MethodDelete {
-		err = remove(write.Context, *identity, write.Audit)
-	} else {
-		status, result, err = run(write.Context, *identity, write.Body, write.Form, write.Audit)
-	}
+	status, result, err := run(write)
+	return h.respond(c, status, result, err)
+}
+
+func (h *CourseLocationWritesHandler) respond(c echo.Context, status int, result any, err error) error {
+	request := c.Request()
 	var invalid *service.CourseLocationValidationError
 	switch {
 	case errors.As(err, &invalid):

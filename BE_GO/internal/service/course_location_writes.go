@@ -256,3 +256,22 @@ func (s *CourseLocationWrites) Delete(ctx context.Context, identity domain.Resol
 	}
 	return tx.Commit()
 }
+
+// Retrieve is the stock RetrieveModelMixin.retrieve of the router's detail
+// route: get_object() then CourseLocationSerializer.
+func (s *CourseLocationWrites) Retrieve(ctx context.Context, identity domain.ResolvedIdentity, raw string) (map[string]any, error) {
+	tx, err := s.store.BeginCourseLocationWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	row, err := s.location(ctx, tx, identity, raw)
+	if err != nil {
+		return nil, err
+	}
+	documents, err := tx.LocationDocuments(ctx, row.ID)
+	if err != nil {
+		return nil, err
+	}
+	return courseLocationItem(*row, documents)
+}

@@ -1,0 +1,1610 @@
+{
+ "matrix_version": 1,
+ "scope": "DefaultRouter course-locations list, create, retrieve, update, destroy and format routes",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "d1": {
+   "id": "a1000000-0000-4000-8000-000000980001",
+   "token": "a1000000-0000-4000-8000-000000980002",
+   "filename": "mappa è.pdf",
+   "filepath": "docs/mappa.pdf",
+   "size": 2048,
+   "created": "2026-09-01T08:00:00.500000Z"
+  },
+  "d2": {
+   "id": "a1000000-0000-4000-8000-000000980003",
+   "token": "a1000000-0000-4000-8000-000000980004",
+   "filename": "orari.pdf",
+   "filepath": null,
+   "size": null,
+   "created": "2026-09-02T08:00:00Z"
+  }
+ },
+ "locations": {
+  "pool": {
+   "id": "a1000000-0000-4000-8000-000000980005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Piscina è",
+   "description": "Vasca",
+   "address": "Via 1",
+   "documents": [
+    "d1",
+    "d2"
+   ]
+  },
+  "gym": {
+   "id": "a1000000-0000-4000-8000-000000980006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": null,
+   "description": null,
+   "address": null,
+   "documents": []
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000980007",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Estero",
+   "description": "",
+   "address": "",
+   "documents": []
+  }
+ },
+ "cases": [
+  {
+   "name": "router-course-locations-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'course-locations'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-restricted-unmapped-post",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'course-locations'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {
+    "title": "X"
+   }
+  },
+  {
+   "name": "router-course-locations-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980005",
+      "documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/mappa.pdf",
+        "filename": "mappa è.pdf",
+        "file_size_bytes": 2048,
+        "token": "a1000000-0000-4000-8000-000000980002"
+       },
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980003",
+        "creation_date": "2026-09-02T08:00:00Z",
+        "filepath": null,
+        "filename": "orari.pdf",
+        "file_size_bytes": null,
+        "token": "a1000000-0000-4000-8000-000000980004"
+       }
+      ],
+      "title": "Piscina è",
+      "description": "Vasca",
+      "address": "Via 1",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980006",
+      "documents": [],
+      "title": null,
+      "description": null,
+      "address": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980005",
+      "documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/mappa.pdf",
+        "filename": "mappa è.pdf",
+        "file_size_bytes": 2048,
+        "token": "a1000000-0000-4000-8000-000000980002"
+       },
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980003",
+        "creation_date": "2026-09-02T08:00:00Z",
+        "filepath": null,
+        "filename": "orari.pdf",
+        "file_size_bytes": null,
+        "token": "a1000000-0000-4000-8000-000000980004"
+       }
+      ],
+      "title": "Piscina è",
+      "description": "Vasca",
+      "address": "Via 1",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980006",
+      "documents": [],
+      "title": null,
+      "description": null,
+      "address": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980005",
+      "documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/mappa.pdf",
+        "filename": "mappa è.pdf",
+        "file_size_bytes": 2048,
+        "token": "a1000000-0000-4000-8000-000000980002"
+       },
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980003",
+        "creation_date": "2026-09-02T08:00:00Z",
+        "filepath": null,
+        "filename": "orari.pdf",
+        "file_size_bytes": null,
+        "token": "a1000000-0000-4000-8000-000000980004"
+       }
+      ],
+      "title": "Piscina è",
+      "description": "Vasca",
+      "address": "Via 1",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980006",
+      "documents": [],
+      "title": null,
+      "description": null,
+      "address": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980007",
+      "documents": [],
+      "title": "Estero",
+      "description": "",
+      "address": "",
+      "sport_association": "a1000000-0000-4000-8000-000000701002"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-course-locations-list-patch-not-allowed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-course-locations-list-delete-without-pk-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Location List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "POST": {
+      "course_location_id": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Course location id"
+      },
+      "documents": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Documents",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "documents_data": {
+       "type": "list",
+       "required": false,
+       "read_only": false,
+       "label": "Documents data",
+       "child": {
+        "type": "nested object",
+        "required": true,
+        "read_only": false,
+        "child": {
+         "type": "field",
+         "required": true,
+         "read_only": false
+        }
+       }
+      },
+      "title": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Title",
+       "max_length": 255
+      },
+      "description": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Description",
+       "max_length": 2048
+      },
+      "address": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Address",
+       "max_length": 255
+      },
+      "sport_association": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Sport association"
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-options-athlete",
+   "actor": "athlete",
+   "method": "OPTIONS",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Location List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "POST": {
+      "course_location_id": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Course location id"
+      },
+      "documents": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Documents",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "documents_data": {
+       "type": "list",
+       "required": false,
+       "read_only": false,
+       "label": "Documents data",
+       "child": {
+        "type": "nested object",
+        "required": true,
+        "read_only": false,
+        "child": {
+         "type": "field",
+         "required": true,
+         "read_only": false
+        }
+       }
+      },
+      "title": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Title",
+       "max_length": 255
+      },
+      "description": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Description",
+       "max_length": 2048
+      },
+      "address": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Address",
+       "max_length": 255
+      },
+      "sport_association": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Sport association"
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-format-json-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-format-json-slash-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations.json/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-format-unknown-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations.xml",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-list-format-unknown-anonymous-not-found",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/course-locations.api/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-course-locations-list-query-format-unknown-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/?format=xml",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-create-invalid-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_location_id": [
+     "Must be a valid UUID."
+    ],
+    "title": [
+     "This field may not be blank."
+    ],
+    "description": [
+     "Ensure this field has no more than 2048 characters."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "course_location_id": "abc",
+    "title": "",
+    "description": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   }
+  },
+  {
+   "name": "router-course-locations-create-existing-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_location_id": [
+     "course location with this course location id already exists."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980006"
+   }
+  },
+  {
+   "name": "router-course-locations-create-unknown-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000989999\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000989999"
+   }
+  },
+  {
+   "name": "router-course-locations-create-foreign-association-forbidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002",
+    "title": ""
+   }
+  },
+  {
+   "name": "router-course-locations-create-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "router-course-locations-create-athlete-invalid",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "title": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "title": ""
+   }
+  },
+  {
+   "name": "router-course-locations-create-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "title": "X"
+   }
+  },
+  {
+   "name": "router-course-locations-create-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [],
+    "title": "Campo router",
+    "description": "Erba",
+    "address": "Via 9",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Campo router",
+     "description": "Erba",
+     "address": "Via 9"
+    }
+   },
+   "body": {
+    "title": "Campo router",
+    "description": "Erba",
+    "address": "Via 9"
+   }
+  },
+  {
+   "name": "router-course-locations-create-full-collaborator-empty",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [],
+    "title": null,
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "full_collaborator",
+    "id": "$new",
+    "stored": {
+     "title": null,
+     "description": null,
+     "address": null
+    }
+   },
+   "body": {}
+  },
+  {
+   "name": "router-course-locations-create-format-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations.json",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [],
+    "title": "Formato",
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Formato",
+     "description": null,
+     "address": null
+    }
+   },
+   "body": {
+    "title": "Formato"
+   }
+  },
+  {
+   "name": "router-course-locations-create-form-blank-title-is-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [],
+    "title": null,
+    "description": "",
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": null,
+     "description": "",
+     "address": null
+    }
+   },
+   "raw_body": "title=&description=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-course-locations-create-document-missing-key-keeps-location",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "document key not present"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Senza chiavi",
+     "description": null,
+     "address": null
+    }
+   },
+   "body": {
+    "title": "Senza chiavi",
+    "documents_data": [
+     {
+      "filename": "a.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "router-course-locations-detail-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-detail-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-detail-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'course-locations/a1000000-0000-4000-8000-000000980005'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-detail-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980005",
+    "documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980001",
+      "creation_date": "2026-09-01T08:00:00.500000Z",
+      "filepath": "docs/mappa.pdf",
+      "filename": "mappa è.pdf",
+      "file_size_bytes": 2048,
+      "token": "a1000000-0000-4000-8000-000000980002"
+     },
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980003",
+      "creation_date": "2026-09-02T08:00:00Z",
+      "filepath": null,
+      "filename": "orari.pdf",
+      "file_size_bytes": null,
+      "token": "a1000000-0000-4000-8000-000000980004"
+     }
+    ],
+    "title": "Piscina è",
+    "description": "Vasca",
+    "address": "Via 1",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980006",
+    "documents": [],
+    "title": null,
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-foreign-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980007/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No CourseLocation matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-unknown-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000989999/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No CourseLocation matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-malformed-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/abc/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-list-segment-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/list/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-format-json",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005.json",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980005",
+    "documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980001",
+      "creation_date": "2026-09-01T08:00:00.500000Z",
+      "filepath": "docs/mappa.pdf",
+      "filename": "mappa è.pdf",
+      "file_size_bytes": 2048,
+      "token": "a1000000-0000-4000-8000-000000980002"
+     },
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980003",
+      "creation_date": "2026-09-02T08:00:00Z",
+      "filepath": null,
+      "filename": "orari.pdf",
+      "file_size_bytes": null,
+      "token": "a1000000-0000-4000-8000-000000980004"
+     }
+    ],
+    "title": "Piscina è",
+    "description": "Vasca",
+    "address": "Via 1",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-format-json-slash",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980007.json/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980007",
+    "documents": [],
+    "title": "Estero",
+    "description": "",
+    "address": "",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-retrieve-format-unknown-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005.yaml",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-detail-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-course-locations-detail-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Location Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "PUT": {
+      "course_location_id": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Course location id"
+      },
+      "documents": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Documents",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "documents_data": {
+       "type": "list",
+       "required": false,
+       "read_only": false,
+       "label": "Documents data",
+       "child": {
+        "type": "nested object",
+        "required": true,
+        "read_only": false,
+        "child": {
+         "type": "field",
+         "required": true,
+         "read_only": false
+        }
+       }
+      },
+      "title": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Title",
+       "max_length": 255
+      },
+      "description": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Description",
+       "max_length": 2048
+      },
+      "address": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Address",
+       "max_length": 255
+      },
+      "sport_association": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Sport association"
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-detail-options-foreign-no-actions",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980007/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Location Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-detail-options-malformed-no-actions",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course-locations/abc/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Location Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-detail-options-athlete-server-error",
+   "actor": "athlete",
+   "method": "OPTIONS",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-partial-update-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "title": "Mai"
+   }
+  },
+  {
+   "name": "router-course-locations-update-format-json-server-error",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "title": "Mai"
+   }
+  },
+  {
+   "name": "router-course-locations-update-foreign-not-found",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980007/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No CourseLocation matches the given query."
+   },
+   "effect": null,
+   "body": {
+    "title": "X"
+   }
+  },
+  {
+   "name": "router-course-locations-update-malformed-not-found",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-locations/abc/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null,
+   "body": {
+    "title": "X"
+   }
+  },
+  {
+   "name": "router-course-locations-update-athlete-server-error",
+   "actor": "athlete",
+   "method": "PUT",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "title": "X"
+   }
+  },
+  {
+   "name": "router-course-locations-update-blank-title",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "title": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "title": ""
+   }
+  },
+  {
+   "name": "router-course-locations-update-foreign-association-forbidden",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-course-locations-update-owner-put-is-partial",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980006",
+    "documents": [],
+    "title": "Palestra router",
+    "description": null,
+    "address": "Via 4",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "gym",
+    "changes": {
+     "title": [
+      "None",
+      "Palestra router"
+     ],
+     "address": [
+      "None",
+      "Via 4"
+     ]
+    },
+    "stored": {
+     "title": "Palestra router",
+     "description": null,
+     "address": "Via 4"
+    }
+   },
+   "body": {
+    "title": "Palestra router",
+    "address": "Via 4"
+   }
+  },
+  {
+   "name": "router-course-locations-update-same-values-no-audit",
+   "actor": "full_collaborator",
+   "method": "PUT",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980006",
+    "documents": [],
+    "title": "Palestra router",
+    "description": null,
+    "address": "Via 4",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "label": "gym",
+    "changes": {},
+    "stored": {
+     "title": "Palestra router",
+     "description": null,
+     "address": "Via 4"
+    }
+   },
+   "body": {
+    "title": "Palestra router"
+   }
+  },
+  {
+   "name": "router-course-locations-destroy-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980007/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No CourseLocation matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-destroy-malformed-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course-locations/abc/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-destroy-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-destroy-owner-with-documents",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "label": "pool"
+   }
+  },
+  {
+   "name": "router-course-locations-destroy-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980005/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No CourseLocation matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-course-locations-destroy-format-json",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006.json",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "actor": "full_collaborator",
+    "label": "gym"
+   }
+  }
+ ]
+}
