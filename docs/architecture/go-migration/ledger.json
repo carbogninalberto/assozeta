@@ -29743,25 +29743,72 @@
         "target": "SpectacularAPIView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/apischema/apischema.go",
+        "BE_GO/internal/apischema/locale.go",
+        "BE_GO/internal/apischema/negotiate.go",
+        "BE_GO/internal/apischema/render.go",
+        "BE_GO/internal/apischema/schema.yaml",
+        "BE_GO/internal/apischema/schema.json",
+        "BE_GO/internal/apischema/catalog.json",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/schema/",
+          "/api/v2/schema/",
+          "/api/schema/"
+        ],
+        "request": "GET/HEAD ?format=yaml|json, ?lang=<code>, ?version=<label>; Accept selects vnd.oai.openapi, application/yaml, vnd.oai.openapi+json or application/json (indent=1..8).",
+        "response": "OpenAPI 3.0.3 document (YAML or JSON indent 4/indent) in the lang or LocaleMiddleware language; Content-Disposition inline; filename=\"Bakney Sport API[ (version)].<format>\"; OPTIONS metadata.",
+        "errors": "404 unknown format and 406 unacceptable Accept rendered with the first (YAML) renderer; 401 invalid token; 403 admin without session, collaborator without registry mapping, scoped impersonation; 405 other methods; 500 refused inputs (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "AllowAny; ScopedJWTAuthentication identity resolution when a bearer token is sent; SERVE_PUBLIC (document independent of the user).",
+        "resource_scope": "None: generated from the URL configuration and translation catalogs.",
+        "side_effects": "None.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/api_schema_http.json",
+        "TESTS/fixtures/generate_api_schema_http.py",
+        "TESTS/contracts/test_api_schema_http.py",
+        "TESTS/adapters/django/api_schema_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/api-schema.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/api-schema-http-red/results.json",
+          "receipt_sha256": "1a2def82610a3deb695b8f0b364c0fde23fff0ee87fef9c443fb07889379dbd5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact bytes, CSRF cookie and token checks.",
+          "artifact": "quality-reports/go-migration/api-schema-http-green/results.json",
+          "receipt_sha256": "df57e4b018b87468bed463d544617665ae49dd2f2bae12ab1269de2cc85306a2"
+        },
+        {
+          "revision": "committing change with the it/en fallback exemption matched case-insensitively",
+          "result": "Mutation control: fails Go on api-schema-lang-upper-english (response.body).",
+          "artifact": "quality-reports/go-migration/api-schema-http-fallback-case/results.json",
+          "receipt_sha256": "ad613faa5f3a00d631321a698d47e156ca7799538845e2616245251b7f8682cc"
+        }
+      ],
+      "notes": [
+        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md."
+      ]
     },
     {
       "id": "route:BE/core/urls.py:schema/redoc/ -> SpectacularRedocView.as_view(url_name='schema')",
@@ -29778,25 +29825,72 @@
         "target": "SpectacularRedocView.as_view(url_name='schema')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/apischema/apischema.go",
+        "BE_GO/internal/apischema/locale.go",
+        "BE_GO/internal/apischema/negotiate.go",
+        "BE_GO/internal/apischema/render.go",
+        "BE_GO/internal/apischema/schema.yaml",
+        "BE_GO/internal/apischema/schema.json",
+        "BE_GO/internal/apischema/catalog.json",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/schema/redoc/",
+          "/api/v2/schema/redoc/",
+          "/api/schema/redoc/"
+        ],
+        "request": "GET/HEAD ?lang, ?version, ?format=html; Accept text/html or a wildcard.",
+        "response": "Redoc page with the HTML-escaped schema URL; OPTIONS renders the page template with empty values.",
+        "errors": "'<status> <reason>' text/html for 401/403/404/405/406; 500 refused inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "AllowAny; identity resolution as for schema/.",
+        "resource_scope": "None.",
+        "side_effects": "None.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/api_schema_http.json",
+        "TESTS/fixtures/generate_api_schema_http.py",
+        "TESTS/contracts/test_api_schema_http.py",
+        "TESTS/adapters/django/api_schema_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/api-schema.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/api-schema-http-red/results.json",
+          "receipt_sha256": "1a2def82610a3deb695b8f0b364c0fde23fff0ee87fef9c443fb07889379dbd5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact bytes, CSRF cookie and token checks.",
+          "artifact": "quality-reports/go-migration/api-schema-http-green/results.json",
+          "receipt_sha256": "df57e4b018b87468bed463d544617665ae49dd2f2bae12ab1269de2cc85306a2"
+        },
+        {
+          "revision": "committing change with the it/en fallback exemption matched case-insensitively",
+          "result": "Mutation control: fails Go on api-schema-lang-upper-english (response.body).",
+          "artifact": "quality-reports/go-migration/api-schema-http-fallback-case/results.json",
+          "receipt_sha256": "ad613faa5f3a00d631321a698d47e156ca7799538845e2616245251b7f8682cc"
+        }
+      ],
+      "notes": [
+        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md."
+      ]
     },
     {
       "id": "route:BE/core/urls.py:schema/swagger-ui/ -> SpectacularSwaggerView.as_view(url_name='schema')",
@@ -29813,25 +29907,72 @@
         "target": "SpectacularSwaggerView.as_view(url_name='schema')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/apischema/apischema.go",
+        "BE_GO/internal/apischema/locale.go",
+        "BE_GO/internal/apischema/negotiate.go",
+        "BE_GO/internal/apischema/render.go",
+        "BE_GO/internal/apischema/schema.yaml",
+        "BE_GO/internal/apischema/schema.json",
+        "BE_GO/internal/apischema/catalog.json",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/schema/swagger-ui/",
+          "/api/v2/schema/swagger-ui/",
+          "/api/schema/swagger-ui/"
+        ],
+        "request": "GET/HEAD ?lang, ?version, ?format=html; Accept text/html or a wildcard.",
+        "response": "Swagger UI page with the schema URL (format/lang/version kept) and a masked CSRF token; Set-Cookie csrftoken (kept, unmasked or new secret); Cross-Origin-Opener-Policy unsafe-none.",
+        "errors": "'<status> <reason>' text/html for 401/403/404/405/406; OPTIONS 500 (template include without context); 500 refused inputs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "AllowAny; identity resolution as for schema/.",
+        "resource_scope": "None.",
+        "side_effects": "CSRF cookie only.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/api_schema_http.json",
+        "TESTS/fixtures/generate_api_schema_http.py",
+        "TESTS/contracts/test_api_schema_http.py",
+        "TESTS/adapters/django/api_schema_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/api-schema.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 76/76; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/api-schema-http-red/results.json",
+          "receipt_sha256": "1a2def82610a3deb695b8f0b364c0fde23fff0ee87fef9c443fb07889379dbd5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 76/76 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact bytes, CSRF cookie and token checks.",
+          "artifact": "quality-reports/go-migration/api-schema-http-green/results.json",
+          "receipt_sha256": "df57e4b018b87468bed463d544617665ae49dd2f2bae12ab1269de2cc85306a2"
+        },
+        {
+          "revision": "committing change with the it/en fallback exemption matched case-insensitively",
+          "result": "Mutation control: fails Go on api-schema-lang-upper-english (response.body).",
+          "artifact": "quality-reports/go-migration/api-schema-http-fallback-case/results.json",
+          "receipt_sha256": "ad613faa5f3a00d631321a698d47e156ca7799538845e2616245251b7f8682cc"
+        }
+      ],
+      "notes": [
+        "Implementing: drf-spectacular schema (YAML/JSON, every catalog language, version, indent), swagger-ui and redoc pages served from documents Django generates (TESTS/adapters/django/api_schema.py; --check drift test in go-quality). lang/version values outside the documented character sets, Accept headers needing email.message parsing and queries over 1000 fields are refused with a 500. See docs/architecture/go-migration/api-schema.md."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/<str:uid>/delete -> delete_document",
