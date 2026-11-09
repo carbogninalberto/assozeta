@@ -14,7 +14,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/profile/sections/DataManagement.svelte": "349a510108fde62e09cd746c5934f445f3c176efe43946541a59a50cd1890bbd",
     "UI/src/routes/profile/sections/DataExports.svelte": "55fd9c417dab5ddc9a26c7e760a8eef2db555b22be1b26e6803946069ec5446a",
     "BE/application/views/export_views.py": "1620991baa696f9ea410edc33fe11a612c8dd9d7d9d5ef8ceb9b0b3cce55544a",
-    "BE/application/tasks.py": "869fe4be173a93e015be7166c72e0b08a0d4b1140b00cf8510926e58087aba70",
+    "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
     "UI/src/routes/profile/ProfileMenu.svelte": "c083936170965608775be53540477754b033d3940313bfce54b09a9dfe426847",
     // Reviewed: association scope is retained for both endpoints; links to
     // soft-deleted associates now survive export and repeated restore.
