@@ -104,8 +104,8 @@ jobs:
       historical_rehearsal: ${{ steps.plan.outputs.historical_rehearsal }}
       manual_revision: ${{ steps.pin.outputs.manual_revision }}
       comprehensive: ${{ inputs.comprehensive }}
-      appliance_scope: ${{ (inputs.comprehensive || steps.plan.outputs.historical_rehearsal == 'true') && 'full' || 'compatibility' }}
-      appliance_required: ${{ inputs.comprehensive || inputs.appliance || steps.plan.outputs.historical_rehearsal == 'true' }}
+      appliance_scope: ${{ (inputs.comprehensive || github.event_name == 'schedule' || steps.plan.outputs.historical_rehearsal == 'true') && 'full' || 'compatibility' }}
+      appliance_required: ${{ inputs.comprehensive || inputs.appliance || github.event_name == 'schedule' || steps.plan.outputs.historical_rehearsal == 'true' }}
       release_binding: ${{ steps.binding.outputs.release_binding }}
       release_binding_release: ${{ steps.binding.outputs.release_binding_release }}
       release_binding_revision: ${{ steps.binding.outputs.release_binding_revision }}

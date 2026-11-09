@@ -179,6 +179,23 @@ class ReleaseWorkflowGateTests(unittest.TestCase):
         for suite in ('--suite python', '--suite node --with-browser', '--suite bot-mcp'):
             self.assertIn(suite, contracts)
 
+    def test_pull_requests_capture_only_with_the_manual_full_label(self):
+        trigger = self.main[True]['pull_request']
+        self.assertIn('labeled', trigger['types'])
+        verify = self.main['jobs']['verify']['if']
+        self.assertIn("github.event_name != 'pull_request'", verify)
+        self.assertIn("contains(github.event.pull_request.labels.*.name, 'manual-full')", verify)
+        # Unrelated labels must not restart the PR's checks.
+        self.assertIn("github.event.label.name != 'manual-full'", self.main['jobs']['plan']['if'])
+        self.assertIn('-ignored-', self.main['concurrency']['group'])
+        # The offline checks still run on every PR.
+        self.assertNotIn('pull_request', str(self.main['jobs']['offline'].get('if', '')))
+
+    def test_schedule_keeps_the_historical_appliance_rehearsal(self):
+        outputs = self.shared['jobs']['verify']['outputs']
+        self.assertIn("github.event_name == 'schedule'", outputs['appliance_scope'])
+        self.assertIn("github.event_name == 'schedule'", outputs['appliance_required'])
+
     def test_verify_job_generates_and_verifies_the_release_binding(self):
         verify = self.shared['jobs']['verify']
         steps = verify['steps']
