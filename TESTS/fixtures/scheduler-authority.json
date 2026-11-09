@@ -8,10 +8,35 @@
   "cases": {
     "configuration_authority": {
       "expected": {
-        "declared_count": 21,
+        "declared_count": 22,
         "effective_names": [
-          "bakney-pairing-maintenance"
+          "association-quote-assign",
+          "auto-archive-subscription",
+          "auto-delete-orphan-medical-certificate",
+          "auto-mark-attendance",
+          "bakney-pairing-maintenance",
+          "change-type-of-stripe-payments",
+          "cleanup-data-restores",
+          "cleanup-old-exports",
+          "clear-deleted-subscription",
+          "clear-expired-subscription-tokens",
+          "delete-old-audit-logs",
+          "delete-users-with-request",
+          "generate-coupon-if-not-exists",
+          "mark-as-paid-payments-checking-stripe",
+          "notify-backup-failures",
+          "renew-memberships-payments",
+          "reset-communication-daily-email-balance",
+          "send-expired-certificate-email",
+          "send-expiring-certificate-email",
+          "send-reminders",
+          "send-user-partial-registration-email",
+          "update-age-of-associates"
         ],
+        "settings_schedule_defined": false,
+        "effective_matches_declarations": true,
+        "effective_extra": [],
+        "unregistered_tasks": [],
         "effective_task": "instance.sso.tasks.maintain_bakney_pairings",
         "effective_interval_seconds": 60,
         "timezone": "UTC",
@@ -33,6 +58,15 @@
             "schedule": {
               "kind": "interval",
               "seconds": 3600
+            },
+            "args": []
+          },
+          "notify-backup-failures": {
+            "source": "BE/core/celery.py",
+            "task": "instance.backups.notify_failures",
+            "schedule": {
+              "kind": "interval",
+              "seconds": 300.0
             },
             "args": []
           },
@@ -284,7 +318,7 @@
             "args": []
           },
           "bakney-pairing-maintenance": {
-            "source": "BE/core/settings.py",
+            "source": "BE/core/celery.py",
             "task": "instance.sso.tasks.maintain_bakney_pairings",
             "schedule": {
               "kind": "interval",
@@ -295,11 +329,46 @@
         }
       }
     },
+    "beat_task_routing": {
+      "expected": {
+        "default_queues": [
+          "celery"
+        ],
+        "all_listed_queues": [
+          "assozeta-go"
+        ],
+        "one_listed": {
+          "instance.backups.notify_failures": "assozeta-go"
+        },
+        "scheduled_task_count": 22
+      }
+    },
     "cold_bootstrap": {
       "expected": {
         "names": [
+          "association-quote-assign",
+          "auto-archive-subscription",
+          "auto-delete-orphan-medical-certificate",
+          "auto-mark-attendance",
           "bakney-pairing-maintenance",
-          "celery.backend_cleanup"
+          "celery.backend_cleanup",
+          "change-type-of-stripe-payments",
+          "cleanup-data-restores",
+          "cleanup-old-exports",
+          "clear-deleted-subscription",
+          "clear-expired-subscription-tokens",
+          "delete-old-audit-logs",
+          "delete-users-with-request",
+          "generate-coupon-if-not-exists",
+          "mark-as-paid-payments-checking-stripe",
+          "notify-backup-failures",
+          "renew-memberships-payments",
+          "reset-communication-daily-email-balance",
+          "send-expired-certificate-email",
+          "send-expiring-certificate-email",
+          "send-reminders",
+          "send-user-partial-registration-email",
+          "update-age-of-associates"
         ],
         "cleanup_hour": "4",
         "cleanup_minute": "0",
@@ -1705,7 +1774,7 @@
     "No production scheduler or ownership selector is activated",
     "Database heap numeric-hour filtering is not yet a portable scheduling contract",
     "No broker persistence, crash recovery, restore or Django/Go handoff proof",
-    "Static declaration authority needs an explicit product decision before restoring twenty schedules",
+    "The twenty-two core/celery.py declarations are the effective fresh schedule; Go publishes only from persisted supported rows and seeds none of them",
     "Solar rows exist but ephem is absent in the pinned runtime",
     "Workflow ETA commands, task retries and worker rate limits need separate transport and ownership contracts"
   ]

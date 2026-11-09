@@ -28,9 +28,14 @@ def timestamp(value):
     return datetime.fromisoformat(value)
 
 
-def declarations(path, target):
+def declarations(path, target, required=True):
     """Inspect actual declarations without executing a second configuration."""
-    tree = ast.parse(path.read_text())
+    return declarations_text(path.read_text(), target, str(path.relative_to(ROOT)), required)
+
+
+def declarations_text(text, target, source, required=True):
+    """declarations() of a source text (also a file at another revision)."""
+    tree = ast.parse(text)
     for node in ast.walk(tree):
         if not isinstance(node, ast.Assign) or not any(ast.unparse(t) == target for t in node.targets):
             continue
@@ -47,11 +52,47 @@ def declarations(path, target):
             else:
                 schedule = {'kind': 'interval', 'seconds': ast.literal_eval(raw)}
             result[ast.literal_eval(key)] = {
-                'source': str(path.relative_to(ROOT)), 'task': ast.literal_eval(fields['task']),
+                'source': source, 'task': ast.literal_eval(fields['task']),
                 'schedule': schedule, 'args': list(ast.literal_eval(fields['args'])) if 'args' in fields else [],
             }
         return result
+    if not required:
+        return {}
     raise AssertionError(f'Missing declaration {target}')
+
+
+def effective_entries(schedule):
+    """The loaded Celery configuration, normalized like the declarations (plus options and kwargs)."""
+    from celery.schedules import crontab
+    result = {}
+    for name, entry in schedule.items():
+        raw = entry['schedule']
+        if isinstance(raw, crontab):
+            value = {'kind': 'cron', 'minute': raw._orig_minute, 'hour': raw._orig_hour,
+                     'day_of_week': raw._orig_day_of_week, 'day_of_month': raw._orig_day_of_month,
+                     'month_of_year': raw._orig_month_of_year}
+        elif isinstance(raw, (int, float)) and not isinstance(raw, bool):
+            value = {'kind': 'interval', 'seconds': raw}
+        else:
+            raise AssertionError(f'{name}: schedule type outside the characterized subset')
+        result[name] = {'task': entry['task'], 'schedule': value, 'args': list(entry.get('args', ())),
+                        'kwargs': dict(entry.get('kwargs', {})), 'options': dict(entry.get('options', {})),
+                        'relative': entry.get('relative', False)}
+    return result
+
+
+def routed_queues(app, names, value):
+    """The queue Celery's router selects for each task name with GO_TASK_QUEUE_TASKS=value."""
+    from core.task_routing import go_task_routes
+    saved = app.conf.task_routes
+    try:
+        app.conf.task_routes = go_task_routes(value)
+        app.amqp.flush_routes()
+        router = app.amqp.Router()
+        return {name: router.route({}, name)['queue'].name for name in names}
+    finally:
+        app.conf.task_routes = saved
+        app.amqp.flush_routes()
 
 
 def observe(fixture):
@@ -77,14 +118,33 @@ def observe(fixture):
     observations = {}
     effective = app.conf.beat_schedule
     declared = {**declarations(ROOT / 'BE/core/celery.py', 'app.conf.beat_schedule'),
-                **declarations(ROOT / 'BE/core/settings.py', 'CELERY_BEAT_SCHEDULE')}
+                **declarations(ROOT / 'BE/core/settings.py', 'CELERY_BEAT_SCHEDULE', required=False)}
+    loaded = effective_entries(effective)
+    app.loader.import_default_modules()
+    tasks = sorted({entry['task'] for entry in loaded.values()})
     observations['configuration_authority'] = {
         'declared_count': len(declared), 'declarations': declared,
+        'settings_schedule_defined': hasattr(settings, 'CELERY_BEAT_SCHEDULE'),
         'effective_names': sorted(effective),
+        'effective_matches_declarations': {name: {k: loaded[name][k] for k in ('task', 'schedule', 'args')}
+                                           for name in loaded} == {name: {k: v for k, v in entry.items() if k != 'source'}
+                                                                   for name, entry in declared.items()},
+        'effective_extra': sorted({(k, repr(v)) for entry in loaded.values() for k, v in entry.items()
+                                   if k in ('kwargs', 'options', 'relative') and v}),
+        'unregistered_tasks': sorted(set(tasks) - set(app.tasks)),
         'effective_task': effective['bakney-pairing-maintenance']['task'],
         'effective_interval_seconds': effective['bakney-pairing-maintenance']['schedule'],
         'timezone': str(app.timezone), 'enable_utc': app.conf.enable_utc,
         'rate_annotations': {name: value['rate_limit'] for name, value in app.conf.task_annotations.items()},
+    }
+    # GO_TASK_QUEUE_TASKS (core.task_routing): empty keeps every scheduled task on the
+    # default queue; a listed name goes to the Go consumer's queue, the others stay.
+    observations['beat_task_routing'] = {
+        'default_queues': sorted(set(routed_queues(app, tasks, '').values())),
+        'all_listed_queues': sorted(set(routed_queues(app, tasks, ','.join(tasks)).values())),
+        'one_listed': {name: queue for name, queue in routed_queues(
+            app, tasks, 'instance.backups.notify_failures').items() if queue != 'celery'},
+        'scheduled_task_count': len(tasks),
     }
     # Preserve schedule authority; replace only external transports after measuring
     # actual core.settings/core.celery. Never touch developer .env or Redis.
