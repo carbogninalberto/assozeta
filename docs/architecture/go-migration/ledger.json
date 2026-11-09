@@ -24300,25 +24300,68 @@
         "target": "subscription_transfer",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_transfer.go",
+        "BE_GO/internal/repository/subscription_transfer.go",
+        "BE_GO/internal/service/subscription_transfer.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/handler/subscription_transfer.go",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/emailrender/templates/email/account/email_welcome_password_message.html",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/transfer",
+          "/api/v2/subscription/<uid>/transfer",
+          "/api/subscription/<uid>/transfer"
+        ],
+        "request": "POST JSON or form {recipient: <user uuid>} or {email: <address>}.",
+        "response": "201 {subscription, expires_at, requester, recipient, token, status: 2}.",
+        "errors": "400 [badly formed hexadecimal UUID string]; 404 {msg: Subscription not found.}; 403 {msg: You are not the owner of the subscription.}; 400 pending transfer {msg}; 409 {msg: You cannot transfer the subscription to yourself.}; 400 empty (recipient not found); 400 {msg: Email is required.}; 403 User is not a sport association (athlete e-mail branch, after the account); 403 registry / admin session / scoped session; 405; 500 non-dict body, unconvertible recipient, non-string e-mail, refused inputs (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.update; collaborators act as the owner; the subscription's user must be request.user.",
+        "resource_scope": "Subscription by id through the group-aware manager (X-Group-Id) and the impersonation association; recipient any non-deleted user other than the requester.",
+        "side_effects": "Expiry update of all transfers past their expiry (no audit); optional athlete account (create entry) and send_mail_async Celery message; notification broadcast rows, Redis DB 0 list, user_broadcasts cache, Channels notification_push and mirrored envelope; SubscriptionTransfer create+accept, subscription/associate/tutor user updates and a relation made primary, with audit entries and index rows.",
+        "transaction": "Not atomic: every statement and save() commits on its own.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_transfer_http.json",
+        "TESTS/fixtures/generate_subscription_transfer_http.py",
+        "TESTS/contracts/test_subscription_transfer_http.py",
+        "TESTS/adapters/django/subscription_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-transfer-http-red-r2/results.json",
+          "receipt_sha256": "afc6cd1caf2ad54ae5908ce4d0df20eab5f9f6052eaab1d41cb84d37c186857b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-transfer-http-versioned-r1/results.json",
+          "receipt_sha256": "162f85c5fa057b2241c0003a075504c7fd3b1ca77d665aa5d1a2eac5198897fa"
+        },
+        {
+          "revision": "expiring only PENDING transfers (adding AND status=1 to the expiry update)",
+          "result": "Mutation control: fails Go on subscription-transfer-pending-transfer (the accepted transfer whose expiry passed keeps status 2).",
+          "artifact": "quality-reports/go-migration/subscription-transfer-http-mutation-r1/results.json",
+          "receipt_sha256": "28c38c6b0c362be2778eb1482b874cee587703feedd508f199c368df15911d07"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/<uid>/transfer for owners, collaborators and athletes owning the subscription: the global expiry update, pending check, recipient lookup (UUIDField conversions) or the e-mail branch (main tutor made primary, random athlete account with its create entry, welcome e-mail rendered with emailrender and published as send_mail_async; athletes get the 403 after the account), the recipient's notification (broadcast rows, Redis store, cache, Channels push and mirrored envelope), then the transfer create, subscription/associate/tutor user saves and the acceptance, each autocommitted with its audit entry. Empty subscription dates on a path reaching Subscription.save() and non-ASCII username prefixes or e-mail domains are refused with a 500 before the first write. See docs/architecture/go-migration/subscription-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/update -> subscription_update",
