@@ -2671,34 +2671,257 @@
         "target": "include(router.urls)",
         "syntax": "path"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/router_stock.go",
+        "BE_GO/internal/handler/router_stock.go",
+        "BE_GO/internal/handler/router_stock_course_locations.go",
+        "BE_GO/internal/handler/router_stock_course_subscriptions.go",
+        "BE_GO/internal/handler/router_stock_documents.go",
+        "BE_GO/internal/handler/router_stock_folders.go",
+        "BE_GO/internal/handler/router_stock_memberships.go",
+        "BE_GO/internal/handler/router_stock_persona_subscriptions.go",
+        "BE_GO/internal/handler/router_stock_personas.go",
+        "BE_GO/internal/handler/router_stock_templates.go",
+        "BE_GO/internal/repository/router_stock_deletes.go",
+        "BE_GO/internal/repository/router_stock_persona_subscriptions.go",
+        "BE_GO/internal/service/router_stock.go",
+        "BE_GO/internal/service/router_stock_persona_subscriptions.go",
+        "BE_GO/internal/handler/django_not_found.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/persona_subs_writes.go",
+        "BE_GO/internal/dto/persona_subs_writes.go",
+        "BE_GO/internal/repository/persona_subs_writes.go",
+        "BE_GO/internal/service/persona_subs_writes.go"
+      ],
       "dependencies": [
         "BE/application/urls.py",
         "BE/application/views/archive_views.py",
         "BE/application/views/course_views.py",
         "BE/application/views/subscriptions_views.py",
-        "BE/application/views/personas_views.py"
+        "BE/application/views/personas_views.py",
+        "BE/application/serializers/user_serializers.py",
+        "BE/application/serializers/courses_serializers.py",
+        "BE/application/serializers/subscriptions_serializers.py",
+        "BE/application/serializers/personas_serializers.py",
+        "BE/application/permissions_registry.py",
+        "BE/core/settings.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/mixin.py",
+        "BE/application/tenant_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py"
       ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/",
+          "/<prefix>/",
+          "/<prefix>/<pk>/",
+          "/<prefix>.<format>",
+          "/<prefix>/<pk>.<format>",
+          "/documents/bulk_delete/",
+          "/api/v1/<prefix>/",
+          "/api/v2/<prefix>/"
+        ],
+        "request": "DefaultRouter list, detail, documents bulk_delete and format-suffix routes of 8 ModelViewSets plus the API root; prefixes course-locations, folders, documents, templates, subscription/memberships, course-subscriptions, personas, personas-subscriptions.",
+        "response": "List GET: the viewset list(); list POST: stock create (templates: its create()); detail GET: stock retrieve; PUT: the viewset update() (partial; personas-subscriptions: the stock non-partial update); PATCH: 500 (personas-subscriptions: the stock partial update); personas-subscriptions POST: validation, then 500 with nothing written; DELETE: stock destroy (personas and personas-subscriptions: hard delete through the Collector). Root: reversed list URLs on the request host.",
+        "errors": "Unknown format 404 before authentication; handlers rejecting format=/partial= 500; viewset delete() on the list route 500 (or 403 User is not a sport association); 405 for unmapped methods.",
+        "authentication": "DRF IsAuthenticated (JWT/session); the API root AllowAny.",
+        "permissions": "No permission-registry mapping: restricted collaborators 403 'Access denied: No permission mapping for endpoint ...'.",
+        "resource_scope": "The viewsets' get_queryset (owner's association; group-aware/live managers where the model has them).",
+        "side_effects": "Creates, partial updates and deletes with their auditlog entries and index rows, as the per-viewset families pin.",
+        "transaction": "Not atomic except the viewsets that declare it (course-subscriptions update); Model.delete() runs the Collector in one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/router_root_http.json",
+        "TESTS/fixtures/generate_router_root_http.py",
+        "TESTS/contracts/test_router_root_http.py",
+        "TESTS/adapters/django/router_root_http.py",
+        "TESTS/fixtures/router_course_locations_http.json",
+        "TESTS/fixtures/generate_router_course_locations_http.py",
+        "TESTS/contracts/test_router_course_locations_http.py",
+        "TESTS/adapters/django/router_course_locations_http.py",
+        "TESTS/fixtures/router_folders_http.json",
+        "TESTS/fixtures/generate_router_folders_http.py",
+        "TESTS/contracts/test_router_folders_http.py",
+        "TESTS/adapters/django/router_folders_http.py",
+        "TESTS/fixtures/router_documents_http.json",
+        "TESTS/fixtures/generate_router_documents_http.py",
+        "TESTS/contracts/test_router_documents_http.py",
+        "TESTS/adapters/django/router_documents_http.py",
+        "TESTS/fixtures/router_templates_http.json",
+        "TESTS/fixtures/generate_router_templates_http.py",
+        "TESTS/contracts/test_router_templates_http.py",
+        "TESTS/adapters/django/router_templates_http.py",
+        "TESTS/fixtures/router_memberships_http.json",
+        "TESTS/fixtures/generate_router_memberships_http.py",
+        "TESTS/contracts/test_router_memberships_http.py",
+        "TESTS/adapters/django/router_memberships_http.py",
+        "TESTS/fixtures/router_course_subscriptions_http.json",
+        "TESTS/fixtures/generate_router_course_subscriptions_http.py",
+        "TESTS/contracts/test_router_course_subscriptions_http.py",
+        "TESTS/adapters/django/router_course_subscriptions_http.py",
+        "TESTS/fixtures/router_course_subscriptions_create_http.json",
+        "TESTS/fixtures/generate_router_course_subscriptions_create_http.py",
+        "TESTS/contracts/test_router_course_subscriptions_create_http.py",
+        "TESTS/adapters/django/router_course_subscriptions_create_http.py",
+        "TESTS/fixtures/router_personas_http.json",
+        "TESTS/fixtures/generate_router_personas_http.py",
+        "TESTS/contracts/test_router_personas_http.py",
+        "TESTS/adapters/django/router_personas_http.py",
+        "TESTS/fixtures/router_persona_subscriptions_http.json",
+        "TESTS/fixtures/generate_router_persona_subscriptions_http.py",
+        "TESTS/contracts/test_router_persona_subscriptions_http.py",
+        "TESTS/adapters/django/router_persona_subscriptions_http.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/unknown-paths.md"
+        "docs/architecture/go-migration/router-stock.md",
+        "docs/architecture/go-migration/persona-subs-writes.md",
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-root): Django 13/13; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-root-http-red-r1/results.json",
+          "receipt_sha256": "765e352b31d53402e4663dfa3b0b01148a55b08d8de989250455623adb10abc0"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-root): 13/13 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-root-http-green-r1/results.json",
+          "receipt_sha256": "cce1595f9ed9eb972e874e8bd824ebd3cf3ed015032b11c9b71ad0196b576949"
+        },
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-course-locations): Django 67/67; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-course-locations-http-probe-r1/results.json",
+          "receipt_sha256": "d80ca944d0e91b7ea1945c5f7e0662fe0a6eec7f81feb555e5bf3d16888e1e68"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-course-locations): 67/67 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-course-locations-http-green-r1/results.json",
+          "receipt_sha256": "addffc6d05cf225a838f17b6815f683d3ca43f2339ce3e5b9884d3e3c3e81e85"
+        },
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-folders): Django 52/52; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-folders-http-red-r1/results.json",
+          "receipt_sha256": "2504199280b3d6f133fff2288507aafd67784f2496d1742b5ab96e6b707c0668"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-folders): 52/52 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-folders-http-green-r1/results.json",
+          "receipt_sha256": "c53e5ff9f4e1fe7dc99e1aa3c56399a36ac151a8df9f3a586f015dc8a83ffa0b"
+        },
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-documents): Django 54/54; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-documents-http-red-r1/results.json",
+          "receipt_sha256": "f691cd5ae5fd53ca7497c599f4c5f260f3201df1c9ccac08490efb06829de596"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-documents): 54/54 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-documents-http-green-r1/results.json",
+          "receipt_sha256": "d4f38ccb58568011831950e688c3212185726d31d7067a0ac06b578965dfeb7c"
+        },
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-templates): Django 45/45; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-templates-http-red-r1/results.json",
+          "receipt_sha256": "2f1029a2f4cd3426051433f0ba8151b6fecd3972ecabbb83fddfad46c5b4848f"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-templates): 45/45 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-templates-http-green-r1/results.json",
+          "receipt_sha256": "b666d79d436d112fc64fd420a449bae1a4b4dc8fdd5b5a8a957b9530c7da49e6"
+        },
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-memberships): Django 49/49; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-memberships-http-red-r1/results.json",
+          "receipt_sha256": "959f6ac105ecdb1278f9a965fde58b26e9cf16131bd2e024ee9493c401a635ee"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-memberships): 49/49 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-memberships-http-green-r1/results.json",
+          "receipt_sha256": "08bd87fb3577f30dea0ee172d416e3b7de901685ff851daeef82f213226a918f"
+        },
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-course-subscriptions): Django 45/45; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-course-subscriptions-http-red-r1/results.json",
+          "receipt_sha256": "88fed85d45ce0ee4409c88fb98db5193b926fa14536bce004b458f973f8d6db2"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-course-subscriptions): 45/45 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-course-subscriptions-http-green-r1/results.json",
+          "receipt_sha256": "c6b3c39442ac53cd7caac9a2d6f485281c29f11c05083454c04a99a234c8dc3c"
+        },
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-course-subscriptions-create): Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-course-subscriptions-create-http-red-r1/results.json",
+          "receipt_sha256": "8eec33ae548a7cb74ba8c6b5390811ddd59654aefef3c4455022e1e114be8ceb"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-course-subscriptions-create): 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-course-subscriptions-create-http-green-r1/results.json",
+          "receipt_sha256": "4c5a5473f5f35566fe670dccbec8d3bbc80660b9c6e1651ca1d9272a6d2d0d2f"
+        },
+        {
+          "revision": "committing change, before Go code (router routes unregistered)",
+          "result": "RED (router-personas): Django 51/51; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/router-personas-http-red-r1/results.json",
+          "receipt_sha256": "04ff9d3aec00cae5d7fbda553c9f19d5e5a1b6542fece1706e75f33385d5e4f6"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-personas): 51/51 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/router-personas-http-green-r1/results.json",
+          "receipt_sha256": "7905acf64b80c149304877e9f8a36ea485c2fe027933f114d0a0ad1ac69f5508"
+        },
+        {
+          "revision": "committing change, before the personas-subscriptions write code (writes refused)",
+          "result": "RED (router-persona-subscriptions): Django 73/73; Go 500 on the first case (router-persona-subscriptions-create-owner-required).",
+          "artifact": "quality-reports/go-migration/router-persona-subscriptions-http-red-writes-r1/results.json",
+          "receipt_sha256": "81744d80bcde818b0b200d27ba3dbcc3cc92166c6ce335bd715288e48893c970"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN (router-persona-subscriptions): 73/73 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact subscription, tag-link, audit and index effects.",
+          "artifact": "quality-reports/go-migration/router-persona-subscriptions-http-green-writes-r1/results.json",
+          "receipt_sha256": "1a9998b958930f8c187270846b26dd7ab8b9775c1f09d62821aba7d9bce0f26a"
+        },
+        {
+          "revision": "committing change with the course-subscriptions router destroy finding soft-deleted rows",
+          "result": "Mutation control: fails Go on router-course-subscriptions-destroy-deleted-not-found (204 instead of 404).",
+          "artifact": "quality-reports/go-migration/router-course-subscriptions-http-mutation-r1/results.json",
+          "receipt_sha256": "ea14972b9c4aab825b3840b7b0024dc681997499c7fe3f8163fdd4fb17c5a277"
+        },
+        {
+          "revision": "committing change with the subscription_id unique check ignoring the X-Group-Id filter",
+          "result": "Mutation control: fails Go on router-persona-subscriptions-create-group-header-id-free-server-error (400 instead of 500).",
+          "artifact": "quality-reports/go-migration/router-persona-subscriptions-http-mutation-writes-r1/results.json",
+          "receipt_sha256": "61ec40fd68c2c5815dd05f3d86002b06cee71909eb5607eb22ade23dc2425b97"
+        }
       ],
       "notes": [
-        "Characterized, not ported (unknown-paths.md, 'include(router.urls)'): DefaultRouter list/detail/format routes for 8 ModelViewSets, documents/bulk_delete/ and the AllowAny API root. Reachable and writing (list POST is a real create; detail DELETE is the stock destroy; PATCH and format routes 500 from the custom signatures), IsAuthenticated, no permission-registry mapping (restricted collaborators 403). No repository client calls them. Go answers them with the 404 page; a port needs per-viewset stock create/retrieve/destroy families."
+        "Implementing via the router-* families (router-stock.md, persona-subs-writes.md): every DefaultRouter route of the 8 registrations and the API root, including the personas-subscriptions stock create, update and partial_update. Input-level refusals (500 before any write) are listed in the two docs."
       ]
     },
     {
@@ -2793,26 +3016,120 @@
         "target": "include('application.urls')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/django_not_found.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/middleware/session_audit.go",
+        "BE_GO/internal/domain/router_stock.go",
+        "BE_GO/internal/handler/router_stock.go",
+        "BE_GO/internal/handler/router_stock_course_locations.go",
+        "BE_GO/internal/handler/router_stock_course_subscriptions.go",
+        "BE_GO/internal/handler/router_stock_documents.go",
+        "BE_GO/internal/handler/router_stock_folders.go",
+        "BE_GO/internal/handler/router_stock_memberships.go",
+        "BE_GO/internal/handler/router_stock_persona_subscriptions.go",
+        "BE_GO/internal/handler/router_stock_personas.go",
+        "BE_GO/internal/handler/router_stock_templates.go",
+        "BE_GO/internal/repository/router_stock_deletes.go",
+        "BE_GO/internal/repository/router_stock_persona_subscriptions.go",
+        "BE_GO/internal/service/router_stock.go",
+        "BE_GO/internal/service/router_stock_persona_subscriptions.go"
+      ],
+      "dependencies": [
+        "BE/application/urls.py",
+        "BE/core/urls.py",
+        "BE/core/middleware.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
         "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
+        "external_paths": [
+          "/"
+        ],
+        "request": "Any path under the include; children are their own ledger routes.",
+        "response": "Children: see their families. Unmatched paths: page_not_found 404 HTML page (every method), or the APPEND_SLASH 301 when path+\"/\" resolves; /api/ with a Bearer token: 500 page.",
+        "errors": "No 405 for unmatched paths (method checks belong to the child views).",
+        "authentication": "None for unmatched paths (no view runs).",
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "None for unmatched paths; an empty supplied session cookie is deleted.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/unknown_paths_http.json",
+        "TESTS/fixtures/generate_unknown_paths_http.py",
+        "TESTS/contracts/test_unknown_paths_http.py",
+        "TESTS/adapters/django/unknown_paths_http.py",
+        "BE_GO/internal/handler/django_not_found_test.go",
+        "TESTS/fixtures/router_root_http.json",
+        "TESTS/fixtures/generate_router_root_http.py",
+        "TESTS/contracts/test_router_root_http.py",
+        "TESTS/adapters/django/router_root_http.py",
+        "TESTS/fixtures/router_course_locations_http.json",
+        "TESTS/fixtures/generate_router_course_locations_http.py",
+        "TESTS/contracts/test_router_course_locations_http.py",
+        "TESTS/adapters/django/router_course_locations_http.py",
+        "TESTS/fixtures/router_folders_http.json",
+        "TESTS/fixtures/generate_router_folders_http.py",
+        "TESTS/contracts/test_router_folders_http.py",
+        "TESTS/adapters/django/router_folders_http.py",
+        "TESTS/fixtures/router_documents_http.json",
+        "TESTS/fixtures/generate_router_documents_http.py",
+        "TESTS/contracts/test_router_documents_http.py",
+        "TESTS/adapters/django/router_documents_http.py",
+        "TESTS/fixtures/router_templates_http.json",
+        "TESTS/fixtures/generate_router_templates_http.py",
+        "TESTS/contracts/test_router_templates_http.py",
+        "TESTS/adapters/django/router_templates_http.py",
+        "TESTS/fixtures/router_memberships_http.json",
+        "TESTS/fixtures/generate_router_memberships_http.py",
+        "TESTS/contracts/test_router_memberships_http.py",
+        "TESTS/adapters/django/router_memberships_http.py",
+        "TESTS/fixtures/router_course_subscriptions_http.json",
+        "TESTS/fixtures/generate_router_course_subscriptions_http.py",
+        "TESTS/contracts/test_router_course_subscriptions_http.py",
+        "TESTS/adapters/django/router_course_subscriptions_http.py",
+        "TESTS/fixtures/router_course_subscriptions_create_http.json",
+        "TESTS/fixtures/generate_router_course_subscriptions_create_http.py",
+        "TESTS/contracts/test_router_course_subscriptions_create_http.py",
+        "TESTS/adapters/django/router_course_subscriptions_create_http.py",
+        "TESTS/fixtures/router_personas_http.json",
+        "TESTS/fixtures/generate_router_personas_http.py",
+        "TESTS/contracts/test_router_personas_http.py",
+        "TESTS/adapters/django/router_personas_http.py",
+        "TESTS/fixtures/router_persona_subscriptions_http.json",
+        "TESTS/fixtures/generate_router_persona_subscriptions_http.py",
+        "TESTS/contracts/test_router_persona_subscriptions_http.py",
+        "TESTS/adapters/django/router_persona_subscriptions_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/unknown-paths.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 58/58; Go fails on unknown-paths-root-get (Echo JSON 404, Vary origin).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-red4/results.json",
+          "receipt_sha256": "50131dd7971ce6e3ef1e024097b6cff6eaf9e8b50af338f4ed088d6572f72dcc"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN: 58/58 on native Django, native Go, Caddy /api/v1 and /api/v2 (404 page, APPEND_SLASH 301, headers, unchanged state).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-versioned3/results.json",
+          "receipt_sha256": "a1405528baeedcd9de19614b29b3aac5d5f7576c76b21f03a30bb46accd5430d"
+        },
+        {
+          "revision": "committing change with the router detail pattern accepting '.' in the pk",
+          "result": "Mutation control: fails Go on unknown-paths-router-detail-dot (301 instead of 404).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-mutation1/results.json",
+          "receipt_sha256": "6ff04f2a1dcc525feaaf0e6932c8b8eac57ecd57822846f91d8882ac1cbb3aba"
+        },
+        "All 302 child routes of BE/application/urls.py are implementing (300) or deprecated (2) in the ledger, and its include(router.urls) mount is implementing via the router-* families (router-stock.md)."
+      ],
       "notes": [
-        "Not satisfied (ledger-closure): payment/<str:uid>/info is needs_review, profile/update/subscription/template is uncharacterized (in progress), and include(router.urls) is not ported. 298 other routes implementing, 2 deprecated. Unmatched paths at the root match Django (family unknown-paths, docs/architecture/go-migration/unknown-paths.md)."
+        "Implementing: every child route and the include(router.urls) mount are implementing (deprecated ones excluded), with no router write path refused (persona-subs-writes.md); unmatched paths at the root match Django (family unknown-paths)."
       ]
     },
     {
@@ -41476,29 +41793,84 @@
           "name": "'check_workflows_trigger'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/workflow_tasks.go",
+        "BE_GO/internal/repository/workflow_tasks.go",
+        "BE_GO/internal/domain/workflow_tasks.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/cmd/celery-consumer/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/communications/models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/audit_resolvers.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "Internal task message without an HTTP actor.",
+        "permissions": "None beyond the queue; CoordinatedTask restore admission through DATA_RESTORE_LOCK_PATH.",
+        "transaction": "Autocommit statements as in Django; effects performed in Django's order; a Python exception in the body ends SUCCESS None with earlier publishes kept.",
+        "response": "TaskResult SUCCESS, result null (workflow_block_execute: [false, \"Subscription is None\"] without a subscription), meta {\"children\": []} (body publishes never reach request.children).",
+        "errors": "All exceptions swallowed by the task body. Database or broker failures are stored by the consumer as FAILURE OperationalError('database error') (documented difference).",
+        "execution_owner": "django",
+        "request": "Celery message on assozeta-go: (trigger_type, sport_association_id, subscription_id=None, data=None).",
+        "resource_scope": "Enabled AutomationWorkflow rows of the association (no ORDER BY); Subscription by pk (unscoped, deleted rows included).",
+        "side_effects": "For each workflow whose first node value equals trigger_type: the subscription must exist (else stop); cron node -> cron fan-out; other nodes with more than one block -> send_task workflow_block_execute([workflow, subscription, 1])."
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_workflow_process.py",
+        "BE_GO/internal/service/workflow_tasks_test.go",
+        "BE_GO/internal/celery/parent_ids_test.go"
+      ],
+      "evidence": [
+        "Differential consumer harness celery_consumer_workflow_process.py: 20 scenarios; real Django worker vs race-built Go consumer on the same seed; complete managed-model state, every broker key and every published message (Redis MONITOR) compared. See docs/architecture/go-migration/consumer-workflow.md.",
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_workflow_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "passed: 20 differential scenarios against the actual Django worker",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process/results.json",
+          "receipt_sha256": "4ffa29c387db7705607110cb881cf7f27d2c977ff29aa7f2946040a398b70fe0"
+        },
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_workflow_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "passed: Django oracle 20/20 before the Go registration existed",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-oracle/results.json",
+          "receipt_sha256": "abdc9cddc46134efbe00533495213d336f032b668d489648c50327dbdbf0e6b4"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_workflow_process.py (consumer without the workflow registration)",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "red: Django passed, Go timed out on the first scenario (every message handed off)",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-red/results.json",
+          "receipt_sha256": "375cfbd93cc590f81af00a3e21db70d44da5424d38f909ee966b70d6dd6652cf"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='cron approved' python -I TESTS/adapters/go/celery_consumer_workflow_process.py with repository/workflow_tasks.go dropping archived=False from the cron status filter",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "caught: Timed out: Go consumer: cron approved target fans out to the accepted subscription (extra fan-out to the archived subscription)",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-mutation/results.json",
+          "receipt_sha256": "375cfbd93cc590f81af00a3e21db70d44da5424d38f909ee966b70d6dd6652cf"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes",
+          "artifact": "quality-reports/go-migration/celery-consumer-process/results.json",
+          "receipt_sha256": "474d74250ebf534dedd8c5c6f625b7cbd8083246354ad80d78f1121ed1b10637"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
         "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md.",
-        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md."
+        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md.",
+        "consumer-workflow: runs on cmd/celery-consumer only when GO_TASK_QUEUE_TASKS lists the name (execution_owner stays django until a deployment enables it). Children are published with send_task's root/parent ids and routes; the email block's random 1-180 s countdown and the list(set()) recipient order are Go's own draws (Django is random there). Handed off before any effect: Python binding errors, UUID args other than UUID/str/None, non-string trigger_type or cron target, bool idx, wait amounts other than JSON ints or plain decimal strings, countdown beyond 2^31 s, JSON floats in email content/subject. See docs/architecture/go-migration/consumer-workflow.md."
       ]
     },
     {
@@ -41518,29 +41890,84 @@
           "name": "'check_workflows_trigger_cron'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/workflow_tasks.go",
+        "BE_GO/internal/repository/workflow_tasks.go",
+        "BE_GO/internal/domain/workflow_tasks.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/cmd/celery-consumer/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/communications/models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/audit_resolvers.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "Internal task message without an HTTP actor.",
+        "permissions": "None beyond the queue; CoordinatedTask restore admission through DATA_RESTORE_LOCK_PATH.",
+        "transaction": "Autocommit statements as in Django; effects performed in Django's order; a Python exception in the body ends SUCCESS None with earlier publishes kept.",
+        "response": "TaskResult SUCCESS, result null (workflow_block_execute: [false, \"Subscription is None\"] without a subscription), meta {\"children\": []} (body publishes never reach request.children).",
+        "errors": "All exceptions swallowed by the task body. Database or broker failures are stored by the consumer as FAILURE OperationalError('database error') (documented difference).",
+        "execution_owner": "django",
+        "request": "Celery message on assozeta-go: (workflow_automation_id).",
+        "resource_scope": "Enabled AutomationWorkflow by pk; subscriptions of its association active today (UTC) filtered by target (status+not archived, archived, or tag id/name icontains via inner joins).",
+        "side_effects": "When the tree has more than one node and the first is cron: one send_task workflow_block_execute([workflow, subscription, 1]) per queryset row (duplicates per matching tag)."
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_workflow_process.py",
+        "BE_GO/internal/service/workflow_tasks_test.go",
+        "BE_GO/internal/celery/parent_ids_test.go"
+      ],
+      "evidence": [
+        "Differential consumer harness celery_consumer_workflow_process.py: 20 scenarios; real Django worker vs race-built Go consumer on the same seed; complete managed-model state, every broker key and every published message (Redis MONITOR) compared. See docs/architecture/go-migration/consumer-workflow.md.",
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_workflow_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "passed: 20 differential scenarios against the actual Django worker",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process/results.json",
+          "receipt_sha256": "4ffa29c387db7705607110cb881cf7f27d2c977ff29aa7f2946040a398b70fe0"
+        },
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_workflow_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "passed: Django oracle 20/20 before the Go registration existed",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-oracle/results.json",
+          "receipt_sha256": "abdc9cddc46134efbe00533495213d336f032b668d489648c50327dbdbf0e6b4"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_workflow_process.py (consumer without the workflow registration)",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "red: Django passed, Go timed out on the first scenario (every message handed off)",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-red/results.json",
+          "receipt_sha256": "375cfbd93cc590f81af00a3e21db70d44da5424d38f909ee966b70d6dd6652cf"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='cron approved' python -I TESTS/adapters/go/celery_consumer_workflow_process.py with repository/workflow_tasks.go dropping archived=False from the cron status filter",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "caught: Timed out: Go consumer: cron approved target fans out to the accepted subscription (extra fan-out to the archived subscription)",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-mutation/results.json",
+          "receipt_sha256": "375cfbd93cc590f81af00a3e21db70d44da5424d38f909ee966b70d6dd6652cf"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes",
+          "artifact": "quality-reports/go-migration/celery-consumer-process/results.json",
+          "receipt_sha256": "474d74250ebf534dedd8c5c6f625b7cbd8083246354ad80d78f1121ed1b10637"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
         "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md.",
-        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md."
+        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md.",
+        "consumer-workflow: runs on cmd/celery-consumer only when GO_TASK_QUEUE_TASKS lists the name (execution_owner stays django until a deployment enables it). Children are published with send_task's root/parent ids and routes; the email block's random 1-180 s countdown and the list(set()) recipient order are Go's own draws (Django is random there). Handed off before any effect: Python binding errors, UUID args other than UUID/str/None, non-string trigger_type or cron target, bool idx, wait amounts other than JSON ints or plain decimal strings, countdown beyond 2^31 s, JSON floats in email content/subject. See docs/architecture/go-migration/consumer-workflow.md."
       ]
     },
     {
@@ -42616,28 +43043,99 @@
           "name": "'send_email_html'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_email.go",
+        "BE_GO/internal/service/send_mail_async.go",
+        "BE_GO/internal/repository/celery_consumer.go",
+        "BE_GO/internal/domain/consumer_email.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/smtpsend/mime.go",
+        "BE_GO/cmd/celery-consumer/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/communications/models.py",
+        "BE/instance/email_configuration.py",
+        "BE/instance/models.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/repository/email_tasks.go",
+        "BE_GO/internal/service/email_tasks.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message (JSON, base64 body) on the assozeta-go queue (GO_TASK_QUEUE_TASKS); args/kwargs bound to the Python signature. (html_message, subject, recipient_list, sport_association_id=None, reply_to=None)",
+        "response": "TaskResult SUCCESS with result null and meta {\"children\": []}; FAILURE StaleDataTask / RETRY Busy from CoordinatedTask admission.",
+        "errors": "Every exception is logged and swallowed (SUCCESS).",
+        "authentication": "Internal task message without an HTTP actor.",
+        "permissions": "None beyond the queue; CoordinatedTask restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "CommunicationConfiguration.objects.filter(sport_association_id).first().",
+        "side_effects": "With a configuration: CommunicationConfiguration.send_email on the loaded instance from a Timer 1-30 s after the task returned (no parent ids on its fallback publish); otherwise send_mail_async with DEFAULT_FROM_EMAIL, message and html_message.",
+        "transaction": "Autocommit statements as in Django; the configuration balance save and its auditlog entry in one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_email_process.py",
+        "TESTS/adapters/go/celery_consumer_process.py",
+        "TESTS/adapters/go/email_render_golden.py",
+        "BE_GO/internal/service/send_mail_async_test.go",
+        "BE_GO/internal/celery/celery_test.go",
+        "BE_GO/internal/emailrender/golden_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "passed: 25 differential scenarios against the actual Django worker (send_email_text 4, send_email_template 7, send_email_html 5, send_mail_async 9)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process/results.json",
+          "receipt_sha256": "cfb66460a4b85a8946b6e8a1bc880be4359dac1b830a36859daef567149291a3"
+        },
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_email_process.py",
+          "revision": "go/consumer-email before the Go registrations",
+          "result": "passed: Django oracle 25/25 authored scenarios",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-django/results.json",
+          "receipt_sha256": "850a90fa1dc247cbbc65aa763355ac170c504b8024d238cd04074fb0ca92c21c"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py (consumer without the send_email_text/template/html registrations)",
+          "revision": "go/consumer-email before 56ff58f7",
+          "result": "red: Django oracle passed, Go timed out (Go consumer: send_email_text publishes send_mail_async with the team address)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-red/run.log",
+          "receipt_sha256": "720cd73d0e0a8fcf12febf97cf2b684990eb9832bbc21c995bb2e3dd63506f60"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='send_email_text publishes' python -I TESTS/adapters/go/celery_consumer_email_process.py with consumerEmailPublish dropping the parent id",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "caught: Go differs from Django on the published send_mail_async message (parent_id)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-mutation/run.log",
+          "receipt_sha256": "79ebcbbe6af0ffa185b00c19795994609d8ec5b44fa5c51b57866c3abd2b9aef"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-process-consumer-email/results.json",
+          "receipt_sha256": "2fcadf414a623d4c8d9ffe5a6e3f2076acb988b992e675b5e1109efd690bd3f9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. With a configuration the send runs in a threading.Timer 1-30 s after the task returns (the in-process call from send_reminders is ported in tasks-db-c)."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. With a configuration the send runs in a threading.Timer 1-30 s after the task returns (the in-process call from send_reminders is ported in tasks-db-c).",
+        "consumer-email: cmd/celery-consumer runs this task when GO_TASK_QUEUE_TASKS routes it to assozeta-go (empty by default). Messages it publishes (send_mail_async) carry root_id/parent_id of the running task (none from the send_email_html Timer) and follow the same routes; Celery 5.6 stores SUCCESS without those children, as Go does. Inputs outside the forwarded/rendered/SMTP subset are handed off unchanged to the celery queue. execution_owner stays django until a deployment lists the name. See docs/architecture/go-migration/consumer-email.md.",
+        "Go waits for pending Timer sends before the consumer exits; Django's prefork pool child would drop them when it exits."
       ]
     },
     {
@@ -42657,28 +43155,99 @@
           "name": "'send_email_template'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_email.go",
+        "BE_GO/internal/service/send_mail_async.go",
+        "BE_GO/internal/repository/celery_consumer.go",
+        "BE_GO/internal/domain/consumer_email.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/smtpsend/mime.go",
+        "BE_GO/cmd/celery-consumer/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/communications/models.py",
+        "BE/instance/email_configuration.py",
+        "BE/instance/models.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/repository/email_tasks.go",
+        "BE_GO/internal/service/email_tasks.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message (JSON, base64 body) on the assozeta-go queue (GO_TASK_QUEUE_TASKS); args/kwargs bound to the Python signature. (template, subject, recipient_list, data, sport_association_id=None, reply_to=None)",
+        "response": "TaskResult SUCCESS with result null and meta {\"children\": []}; FAILURE StaleDataTask / RETRY Busy from CoordinatedTask admission.",
+        "errors": "Every exception is logged and swallowed (SUCCESS).",
+        "authentication": "Internal task message without an HTTP actor.",
+        "permissions": "None beyond the queue; CoordinatedTask restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "InstanceConfiguration.get_config() for the brand; CommunicationConfiguration.objects.filter(sport_association_id).first().",
+        "side_effects": "render_to_string (LANGUAGE_CODE); with a configuration CommunicationConfiguration.send_email(body=None, html_body) in the task (daily limit; verify_smtp then SMTP delivery and balance+1 save with audit; or the fallback send_mail_async under the denomination); otherwise send_mail_async with DEFAULT_TEAM_EMAIL and html_message.",
+        "transaction": "Autocommit statements as in Django; the configuration balance save and its auditlog entry in one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_email_process.py",
+        "TESTS/adapters/go/celery_consumer_process.py",
+        "TESTS/adapters/go/email_render_golden.py",
+        "BE_GO/internal/service/send_mail_async_test.go",
+        "BE_GO/internal/celery/celery_test.go",
+        "BE_GO/internal/emailrender/golden_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "passed: 25 differential scenarios against the actual Django worker (send_email_text 4, send_email_template 7, send_email_html 5, send_mail_async 9)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process/results.json",
+          "receipt_sha256": "cfb66460a4b85a8946b6e8a1bc880be4359dac1b830a36859daef567149291a3"
+        },
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_email_process.py",
+          "revision": "go/consumer-email before the Go registrations",
+          "result": "passed: Django oracle 25/25 authored scenarios",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-django/results.json",
+          "receipt_sha256": "850a90fa1dc247cbbc65aa763355ac170c504b8024d238cd04074fb0ca92c21c"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py (consumer without the send_email_text/template/html registrations)",
+          "revision": "go/consumer-email before 56ff58f7",
+          "result": "red: Django oracle passed, Go timed out (Go consumer: send_email_text publishes send_mail_async with the team address)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-red/run.log",
+          "receipt_sha256": "720cd73d0e0a8fcf12febf97cf2b684990eb9832bbc21c995bb2e3dd63506f60"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='send_email_text publishes' python -I TESTS/adapters/go/celery_consumer_email_process.py with consumerEmailPublish dropping the parent id",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "caught: Go differs from Django on the published send_mail_async message (parent_id)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-mutation/run.log",
+          "receipt_sha256": "79ebcbbe6af0ffa185b00c19795994609d8ec5b44fa5c51b57866c3abd2b9aef"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-process-consumer-email/results.json",
+          "receipt_sha256": "2fcadf414a623d4c8d9ffe5a6e3f2076acb988b992e675b5e1109efd690bd3f9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body renders the template named in the message; internal/emailrender embeds a fixed set."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body renders the template named in the message; internal/emailrender embeds a fixed set.",
+        "consumer-email: cmd/celery-consumer runs this task when GO_TASK_QUEUE_TASKS routes it to assozeta-go (empty by default). Messages it publishes (send_mail_async) carry root_id/parent_id of the running task (none from the send_email_html Timer) and follow the same routes; Celery 5.6 stores SUCCESS without those children, as Go does. Inputs outside the forwarded/rendered/SMTP subset are handed off unchanged to the celery queue. execution_owner stays django until a deployment lists the name. See docs/architecture/go-migration/consumer-email.md.",
+        "Templates outside BE_GO/internal/emailrender's embedded set are handed off; email_new_subscription.html is embedded with Django goldens."
       ]
     },
     {
@@ -42698,28 +43267,98 @@
           "name": "'send_email_text'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_email.go",
+        "BE_GO/internal/service/send_mail_async.go",
+        "BE_GO/internal/repository/celery_consumer.go",
+        "BE_GO/internal/domain/consumer_email.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/smtpsend/mime.go",
+        "BE_GO/cmd/celery-consumer/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/communications/models.py",
+        "BE/instance/email_configuration.py",
+        "BE/instance/models.py",
+        "BE/instance/restore/task_base.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/repository/email_tasks.go",
+        "BE_GO/internal/service/email_tasks.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message (JSON, base64 body) on the assozeta-go queue (GO_TASK_QUEUE_TASKS); args/kwargs bound to the Python signature. (message, subject, recipient_list, sport_association_id=None, reply_to=None)",
+        "response": "TaskResult SUCCESS with result null and meta {\"children\": []}; FAILURE StaleDataTask / RETRY Busy from CoordinatedTask admission.",
+        "errors": "Every exception is logged and swallowed (SUCCESS).",
+        "authentication": "Internal task message without an HTTP actor.",
+        "permissions": "None beyond the queue; CoordinatedTask restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "None.",
+        "side_effects": "Publishes core.tasks.send_mail_async(subject, message, from_email=DEFAULT_TEAM_EMAIL, recipient_list, fail_silently=False, sport_association_id, reply_to) with the running task's root/parent ids.",
+        "transaction": "Autocommit statements as in Django; the configuration balance save and its auditlog entry in one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_email_process.py",
+        "TESTS/adapters/go/celery_consumer_process.py",
+        "TESTS/adapters/go/email_render_golden.py",
+        "BE_GO/internal/service/send_mail_async_test.go",
+        "BE_GO/internal/celery/celery_test.go",
+        "BE_GO/internal/emailrender/golden_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "passed: 25 differential scenarios against the actual Django worker (send_email_text 4, send_email_template 7, send_email_html 5, send_mail_async 9)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process/results.json",
+          "receipt_sha256": "cfb66460a4b85a8946b6e8a1bc880be4359dac1b830a36859daef567149291a3"
+        },
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_email_process.py",
+          "revision": "go/consumer-email before the Go registrations",
+          "result": "passed: Django oracle 25/25 authored scenarios",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-django/results.json",
+          "receipt_sha256": "850a90fa1dc247cbbc65aa763355ac170c504b8024d238cd04074fb0ca92c21c"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py (consumer without the send_email_text/template/html registrations)",
+          "revision": "go/consumer-email before 56ff58f7",
+          "result": "red: Django oracle passed, Go timed out (Go consumer: send_email_text publishes send_mail_async with the team address)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-red/run.log",
+          "receipt_sha256": "720cd73d0e0a8fcf12febf97cf2b684990eb9832bbc21c995bb2e3dd63506f60"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='send_email_text publishes' python -I TESTS/adapters/go/celery_consumer_email_process.py with consumerEmailPublish dropping the parent id",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "caught: Go differs from Django on the published send_mail_async message (parent_id)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-mutation/run.log",
+          "receipt_sha256": "79ebcbbe6af0ffa185b00c19795994609d8ec5b44fa5c51b57866c3abd2b9aef"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-process-consumer-email/results.json",
+          "receipt_sha256": "2fcadf414a623d4c8d9ffe5a6e3f2076acb988b992e675b5e1109efd690bd3f9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body is one send_mail_async.apply_async from inside the task (needs the running task's root_id/parent_id)."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body is one send_mail_async.apply_async from inside the task (needs the running task's root_id/parent_id).",
+        "consumer-email: cmd/celery-consumer runs this task when GO_TASK_QUEUE_TASKS routes it to assozeta-go (empty by default). Messages it publishes (send_mail_async) carry root_id/parent_id of the running task (none from the send_email_html Timer) and follow the same routes; Celery 5.6 stores SUCCESS without those children, as Go does. Inputs outside the forwarded/rendered/SMTP subset are handed off unchanged to the celery queue. execution_owner stays django until a deployment lists the name. See docs/architecture/go-migration/consumer-email.md."
       ]
     },
     {
@@ -43300,29 +43939,84 @@
           "name": "'workflow_block_execute'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/workflow_tasks.go",
+        "BE_GO/internal/repository/workflow_tasks.go",
+        "BE_GO/internal/domain/workflow_tasks.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/cmd/celery-consumer/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/communications/models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/audit_resolvers.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "Internal task message without an HTTP actor.",
+        "permissions": "None beyond the queue; CoordinatedTask restore admission through DATA_RESTORE_LOCK_PATH.",
+        "transaction": "Autocommit statements as in Django; effects performed in Django's order; a Python exception in the body ends SUCCESS None with earlier publishes kept.",
+        "response": "TaskResult SUCCESS, result null (workflow_block_execute: [false, \"Subscription is None\"] without a subscription), meta {\"children\": []} (body publishes never reach request.children).",
+        "errors": "All exceptions swallowed by the task body. Database or broker failures are stored by the consumer as FAILURE OperationalError('database error') (documented difference).",
+        "execution_owner": "django",
+        "request": "Celery message on assozeta-go: (workflow_id, subscription_id=None, idx=None).",
+        "resource_scope": "Subscription select_related associate/user; enabled AutomationWorkflow with association owner; tutor relations of the associate.",
+        "side_effects": "Email block: get_main_tutor promotion (audited update, AuditLogIndex via associate.sport_association), send_task send_email_html(kwargs) and the next block with one random 1-180 s countdown. Wait block: next block with int(amount)*60/3600/86400 countdown (0: no eta)."
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_workflow_process.py",
+        "BE_GO/internal/service/workflow_tasks_test.go",
+        "BE_GO/internal/celery/parent_ids_test.go"
+      ],
+      "evidence": [
+        "Differential consumer harness celery_consumer_workflow_process.py: 20 scenarios; real Django worker vs race-built Go consumer on the same seed; complete managed-model state, every broker key and every published message (Redis MONITOR) compared. See docs/architecture/go-migration/consumer-workflow.md.",
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_workflow_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "passed: 20 differential scenarios against the actual Django worker",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process/results.json",
+          "receipt_sha256": "4ffa29c387db7705607110cb881cf7f27d2c977ff29aa7f2946040a398b70fe0"
+        },
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_workflow_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "passed: Django oracle 20/20 before the Go registration existed",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-oracle/results.json",
+          "receipt_sha256": "abdc9cddc46134efbe00533495213d336f032b668d489648c50327dbdbf0e6b4"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_workflow_process.py (consumer without the workflow registration)",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "red: Django passed, Go timed out on the first scenario (every message handed off)",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-red/results.json",
+          "receipt_sha256": "375cfbd93cc590f81af00a3e21db70d44da5424d38f909ee966b70d6dd6652cf"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='cron approved' python -I TESTS/adapters/go/celery_consumer_workflow_process.py with repository/workflow_tasks.go dropping archived=False from the cron status filter",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "caught: Timed out: Go consumer: cron approved target fans out to the accepted subscription (extra fan-out to the archived subscription)",
+          "artifact": "quality-reports/go-migration/consumer-workflow-process-mutation/results.json",
+          "receipt_sha256": "375cfbd93cc590f81af00a3e21db70d44da5424d38f909ee966b70d6dd6652cf"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/consumer-workflow 4e817e3a (base codex/go-backend-parity ac5a3ba2)",
+          "result": "re-run green 14/14 after the shared celery.Task and cmd/celery-consumer changes",
+          "artifact": "quality-reports/go-migration/celery-consumer-process/results.json",
+          "receipt_sha256": "474d74250ebf534dedd8c5c6f625b7cbd8083246354ad80d78f1121ed1b10637"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
         "Not ported by tasks-db-b: not periodic; produced only as Celery messages by Django (signals, AutomationWorkflow.trigger, own send_task countdown chains) while the Go worker consumes only its job table, so a Go body has no producer. Also depends on random.randint countdowns and Python set recipient order. See docs/architecture/go-migration/tasks-db-b.md.",
-        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md."
+        "Decision (tasks-db-d): Django-owned, nothing credited to Go. The task has no Beat declaration or persisted django_celery_beat row; Django publishes it as a Celery message (signals, AutomationWorkflow.trigger() with an ETA countdown, its own send_task chains) and the Go worker consumes only its own job table. The Go scheduler publishes only persisted Beat rows, so it never publishes check_workflows_trigger_cron (a persisted row naming it is rejected as unsupported). See docs/architecture/go-migration/tasks-db-d.md.",
+        "consumer-workflow: runs on cmd/celery-consumer only when GO_TASK_QUEUE_TASKS lists the name (execution_owner stays django until a deployment enables it). Children are published with send_task's root/parent ids and routes; the email block's random 1-180 s countdown and the list(set()) recipient order are Go's own draws (Django is random there). Handed off before any effect: Python binding errors, UUID args other than UUID/str/None, non-string trigger_type or cron target, bool idx, wait amounts other than JSON ints or plain decimal strings, countdown beyond 2^31 s, JSON floats in email content/subject. See docs/architecture/go-migration/consumer-workflow.md."
       ]
     },
     {
@@ -43345,53 +44039,66 @@
       },
       "status": "implementing",
       "go": [
-        "BE_GO/internal/service/send_mail_async.go",
-        "BE_GO/internal/repository/celery_consumer.go",
-        "BE_GO/internal/celeryworker/worker.go",
-        "BE_GO/internal/celery/transport.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/celery/celery.go",
         "BE_GO/internal/celery/message.go",
         "BE_GO/internal/celery/pyjson.go",
         "BE_GO/internal/celery/routes.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/domain/consumer_email.go",
+        "BE_GO/internal/repository/celery_consumer.go",
+        "BE_GO/internal/service/consumer_email.go",
+        "BE_GO/internal/service/send_mail_async.go",
         "BE_GO/internal/smtpsend/django_message.go",
-        "BE_GO/cmd/celery-consumer/main.go"
+        "BE_GO/internal/smtpsend/mime.go",
+        "BE_GO/internal/smtpsend/smtpsend.go"
       ],
       "dependencies": [
-        "BE/core/tasks.py",
+        "BE/application/models/user_models.py",
+        "BE/application/tasks.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE/communications/models.py",
         "BE/core/celery.py",
         "BE/core/settings.py",
         "BE/core/task_routing.py",
-        "BE/instance/restore/task_base.py",
-        "BE/instance/restore/locking.py",
+        "BE/core/tasks.py",
         "BE/instance/email_configuration.py",
-        "BE/application/models/user_models.py",
-        "BE/communications/models.py",
         "BE/instance/models.py",
-        "BE_GO/internal/service/job_restore_admission.go",
-        "BE_GO/internal/repository/restore_lock.go",
+        "BE/instance/restore/locking.py",
+        "BE/instance/restore/task_base.py",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/repository/email_tasks.go",
         "BE_GO/internal/repository/restore_admission.go",
-        "BE_GO/internal/smtpsend/smtpsend.go",
-        "BE_GO/internal/smtpsend/backend.go"
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/service/email_tasks.go",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/smtpsend/backend.go",
+        "BE_GO/internal/smtpsend/smtpsend.go"
       ],
       "contract": {
         "request": "Celery protocol 2 message (JSON, base64 body) on the assozeta-go queue, routed there only when GO_TASK_QUEUE_TASKS lists core.tasks.send_mail_async (empty by default); kwargs or up to five positional args bound to (subject, message, from_email, recipient_list, sport_association_id) plus fail_silently, html_message, reply_to, skip_association_check.",
         "response": "TaskResult row as django_celery_results writes it with result_extended off: SUCCESS result null meta {\"children\": []}; RETRY/FAILURE with the kombu-JSON exception; REVOKED TaskRevokedError('expired').",
-        "errors": "Any exception in the body: self.retry(exc, countdown=int(180 * 2 ** retries)) republishing the same id with retries+1, root/parent ids, origin, reply_to and the restore stamp; on the fourth failure the original exception fails the task. CoordinatedTask: busy lock or pending restore defers 15 s (same retries, RETRY Busy, itself as child); a restore completed after assozeta_published_at fails with StaleDataTask before any effect.",
+        "errors": "Any exception in the body: self.retry(exc, countdown=int(180 * 2 ** retries)) republishing the same id with retries+1, root/parent ids, origin, reply_to and the restore stamp; on the fourth failure the original exception fails the task. CoordinatedTask: busy lock or pending restore defers 15 s (same retries, RETRY Busy, itself as child); a restore completed after assozeta_published_at fails with StaleDataTask before any effect. Instance source: an undecryptable password raises ImproperlyConfigured (retried).",
         "authentication": "Internal task message without an HTTP actor.",
-        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "permissions": "None beyond the queue; CoordinatedTask restore admission through DATA_RESTORE_LOCK_PATH.",
         "resource_scope": "SportAssociation.objects (deleted excluded) by pk; CommunicationConfiguration existence for that association; InstanceConfiguration.objects.first() for the email source.",
-        "side_effects": "EmailMultiAlternatives through instance.email_configuration.EmailBackend with the environment source (Django SMTP backend dialogue, MIME bytes per smtpsend.RenderDjangoMessage), then EmailLog(recipient_list[0], subject, 'Sent', association). kombu ack emulation: unacked hash/index, early ack, visibility restore under unacked_mutex, warm-shutdown restore of held eta messages.",
-        "transaction": "Autocommit statements as in Django; the result row is stored after the retry message is published.",
+        "side_effects": "With an association configuration (no skip): CommunicationConfiguration.send_email(body=message, html_body=html_message) then EmailLog Sent. Otherwise EmailMultiAlternatives through instance.email_configuration.EmailBackend with the environment or instance source (From replaced by formataddr(sender_name, from_email)); fail_silently swallows open() OSErrors and sendmail SMTPExceptions; then EmailLog Sent. Retry and kombu ack emulation as before.",
+        "transaction": "Autocommit statements as in Django; the configuration balance save and its auditlog entry in one transaction.",
         "execution_owner": "django"
       },
       "tests": [
-        "TESTS/adapters/go/celery_consumer_process.py",
-        "TESTS/adapters/go/django_mail_golden.py",
-        "TESTS/adapters/go/celery_producer_golden.py",
         "BE/instance/tests/test_celery_task_routing.py",
-        "BE_GO/internal/celery/consumer_test.go",
         "BE_GO/internal/celery/celery_test.go",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/emailrender/golden_test.go",
+        "BE_GO/internal/service/send_mail_async_test.go",
         "BE_GO/internal/smtpsend/django_message_test.go",
-        "BE_GO/internal/service/send_mail_async_test.go"
+        "TESTS/adapters/go/celery_consumer_email_process.py",
+        "TESTS/adapters/go/celery_consumer_process.py",
+        "TESTS/adapters/go/celery_producer_golden.py",
+        "TESTS/adapters/go/django_mail_golden.py",
+        "TESTS/adapters/go/email_render_golden.py"
       ],
       "evidence": [
         "Differential consumer harness: each message built by Django's routed producer is executed once by a real Django Celery worker (-Q assozeta-go, django-db, CoordinatedTask, production EmailBackend) and once by the race-built cmd/celery-consumer on the same seed (private PostgreSQL current schema, private Redis, fake SMTP); SMTP transcripts, complete managed-model state incl. TaskResult/EmailLog, and every broker key compared. 14 scenarios: system-backend sends (plain, html+reply-to+two recipients, skip check with configuration, deleted association), auth failure retry (+180 s), connection refused retry (+360 s), last-retry FAILURE, StaleDataTask, pending-restore deferral (+15 s), future eta held and restored, expired REVOKED, visibility-timeout restore, and two handoffs to the celery queue (configuration path with its child executed by Go; fail_silently). RED: consumer without the registration (Timed out: Go consumer: plain text without association). GREEN 14/14. Mutation caught: retry message without assozeta_published_at. See docs/architecture/go-migration/celery-consumer.md.",
@@ -43415,13 +44122,50 @@
           "result": "caught: Go differs from Django on the held retry message",
           "artifact": "quality-reports/go-migration/celery-consumer-process-mutation/results.json",
           "receipt_sha256": "1d6a7eed38db47ebbb7bbe59d52b51a35deec29a9da79fb0658ea900a6dd15e3"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "passed: 25 differential scenarios against the actual Django worker (send_email_text 4, send_email_template 7, send_email_html 5, send_mail_async 9)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process/results.json",
+          "receipt_sha256": "cfb66460a4b85a8946b6e8a1bc880be4359dac1b830a36859daef567149291a3"
+        },
+        {
+          "command": "CELERY_CONSUMER_DJANGO_ONLY=1 python -I TESTS/adapters/go/celery_consumer_email_process.py",
+          "revision": "go/consumer-email before the Go registrations",
+          "result": "passed: Django oracle 25/25 authored scenarios",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-django/results.json",
+          "receipt_sha256": "850a90fa1dc247cbbc65aa763355ac170c504b8024d238cd04074fb0ca92c21c"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_email_process.py (consumer without the send_email_text/template/html registrations)",
+          "revision": "go/consumer-email before 56ff58f7",
+          "result": "red: Django oracle passed, Go timed out (Go consumer: send_email_text publishes send_mail_async with the team address)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-red/run.log",
+          "receipt_sha256": "720cd73d0e0a8fcf12febf97cf2b684990eb9832bbc21c995bb2e3dd63506f60"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='send_email_text publishes' python -I TESTS/adapters/go/celery_consumer_email_process.py with consumerEmailPublish dropping the parent id",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "caught: Go differs from Django on the published send_mail_async message (parent_id)",
+          "artifact": "quality-reports/go-migration/celery-consumer-email-process-mutation/run.log",
+          "receipt_sha256": "79ebcbbe6af0ffa185b00c19795994609d8ec5b44fa5c51b57866c3abd2b9aef"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/consumer-email on 592bac53 (merged codex/go-backend-parity 8d77d77b)",
+          "result": "passed: 15 scenarios (configuration path and fail_silently now run in Go; unknown keyword handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-process-consumer-email/results.json",
+          "receipt_sha256": "2fcadf414a623d4c8d9ffe5a6e3f2076acb988b992e675b5e1109efd690bd3f9"
         }
       ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
         "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Registered as core.tasks.send_mail_async; without a configuration it sends through Django EmailMultiAlternatives and instance.email_configuration.EmailBackend, writes EmailLog and retries with self.retry (max 3, countdown 180*2**retries).",
-        "celery-consumer: Go consumption is opt-in per task name through GO_TASK_QUEUE_TASKS (Django task_routes and the Go producer route listed names to assozeta-go; empty by default, no routes, payloads unchanged). cmd/celery-consumer runs send_mail_async for the system-backend path; the CommunicationConfiguration.send_email path, the instance email source, fail_silently, other keyword arguments and messages outside the rendered MIME subset are handed off unchanged to the celery queue before any effect. Documented differences: no prefetch beyond free slots, no remote control/revoke-by-id, database errors stored as OperationalError('database error'), approximate messages for SMTPServerDisconnected/SMTPRecipientsRefused/SMTPNotSupportedError/TLS errors, TLS trust via Go system roots. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/celery-consumer.md."
+        "celery-consumer: Go consumption is opt-in per task name through GO_TASK_QUEUE_TASKS (Django task_routes and the Go producer route listed names to assozeta-go; empty by default, no routes, payloads unchanged). cmd/celery-consumer runs send_mail_async for the system-backend path; the CommunicationConfiguration.send_email path, the instance email source, fail_silently, other keyword arguments and messages outside the rendered MIME subset are handed off unchanged to the celery queue before any effect. Documented differences: no prefetch beyond free slots, no remote control/revoke-by-id, database errors stored as OperationalError('database error'), approximate messages for SMTPServerDisconnected/SMTPRecipientsRefused/SMTPNotSupportedError/TLS errors, TLS trust via Go system roots. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/celery-consumer.md.",
+        "consumer-email: cmd/celery-consumer runs this task when GO_TASK_QUEUE_TASKS routes it to assozeta-go (empty by default). Messages it publishes (send_mail_async) carry root_id/parent_id of the running task (none from the send_email_html Timer) and follow the same routes; Celery 5.6 stores SUCCESS without those children, as Go does. Inputs outside the forwarded/rendered/SMTP subset are handed off unchanged to the celery queue. execution_owner stays django until a deployment lists the name. See docs/architecture/go-migration/consumer-email.md.",
+        "consumer-email: the configuration path, the instance email source and fail_silently now run in Go (handoffs of the first slice otherwise unchanged)."
       ]
     },
     {
