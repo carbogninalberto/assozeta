@@ -189,4 +189,4 @@ Per remaining task:
 | `save_to_storage` | `default_storage.save` with `AWS_S3_FILE_OVERWRITE=False` (exists checks, random suffix): reproduce the name selection against MinIO. |
 | `export_invoices_to_zip` | ZIP bytes (entry order and timestamps) and the Rome-clock file name; golden archives. |
 | workflow triggers (`check_workflows_trigger`, `check_workflows_trigger_cron`, `workflow_block_execute`) | Ported: [consumer-workflow](consumer-workflow.md). |
-| restore / import / export (`instance.restore.*`, import/export tasks) | `instance.restore.*` bypasses CoordinatedTask admission (name prefix) and holds the exclusive lock itself, with `time_limit`/`soft_time_limit` headers: extend `Plain`/`EncodeRepublish` for time limits first; large S3 and archive work is better kept on Django until the storage layer is characterized. |
+| restore / import / export (`instance.restore.*`, import/export tasks) | Prefork capabilities (acks_late, reject_on_worker_lost, time limits, the `instance.restore.` admission bypass) are in place: [consumer-restore](consumer-restore.md). |

@@ -49,6 +49,8 @@ func run(arguments []string) error {
 	envFile := flags.String("env-file", "", "optional existing deployment .env")
 	concurrency := flags.Int("concurrency", 2, "execution slots, from 1 to 32")
 	drain := flags.Duration("drain-timeout", 30*time.Second, "grace for running tasks at shutdown")
+	// Internal: one prefork job (see celeryworker/prefork.go), started by the consumer itself.
+	child := flags.Bool("prefork-child", false, "internal")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			fmt.Println("Go Celery consumer: --env-file PATH, --concurrency N, --drain-timeout D. Consumes the assozeta-go queue " +
@@ -104,12 +106,31 @@ func run(arguments []string) error {
 	for name, task := range service.NewWorkflowTasks(repository.NewWorkflowTaskStore(db), producer, time.Now).Tasks() {
 		tasks[name] = task
 	}
+	for _, register := range extraTasks {
+		register(tasks)
+	}
+	childArgs := []string{"--prefork-child"}
+	if *envFile != "" {
+		childArgs = append(childArgs, "--env-file", *envFile)
+	}
 	worker, err := celeryworker.New(transport, tasks,
 		repository.NewCeleryResults(db), admission, celeryworker.Options{Concurrency: *concurrency, HandoffQueue: celery.DefaultQueue,
 			Origin: "gen" + strconv.Itoa(os.Getpid()) + "@" + host, Hostname: "celery@" + host, DrainTimeout: *drain,
-			Coordinated: strings.TrimSpace(cfg.RestoreLockPath) != ""}, slog.Default())
+			Coordinated: strings.TrimSpace(cfg.RestoreLockPath) != "", Child: celeryworker.ChildCommand(childArgs...)}, slog.Default())
 	if err != nil {
 		return errors.New("invalid celery consumer bounds")
+	}
+	if *child {
+		events := os.NewFile(3, "prefork-events")
+		if events == nil {
+			return errors.New("prefork child without an event pipe")
+		}
+		defer events.Close()
+		if err := worker.RunChild(context.Background(), os.Stdin, events); err != nil {
+			return errors.New("prefork child failed")
+		}
+		mail.Wait()
+		return nil
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -132,6 +153,9 @@ func run(arguments []string) error {
 	slog.Info("celery consumer stopped")
 	return nil
 }
+
+// extraTasks registers tasks of optional builds (the consumerprobe tag).
+var extraTasks []func(map[string]celeryworker.Task)
 
 // dnsName is django.core.mail.utils.DNS_NAME (socket.getfqdn()).
 func dnsName() string {

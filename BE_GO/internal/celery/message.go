@@ -196,7 +196,31 @@ func ParseMessage(raw []byte) (*Message, error) {
 
 // Plain reports a message without the options this package does not
 // republish: group, shadow, stamping, expiry, time limits and a priority.
-func (m *Message) Plain() bool {
+func (m *Message) Plain() bool { return m.PlainWith(false) }
+
+// PlainWith is Plain, also accepting time limits when timeLimits is true
+// (tasks the worker runs in a prefork child, which applies them).
+func (m *Message) PlainWith(timeLimits bool) bool {
+	if !m.plainOptions() {
+		return false
+	}
+	if timeLimits {
+		return true
+	}
+	return m.TimeLimit[0] == nil && m.TimeLimit[1] == nil
+}
+
+// Redelivered is delivery_info["redelivered"], set by kombu when it restores
+// an unacknowledged or rejected message.
+func (m *Message) Redelivered() bool {
+	info, _ := m.Properties.Get("delivery_info")
+	d, _ := info.(Dict)
+	value, _ := d.Get("redelivered")
+	flag, _ := value.(bool)
+	return flag
+}
+
+func (m *Message) plainOptions() bool {
 	for _, key := range []string{"shadow", "group", "group_index", "stamped_headers", "expires"} {
 		if v, _ := m.Headers.Get(key); v != nil {
 			return false
@@ -207,7 +231,7 @@ func (m *Message) Plain() bool {
 		return false
 	}
 	nesting, _ := integer(func() any { v, _ := m.Headers.Get("replaced_task_nesting"); return v }())
-	return m.TimeLimit[0] == nil && m.TimeLimit[1] == nil && m.Priority == 0 && nesting == 0 && m.Exchange == ""
+	return m.Priority == 0 && nesting == 0 && m.Exchange == ""
 }
 
 // Republish is a message the running task publishes for itself
@@ -222,17 +246,20 @@ type Republish struct {
 }
 
 // EncodeRepublish returns the payload Celery publishes for a request that
-// Plain accepts: the same id, args, kwargs, reply_to and custom headers
+// PlainWith(true) accepts: the same id, args, kwargs, time limits (the
+// request's timelimit, as_execution_options), reply_to and custom headers
 // (the restore stamp is kept), root_id defaulting to the task id, parent_id
 // to the running task, the request's origin in the headers and properties,
 // and the queue the message came from (the anonymous exchange).
 func EncodeRepublish(m *Message, r Republish) ([]byte, error) {
-	if !m.Plain() {
+	if !m.PlainWith(true) {
 		return nil, fmt.Errorf("%w: republish options", ErrUnsupportedValue)
 	}
-	var shown any = tuple{}
-	if len(m.Args) > 0 {
-		shown = m.Args
+	// signature_from_request passes request.args, a tuple: argsrepr is the
+	// tuple's repr whatever the original message's argsrepr was.
+	shown := tuple(m.Args)
+	if shown == nil {
+		shown = tuple{}
 	}
 	argsrepr, err := saferepr(shown, reprMaxSize)
 	if err != nil {
@@ -262,7 +289,7 @@ func EncodeRepublish(m *Message, r Republish) ([]byte, error) {
 	}
 	headers := Dict{
 		{"lang", "py"}, {"task", m.Task}, {"id", m.ID}, {"shadow", nil}, {"eta", pythonISOFormat(r.ETA)},
-		{"expires", nil}, {"group", nil}, {"group_index", nil}, {"retries", r.Retries}, {"timelimit", []any{nil, nil}},
+		{"expires", nil}, {"group", nil}, {"group_index", nil}, {"retries", r.Retries}, {"timelimit", []any{m.TimeLimit[0], m.TimeLimit[1]}},
 		{"root_id", root}, {"parent_id", parent}, {"argsrepr", argsrepr}, {"kwargsrepr", kwargsrepr}, {"origin", origin},
 		{"ignore_result", false}, {"replaced_task_nesting", 0}, {"stamped_headers", nil}, {"stamps", Dict{}},
 	}

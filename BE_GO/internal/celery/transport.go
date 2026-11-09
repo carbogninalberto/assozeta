@@ -122,6 +122,16 @@ func (t *Transport) Ack(ctx context.Context, tag string) error {
 	return err
 }
 
+// Reject is QoS.reject: with requeue the message is restored (marked
+// redelivered) at the far end of its queue (restore_by_tag leftmost), else it
+// is dropped like an acknowledgement.
+func (t *Transport) Reject(ctx context.Context, tag string, requeue bool) error {
+	if requeue {
+		return t.RestoreByTag(ctx, tag, true)
+	}
+	return t.Ack(ctx, tag)
+}
+
 // Publish declares queue and pushes payload (a message the running task
 // publishes, as Celery's producer does).
 func (t *Transport) Publish(ctx context.Context, queue string, payload []byte) error {
