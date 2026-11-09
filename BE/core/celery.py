@@ -41,6 +41,7 @@ app.conf.task_annotations = {
 }
 
 app.conf.beat_schedule = {
+    'bakney-pairing-maintenance': {'task': 'instance.sso.tasks.maintain_bakney_pairings', 'schedule': 60.0},
     'cleanup-data-restores': {'task': 'instance.restore.cleanup', 'schedule': 3600.0},
     'notify-backup-failures': {'task': 'instance.backups.notify_failures', 'schedule': 300.0},
     'renew-memberships-payments': {

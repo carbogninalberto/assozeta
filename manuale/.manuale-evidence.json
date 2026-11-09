@@ -1639,10 +1639,10 @@
       "title": "Account collaboratore associato",
       "content_sha256": "67d98abe461cd3aeca4222c5fd106881cddb7ad56bb7f0a7453b49c15cfffc7b",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1651,10 +1651,10 @@
       "title": "Aggiungere un Istruttore",
       "content_sha256": "a6ed62869d36994569ae50ecffa22203e338f2c57252ec0f03ebf33dcea0b574",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1663,10 +1663,10 @@
       "title": "Campi principali",
       "content_sha256": "75c3141f17b55605e1ebcb7989bee6a97ac1df9d982c5932e3113a4e041f5cb4",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1675,10 +1675,10 @@
       "title": "Compenso orario",
       "content_sha256": "11801df7e376b42c7eb758356a8109af237ceb49091a28a0603ee912f7e59b4e",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1687,10 +1687,10 @@
       "title": "Informazioni anagrafiche",
       "content_sha256": "b68774ccef4a436b6ad8894d003a701ee2bf220115f921fea105f61abb500266",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1699,10 +1699,10 @@
       "title": "Informazioni contratto",
       "content_sha256": "113d52f781c8327b704fea7f05b6d82a1ce758b5c43dbc51e713d45b8beee279",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1711,10 +1711,10 @@
       "title": "Informazioni obbligatorie",
       "content_sha256": "d2f8a395858f9dfa4f3a567b4bff122de1e057ff0c035980f0ae7ef670b3fb67",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1723,10 +1723,10 @@
       "title": "La scheda dell'Istruttore",
       "content_sha256": "eb4daf9b0eda1b5f36903d70b9a2e593d3df9a8c80dd01dd2ee91e8ee1b1f3a3",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1735,10 +1735,10 @@
       "title": "Modificare un Istruttore",
       "content_sha256": "136acca091691df950083e3d1dd20e7b595128c57857ca350865ae754c22b57c",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1747,10 +1747,10 @@
       "title": "Note e salvataggio",
       "content_sha256": "013ebf6bbee03f5cef6ce01d2973674f0a6fd8e731809ff1a13087b6d26ef18a",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1759,10 +1759,10 @@
       "title": "Registrare le ore lavorate",
       "content_sha256": "629303795f31023e293101fcfb208834e2d9fcbe7839f3d9dff539caa1e284b3",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1771,10 +1771,10 @@
       "title": "Stato dei compensi",
       "content_sha256": "4f118159a7ca3c00b168c89385d69cd2d8be8c11bf0230f9990994caaaec7d51",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1783,10 +1783,10 @@
       "title": "Tariffe predefinite",
       "content_sha256": "c61d8fe85015ae3d55cded691d871386a819efa30ca244a5b9e846b6db95238a",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -1795,10 +1795,10 @@
       "title": "Tipi di compenso",
       "content_sha256": "354cf9231bc0fe5ee1b09b34306182fcfa2105f24e5464b23190c73511ae3d50",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -3739,10 +3739,10 @@
       "title": "Aggiungere un nuovo istruttore",
       "content_sha256": "a95d3bb42ef073f3a0300d5015f02d2a9ea010e404f2247cef84df48bd829fb0",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -3751,10 +3751,10 @@
       "title": "Modificare i dati",
       "content_sha256": "7944e7e3ca56ec1ad6460e534a1d6845598967abc2e3c8aa2b1dfbe51bd0a0ac",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -3763,10 +3763,10 @@
       "title": "Registrare le ore lavorate",
       "content_sha256": "69b07883c4fd5360975d2bc6d97771c6364eaf90c7171a8eb85fd24f66638056",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -3775,10 +3775,10 @@
       "title": "Riepilogo ore",
       "content_sha256": "cee7ca5c218614d638763b8e4369d7600c69972834345669ddd2ff1f1d704a1f",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -3787,10 +3787,10 @@
       "title": "Tipologie di compenso",
       "content_sha256": "2f15ec9a3d3970941688f9bb114a8c640a85838b9e04227e44a6063c34437fb6",
       "recipe_module": "docs/manuale/instructor-recipes.mjs",
-      "recipe_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+      "recipe_sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
       "recipe_review": {
-        "previous_sha256": "73d470ac04b9b5a856395ff54cb8dd11c994237476be56846b11bb3c59432b40",
-        "sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "previous_sha256": "8dd6feaa0775867f8131b87e9814b2b5f6479274e508a01efc3d573f7c11fa5f",
+        "sha256": "a313474a75fdcf36cbbf809e084cd097c3989dd551f6139afaa5686f720d973d",
         "purpose": "editorial-review-only"
       },
       "content_source": "authored-mdx"
@@ -5971,11 +5971,11 @@
       "title": "Altre impostazioni",
       "content_sha256": "9179c2bba13db5749764463218d5423d45fa81bb365846027f001d9735b44163",
       "recipe_module": "docs/manuale/settings-additional-reference-recipes.mjs",
-      "recipe_sha256": "3998535c59a26abca7a4d271f2fe805b7cd5ab96f2089aa9103bba302660f980",
+      "recipe_sha256": "fc33f63f0a2ebecdb3afdc39f90af5a6332048d6d6ffc4449bd60f6b8839e883",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "9d6db3aacf913b712b6aab767af6bf1fc4e3c66ced7a25536e00ddef58bdb353",
-        "sha256": "3998535c59a26abca7a4d271f2fe805b7cd5ab96f2089aa9103bba302660f980",
+        "previous_sha256": "3998535c59a26abca7a4d271f2fe805b7cd5ab96f2089aa9103bba302660f980",
+        "sha256": "fc33f63f0a2ebecdb3afdc39f90af5a6332048d6d6ffc4449bd60f6b8839e883",
         "purpose": "editorial-review-only"
       }
     },
@@ -5995,11 +5995,11 @@
       "title": "Presenze automatiche",
       "content_sha256": "e5ffcc8fcd26eea419b39be1a342c3342c8687fa9629871736e02026bd719ad5",
       "recipe_module": "docs/manuale/settings-additional-reference-recipes.mjs",
-      "recipe_sha256": "93576b3317ad5f125dba7db300d57ac140c0e098dc47b80dd601a19957c1e749",
+      "recipe_sha256": "cdb6f085f2b667004ee01e38b4e56ff9e038a387fb78c0b4db101422670cf91c",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "8a937592215623f13a345a2bd8ad16f9aab51fc8c8c1d811df4830affabcecc0",
-        "sha256": "93576b3317ad5f125dba7db300d57ac140c0e098dc47b80dd601a19957c1e749",
+        "previous_sha256": "93576b3317ad5f125dba7db300d57ac140c0e098dc47b80dd601a19957c1e749",
+        "sha256": "cdb6f085f2b667004ee01e38b4e56ff9e038a387fb78c0b4db101422670cf91c",
         "purpose": "editorial-review-only"
       }
     },
@@ -6007,11 +6007,11 @@
       "title": "Archiviazione automatica",
       "content_sha256": "6fded58d5d2273212631d802dacc3619312d0b0bb92a82f85b6bc641ab13d693",
       "recipe_module": "docs/manuale/settings-additional-reference-recipes.mjs",
-      "recipe_sha256": "93576b3317ad5f125dba7db300d57ac140c0e098dc47b80dd601a19957c1e749",
+      "recipe_sha256": "cdb6f085f2b667004ee01e38b4e56ff9e038a387fb78c0b4db101422670cf91c",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "8a937592215623f13a345a2bd8ad16f9aab51fc8c8c1d811df4830affabcecc0",
-        "sha256": "93576b3317ad5f125dba7db300d57ac140c0e098dc47b80dd601a19957c1e749",
+        "previous_sha256": "93576b3317ad5f125dba7db300d57ac140c0e098dc47b80dd601a19957c1e749",
+        "sha256": "cdb6f085f2b667004ee01e38b4e56ff9e038a387fb78c0b4db101422670cf91c",
         "purpose": "editorial-review-only"
       }
     },

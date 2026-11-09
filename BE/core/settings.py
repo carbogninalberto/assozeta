@@ -173,11 +173,8 @@ CELERY_BROKER_URL = f'{REDIS_PROTOCOL}://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDI
 CELERY_RESULT_BACKEND = "django-db"
 # this allows you to schedule items in the Django admin.
 CELERY_BEAT_SCHEDULER = 'instance.scheduler.InstanceScheduler'
-CELERY_BEAT_SCHEDULE = {
-    'bakney-pairing-maintenance': {
-        'task': 'instance.sso.tasks.maintain_bakney_pairings', 'schedule': 60.0,
-    },
-}
+# The beat schedule lives in core/celery.py. Do not define CELERY_BEAT_SCHEDULE
+# here: it replaces that whole schedule instead of adding to it.
 # useful for mitigating memory leaks
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
 
