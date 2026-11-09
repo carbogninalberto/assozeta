@@ -25,6 +25,7 @@ var scheduleSubset = []string{
 	"utc_every_minute_hour_rollover", "utc_every_minute_day_rollover", "utc_every_minute_previous_date",
 	"utc_every_minute_future_cursor", "utc_every_minute_start_future", "utc_every_minute_initial_cursor",
 	"utc_daily_0730_before_slot", "utc_daily_0730_at_slot",
+	"utc_daily_0010_before_slot", "utc_daily_0010_at_slot", "utc_daily_0010_missed_slot",
 	"utc_every_15_minutes_before_slot", "utc_every_15_minutes_at_slot", "utc_every_15_minutes_missed_slots",
 	"utc_every_15_minutes_hour_rollover", "utc_every_15_minutes_day_rollover", "utc_every_15_minutes_previous_date",
 	"utc_every_15_minutes_off_slot_cursor", "utc_every_15_minutes_future_cursor", "utc_every_15_minutes_start_future",
@@ -36,7 +37,8 @@ var scheduleSubset = []string{
 var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateAssociateAge,
 	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest,
 	domain.JobAutoMarkAttendance, domain.JobSendUserPartialRegistrationEmail, domain.JobSendExpiringCertificateEmail,
-	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings}
+	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings,
+	domain.JobChangeTypeOfStripePayments, domain.JobGenerateCouponIfNotExists, domain.JobRenewMembershipsPayments}
 
 type dueFixtureInput struct {
 	Kind        string  `json:"kind"`
@@ -172,10 +174,10 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 	now := time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
 	integer := 0
 	cases := map[string]func(*domain.PeriodicSchedule){
-		"other task":                func(s *domain.PeriodicSchedule) { s.Task = "generate_coupon_if_not_exists" },
+		"other task":                func(s *domain.PeriodicSchedule) { s.Task = "mark_as_paid_payments_checking_stripe" },
 		"archive task":              func(s *domain.PeriodicSchedule) { s.Task = "auto_archive_subscription" },
 		"deleted subscription task": func(s *domain.PeriodicSchedule) { s.Task = "clear_deleted_subscription" },
-		"renewal task":              func(s *domain.PeriodicSchedule) { s.Task = "renew_memberships_payments" },
+		"workflow cron task":        func(s *domain.PeriodicSchedule) { s.Task = "check_workflows_trigger_cron" },
 		"quote task":                func(s *domain.PeriodicSchedule) { s.Task = "association_quote_assign" },
 		"export cleanup task":       func(s *domain.PeriodicSchedule) { s.Task = "cleanup_old_exports" },
 		"orphan medical task":       func(s *domain.PeriodicSchedule) { s.Task = "auto_delete_orphan_medical_certificate" },
@@ -334,7 +336,7 @@ func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
 			t.Fatalf("%s mapped to %q %v", task, kind, ok)
 		}
 	}
-	for _, task := range []string{"", "generate_coupon_if_not_exists", "auto_archive_subscription", "clear_deleted_subscription",
+	for _, task := range []string{"", "mark_as_paid_payments_checking_stripe", "association_quote_assign", "auto_archive_subscription", "clear_deleted_subscription",
 		"application.tasks.delete_old_audit_logs", "Delete_old_audit_logs"} {
 		if kind, ok := domain.PeriodicJobKind(task); ok || kind != "" {
 			t.Fatalf("%q unexpectedly mapped to %q", task, kind)
