@@ -181,6 +181,8 @@ func run() (runErr error) {
 	workflowReadsHandler := handler.NewAutomationWorkflowReadsHandler(service.NewAutomationWorkflowReads(repository.NewAutomationWorkflows(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	profileMiscHandler := handler.NewProfileMiscHandler(service.NewProfileMisc(repository.NewProfileMisc(db), repository.NewProfileMisc(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	associationTransferHandler := handler.NewAssociationTransferHandler(service.NewAssociationTransfer(repository.NewAssociationTransfer(db, cache),
+		cfg.SessionSecret, time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	testimonialsHandler := handler.NewTestimonialsHandler(service.NewTestimonials(repository.NewTestimonials(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations, cfg.SenjaWebhookSecret)
 	moduleTemplatesHandler := handler.NewModuleTemplatesHandler(service.NewModuleTemplates(repository.NewModuleTemplates(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	dashboardLayoutHandler := handler.NewDashboardLayoutHandler(service.NewDashboardLayouts(repository.NewDashboardLayouts(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
@@ -555,6 +557,14 @@ func run() (runErr error) {
 	e.Any("/profile/associates/sport-association/:uid", profileMiscHandler.SportAssociation, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/profile/image/:uid", profileMiscHandler.Image, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/onboarding/update", profileMiscHandler.Onboarding, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/association/export/active", associationTransferHandler.ExportActive, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/association/export/list", associationTransferHandler.ExportList, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/association/export/status", associationTransferHandler.ExportStatus, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/association/export/delete", associationTransferHandler.ExportDelete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/association/export/start", associationTransferHandler.ExportStart, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/association/import/status", associationTransferHandler.ImportStatus, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/association/import/validate", associationTransferHandler.ImportValidate, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/association/import/start", associationTransferHandler.ImportStart, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/two-fa/setup", twoFactorSetupHandler.Setup, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/two-fa/info", twoFactorHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/two-fa/update", twoFactorUpdateHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))

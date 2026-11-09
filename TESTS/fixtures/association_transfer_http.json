@@ -1,0 +1,3190 @@
+{
+ "matrix_version": 1,
+ "scope": "association export/import routes: reads, refusals and pre-dispatch checks",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "own1": {
+   "id": "a1000000-0000-4000-8000-000000976001",
+   "filename": "export_own_01.zip",
+   "filepath": "exports/own/export_01.zip",
+   "size": 1001,
+   "created": "2026-01-01T08:30:00.123456+00:00"
+  },
+  "own2": {
+   "id": "a1000000-0000-4000-8000-000000976002",
+   "filename": "export_own_02.zip",
+   "filepath": "exports/own/export_02.zip",
+   "size": 1002,
+   "created": "2026-01-02T08:30:00+00:00"
+  },
+  "own3": {
+   "id": "a1000000-0000-4000-8000-000000976003",
+   "filename": "export_own_03.zip",
+   "filepath": "exports/own/export_03.zip",
+   "size": 1003,
+   "created": "2026-01-03T08:30:00.123456+00:00"
+  },
+  "own4": {
+   "id": "a1000000-0000-4000-8000-000000976004",
+   "filename": "export_own_04.zip",
+   "filepath": "exports/own/export_04.zip",
+   "size": 1004,
+   "created": "2026-01-04T08:30:00+00:00"
+  },
+  "own5": {
+   "id": "a1000000-0000-4000-8000-000000976005",
+   "filename": "export_own_05.zip",
+   "filepath": null,
+   "size": null,
+   "created": "2026-01-05T08:30:00.123456+00:00"
+  },
+  "own6": {
+   "id": "a1000000-0000-4000-8000-000000976006",
+   "filename": "export_own_06.zip",
+   "filepath": "",
+   "size": null,
+   "created": "2026-01-06T08:30:00+00:00"
+  },
+  "own7": {
+   "id": "a1000000-0000-4000-8000-000000976007",
+   "filename": "export_own_07.zip",
+   "filepath": "exports/own/export_07.zip",
+   "size": 0,
+   "created": "2026-01-07T08:30:00.123456+00:00"
+  },
+  "own8": {
+   "id": "a1000000-0000-4000-8000-000000976008",
+   "filename": "export_own_08.zip",
+   "filepath": "exports/own/export_08.zip",
+   "size": 1099511627776,
+   "created": "2026-01-08T08:30:00+00:00"
+  },
+  "own9": {
+   "id": "a1000000-0000-4000-8000-000000976009",
+   "filename": "export_own_09.zip",
+   "filepath": "exports/own/export_09.zip",
+   "size": 1009,
+   "created": "2026-01-09T08:30:00.123456+00:00"
+  },
+  "own10": {
+   "id": "a1000000-0000-4000-8000-000000976010",
+   "filename": "export_own_10.zip",
+   "filepath": "exports/own/export_10.zip",
+   "size": 1010,
+   "created": "2026-01-10T08:30:00+00:00"
+  },
+  "own11": {
+   "id": "a1000000-0000-4000-8000-000000976011",
+   "filename": "export_own_11.zip",
+   "filepath": "exports/own/export_11.zip",
+   "size": 1011,
+   "created": "2026-01-11T08:30:00.123456+00:00"
+  },
+  "own12": {
+   "id": "a1000000-0000-4000-8000-000000976012",
+   "filename": "export_own_12.zip",
+   "filepath": "exports/own/export_12.zip",
+   "size": 1012,
+   "created": "2026-01-12T08:30:00+00:00"
+  },
+  "own13": {
+   "id": "a1000000-0000-4000-8000-000000976013",
+   "filename": "export_own_13.zip",
+   "filepath": "exports/own/export_13.zip",
+   "size": 1013,
+   "created": "2026-01-13T08:30:00.123456+00:00"
+  },
+  "own14": {
+   "id": "a1000000-0000-4000-8000-000000976014",
+   "filename": "export_own_14.zip",
+   "filepath": "exports/own/export_14.zip",
+   "size": 1014,
+   "created": "2026-01-14T08:30:00+00:00"
+  },
+  "own15": {
+   "id": "a1000000-0000-4000-8000-000000976015",
+   "filename": "export_own_15.zip",
+   "filepath": "exports/own/export_15.zip",
+   "size": 1015,
+   "created": "2026-01-15T08:30:00.123456+00:00"
+  },
+  "own16": {
+   "id": "a1000000-0000-4000-8000-000000976016",
+   "filename": "export_own_16.zip",
+   "filepath": "exports/own/export_16.zip",
+   "size": 1016,
+   "created": "2026-01-16T08:30:00+00:00"
+  },
+  "own17": {
+   "id": "a1000000-0000-4000-8000-000000976017",
+   "filename": "export_own_17.zip",
+   "filepath": "exports/own/export_17.zip",
+   "size": 1017,
+   "created": "2026-01-17T08:30:00.123456+00:00"
+  },
+  "own18": {
+   "id": "a1000000-0000-4000-8000-000000976018",
+   "filename": "export_own_18.zip",
+   "filepath": "exports/own/export_18.zip",
+   "size": 1018,
+   "created": "2026-01-18T08:30:00+00:00"
+  },
+  "own19": {
+   "id": "a1000000-0000-4000-8000-000000976019",
+   "filename": "export_own_19.zip",
+   "filepath": "exports/own/export_19.zip",
+   "size": 1019,
+   "created": "2026-01-19T08:30:00.123456+00:00"
+  },
+  "own20": {
+   "id": "a1000000-0000-4000-8000-000000976020",
+   "filename": "export_own_20.zip",
+   "filepath": "exports/own/export_20.zip",
+   "size": 1020,
+   "created": "2026-01-20T08:30:00+00:00"
+  },
+  "own21": {
+   "id": "a1000000-0000-4000-8000-000000976021",
+   "filename": "export_own_21.zip",
+   "filepath": "exports/own/export_21.zip",
+   "size": 1021,
+   "created": "2026-01-21T08:30:00.123456+00:00"
+  },
+  "own_report": {
+   "id": "a1000000-0000-4000-8000-000000976022",
+   "filename": "report.pdf",
+   "filepath": "exports/archive.zip",
+   "size": 1024,
+   "created": "2026-01-25T10:00:00+00:00"
+  },
+  "own_upper": {
+   "id": "a1000000-0000-4000-8000-000000976023",
+   "filename": "Export_upper.zip",
+   "filepath": "exports/archive.zip",
+   "size": 1024,
+   "created": "2026-01-26T10:00:00+00:00"
+  },
+  "foreign1": {
+   "id": "a1000000-0000-4000-8000-000000976024",
+   "filename": "export_foreign.zip",
+   "filepath": "exports/archive.zip",
+   "size": 77,
+   "created": "2026-01-03T09:00:00+00:00"
+  }
+ },
+ "archives": {
+  "own1": {
+   "id": "a1000000-0000-4000-8000-000000976501",
+   "association": "own_association",
+   "document": "own1",
+   "date": "2026-01-01"
+  },
+  "own2": {
+   "id": "a1000000-0000-4000-8000-000000976502",
+   "association": "own_association",
+   "document": "own2",
+   "date": "2026-01-02"
+  },
+  "own3": {
+   "id": "a1000000-0000-4000-8000-000000976503",
+   "association": "own_association",
+   "document": "own3",
+   "date": "2026-01-03"
+  },
+  "own4": {
+   "id": "a1000000-0000-4000-8000-000000976504",
+   "association": "own_association",
+   "document": "own4",
+   "date": "2026-01-04"
+  },
+  "own5": {
+   "id": "a1000000-0000-4000-8000-000000976505",
+   "association": "own_association",
+   "document": "own5",
+   "date": "2026-01-05"
+  },
+  "own6": {
+   "id": "a1000000-0000-4000-8000-000000976506",
+   "association": "own_association",
+   "document": "own6",
+   "date": "2026-01-06"
+  },
+  "own7": {
+   "id": "a1000000-0000-4000-8000-000000976507",
+   "association": "own_association",
+   "document": "own7",
+   "date": "2026-01-07"
+  },
+  "own8": {
+   "id": "a1000000-0000-4000-8000-000000976508",
+   "association": "own_association",
+   "document": "own8",
+   "date": "2026-01-08"
+  },
+  "own9": {
+   "id": "a1000000-0000-4000-8000-000000976509",
+   "association": "own_association",
+   "document": "own9",
+   "date": "2026-01-09"
+  },
+  "own10": {
+   "id": "a1000000-0000-4000-8000-000000976510",
+   "association": "own_association",
+   "document": "own10",
+   "date": "2026-01-10"
+  },
+  "own11": {
+   "id": "a1000000-0000-4000-8000-000000976511",
+   "association": "own_association",
+   "document": "own11",
+   "date": "2026-01-11"
+  },
+  "own12": {
+   "id": "a1000000-0000-4000-8000-000000976512",
+   "association": "own_association",
+   "document": "own12",
+   "date": "2026-01-12"
+  },
+  "own13": {
+   "id": "a1000000-0000-4000-8000-000000976513",
+   "association": "own_association",
+   "document": "own13",
+   "date": "2026-01-13"
+  },
+  "own14": {
+   "id": "a1000000-0000-4000-8000-000000976514",
+   "association": "own_association",
+   "document": "own14",
+   "date": "2026-01-14"
+  },
+  "own15": {
+   "id": "a1000000-0000-4000-8000-000000976515",
+   "association": "own_association",
+   "document": "own15",
+   "date": "2026-01-15"
+  },
+  "own16": {
+   "id": "a1000000-0000-4000-8000-000000976516",
+   "association": "own_association",
+   "document": "own16",
+   "date": "2026-01-16"
+  },
+  "own17": {
+   "id": "a1000000-0000-4000-8000-000000976517",
+   "association": "own_association",
+   "document": "own17",
+   "date": "2026-01-17"
+  },
+  "own18": {
+   "id": "a1000000-0000-4000-8000-000000976518",
+   "association": "own_association",
+   "document": "own18",
+   "date": "2026-01-18"
+  },
+  "own19": {
+   "id": "a1000000-0000-4000-8000-000000976519",
+   "association": "own_association",
+   "document": "own19",
+   "date": "2026-01-19"
+  },
+  "own20": {
+   "id": "a1000000-0000-4000-8000-000000976520",
+   "association": "own_association",
+   "document": "own20",
+   "date": "2026-01-20"
+  },
+  "own21": {
+   "id": "a1000000-0000-4000-8000-000000976521",
+   "association": "own_association",
+   "document": "own21",
+   "date": "2026-01-21"
+  },
+  "own_report": {
+   "id": "a1000000-0000-4000-8000-000000976522",
+   "association": "own_association",
+   "document": "own_report",
+   "date": "2026-01-25"
+  },
+  "own_upper": {
+   "id": "a1000000-0000-4000-8000-000000976523",
+   "association": "own_association",
+   "document": "own_upper",
+   "date": "2026-01-26"
+  },
+  "foreign1": {
+   "id": "a1000000-0000-4000-8000-000000976524",
+   "association": "foreign_association",
+   "document": "foreign1",
+   "date": "2026-01-03"
+  }
+ },
+ "active_keys": {
+  "foreign_association": {
+   "task_id": "a1000000-0000-4000-8000-000000976900",
+   "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+   "user_id": "a1000000-0000-4000-8000-000000700007",
+   "status": "PENDING",
+   "ready": false,
+   "estimate": "0%",
+   "progress": {
+    "percent": 0,
+    "phase": "queued"
+   },
+   "updated_at": "2026-01-01T00:00:00+00:00"
+  }
+ },
+ "tasks": {
+  "started": {
+   "task_id": "a1000000-0000-4000-8000-000000976800",
+   "status": "STARTED",
+   "result": "{\"pid\": 7, \"hostname\": \"worker\"}"
+  },
+  "progress": {
+   "task_id": "import-progress-task",
+   "status": "PROGRESS",
+   "result": "{\"current\": 3}"
+  },
+  "success": {
+   "task_id": "a1000000-0000-4000-8000-000000976801",
+   "status": "SUCCESS",
+   "result": "{\"success\": true, \"counts\": {\"users\": 3, \"courses\": 12}, \"warnings\": [\"a\", \"b\"], \"ratio\": 1.5, \"big\": 12345678901234567890, \"nested\": [null, {\"x\": \"\\u00e8\"}]}"
+  },
+  "success_null": {
+   "task_id": "a1000000-0000-4000-8000-000000976802",
+   "status": "SUCCESS",
+   "result": null
+  },
+  "success_text": {
+   "task_id": "a1000000-0000-4000-8000-000000976803",
+   "status": "SUCCESS",
+   "result": "\"Import completato\""
+  },
+  "success_broken": {
+   "task_id": "a1000000-0000-4000-8000-000000976804",
+   "status": "SUCCESS",
+   "result": "{not json"
+  }
+ },
+ "instance": {
+  "id": 976090,
+  "domain": "association-transfer.example.test",
+  "name": "Association transfer",
+  "self_hosted": true,
+  "setup_provenance": "fresh",
+  "primary_association": "own_association"
+ },
+ "cases": [
+  {
+   "name": "association-transfer-active-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/export/active'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-restricted-post-permission-first",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/export/active'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-active-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può visualizzare gli export"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può visualizzare gli export"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Associazione non trovata"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-owner-idle",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-owner-query-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-deleted-association-owner",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Associazione non trovata"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-active-delete-not-allowed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"DELETE\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-active-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Association Export",
+    "description": "API endpoints for association data export.\n\nAllows association owners to export their data for migration\nto a self-hosted instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976521",
+      "document_id": "a1000000-0000-4000-8000-000000976021",
+      "filename": "export_own_21.zip",
+      "file_size_bytes": 1021,
+      "download_token": "$download-token",
+      "date": "2026-01-21",
+      "created_at": "2026-01-21T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976520",
+      "document_id": "a1000000-0000-4000-8000-000000976020",
+      "filename": "export_own_20.zip",
+      "file_size_bytes": 1020,
+      "download_token": "$download-token",
+      "date": "2026-01-20",
+      "created_at": "2026-01-20T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976519",
+      "document_id": "a1000000-0000-4000-8000-000000976019",
+      "filename": "export_own_19.zip",
+      "file_size_bytes": 1019,
+      "download_token": "$download-token",
+      "date": "2026-01-19",
+      "created_at": "2026-01-19T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976518",
+      "document_id": "a1000000-0000-4000-8000-000000976018",
+      "filename": "export_own_18.zip",
+      "file_size_bytes": 1018,
+      "download_token": "$download-token",
+      "date": "2026-01-18",
+      "created_at": "2026-01-18T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976517",
+      "document_id": "a1000000-0000-4000-8000-000000976017",
+      "filename": "export_own_17.zip",
+      "file_size_bytes": 1017,
+      "download_token": "$download-token",
+      "date": "2026-01-17",
+      "created_at": "2026-01-17T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976516",
+      "document_id": "a1000000-0000-4000-8000-000000976016",
+      "filename": "export_own_16.zip",
+      "file_size_bytes": 1016,
+      "download_token": "$download-token",
+      "date": "2026-01-16",
+      "created_at": "2026-01-16T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976515",
+      "document_id": "a1000000-0000-4000-8000-000000976015",
+      "filename": "export_own_15.zip",
+      "file_size_bytes": 1015,
+      "download_token": "$download-token",
+      "date": "2026-01-15",
+      "created_at": "2026-01-15T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976514",
+      "document_id": "a1000000-0000-4000-8000-000000976014",
+      "filename": "export_own_14.zip",
+      "file_size_bytes": 1014,
+      "download_token": "$download-token",
+      "date": "2026-01-14",
+      "created_at": "2026-01-14T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976513",
+      "document_id": "a1000000-0000-4000-8000-000000976013",
+      "filename": "export_own_13.zip",
+      "file_size_bytes": 1013,
+      "download_token": "$download-token",
+      "date": "2026-01-13",
+      "created_at": "2026-01-13T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976512",
+      "document_id": "a1000000-0000-4000-8000-000000976012",
+      "filename": "export_own_12.zip",
+      "file_size_bytes": 1012,
+      "download_token": "$download-token",
+      "date": "2026-01-12",
+      "created_at": "2026-01-12T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976511",
+      "document_id": "a1000000-0000-4000-8000-000000976011",
+      "filename": "export_own_11.zip",
+      "file_size_bytes": 1011,
+      "download_token": "$download-token",
+      "date": "2026-01-11",
+      "created_at": "2026-01-11T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976510",
+      "document_id": "a1000000-0000-4000-8000-000000976010",
+      "filename": "export_own_10.zip",
+      "file_size_bytes": 1010,
+      "download_token": "$download-token",
+      "date": "2026-01-10",
+      "created_at": "2026-01-10T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976509",
+      "document_id": "a1000000-0000-4000-8000-000000976009",
+      "filename": "export_own_09.zip",
+      "file_size_bytes": 1009,
+      "download_token": "$download-token",
+      "date": "2026-01-09",
+      "created_at": "2026-01-09T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976508",
+      "document_id": "a1000000-0000-4000-8000-000000976008",
+      "filename": "export_own_08.zip",
+      "file_size_bytes": 1099511627776,
+      "download_token": "$download-token",
+      "date": "2026-01-08",
+      "created_at": "2026-01-08T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976507",
+      "document_id": "a1000000-0000-4000-8000-000000976007",
+      "filename": "export_own_07.zip",
+      "file_size_bytes": 0,
+      "download_token": "$download-token",
+      "date": "2026-01-07",
+      "created_at": "2026-01-07T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976506",
+      "document_id": "a1000000-0000-4000-8000-000000976006",
+      "filename": "export_own_06.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-06",
+      "created_at": "2026-01-06T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976505",
+      "document_id": "a1000000-0000-4000-8000-000000976005",
+      "filename": "export_own_05.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-05",
+      "created_at": "2026-01-05T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976504",
+      "document_id": "a1000000-0000-4000-8000-000000976004",
+      "filename": "export_own_04.zip",
+      "file_size_bytes": 1004,
+      "download_token": "$download-token",
+      "date": "2026-01-04",
+      "created_at": "2026-01-04T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976503",
+      "document_id": "a1000000-0000-4000-8000-000000976003",
+      "filename": "export_own_03.zip",
+      "file_size_bytes": 1003,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976502",
+      "document_id": "a1000000-0000-4000-8000-000000976002",
+      "filename": "export_own_02.zip",
+      "file_size_bytes": 1002,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2026-01-02T08:30:00+00:00"
+     }
+    ],
+    "count": 20
+   },
+   "effect": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  {
+   "name": "association-transfer-list-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/export/list'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-list-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può visualizzare gli export"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-list-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può visualizzare gli export"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-list-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-list-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Associazione non trovata"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-list-owner-latest-twenty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976521",
+      "document_id": "a1000000-0000-4000-8000-000000976021",
+      "filename": "export_own_21.zip",
+      "file_size_bytes": 1021,
+      "download_token": "$download-token",
+      "date": "2026-01-21",
+      "created_at": "2026-01-21T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976520",
+      "document_id": "a1000000-0000-4000-8000-000000976020",
+      "filename": "export_own_20.zip",
+      "file_size_bytes": 1020,
+      "download_token": "$download-token",
+      "date": "2026-01-20",
+      "created_at": "2026-01-20T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976519",
+      "document_id": "a1000000-0000-4000-8000-000000976019",
+      "filename": "export_own_19.zip",
+      "file_size_bytes": 1019,
+      "download_token": "$download-token",
+      "date": "2026-01-19",
+      "created_at": "2026-01-19T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976518",
+      "document_id": "a1000000-0000-4000-8000-000000976018",
+      "filename": "export_own_18.zip",
+      "file_size_bytes": 1018,
+      "download_token": "$download-token",
+      "date": "2026-01-18",
+      "created_at": "2026-01-18T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976517",
+      "document_id": "a1000000-0000-4000-8000-000000976017",
+      "filename": "export_own_17.zip",
+      "file_size_bytes": 1017,
+      "download_token": "$download-token",
+      "date": "2026-01-17",
+      "created_at": "2026-01-17T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976516",
+      "document_id": "a1000000-0000-4000-8000-000000976016",
+      "filename": "export_own_16.zip",
+      "file_size_bytes": 1016,
+      "download_token": "$download-token",
+      "date": "2026-01-16",
+      "created_at": "2026-01-16T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976515",
+      "document_id": "a1000000-0000-4000-8000-000000976015",
+      "filename": "export_own_15.zip",
+      "file_size_bytes": 1015,
+      "download_token": "$download-token",
+      "date": "2026-01-15",
+      "created_at": "2026-01-15T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976514",
+      "document_id": "a1000000-0000-4000-8000-000000976014",
+      "filename": "export_own_14.zip",
+      "file_size_bytes": 1014,
+      "download_token": "$download-token",
+      "date": "2026-01-14",
+      "created_at": "2026-01-14T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976513",
+      "document_id": "a1000000-0000-4000-8000-000000976013",
+      "filename": "export_own_13.zip",
+      "file_size_bytes": 1013,
+      "download_token": "$download-token",
+      "date": "2026-01-13",
+      "created_at": "2026-01-13T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976512",
+      "document_id": "a1000000-0000-4000-8000-000000976012",
+      "filename": "export_own_12.zip",
+      "file_size_bytes": 1012,
+      "download_token": "$download-token",
+      "date": "2026-01-12",
+      "created_at": "2026-01-12T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976511",
+      "document_id": "a1000000-0000-4000-8000-000000976011",
+      "filename": "export_own_11.zip",
+      "file_size_bytes": 1011,
+      "download_token": "$download-token",
+      "date": "2026-01-11",
+      "created_at": "2026-01-11T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976510",
+      "document_id": "a1000000-0000-4000-8000-000000976010",
+      "filename": "export_own_10.zip",
+      "file_size_bytes": 1010,
+      "download_token": "$download-token",
+      "date": "2026-01-10",
+      "created_at": "2026-01-10T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976509",
+      "document_id": "a1000000-0000-4000-8000-000000976009",
+      "filename": "export_own_09.zip",
+      "file_size_bytes": 1009,
+      "download_token": "$download-token",
+      "date": "2026-01-09",
+      "created_at": "2026-01-09T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976508",
+      "document_id": "a1000000-0000-4000-8000-000000976008",
+      "filename": "export_own_08.zip",
+      "file_size_bytes": 1099511627776,
+      "download_token": "$download-token",
+      "date": "2026-01-08",
+      "created_at": "2026-01-08T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976507",
+      "document_id": "a1000000-0000-4000-8000-000000976007",
+      "filename": "export_own_07.zip",
+      "file_size_bytes": 0,
+      "download_token": "$download-token",
+      "date": "2026-01-07",
+      "created_at": "2026-01-07T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976506",
+      "document_id": "a1000000-0000-4000-8000-000000976006",
+      "filename": "export_own_06.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-06",
+      "created_at": "2026-01-06T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976505",
+      "document_id": "a1000000-0000-4000-8000-000000976005",
+      "filename": "export_own_05.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-05",
+      "created_at": "2026-01-05T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976504",
+      "document_id": "a1000000-0000-4000-8000-000000976004",
+      "filename": "export_own_04.zip",
+      "file_size_bytes": 1004,
+      "download_token": "$download-token",
+      "date": "2026-01-04",
+      "created_at": "2026-01-04T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976503",
+      "document_id": "a1000000-0000-4000-8000-000000976003",
+      "filename": "export_own_03.zip",
+      "file_size_bytes": 1003,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976502",
+      "document_id": "a1000000-0000-4000-8000-000000976002",
+      "filename": "export_own_02.zip",
+      "file_size_bytes": 1002,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2026-01-02T08:30:00+00:00"
+     }
+    ],
+    "count": 20
+   },
+   "effect": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  {
+   "name": "association-transfer-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976521",
+      "document_id": "a1000000-0000-4000-8000-000000976021",
+      "filename": "export_own_21.zip",
+      "file_size_bytes": 1021,
+      "download_token": "$download-token",
+      "date": "2026-01-21",
+      "created_at": "2026-01-21T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976520",
+      "document_id": "a1000000-0000-4000-8000-000000976020",
+      "filename": "export_own_20.zip",
+      "file_size_bytes": 1020,
+      "download_token": "$download-token",
+      "date": "2026-01-20",
+      "created_at": "2026-01-20T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976519",
+      "document_id": "a1000000-0000-4000-8000-000000976019",
+      "filename": "export_own_19.zip",
+      "file_size_bytes": 1019,
+      "download_token": "$download-token",
+      "date": "2026-01-19",
+      "created_at": "2026-01-19T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976518",
+      "document_id": "a1000000-0000-4000-8000-000000976018",
+      "filename": "export_own_18.zip",
+      "file_size_bytes": 1018,
+      "download_token": "$download-token",
+      "date": "2026-01-18",
+      "created_at": "2026-01-18T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976517",
+      "document_id": "a1000000-0000-4000-8000-000000976017",
+      "filename": "export_own_17.zip",
+      "file_size_bytes": 1017,
+      "download_token": "$download-token",
+      "date": "2026-01-17",
+      "created_at": "2026-01-17T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976516",
+      "document_id": "a1000000-0000-4000-8000-000000976016",
+      "filename": "export_own_16.zip",
+      "file_size_bytes": 1016,
+      "download_token": "$download-token",
+      "date": "2026-01-16",
+      "created_at": "2026-01-16T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976515",
+      "document_id": "a1000000-0000-4000-8000-000000976015",
+      "filename": "export_own_15.zip",
+      "file_size_bytes": 1015,
+      "download_token": "$download-token",
+      "date": "2026-01-15",
+      "created_at": "2026-01-15T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976514",
+      "document_id": "a1000000-0000-4000-8000-000000976014",
+      "filename": "export_own_14.zip",
+      "file_size_bytes": 1014,
+      "download_token": "$download-token",
+      "date": "2026-01-14",
+      "created_at": "2026-01-14T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976513",
+      "document_id": "a1000000-0000-4000-8000-000000976013",
+      "filename": "export_own_13.zip",
+      "file_size_bytes": 1013,
+      "download_token": "$download-token",
+      "date": "2026-01-13",
+      "created_at": "2026-01-13T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976512",
+      "document_id": "a1000000-0000-4000-8000-000000976012",
+      "filename": "export_own_12.zip",
+      "file_size_bytes": 1012,
+      "download_token": "$download-token",
+      "date": "2026-01-12",
+      "created_at": "2026-01-12T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976511",
+      "document_id": "a1000000-0000-4000-8000-000000976011",
+      "filename": "export_own_11.zip",
+      "file_size_bytes": 1011,
+      "download_token": "$download-token",
+      "date": "2026-01-11",
+      "created_at": "2026-01-11T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976510",
+      "document_id": "a1000000-0000-4000-8000-000000976010",
+      "filename": "export_own_10.zip",
+      "file_size_bytes": 1010,
+      "download_token": "$download-token",
+      "date": "2026-01-10",
+      "created_at": "2026-01-10T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976509",
+      "document_id": "a1000000-0000-4000-8000-000000976009",
+      "filename": "export_own_09.zip",
+      "file_size_bytes": 1009,
+      "download_token": "$download-token",
+      "date": "2026-01-09",
+      "created_at": "2026-01-09T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976508",
+      "document_id": "a1000000-0000-4000-8000-000000976008",
+      "filename": "export_own_08.zip",
+      "file_size_bytes": 1099511627776,
+      "download_token": "$download-token",
+      "date": "2026-01-08",
+      "created_at": "2026-01-08T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976507",
+      "document_id": "a1000000-0000-4000-8000-000000976007",
+      "filename": "export_own_07.zip",
+      "file_size_bytes": 0,
+      "download_token": "$download-token",
+      "date": "2026-01-07",
+      "created_at": "2026-01-07T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976506",
+      "document_id": "a1000000-0000-4000-8000-000000976006",
+      "filename": "export_own_06.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-06",
+      "created_at": "2026-01-06T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976505",
+      "document_id": "a1000000-0000-4000-8000-000000976005",
+      "filename": "export_own_05.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-05",
+      "created_at": "2026-01-05T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976504",
+      "document_id": "a1000000-0000-4000-8000-000000976004",
+      "filename": "export_own_04.zip",
+      "file_size_bytes": 1004,
+      "download_token": "$download-token",
+      "date": "2026-01-04",
+      "created_at": "2026-01-04T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976503",
+      "document_id": "a1000000-0000-4000-8000-000000976003",
+      "filename": "export_own_03.zip",
+      "file_size_bytes": 1003,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976502",
+      "document_id": "a1000000-0000-4000-8000-000000976002",
+      "filename": "export_own_02.zip",
+      "file_size_bytes": 1002,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2026-01-02T08:30:00+00:00"
+     }
+    ],
+    "count": 20
+   },
+   "effect": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  {
+   "name": "association-transfer-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976524",
+      "document_id": "a1000000-0000-4000-8000-000000976024",
+      "filename": "export_foreign.zip",
+      "file_size_bytes": 77,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T09:00:00+00:00"
+     }
+    ],
+    "count": 1
+   },
+   "effect": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  {
+   "name": "association-transfer-list-admin-impersonating-foreign",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_foreign",
+    "User-Id": "a1000000-0000-4000-8000-000000700007"
+   },
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976524",
+      "document_id": "a1000000-0000-4000-8000-000000976024",
+      "filename": "export_foreign.zip",
+      "file_size_bytes": 77,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T09:00:00+00:00"
+     }
+    ],
+    "count": 1
+   },
+   "effect": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  {
+   "name": "association-transfer-list-deleted-association-owner",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Associazione non trovata"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-list-group-header-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976521",
+      "document_id": "a1000000-0000-4000-8000-000000976021",
+      "filename": "export_own_21.zip",
+      "file_size_bytes": 1021,
+      "download_token": "$download-token",
+      "date": "2026-01-21",
+      "created_at": "2026-01-21T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976520",
+      "document_id": "a1000000-0000-4000-8000-000000976020",
+      "filename": "export_own_20.zip",
+      "file_size_bytes": 1020,
+      "download_token": "$download-token",
+      "date": "2026-01-20",
+      "created_at": "2026-01-20T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976519",
+      "document_id": "a1000000-0000-4000-8000-000000976019",
+      "filename": "export_own_19.zip",
+      "file_size_bytes": 1019,
+      "download_token": "$download-token",
+      "date": "2026-01-19",
+      "created_at": "2026-01-19T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976518",
+      "document_id": "a1000000-0000-4000-8000-000000976018",
+      "filename": "export_own_18.zip",
+      "file_size_bytes": 1018,
+      "download_token": "$download-token",
+      "date": "2026-01-18",
+      "created_at": "2026-01-18T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976517",
+      "document_id": "a1000000-0000-4000-8000-000000976017",
+      "filename": "export_own_17.zip",
+      "file_size_bytes": 1017,
+      "download_token": "$download-token",
+      "date": "2026-01-17",
+      "created_at": "2026-01-17T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976516",
+      "document_id": "a1000000-0000-4000-8000-000000976016",
+      "filename": "export_own_16.zip",
+      "file_size_bytes": 1016,
+      "download_token": "$download-token",
+      "date": "2026-01-16",
+      "created_at": "2026-01-16T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976515",
+      "document_id": "a1000000-0000-4000-8000-000000976015",
+      "filename": "export_own_15.zip",
+      "file_size_bytes": 1015,
+      "download_token": "$download-token",
+      "date": "2026-01-15",
+      "created_at": "2026-01-15T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976514",
+      "document_id": "a1000000-0000-4000-8000-000000976014",
+      "filename": "export_own_14.zip",
+      "file_size_bytes": 1014,
+      "download_token": "$download-token",
+      "date": "2026-01-14",
+      "created_at": "2026-01-14T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976513",
+      "document_id": "a1000000-0000-4000-8000-000000976013",
+      "filename": "export_own_13.zip",
+      "file_size_bytes": 1013,
+      "download_token": "$download-token",
+      "date": "2026-01-13",
+      "created_at": "2026-01-13T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976512",
+      "document_id": "a1000000-0000-4000-8000-000000976012",
+      "filename": "export_own_12.zip",
+      "file_size_bytes": 1012,
+      "download_token": "$download-token",
+      "date": "2026-01-12",
+      "created_at": "2026-01-12T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976511",
+      "document_id": "a1000000-0000-4000-8000-000000976011",
+      "filename": "export_own_11.zip",
+      "file_size_bytes": 1011,
+      "download_token": "$download-token",
+      "date": "2026-01-11",
+      "created_at": "2026-01-11T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976510",
+      "document_id": "a1000000-0000-4000-8000-000000976010",
+      "filename": "export_own_10.zip",
+      "file_size_bytes": 1010,
+      "download_token": "$download-token",
+      "date": "2026-01-10",
+      "created_at": "2026-01-10T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976509",
+      "document_id": "a1000000-0000-4000-8000-000000976009",
+      "filename": "export_own_09.zip",
+      "file_size_bytes": 1009,
+      "download_token": "$download-token",
+      "date": "2026-01-09",
+      "created_at": "2026-01-09T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976508",
+      "document_id": "a1000000-0000-4000-8000-000000976008",
+      "filename": "export_own_08.zip",
+      "file_size_bytes": 1099511627776,
+      "download_token": "$download-token",
+      "date": "2026-01-08",
+      "created_at": "2026-01-08T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976507",
+      "document_id": "a1000000-0000-4000-8000-000000976007",
+      "filename": "export_own_07.zip",
+      "file_size_bytes": 0,
+      "download_token": "$download-token",
+      "date": "2026-01-07",
+      "created_at": "2026-01-07T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976506",
+      "document_id": "a1000000-0000-4000-8000-000000976006",
+      "filename": "export_own_06.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-06",
+      "created_at": "2026-01-06T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976505",
+      "document_id": "a1000000-0000-4000-8000-000000976005",
+      "filename": "export_own_05.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-05",
+      "created_at": "2026-01-05T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976504",
+      "document_id": "a1000000-0000-4000-8000-000000976004",
+      "filename": "export_own_04.zip",
+      "file_size_bytes": 1004,
+      "download_token": "$download-token",
+      "date": "2026-01-04",
+      "created_at": "2026-01-04T08:30:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976503",
+      "document_id": "a1000000-0000-4000-8000-000000976003",
+      "filename": "export_own_03.zip",
+      "file_size_bytes": 1003,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T08:30:00.123456+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976502",
+      "document_id": "a1000000-0000-4000-8000-000000976002",
+      "filename": "export_own_02.zip",
+      "file_size_bytes": 1002,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2026-01-02T08:30:00+00:00"
+     }
+    ],
+    "count": 20
+   },
+   "effect": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  {
+   "name": "association-transfer-list-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Association Export",
+    "description": "API endpoints for association data export.\n\nAllows association owners to export their data for migration\nto a self-hosted instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/export/status?task_id=x",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/export/status",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "task_id richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/association/export/status",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/export/status'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/association/export/status?task_id=x",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può visualizzare gli export"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/association/export/status",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può visualizzare gli export"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-owner-missing-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "task_id richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-owner-empty-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "task_id richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-without-association-task-first",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/association/export/status",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "task_id richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Associazione non trovata"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-owner-unknown-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-owner-import-task-not-registered",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976801",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-owner-foreign-active-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976900",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-owner-free-text-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=not%20a%20uuid",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-repeated-task-last-wins",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976999&task_id=",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "task_id richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-status-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/export/status",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-status-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/export/status",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Association Export",
+    "description": "API endpoints for association data export.\n\nAllows association owners to export their data for migration\nto a self-hosted instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/export/delete'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può eliminare gli export"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976021"
+   }
+  },
+  {
+   "name": "association-transfer-delete-collaborator-list-body",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "association-transfer-delete-athlete-number-body",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": 5
+  },
+  {
+   "name": "association-transfer-delete-athlete",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può eliminare gli export"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-delete-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-without-body",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "document_id richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-delete-owner-empty-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "document_id richiesto"
+   },
+   "effect": null,
+   "body": {
+    "document_id": ""
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-zero-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "document_id richiesto"
+   },
+   "effect": null,
+   "body": {
+    "document_id": 0
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-false-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "document_id richiesto"
+   },
+   "effect": null,
+   "body": {
+    "document_id": false
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-null-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "document_id richiesto"
+   },
+   "effect": null,
+   "body": {
+    "document_id": null
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-empty-list-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "document_id richiesto"
+   },
+   "effect": null,
+   "body": {
+    "document_id": []
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-query-ignored",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete?document_id=a1000000-0000-4000-8000-000000976021",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "document_id richiesto"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-delete-without-association",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Associazione non trovata"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "x"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-foreign-export",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976024"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-non-export-document",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976022"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-case-sensitive-prefix",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976023"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-integer-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": 5
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-true-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": true
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-uppercase-foreign",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "A1000000-0000-4000-8000-000000976024"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-hex-foreign",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000000040008000000000976024"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-form-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "raw_body": "document_id=a1000000-0000-4000-8000-000000976999",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "association-transfer-delete-deleted-association-owner",
+   "actor": "deleted_association_owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Associazione non trovata"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000976021"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-malformed-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": "not-a-uuid"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-dict-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": {
+     "a": 1
+    }
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-float-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": 1.5
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-negative-id",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": -1
+   }
+  },
+  {
+   "name": "association-transfer-delete-get-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Association Export",
+    "description": "API endpoints for association data export.\n\nAllows association owners to export their data for migration\nto a self-hosted instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-start-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Elimina un export prima di crearne uno nuovo"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/export/start'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può esportare i dati"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può esportare i dati"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-start-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Associazione non trovata"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-owner-export-limit",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Elimina un export prima di crearne uno nuovo"
+   },
+   "effect": null,
+   "body": {
+    "include_media": false
+   }
+  },
+  {
+   "name": "association-transfer-start-admin-impersonating-owner-limit",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 409,
+   "response": {
+    "error": "Elimina un export prima di crearne uno nuovo"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-foreign-owner-already-running",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Un export è già in corso"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-start-get-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-start-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/export/start",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Association Export",
+    "description": "API endpoints for association data export.\n\nAllows association owners to export their data for migration\nto a self-hosted instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-anonymous-setup-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {
+    "X-Setup-Token": "contract-setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/import/status",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/association/import/status",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/import/status'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-admin-impersonating-foreign",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_foreign",
+    "User-Id": "a1000000-0000-4000-8000-000000700007"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=x",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-missing-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "task_id richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-empty-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "task_id richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976999",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-free-text",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=caf%C3%A8%20task",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "cafè task",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-started",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976800",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976800",
+    "status": "STARTED",
+    "ready": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-custom-state",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=import-progress-task",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "import-progress-task",
+    "status": "PROGRESS",
+    "ready": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-success",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976801",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976801",
+    "status": "SUCCESS",
+    "ready": true,
+    "result": {
+     "success": true,
+     "counts": {
+      "users": 3,
+      "courses": 12
+     },
+     "warnings": [
+      "a",
+      "b"
+     ],
+     "ratio": 1.5,
+     "big": 12345678901234567890,
+     "nested": [
+      null,
+      {
+       "x": "è"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-success-null",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976802",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976802",
+    "status": "SUCCESS",
+    "ready": true,
+    "result": null
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-success-text",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976803",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976803",
+    "status": "SUCCESS",
+    "ready": true,
+    "result": "Import completato"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-success-undecodable",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976804",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976800",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976800",
+    "status": "STARTED",
+    "ready": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976999",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/status",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-status-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/import/status",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Association Import",
+    "description": "API endpoints for association data import.\n\nAllows importing association data from a ZIP export file\ninto a fresh Bakney instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "multipart/form-data",
+     "application/x-www-form-urlencoded"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/import/validate'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-import-validate-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-owner-json-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/json\" in request."
+   },
+   "effect": null,
+   "body": {
+    "file": "x"
+   }
+  },
+  {
+   "name": "association-transfer-import-validate-owner-without-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-owner-form-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "raw_body": "file=archive.zip&owner_password=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-multipart-text-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nnot a file\r\n--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"owner_password\"\r\n\r\nsecret\r\n--association-transfer-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-multipart-other-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"archive\"; filename=\"export.zip\"\r\nContent-Type: application/zip\r\n\r\nPK\r\n--association-transfer-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-owner-multipart-empty-filename",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\nContent-Type: application/zip\r\n\r\nPK\r\n--association-transfer-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-validate-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-get-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-validate-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Association Import",
+    "description": "API endpoints for association data import.\n\nAllows importing association data from a ZIP export file\ninto a fresh Bakney instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "multipart/form-data",
+     "application/x-www-form-urlencoded"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'association/import/start'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "association-transfer-import-start-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-owner-json-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/json\" in request."
+   },
+   "effect": null,
+   "body": {
+    "file": "x"
+   }
+  },
+  {
+   "name": "association-transfer-import-start-owner-without-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-owner-form-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "raw_body": "file=archive.zip&owner_password=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "association-transfer-import-start-owner-multipart-text-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nnot a file\r\n--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"owner_password\"\r\n\r\nsecret\r\n--association-transfer-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-owner-multipart-other-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"archive\"; filename=\"export.zip\"\r\nContent-Type: application/zip\r\n\r\nPK\r\n--association-transfer-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-owner-multipart-empty-filename",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null,
+   "raw_body": "--association-transfer-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\nContent-Type: application/zip\r\n\r\nPK\r\n--association-transfer-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-import-start-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/association/import/start",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 400,
+   "response": {
+    "error": "File ZIP richiesto"
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-get-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "association-transfer-import-start-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/association/import/start",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Association Import",
+    "description": "API endpoints for association data import.\n\nAllows importing association data from a ZIP export file\ninto a fresh Bakney instance.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "multipart/form-data",
+     "application/x-www-form-urlencoded"
+    ]
+   },
+   "effect": null
+  }
+ ]
+}
