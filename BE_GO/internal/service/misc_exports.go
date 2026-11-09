@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 	"github.com/google/uuid"
 )
 
@@ -141,10 +144,7 @@ func (s *MiscExports) SubscriptionExport(ctx context.Context, request MiscExport
 	if value, present := paymentReadsParam(request.Query, "filetype"); present {
 		mode = value
 	}
-	if strings.Contains(mode, "xls") {
-		// The pandas/xlsxwriter workbook is not ported.
-		return nil, domain.ErrMiscExportsNotPorted
-	}
+	xls := strings.Contains(mode, "xls")
 	simplified := strings.Contains(mode, "simplified")
 	tx, err := s.store.BeginMiscExports(ctx)
 	if err != nil {
@@ -186,6 +186,60 @@ func (s *MiscExports) SubscriptionExport(ctx context.Context, request MiscExport
 			tutors.byAssociate[relation.AssociateID] = append(tutors.byAssociate[relation.AssociateID], relation)
 		}
 	}
+	columns := miscExportFullColumns
+	if simplified {
+		columns = miscExportSimpleColumns
+	}
+	var workbook []byte
+	if xls {
+		// The workbook's cells do not depend on the promotions: build it from
+		// a dry pass first, so an input Go does not reproduce is refused
+		// before any write.
+		preview, failure, err := s.subscriptionRows(ctx, tx, request, subscriptions, tags, tutors.copy(), simplified, true)
+		if err != nil {
+			return nil, err
+		}
+		if failure == nil && len(preview) > 0 {
+			if workbook, err = miscExportsWorkbook(columns, preview, s.now()); err != nil {
+				return nil, err
+			}
+		}
+	}
+	rows, failure, err := s.subscriptionRows(ctx, tx, request, subscriptions, tags, tutors, simplified, false)
+	if err != nil {
+		return nil, err
+	}
+	// Each promotion was autocommitted before the failing row.
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	if failure != nil {
+		return nil, failure
+	}
+	if len(rows) == 0 {
+		return nil, domain.ErrMiscExportsServer // pandas: df.columns = cols on an empty frame
+	}
+	if xls {
+		filename := fmt.Sprintf("[%s] ISCRIZIONI a %s.xls", miscExportDate(s.today()), miscExportDenomination(association))
+		return domain.RequestObject{{Name: "data", Value: domain.RequestObject{{Name: "filename", Value: filename}, {Name: "type", Value: "xls"},
+			{Name: "file", Value: base64.StdEncoding.EncodeToString(workbook)}}}}, nil
+	}
+	var out bytes.Buffer
+	paymentExportWriteRow(&out, columns)
+	for _, row := range rows {
+		paymentExportWriteRow(&out, row)
+	}
+	filename := fmt.Sprintf("[%s] ISCRIZIONI a %s.csv", miscExportDate(s.today()), miscExportDenomination(association))
+	return domain.RequestObject{{Name: "data", Value: domain.RequestObject{{Name: "filename", Value: filename}, {Name: "type", Value: "csv"},
+		{Name: "file", Value: base64.StdEncoding.EncodeToString(out.Bytes())}}}}, nil
+}
+
+// subscriptionRows builds the export rows in queryset order; a row that
+// raises ends the rows with its failure. Unless dry, get_main_tutor's
+// promotions are saved as the rows are built.
+func (s *MiscExports) subscriptionRows(ctx context.Context, tx domain.MiscExportTransaction, request MiscExportRequest,
+	subscriptions []domain.MiscExportSubscription, tags map[string][]string, tutors miscExportTutors, simplified, dry bool) ([][]string, error, error) {
+	identity := request.Identity
 	rows := make([][]string, 0, len(subscriptions))
 	var failure error
 	for _, row := range subscriptions {
@@ -196,10 +250,12 @@ func (s *MiscExports) SubscriptionExport(ctx context.Context, request MiscExport
 		var tutor *domain.MiscExportPerson
 		if !simplified {
 			relation, promote := tutors.main(*row.AssociateID)
-			if promote {
+			if promote && !dry {
 				if err := s.promote(ctx, tx, identity, request.Audit, relation, row.AssociateAssociation); err != nil {
-					return nil, err
+					return nil, nil, err
 				}
+			}
+			if promote {
 				relation.Primary = true
 			}
 			if relation != nil {
@@ -234,28 +290,45 @@ func (s *MiscExports) SubscriptionExport(ctx context.Context, request MiscExport
 		}
 		rows = append(rows, append(values, tail...))
 	}
-	// Each promotion was autocommitted before the failing row.
-	if err := tx.Commit(); err != nil {
-		return nil, err
+	return rows, failure, nil
+}
+
+// copy is the tutor relations with their primary flags copied (for a dry pass).
+func (t miscExportTutors) copy() miscExportTutors {
+	out := miscExportTutors{byAssociate: map[string][]*domain.MiscExportRelation{}}
+	for associate, relations := range t.byAssociate {
+		for _, relation := range relations {
+			clone := *relation
+			out.byAssociate[associate] = append(out.byAssociate[associate], &clone)
+		}
 	}
-	if failure != nil {
-		return nil, failure
+	return out
+}
+
+// miscExportsWorkbook is _export_to_excel(DataFrame(rows) with cols): sheet
+// 'Libro Soci' with the index column, set_column(i, i, len(col) + 10) for
+// i over the columns (the index column takes the first width). Every value is
+// a str or None (written blank, as ”).
+func miscExportsWorkbook(columns []string, rows [][]string, now time.Time) ([]byte, error) {
+	frame := xlsxexport.Frame{Sheet: "Libro Soci", Columns: columns, Index: true}
+	for _, column := range columns {
+		frame.Widths = append(frame.Widths, float64(utf8.RuneCountInString(column)+10))
 	}
-	if len(rows) == 0 {
-		return nil, domain.ErrMiscExportsServer // pandas: df.columns = cols on an empty frame
-	}
-	columns := miscExportFullColumns
-	if simplified {
-		columns = miscExportSimpleColumns
-	}
-	var out bytes.Buffer
-	paymentExportWriteRow(&out, columns)
 	for _, row := range rows {
-		paymentExportWriteRow(&out, row)
+		values := make([]xlsxexport.Value, len(row))
+		for i, text := range row {
+			values[i] = xlsxexport.StrValue(text)
+		}
+		frame.Rows = append(frame.Rows, values)
 	}
-	filename := fmt.Sprintf("[%s] ISCRIZIONI a %s.csv", miscExportDate(s.today()), miscExportDenomination(association))
-	return domain.RequestObject{{Name: "data", Value: domain.RequestObject{{Name: "filename", Value: filename}, {Name: "type", Value: "csv"},
-		{Name: "file", Value: base64.StdEncoding.EncodeToString(out.Bytes())}}}}, nil
+	workbook, err := xlsxexport.PandasXlsxwriter(frame, now)
+	switch {
+	case errors.Is(err, xlsxexport.ErrNotPorted):
+		return nil, domain.ErrMiscExportsNotPorted
+	case err != nil:
+		return nil, domain.ErrMiscExportsServer
+	}
+	return workbook, nil
 }
 
 func miscExportDenomination(association *domain.PaymentExportAssociation) string {
@@ -294,10 +367,6 @@ func (s *MiscExports) InvoiceExport(ctx context.Context, request MiscExportReque
 	mode := "csv"
 	if value, present := paymentReadsParam(request.Query, "m"); present {
 		mode = value
-	}
-	if mode == "xlsx" {
-		// The get_excel_base64 workbook is not ported.
-		return nil, domain.ErrMiscExportsNotPorted
 	}
 	tx, err := s.store.BeginMiscExports(ctx)
 	if err != nil {
@@ -359,6 +428,13 @@ func (s *MiscExports) InvoiceExport(ctx context.Context, request MiscExportReque
 		}
 		data = domain.RequestObject{{Name: "file", Value: base64.StdEncoding.EncodeToString(out.Bytes())}, {Name: "type", Value: "csv"},
 			{Name: "filename", Value: fmt.Sprintf("[%s] RICEVUTE a %s.csv", miscExportDate(s.today()), miscExportDenomination(association))}}
+	case "xlsx":
+		workbook, err := miscExportsInvoiceWorkbook(invoices, payments, s.now())
+		if err != nil {
+			return nil, err
+		}
+		data = domain.RequestObject{{Name: "file", Value: base64.StdEncoding.EncodeToString(workbook)}, {Name: "type", Value: "xlsx"},
+			{Name: "filename", Value: fmt.Sprintf("[%s] RICEVUTE a %s.xlsx", miscExportDate(s.today()), miscExportDenomination(association))}}
 	case "files":
 		files := []any{}
 		for _, invoice := range invoices {
@@ -378,4 +454,45 @@ func (s *MiscExports) InvoiceExport(ctx context.Context, request MiscExportReque
 			Value: "Export dei file in corso, controlla la sezione Documenti e Modelli tra qualche minuto."})
 	}
 	return domain.RequestObject{{Name: "data", Value: data}}, nil
+}
+
+// miscExportsInvoiceWorkbook is invoice_list_export's get_excel_base64 call:
+// the creation date, the payment associate's first and last name (None kept,
+// ” without a payment or an associate), the fees (Decimals), the number
+// (None kept) and the payment type ('-' for default or without a payment).
+func miscExportsInvoiceWorkbook(invoices []domain.MiscExportInvoice, payments map[string]domain.MiscExportPayment,
+	now time.Time) ([]byte, error) {
+	data := make([][]xlsxexport.Value, len(miscExportInvoiceColumns))
+	for c := range data {
+		data[c] = []xlsxexport.Value{}
+	}
+	for _, invoice := range invoices {
+		payment, found := payments[invoice.ID]
+		first, last, kind := xlsxexport.StrValue(""), xlsxexport.StrValue(""), "-"
+		if found {
+			if payment.HasAssociate {
+				first, last = xlsxexport.OptionalStr(payment.AssociateFirst), xlsxexport.OptionalStr(payment.AssociateLast)
+			}
+			if payment.Type != "default" {
+				kind = payment.Type
+			}
+		}
+		number := xlsxexport.NoneValue()
+		if invoice.Number != nil {
+			number = xlsxexport.IntValue(*invoice.Number)
+		}
+		values := []xlsxexport.Value{xlsxexport.StrValue(miscExportDate(invoice.Created.UTC())), first, last,
+			xlsxexport.DecimalValue(invoice.Membership), xlsxexport.DecimalValue(invoice.Activity), number, xlsxexport.StrValue(kind)}
+		for c, value := range values {
+			data[c] = append(data[c], value)
+		}
+	}
+	workbook, err := xlsxexport.PandasOpenpyxl(data, miscExportInvoiceColumns, now)
+	switch {
+	case errors.Is(err, xlsxexport.ErrNotPorted):
+		return nil, domain.ErrMiscExportsNotPorted
+	case err != nil:
+		return nil, domain.ErrMiscExportsServer // get_excel_base64 returned None: raise Exception
+	}
+	return workbook, nil
 }

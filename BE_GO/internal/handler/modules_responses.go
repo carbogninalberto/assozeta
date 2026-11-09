@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
@@ -23,9 +24,10 @@ type ModulesResponsesService interface {
 // ModulesResponsesHandler serves modules_custom_link_info,
 // modules_response_add and modules_response_add_attachment (no
 // permission_classes: AllowAny) and modules_response_approve and
-// modules_response_delete (IsAuthenticated). modules/<id>/export is not ported.
+// modules_response_delete and modules_response_export (IsAuthenticated).
 type ModulesResponsesHandler struct {
 	responses  ModulesResponsesService
+	export     *service.ModulesExport
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
 	audit      LoginAuditReader
@@ -154,6 +156,25 @@ func (h *ModulesResponsesHandler) Delete(c echo.Context) error {
 		err := h.responses.Delete(ctx, *identity, c.Param("module_response_id"), audit)
 		return h.answer(c, 200, map[string]string{"msg": "response deleted"}, err)
 	})
+}
+
+// WithExport serves modules_response_export through the export service.
+func (h *ModulesResponsesHandler) WithExport(export *service.ModulesExport) *ModulesResponsesHandler {
+	h.export = export
+	return h
+}
+
+// Export mirrors modules_response_export (a read: no write prologue).
+func (h *ModulesResponsesHandler) Export(c echo.Context) error {
+	identity, ok, err := h.admit(c, []string{http.MethodGet}, "modules_response_export", "Modules Response Export", false)
+	if !ok {
+		return err
+	}
+	body, err := h.export.Export(c.Request().Context(), *identity, c.Param("module_id"))
+	if err == nil {
+		return c.Blob(http.StatusOK, echo.MIMEApplicationJSON, dto.PythonJSONDumpsCompact(body))
+	}
+	return h.answer(c, 200, nil, err)
 }
 
 // Attachment mirrors modules_response_add_attachment (POST and DELETE).

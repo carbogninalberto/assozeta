@@ -47,8 +47,17 @@ payment_list_export (BE/application/views/payment_views.py) is an
   key) course title, else its installments (any state, group-aware, first by
   key) course subscription's course title, else the course JSON's 'label';
 - ``{'data': {'file': base64, 'type': 'csv', 'filename': '[<today>] PAGAMENTI a
-  <denomination>.csv'}}``. ``m=xlsx`` (an openpyxl workbook) is not authored:
-  Go refuses it.
+  <denomination>.csv'}}``;
+- ``m=xlsx`` hands get_excel_base64 the column lists (zip truncates them to the
+  shortest): the user (None kept), 'Pagato'/'In Attesa', the type, the dates,
+  the invoice number (an int, '' without an invoice), the activities, the
+  additional categories (``'payment_category_id' in mpc`` first), the category
+  name or '-', the account name or '-' (the petty cash book included), the
+  flow, the course (the label value as is), the amount (a Decimal), the notes
+  (None kept) and for the petty cash book the progressive balances (floats or
+  '-'); the response is ``{'data': {'file': base64, 'type': 'xlsx', 'filename':
+  '[<today>] PAGAMENTI a <denomination>.xlsx'}}`` (the workbook is compared with
+  TESTS/contracts/xlsx.py).
 
 The expected CSVs below are computed by an independent model of those Django
 semantics over the authored rows. Personal data is synthetic. Run with
@@ -461,6 +470,59 @@ def export_csv(labels, *, petty=False, span=None, group=None, association=OWN):
     return out.getvalue()
 
 
+def typed(value):
+    """A cell value as the xlsx spec's typed JSON."""
+    if isinstance(value, bool):
+        return {'bool': value}
+    if isinstance(value, int):
+        return {'int': str(value)}
+    if isinstance(value, float):
+        return {'float': repr(value)}
+    if isinstance(value, Decimal):
+        return {'decimal': str(value)}
+    return value
+
+
+def export_xlsx(labels, *, petty=False, span=None, group=None, association=OWN):
+    """The m=xlsx workbook spec: get_excel_base64's column lists."""
+    items = [item(label, group) for label in labels]
+    if petty:
+        items += transfer_items(association, span)
+    items.sort(key=lambda entry: entry['date'] or NOW)
+    progressive = []
+    if petty:
+        balances = {name: balance(name, span[0], group) for name in ACCOUNTS}
+        for entry in items:
+            if entry['paid']:
+                if entry['account']:
+                    balances[entry['account']] = balances[entry['account']] + float(entry['amount']) * (-1 if entry['expense'] else 1)
+                    progressive.append(balances[entry['account']])
+            else:
+                progressive.append('-')
+    columns = [
+        [entry['user'] for entry in items],
+        ['Pagato' if entry['paid'] else 'In Attesa' for entry in items],
+        ['-' if entry['type'] == 'default' else entry['type'] for entry in items],
+        [entry['created'].strftime('%Y-%m-%d') for entry in items],
+        [entry['date'].strftime('%Y-%m-%d') if entry['date'] else '' for entry in items],
+        [entry['invoice'] for entry in items],
+        [entry['activity'] for entry in items if entry['activity'] is not None],
+        [entry['meta'] for entry in items],
+        [entry['category'] for entry in items],
+        [ACCOUNTS[entry['account']]['name'] if entry['account'] else '-' for entry in items],
+        ['Uscita' if entry['expense'] else 'Entrata' for entry in items],
+        [entry['course'] for entry in items],
+        [Decimal(entry['amount']) for entry in items],
+        [entry['notes'] for entry in items],
+    ] + ([progressive] if petty else [])
+    header = HEADER + (['Saldo progressivo'] if petty else [])
+    return {'$xlsx': {'engine': 'excel_utils', 'columns': header, 'data': [[typed(value) for value in column] for column in columns]}}
+
+
+def xbody(spec, association=OWN):
+    return {'data': {'file': spec, 'type': 'xlsx', 'filename': f'[$today] PAGAMENTI a {DENOMINATION[association]}.xlsx'}}
+
+
 def body(csv_text, association=OWN):
     return {'data': {'file': {'$csv': csv_text}, 'type': 'csv',
                      'filename': f'[$today] PAGAMENTI a {DENOMINATION[association]}.csv'}}
@@ -589,8 +651,33 @@ add('petty-foreign-before-transfer', 'foreign_owner', PETTY + '&query[payment_ra
 add('petty-range-fallback', 'owner', PETTY + '&query[payment_range]=ieri%20al%20oggi', 200, '$petty-fallback')
 add('export-type-other', 'owner', EXPORT + '?export_type=journal', 200, DEFAULT)
 
+# --- m=xlsx: the get_excel_base64 workbook ---
+X = EXPORT + '?m=xlsx'
+add('xlsx', 'owner', X, 200, xbody(export_xlsx(listed())))
+add('xlsx-collaborator', 'full_collaborator', X, 200, xbody(export_xlsx(listed())))
+add('xlsx-foreign', 'foreign_owner', X, 200, xbody(export_xlsx(listed(association=FOREIGN)), FOREIGN))
+add('xlsx-group', 'owner', X, 200, xbody(export_xlsx(listed(group=OWN_GROUP), group=OWN_GROUP)), headers={'X-Group-Id': OWN_GROUP})
+add('xlsx-archived-shifted', 'owner', X + '&archived=1', 200, xbody(export_xlsx(listed(archived=True))))
+add('xlsx-paid', 'owner', X + '&query[paid]=true', 200, xbody(export_xlsx(listed(paid=True))))
+add('xlsx-search', 'owner', X + '&query[generalSearch]=rossi', 200, xbody(export_xlsx(listed(search='rossi'))))
+add('xlsx-empty', 'owner', X, 200, xbody(export_xlsx([])), headers={'X-Group-Id': FOREIGN_GROUP})
+add('xlsx-petty-spring', 'owner', PETTY + '&m=xlsx&query[payment_range]=2024/03/01%20al%202024/06/30', 200,
+    xbody(export_xlsx(listed(span=SPRING, paid=True), petty=True, span=SPRING)))
+add('xlsx-petty-year', 'owner', PETTY + '&m=xlsx&query[payment_range]=01/01/2024%20al%2031/12/2024', 200,
+    xbody(export_xlsx(listed(span=YEAR, paid=True), petty=True, span=YEAR)))
+# The workbook reads the account name with a '-' default: the CSV's 500 does not happen.
+add('xlsx-petty-archived-row-without-account', 'owner', PETTY + '&m=xlsx&archived=True', 200, '$petty-archived')
+add('xlsx-petty-last-row-without-account', 'owner', PETTY + '&m=xlsx&query[payment_range]=2025/01/01%20al%202025/01/31', 200,
+    xbody(export_xlsx(listed(span=JANUARY, paid=True), petty=True, span=JANUARY)))
+add('xlsx-petty-transfer-without-account', 'foreign_owner', PETTY + '&m=xlsx', 500, SERVER)
+add('xlsx-athlete', 'athlete', X, 500, SERVER)
+add('xlsx-range-empty', 'owner', X + '&query[payment_range]=', 500, SERVER)
+
 # The fallback window starts a year ago: no authored transfer or payment is in it, the header only.
+TEN_YEARS = (datetime.now(timezone.utc) - timedelta(days=3650), datetime.now(timezone.utc) + timedelta(days=1))
 for case in cases:
+    if case['response'] == '$petty-archived':
+        case['response'] = xbody(export_xlsx(listed(archived=True, paid=True), petty=True, span=TEN_YEARS))
     if case['response'] == '$petty-fallback':
         out = io.StringIO()
         csv.writer(out).writerow(HEADER + ['Saldo progressivo'])

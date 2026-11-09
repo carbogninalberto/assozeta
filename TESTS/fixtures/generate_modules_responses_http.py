@@ -35,8 +35,24 @@ Five @api_view views of modules_views.py:
   200 'attachment added' also when nothing was sent.
 update_queue: approved responses with a queue position lose it, the others
 are renumbered 1.. by queue position; every save() writes all fields and
-auditlog records the changed ones. modules/<id>/export (XLSX only) is not
-part of this sequence. Run with ``python3 -I``.
+auditlog records the changed ones.
+- modules_response_export (GET, IsAuthenticated; association.modules.read):
+  is_valid_uuid, then ModuleResponses.objects.filter(module_id=...,
+  module__sport_association=request.user.sport_association) (athletes 403
+  'User is not a sport association', owners without an association 500);
+  no first() row: 404 {'error': 'response not found'}. The first response's
+  module elements give the columns (type not heading/paragraph/link:
+  props['label'] and props['name']; missing keys raise), then per response
+  (database order) response[name] or '-' (response.keys(): a non-dict response
+  raises when there are response columns), the creation date '%d/%m/%Y %H:%M',
+  the progressive number and queue position or '-', user.get_full_name() or
+  '-', 'Pagato'/'Non pagato'/'-', 'Approvata'/'Non approvata' and the
+  attachment filenames joined by ','. pandas.DataFrame(rows) through xlsxwriter
+  (sheet 'Risposte', index=False, set_column(i, i, len(label) + 10)); 200
+  {'data': {'file': base64, 'filename': '[<today>] Risposte al modulo
+  (<title>).xls', 'type': 'xlsx'}} (the workbook is compared with
+  TESTS/contracts/xlsx.py). The export cases come first, on the seeded state.
+Run with ``python3 -I``.
 """
 import base64
 import copy
@@ -60,6 +76,22 @@ ELEMENTS = [{'type': 'heading', 'props': {'label': 'Titolo'}}, {'type': 'text', 
 BASE = {'association': OWN, 'link': None, 'created': '2026-09-01T08:00:00Z', 'title': 'Modulo', 'require_approval': False,
         'start': None, 'end': None, 'always_active': True, 'max_responses': None, 'queue_mode': False, 'only_users': False,
         'payment_required': False, 'payment_data': {}, 'response_message': None, 'allow_attachments': False, 'elements': ELEMENTS}
+xids = iter(f'a1000000-0000-4000-8000-{643101 + n:012d}' for n in range(60))
+EXPORT_ELEMENTS = [
+    {'type': 'heading', 'props': {'label': 'Intestazione'}},
+    {'type': 'text', 'props': {'label': 'Nome', 'name': 'nome'}},
+    {'type': 'number', 'props': {'label': 'Età', 'name': 'eta'}},
+    {'type': 'checkbox', 'props': {'label': 'Consenso', 'name': 'consenso'}},
+    {'type': 'select', 'props': {'label': 'Corsi scelti', 'name': 'corsi'}},
+    {'type': 'group', 'props': {'label': 'Indirizzo', 'name': 'indirizzo'}},
+    {'type': 'paragraph', 'props': {'label': 'Testo'}},
+    {'type': 'signature', 'props': {'label': 'Firma', 'name': 'firma'}},
+    {'type': 'text', 'props': {'label': 'Note & <varie>', 'name': 'note'}},
+    {'type': 'link', 'props': {'label': 'Sito', 'name': 'sito'}},
+    {'type': 'text', 'props': {'label': '', 'name': 'vuoto'}},
+    {'type': 'text', 'props': {'label': 'Numero', 'name': 5}},
+]
+EXPORT_BASE = {**BASE, 'elements': EXPORT_ELEMENTS}
 MODULES = {
     'open': {**BASE, 'id': next(ids), 'link': 'risposte-aperto', 'title': 'Aperto è', 'response_message': 'Grazie',
              'created': '2026-08-01T10:00:00.250000Z', 'allow_attachments': True},
@@ -76,12 +108,28 @@ MODULES = {
                        'start': '2000-01-01', 'end': '2000-12-31'},
     'orphan': {**BASE, 'id': next(ids), 'association': None, 'link': 'risposte-orfano', 'title': None, 'elements': {}},
     'nullnum': {**BASE, 'id': next(ids), 'link': 'risposte-nullo'},
+    'export': {**EXPORT_BASE, 'id': next(xids), 'link': 'risposte-export', 'title': 'Esporta "risposte" è'},
+    'export_empty': {**EXPORT_BASE, 'id': next(xids), 'link': 'risposte-export-vuoto'},
+    'export_plain': {**BASE, 'id': next(xids), 'link': 'risposte-export-semplice', 'elements': [], 'title': None},
+    'export_noname': {**BASE, 'id': next(xids), 'link': 'risposte-export-senza-nome',
+                      'elements': [{'type': 'text', 'props': {'label': 'Senza nome'}}]},
+    'export_nolabel': {**BASE, 'id': next(xids), 'link': 'risposte-export-senza-etichetta',
+                       'elements': [{'type': 'text', 'props': {'label': None, 'name': 'x'}}]},
+    'export_dict': {**BASE, 'id': next(xids), 'link': 'risposte-export-dizionario', 'elements': {'campo': 1}},
+    'export_foreign': {**EXPORT_BASE, 'id': next(xids), 'association': FOREIGN, 'link': 'risposte-export-estero'},
 }
 DOCUMENTS = {'d1': {'id': next(ids), 'filename': 'certificato è.pdf', 'token': next(ids)},
              'd2': {'id': next(ids), 'filename': 'foto.png', 'token': next(ids)},
              'd3': {'id': next(ids), 'filename': 'libero.txt', 'token': next(ids)},
              'd4': {'id': next(ids), 'filename': 'condiviso.pdf', 'token': next(ids)},
-             'd5': {'id': next(ids), 'filename': 'anonimo.txt', 'token': next(ids)}}
+             'd5': {'id': next(ids), 'filename': 'anonimo.txt', 'token': next(ids)},
+             'd6': {'id': next(xids), 'filename': 'primo, allegato.pdf', 'token': next(xids)},
+             'd7': {'id': next(xids), 'filename': 'secondo.png', 'token': next(xids)}}
+EXPORT_USERS = {'export_a': {'id': next(xids), 'first_name': '', 'last_name': 'Neri  ', 'username': 'modules-export-a'},
+                'export_b': {'id': next(xids), 'first_name': '', 'last_name': '', 'username': 'modules-export-b'}}
+EXPORT_PAYMENTS = {'paid': {'id': next(xids), 'paid': True, 'deleted': False},
+                   'unpaid': {'id': next(xids), 'paid': False, 'deleted': False},
+                   'gone': {'id': next(xids), 'paid': True, 'deleted': True}}
 R = {'created': '2026-09-02T10:00:00Z', 'queue': None, 'response': {}, 'approved': True, 'user': None, 'attachments': []}
 RESPONSES = {
     'open_r1': {**R, 'id': next(ids), 'module': 'open', 'number': 0, 'response': {'nome': 'Anna è', 'eta': 12}, 'user': 'athlete',
@@ -97,7 +145,25 @@ RESPONSES = {
     'other_r': {**R, 'id': next(ids), 'module': 'foreign', 'number': 1, 'attachments': ['d4']},
     'orphan_r': {**R, 'id': next(ids), 'module': 'orphan', 'number': 0, 'approved': False},
     'nullnum_r': {**R, 'id': next(ids), 'module': 'nullnum', 'number': None},
+    # Key order is insertion order: the database returns them in that order.
+    'e1': {**R, 'id': next(xids), 'module': 'export', 'number': 0, 'created': '2026-09-03T08:05:59.900000Z',
+           'response': {'nome': 'Anna è', 'eta': 30, 'consenso': True, 'corsi': ['nuoto', 'tennis'], 'indirizzo': {'via': 'Roma', 'n': 1.5},
+                        'firma': 'data:image/png;base64,AAAA', 'note': ' spazi ', 'vuoto': None, 'sito': 'ignorato'},
+           'export_user': 'export_a', 'payment': 'paid', 'attachments': ['d6', 'd7']},
+    'e2': {**R, 'id': next(xids), 'module': 'export', 'number': 1, 'queue': 2, 'approved': False, 'created': '2026-09-04T23:59:00Z',
+           'response': {'nome': 'Bruno', 'eta': 41.5, 'consenso': False, 'corsi': [], 'indirizzo': {}}, 'payment': 'unpaid'},
+    'e3': {**R, 'id': next(xids), 'module': 'export', 'number': None, 'created': '2026-09-05T00:00:00Z',
+           'response': {'nome': 'http://example.test/modulo?a=1&b=2', 'eta': None, 'note': 'riga\nuno\x01due', '5': 'non letto'}},
+    'e4': {**R, 'id': next(xids), 'module': 'export', 'number': 3, 'response': {}, 'export_user': 'export_b', 'payment': 'gone'},
+    'plain_r': {**R, 'id': next(xids), 'module': 'export_plain', 'number': 0, 'response': [1, 2], 'attachments': ['d6']},
+    'noname_r': {**R, 'id': next(xids), 'module': 'export_noname', 'number': 0},
+    'nolabel_r': {**R, 'id': next(xids), 'module': 'export_nolabel', 'number': 0},
+    'dict_r': {**R, 'id': next(xids), 'module': 'export_dict', 'number': 0},
+    'xforeign_r': {**R, 'id': next(xids), 'module': 'export_foreign', 'number': 0, 'response': {'nome': 'Estero'}},
 }
+for _row in RESPONSES.values():
+    _row.setdefault('export_user', None)
+    _row.setdefault('payment', None)
 # Running state: queue positions and approvals change across cases.
 STATE = copy.deepcopy(RESPONSES)
 cases = []
@@ -286,6 +352,87 @@ def removed_document(label, actor):
 info = lambda link, query='': f'/modules/{link}/info' + query
 INFO_OPEN = {'data': serialized('open'), 'response_data': None}
 NOT_FOUND = {'error': 'module not found'}
+# --- modules_response_export (first: the seeded state) ---
+def export(module):
+    return f'/modules/{mid(module)}/export'
+
+
+def full_name(label):
+    user = EXPORT_USERS[label]
+    return ('%s %s' % (user['first_name'], user['last_name'])).strip()
+
+
+def typed(value):
+    if isinstance(value, bool):
+        return {'bool': value}
+    if isinstance(value, int):
+        return {'int': str(value)}
+    if isinstance(value, float):
+        return {'float': repr(value)}
+    if isinstance(value, list):
+        return {'list': [typed(item) for item in value]}
+    if isinstance(value, dict):
+        # jsonb keeps keys ordered by length, then bytes; json.loads keeps that order.
+        keys = sorted(value, key=lambda key: (len(key.encode()), key.encode()))
+        return {'dict': [[key, typed(value[key])] for key in keys]}
+    return value
+
+
+def exported(module):
+    """The export body over the module's seeded responses (insertion order)."""
+    columns = [(e['props']['label'], e['props']['name']) for e in MODULES[module]['elements']
+               if e['type'] not in ('heading', 'paragraph', 'link')]
+    rows = []
+    for row in RESPONSES.values():
+        if row['module'] != module:
+            continue
+        values = [typed(row['response'][name]) if name in row['response'] else '-' for _, name in columns]
+        created = row['created'].replace('Z', '')
+        stamp = f'{created[8:10]}/{created[5:7]}/{created[:4]} {created[11:16]}'
+        user = full_name(row['export_user']) if row['export_user'] else ('-' if not row['user'] else '$base-user')
+        assert user != '$base-user', 'seeded base users are not authored here'
+        payment = ({True: 'Pagato', False: 'Non pagato'}[EXPORT_PAYMENTS[row['payment']]['paid']] if row['payment'] else '-')
+        rows.append(values + [stamp, '-' if row['number'] is None else {'int': str(row['number'])},
+                              '-' if row['queue'] is None else {'int': str(row['queue'])}, user, payment,
+                              'Approvata' if row['approved'] else 'Non approvata',
+                              ','.join(DOCUMENTS[d]['filename'] for d in row['attachments'])])
+    labels = [label for label, _ in columns] + ['Data creazione', 'Progressivo risposta', 'Posizione in coda', 'Utente', 'Pagamento',
+                                                'Approvato', 'Allegati']
+    spec = {'engine': 'xlsxwriter', 'sheet': 'Risposte', 'columns': labels, 'rows': rows, 'index': False,
+            'widths': [len(label) + 10 for label in labels]}
+    return {'data': {'file': {'$xlsx': spec}, 'filename': f"[$today] Risposte al modulo ({MODULES[module]['title']}).xls",
+                     'type': 'xlsx'}}
+
+
+NO_EXPORT = {'error': 'response not found'}
+add('export-anonymous', 'anonymous', 'GET', export('export'), 401, ANONYMOUS)
+add('export-admin-without-session', 'admin', 'GET', export('export'), 403, NO_SESSION)
+add('export-restricted-missing-permission', 'restricted_collaborator', 'GET', export('export'), 403,
+    PERMISSION('association.modules.read'))
+add('export-owner-scoped-athlete', 'owner', 'GET', export('export'), 403, SCOPED, headers=OWNER_ATHLETE)
+add('export-wrong-method', 'owner', 'POST', export('export'), 405, METHOD('POST'))
+add('export-options', 'owner', 'OPTIONS', export('export'), 200, OPTIONS('Modules Response Export'))
+add('export-malformed', 'owner', 'GET', export('abc'), 400, BAD_UUID)
+add('export-athlete-malformed', 'athlete', 'GET', export('abc'), 400, BAD_UUID)
+add('export-athlete-denied', 'athlete', 'GET', export('export'), 403, NOT_ASSOCIATION)
+add('export-owner-without-association', 'owner_without_association', 'GET', export('export'), 500, SERVER)
+add('export-unknown', 'owner', 'GET', export(UNKNOWN), 404, NO_EXPORT)
+add('export-foreign-module', 'owner', 'GET', export('export_foreign'), 404, NO_EXPORT)
+add('export-orphan-module', 'owner', 'GET', export('orphan'), 404, NO_EXPORT)
+add('export-no-responses', 'owner', 'GET', export('export_empty'), 404, NO_EXPORT)
+add('export-owner', 'owner', 'GET', export('export'), 200, exported('export'))
+add('export-hex-upper', 'owner', 'GET', export(mid('export').replace('-', '').upper()), 200, exported('export'))
+add('export-full-collaborator', 'full_collaborator', 'GET', export('export'), 200, exported('export'))
+add('export-admin-impersonating-owner', 'admin', 'GET', export('export'), 200, exported('export'), headers=ADMIN_OWNER)
+add('export-foreign-owner', 'foreign_owner', 'GET', export('export_foreign'), 200, exported('export_foreign'))
+add('export-queue', 'owner', 'GET', export('queue'), 200, exported('queue'))
+# Without response columns a list response is never indexed; with them its .keys() raises.
+add('export-plain-list-response', 'owner', 'GET', export('export_plain'), 200, exported('export_plain'))
+add('export-list-response-server-error', 'owner', 'GET', export('open'), 500, SERVER)
+add('export-element-without-name', 'owner', 'GET', export('export_noname'), 500, SERVER)
+add('export-label-none', 'owner', 'GET', export('export_nolabel'), 500, SERVER)
+add('export-elements-dict', 'owner', 'GET', export('export_dict'), 500, SERVER)
+
 add('info-anonymous', 'anonymous', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-admin-without-session', 'admin', 'GET', info('risposte-aperto'), 403, NO_SESSION)
 add('info-restricted-missing-permission', 'restricted_collaborator', 'GET', info('risposte-aperto'), 403,
@@ -460,7 +607,8 @@ add('attach-delete-anonymous-other-response', 'anonymous', 'DELETE', attach('q3'
     body={'document_id': DOCUMENTS['d5']['id']}, effect=removed_document('d5', None))
 
 assert len({c['name'] for c in cases}) == len(cases)
-OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Module responses info/add/approve/delete/add-attachment authored sequence',
+OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Module responses info/add/approve/delete/add-attachment/export authored sequence',
                               'ids': IDS, 'location': LOCATION, 'modules': MODULES, 'documents': DOCUMENTS, 'responses': RESPONSES,
+                              'export_users': EXPORT_USERS, 'export_payments': EXPORT_PAYMENTS,
                               'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

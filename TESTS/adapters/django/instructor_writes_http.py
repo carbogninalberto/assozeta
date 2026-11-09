@@ -28,7 +28,8 @@ SOURCES = ('TESTS/fixtures/instructor_writes_http.json', 'TESTS/contracts/test_i
            'BE/application/models/subscriptions_models.py', 'BE/application/models/balance_sheet_models.py',
            'BE/application/models/courses_models.py', 'BE/docmanager/models.py', 'BE/application/mixin.py',
            'BE/application/utils/api_utils.py', 'BE/application/tenant_scope.py', 'BE/application/audit_resolvers.py',
-           'BE/application/impersonation.py', 'BE/application/permissions_registry.py', 'BE/application/signals.py') + harness.SOURCES
+           'BE/application/impersonation.py', 'BE/application/permissions_registry.py', 'BE/application/signals.py',
+           'TESTS/fixtures/generate_instructor_writes_http.py', 'TESTS/contracts/xlsx.py') + harness.SOURCES
 # Payment first: hour columns refer to the new payment's key.
 LABELS = {'Payment': 'payments', 'Instructor': 'instructors', 'InstructorHours': 'hours', 'Subscription': 'subscriptions',
           'Reminders': 'reminders'}
@@ -96,6 +97,24 @@ def seed_rows(source, created):
     for row in source['registries'].values():
         insert(AttendanceRegistry, AttendanceRegistry(attendance_registry_id=row['id'], course_id=source['courses'][row['course']]['id'],
                                                       events=row['events'], status=row['status'], creation_date=when('2026-08-01T08:00:00Z')))
+    # instructor/report: attendance days and the course subscriptions their attendees name.
+    from application.models import AttendanceDay, Associate, CourseSubscription
+    for row in source['days'].values():
+        insert(AttendanceDay, AttendanceDay(attendance_day_id=row['id'], attendance_registry_id=source['registries'][row['registry']]['id'],
+                                            title=row['title'], date=when(row['date']), attendees=row['attendees'],
+                                            expected_absences=row['expected_absences'],
+                                            associated_event=row['event']))
+    people = {}
+    for label, row in source['people'].items():
+        insert(Associate, Associate(associate_id=row['id'], first_name=row['first_name'], last_name=row['last_name'],
+                                    sport_association_id=ids['own_association']))
+        people[label] = Subscription(sport_association_id=ids['own_association'], user_id=ids['athlete'], associate_id=row['id'],
+                                     status_flag=Subscription.ACCEPTED)
+        insert(Subscription, people[label])
+    for row in source['course_subscriptions'].values():
+        insert(CourseSubscription, CourseSubscription(course_subscription_id=row['id'], course_id=source['courses']['ca']['id'],
+                                                      subscription_id=people[row['person']].pk if row['person'] else None,
+                                                      deleted=row['deleted']))
 
 
 def prepared(source):

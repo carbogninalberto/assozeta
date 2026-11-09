@@ -46,5 +46,6 @@ func composeModulesResponses(cfg config.Config, db *sqlx.DB, actors *service.Act
 	responses := service.NewModulesResponses(store, store, service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now),
 		storage, service.ModuleAttachmentSettings{CacheControl: settings.CacheControl, DefaultACL: settings.DefaultACL,
 			FileOverwrite: settings.FileOverwrite}, time.Now, uuid.NewString)
-	return handler.NewModulesResponsesHandler(responses, actors, identities, middleware.SessionAuditContext, operations)
+	return handler.NewModulesResponsesHandler(responses, actors, identities, middleware.SessionAuditContext, operations).
+		WithExport(service.NewModulesExport(repository.NewModulesExport(db), time.Now))
 }
