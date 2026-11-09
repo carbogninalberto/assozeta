@@ -85,3 +85,88 @@ func ParseAutomationWorkflowWrite(body any, form bool) (AutomationWorkflowWrite,
 	}
 	return input, nil
 }
+
+// ErrAutomationWorkflowFormTreeNotPorted refuses a form-encoded automation_tree
+// (DRF JSONField parses the HTML value with Python's json.loads; not ported).
+var ErrAutomationWorkflowFormTreeNotPorted = errors.New("form-encoded automation_tree is not ported")
+
+// AutomationWorkflowPatch holds the present fields of a partial
+// AutomationWorkflowSerializer; nil pointers are absent.
+type AutomationWorkflowPatch struct {
+	ID          *string
+	Association *string // a well-formed pk; existence and tenant are checked by the service
+	Name        *string
+	Description **string
+	Tree        *any
+	Enabled     *bool
+}
+
+// ParseAutomationWorkflowPatch ports AutomationWorkflowSerializer(partial=True)
+// field validation. invalid reports any field error (the view's generic 400);
+// the relation is still parsed because a foreign association escapes as 403
+// whatever the other errors are.
+func ParseAutomationWorkflowPatch(body any, form bool) (AutomationWorkflowPatch, bool, error) {
+	var patch AutomationWorkflowPatch
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		return patch, true, nil
+	}
+	invalid := false
+	if value, present := object.Lookup("automation_workflow_id"); present {
+		if id, err := parsePaymentCategoryUUID(value); err != nil {
+			invalid = true
+		} else {
+			patch.ID = &id
+		}
+	}
+	if value, present := object.Lookup("sport_association"); present {
+		if id, code := supplierRelated(value); code != "" || value == nil {
+			invalid = true
+		} else {
+			patch.Association = &id
+		}
+	}
+	if value, present := object.Lookup("name"); present {
+		if name, codes := modelTextValue(SupplierField{Name: "name", Max: 255}, value, form); len(codes) > 0 || name == nil {
+			invalid = true
+		} else {
+			patch.Name = name
+		}
+	}
+	if value, present := object.Lookup("description"); present {
+		if text, codes := modelTextValue(SupplierField{Name: "description", Null: true, Blank: true}, value, form); len(codes) > 0 {
+			invalid = true
+		} else {
+			patch.Description = &text
+		}
+	}
+	if value, present := object.Lookup("automation_tree"); present {
+		if form {
+			return patch, invalid, ErrAutomationWorkflowFormTreeNotPorted
+		}
+		tree, isList := value.([]any)
+		if !isList {
+			invalid = true
+		} else {
+			for _, raw := range tree {
+				if node, isObject := raw.(domain.RequestObject); isObject {
+					id, _ := node.Lookup("id")
+					kind, _ := node.Lookup("value")
+					if id == "message" && kind != "email" {
+						invalid = true
+					}
+				}
+			}
+			var stored any = tree
+			patch.Tree = &stored
+		}
+	}
+	if value, present := object.Lookup("enabled"); present {
+		if enabled, err := parsePaymentCategoryBoolean(value); value == nil || err != nil {
+			invalid = true
+		} else {
+			patch.Enabled = &enabled
+		}
+	}
+	return patch, invalid, nil
+}

@@ -90,6 +90,20 @@ func (t *automationWorkflowTransaction) DeleteAutomationWorkflow(ctx context.Con
 	return nil
 }
 
+// UpdateAutomationWorkflow is Model.save() of an existing key: every column.
+func (t *automationWorkflowTransaction) UpdateAutomationWorkflow(ctx context.Context, row domain.AutomationWorkflowRecord) error {
+	result, err := t.tx.ExecContext(ctx, `UPDATE communications_automationworkflow SET sport_association_id=$2,name=$3,description=$4,
+automation_tree=$5::jsonb,enabled=$6,created_at=$7,updated_at=$8 WHERE automation_workflow_id=$1`, row.ID, row.AssociationID, row.Name,
+		row.Description, string(row.Tree), row.Enabled, row.CreatedAt, row.UpdatedAt)
+	if err != nil {
+		return err
+	}
+	if count, err := result.RowsAffected(); err != nil || count != 1 {
+		return errors.Join(err, domain.ErrAutomationWorkflowNotFound)
+	}
+	return nil
+}
+
 func (t *automationWorkflowTransaction) AppendAutomationWorkflowAudit(ctx context.Context, event domain.AutomationWorkflowAudit) error {
 	// The registered direct resolver indexes a live row; after a delete the
 	// row is gone and resolution falls back to the changes JSON.
