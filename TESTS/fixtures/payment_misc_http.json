@@ -1,0 +1,4132 @@
+{
+ "matrix_version": 1,
+ "scope": "Payment partial quotes simulation and apply, payment sign and invoiced approve authored sequence with payment and audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "plans_owner": {
+  "id": "a1000000-0000-4000-8000-000000993001",
+  "association": "a1000000-0000-4000-8000-000000993002",
+  "denomination": "Piani fixture",
+  "first": "Piani",
+  "last": "Fixture",
+  "email": "piani-fixture@example.test",
+  "username": "piani-fixture"
+ },
+ "category": {
+  "id": "a1000000-0000-4000-8000-000000993003",
+  "name": "Quote misc fixture"
+ },
+ "bank": {
+  "id": "a1000000-0000-4000-8000-000000993004",
+  "name": "Banca misc",
+  "code": "BMX"
+ },
+ "document": {
+  "id": "a1000000-0000-4000-8000-000000993005",
+  "token": "a1000000-0000-4000-8000-000000993006",
+  "filename": "ricevuta.pdf",
+  "filepath": "docs/ricevuta.pdf",
+  "size": 2048,
+  "created": "2026-02-03T08:00:00Z"
+ },
+ "attached": {
+  "id": "a1000000-0000-4000-8000-000000993007",
+  "token": "a1000000-0000-4000-8000-000000993008",
+  "filename": "allegato.pdf",
+  "filepath": "docs/allegato.pdf",
+  "size": 1024,
+  "created": "2026-02-04T08:00:00Z"
+ },
+ "supplier": {
+  "id": "a1000000-0000-4000-8000-000000993009",
+  "name": "Fornitore misc",
+  "vat_number": "09876543210",
+  "email": "fornitore-misc@example.test"
+ },
+ "associates": {
+  "mario": {
+   "id": "a1000000-0000-4000-8000-000000993010",
+   "first": "Mario",
+   "last": "Rossi",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null
+  },
+  "luca": {
+   "id": "a1000000-0000-4000-8000-000000993011",
+   "first": "Luca",
+   "last": "Verdi è",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null
+  },
+  "giulia": {
+   "id": "a1000000-0000-4000-8000-000000993012",
+   "first": "Giulia",
+   "last": "Neri",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null
+  },
+  "paolo": {
+   "id": "a1000000-0000-4000-8000-000000993013",
+   "first": "Paolo",
+   "last": "Bianchi",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": "own_group"
+  },
+  "sara": {
+   "id": "a1000000-0000-4000-8000-000000993014",
+   "first": "Sara",
+   "last": "Blu",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null
+  },
+  "hans": {
+   "id": "a1000000-0000-4000-8000-000000993015",
+   "first": "Hans",
+   "last": "Muller",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null
+  }
+ },
+ "plans": {
+  "a1000000-0000-4000-8000-000000701001": [
+   {
+    "id": "plan-b",
+    "name": "Quota B è",
+    "subscription_fee": "30",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "plan-a",
+    "from_day": "15",
+    "from_month": 3,
+    "to_day": 14,
+    "to_month": "6"
+   },
+   {
+    "id": "plan-c",
+    "name": "Quota C",
+    "subscription_fee": 12.5,
+    "auto_assign": 1,
+    "advanced_options": "yes",
+    "previous_subscription_fee_plan": "PLAN-X",
+    "from_day": 15.9,
+    "from_month": " 3 ",
+    "to_day": true,
+    "to_month": 12
+   },
+   {
+    "id": "plan-off",
+    "name": "Fuori data",
+    "subscription_fee": "1",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "plan-a",
+    "from_day": 16,
+    "from_month": 3,
+    "to_day": 1,
+    "to_month": 1
+   },
+   {
+    "id": "plan-manual",
+    "auto_assign": false,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "plan-a",
+    "from_day": "x"
+   },
+   {
+    "id": "plan-blank",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "",
+    "from_day": "x"
+   },
+   {
+    "id": "plan-first",
+    "auto_assign": true,
+    "advanced_options": true,
+    "from_day": "x"
+   },
+   {
+    "id": "plan-zero",
+    "auto_assign": true,
+    "advanced_options": 0,
+    "previous_subscription_fee_plan": "plan-a",
+    "from_day": "x"
+   },
+   {
+    "id": "plan-empty",
+    "auto_assign": "x",
+    "advanced_options": [],
+    "previous_subscription_fee_plan": "plan-a",
+    "from_day": "x"
+   },
+   {
+    "id": "plan-d",
+    "name": "Quota D",
+    "subscription_fee": "25.50",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "plan-q",
+    "from_day": 1,
+    "from_month": 4,
+    "to_day": 30,
+    "to_month": 4
+   },
+   {
+    "id": "plan-e",
+    "name": "Quota E",
+    "subscription_fee": 7.25,
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-e",
+    "from_day": 1,
+    "from_month": 5,
+    "to_day": 31,
+    "to_month": 5
+   }
+  ],
+  "a1000000-0000-4000-8000-000000701002": [
+   {
+    "id": "plan-f",
+    "name": "Quota F",
+    "subscription_fee": "9",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-f",
+    "from_day": 15,
+    "from_month": 3,
+    "to_day": 1,
+    "to_month": 4
+   },
+   {
+    "id": "plan-bad",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-f",
+    "from_day": "abc",
+    "from_month": 3
+   }
+  ],
+  "a1000000-0000-4000-8000-000000993002": [
+   {
+    "id": "plan-z",
+    "name": "Quota Z",
+    "subscription_fee": "5",
+    "auto_assign": true,
+    "advanced_options": true,
+    "previous_subscription_fee_plan": "prev-z",
+    "from_day": 15,
+    "from_month": 3,
+    "to_day": 15,
+    "to_month": 4
+   }
+  ]
+ },
+ "subscriptions": {
+  "s1": {
+   "id": "a1000000-0000-4000-8000-000000993016",
+   "payment": "a1000000-0000-4000-8000-000000993017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993010",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s2": {
+   "id": "a1000000-0000-4000-8000-000000993018",
+   "payment": "a1000000-0000-4000-8000-000000993019",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000993011",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s3": {
+   "id": "a1000000-0000-4000-8000-000000993020",
+   "payment": "a1000000-0000-4000-8000-000000993021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-x"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-x",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_existing": {
+   "id": "a1000000-0000-4000-8000-000000993022",
+   "payment": "a1000000-0000-4000-8000-000000993023",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993014",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_group": {
+   "id": "a1000000-0000-4000-8000-000000993024",
+   "payment": "a1000000-0000-4000-8000-000000993025",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993013",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": "own_group"
+  },
+  "s_old": {
+   "id": "a1000000-0000-4000-8000-000000993026",
+   "payment": "a1000000-0000-4000-8000-000000993027",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993010",
+   "created": "last_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_deleted": {
+   "id": "a1000000-0000-4000-8000-000000993028",
+   "payment": "a1000000-0000-4000-8000-000000993029",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": true,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_archived": {
+   "id": "a1000000-0000-4000-8000-000000993030",
+   "payment": "a1000000-0000-4000-8000-000000993031",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": false,
+   "archived": true,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_no_meta": {
+   "id": "a1000000-0000-4000-8000-000000993032",
+   "payment": "a1000000-0000-4000-8000-000000993033",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": null,
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_payment_no_meta": {
+   "id": "a1000000-0000-4000-8000-000000993034",
+   "payment": "a1000000-0000-4000-8000-000000993035",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": null,
+   "group": null
+  },
+  "s_no_payment": {
+   "id": "a1000000-0000-4000-8000-000000993036",
+   "payment": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s4": {
+   "id": "a1000000-0000-4000-8000-000000993037",
+   "payment": "a1000000-0000-4000-8000-000000993038",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993010",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-q"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-q",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s5": {
+   "id": "a1000000-0000-4000-8000-000000993039",
+   "payment": "a1000000-0000-4000-8000-000000993040",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993010",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-q"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-q",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s6": {
+   "id": "a1000000-0000-4000-8000-000000993041",
+   "payment": "a1000000-0000-4000-8000-000000993042",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993011",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-e"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-e",
+     "name": "Quota precedente"
+    }
+   },
+   "group": "own_group"
+  },
+  "s7": {
+   "id": "a1000000-0000-4000-8000-000000993043",
+   "payment": "a1000000-0000-4000-8000-000000993044",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000993012",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-e"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-e",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_foreign": {
+   "id": "a1000000-0000-4000-8000-000000993045",
+   "payment": "a1000000-0000-4000-8000-000000993046",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "a1000000-0000-4000-8000-000000993015",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-f"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-f",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_foreign_plan_a": {
+   "id": "a1000000-0000-4000-8000-000000993047",
+   "payment": "a1000000-0000-4000-8000-000000993048",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "a1000000-0000-4000-8000-000000993015",
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "plan-a"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "plan-a",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  },
+  "s_z": {
+   "id": "a1000000-0000-4000-8000-000000993049",
+   "payment": "a1000000-0000-4000-8000-000000993050",
+   "association": "a1000000-0000-4000-8000-000000993002",
+   "user": "a1000000-0000-4000-8000-000000993001",
+   "associate": null,
+   "created": "in_year",
+   "deleted": false,
+   "archived": false,
+   "meta": {
+    "plan_id": "prev-z"
+   },
+   "payment_meta": {
+    "subscription_data": {
+     "id": "prev-z",
+     "name": "Quota precedente"
+    }
+   },
+   "group": null
+  }
+ },
+ "invoices": {
+  "inv_paid": {
+   "id": "a1000000-0000-4000-8000-000000993051",
+   "number": 7,
+   "document": true,
+   "attached": true,
+   "membership_fee": "0.00",
+   "activity_fee": "25.00",
+   "description": "Ricevuta è",
+   "meta_payment_categories": [
+    {
+     "amount": 5
+    }
+   ],
+   "created": "2026-04-01T09:00:00Z"
+  },
+  "inv_expense": {
+   "id": "a1000000-0000-4000-8000-000000993052",
+   "number": null,
+   "document": false,
+   "attached": false,
+   "membership_fee": "0.00",
+   "activity_fee": "30.00",
+   "description": null,
+   "meta_payment_categories": null,
+   "created": "2026-04-02T09:00:00Z"
+  },
+  "inv_plain": {
+   "id": "a1000000-0000-4000-8000-000000993053",
+   "number": 8,
+   "document": false,
+   "attached": false,
+   "membership_fee": "1.50",
+   "activity_fee": "0.00",
+   "description": "Ricevuta",
+   "meta_payment_categories": null,
+   "created": "2026-04-03T09:00:00.250000Z"
+  }
+ },
+ "payments": {
+  "existing_quote": {
+   "id": "a1000000-0000-4000-8000-000000993054",
+   "type": "default",
+   "subject": 1,
+   "amount": "30.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Iscrizione",
+   "payment_category_id": "a1000000-0000-4000-8000-000000993003",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000993014",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": {
+    "subscription_data": {
+     "id": "plan-b"
+    }
+   },
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "ai_paid": {
+   "id": "a1000000-0000-4000-8000-000000993055",
+   "type": "default",
+   "subject": 0,
+   "amount": "25.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": "2026-04-01T00:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000993003",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000993051",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": "a1000000-0000-4000-8000-000000993014",
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "ai_expense": {
+   "id": "a1000000-0000-4000-8000-000000993056",
+   "type": "default",
+   "subject": 2,
+   "amount": "30.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": true,
+   "description": "Fattura misc",
+   "payment_category_id": "a1000000-0000-4000-8000-000000993003",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000993052",
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": "a1000000-0000-4000-8000-000000993009",
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "ai_plain": {
+   "id": "a1000000-0000-4000-8000-000000993057",
+   "type": "default",
+   "subject": 2,
+   "amount": "1.50",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000993003",
+   "meta_payment_categories": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000993053",
+   "user_id": null,
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "sign_own": {
+   "id": "a1000000-0000-4000-8000-000000993058",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000993003",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "sign_group": {
+   "id": "a1000000-0000-4000-8000-000000993059",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000993003",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": "a1000000-0000-4000-8000-000000714001",
+   "course": null
+  },
+  "sign_removed": {
+   "id": "a1000000-0000-4000-8000-000000993060",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000993003",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": true,
+   "group_id": null,
+   "course": null
+  },
+  "sign_abroad": {
+   "id": "a1000000-0000-4000-8000-000000993061",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": null,
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700007",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  }
+ },
+ "cases": [
+  {
+   "name": "payment-misc-simulation-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Simulation Partial Quotes",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-march",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 14,
+      "to_month": 6,
+      "previous_subscription_fee_plan": "plan-a",
+      "name": "Quota B è",
+      "subscription_fee": "30",
+      "id": "plan-b"
+     },
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 1,
+      "to_month": 12,
+      "previous_subscription_fee_plan": "PLAN-X",
+      "name": "Quota C",
+      "subscription_fee": 12.5,
+      "id": "plan-c"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Quota B è\" con importo 30 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Paolo",
+       "last_name": "Bianchi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": 12.5,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 12.5,
+        "name": "Quota C",
+        "id": "plan-c"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-one-digit-month",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-3-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 14,
+      "to_month": 6,
+      "previous_subscription_fee_plan": "plan-a",
+      "name": "Quota B è",
+      "subscription_fee": "30",
+      "id": "plan-b"
+     },
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 1,
+      "to_month": 12,
+      "previous_subscription_fee_plan": "PLAN-X",
+      "name": "Quota C",
+      "subscription_fee": 12.5,
+      "id": "plan-c"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Quota B è\" con importo 30 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Paolo",
+       "last_name": "Bianchi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": 12.5,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 12.5,
+        "name": "Quota C",
+        "id": "plan-c"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-last-date-value",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=bad&date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 14,
+      "to_month": 6,
+      "previous_subscription_fee_plan": "plan-a",
+      "name": "Quota B è",
+      "subscription_fee": "30",
+      "id": "plan-b"
+     },
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 1,
+      "to_month": 12,
+      "previous_subscription_fee_plan": "PLAN-X",
+      "name": "Quota C",
+      "subscription_fee": 12.5,
+      "id": "plan-c"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Quota B è\" con importo 30 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Paolo",
+       "last_name": "Bianchi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": 12.5,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 12.5,
+        "name": "Quota C",
+        "id": "plan-c"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-other-format-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=15/03/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-blank-date-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-invalid-day-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-02-30",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-no-active-plan",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-17",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 14,
+      "to_month": 6,
+      "previous_subscription_fee_plan": "plan-a",
+      "name": "Quota B è",
+      "subscription_fee": "30",
+      "id": "plan-b"
+     },
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 1,
+      "to_month": 12,
+      "previous_subscription_fee_plan": "PLAN-X",
+      "name": "Quota C",
+      "subscription_fee": 12.5,
+      "id": "plan-c"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Paolo",
+       "last_name": "Bianchi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-other-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 14,
+      "to_month": 6,
+      "previous_subscription_fee_plan": "plan-a",
+      "name": "Quota B è",
+      "subscription_fee": "30",
+      "id": "plan-b"
+     },
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 1,
+      "to_month": 12,
+      "previous_subscription_fee_plan": "PLAN-X",
+      "name": "Quota C",
+      "subscription_fee": 12.5,
+      "id": "plan-c"
+     }
+    ],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-malformed-group-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {
+    "X-Group-Id": "abc"
+   },
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 14,
+      "to_month": 6,
+      "previous_subscription_fee_plan": "plan-a",
+      "name": "Quota B è",
+      "subscription_fee": "30",
+      "id": "plan-b"
+     },
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 1,
+      "to_month": 12,
+      "previous_subscription_fee_plan": "PLAN-X",
+      "name": "Quota C",
+      "subscription_fee": 12.5,
+      "id": "plan-c"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Quota B è\" con importo 30 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Paolo",
+       "last_name": "Bianchi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": 12.5,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 12.5,
+        "name": "Quota C",
+        "id": "plan-c"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 14,
+      "to_month": 6,
+      "previous_subscription_fee_plan": "plan-a",
+      "name": "Quota B è",
+      "subscription_fee": "30",
+      "id": "plan-b"
+     },
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 1,
+      "to_month": 12,
+      "previous_subscription_fee_plan": "PLAN-X",
+      "name": "Quota C",
+      "subscription_fee": 12.5,
+      "id": "plan-c"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Quota B è\" con importo 30 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Paolo",
+       "last_name": "Bianchi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": 12.5,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 12.5,
+        "name": "Quota C",
+        "id": "plan-c"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 14,
+      "to_month": 6,
+      "previous_subscription_fee_plan": "plan-a",
+      "name": "Quota B è",
+      "subscription_fee": "30",
+      "id": "plan-b"
+     },
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 1,
+      "to_month": 12,
+      "previous_subscription_fee_plan": "PLAN-X",
+      "name": "Quota C",
+      "subscription_fee": 12.5,
+      "id": "plan-c"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": "\n                            <p>Ciao Luca Verdi è,</p>\n                            <p>Ti è stata assegnata la quota associativa \"Quota B è\" con importo 30 €.</p>\n                            <br>\n                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n                            <p>Cordialmente, <br />\n                             Message reads own</p>\n                        "
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Paolo",
+       "last_name": "Bianchi"
+      },
+      "amount": "30",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "30",
+        "name": "Quota B è",
+        "id": "plan-b"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": 12.5,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 12.5,
+        "name": "Quota C",
+        "id": "plan-c"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-plan-error-empty",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-missing-associate-stops",
+   "actor": "plans_owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 15,
+      "from_month": 3,
+      "to_day": 15,
+      "to_month": 4,
+      "previous_subscription_fee_plan": "prev-z",
+      "name": "Quota Z",
+      "subscription_fee": "5",
+      "id": "plan-z"
+     }
+    ],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-april-before-apply",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-04-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 1,
+      "from_month": 4,
+      "to_day": 30,
+      "to_month": 4,
+      "previous_subscription_fee_plan": "plan-q",
+      "name": "Quota D",
+      "subscription_fee": "25.50",
+      "id": "plan-d"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi"
+      },
+      "amount": "25.50",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "25.50",
+        "name": "Quota D",
+        "id": "plan-d"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Mario",
+       "last_name": "Rossi"
+      },
+      "amount": "25.50",
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "25.50",
+        "name": "Quota D",
+        "id": "plan-d"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-simulation-may-before-apply",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-05-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 1,
+      "from_month": 5,
+      "to_day": 31,
+      "to_month": 5,
+      "previous_subscription_fee_plan": "prev-e",
+      "name": "Quota E",
+      "subscription_fee": 7.25,
+      "id": "plan-e"
+     }
+    ],
+    "quotes_to_emit": [
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Luca",
+       "last_name": "Verdi è"
+      },
+      "amount": 7.25,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 7.25,
+        "name": "Quota E",
+        "id": "plan-e"
+       }
+      },
+      "message": null
+     },
+     {
+      "user": "Message Fixture",
+      "associate": {
+       "first_name": "Giulia",
+       "last_name": "Neri"
+      },
+      "amount": 7.25,
+      "subject": 1,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 7.25,
+        "name": "Quota E",
+        "id": "plan-e"
+       }
+      },
+      "message": null
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Simulation Partial Quotes Apply",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-misc-apply-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-other-format-nothing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=01/04/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-misc-apply-no-active-plan-nothing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-03-17",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-misc-apply-plan-error-nothing",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-misc-apply-other-group-nothing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-misc-apply-april-creates-one",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "25.50",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": "a1000000-0000-4000-8000-000000993010",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "25.50",
+        "name": "Quota D",
+        "id": "plan-d"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000993004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "25.50"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000993010"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-d\", \"name\": \"Quota D\", \"subscription_fee\": \"25.50\"}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "a1000000-0000-4000-8000-000000993004"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-misc-apply-april-again-nothing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-misc-apply-admin-impersonating-owner-nothing",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-04-01",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "admin",
+    "created": [],
+    "changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-misc-simulation-april-after-apply",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-04-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 1,
+      "from_month": 4,
+      "to_day": 30,
+      "to_month": 4,
+      "previous_subscription_fee_plan": "plan-q",
+      "name": "Quota D",
+      "subscription_fee": "25.50",
+      "id": "plan-d"
+     }
+    ],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-may-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-05-01",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "7.25",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": "a1000000-0000-4000-8000-000000993011",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 7.25,
+        "name": "Quota E",
+        "id": "plan-e"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000993004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": "a1000000-0000-4000-8000-000000714001",
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "7.25"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000993011"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-e\", \"name\": \"Quota E\", \"subscription_fee\": 7.25}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "a1000000-0000-4000-8000-000000993004"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714001"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-misc-apply-may-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-05-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "7.25",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": "a1000000-0000-4000-8000-000000993012",
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 7.25,
+        "name": "Quota E",
+        "id": "plan-e"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000993004",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "7.25"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000993012"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-e\", \"name\": \"Quota E\", \"subscription_fee\": 7.25}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "a1000000-0000-4000-8000-000000993004"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-misc-simulation-may-after-apply",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes?date=2026-05-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_plans_considered": [
+     {
+      "from_day": 1,
+      "from_month": 5,
+      "to_day": 31,
+      "to_month": 5,
+      "previous_subscription_fee_plan": "prev-e",
+      "name": "Quota E",
+      "subscription_fee": 7.25,
+      "id": "plan-e"
+     }
+    ],
+    "quotes_to_emit": []
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-apply-missing-associate-created",
+   "actor": "plans_owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "plans_owner",
+    "created": [
+     {
+      "type": "default",
+      "subject": 1,
+      "amount": "5.00",
+      "creation_date": "$now",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Iscrizione",
+      "payment_category_id": "$default_category",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000993001",
+      "associate_id": null,
+      "supplier_id": null,
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000993002",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": "5",
+        "name": "Quota Z",
+        "id": "plan-z"
+       }
+      },
+      "notes": null,
+      "custom_accounts_id": null,
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    ],
+    "changed": {},
+    "audit": [
+     {
+      "key": "$id",
+      "action": 0,
+      "changes": {
+       "payment_id": [
+        "None",
+        "$id"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "amount": [
+        "None",
+        "5"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "payment_category": [
+        "None",
+        "$default_category"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "null"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000993001"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000993002"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "{\"subscription_data\": {\"id\": \"plan-z\", \"name\": \"Quota Z\", \"subscription_fee\": \"5\"}}"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "course": [
+        "None",
+        "null"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000993002",
+       "direct"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-misc-apply-missing-associate-again-nothing",
+   "actor": "plans_owner",
+   "method": "GET",
+   "path": "/payment/simulation/partial-quotes-apply?date=2026-03-15",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Partial quotes applied."
+   },
+   "effect": {
+    "actor": "plans_owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   }
+  },
+  {
+   "name": "payment-misc-sign-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-sign-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-sign-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-sign-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-sign-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-sign-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Sign",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-sign-no-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null
+  },
+  {
+   "name": "payment-misc-sign-only-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058"
+   }
+  },
+  {
+   "name": "payment-misc-sign-extra-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    },
+    "other": 1
+   }
+  },
+  {
+   "name": "payment-misc-sign-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "payment_id",
+    "signature"
+   ]
+  },
+  {
+   "name": "payment-misc-sign-malformed-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "payment_id": "abc",
+    "signature": "x"
+   }
+  },
+  {
+   "name": "payment-misc-sign-number-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "'int' object has no attribute 'replace'"
+   ],
+   "effect": null,
+   "body": {
+    "payment_id": 5,
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-null-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "one of the hex, bytes, bytes_le, fields, or int arguments must be given"
+   ],
+   "effect": null,
+   "body": {
+    "payment_id": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-missing-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "payment not found"
+   ],
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000720009",
+    "signature": "x"
+   }
+  },
+  {
+   "name": "payment-misc-sign-deleted-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "payment not found"
+   ],
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993060",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-other-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 400,
+   "response": [
+    "payment not found"
+   ],
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993059",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-scoped-session-foreign-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993061",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-string-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got str."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": "x"
+   }
+  },
+  {
+   "name": "payment-misc-sign-list-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": []
+   }
+  },
+  {
+   "name": "payment-misc-sign-null-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "No data provided"
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": null
+   }
+  },
+  {
+   "name": "payment-misc-sign-empty-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "data": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {}
+   }
+  },
+  {
+   "name": "payment-misc-sign-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "there_is_signature": [
+     "Must be a valid boolean."
+    ],
+    "data": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": "maybe",
+     "data": true
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-null-flag",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "there_is_signature": [
+     "This field may not be null."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": null,
+     "data": "x"
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-required-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "data": [
+     "La firma è obbligatoria."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": true,
+     "data": ""
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-required-blank-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "data": [
+     "La firma è obbligatoria."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": "yes",
+     "data": "   "
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-required-null-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "data": [
+     "La firma è obbligatoria."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": 1,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got str."
+    ]
+   },
+   "effect": null,
+   "raw_body": "payment_id=a1000000-0000-4000-8000-000000993058&signature=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "payment-misc-sign-unsigned",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-default-flag",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_id": "A1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "data": "abc"
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-false-strings",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": "off",
+     "data": 12
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993059",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-foreign-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993061",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "athlete",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": false,
+     "data": null
+    }
+   }
+  },
+  {
+   "name": "payment-misc-sign-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment/sign",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000993058",
+    "signature": {
+     "there_is_signature": 0,
+     "data": ""
+    }
+   }
+  },
+  {
+   "name": "payment-misc-approve-invoice-paid-without-invoice-task",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000993055/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000993055",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000993014",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": null,
+       "sex": "M",
+       "first_name": "Sara",
+       "last_name": "Blu",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000993022",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "a1000000-0000-4000-8000-000000993051",
+       "document_token": "a1000000-0000-4000-8000-000000993006",
+       "creation_date": "2026-04-01T09:00:00Z",
+       "membership_fee": "0.00",
+       "activity_fee": "25.00",
+       "meta_payment_categories": [
+        {
+         "amount": 5
+        }
+       ],
+       "description": "Ricevuta è",
+       "number": 7,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": "a1000000-0000-4000-8000-000000993005",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": [
+        "a1000000-0000-4000-8000-000000993007"
+       ]
+      },
+      "attachments": [],
+      "payment_category_name": "Quote misc fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "25.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-04-01T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000993003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "generate_invoice": false
+   }
+  },
+  {
+   "name": "payment-misc-approve-invoice-paid-zero-flag",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000993055/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000993055",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000993014",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": null,
+       "sex": "M",
+       "first_name": "Sara",
+       "last_name": "Blu",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000993022",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "a1000000-0000-4000-8000-000000993051",
+       "document_token": "a1000000-0000-4000-8000-000000993006",
+       "creation_date": "2026-04-01T09:00:00Z",
+       "membership_fee": "0.00",
+       "activity_fee": "25.00",
+       "meta_payment_categories": [
+        {
+         "amount": 5
+        }
+       ],
+       "description": "Ricevuta è",
+       "number": 7,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": "a1000000-0000-4000-8000-000000993005",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": [
+        "a1000000-0000-4000-8000-000000993007"
+       ]
+      },
+      "attachments": [],
+      "payment_category_name": "Quote misc fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "25.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-04-01T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000993003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "generate_invoice": 0,
+    "payment_date": "2020-01-01"
+   }
+  },
+  {
+   "name": "payment-misc-approve-invoice-paid-blank-form-flag",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000993055/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000993055",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000000993014",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": null,
+       "sex": "M",
+       "first_name": "Sara",
+       "last_name": "Blu",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": null,
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000000993022",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "a1000000-0000-4000-8000-000000993051",
+       "document_token": "a1000000-0000-4000-8000-000000993006",
+       "creation_date": "2026-04-01T09:00:00Z",
+       "membership_fee": "0.00",
+       "activity_fee": "25.00",
+       "meta_payment_categories": [
+        {
+         "amount": 5
+        }
+       ],
+       "description": "Ricevuta è",
+       "number": 7,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": "a1000000-0000-4000-8000-000000993005",
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": [
+        "a1000000-0000-4000-8000-000000993007"
+       ]
+      },
+      "attachments": [],
+      "payment_category_name": "Quote misc fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "25.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-04-01T00:00:00Z",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000993003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "raw_body": "generate_invoice=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "payment-misc-approve-invoice-expense",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000993056/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000993056",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": {
+       "supplier_id": "a1000000-0000-4000-8000-000000993009",
+       "name": "Fornitore misc",
+       "address": null,
+       "tax_code": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "vat_number": "09876543210",
+       "type": "supplier",
+       "email": "fornitore-misc@example.test",
+       "phone_number": null,
+       "city": null,
+       "cap": null,
+       "state": null,
+       "country": "Italia",
+       "nationality": "Italiana",
+       "note": null,
+       "group": null,
+       "deleted": false
+      },
+      "supplier_id": "a1000000-0000-4000-8000-000000993009",
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "a1000000-0000-4000-8000-000000993052",
+       "document_token": null,
+       "creation_date": "2026-04-02T09:00:00Z",
+       "membership_fee": "0.00",
+       "activity_fee": "30.00",
+       "meta_payment_categories": null,
+       "description": null,
+       "number": null,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Quote misc fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "30.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-10T00:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "Fattura misc",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000993003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "ai_expense": {
+      "paid": true,
+      "payment_date": "2026-03-10T00:00:00Z"
+     }
+    },
+    "audit": [
+     {
+      "key": "ai_expense",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "2026-03-10 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {
+    "payment_date": "2026-03-10"
+   }
+  },
+  {
+   "name": "payment-misc-approve-invoice-expense-now-paid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000993056/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "payment mark as payed.",
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000993056",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": {
+       "supplier_id": "a1000000-0000-4000-8000-000000993009",
+       "name": "Fornitore misc",
+       "address": null,
+       "tax_code": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "vat_number": "09876543210",
+       "type": "supplier",
+       "email": "fornitore-misc@example.test",
+       "phone_number": null,
+       "city": null,
+       "cap": null,
+       "state": null,
+       "country": "Italia",
+       "nationality": "Italiana",
+       "note": null,
+       "group": null,
+       "deleted": false
+      },
+      "supplier_id": "a1000000-0000-4000-8000-000000993009",
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "a1000000-0000-4000-8000-000000993052",
+       "document_token": null,
+       "creation_date": "2026-04-02T09:00:00Z",
+       "membership_fee": "0.00",
+       "activity_fee": "30.00",
+       "meta_payment_categories": null,
+       "description": null,
+       "number": null,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Quote misc fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "30.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "2026-03-10T00:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "Fattura misc",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000993003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "body": {
+    "generate_invoice": null
+   }
+  },
+  {
+   "name": "payment-misc-approve-invoice-without-party",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000993057/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000993057",
+      "user": null,
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": {
+       "invoice_id": "a1000000-0000-4000-8000-000000993053",
+       "document_token": null,
+       "creation_date": "2026-04-03T09:00:00.250000Z",
+       "membership_fee": "1.50",
+       "activity_fee": "0.00",
+       "meta_payment_categories": null,
+       "description": "Ricevuta",
+       "number": 8,
+       "archived": false,
+       "cancelled": false,
+       "meta": null,
+       "imported_from_associami": false,
+       "deleted": false,
+       "document_pdf": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "selected_tutor": null,
+       "group": null,
+       "attached_documents": []
+      },
+      "attachments": [],
+      "payment_category_name": "Quote misc fixture",
+      "type": "default",
+      "subject": 2,
+      "amount": "1.50",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": "$now",
+      "paid": true,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000993003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "created": [],
+    "changed": {
+     "ai_plain": {
+      "paid": true,
+      "payment_date": "$now"
+     }
+    },
+    "audit": [
+     {
+      "key": "ai_plain",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "body": {}
+  }
+ ]
+}

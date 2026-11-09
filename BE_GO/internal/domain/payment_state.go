@@ -44,6 +44,8 @@ type PaymentStateQuery struct {
 type PaymentStateRender struct {
 	Payment    CourseSubscriptionPayment
 	Instructor *InstructorRow
+	// Invoice is the payment's invoice (InvoiceSerializer), nil without one.
+	Invoice *PaymentReadsInvoice
 }
 
 // PaymentStateSupplierInvoice is the first InvoiceSuppliers of a payment.

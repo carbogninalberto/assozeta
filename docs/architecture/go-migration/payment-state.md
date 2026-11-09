@@ -63,8 +63,9 @@ untouched. Responses `{'message': 'All payments archived'}` / `{'message': 'All 
 
 - Approve of an unpaid income payment with an associate, supplier or instructor (invoice numbering and creation, course
   subscription and carnet paid flags, notification, PDF/e-mail task on commit).
-- Any approve, paid cancel or delete of a payment with an invoice (InvoiceSerializer rendering, invoice cancellation and
-  the `print_document_invoice` PDF task, synchronous for delete).
+- Approve of a paid invoiced payment with a truthy `generate_invoice` (`print_document_invoice` on commit); paid cancel
+  or delete of a payment with an invoice (invoice cancellation and the PDF task, synchronous for delete). Approve of
+  other invoiced payments renders the invoice (see payment-misc.md).
 - A `payment_date` containing non-ASCII decimal digits (accepted by `strptime`).
 
 ## Evidence
