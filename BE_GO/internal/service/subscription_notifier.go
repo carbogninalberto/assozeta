@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/channels"
@@ -43,6 +44,26 @@ var errNotificationPush = errors.New("notification push value not supported")
 // and pushes it to notifications_user_<id>; push failures are swallowed as in
 // _push_to_websocket and returned only for logging.
 func (n *SubscriptionNotifier) Send(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
+	if err := n.store(ctx, user, kind, message, association, audit); err != nil {
+		return err
+	}
+	return n.push(ctx, user, message, association)
+}
+
+// Deliver is send_notification called inline by a view: storing errors
+// propagate, _push_to_websocket's are logged and swallowed.
+func (n *SubscriptionNotifier) Deliver(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
+	if err := n.store(ctx, user, kind, message, association, audit); err != nil {
+		return err
+	}
+	if err := n.push(ctx, user, message, association); err != nil {
+		slog.WarnContext(ctx, "notification push failed", "error", err)
+	}
+	return nil
+}
+
+// store is validate_broadcast and add_notification_role_broadcast.
+func (n *SubscriptionNotifier) store(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
 	broadcast := "broadcast_" + user
 	subscribed, err := n.rows.ValidateBroadcast(ctx, user, broadcast, audit, n.now().UTC())
 	if err != nil {
@@ -65,9 +86,11 @@ func (n *SubscriptionNotifier) Send(ctx context.Context, user, kind, message, as
 	items = append(items, domain.RequestObject{{Name: "id", Value: id.String()}, {Name: "type", Value: kind}, {Name: "msg", Value: message},
 		{Name: "association_id", Value: association}, {Name: "users", Value: []any{}},
 		{Name: "expires", Value: json.Number(jsonInt(expires))}})
-	if err = n.redis.SaveNotifications(ctx, broadcast, items); err != nil {
-		return err
-	}
+	return n.redis.SaveNotifications(ctx, broadcast, items)
+}
+
+// push is _push_to_websocket.
+func (n *SubscriptionNotifier) push(ctx context.Context, user, message, association string) error {
 	broadcasts, err := n.redis.Broadcasts(ctx, user)
 	if err != nil {
 		return err
