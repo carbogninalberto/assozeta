@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import PermissionDenied
 
-from application.models import User, SportAssociation, Associate
+from application.models import User, SportAssociation, Associate, Subscription
 
 SESSION_TTL = 3600
 
@@ -49,8 +49,12 @@ def eligible_users(actor):
     if association:
         members = Associate.objects.all_objects().filter(
             sport_association=association, deleted=False, user__isnull=False).values('user_id')
+        # Associations often register members themselves: the Associate row then
+        # belongs to the owner and only the subscription points at the athlete.
+        subscribers = Subscription._base_manager.filter(
+            sport_association=association, deleted=False, user__isnull=False).values('user_id')
         return users.exclude(pk=actor.pk).filter(
-            Q(role=User.ATHLETE, pk__in=members) |
+            Q(role=User.ATHLETE, pk__in=members) | Q(role=User.ATHLETE, pk__in=subscribers) |
             Q(role=User.COLLABORATOR, connected_user_id=actor.pk))
     return users.filter(Q(role=User.ATHLETE) | Q(role=User.ASSOCIATION, sportassociation__deleted=False) |
         Q(role=User.COLLABORATOR, connected_user__is_active=True, connected_user__deleted=False,

@@ -68,6 +68,38 @@ class AssociationImpersonationTests(TestCase):
                 response = self.client.post('/association/impersonation', {'target_user_id': str(target.pk)}, format='json')
                 self.assertEqual(response.status_code, 403, response.data)
 
+    def test_athletes_linked_only_by_subscription_are_eligible(self):
+        # The association registered the member itself, so the Associate row is the owner's.
+        own_member = Associate.objects.create(user=self.owner, sport_association=self.association,
+            first_name='Mario', last_name='Rossi')
+        subscriber = User.objects.create_user(username='subscriber', role=User.ATHLETE,
+            first_name='Mario', last_name='Rossi')
+        foreign = User.objects.create_user(username='foreign', role=User.ATHLETE)
+        dropped = User.objects.create_user(username='dropped', role=User.ATHLETE)
+        now = timezone.now()
+        for user, association, deleted in ((subscriber, self.association, False), (foreign, self.other, False),
+                                           (dropped, self.association, True)):
+            Subscription(user=user, sport_association=association, associate=own_member, deleted=deleted,
+                         start_date=now, end_date=now + timezone.timedelta(days=365)).save()
+        eligible = set(eligible_users(self.owner).values_list('pk', flat=True))
+        self.assertIn(subscriber.pk, eligible)
+        self.assertNotIn(foreign.pk, eligible)
+        self.assertNotIn(dropped.pk, eligible)
+        self.assertNotIn(self.owner.pk, eligible)
+        self.start(subscriber)
+
+    def test_search_matches_every_word_in_any_order(self):
+        self.athlete.first_name, self.athlete.last_name = 'Mario', 'Rossi'
+        self.athlete.save()
+        Associate.objects.create(user=User.objects.create_user(username='mario-bianchi', role=User.ATHLETE,
+            first_name='Mario', last_name='Bianchi'), sport_association=self.association)
+        for query in ('Mario Rossi', 'rossi  mario', 'mar ROSS'):
+            with self.subTest(query=query):
+                response = self.client.get('/association/impersonation/users', {'q': query})
+                self.assertEqual(response.status_code, 200, response.data)
+                self.assertEqual([u['user_id'] for u in response.data['users']], [str(self.athlete.pk)])
+                self.assertEqual(response.data['meta']['total'], 1)
+
     def test_profile_restoration_audit_and_session_context(self):
         response = self.start()
         self.assertEqual(response.data['actor_role'], 'association')

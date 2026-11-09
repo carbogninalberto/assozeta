@@ -33,6 +33,21 @@ def describe(user, association=None):
             'association': {'id': str(association.pk), 'name': association.denomination} if association else None}
 
 
+IMPERSONATION_SEARCH_FIELDS = ('username', 'email', 'first_name', 'last_name', 'sportassociation__denomination',
+                               'connected_user__sportassociation__denomination')
+
+
+def search_users(query):
+    """Every word must match some field, so "Mario Rossi" and "rossi mario" both work."""
+    condition = Q()
+    for word in query.split()[:10]:
+        word_match = Q()
+        for field in IMPERSONATION_SEARCH_FIELDS:
+            word_match |= Q(**{f'{field}__icontains': word})
+        condition &= word_match
+    return User.objects.filter(condition).values('pk')
+
+
 @api_view(['GET'])
 @permission_classes([CanManageImpersonation])
 def impersonation_users(request):
@@ -48,9 +63,7 @@ def impersonation_users(request):
     users = eligible_users(actor)
     query = request.query_params.get('query[generalSearch]', request.query_params.get('q', '')).strip()[:150]
     if query:
-        users = users.filter(Q(username__icontains=query) | Q(email__icontains=query) | Q(first_name__icontains=query) |
-                             Q(last_name__icontains=query) | Q(sportassociation__denomination__icontains=query) |
-                             Q(connected_user__sportassociation__denomination__icontains=query))
+        users = users.filter(pk__in=search_users(query))
     roles = {'association': User.ASSOCIATION, 'athlete': User.ATHLETE, 'collaborator': User.COLLABORATOR}
     role = request.query_params.get('query[role]', request.query_params.get('role'))
     if role:
