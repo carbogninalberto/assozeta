@@ -46,10 +46,10 @@ func NewJPEGFileProcessor(path string, limits JPEGFileLimits) (*JPEGFileProcesso
 }
 
 func (p *JPEGFileProcessor) Process(ctx context.Context, input []byte) (JPEGFileResult, error) {
-	return p.processSize(ctx, input, 200)
+	return p.processSize(ctx, input, squareBound(200))
 }
 
-func (p *JPEGFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (JPEGFileResult, error) {
+func (p *JPEGFileProcessor) processSize(ctx context.Context, input []byte, maxSize sizeBound) (JPEGFileResult, error) {
 	empty := JPEGFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()

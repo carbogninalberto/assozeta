@@ -40,10 +40,10 @@ func NewSGIFileProcessor(path string, limits SGIFileLimits) (*SGIFileProcessor, 
 	return &SGIFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *SGIFileProcessor) Process(ctx context.Context, input []byte) (SGIFileResult, error) {
-	return p.processSize(ctx, input, 200)
+	return p.processSize(ctx, input, squareBound(200))
 }
 
-func (p *SGIFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (SGIFileResult, error) {
+func (p *SGIFileProcessor) processSize(ctx context.Context, input []byte, maxSize sizeBound) (SGIFileResult, error) {
 	empty := SGIFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()

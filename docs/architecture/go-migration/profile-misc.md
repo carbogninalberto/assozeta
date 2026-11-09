@@ -37,7 +37,7 @@
 
 ## Not ported (explicit refusals before any committed write)
 
-- **`profile/update/subscription/template` is dropped from this family.** The frontend (`Template.svelte`) sends the whole stored association on every save. Every realistic request therefore carries `regulation`, `demand` and section HTML, which the view rewrites with BeautifulSoup `prettify()`, and a `logo` that it re-encodes with Pillow at `max_size=(590, 130)`. The response also re-encodes the stored logo at that size. Go has no BeautifulSoup-compatible serializer. `pkg/storage/loginimage` implements only square bounds (200 and 512). A port would therefore refuse every real request.
+- **`profile/update/subscription/template` is ported separately** in [profile-template.md](profile-template.md), with a bs4 `prettify()` port and a rectangular image bound.
 - In `onboarding/update`, Go answers the 500 page instead of reproducing a database error or model path in these cases:
   - Multipart uploads.
   - An owner whose association is soft-deleted, which auditlog's default manager cannot load.

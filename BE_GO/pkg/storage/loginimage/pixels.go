@@ -27,14 +27,20 @@ type Raster struct {
 // can be enlarged when its encoded data is over 1 MiB; under that limit only the
 // JPEG representation changes. Zero-sized resize results are Django fallbacks.
 func Decide(width, height, encodedBytes int) (Plan, error) {
-	return decideSize(width, height, encodedBytes, 200)
+	return decideSize(width, height, encodedBytes, squareBound(200))
 }
 
-func decideSize(width, height, encodedBytes, maxSize int) (Plan, error) {
-	if width <= 0 || height <= 0 || encodedBytes < 0 || maxSize <= 0 {
+// sizeBound is compress_base64's max_size=(width, height).
+type sizeBound struct{ width, height int }
+
+func squareBound(size int) sizeBound { return sizeBound{size, size} }
+
+func decideSize(width, height, encodedBytes int, maxSize sizeBound) (Plan, error) {
+	if width <= 0 || height <= 0 || encodedBytes < 0 || maxSize.width <= 0 || maxSize.height <= 0 {
 		return Plan{}, ErrDimensions
 	}
-	ratio := math.Min(float64(maxSize)/float64(width), float64(maxSize)/float64(height))
+	// ratio = min(max_size[0] / w, max_size[1] / h), Python float division.
+	ratio := math.Min(float64(maxSize.width)/float64(width), float64(maxSize.height)/float64(height))
 	w, h := int(float64(width)*ratio), int(float64(height)*ratio)
 	if encodedBytes <= 1024*1024 {
 		return Plan{width, height, w == width && h == height}, nil

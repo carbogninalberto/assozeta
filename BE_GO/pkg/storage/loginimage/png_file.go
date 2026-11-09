@@ -44,10 +44,10 @@ func NewPNGFileProcessor(path string, limits PNGFileLimits) (*PNGFileProcessor, 
 	return &PNGFileProcessor{decoder, encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *PNGFileProcessor) Process(ctx context.Context, input []byte) (PNGFileResult, error) {
-	return p.processSize(ctx, input, 200)
+	return p.processSize(ctx, input, squareBound(200))
 }
 
-func (p *PNGFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (PNGFileResult, error) {
+func (p *PNGFileProcessor) processSize(ctx context.Context, input []byte, maxSize sizeBound) (PNGFileResult, error) {
 	empty := PNGFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()

@@ -40,10 +40,10 @@ func NewGIFFileProcessor(path string, limits GIFFileLimits) (*GIFFileProcessor, 
 	return &GIFFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *GIFFileProcessor) Process(ctx context.Context, input []byte) (GIFFileResult, error) {
-	return p.processSize(ctx, input, 200)
+	return p.processSize(ctx, input, squareBound(200))
 }
 
-func (p *GIFFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (GIFFileResult, error) {
+func (p *GIFFileProcessor) processSize(ctx context.Context, input []byte, maxSize sizeBound) (GIFFileResult, error) {
 	empty := GIFFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()

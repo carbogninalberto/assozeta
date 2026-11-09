@@ -40,10 +40,10 @@ func NewPCXFileProcessor(path string, limits PCXFileLimits) (*PCXFileProcessor, 
 	return &PCXFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *PCXFileProcessor) Process(ctx context.Context, input []byte) (PCXFileResult, error) {
-	return p.processSize(ctx, input, 200)
+	return p.processSize(ctx, input, squareBound(200))
 }
 
-func (p *PCXFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (PCXFileResult, error) {
+func (p *PCXFileProcessor) processSize(ctx context.Context, input []byte, maxSize sizeBound) (PCXFileResult, error) {
 	empty := PCXFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()

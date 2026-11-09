@@ -40,10 +40,10 @@ func NewPPMFileProcessor(path string, limits PPMFileLimits) (*PPMFileProcessor, 
 	return &PPMFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *PPMFileProcessor) Process(ctx context.Context, input []byte) (PPMFileResult, error) {
-	return p.processSize(ctx, input, 200)
+	return p.processSize(ctx, input, squareBound(200))
 }
 
-func (p *PPMFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (PPMFileResult, error) {
+func (p *PPMFileProcessor) processSize(ctx context.Context, input []byte, maxSize sizeBound) (PPMFileResult, error) {
 	empty := PPMFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
