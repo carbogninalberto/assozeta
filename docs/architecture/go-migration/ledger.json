@@ -27642,25 +27642,74 @@
         "target": "delete_document",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/docmanager_reads.go",
+        "BE_GO/internal/repository/docmanager_reads.go",
+        "BE_GO/internal/service/docmanager_reads.go",
+        "BE_GO/internal/service/docmanager_signing.go",
+        "BE_GO/internal/handler/docmanager_reads.go",
+        "BE_GO/cmd/server/docmanager_reads.go",
+        "BE_GO/pkg/pymime/pymime.go",
+        "BE_GO/pkg/pymime/defaults.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go"
+      ],
+      "dependencies": [
+        "PostgreSQL",
+        "Redis (identity sessions)",
+        "S3 default storage (AWS_* settings)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/<uid>/delete",
+          "/api/v2/document/<uid>/delete",
+          "/api/document/<uid>/delete"
+        ],
+        "request": "Path uid (Python uuid.UUID grammar).",
+        "response": "404 {'error': 'Document not found.'} for an unknown document or a requester without an active association; otherwise refused (500 page) before any write.",
+        "errors": "401 (challenge); 403 identity/registry denials; 400 [ValueError text]; 405; 500 page.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "DRF IsAuthenticated; no registry key; not an athlete operation in scoped sessions.",
+        "resource_scope": "Document by id; SportAssociation of request.user (ActiveManager).",
+        "side_effects": "None in the implemented part (the ownership walk and Document.delete() are not ported).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/docmanager_reads_http.json",
+        "TESTS/fixtures/generate_docmanager_reads_http.py",
+        "TESTS/contracts/test_docmanager_reads_http.py",
+        "TESTS/adapters/django/docmanager_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/docmanager-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-native-r2/results.json",
+          "receipt_sha256": "fa3ee2f484608422ab912295c7e64ecf3c59f5fbe9ad03a2fb8186f0c37e6cf7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact streamed bytes and headers.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "13a80d3449add380d77411c6ee1bde7aea9f0cea74cf548d43005be7322f649c"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter in the related-id lookup",
+          "result": "Mutation control: fails Go on docmanager-reads-retrieve-owner-by-deleted-invoice (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-mutation-deleted-invoice/results.json",
+          "receipt_sha256": "f4edcc0e0f99fd093582ade99a88d6193c1829f9b065c3c57814aa2752b9a8b9"
+        }
+      ],
+      "notes": [
+        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers; delete is implemented up to its ownership walk. Refused with the 500 page: re-rendering a missing subscription/invoice PDF, provider errors other than a 404 HEAD, URL-like or newline-terminated filenames, non-standard JSON in signed payloads, and delete of an existing document by a requester with an association. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/compensation/<str:uid> -> document_compensation",
@@ -27992,25 +28041,74 @@
         "target": "retrieve_document",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/docmanager_reads.go",
+        "BE_GO/internal/repository/docmanager_reads.go",
+        "BE_GO/internal/service/docmanager_reads.go",
+        "BE_GO/internal/service/docmanager_signing.go",
+        "BE_GO/internal/handler/docmanager_reads.go",
+        "BE_GO/cmd/server/docmanager_reads.go",
+        "BE_GO/pkg/pymime/pymime.go",
+        "BE_GO/pkg/pymime/defaults.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go"
+      ],
+      "dependencies": [
+        "PostgreSQL",
+        "Redis (identity sessions)",
+        "S3 default storage (AWS_* settings)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/document/retrieve/<uid>",
+          "/api/v2/document/retrieve/<uid>",
+          "/api/document/retrieve/<uid>"
+        ],
+        "request": "Path uid (Python uuid.UUID grammar). Query: download ('false' selects view_file; any other value or none selects download_file, attachment when non-empty), token (a JWT or the Document's UUID token), download_token (django.core.signing, salt docmanager.association-export-download, max_age 3600). Headers: Authorization, Cookie BKN_AUTH, X-Group-Id, impersonation headers.",
+        "response": "200 streamed object bytes with Content-Type from mimetypes.guess_type (else the object's, else application/octet-stream), Content-Length and Content-Encoding from the object, and Content-Disposition from content_disposition_header for download_file.",
+        "errors": "400 [ValueError text]; 401 {'error': 'Invalid token. Not Authorized.'} / {'error': 'Invalid download token.'} (no challenge); DRF 401 for an invalid bearer; 403 {'error': 'Not authorized to access this export.'}; 403 {'detail': 'Documento non disponibile per questa associazione.'}; 404 {'error': 'Document not found.'}; 500 {'exception': 'File not found'} / {'exception': \"Attempted access to '<name>' denied.\"}; 405; 500 page.",
+        "authentication": "DRF AllowAny with ScopedJWTAuthentication; the view recomputes request.user from the Authorization header, the BKN_AUTH cookie or ?token unless impersonating.",
+        "permissions": "No registry key (restricted collaborators denied by identity resolution); download tokens, document tokens or any authenticated user; export documents need the archive's association owner; association-scoped sessions need visible_documents.",
+        "resource_scope": "Document by id or token; related Subscription (group-aware), MedicalCertificate and Invoice (soft-delete, group-aware) ids; export archives.",
+        "side_effects": "None (object storage is read with HEAD and GET).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/docmanager_reads_http.json",
+        "TESTS/fixtures/generate_docmanager_reads_http.py",
+        "TESTS/contracts/test_docmanager_reads_http.py",
+        "TESTS/adapters/django/docmanager_reads_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/docmanager-reads.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-native-r2/results.json",
+          "receipt_sha256": "fa3ee2f484608422ab912295c7e64ecf3c59f5fbe9ad03a2fb8186f0c37e6cf7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact streamed bytes and headers.",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-versioned-r1/results.json",
+          "receipt_sha256": "13a80d3449add380d77411c6ee1bde7aea9f0cea74cf548d43005be7322f649c"
+        },
+        {
+          "revision": "committing change without the invoice soft-delete filter in the related-id lookup",
+          "result": "Mutation control: fails Go on docmanager-reads-retrieve-owner-by-deleted-invoice (200 instead of 404).",
+          "artifact": "quality-reports/go-migration/docmanager-reads-http-mutation-deleted-invoice/results.json",
+          "receipt_sha256": "f4edcc0e0f99fd093582ade99a88d6193c1829f9b065c3c57814aa2752b9a8b9"
+        }
+      ],
+      "notes": [
+        "Implementing: retrieve streams stored documents from S3 with Django's lookups, download tokens and headers; delete is implemented up to its ownership walk. Refused with the 500 page: re-rendering a missing subscription/invoice PDF, provider errors other than a 404 HEAD, URL-like or newline-terminated filenames, non-standard JSON in signed payloads, and delete of an existing document by a requester with an association. The PDF rendering routes, their /view/ variants, subscription/preview and medical/certificate are not part of this family."
+      ]
     },
     {
       "id": "route:BE/docmanager/urls.py:document/subscription/<str:uid> -> document_subscription",
