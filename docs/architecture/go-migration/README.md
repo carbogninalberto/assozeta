@@ -725,7 +725,7 @@ and later corrections appear above and in the component contracts.
 | Portable Go contracts | The same 3 health contracts pass over real HTTP |
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
-| Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Identity selection | 50 explicit Django/Go cases, 10 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
 | Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
 | Login response composition | 48 explicit full response cases including twelve concrete image scenarios; 11/14 SQL statements including shared fences and excluding BEGIN/COMMIT; concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, 3/5/6 SQL statements including the shared fence and excluding BEGIN/COMMIT; concurrent cancellation and atomic failure rollback |

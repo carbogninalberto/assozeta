@@ -62,6 +62,10 @@ type PaymentPaidFlowTransaction interface {
 	// group-aware, unarchived invoices created in [from, to).
 	MaxInvoiceNumberCreated(ctx context.Context, association string, group *string, from, to time.Time) (*int64, error)
 	SavePaidFlowPayment(ctx context.Context, save PaymentPaidFlowSave) error
+	// MarkStripePaymentPaid is mark_payment_as_paid's payment.type = 'stripe'
+	// and payment.save(update_fields=['paid', 'payment_date', 'type']): it
+	// writes those three columns and returns the previous type.
+	MarkStripePaymentPaid(ctx context.Context, id string, at time.Time) (string, error)
 	// PaidFlowCourseSubscription is CourseSubscription.objects.filter(payment=...).first()
 	// (live; scope adds the impersonation boundaries).
 	PaidFlowCourseSubscription(ctx context.Context, payment string, scope *string) (*CourseSubscriptionRow, error)

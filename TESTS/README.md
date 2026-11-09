@@ -322,10 +322,10 @@ covers current schema, not historical installation or backend activation. See
 
 
 The same account command now invokes `adapters/django/identity.py` with private
-Redis and runs 46 explicitly expected identity-selection cases against Django's
-real resolver and Go. It verifies eight persisted eligibility/configuration
+Redis and runs 50 explicitly expected identity-selection cases against Django's
+real resolver and Go. It verifies ten persisted eligibility/configuration
 transitions and 32 concurrent resolutions with a four-connection pool. Go
-revocation is visible in Django. Readback compares users, associations, members,
+revocation is visible in Django. Readback compares users, associations, members, subscriptions,
 instance configuration and audit records after restoring test-only changes.
 These identity cases have no nested resource IDs; the separate scoped-request
 cases below cover that admission stage. HTTP and audit mutation workflows remain

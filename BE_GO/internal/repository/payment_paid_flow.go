@@ -92,6 +92,13 @@ func (t *paymentPaidFlowTransaction) SavePaidFlowPayment(ctx context.Context, sa
 	return err
 }
 
+func (t *paymentPaidFlowTransaction) MarkStripePaymentPaid(ctx context.Context, id string, at time.Time) (string, error) {
+	var previous string
+	err := t.tx.GetContext(ctx, &previous, `WITH old AS (SELECT type FROM application_payment WHERE payment_id=$1)
+ UPDATE application_payment SET paid=true, payment_date=$2, type='stripe' WHERE payment_id=$1 RETURNING (SELECT type FROM old)`, id, at)
+	return previous, err
+}
+
 const paymentPaidFlowCourseSelect = `SELECT ` + courseSubscriptionColumns + ` FROM application_coursesubscription cs
  JOIN application_course c ON c.course_id=cs.course_id`
 

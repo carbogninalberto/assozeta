@@ -336,9 +336,11 @@ type stripeMarkTransaction interface {
 
 // mark is mark_payment_as_paid(request or None, payment, ...): atomically the
 // locked payment's first supplier invoice is marked paid now; an unpaid
-// payment without an invoice runs the invoice flow (stripePaidFlow) while one
-// with an invoice is not saved; afterwards the notification is delivered and
-// payment.user.user_id is read for the log (no user: an error after the commit).
+// payment is saved paid now with type 'stripe' (stripeMarkPaid) and, without
+// an invoice, runs the invoice flow (stripePaidFlow); after the commit the
+// notification is delivered, the on-commit print_document_invoice is
+// published and payment.user.user_id is read for the log (no user: an error
+// after the commit).
 func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentity, request StripeRequest, payment *domain.StripePayment,
 	withRequest bool) error {
 	if withRequest && payment.UserID == nil && payment.AssociateID == nil {
@@ -383,13 +385,18 @@ func (s *StripeRoutes) mark(ctx context.Context, identity domain.ResolvedIdentit
 		}
 	}
 	var notification *paymentPaidFlowNotification
-	if !row.Paid && row.InvoiceID == nil {
+	if !row.Paid {
 		flow, ok := tx.(domain.PaymentPaidFlowTransaction)
 		if !ok {
 			return domain.ErrStripeNotPorted
 		}
-		if notification, err = s.stripePaidFlow(ctx, flow, identity, request, row.ID, now, withRequest); err != nil {
+		if err := stripeMarkPaid(ctx, flow, row.PaymentSaveRow, row.PaymentDate, stripeAuditContext(identity, request.Audit), now); err != nil {
 			return err
+		}
+		if row.InvoiceID == nil {
+			if notification, err = s.stripePaidFlow(ctx, flow, identity, request, row.ID, now, withRequest); err != nil {
+				return err
+			}
 		}
 	}
 	if err := tx.Commit(); err != nil {

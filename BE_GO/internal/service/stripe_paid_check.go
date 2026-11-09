@@ -204,9 +204,10 @@ func (s *StripePaidCheck) check(ctx context.Context, job domain.Job, id string, 
 
 // mark is the succeeded branch inside the block: the type save, then
 // mark_payment_as_paid(request, payment): the first supplier invoice marked
-// paid, the invoice flow for an unpaid payment without invoice (an unpaid
-// payment with one is not saved), and payment.user.user_id read for the log
-// (no user: an exception that rolls the block back).
+// paid, the payment saved paid (stripeMarkPaid), the invoice flow for a
+// payment without invoice, and payment.user.user_id read for the log (no
+// user: an exception that rolls the block back, discarding the on-commit
+// print_document_invoice).
 func (s *StripePaidCheck) mark(ctx context.Context, tx domain.StripePaidCheckTransaction, stripe *StripeRoutes,
 	row domain.StripePaidCheckPayment) (*paymentPaidFlowNotification, error) {
 	now := stripe.at()
@@ -233,6 +234,16 @@ func (s *StripePaidCheck) mark(ctx context.Context, tx domain.StripePaidCheckTra
 		if err := tx.AppendSupplierInvoiceAudit(ctx, *invoice, changes, domain.LoginAuditContext{}, now); err != nil {
 			return nil, err
 		}
+	}
+	locked, err := tx.LockStripePayment(ctx, row.ID, nil)
+	if err != nil {
+		return nil, err
+	}
+	if locked == nil {
+		return nil, errStripePaidCheckException
+	}
+	if err = stripeMarkPaid(ctx, tx, locked.PaymentSaveRow, locked.PaymentDate, domain.LoginAuditContext{}, now); err != nil {
+		return nil, err
 	}
 	var notification *paymentPaidFlowNotification
 	if row.InvoiceID == nil {

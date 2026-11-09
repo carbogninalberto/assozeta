@@ -14,17 +14,59 @@ import (
 )
 
 // paymentPaidFlowNotification is send_notification's call, delivered after
-// the commit once validate_broadcast's rows were written in the transaction.
+// the commit once validate_broadcast's rows were written in the transaction,
+// and, for mark_payment_as_paid, the print_document_invoice.delay that
+// transaction.on_commit runs once the block committed (after the
+// notification, which Django sends inside the block).
 type paymentPaidFlowNotification struct {
 	user, message, association string
 	subscribed                 bool
+	print                      *paymentPaidFlowPrint
+}
+
+// paymentPaidFlowPrint is the on-commit print_document_invoice.delay(invoice, token).
+type paymentPaidFlowPrint struct {
+	publisher celery.Publisher
+	invoice   string
+	token     any
 }
 
 func (n *paymentPaidFlowNotification) deliver(ctx context.Context, notifier *SubscriptionNotifier) error {
 	if n == nil {
 		return nil
 	}
-	return notifier.DeliverValidated(ctx, n.user, "payment", n.message, n.association, n.subscribed)
+	if err := notifier.DeliverValidated(ctx, n.user, "payment", n.message, n.association, n.subscribed); err != nil {
+		return err
+	}
+	if n.print == nil {
+		return nil
+	}
+	return paymentPaidFlowPublish(ctx, n.print.publisher, n.print.invoice, n.print.token)
+}
+
+// stripeMarkPaid is mark_payment_as_paid's first save of an unpaid payment:
+// payment.paid = True, payment.payment_date = now, payment.type = 'stripe' and
+// payment.save(update_fields=['paid', 'payment_date', 'type']). Payment.save()
+// computes its defaults (a failure raises inside the block) but only the
+// update fields are written; auditlog records the changed update fields.
+func stripeMarkPaid(ctx context.Context, tx domain.PaymentPaidFlowTransaction, row domain.PaymentSaveRow, before *time.Time,
+	audit domain.LoginAuditContext, now time.Time) error {
+	if err := paymentSaveDefaults(ctx, tx, &row, map[string][2]string{}); err != nil {
+		return err
+	}
+	previous, err := tx.MarkStripePaymentPaid(ctx, row.ID, now)
+	if err != nil {
+		return err
+	}
+	changes := map[string][2]string{"paid": {"False", "True"}}
+	if old, current := courseSubscriptionAuditTime(before), courseSubscriptionAuditTime(&now); old != current {
+		changes["payment_date"] = [2]string{old, current}
+	}
+	if previous != "stripe" {
+		changes["type"] = [2]string{previous, "stripe"}
+	}
+	return tx.AppendPaymentAudit(ctx, domain.PaymentArchiveEvent{PaymentID: row.ID, AssociationID: row.AssociationID, Changes: changes,
+		Context: audit, At: now})
 }
 
 // paymentPaidFlowInvoiceGroup is the group Invoice.objects.create stores: the
@@ -416,11 +458,12 @@ func (s *PaymentStates) paySupplierInvoice(ctx context.Context, tx domain.Paymen
 }
 
 // stripePaidFlow is mark_payment_as_paid for an unpaid payment without an
-// invoice, inside the mark's transaction: the fees, the next number (the
-// association's invoices created in the current balance year, no lock), the
-// description, the invoice, the payment save, the course subscription or
-// installment paid flag, print_document_invoice.delay (published before the
-// commit) and validate_broadcast for payment.user.
+// invoice, inside the mark's transaction after stripeMarkPaid: the fees, the
+// next number (the association's invoices created in the current balance
+// year, no lock), the description, the invoice, the payment save recording it,
+// the course subscription or installment paid flag, validate_broadcast for
+// payment.user and the on-commit print_document_invoice.delay (returned with
+// the notification, published after the commit).
 func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaidFlowTransaction, identity domain.ResolvedIdentity,
 	request StripeRequest, id string, now time.Time, withRequest bool) (*paymentPaidFlowNotification, error) {
 	group := supplierGroup(request.GroupHeader)
@@ -430,6 +473,13 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	}
 	if row == nil || row.AssociationID == "" {
 		return nil, domain.ErrStripeServer
+	}
+	// The update_fields save already ran Payment.save()'s defaults on the
+	// in-memory payment: the invoice description reads them, and the later
+	// full save records them with the invoice.
+	changes := map[string][2]string{}
+	if err = paymentSaveDefaults(ctx, tx, &row.PaymentSaveRow, changes); err != nil {
+		return nil, err
 	}
 	payment, err := tx.InvoiceGeneratePayment(ctx, row.ID)
 	if err != nil {
@@ -472,13 +522,8 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 		"activity_fee": fees.activity.memory}, audit, now); err != nil {
 		return nil, err
 	}
-	changes := map[string][2]string{"paid": {"False", "True"}, "invoice": {"None", create.ID}}
-	if before, after := courseSubscriptionAuditTime(row.PaymentDate), courseSubscriptionAuditTime(&now); before != after {
-		changes["payment_date"] = [2]string{before, after}
-	}
-	if err = paymentSaveDefaults(ctx, tx, &row.PaymentSaveRow, changes); err != nil {
-		return nil, err
-	}
+	// paid, payment_date and type were saved by stripeMarkPaid: only the invoice and the defaults change.
+	changes["invoice"] = [2]string{"None", create.ID}
 	if err = tx.SavePaidFlowPayment(ctx, domain.PaymentPaidFlowSave{ID: row.ID, PaymentDate: now, Invoice: &create.ID,
 		CategoryID: row.CategoryID, Description: row.Description}); err != nil {
 		return nil, err
@@ -501,9 +546,6 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	if withRequest {
 		token = authorizationArg(request.Authorization)
 	}
-	if err = paymentPaidFlowPublish(ctx, s.publisher, create.ID, token); err != nil {
-		return nil, err
-	}
 	switch row.Subject {
 	case 2:
 	case 1:
@@ -524,5 +566,6 @@ func (s *StripeRoutes) stripePaidFlow(ctx context.Context, tx domain.PaymentPaid
 	if err != nil {
 		return nil, err
 	}
-	return &paymentPaidFlowNotification{user: *people.UserID, message: message, association: row.AssociationID, subscribed: subscribed}, nil
+	return &paymentPaidFlowNotification{user: *people.UserID, message: message, association: row.AssociationID, subscribed: subscribed,
+		print: &paymentPaidFlowPrint{publisher: s.publisher, invoice: create.ID, token: token}}, nil
 }

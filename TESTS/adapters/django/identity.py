@@ -59,7 +59,8 @@ def prepare(work):
     from rest_framework.request import Request
     from rest_framework.exceptions import PermissionDenied
     from auditlog.context import disable_auditlog
-    from application.models import User, SportAssociation, Associate
+    from datetime import datetime, timezone
+    from application.models import User, SportAssociation, Associate, Subscription
     from application.impersonation import begin, resolve_request_identity, session_key
     from instance.models import InstanceConfiguration
     def uid(n):
@@ -82,18 +83,26 @@ def prepare(work):
         account(19, 3, connected_user=owner, collaborator_role=3, collaborator_permissions=True)
         account(20, 3, connected_user=owner, collaborator_role=1, collaborator_permissions=True)
         account(21, 3, connected_user=owner, collaborator_role=3, collaborator_permissions=False)
+        subscriber = account(22)
+        account(23)  # subscription deleted
         association = SportAssociation.objects.create(sport_association_id=uid(80), user=owner, denomination='Identity owner')
         other = SportAssociation.objects.create(sport_association_id=uid(90), user=foreign, denomination='Identity foreign')
         Associate.objects.create(associate_id=uid(81), sport_association=association, user=member, first_name='Member')
         Associate.objects.create(associate_id=uid(91), sport_association=other, user=foreign_member, first_name='Foreign')
         InstanceConfiguration.objects.create(domain='identity.example.test', name='Identity fixture', primary_association=association)
+        # The foreign association registered these athletes through its own Associate row: only the subscription names them.
+        start = datetime(2026, 9, 1, tzinfo=timezone.utc)
+        for n, person, deleted in ((92, 22, False), (93, 23, True)):
+            Subscription(subscription_id=uid(n), sport_association=other, associate_id=uid(91), user_id=uid(person), deleted=deleted,
+                         start_date=start, end_date=datetime(2027, 8, 31, tzinfo=timezone.utc)).save()
     admin = User.objects.get(pk=uid(1))
     owner_member, _ = begin(owner, member.pk)
     owner_staff, _ = begin(owner, staff.pk)
     admin_foreign, _ = begin(admin, foreign.pk)
     admin_staff, _ = begin(admin, staff.pk)
     # Persisted records deliberately no longer eligible or incorrectly bound.
-    for n, actor, target, tenant in [(200, 8, 15, 80), (201, 1, 3, None), (202, 8, 10, 90), (203, 1, 1, None), (204, 1, 13, None), (205, 1, 12, None), (206, 1, 16, None), (207, 8, 2, 80), (208, 8, 8, 80)]:
+    for n, actor, target, tenant in [(200, 8, 15, 80), (201, 1, 3, None), (202, 8, 10, 90), (203, 1, 1, None), (204, 1, 13, None), (205, 1, 12, None), (206, 1, 16, None), (207, 8, 2, 80), (208, 8, 8, 80),
+                                     (209, 9, 10, 90), (210, 9, 22, 90), (211, 9, 23, 90), (212, 9, 15, 90)]:
         cache.set(session_key(uid(n)), {'actor_id': uid(actor), 'target_id': uid(target), 'association_id': uid(tenant) if tenant else None}, 3600)
     cases = []
     def case(name, actor, path='/profile/info', method='GET', session='', target='', detail='', invalid=False,
@@ -146,7 +155,13 @@ def prepare(work):
     case('foreign-actor-session', 9, session=owner_member, detail=missing, invalid=True)
     case('mismatched-target-header', 8, session=owner_member, target=uid(15), detail=missing, invalid=True)
     case('foreign-association-binding', 8, session=uid(202), detail=missing, invalid=True)
-    case('foreign-member-not-eligible', 8, session=uid(200), detail=unavailable, invalid=True)
+    # The self-hosted instance owner (primary association 80) selects every athlete; another owner selects
+    # members and athletes with a non-deleted subscription of the association.
+    case('instance-owner-unlinked-athlete', 8, session=uid(200), effective=15, scope=15, association=80, impersonating=True)
+    case('owner-unlinked-athlete-not-eligible', 9, session=uid(209), detail=unavailable, invalid=True)
+    case('owner-impersonates-subscriber', 9, session=uid(210), effective=22, scope=22, association=90, impersonating=True)
+    case('owner-impersonates-own-member', 9, session=uid(212), effective=15, scope=15, association=90, impersonating=True)
+    case('owner-deleted-subscription-not-eligible', 9, session=uid(211), detail=unavailable, invalid=True)
     case('inactive-target-not-eligible', 1, session=uid(201), detail=unavailable, invalid=True)
     case('administrator-target-not-eligible', 1, session=uid(203), detail=unavailable, invalid=True)
     case('collaborator-cannot-initiate', 11, session=owner_member, detail='Solo il titolare può impersonare utenti.', invalid=True)
@@ -184,20 +199,22 @@ def prepare(work):
     # Reuse a previously authenticated actor to prove current eligibility is
     # checked again after persisted state changes, not only at session issuance.
     transitions = [
-        (User.objects.filter(pk=owner.pk), 'is_active', False, True, 'Account non disponibile.'),
-        (User.original_objects.filter(pk=owner.pk), 'deleted', True, False, 'Account non disponibile.'),
-        (User.objects.filter(pk=member.pk), 'is_active', False, True, unavailable),
-        (User.original_objects.filter(pk=member.pk), 'deleted', True, False, unavailable),
-        (SportAssociation.original_objects.filter(pk=association.pk), 'deleted', True, False, 'Associazione non disponibile.'),
-        (Associate.objects.all_objects().filter(pk=uid(81)), 'deleted', True, False, unavailable),
+        (User.objects.filter(pk=owner.pk), 'is_active', False, True, 'Account non disponibile.', owner, owner_member),
+        (User.original_objects.filter(pk=owner.pk), 'deleted', True, False, 'Account non disponibile.', owner, owner_member),
+        (User.objects.filter(pk=member.pk), 'is_active', False, True, unavailable, owner, owner_member),
+        (User.original_objects.filter(pk=member.pk), 'deleted', True, False, unavailable, owner, owner_member),
+        (SportAssociation.original_objects.filter(pk=association.pk), 'deleted', True, False, 'Associazione non disponibile.', owner, owner_member),
+        (Associate.objects.all_objects().filter(pk=uid(91)), 'deleted', True, False, unavailable, foreign, uid(212)),
+        (Subscription._base_manager.filter(pk=uid(92)), 'deleted', True, False, unavailable, foreign, uid(210)),
+        (InstanceConfiguration.objects.all(), 'self_hosted', False, True, unavailable, owner, uid(200)),
     ]
-    for queryset, field, changed, original, expected in transitions:
+    for queryset, field, changed, original, expected, actor, session in transitions:
         try:
             assert queryset.update(**{field: changed}) == 1
-            request = Request(factory.get('/profile/info', HTTP_X_IMPERSONATION_ID=owner_member))
-            request.user = owner
+            request = Request(factory.get('/profile/info', HTTP_X_IMPERSONATION_ID=session))
+            request.user = actor
             try:
-                resolve_request_identity(request, owner)
+                resolve_request_identity(request, actor)
             except PermissionDenied as denied:
                 assert str(denied.detail['detail']) == expected
                 assert str(denied.detail['impersonation_invalid']).lower() == 'true'
@@ -221,5 +238,5 @@ def prepare(work):
             InstanceConfiguration.objects.filter(pk=configuration.pk).update(**{field: original})
     path = Path(work) / 'identity.json'
     path.write_text(json.dumps(cases)); path.chmod(0o600)
-    print(f'Django: {len(cases)} explicit identity selection contracts and 8 eligibility/configuration transitions passed', flush=True)
+    print(f'Django: {len(cases)} explicit identity selection contracts and 10 eligibility/configuration transitions passed', flush=True)
     return path, len(cases)

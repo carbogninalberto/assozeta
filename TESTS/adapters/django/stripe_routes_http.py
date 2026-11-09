@@ -25,11 +25,12 @@ the new auditlog entries match the authored ones in order, with their index
 rows. A '$now' payment date must be recent and equal in the row and the entry.
 
 The paid flow (an unpaid payment without an invoice) is checked with
-payment_paid_flow: the created invoice, the payment's paid/payment_date/invoice,
+payment_paid_flow: the created invoice, the payment's paid/payment_date/invoice/type,
 the course subscription or installment marked paid, the broadcast rows, the
 owner's notification and the print_document_invoice messages on the run's
-private Celery broker ('$bypass' is DOCUMENT_BYPASS_TOKEN, '$rolled_back_invoice'
-the id of an invoice the rolled-back block never kept). A course, a carnet,
+private Celery broker ('$bypass' is DOCUMENT_BYPASS_TOKEN); CommitObserver
+records, when each message reaches the broker, the committed invoice and its
+payments' paid/type, which must equal the authored 'committed' values. A course, a carnet,
 course subscriptions, an installment and a carnet subscription are seeded for it.
 """
 from contextlib import contextmanager
@@ -41,6 +42,7 @@ import json
 import os
 import re
 import threading
+import time
 import types
 
 from TESTS.contracts import test_stripe_routes_http as base_contract
@@ -256,7 +258,7 @@ def seed_rows(source, created):
             payment_intent_id=row['intent'], invoice_id=source['invoices'][label]['id'] if row['invoice'] else None,
             group_id=ids[row['group']] if row['group'] else None, deleted=row['deleted'], payment_category_id=row['category'],
             creation_date=moment(row['created']), payment_date=moment(row['payment_date']), description=row['description'],
-            meta_payment_categories=row.get('meta_categories')))
+            meta_payment_categories=row.get('meta_categories'), type=row['type']))
     for label, row in source['supplier_invoices'].items():
         insert(InvoiceSuppliers, InvoiceSuppliers(invoice_supplier_id=row['id'], invoice_identifier=row['identifier'],
                                                   amount=Decimal(row['amount']), sport_association_id=payments[label]['association'],
@@ -297,6 +299,73 @@ base_fixture_context = paid.with_notifications(harness.with_celery_broker(harnes
     contract, seed_rows, purge=(invoices, user_broadcasts, broadcasts))), lambda fixture: {'owner': base_contract.load_source()['ids']['owner']})
 
 
+class CommitObserver:
+    """Reads the database when each Celery message reaches the broker.
+
+    Redis keyspace notifications for the queue key wake a thread that, for
+    every message it has not seen, reads (on its own connection, so only
+    committed rows) whether the invoice named by print_document_invoice's first
+    argument exists and the paid/type of the payments linked to it. The
+    observation is keyed by task id.
+    """
+
+    def __init__(self, broker):
+        self.broker, self.seen, self.lock = broker, {}, threading.Lock()
+        self.stop = threading.Event()
+        self.ready = threading.Event()
+        self.saved = broker.config_get('notify-keyspace-events').get('notify-keyspace-events', '')
+        broker.config_set('notify-keyspace-events', 'Kl')
+        self.thread = threading.Thread(target=self.loop, daemon=True)
+        self.thread.start()
+        contract.require(self.ready.wait(10), 'celery.observer-ready')
+
+    def loop(self):
+        from django.db import connection
+        pubsub = self.broker.pubsub()
+        try:
+            pubsub.subscribe(f'__keyspace@0__:{harness.CELERY_QUEUE}')
+            self.ready.set()
+            while not self.stop.is_set():
+                message = pubsub.get_message(ignore_subscribe_messages=True, timeout=0.2)
+                if message is not None:
+                    self.observe()
+        finally:
+            pubsub.close()
+            connection.close()
+
+    def observe(self):
+        import base64
+        from application.models import Invoice, Payment
+        for raw in self.broker.lrange(harness.CELERY_QUEUE, 0, -1):
+            envelope = json.loads(raw)
+            task = envelope['headers']['id']
+            with self.lock:
+                if task in self.seen:
+                    continue
+            body = json.loads(base64.b64decode(envelope['body']))
+            invoice = body[0][0] if body and body[0] else None
+            payments = list(Payment._base_manager.filter(invoice_id=invoice).values_list('paid', 'type')) if isinstance(invoice, str) else []
+            observed = {'invoice': isinstance(invoice, str) and Invoice._base_manager.filter(pk=invoice).exists(),
+                        'payments': [list(item) for item in payments]}
+            with self.lock:
+                self.seen.setdefault(task, observed)
+
+    def observation(self, task):
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            with self.lock:
+                if task in self.seen:
+                    return self.seen[task]
+            time.sleep(0.02)
+        return None
+
+    def close(self):
+        self.stop.set()
+        self.thread.join(timeout=10)
+        self.broker.config_set('notify-keyspace-events', self.saved)
+        contract.require(not self.thread.is_alive(), 'celery.observer-stopped')
+
+
 def default_category():
     from application.models import PaymentCategory
     row = PaymentCategory.objects.filter(name__iexact='entrate e proventi da attività tipiche').order_by('pk').first()
@@ -309,9 +378,11 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
         fixture['default_category'] = default_category()
         STATE['fixture'] = fixture
+        fixture['commit_observer'] = CommitObserver(fixture['celery_broker'])
         try:
             yield fixture
         finally:
+            fixture.pop('commit_observer').close()
             STATE.pop('fixture', None)
 
 
@@ -340,24 +411,22 @@ def recent(when):
 
 def side_channels(case, effect, fixture, context, binding, until):
     """The Celery messages and the notification of the case."""
-    import base64
     from django.conf import settings
     since = context['prepared']['started']
     values = {**binding, '$bypass': settings.DOCUMENT_BYPASS_TOKEN,
               '$authorization': None if case['actor'] == 'anonymous' else 'Bearer ' + fixture['tokens'][case['actor']]}
     specs = effect.get('celery', [])
     messages = harness.drain_celery(fixture)
-    if effect.get('rolled_back') and len(messages) == 1:
-        # The rolled-back invoice's id is only known from the published task.
-        body = json.loads(base64.b64decode(json.loads(messages[0])['body']))
-        values['$rolled_back_invoice'] = body[0][0] if body and body[0] else None
-        from application.models import Invoice
-        contract.require(isinstance(values['$rolled_back_invoice'], str) and UUID4.match(values['$rolled_back_invoice'])
-                         and not Invoice._base_manager.filter(pk=values['$rolled_back_invoice']).exists(), 'celery.rolled-back-invoice')
     contract.require(len(messages) == len(specs), 'celery.count')
     for index, (raw, spec) in enumerate(zip(messages, specs)):
         args = [values.get(item, item) if isinstance(item, str) else item for item in spec['args']]
         harness.check_celery_message(contract, raw, {**spec, 'args': args}, since=since, until=until, where=f':{index}')
+        if 'committed' in spec:
+            # What a worker reading the database sees when the message arrives.
+            seen = fixture['commit_observer'].observation(json.loads(raw)['headers']['id'])
+            committed = spec['committed']
+            contract.require(seen == {'invoice': committed['invoice'], 'payments': [[committed['paid'], committed['type']]]},
+                             f'celery.committed:{index}')
     if specs:
         key, member = harness.CELERY_BINDING
         contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
@@ -411,6 +480,12 @@ def check_state(case, effect, before, after, source, context, binding):
                 require(recent(stored), 'state.payment-date-now')
                 now_text[label] = audit_text(stored)
                 row = {**row, 'paid': True, 'payment_date': stored, 'invoice_id': bindings.get(spec['invoice'], spec['invoice'])}
+            if 'type' in spec:
+                row = {**row, 'type': spec['type']}
+            if 'category' in spec:
+                row = {**row, 'payment_category_id': bindings[spec['category']]}
+            if 'description' in spec:
+                row = {**row, 'description': spec['description']}
         expected_payments.append(row)
     actual_payments = [flat(row) for row in after[PAYMENT]]
     normalize = lambda rows: [{**row, 'payment_category_id': None if row['payment_category_id'] is None else str(row['payment_category_id']),
@@ -465,7 +540,8 @@ def check_state(case, effect, before, after, source, context, binding):
                         created_now.append(value)
                         items.append(value)
                     elif item == '$now':
-                        items.append(now_text.get(spec['label'], now_text.get('si:' + spec['label'], '<missing now>')))
+                        now_key = ('si:' if spec['model'] == 'invoicesuppliers' else '') + spec['label']
+                        items.append(now_text.get(now_key, '<missing now>'))
                     else:
                         items.append(bindings.get(item, item))
                 changes[name] = items

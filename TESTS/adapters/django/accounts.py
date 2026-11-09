@@ -78,7 +78,7 @@ def main():
                 from django.db import connections
                 from django.db.models import Q
                 from auditlog.context import disable_auditlog
-                from application.models import User, SportAssociation, Associate
+                from application.models import User, SportAssociation, Associate, Subscription
                 from instance.models import InstanceConfiguration
                 from auditlog.models import LogEntry
                 settings.MIGRATION_MODULES = {app.label: None for app in apps.get_app_configs()}
@@ -229,7 +229,8 @@ def main():
                     def snapshot():
                         result = {name: list(manager.order_by('pk').values()) for name, manager in (
                             ('users', User.original_objects), ('associations', SportAssociation.original_objects),
-                            ('members', Associate.objects.all_objects()), ('instance', InstanceConfiguration.objects),
+                            ('members', Associate.objects.all_objects()), ('subscriptions', Subscription._base_manager),
+                            ('instance', InstanceConfiguration.objects),
                             ('audit', LogEntry.objects))}
                         result.update({model._meta.label: list(model._base_manager.order_by('pk').values()) for model in scoped_models})
                         return result

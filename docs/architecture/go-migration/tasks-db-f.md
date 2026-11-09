@@ -78,13 +78,15 @@ the job.
 - Succeeded: `type='stripe'` with `save(update_fields=['type'])` (audited with only `type`,
   indexed `direct`) when it differs, then `mark_payment_as_paid(request, payment)` with a request
   whose user is `payment.user` and no `Authorization` header: the first supplier invoice is marked
-  paid now (audited); an unpaid payment without invoice gets the Stripe paid flow (fees, the
-  association's next number in the current balance year, description, invoice, payment save, the
-  course branch, `print_document_invoice.delay(<invoice>, None)` published before the commit,
-  `validate_broadcast` and the notification to `payment.user`); an unpaid payment that already has
-  an invoice is not saved. `payment.user.user_id` is then read for the log: a payment without
-  user raises (for the invoice flow already at the notification), the block is rolled back and
-  the published invoice task stays in the broker, as in Django.
+  paid now (audited); the payment is saved with `paid`, `payment_date` now and `type='stripe'`
+  (`update_fields`, audited with the changed fields: `type` was already saved); without invoice it
+  then gets the Stripe paid flow (fees, the association's next number in the current balance
+  year, description, invoice, the save recording it, the course branch, `validate_broadcast` and
+  the notification to `payment.user`) and `print_document_invoice.delay(<invoice>, None)` in
+  `transaction.on_commit` of the task's block (Go: after the commit, after the notification); a
+  payment that already has an invoice gets nothing else. `payment.user.user_id` is then read for
+  the log: a payment without user raises (for the invoice flow already at the notification), the
+  block is rolled back and nothing is published.
 - Notifications are delivered after the block commits (Redis list, `user_broadcasts` cache entry,
   Channels push mirrored on `assozeta:realtime:v1`).
 
@@ -170,14 +172,16 @@ the unordered queries identically.
 - **Stripe check** (`TESTS/adapters/go/stripe_paid_check_worker_process.py`): private PostgreSQL,
   Redis and the Stripe stub of tasks-db-d. Fourteen payments: succeeded subscription, other-income
   (already `stripe`) and meta-category payments, processing, 404, empty id, card error, empty
-  intent, intent without status, a payment without user (rolled back after publishing its invoice
-  task), a payment that already has an invoice and a supplier invoice, paid, deleted and without
+  intent, intent without status, a payment without user (rolled back, nothing published), a
+  payment that already has an invoice and a supplier invoice (saved paid), paid, deleted and without
   intent. The one-thread Django run must produce invoices 8, 9, 10 in `payment_id` order; Go must
   match state, Stripe requests (headers, telemetry chaining), the `print_document_invoice` bodies in
   order, the Redis store and cache entries and the mirrored pushes. Six groups: default owner,
-  native parity, a later run (only the supplier invoice's date and the rolled-back publication
-  repeat), unconfigured credentials, invalid envelopes, an unported fee refused. RED: pending job
-  after the oracles. GREEN 6/6 (`paid-green-r2`). Course, installment and carnet payments are
+  native parity, a later run (nothing changes or is published), unconfigured credentials, invalid envelopes, an unported fee refused. RED: pending job
+  after the oracles. GREEN 6/6 (`paid-green-r2`). Re-verified after main 6b20715d
+  (payments-impersonation-reverify): authored checks pin the published invoices (8, 9, 10; none for
+  the rolled-back payment), the paid set (0, 7, 9, 10, 12) and each marked payment's audit order
+  (type save, update_fields save, invoice save); RED (Go state differs), GREEN 6/6. Course, installment and carnet payments are
   not seeded here; that branch of the shared paid flow is covered by the stripe-routes family.
 - **Orphan certificates** (`TESTS/adapters/go/orphan_medical_worker_process.py`): private PostgreSQL
   and pinned MinIO. Seed: orphans with stored, missing, `..`-normalized, filepath-ignored and
