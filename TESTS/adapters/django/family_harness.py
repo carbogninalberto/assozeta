@@ -154,3 +154,213 @@ def check_audit_event(contract, case, event, indexes, *, before, ids, model, key
 def pairs(rows, left, right):
     """{(left, right)} of M2M through rows, as strings."""
     return {(str(scalar(row[left])), str(scalar(row[right]))) for row in rows}
+
+
+# ---------------------------------------------------------------------------
+# Celery publishes (docs/architecture/go-migration/celery-producer.md)
+# ---------------------------------------------------------------------------
+
+CELERY_QUEUE = 'celery'
+CELERY_BINDING = ('_kombu.binding.' + CELERY_QUEUE, CELERY_QUEUE + '\x06\x16\x06\x16' + CELERY_QUEUE)
+CELERY_HEADERS = ('lang', 'task', 'id', 'shadow', 'eta', 'expires', 'group', 'group_index', 'retries', 'timelimit', 'root_id',
+                  'parent_id', 'argsrepr', 'kwargsrepr', 'origin', 'ignore_result', 'replaced_task_nesting', 'stamped_headers', 'stamps',
+                  'assozeta_published_at')
+CELERY_PROPERTIES = ('correlation_id', 'reply_to', 'delivery_mode', 'delivery_info', 'priority', 'body_encoding', 'delivery_tag')
+
+
+def _reset_celery_app(app):
+    """Drop the app's broker pools; kombu's global pool registry is keyed by
+    connection, so it is reset as a whole (a closed pool would be reused)."""
+    from kombu import pools
+    pools.reset()
+    app._pool = None
+    app.__dict__.pop('amqp', None)
+
+
+def with_celery_broker(fixture_context):
+    """Wrap a family fixture_context so Django publishes Celery tasks like production.
+
+    The test settings use the in-memory broker; for the fixture's lifetime the
+    Django Celery app instead publishes to the run's private Redis on DB 0
+    (CELERY_BROKER_URL has no database number) with the production queue
+    settings (default queue 'celery', no routes) - the same broker the Go
+    server's producer uses. fixture['celery_broker'] is a DB 0 client.
+    """
+    @contextmanager
+    def wrapped(apps, private_work, raw, *, cleanup_receipt=None):
+        import redis
+        from core.celery import app
+        options = raw.connection_pool.connection_kwargs
+        broker = redis.Redis(host=options['host'], port=options['port'], db=0, password=options['password'],
+                             socket_timeout=5, socket_connect_timeout=5)
+        # The app reads Django settings with namespace='CELERY': override the prefixed keys.
+        keys = ('CELERY_BROKER_URL', 'CELERY_TASK_DEFAULT_QUEUE', 'CELERY_TASK_ROUTES')
+        saved = {key: app.conf[key] for key in keys}
+        url = f"redis://default:{options['password']}@{options['host']}:{options['port']}"
+        try:
+            broker.delete(CELERY_QUEUE)
+            app.conf.update(dict(zip(keys, (url, CELERY_QUEUE, None))))
+            assert app.conf.broker_url == url and app.conf.task_default_queue == CELERY_QUEUE, 'celery.broker-override'
+            _reset_celery_app(app)
+            with fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
+                fixture['celery_broker'] = broker
+                yield fixture
+                leftover = broker.llen(CELERY_QUEUE)
+                assert leftover == 0, 'celery.unchecked-messages'
+        finally:
+            app.conf.update(saved)
+            _reset_celery_app(app)
+            broker.delete(CELERY_QUEUE)
+            broker.close()
+
+    return wrapped
+
+
+def drain_celery(fixture):
+    """The raw messages on the broker queue, oldest first; the queue is emptied."""
+    broker = fixture['celery_broker']
+    with broker.pipeline(transaction=True) as pipe:
+        pipe.lrange(CELERY_QUEUE, 0, -1)
+        pipe.delete(CELERY_QUEUE)
+        raw, _ = pipe.execute()
+    return [item.decode('utf-8') for item in reversed(raw)]
+
+
+def _celery_value(value):
+    """Authored kwargs values: {'uuid': '<id>'} is a UUID; lists and pairs lists nest."""
+    import uuid
+    if isinstance(value, dict) and set(value) == {'uuid'}:
+        return uuid.UUID(value['uuid'])
+    if isinstance(value, list):
+        return [_celery_value(item) for item in value]
+    return value
+
+
+def check_celery_message(contract, raw, spec, *, since, until, where=''):
+    """One Redis payload against an authored task: the exact protocol 2 envelope
+    (key order, constants, argsrepr/kwargsrepr, base64 JSON body bytes); only the
+    task id, delivery tag, reply_to, origin and publish stamp vary, by shape."""
+    import base64
+    import json
+    import re
+    from celery.utils.saferepr import saferepr
+    from kombu.utils.json import dumps, loads
+    uuid_shape = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\Z')
+    ordered = json.loads(raw, object_pairs_hook=lambda pairs: pairs)
+    top = dict(ordered)
+    contract.require([key for key, _ in ordered] == ['body', 'content-encoding', 'content-type', 'headers', 'properties'], 'celery.envelope' + where)
+    contract.require(top['content-encoding'] == 'utf-8' and top['content-type'] == 'application/json', 'celery.content' + where)
+    contract.require([key for key, _ in top['headers']] == list(CELERY_HEADERS), 'celery.header-order' + where)
+    queue = spec.get('queue', CELERY_QUEUE)
+    properties_order = list(CELERY_PROPERTIES)
+    if spec.get('expires') is not None:
+        properties_order.insert(3, 'expiration')
+    contract.require([key for key, _ in top['properties']] == properties_order, 'celery.property-order' + where)
+    message = json.loads(raw)
+    headers, properties = message['headers'], message['properties']
+    args = tuple(_celery_value(item) for item in spec['args'])
+    kwargs = {key: _celery_value(item) for key, item in spec['kwargs']}
+    task_id = headers['id']
+    contract.require(isinstance(task_id, str) and uuid_shape.match(task_id) and task_id[14] == '4', 'celery.id' + where)
+    expected_headers = {
+        'lang': 'py', 'task': spec['task'], 'id': task_id, 'shadow': None, 'eta': spec.get('eta'), 'expires': spec.get('expires'),
+        'group': None, 'group_index': None, 'retries': 0, 'timelimit': [None, None], 'root_id': task_id, 'parent_id': None,
+        'argsrepr': saferepr(args, 1024), 'kwargsrepr': saferepr(kwargs, 1024), 'origin': headers['origin'], 'ignore_result': False,
+        'replaced_task_nesting': 0, 'stamped_headers': None, 'stamps': {}, 'assozeta_published_at': headers['assozeta_published_at']}
+    contract.require(headers == expected_headers, 'celery.headers' + where)
+    contract.require(re.fullmatch(r'gen\d+@\S+', headers['origin']) is not None, 'celery.origin' + where)
+    stamp = headers['assozeta_published_at']
+    contract.require(type(stamp) is float and since - 1 <= stamp <= until + 1, 'celery.published-at' + where)
+    expiration = {'expiration': properties.get('expiration')} if 'expiration' in properties_order else {}
+    contract.require(all(str(value).isdigit() for value in expiration.values()), 'celery.expiration' + where)
+    contract.require(properties == {'correlation_id': task_id, 'reply_to': properties['reply_to'], 'delivery_mode': 2, **expiration,
+                                    'delivery_info': {'exchange': '', 'routing_key': queue}, 'priority': 0, 'body_encoding': 'base64',
+                                    'delivery_tag': properties['delivery_tag']}, 'celery.properties' + where)
+    contract.require(uuid_shape.match(properties['reply_to']) is not None and uuid_shape.match(properties['delivery_tag']) is not None
+                     and properties['delivery_tag'] != task_id, 'celery.property-shapes' + where)
+    body = base64.b64decode(message['body'], validate=True)
+    embed = {'callbacks': None, 'errbacks': None, 'chain': None, 'chord': None}
+    contract.require(body == dumps([list(args), kwargs, embed]).encode('utf-8'), 'celery.body' + where)
+    contract.require(loads(body) == [list(args), kwargs, embed], 'celery.body-decoded' + where)
+    return message
+
+
+def celery_published(contract, fixture, expected, *, since, until):
+    """Effect check: the case published exactly `expected` (authored task specs,
+    in order) to the default queue, and the queue's kombu binding is declared."""
+    messages = drain_celery(fixture)
+    contract.require(len(messages) == len(expected), 'celery.count')
+    checked = [check_celery_message(contract, raw, spec, since=since, until=until, where=f':{index}')
+               for index, (raw, spec) in enumerate(zip(messages, expected))]
+    if expected:
+        key, member = CELERY_BINDING
+        contract.require({m.decode() for m in fixture['celery_broker'].smembers(key)} == {member}, 'celery.binding')
+        fixture.setdefault('celery_accepted', []).extend(messages)
+    return checked
+
+
+def celery_worker_accepts(contract, fixture, payload, kwargs, *, restore_owner, association, timeout=30):
+    """Execute one published message with a real worker of the Django Celery app.
+
+    The raw payload is pushed back on the queue and consumed by
+    celery.contrib.testing.worker (solo pool, the app's task registry,
+    CoordinatedTask and the django-db result backend): the task must start
+    with exactly `kwargs` (decoded values, e.g. UUIDs) and succeed. Then a
+    data restore completed after the message's assozeta_published_at stamp is
+    recorded and the same message must be refused by CoordinatedTask
+    (StaleDataTask). Result and restore rows and the worker's broker keys are
+    removed afterwards.
+    """
+    import json
+    import time
+    from auditlog.context import disable_auditlog
+    from celery.contrib.testing.worker import start_worker
+    from celery.signals import task_prerun
+    from core.celery import app
+    from django.utils import timezone
+    from django_celery_results.models import TaskResult
+    from instance.models import DataRestore
+    broker = fixture['celery_broker']
+    message = json.loads(payload)
+    task_id, name = message['headers']['id'], message['headers']['task']
+    started = []
+
+    def prerun(sender=None, task_id=None, task=None, args=None, kwargs=None, **_):
+        started.append((task_id, task.name, tuple(args or ()), dict(kwargs or {})))
+
+    def wait(status):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            row = TaskResult.objects.filter(task_id=task_id, status=status).first()
+            if row is not None:
+                return row
+            time.sleep(0.1)
+        contract.require(False, 'celery.worker-timeout:' + status)
+
+    restore = None
+    task_prerun.connect(prerun, weak=False)
+    try:
+        with start_worker(app, pool='solo', concurrency=1, perform_ping_check=False, loglevel='WARNING', shutdown_timeout=30):
+            broker.lpush(CELERY_QUEUE, payload)
+            wait('SUCCESS')
+            contract.require(started == [(task_id, name, (), kwargs)], 'celery.worker-arguments')
+            with disable_auditlog():
+                restore = DataRestore(owner_id=restore_owner, association_id=association, state='completed', completed_at=timezone.now(),
+                                      sha256='0' * 64)
+                contract.require(restore.completed_at.timestamp() > message['headers']['assozeta_published_at'], 'celery.restore-after-publish')
+                DataRestore._base_manager.bulk_create([restore])
+            broker.lpush(CELERY_QUEUE, payload)
+            refused = wait('FAILURE')
+            contract.require('StaleDataTask' in (refused.result or ''), 'celery.worker-restore-fence')
+    finally:
+        task_prerun.disconnect(prerun)
+        with disable_auditlog():
+            TaskResult.objects.filter(task_id=task_id).delete()
+            if restore is not None:
+                DataRestore._base_manager.filter(pk=restore.pk).delete()
+        key, _ = CELERY_BINDING
+        for leftover in broker.keys('*'):
+            if leftover.decode() != key:
+                broker.delete(leftover)
+    contract.require(broker.llen(CELERY_QUEUE) == 0, 'celery.worker-drained')
+    return {'task_id': task_id, 'executed': True, 'restore_fence': True}

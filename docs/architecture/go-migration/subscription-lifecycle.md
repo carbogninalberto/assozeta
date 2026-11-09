@@ -4,7 +4,7 @@
 (`subscription_reject`, `subscription_archive` and `subscription_delete` in `BE/application/views/subscriptions_views.py`, the last
 through `SubscriptionService.delete_subscription`) are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/subscription_lifecycle.go`).
 Registry `association.members.update`, `association.members.archive.update` and `association.members.delete`. Django remains the
-execution owner. `subscription/<uid>/approve` is not ported (see below).
+execution owner. `subscription/<uid>/approve` shares the prologue and is documented in [subscription-approve](subscription-approve.md).
 
 ## Shared behaviour
 
@@ -68,8 +68,6 @@ table's physical order, which is the order Django iterates them; collector sets 
 
 ## Not ported (refused with a 500 before any write)
 
-- `subscription/<uid>/approve`: its success path always dispatches the `check_workflows_trigger` Celery task (`subscription_approved`
-  signal); not routed in Go.
 - Archive: an unpaid payment with an invoice on a course subscription, installment or the subscription (Django deletes the invoice and then
   re-saves the stale reference); such a payment hidden from `Payment.objects` (soft-deleted or outside `X-Group-Id`, whose save audits
   every field against None); a payment without an association; a `Payment.save()` that raises (account transfers without a description);

@@ -1,0 +1,1450 @@
+{
+ "matrix_version": 1,
+ "scope": "Subscription approve authored sequence with audit and Celery publish effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "associates": {
+  "mario": {
+   "id": "a1000000-0000-4000-8000-000000640001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Mario",
+   "last": "Fixture"
+  },
+  "luisa": {
+   "id": "a1000000-0000-4000-8000-000000640002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Luisa",
+   "last": "Fixture"
+  },
+  "gino": {
+   "id": "a1000000-0000-4000-8000-000000640003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Gino",
+   "last": "Fixture"
+  },
+  "paolo": {
+   "id": "a1000000-0000-4000-8000-000000640004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Paolo",
+   "last": "Fixture"
+  },
+  "carla": {
+   "id": "a1000000-0000-4000-8000-000000640005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Carla",
+   "last": "Fixture"
+  },
+  "anna": {
+   "id": "a1000000-0000-4000-8000-000000640006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Anna",
+   "last": "Fixture"
+  },
+  "dario": {
+   "id": "a1000000-0000-4000-8000-000000640007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Dario",
+   "last": "Fixture"
+  },
+  "elena": {
+   "id": "a1000000-0000-4000-8000-000000640008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Elena",
+   "last": "Fixture"
+  },
+  "franco": {
+   "id": "a1000000-0000-4000-8000-000000640009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Franco",
+   "last": "Fixture"
+  },
+  "hans": {
+   "id": "a1000000-0000-4000-8000-000000640010",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "first": "Hans",
+   "last": "Muller"
+  }
+ },
+ "subscriptions": {
+  "pending": {
+   "id": "a1000000-0000-4000-8000-000000640011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "dated": {
+   "id": "a1000000-0000-4000-8000-000000640012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "franco",
+   "status": 1,
+   "acceptance": "2026-01-15",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "accepted": {
+   "id": "a1000000-0000-4000-8000-000000640013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "anna",
+   "status": 4,
+   "acceptance": "2026-02-01",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "undated": {
+   "id": "a1000000-0000-4000-8000-000000640014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "anna",
+   "status": 1,
+   "acceptance": null,
+   "start": null,
+   "end": null,
+   "created": "2026-03-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "rejected": {
+   "id": "a1000000-0000-4000-8000-000000640015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "anna",
+   "status": 3,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000640016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "carla",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": "own_group",
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "flagged": {
+   "id": "a1000000-0000-4000-8000-000000640017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "dario",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": true,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "admin": {
+   "id": "a1000000-0000-4000-8000-000000640018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000640019",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "associate": "hans",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "sig_target": {
+   "id": "a1000000-0000-4000-8000-000000640020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "gino",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-04-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "sig_old": {
+   "id": "a1000000-0000-4000-8000-000000640021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "gino",
+   "status": 4,
+   "acceptance": "2025-01-05",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-01-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": "signatures/firma-vecchia.png",
+   "signature_url": null
+  },
+  "sig_new": {
+   "id": "a1000000-0000-4000-8000-000000640022",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "gino",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-06-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": "https://storage.example.test/signatures/firma-nuova.png"
+  },
+  "sig_rejected": {
+   "id": "a1000000-0000-4000-8000-000000640023",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "gino",
+   "status": 3,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-12-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": "signatures/firma-respinta.png",
+   "signature_url": null
+  },
+  "blank_target": {
+   "id": "a1000000-0000-4000-8000-000000640024",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "paolo",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-04-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "blank_new": {
+   "id": "a1000000-0000-4000-8000-000000640025",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "paolo",
+   "status": 4,
+   "acceptance": "2025-07-01",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-07-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": "",
+   "signature_url": null
+  },
+  "blank_old": {
+   "id": "a1000000-0000-4000-8000-000000640026",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "paolo",
+   "status": 4,
+   "acceptance": "2025-02-01",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-02-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": "signatures/firma-paolo.png",
+   "signature_url": null
+  },
+  "own_signed": {
+   "id": "a1000000-0000-4000-8000-000000640027",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "elena",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-04-02T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": "signatures/firma-propria.png",
+   "signature_url": null
+  },
+  "own_other": {
+   "id": "a1000000-0000-4000-8000-000000640028",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "elena",
+   "status": 4,
+   "acceptance": "2025-01-01",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-01-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": "https://storage.example.test/signatures/firma-nuova.png"
+  },
+  "group_target": {
+   "id": "a1000000-0000-4000-8000-000000640029",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "carla",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-04-01T09:00:00Z",
+   "group": "own_group",
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "group_source": {
+   "id": "a1000000-0000-4000-8000-000000640030",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "carla",
+   "status": 4,
+   "acceptance": "2025-03-01",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-03-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": "signatures/firma-carla.png",
+   "signature_url": null
+  },
+  "none_target": {
+   "id": "a1000000-0000-4000-8000-000000640031",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": null,
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-04-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "none_source": {
+   "id": "a1000000-0000-4000-8000-000000640032",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "associate": null,
+   "status": 4,
+   "acceptance": "2025-04-01",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-04-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": "signatures/firma-senza-socio.png",
+   "signature_url": "https://storage.example.test/signatures/firma-nuova.png"
+  },
+  "deleted_target": {
+   "id": "a1000000-0000-4000-8000-000000640033",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "luisa",
+   "status": 2,
+   "acceptance": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-04-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "signature_key": null,
+   "signature_url": null
+  },
+  "deleted_source": {
+   "id": "a1000000-0000-4000-8000-000000640034",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "luisa",
+   "status": 4,
+   "acceptance": "2025-05-01",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2025-05-01T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": true,
+   "signature_key": "signatures/firma-luisa.png",
+   "signature_url": null
+  }
+ },
+ "cases": [
+  {
+   "name": "subscription-approve-pending",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "pending",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640011"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-again-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User cannot change the status of the subscription."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-replaces-acceptance",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640012/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "dated",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "1",
+      "4"
+     ],
+     "acceptance_date": [
+      "2026-01-15",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640012"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-accepted-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640013/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User cannot change the status of the subscription."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-rejected",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640015/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "rejected",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "3",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640015"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-fills-dates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640014/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "undated",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today",
+     "start_date": "2026-01-01",
+     "end_date": "2026-12-31"
+    },
+    "audit": {
+     "status_flag": [
+      "1",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ],
+     "start_date": [
+      "None",
+      "2026-01-01"
+     ],
+     "end_date": [
+      "None",
+      "2026-12-31"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640014"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-other-group-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640016/approve",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "msg": "Subscription not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-group-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640016/approve",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "subscription": "grouped",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640016"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-soft-deleted-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640017/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "flagged",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640017"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640018/approve",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "admin",
+    "subscription": "admin",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640018"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-foreign-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640019/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000649999/approve",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Subscription not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/abc/approve",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-copies-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640020/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "sig_target",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today",
+     "signature_url": "https://storage.example.test/signatures/firma-nuova.png"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ],
+     "signature_url": [
+      "None",
+      "https://storage.example.test/signatures/firma-nuova.png"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640020"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-blank-signature-not-copied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640024/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "blank_target",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640024"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-own-signature-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640027/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "own_signed",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640027"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-group-scoped-signature",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640029/approve",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "subscription": "group_target",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640029"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-without-associate-signature",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640031/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "none_target",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today",
+     "signature_storage_key": "signatures/firma-senza-socio.png",
+     "signature_url": "https://storage.example.test/signatures/firma-nuova.png"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ],
+     "signature_storage_key": [
+      "None",
+      "signatures/firma-senza-socio.png"
+     ],
+     "signature_url": [
+      "None",
+      "https://storage.example.test/signatures/firma-nuova.png"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640031"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-signature-source-soft-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640033/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription approved."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": "deleted_target",
+    "columns": {
+     "status_flag": 4,
+     "acceptance_date": "$today",
+     "signature_storage_key": "signatures/firma-luisa.png"
+    },
+    "audit": {
+     "status_flag": [
+      "2",
+      "4"
+     ],
+     "acceptance_date": [
+      "None",
+      "$now"
+     ],
+     "signature_storage_key": [
+      "None",
+      "signatures/firma-luisa.png"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "subscription_approved"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000640033"
+        }
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-approve-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-approve-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000640011/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Approve",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  }
+ ]
+}
