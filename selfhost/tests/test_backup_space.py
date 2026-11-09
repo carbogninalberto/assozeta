@@ -246,6 +246,43 @@ df() {
         # The oldest automatic archive went; the newest always stays.
         self.assertEqual(len(self.remaining()), 1)
 
+    # restore_prod itself needs Docker: record how it is called instead.
+    RESTORE = """
+restore_prod() { printf 'restore_prod %s safety=%s\\n' "$*" "${restore_safety_stopped:-}"; }
+prod_app_services_running() { return 0; }
+"""
+
+    def test_restore_takes_a_pre_restore_backup_first_and_keeps_its_source(self):
+        names = self.archives(['scheduled'] * 3)
+        source = self.backups / names[0]
+        result = self.run_cli(self.RESTORE + f'restore_command_prod "{source}" --yes', ASSOZETA_BACKUP_KEEP='1')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        lines = [line for line in result.stdout.splitlines() if line.startswith(('@@', 'restore_prod'))]
+        safety = sorted(set(self.remaining()) - set(names))
+        self.assertEqual(len(safety), 1)
+        self.assertEqual(lines, ['@@ASSOZETA_STAGE checking', '@@ASSOZETA_STAGE backup', f'@@ASSOZETA_BACKUP {safety[0]}',
+                                 '@@ASSOZETA_STAGE restoring', f'restore_prod {source} --yes safety=true'])
+        self.assertTrue((self.backups / (safety[0] + '.meta')).read_text().startswith('origin=pre-restore\n'))
+        # No rotation right before the restore: the archive to restore stays.
+        self.assertEqual(sorted(set(self.remaining()) & set(names)), names)
+
+    def test_restore_space_check_never_removes_the_archive_to_restore(self):
+        names = self.archives(['scheduled', 'scheduled', 'manual'])
+        result = self.run_cli(self.RESTORE + self.SPACE + f'destination="{self.backups}"; backup_protected={names[0]}; backup_free_space {50 * 1024 * 1024}',
+                              TEST_BASE_KIB='0', TEST_EACH_KIB=str(1024 * 1024), TEST_INITIAL='3')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.remaining(), [names[0], names[2]])
+
+    def test_restore_without_backup_or_archive(self):
+        names = self.archives(['manual'])
+        result = self.run_cli(self.RESTORE + f'restore_command_prod "{self.backups / names[0]}" --yes --no-backup')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn('@@ASSOZETA_STAGE backup', result.stdout)
+        self.assertEqual(self.remaining(), names)
+        self.assertNotEqual(self.run_cli(self.RESTORE + 'restore_command_prod --yes').returncode, 0)
+        self.assertNotEqual(self.run_cli(self.RESTORE + f'restore_command_prod "{self.root}/missing.tar.gz" --yes').returncode, 0)
+        self.assertNotEqual(self.run_cli(self.RESTORE + f'restore_command_prod "{self.backups / names[0]}" --force').returncode, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

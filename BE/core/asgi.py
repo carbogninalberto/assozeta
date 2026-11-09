@@ -19,12 +19,14 @@ django_asgi_app = get_asgi_application()
 
 # Import after Django setup
 from notifications.middleware import JWTAuthMiddlewareStack
+from instance.upload_stream import stream_uploads
 import application.routing
 import application.chat.routing
 import notifications.routing
 
 application = ProtocolTypeRouter({
-    "http": django_asgi_app,
+    # The backup upload is streamed to the runner instead of buffered.
+    "http": stream_uploads(django_asgi_app),
     "websocket": JWTAuthMiddlewareStack(
         URLRouter(
             application.routing.websocket_urlpatterns +

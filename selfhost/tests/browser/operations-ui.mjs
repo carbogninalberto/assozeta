@@ -74,7 +74,7 @@ try {
         let schedule = {enabled: false, frequency: 'daily', time: '03:00', weekday: 0, next_run: null, last_run: null};
         let retention = {automatic: 3};
         const backupOverview = () => ({available: true, retention, schedule, archives: backupArchives,
-            actions: {create: true, keep: true, delete: true},
+            actions: {create: true, keep: true, delete: true, restore: true, upload: true},
             disk: {total: 40 * GIB, used: 33 * GIB, free: 7 * GIB, backups: 8 * GIB, database: GIB, objects: 3 * GIB},
             next_backup: {estimated: 4 * GIB, required: 9 * GIB, fits: false}});
         const backupPasswords = [];
@@ -425,6 +425,69 @@ try {
         runnerHistory = [{id: 'fixture-backup', kind: 'backup', stage: 'completed', status: 'succeeded', target_version: '1.0.3', created_at: new Date().toISOString(), updated_at: new Date().toISOString()}, ...runnerHistory];
         await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Backup completato', {timeout: 10000});
 
+        // Restore and upload: typed confirmation, banner progress, upload progress and the new row.
+        {
+            const restoreCalls = [];
+            const uploaded = 'assozeta-20261109T100000Z.tar.gz';
+            await page.route(/\/api\/instance\/admin\/backups\/(upload|assozeta-[^/]+\/restore)$/, async route => {
+                const request = route.request();
+                if (request.url().endsWith('/upload')) {
+                    const body = request.postDataBuffer();
+                    restoreCalls.push(`upload:${body.length}:${request.headers()['content-type']}`);
+                    const archive = {name: uploaded, size: body.length, created_at: hoursAgo(48), version: '1.0.2', origin: 'uploaded', keep: false, last_upgrade: false, pending_upgrade: false, location: 'local'};
+                    backupArchives = [archive, ...backupArchives];
+                    await route.fulfill({status: 201, contentType: 'application/json', body: JSON.stringify({archive})});
+                    return;
+                }
+                const input = request.postDataJSON();
+                restoreCalls.push(`restore:${decodeURIComponent(request.url().split('/').at(-2))}:${input.password}:${input.confirm}`);
+                runnerActive = {id: 'fixture-restore', kind: 'restore', stage: 'backup', status: 'running', target_version: '1.0.3', created_at: new Date().toISOString()};
+                await route.fulfill({status: 202, contentType: 'application/json', body: JSON.stringify({operation: runnerActive})});
+            });
+            await page.getByRole('button', {name: 'Altre azioni backup'}).click();
+            await page.getByRole('menuitem', {name: 'Carica backup'}).click();
+            const uploadDialog = page.getByRole('dialog', {name: 'Carica backup'});
+            const picker = uploadDialog.getByLabel('File di backup (.tar.gz)');
+            await picker.setInputFiles({name: 'export.zip', mimeType: 'application/zip', buffer: Buffer.alloc(16)});
+            await expect(uploadDialog.getByRole('alert')).toHaveText('Scegli un file di backup .tar.gz.');
+            await expect(uploadDialog.getByRole('button', {name: 'Carica', exact: true})).toBeDisabled();
+            await picker.setInputFiles({name: 'assozeta-20261107T020000Z.tar.gz', mimeType: 'application/gzip', buffer: Buffer.alloc(256 * 1024, 1)});
+            await expect(uploadDialog.getByText('Dimensione 256 KB')).toBeVisible();
+            await noOverflow('backup-upload');
+            await shot('backup-upload');
+            await uploadDialog.getByRole('button', {name: 'Carica', exact: true}).click();
+            await expect(uploadDialog).toHaveCount(0);
+            await expect(backupRows.nth(0)).toContainText('Caricato');
+            assert.deepEqual(restoreCalls, [`upload:${256 * 1024}:application/gzip`]);
+
+            await backupRows.nth(0).getByRole('button', {name: /^Azioni backup del/}).click();
+            await page.getByRole('menuitem', {name: 'Ripristina', exact: true}).click();
+            const restore = page.getByRole('dialog', {name: 'Ripristinare questo backup?'});
+            await expect(restore.getByRole('button', {name: 'Annulla'})).toBeFocused();
+            await expect(restore).toContainText('Prima viene creato un backup di sicurezza.');
+            await expect(restore).toContainText('v1.0.2');
+            const confirmRestore = restore.getByRole('button', {name: 'Ripristina', exact: true});
+            await expect(confirmRestore).toBeDisabled();
+            await restore.getByLabel('Conferma la tua password').fill('fixture-secret');
+            await restore.getByLabel('Scrivi RIPRISTINA').fill('ripristina');
+            await expect(confirmRestore).toBeDisabled();
+            await restore.getByLabel('Scrivi RIPRISTINA').fill('RIPRISTINA');
+            await expect(confirmRestore).toBeEnabled();
+            await expect(confirmRestore).toHaveClass(/btn-danger/);
+            await shot('backup-restore');
+            await confirmRestore.click();
+            await expect(restore).toHaveCount(0);
+            await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Ripristino in corso');
+            await expect(page.getByText('Ripristino in corso…')).toBeVisible();
+            await noOverflow('backup-restore-running');
+            await shot('backup-restore-running');
+            assert.equal(restoreCalls[1], `restore:${uploaded}:fixture-secret:RIPRISTINA`);
+            runnerActive = null;
+            runnerHistory = [{id: 'fixture-restore', kind: 'restore', stage: 'completed', status: 'succeeded', target_version: '1.0.3', created_at: new Date().toISOString(), updated_at: new Date().toISOString()}, ...runnerHistory];
+            await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Ripristino completato', {timeout: 20000});
+            runnerHistory = runnerHistory.filter(item => item.id !== 'fixture-restore');
+        }
+
         // A recovery requirement is shown on every tab.
         runnerHistory = [{...runnerHistory[1], stage: 'recovery_required', recovery: 'Ripristina il backup verificato.'}];
         await page.reload();
@@ -436,7 +499,7 @@ try {
             await noOverflow(label);
         }
         assert.deepEqual(errors, []);
-        reports.push({viewport, passed: true, scope: 'Real Svelte components, fixture API; tab keyboard navigation, status tiles and next step, saves/reloads, failed saves, SMTP actions, dialogs and focus, failed diagnostics, integration environment values, masked secrets, explicit resets, backup download/keep/delete/schedule/create, update review, history, recovery visibility, overflow.'});
+        reports.push({viewport, passed: true, scope: 'Real Svelte components, fixture API; tab keyboard navigation, status tiles and next step, saves/reloads, failed saves, SMTP actions, dialogs and focus, failed diagnostics, integration environment values, masked secrets, explicit resets, backup download/keep/delete/schedule/create/upload/restore, update review, history, recovery visibility, overflow.'});
         await context.close();
     }
     await fs.writeFile(path.join(output, 'report.json'), JSON.stringify(reports, null, 2));

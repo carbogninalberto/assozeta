@@ -99,3 +99,37 @@ def call_runner(method, path, payload=None):
         raise UpdaterUnavailable('Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.') from exc
     finally:
         connection.close()
+
+
+def send_runner_stream(path, chunks, length):
+    """POST a large body to the runner chunk by chunk; return its JSON reply.
+
+    The runner may refuse before reading everything (no space, bad archive):
+    its reply is still read after the write fails.
+    """
+    directory = _runner_directory()
+    connection = UnixConnection(directory / 'runner.sock')
+    connection.timeout = 300
+    try:
+        token = (directory / 'token').read_text().strip()
+        if not token:
+            raise OSError('Missing runner credentials')
+        connection.putrequest('POST', path)
+        connection.putheader('Authorization', f'Bearer {token}')
+        connection.putheader('Content-Type', 'application/gzip')
+        connection.putheader('Content-Length', str(length))
+        connection.endheaders()
+        try:
+            for chunk in chunks:
+                connection.send(chunk)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        response = connection.getresponse()
+        body = json.loads(response.read())
+        if response.status >= 400:
+            raise UpdaterRejected(body.get('error', 'Caricamento non riuscito.'), response.status)
+        return body
+    except (OSError, ValueError, http.client.HTTPException) as exc:
+        raise UpdaterUnavailable('Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.') from exc
+    finally:
+        connection.close()

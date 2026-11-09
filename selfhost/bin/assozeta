@@ -50,7 +50,8 @@ Production commands:
   logs [SERVICE]
   sync-manual               Install the published manual for the configured release.
   backup [--scheduled] [DIRECTORY]
-  restore ARCHIVE [--yes]
+  restore ARCHIVE [--yes] [--no-backup]
+                            Back up the current data first (unless --no-backup), then restore.
   recover-upgrade ARCHIVE [--yes]
   reconcile-updates
   upgrade VERSION
@@ -1360,6 +1361,7 @@ backup_free_space() {
             [ "$free_available" -lt "$free_needed_kib" ] || return 0
             [ "$candidate" != "$free_newest" ] || continue
             [ "$candidate" != "$free_last_upgrade" ] || continue
+            [ "$candidate" != "${backup_protected:-}" ] || continue
             [ "$(backup_meta_value keep "$destination/$candidate")" != true ] || continue
             if [ -f "$free_transaction" ] && grep -qF "$candidate" "$free_transaction"; then
                 continue
@@ -1547,8 +1549,12 @@ EOF
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
     log "backup created: $archive"
     backup_write_meta "$archive" "$backup_origin"
-    # A pre-upgrade backup rotates only once the upgrade succeeds.
-    [ "$backup_origin" = pre-upgrade ] || backup_prune
+    # A pre-upgrade backup rotates only once the upgrade succeeds; a
+    # pre-restore one must not remove the archive about to be restored.
+    case "$backup_origin" in
+        pre-upgrade|pre-restore) ;;
+        *) backup_prune ;;
+    esac
     log "the archive contains secrets; copy it off-host and protect it"
 }
 
@@ -1588,6 +1594,11 @@ restore_prod() {
     restore_live_modified=false
     restore_app_was_running=false
     restore_app_stopped=false
+    if [ "${restore_safety_stopped:-false}" = true ]; then
+        # The safety backup left the services stopped: restart them on failure.
+        restore_app_was_running=true
+        restore_app_stopped=true
+    fi
     restore_cleanup_done=false
     trap 'restore_on_exit' EXIT
     trap 'exit 129' HUP
@@ -1698,13 +1709,52 @@ restore_prod() {
         redis redis-cli FLUSHALL >/dev/null
 
     prod_compose --profile tools run --rm --no-deps migrate
-    start_prod_app_services "${recover_upgrade_active:-false}"
+    printf '%s\n' '@@ASSOZETA_STAGE restarting'
+    start_prod_app_services "${recover_upgrade_active:-false}" true
     require_public_readiness
     cleanup_status=0
     restore_cleanup 0 || cleanup_status=$?
     [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
     status_prod
     log "restore completed"
+}
+
+# The restore command: unless --no-backup, the current data are backed up
+# first (origin pre-restore) and the services stay stopped until the restore
+# ends, so the safety backup holds exactly the data that get replaced.
+restore_command_prod() {
+    restore_source=
+    restore_assume_yes=false
+    restore_take_backup=true
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --yes) restore_assume_yes=true ;;
+            --no-backup) restore_take_backup=false ;;
+            -*) die "unknown restore option: $1" ;;
+            *) [ -z "$restore_source" ] || die "restore accepts one archive"; restore_source=$1 ;;
+        esac
+        shift
+    done
+    [ -n "$restore_source" ] || die "restore requires a backup archive"
+    [ -f "$restore_source" ] || die "backup archive not found: $restore_source"
+    confirm_destructive "Restore $restore_source and replace current database/object data?" "$restore_assume_yes"
+    printf '%s\n' '@@ASSOZETA_STAGE checking'
+    restore_source="$(CDPATH= cd -- "$(dirname -- "$restore_source")" && pwd)/$(basename -- "$restore_source")"
+    if [ "$restore_take_backup" = true ]; then
+        printf '%s\n' '@@ASSOZETA_STAGE backup'
+        backup_keep_stopped=true
+        backup_origin=pre-restore
+        backup_protected=$(basename -- "$restore_source")
+        # The restore extracts the archive and stages its objects once more.
+        restore_source_kib=$(du -k "$restore_source" | awk 'NR == 1 { print $1 }')
+        backup_extra_space_mb=$(( ${restore_source_kib:-0} * 2 / 1024 ))
+        backup_prod
+        restore_safety_stopped=$backup_app_was_running
+        printf '@@ASSOZETA_BACKUP %s\n' "$(basename -- "$archive")"
+        log "safety backup created: $archive"
+    fi
+    printf '%s\n' '@@ASSOZETA_STAGE restoring'
+    restore_prod "$restore_source" --yes
 }
 
 supports_self_update() {
@@ -1930,7 +1980,7 @@ run_locked_prod_command() {
         stop) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose stop ;;
         restart) restart_prod ;;
         backup) backup_prod "$@" ;;
-        restore) restore_prod "$@" ;;
+        restore) restore_command_prod "$@" ;;
         recover-upgrade) recover_upgrade_prod "$@" ;;
         reconcile-updates) reconcile_updates_prod "$@" ;;
         upgrade) upgrade_prod "$@" ;;
