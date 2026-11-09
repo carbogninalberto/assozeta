@@ -13,29 +13,40 @@
     import DataManagement from './sections/DataManagement.svelte';
     import SelfInstance from './sections/SelfInstance.svelte';
     import {onMount} from 'svelte';
-    import {readProfileLocation, navigateProfile, isProfileLocation} from 'utils/profileNavigation.js';
+    import {readProfileLocation, navigateProfile, isProfileLocation, legacyProfileTarget} from 'utils/profileNavigation.js';
     import {apiFetch, originalFetch} from 'utils/ApiMiddleware.js';
     import {readStoredStatus} from './sections/independentStatus.js';
     import {getApiHost, isSelfHostedMode} from 'store/instanceStore.js';
     role.useLocalStorage();
 
-    function syncAdministratorPage() {
+    // On self-hosted the owner finds Gestione Dati in Istanza → Backup
+    // (see legacyProfileTarget); other staff with permission keep the page.
+    const selfHosted = isSelfHostedMode();
+    function syncProfilePage() {
         // Hash listeners may run before the router destroys this component.
         if (!isProfileLocation()) return;
-        if ($role !== 'administrator') return;
         const {page} = readProfileLocation();
+        const legacy = instanceOwner || $role === 'administrator' ? legacyProfileTarget(page, $subPage, selfHosted) : null;
+        if (legacy) {
+            subPage.set(legacy.page);
+            navigateProfile(legacy.page, legacy.tab, true);
+            return;
+        }
+        if ($role !== 'administrator') return;
         const next = ['self-instance', 'data-management'].includes(page) ? page : 'self-instance';
         subPage.set(next);
         if (page !== next) navigateProfile(next, undefined, true);
     }
     onMount(() => {
-        syncAdministratorPage();
-        window.addEventListener('hashchange', syncAdministratorPage);
-        return () => window.removeEventListener('hashchange', syncAdministratorPage);
+        syncProfilePage();
+        window.addEventListener('hashchange', syncProfilePage);
+        return () => window.removeEventListener('hashchange', syncProfilePage);
     });
     let changes = false;
     let instanceOwner = false;
     let checkingOwner = true;
+    // Re-route an old Gestione Dati link once ownership is known.
+    $: if (instanceOwner) syncProfilePage();
     let ownerError = '';
     let dataAssociation = null;
     onMount(async () => {
@@ -66,7 +77,7 @@
         <div class="row">
             {#if $role !== 'administrator'}
                 <div class="col-lg-3 p-0 pr-md-2">
-                    <ProfileMenu bind:changes {instanceOwner} />
+                    <ProfileMenu bind:changes {instanceOwner} {selfHosted} />
                 </div>
             {/if}
             <div id="content-profile-menu" class="{$role === 'administrator' ? 'col-12' : 'col-lg-9 pl-md-2'} p-0 pb-24 pb-md-0">
@@ -109,7 +120,7 @@
 
                 {/if}
 
-                {#if $subPage == 'data-management'}
+                {#if $subPage == 'data-management' && !(selfHosted && (checkingOwner || instanceOwner || $role === 'administrator'))}
                     {#if $role === 'administrator'}
                         <p class="p-4" role="status">I dati gestiti appartengono all’associazione principale: <strong>{dataAssociation?.name || 'non configurata'}</strong>.</p>
                     {/if}

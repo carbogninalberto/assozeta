@@ -14,7 +14,7 @@ import stat
 from common import read_env
 
 ARCHIVE = re.compile(r'assozeta-(\d{8}T\d{6}Z)(-\d+)?\.tar\.gz')
-ORIGINS = {'manual', 'scheduled', 'pre-upgrade', 'pre-restore'}
+ORIGINS = {'manual', 'scheduled', 'pre-upgrade', 'pre-restore', 'uploaded'}
 DEFAULT_KEEP = 3
 DEFAULT_MARGIN_MB = 1024
 MAX_ARCHIVES = 1000

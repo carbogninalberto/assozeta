@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied, NotAcceptable
 from rest_framework.permissions import BasePermission
 from application.models import User
+from instance.upload_stream import STREAMED_PATHS
 
 logger = logging.getLogger()
 
@@ -109,11 +110,13 @@ class ExceptionHandlerMiddleware:
             OPTIMIZATION: Only read body for methods that actually have a body (POST, PUT, PATCH, DELETE)
             This saves 5-10ms per GET request by avoiding unnecessary I/O
 
-            Multipart requests are excluded so Django's upload handlers can stream large files to disk.
+            Multipart requests are excluded so Django's upload handlers can stream large files to disk,
+            and so are streamed uploads, which the view forwards as they arrive.
             '''
             if (
                 request.method in ['POST', 'PUT', 'PATCH', 'DELETE']
                 and not (request.content_type or '').startswith('multipart/')
+                and request.path not in STREAMED_PATHS
             ):
                 request.body
             response = self.get_response(request)

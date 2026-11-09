@@ -584,6 +584,25 @@ class EngineTests(unittest.TestCase):
                 self.assertEqual(journal.interrupted(), [])
                 self.assertEqual(journal.records()[0]['status'], 'recovered' if version == '1.0.1' else 'succeeded')
 
+    def test_an_interrupted_restore_is_reconciled_once_the_running_app_is_verified(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = root / '.env'
+            env.write_text('ASSOZETA_VERSION=1.0.2\n')
+            journal = Journal(root / '.updater/operations.sqlite3')
+            operation = journal.create({'kind': 'restore', 'archive': 'assozeta-20261101T020000Z.tar.gz', 'request_id': str(uuid4()),
+                                        'actor_id': str(uuid4()), 'release_id': None, 'tag': '1.0.2', 'source_version': '1.0.2'})
+            journal.update(operation['id'], status='running', stage='restoring', safety_backup='assozeta-20261109T100000Z.tar.gz')
+            journal.interrupt_running()
+            self.assertIn('--no-backup', journal.records()[0]['recovery'])
+            with patch.object(Engine, 'verify_running', side_effect=RuntimeError('Unhealthy')):
+                with self.assertRaises(RuntimeError):
+                    reconcile(root, env)
+            with patch.object(Engine, 'verify_running') as verify:
+                reconcile(root, env)
+            verify.assert_called_once_with('1.0.2', allow_configured_images=True)
+            self.assertEqual(journal.records()[0]['status'], 'recovered')
+
     def test_interruption_with_pending_distribution_requires_backup_recovery(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

@@ -30,13 +30,13 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/accounting/receipts/modals/ShareModal.svelte": "0c86445d001a0d9141f26b673471a5b8b1ed1b9f15dc22264e125dc34d61bda3",
     "BE/application/views/invoice_views.py": "500cf26719455a1a86aacb63e5c99bc9cbcc470a0bb1d275df926fbb884c8260",
     "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
-    "UI/src/routes/profile/sections/SelfInstance.svelte": "7288666b2ba7f24af367b8c1591b9f12fb7d5346805db20ce839bbd7cbfc5a4e",
-    "UI/src/routes/profile/sections/InstanceIntegrations.svelte": "4ee10eb96a9f8dfde6239babafe405745386965bb5b670993a0381d4fe172c56",
-    "UI/src/routes/profile/sections/InstanceIntegration.svelte": "3b7f9908dc8f4c995d3591caa97f3af3f66634fc2c9f9ca70d30b753e9667cb5",
+    "UI/src/routes/profile/sections/SelfInstance.svelte": "60b2d0b1022ea22730c7879ff7d01b2137db59e913709b6446cb57021f11a1ad",
+    "UI/src/routes/profile/sections/InstanceIntegrations.svelte": "3fb8d12712e3088142b367b144dca0c70151a2c2692ad8dd69eacc88a4720332",
+    "UI/src/routes/profile/sections/InstanceIntegration.svelte": "eddd0a8db6dcbc071daad1782b207f743acdc0bd20300de04f863b801b5f4ba7",
     "BE/instance/integrations.py": "c7bb11e0eb4e587b5334b2661c6ca2def5118b93c4dcb12373cc399e83a8ef59",
     "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
     "BE/application/utils/stripe_utils.py": "5eb9238ba059bd0e2247235dc33cbd2502c38d8cb1e81f793583b34e270b9bab",
-    "BE/application/views/stripe_views.py": "d35f1a6f13dcec42d032fe77eb01547f71543dffc8ae1e66e8407524119def40",
+    "BE/application/views/stripe_views.py": "eaf4b2f4bdd43c12bb90c15096c6bbfac4de1997432fd6b72bf2f1a734f4565f",
     "UI/src/routes/activities/payment/PaymentList.svelte": "9f913de33eea435d9a5c0487f28b1df466ee8198d66564fd7ffdeee817256151",
     "UI/src/routes/stripe/Checkout.svelte": "3c619dd299432dadf62a76649f9f55318f526ea477835618d32457c0a8f776b2",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa"
@@ -366,7 +366,7 @@ export const coursePaymentAdditionalSourceContracts = Object.freeze([
     ],
     [
         "UI/src/routes/profile/sections/SelfInstance.svelte",
-        "const sections =",
+        "const settingsSections =",
         1
     ],
     [
@@ -391,8 +391,8 @@ export const coursePaymentAdditionalSourceContracts = Object.freeze([
     ],
     [
         "UI/src/routes/profile/sections/InstanceIntegration.svelte",
-        "<div class=\"integration-actions\">",
-        25
+        "<div class=\"si-savebar\" class:dirty={changes}>",
+        5
     ],
     [
         "BE/instance/integrations.py",

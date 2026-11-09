@@ -24,9 +24,13 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         await page.goto('/');
         await expect(page.getByRole('heading', {name: 'Panoramica', exact: true})).toBeVisible();
         await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toHaveCount(0);
-        const tabs = page.getByRole('group', {name: 'Sezioni Self Instance'});
-        await tabs.getByRole('button', {name: 'Bot AI', exact: true}).focus();
-        await page.keyboard.press('Enter');
+        const tabs = page.getByRole('tablist', {name: 'Sezioni istanza'});
+        const settingsNav = page.getByRole('tablist', {name: 'Impostazioni'});
+        const openAI = async () => { await tabs.getByRole('tab', {name: 'Impostazioni'}).click(); await settingsNav.getByRole('tab', {name: 'Bot AI'}).click(); };
+        await tabs.getByRole('tab', {name: 'Impostazioni'}).click();
+        await settingsNav.getByRole('tab', {name: 'Identità'}).focus();
+        await page.keyboard.press('End');
+        await page.keyboard.press('ArrowLeft');
         const card = page.getByRole('region', {name: 'Bot AI', exact: true});
         await expect(card).toBeVisible();
         const toggle = card.getByRole('switch', {name: 'Abilita Bot AI', exact: true});
@@ -43,8 +47,10 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         for (const [label, value] of [['Iterazioni massime', '8'], ['Risultati massimi', '321'], ['Timeout query (secondi)', '12'], ['Messaggi al minuto', '7'], ['Timeout risposta (secondi)', '150'], ['Messaggi nella cronologia', '30']]) {
             await card.getByLabel(label, {exact: false}).fill(value);
         }
-        await tabs.getByRole('button', {name: 'Panoramica', exact: true}).click();
-        await tabs.getByRole('button', {name: 'Bot AI •', exact: true}).click();
+        await tabs.getByRole('tab', {name: 'Panoramica'}).click();
+        await expect(tabs.locator('.dirty-dot')).toHaveCount(1);
+        await openAI();
+        await expect(settingsNav.getByRole('tab', {name: /Bot AI/}).locator('.dirty-dot')).toHaveCount(1);
         await expect(card.getByLabel('Modello principale', {exact: false})).toHaveValue('fixture-model');
         await card.getByRole('button', {name: 'Salva Bot AI', exact: true}).click();
         await expect(card.getByRole('button', {name: 'Salva Bot AI', exact: true})).toBeDisabled();
@@ -54,7 +60,7 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         await card.getByRole('button', {name: 'Verifica Bot AI', exact: true}).click();
         await expect(card.locator('.diagnostic-result')).toContainText('Elenco modelli accessibile');
         await page.reload();
-        await tabs.getByRole('button', {name: 'Bot AI', exact: true}).click();
+        await openAI();
         await expect(toggle).toBeChecked();
         await expect(card.locator('.diagnostic-result')).toContainText('Elenco modelli accessibile');
         await expect(card.getByLabel('Risultati massimi', {exact: false})).toHaveValue('321');
@@ -78,17 +84,16 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         await card.getByRole('button', {name: 'Salva Bot AI', exact: true}).click();
         await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toHaveCount(0);
         await page.reload();
-        await tabs.getByRole('button', {name: 'Bot AI', exact: true}).click();
+        await openAI();
         await expect(toggle).not.toBeChecked();
         await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toHaveCount(0);
-        await card.getByText('Ripristina Bot AI da .env', {exact: true}).click();
-        await card.getByRole('switch', {name: 'Confermo il ripristino di Bot AI da .env'}).focus();
-        await page.keyboard.press('Space');
-        await card.getByRole('button', {name: 'Ripristina Bot AI', exact: true}).click();
+        await card.getByRole('button', {name: 'Altre azioni Bot AI'}).click();
+        await page.getByRole('menuitem', {name: 'Ripristina valori del server'}).click();
+        await page.getByRole('dialog', {name: 'Ripristinare i valori del server?'}).getByRole('button', {name: 'Ripristina Bot AI', exact: true}).click();
         await expect(card.getByLabel('Modello principale', {exact: false})).toHaveValue('deepseek-v4-flash');
         await request.post('/fixture/maintenance', {data: {enabled: true}});
         await page.reload();
-        await tabs.getByRole('button', {name: 'Bot AI', exact: true}).click();
+        await openAI();
         await expect(toggle).toBeDisabled();
         await expect(card.getByRole('button', {name: 'Verifica Bot AI', exact: true})).toBeDisabled();
         expect(errors).toEqual([]);

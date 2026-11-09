@@ -355,6 +355,10 @@ def mark_payment_as_paid(request, payment, response=True):
         if payment.paid is False:
             payment.paid = True
             payment.payment_date = timezone.now()
+            # Stripe confirmed this payment: record the method now, before the
+            # receipt is printed, otherwise it shows "non specificato".
+            payment.type = Payment.STRIPE
+            payment.save(update_fields=['paid', 'payment_date', 'type'])
 
             # check if there is not an invoice yet
             if payment.invoice is None:
@@ -438,13 +442,10 @@ def mark_payment_as_paid(request, payment, response=True):
                 # printing the invoice
                 # printing_response = requests.get(CURRENT_HOST + "/document/invoice/" + str(invoice.invoice_id),
                 #                                  headers=headers)
-                if request is not None:
-                    print_document_invoice.delay(str(invoice.invoice_id), request.headers.get('authorization'))
-                else:
-                    # log the invoice.sport_association.user and get the bearer token
-                    u = invoice.sport_association.user
-                    # log the user
-                    print_document_invoice.delay(str(invoice.invoice_id), settings.DOCUMENT_BYPASS_TOKEN)
+                # Print only after commit so the worker sees the paid payment and its type.
+                token = request.headers.get('authorization') if request is not None else settings.DOCUMENT_BYPASS_TOKEN
+                invoice_id = str(invoice.invoice_id)
+                transaction.on_commit(lambda: print_document_invoice.delay(invoice_id, token))
 
                 description = ""
                 if is_carnet:

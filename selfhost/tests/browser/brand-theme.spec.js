@@ -6,9 +6,10 @@ test('saved branding propagates through real shared styles, charts, cache and da
     await page.goto('/');
     await page.waitForFunction(()=>window.brandTest?.ready);
     await expect(page.locator('#primary')).toHaveCSS('background-color',rgb('#087e54'));
-    await page.getByRole('button',{name:'Identità',exact:false}).click();
+    await page.getByRole('tab',{name:'Impostazioni'}).click();
+    await page.getByRole('tab',{name:'Identità'}).click();
     await page.getByLabel('Colore principale').fill('#f9e300');
-    await page.getByRole('button',{name:'Salva impostazioni',exact:true}).click();
+    await page.getByRole('button',{name:'Salva identità',exact:true}).click();
     await expect(page.locator('#primary')).toHaveCSS('background-color',rgb('#f9e300'));
     for(const dark of [false,true]){
         await page.evaluate(dark=>dark?document.documentElement.setAttribute('data-theme','dark'):document.documentElement.removeAttribute('data-theme'),dark);

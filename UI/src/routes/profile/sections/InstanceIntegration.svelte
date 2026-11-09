@@ -1,10 +1,11 @@
 <script>
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
-    import InstanceAlert from './InstanceAlert.svelte';
     import Switch from '../../../components/inputs/Switch.svelte';
     import {aiFields} from './aiFields.js';
     import DiagnosticResult from './DiagnosticResult.svelte';
+    import InstanceMenu from './InstanceMenu.svelte';
+    import InstanceDialog from './InstanceDialog.svelte';
     export let provider;
     export let title;
     export let check;
@@ -20,18 +21,25 @@
     let webhookSecret = '';
     let clearSecret = false;
     let clearWebhook = false;
-    let confirmReset = false;
+    let resetOpen = false;
     let loading = true;
     let error = '';
     let verifying = false;
     let testResult;
+    const descriptions = {
+        ai: 'Assistente che risponde alle domande sui dati dell’associazione.',
+        stripe: 'Pagamenti online con carta.',
+        google: 'Accesso con Google.',
+        apple: 'Verifica dei token Apple dalle app compatibili.',
+    };
     $: changes = !!baseline && (JSON.stringify(draft) !== baseline || !!secretKey || !!webhookSecret || clearSecret || clearWebhook);
+    $: verifyBlocked = changes ? 'Salva prima le modifiche.' : config && !config.enabled ? 'Attiva e salva per verificare.' : '';
     function adopt(value) {
         config = value;
         testResult = value.last_test;
         draft = {enabled: value.enabled, ...(provider === 'ai' ? Object.fromEntries(aiFields.map(({key}) => [key, value[key]])) : provider === 'stripe' ? {public_key: value.public_key} : {client_id: value.client_id})};
         baseline = JSON.stringify(draft);
-        secretKey = ''; webhookSecret = ''; clearSecret = false; clearWebhook = false; confirmReset = false;
+        secretKey = ''; webhookSecret = ''; clearSecret = false; clearWebhook = false;
     }
     async function load() {
         loading = true; error = '';
@@ -56,15 +64,17 @@
             adopt(await request(`/admin/integrations/${provider}`, {method: 'PUT', body: JSON.stringify(data)}));
             toast.success(`${title}: impostazioni salvate.`);
             onSaved(config);
-        } catch (e) { error = e.message; toast.error(e.message); }
+        } catch (e) { error = e.message; }
         finally { busy = false; }
     }
     async function resetEnvironment() {
-        if (busy || disabled || changes || !confirmReset) return;
+        // Only the confirmation dialog can reset to the server values.
+        if (!resetOpen || busy || disabled || changes) return;
         busy = true; error = '';
         try {
             adopt(await request(`/admin/integrations/${provider}`, {method: 'DELETE', body: JSON.stringify({revision: config.revision})}));
-            toast.success('Ripristinate le variabili di ambiente del server. Il file .env è rimasto invariato.');
+            resetOpen = false;
+            toast.success(`${title}: ripristinati i valori del server.`);
             onSaved(config);
         } catch (e) { error = e.message; }
         finally { busy = false; }
@@ -75,43 +85,42 @@
         try {
             testResult = await request(`/admin/integrations/${provider}/test`, {method: 'POST', body: JSON.stringify({revision: config.revision})});
             config = {...config, last_test: testResult};
-            if (testResult.status === 'passed') toast.success(`${title}: verifica completata.`);
-        } catch (e) { error = e.message; toast.error(e.message); }
+            if (testResult.status === 'passed') toast.success(`${title}: verifica riuscita.`);
+        } catch (e) { error = e.message; }
         finally { busy = false; verifying = false; }
     }
     onMount(load);
 </script>
 
-<section class="integration-card" aria-labelledby={`integration-${provider}-title`}>
-    <div class="integration-heading">
-        <h3 id={`integration-${provider}-title`} class="mb-0">{title}</h3>
-        {#if config}<span class="label label-inline {config.enabled ? 'label-light-success' : 'label-light-secondary'}">{config.enabled ? 'ON · Attivo' : 'OFF · Disattivato'}</span>{/if}
+<section class="si-card integration-card" aria-labelledby={`integration-${provider}-title`}>
+    <div class="si-card-head">
+        <div>
+            <h3 id={`integration-${provider}-title`} class="si-subtitle">{title}</h3>
+            <p class="si-muted si-small">{descriptions[provider]}</p>
+        </div>
+        {#if config}
+            <div class="si-actions">
+                <span class="si-pill" class:ok={config.enabled}>{config.enabled ? 'Attivo' : 'Disattivato'}</span>
+                {#if config.source === 'instance'}
+                    <InstanceMenu label={`Altre azioni ${title}`} items={[{label: 'Ripristina valori del server', hint: changes ? 'Salva o annulla prima le modifiche.' : 'Torna ai valori del file .env.', disabled: changes || disabled, onSelect: () => resetOpen = true}]} />
+                {/if}
+            </div>
+        {/if}
     </div>
-    {#if provider === 'ai'}
-        <p class="mt-3">Configura il provider e i limiti del bot AI. Le modifiche si applicano ai nuovi messaggi; le richieste già in corso possono terminare con la configurazione precedente.</p>
-    {:else if provider === 'stripe'}
-        <p>Account Stripe diretto dell’istanza: chiavi pubblica e segreta dello stesso ambiente e firma dell’endpoint webhook.</p>
-    {:else if provider === 'google'}
-        <p>Client ID web per il pulsante Google e la verifica dei token. Il flusso attuale non utilizza un client secret. Autorizza l’origine di questa istanza nella console Google.</p>
-    {:else}
-        <p>Client ID per verificare i token Apple inviati dai client compatibili. Il pulsante Apple nella pagina di accesso web non è disponibile in questa versione. Team ID e chiave privata non sono usati da questo flusso.</p>
-    {/if}
-    {#if check}<DiagnosticResult check={{...check, label: 'Stato configurazione'}} />{/if}
-    {#if loading}<p role="status">Caricamento configurazione…</p>{/if}
-    {#if error}<InstanceAlert tone="danger" role="alert">{error}</InstanceAlert>{/if}
+    {#if loading && !config}<span class="si-skeleton" style="height: 2.5rem"></span>{/if}
+    {#if error}<p class="text-danger" role="alert">{error}{#if !config} <button type="button" class="si-link" on:click={load}>Riprova</button>{/if}</p>{/if}
+    {#if check && check.status !== 'passed' && check.status !== 'not_configured'}<div class="mb-3"><DiagnosticResult check={{...check, label: 'Stato configurazione'}} /></div>{/if}
     {#if config}
-        <p class="mt-4">Origine: <strong>{config.source === 'instance' ? 'Impostazioni salvate nell’istanza' : 'Variabili di ambiente del server (.env)'}</strong>.</p>
-        {#if config.credential_error}<InstanceAlert tone="warning" role="alert">Una credenziale salvata non può essere letta. Reinseriscila o rimuovila esplicitamente.</InstanceAlert>{/if}
+        {#if config.credential_error}<p class="text-danger si-small" role="alert">Una credenziale salvata non è leggibile. Inseriscila di nuovo.</p>{/if}
         <form on:submit|preventDefault={save}>
             <fieldset disabled={disabled || busy || loading}>
-                <legend class="sr-only">Configurazione {title}</legend>
+                <legend class="si-sr-only">Configurazione {title}</legend>
                 <Switch id={`integration-${provider}-enabled`} name={`${provider}-enabled`} label={provider === 'apple' ? 'Abilita verifica token Apple' : `Abilita ${title}`} bind:checked={draft.enabled} />
                 {#if provider === 'ai'}
-                    <InstanceAlert>Il bot invia al provider configurato i messaggi e i dati necessari per rispondere. Disattivalo per bloccare nuove richieste, anche nelle chat già aperte.</InstanceAlert>
-                    <label>Chiave API<input class="form-control" type="password" bind:value={secretKey} maxlength="2000" autocomplete="new-password" placeholder={config.api_key_configured ? 'Configurata · lascia vuoto per conservarla' : 'Inserisci la chiave del provider'} disabled={clearSecret} /></label>
-                    <Switch id="ai-clear-key" label="Rimuovi chiave API" bind:checked={clearSecret} disabled={!!secretKey} />
-                    <p class="text-muted">La chiave è cifrata al salvataggio e non viene restituita al browser.</p>
-                    <div class="integration-grid">
+                    <p class="si-hint">I messaggi e i dati necessari a rispondere vengono inviati al provider configurato.</p>
+                    <div class="si-grid-2">
+                        <label>Chiave API<input class="form-control" type="password" bind:value={secretKey} maxlength="2000" autocomplete="new-password" placeholder={config.api_key_configured ? 'Salvata · lascia vuoto per mantenerla' : 'Chiave del provider'} disabled={clearSecret} aria-label="Chiave API" /></label>
+                        <div class="si-field align-end">{#if config.api_key_configured}<Switch id="ai-clear-key" label="Rimuovi chiave API" bind:checked={clearSecret} disabled={!!secretKey} />{/if}</div>
                         {#each aiFields as field}
                             <label>{field.label}
                                 {#if field.type === 'number'}
@@ -121,59 +130,53 @@
                                 {:else}
                                     <input class="form-control" bind:value={draft[field.key]} maxlength={field.maxLength} required aria-label={field.label} aria-describedby={`ai-help-${field.key}`} />
                                 {/if}
-                                <small class="text-muted d-block mt-2" id={`ai-help-${field.key}`}>{field.help}</small>
+                                <span class="si-hint" id={`ai-help-${field.key}`}>{field.help}</span>
                             </label>
                         {/each}
                     </div>
                 {:else if provider === 'stripe'}
-                    <label>Chiave pubblica Stripe<input class="form-control" bind:value={draft.public_key} maxlength="300" autocomplete="off" placeholder="pk_test_… oppure pk_live_…" required={draft.enabled} /></label>
-                    <div class="integration-grid">
-                        <div>
-                            <label>Chiave segreta Stripe<input class="form-control" type="password" bind:value={secretKey} maxlength="500" autocomplete="new-password" placeholder={config.secret_key_configured ? 'Configurata · lascia vuoto per conservarla' : 'sk_test_… oppure sk_live_…'} disabled={clearSecret} /></label>
-                            <Switch id="stripe-clear-key" label="Rimuovi chiave segreta Stripe" bind:checked={clearSecret} disabled={!!secretKey} />
+                    <div class="si-grid-2">
+                        <label class="span-2">Chiave pubblica Stripe<input class="form-control" bind:value={draft.public_key} maxlength="300" autocomplete="off" placeholder="pk_live_…" required={draft.enabled} /></label>
+                        <div class="si-field">
+                            <label>Chiave segreta Stripe<input class="form-control" type="password" bind:value={secretKey} maxlength="500" autocomplete="new-password" placeholder={config.secret_key_configured ? 'Salvata · lascia vuoto per mantenerla' : 'sk_live_…'} disabled={clearSecret} /></label>
+                            {#if config.secret_key_configured}<Switch id="stripe-clear-key" label="Rimuovi chiave segreta Stripe" bind:checked={clearSecret} disabled={!!secretKey} />{/if}
                         </div>
-                        <div>
-                            <label>Firma webhook Stripe<input class="form-control" type="password" bind:value={webhookSecret} maxlength="500" autocomplete="new-password" placeholder={config.webhook_secret_configured ? 'Configurata · lascia vuoto per conservarla' : 'whsec_…'} disabled={clearWebhook} /></label>
-                            <Switch id="stripe-clear-webhook" label="Rimuovi firma webhook Stripe" bind:checked={clearWebhook} disabled={!!webhookSecret} />
+                        <div class="si-field">
+                            <label>Firma webhook Stripe<input class="form-control" type="password" bind:value={webhookSecret} maxlength="500" autocomplete="new-password" placeholder={config.webhook_secret_configured ? 'Salvata · lascia vuoto per mantenerla' : 'whsec_…'} disabled={clearWebhook} /></label>
+                            {#if config.webhook_secret_configured}<Switch id="stripe-clear-webhook" label="Rimuovi firma webhook Stripe" bind:checked={clearWebhook} disabled={!!webhookSecret} />{/if}
                         </div>
                     </div>
-                    {#if config.webhook_url}<p>Endpoint webhook: <code>{config.webhook_url}</code>. Abilita l’evento <code>charge.succeeded</code> nella dashboard Stripe.</p>{/if}
-                    <p>Cambiare account o ambiente può impedire di riconciliare pagamenti creati con le chiavi precedenti.</p>
-                    <p>Le credenziali sono mascherate e cifrate quando salvate nell’istanza. La configurazione non esegue pagamenti né verifica la consegna dei webhook.</p>
+                    {#if config.webhook_url}<p class="si-hint mt-3 mb-0">Webhook: <code>{config.webhook_url}</code> con l’evento <code>charge.succeeded</code>.</p>{/if}
                 {:else}
-                    {#if provider === 'google' && config.authorized_origin}<p>Origine JavaScript da autorizzare: <code>{config.authorized_origin}</code>.</p>{/if}
-                    <label>Client ID {title}<input class="form-control" bind:value={draft.client_id} maxlength="255" autocomplete="off" required={draft.enabled} placeholder={provider === 'google' ? '…apps.googleusercontent.com' : 'com.example.service'} /></label>
+                    <label class="d-grid">Client ID {title}<input class="form-control" bind:value={draft.client_id} maxlength="255" autocomplete="off" required={draft.enabled} placeholder={provider === 'google' ? '…apps.googleusercontent.com' : 'com.example.service'} /></label>
+                    {#if provider === 'google' && config.authorized_origin}<p class="si-hint mt-2 mb-0">Origine da autorizzare su Google: <code>{config.authorized_origin}</code></p>{/if}
+                    {#if provider === 'apple'}<p class="si-hint mt-2 mb-0">Il pulsante Apple nella pagina di accesso web non è disponibile.</p>{/if}
                 {/if}
-                <div class="integration-actions">
+                <div class="si-savebar" class:dirty={changes}>
                     <button type="submit" class="btn btn-primary" disabled={!changes}>{busy && !verifying ? 'Salvataggio…' : `Salva ${title}`}</button>
-                    <button type="button" class="btn btn-light-primary" disabled={busy || loading || disabled || changes || !config.enabled} on:click={verify}>{verifying ? 'Verifica in corso…' : `Verifica ${title}`}</button>
-                    {#if changes}<button type="button" class="btn btn-light" on:click={cancel}>Annulla {title}</button>{/if}
+                    {#if changes}<button type="button" class="btn btn-light" on:click={cancel}>Annulla</button>{/if}
+                    <button type="button" class="btn btn-light-primary" disabled={busy || loading || disabled || !!verifyBlocked} title={verifyBlocked} on:click={verify}>{verifying ? 'Verifica…' : `Verifica ${title}`}</button>
+                    {#if verifyBlocked}<span class="si-dirty">{verifyBlocked}</span>{/if}
                 </div>
             </fieldset>
         </form>
-        <p class="text-muted mt-3">Verifica in lettura delle impostazioni salvate. Non esegue pagamenti, accessi utente o generazioni AI. {changes ? 'Salva o annulla le modifiche prima di verificare.' : !config.enabled ? 'Abilita e salva l’integrazione per verificarla.' : ''}</p>
-        {#if verifying}<p role="status">Connessione al provider in corso…</p>{/if}
-        {#if testResult}<DiagnosticResult check={{...testResult, label: changes ? 'Ultima verifica delle impostazioni salvate' : 'Ultima verifica'}} />{/if}
-        {#if config.source === 'instance'}
-            <details class="mt-4">
-                <summary>Ripristina {title} da .env</summary>
-                <p class="mt-3">Rimuove l’override dell’istanza e riprende i valori dell’ambiente. Le variabili sul server non vengono modificate.</p>
-                <Switch id={`${provider}-confirm-reset`} label={`Confermo il ripristino di ${title} da .env`} bind:checked={confirmReset} disabled={busy || disabled || changes} />
-                <button type="button" class="btn btn-light-danger mt-3" disabled={!confirmReset || busy || disabled || changes} on:click={resetEnvironment}>Ripristina {title}</button>
-            </details>
-        {/if}
+        {#if testResult}<div class="mt-4" aria-live="polite"><DiagnosticResult check={{...testResult, label: 'Ultima verifica'}} /></div>{/if}
     {/if}
-    {#if error}<button type="button" class="btn btn-light mt-3" on:click={load} disabled={busy || loading || changes}>Ricarica {title}</button>{/if}
 </section>
 
+<InstanceDialog bind:open={resetOpen} title="Ripristinare i valori del server?" locked={busy}>
+    <p>Le impostazioni di {title} salvate qui vengono rimosse. Si torna ai valori del file .env.</p>
+    <svelte:fragment slot="footer">
+        <button type="button" class="btn btn-light" data-autofocus disabled={busy} on:click={() => resetOpen = false}>Annulla</button>
+        <button type="button" class="btn btn-danger" disabled={busy} on:click={resetEnvironment}>{busy ? 'Ripristino…' : `Ripristina ${title}`}</button>
+    </svelte:fragment>
+</InstanceDialog>
+
 <style>
-    .integration-heading {display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;}
-    .integration-card {border: 1px solid #d9deeb; border-radius: 8px; padding: 20px; margin-bottom: 20px; overflow-wrap: anywhere;}
-    .integration-grid {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;}
-    label {display: block; margin: 14px 0;}
-    label input.form-control {margin-top: 8px;}
-    .integration-actions {display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;}
-    fieldset {min-width: 0;}
-    summary {cursor: pointer;}
-    @media (max-width: 600px) {.integration-grid {grid-template-columns: 1fr;} .integration-card {padding: 16px;}}
+    fieldset { min-width: 0; }
+    .span-2 { grid-column: 1 / -1; }
+    .align-end { align-content: end; }
+    .si-field :global(.form-group) { margin: .5rem 0 0; }
+    .d-grid { display: grid; gap: .4rem; font-weight: 500; }
+    code { overflow-wrap: anywhere; }
 </style>

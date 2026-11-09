@@ -239,7 +239,7 @@ test('email tests require saved settings and reset requires explicit confirmatio
     f.run("recipient = 'chosen@example.test'");
     await f.run("test('send')");
     assert.equal(JSON.parse(f.context.requests[1].body).recipient, 'chosen@example.test');
-    f.run('confirmReset = true');
+    f.run('resetOpen = true');
     await f.run('resetEnvironment()');
     assert.equal(f.context.requests[2].method, 'DELETE');
 });
@@ -247,18 +247,21 @@ test('email tests require saved settings and reset requires explicit confirmatio
 
 test('instance updates wait for email drafts and ongoing email or diagnostic checks', () => {
     const f = form('SelfInstance', {getApiHost: () => '/api', createCompletionRefresh: () => ({})});
-    f.run("saved = JSON.stringify(draft); info = {mode: 'production'}; catalog = {relation: 'behind', latest: {artifacts_ready: true}}; runner = {available: true, active: null}");
+    // The catalog is given here; do not let the tab fetch it again.
+    f.run("releasesRequested = true; info = {mode: 'production'}; catalog = {relation: 'behind', latest: {artifacts_ready: true}}; runner = {available: true, can_update: true, active: null}");
     f.flush();
-    assert.equal(f.run('updateReady'), true);
+    assert.equal(f.run('updateBlocked'), '');
     f.run('emailChanges = true'); f.flush();
-    assert.equal(f.run('updateReady'), false);
+    assert.match(f.run('updateBlocked'), /modifiche/);
     assert.equal(f.run('changes'), true);
     f.run('emailChanges = false; emailBusy = true'); f.flush();
-    assert.equal(f.run('updateReady'), false);
+    assert.notEqual(f.run('updateBlocked'), '');
     f.run('emailBusy = false; diagnosticBusy = true'); f.flush();
-    assert.equal(f.run('updateReady'), false);
+    assert.notEqual(f.run('updateBlocked'), '');
     f.run('diagnosticBusy = false'); f.flush();
-    assert.equal(f.run('updateReady'), true);
+    assert.equal(f.run('updateBlocked'), '');
+    f.run("catalog = {relation: 'behind', latest: {artifacts_ready: false}}"); f.flush();
+    assert.match(f.run('updateBlocked'), /non ancora pronta/);
 });
 
 const stripeFixture = {source: 'environment', revision: 0, enabled: true, public_key: 'pk_test_environment', secret_key_configured: true, webhook_secret_configured: true};
@@ -283,7 +286,7 @@ test('integration forms preserve masked credentials and failed drafts, and reset
     f.run('cancel()');assert.equal(f.flush(), false);
     f.run("request = async (path, options) => {requests.push({path, ...options}); return fixture;}");
     await f.run('resetEnvironment()');assert.equal(f.context.requests.length, 1);
-    f.run('confirmReset = true');await f.run('resetEnvironment()');
+    f.run('resetOpen = true');await f.run('resetEnvironment()');
     assert.equal(f.context.requests[1].method, 'DELETE');
     assert.equal(f.run('config.source'), 'environment');
 });

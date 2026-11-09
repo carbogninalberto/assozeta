@@ -1,7 +1,7 @@
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
-  "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
+  "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
   "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
   "UI/src/routes/association/course/CourseList.svelte": "d68233a0b121dcbf15b840ea120348b331d017b4dd7ab936da95c46f1c50ad84",
   "UI/src/routes/association/course/add/AddCourse.svelte": "c1e10ddcd4c3f258a6e3f4fe387b77a68a85b0ff74191701e169dfad2d38f4a5",

@@ -15,6 +15,16 @@ class Conflict(Exception):
     pass
 
 
+def restore_recovery(record):
+    """Server steps after a restore stopped half-way: go back to the safety backup."""
+    safety = record.get('safety_backup')
+    if safety:
+        return (f'I dati potrebbero essere incompleti. Dal server ripristina il backup di sicurezza con '
+                f'./bin/assozeta restore backups/{safety} --yes --no-backup, poi esegui ./bin/assozeta reconcile-updates.')
+    return ('I dati potrebbero essere incompleti. Dal server ripristina l’ultimo backup "Prima del ripristino" con '
+            './bin/assozeta restore backups/<nome> --yes --no-backup, poi esegui ./bin/assozeta reconcile-updates.')
+
+
 class Journal:
     def __init__(self, path):
         self.path = Path(path)
@@ -81,7 +91,26 @@ class Journal:
 
     def interrupt_running(self):
         for record in self.records():
-            if record['status'] == 'running' and record.get('kind') != 'restart':
+            if record['status'] == 'running' and record.get('kind') == 'backup':
+                # A backup changes no data: report it as failed, not as a recovery.
+                self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
+                            error='Il backup è stato interrotto.',
+                            recovery='Se l’app non torna disponibile, avviala dal server con ./bin/assozeta start.')
+            elif record['status'] == 'running' and record.get('kind') == 'restore':
+                if record['stage'] in ('queued', 'checking', 'backup'):
+                    # Interrupted before the data were replaced.
+                    self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
+                                failed_stage=record['stage'], error='Il ripristino è stato interrotto prima di modificare i dati.',
+                                recovery='Se l’app non torna disponibile, avviala dal server con ./bin/assozeta start.')
+                else:
+                    self.update(record['id'], status='recovery_required', stage='recovery_required',
+                                interrupted_at=now(), failed_stage=record['stage'],
+                                error='Il ripristino è stato interrotto.', recovery=restore_recovery(record))
+            elif record['status'] in ('queued', 'running') and record.get('kind') == 'fetch':
+                # The recovery key lived only in memory: a fetch cannot resume.
+                self.update(record['id'], status='failed', stage='failed', interrupted_at=now(),
+                            error='Il recupero dalla copia remota è stato interrotto. Riprova.')
+            elif record['status'] == 'running' and record.get('kind') != 'restart':
                 self.update(record['id'], status='recovery_required', stage='recovery_required',
                             interrupted_at=now(), failed_stage=record['stage'],
                             error='Il servizio di aggiornamento è stato interrotto.',

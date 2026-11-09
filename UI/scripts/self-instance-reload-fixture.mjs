@@ -50,7 +50,7 @@ try {
             define: {__bakney: JSON.stringify({OEM_CONFIG: {selfHosted: true}, env: {API_HOST: '/api'}})},
             resolve: {alias: {store: `${root}/src/store`, utils: `${root}/src/utils`, components: `${root}/src/components`}},
             plugins: [{name: 'reload-fixture', enforce: 'pre', resolveId(id) {
-                if (id === 'utils/ApiMiddleware.js' || id.endsWith('/utils/ApiMiddleware.js')) return '\0fixture-api';
+                if (id === 'utils/ApiMiddleware.js' || id.endsWith('/ApiMiddleware.js')) return '\0fixture-api';
                 if (id === '/reload-fixture-entry.js') return '\0fixture-entry';
             }, load(id) {
                 if (id === '\0fixture-api') return apiModule;

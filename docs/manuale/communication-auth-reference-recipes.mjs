@@ -23,13 +23,13 @@ export const communicationAuthReviewedSources = Object.freeze({
     "UI/src/routes/association/communication/automation/editor/AutomationEditor.svelte": "03a5be42ad985df535861ee1c5dc2df4f97876b7ae5a43fdc313456907a15c6a",
     "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
     "UI/src/components/inputs/email-builder/EmailBuilder.svelte": "96085ea1094e0a8ef3c48e38b9ad17b31f9a1d2eb35447a42d10ed5b5de3352d",
-    "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
+    "UI/src/routes/profile/ProfileMenu.svelte": "c083936170965608775be53540477754b033d3940313bfce54b09a9dfe426847",
     "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
     "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3",
     "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
     "UI/src/routes/login/Login.svelte": "8c5e4b3552f09734d9ca60d256ee6e6a6e008e0f6792e519faac770c106889a1",
     "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
-    "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
+    "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
     "UI/src/components/inputs/email-builder/emailbuilder.js": "1e96505ab77517ff72f491223a91992d80d33ad8b79a42d13868c844ab331f07"
 });
 

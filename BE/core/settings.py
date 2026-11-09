@@ -173,11 +173,8 @@ CELERY_BROKER_URL = f'{REDIS_PROTOCOL}://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDI
 CELERY_RESULT_BACKEND = "django-db"
 # this allows you to schedule items in the Django admin.
 CELERY_BEAT_SCHEDULER = 'instance.scheduler.InstanceScheduler'
-CELERY_BEAT_SCHEDULE = {
-    'bakney-pairing-maintenance': {
-        'task': 'instance.sso.tasks.maintain_bakney_pairings', 'schedule': 60.0,
-    },
-}
+# The beat schedule lives in core/celery.py. Do not define CELERY_BEAT_SCHEDULE
+# here: it replaces that whole schedule instead of adding to it.
 # useful for mitigating memory leaks
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
 # Opt-in: task names consumed by the Go Celery consumer (empty by default, no routes).
@@ -455,6 +452,8 @@ SILKY_IGNORE_PATHS = ['/instance/admin/data-restore', '/instance/admin/email', '
                      '/instance/admin/integrations/stripe', '/instance/admin/integrations/google', '/instance/admin/integrations/apple']
 # The backup download token request carries the owner's password.
 SILKY_IGNORE_PATHS += ['/instance/admin/backups/download-token']
+# Remote copy: S3 secret key, recovery key and its confirmation characters.
+SILKY_IGNORE_PATHS += ['/instance/admin/backups/remote' + suffix for suffix in ('', '/test', '/key', '/key/confirm', '/fetch')]
 SILKY_IGNORE_PATHS += ['/instance/admin/bakney-pairing', *[
     '/bakney/v1/' + action for action in ('pairing/challenge', 'pairing/commit', 'login-start', 'callback', 'session')]]
 
@@ -746,6 +745,7 @@ DRF_LOGGER_QUEUE_MAX_SIZE = 1 # Default to 50 if not specified.
 DRF_LOGGER_INTERVAL = 1 # In Seconds, Default to 10 seconds if not specified.
 DRF_API_LOGGER_SKIP_URL_NAME = ['', 'health', 'instance-email-settings', 'instance-email-test', 'instance-diagnostics', 'instance-integration-settings']
 DRF_API_LOGGER_SKIP_URL_NAME += ['instance-backup-download-token']
+DRF_API_LOGGER_SKIP_URL_NAME += ['instance-backup-remote' + suffix for suffix in ('', '-test', '-key', '-key-confirm', '-fetch')]
 DRF_API_LOGGER_SKIP_URL_NAME += ['bakney-pairing-admin', 'bakney-pairing-challenge', 'bakney-pairing-commit',
                                'bakney-sso-start', 'bakney-sso-callback', 'bakney-sso-session']
 DRF_API_LOGGER_SLOW_API_ABOVE = 300
