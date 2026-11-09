@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/jmoiron/sqlx"
@@ -56,6 +57,31 @@ func (t *moduleTemplateTransaction) InsertModuleTemplate(ctx context.Context, ro
 	return err
 }
 
+func (t *moduleTemplateTransaction) ModuleTemplate(ctx context.Context, association, id string) (domain.ModuleTemplate, error) {
+	var row domain.ModuleTemplate
+	err := t.tx.GetContext(ctx, &row, `SELECT `+moduleTemplateColumns+` FROM application_sportassociationmoduletemplates
+ WHERE sport_association_id=$1 AND sport_association_module_templates_id=$2`, association, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return row, domain.ErrModuleTemplateNotFound
+	}
+	return row, err
+}
+
+func (t *moduleTemplateTransaction) SportAssociationExists(ctx context.Context, id string) (bool, error) {
+	var exists bool
+	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1)`, id)
+	return exists, err
+}
+
+// UpdateModuleTemplate is Model.save() of an existing row: every field written.
+func (t *moduleTemplateTransaction) UpdateModuleTemplate(ctx context.Context, row domain.ModuleTemplate) error {
+	_, err := t.tx.NamedExecContext(ctx, `UPDATE application_sportassociationmoduletemplates SET
+ sport_association_id=:sport_association_id, name=:name, template=:template, footer=:footer, header=:header,
+ custom_footer_header=:custom_footer_header, custom_footer=:custom_footer, custom_header=:custom_header
+ WHERE sport_association_module_templates_id=:sport_association_module_templates_id`, row)
+	return err
+}
+
 func (t *moduleTemplateTransaction) DeleteModuleTemplates(ctx context.Context, association string, ids []string) ([]domain.ModuleTemplate, error) {
 	rows := []domain.ModuleTemplate{}
 	err := t.tx.SelectContext(ctx, &rows, `DELETE FROM application_sportassociationmoduletemplates
@@ -71,7 +97,15 @@ func (t *moduleTemplateTransaction) AppendModuleTemplateAudit(ctx context.Contex
 	if event.Action == 2 {
 		path = "changes_json.sport_association"
 	}
+	if event.Path != "" {
+		path = event.Path
+	}
 	row := event.Template
+	if event.Changes != nil {
+		return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "sportassociationmoduletemplates", Key: row.ID,
+			Representation: "SportAssociationModuleTemplates object (" + row.ID + ")", Action: event.Action, Changes: event.Changes,
+			Context: event.Context, AssociationID: &row.AssociationID, ResolutionPath: &path, At: event.At})
+	}
 	values := map[string]string{"sport_association_module_templates_id": row.ID, "sport_association": row.AssociationID,
 		"name": row.Name, "footer": pythonBool(row.Footer), "header": pythonBool(row.Header),
 		"custom_footer_header": pythonBool(row.CustomFooterHeader)}

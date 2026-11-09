@@ -1,10 +1,10 @@
-# Module templates — list, add, delete and bulk-delete implementing; update characterized only
+# Module templates — list, add, delete and bulk-delete implementing; update in templates-reports.md
 
 Five explicit `templates/...` routes in `BE/application/urls.py` map
 `SportAssociationModuleTemplatesViewSet` (`BE/application/views/archive_views.py`)
 actions. List, add, delete and bulk-delete are implemented in Go
 (`BE_GO/internal/{domain,dto,repository,service,handler}/module_templates.go`);
-update is not ported yet. The router registration of the same viewset belongs
+update is ported by the templates-reports family (`templates-reports.md`). The router registration of the same viewset belongs
 to the router mount entry. Django remains the production execution owner.
 
 ## Shared behavior
@@ -45,7 +45,7 @@ to the router mount entry. Django remains the production execution owner.
   iterated, each item prepared by `UUIDField` (unparseable or non-iterable
   values raise, 500; `null` items are dropped). Only the association's rows are
   deleted, each audited; `204`.
-- **update (PATCH):** not ported; characterized separately before porting.
+- **update (PATCH):** see `templates-reports.md`.
 
 ## Evidence (TDD)
 

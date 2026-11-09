@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -169,6 +172,136 @@ func (s *SavedReports) Update(ctx context.Context, identity domain.ResolvedIdent
 		return "", nil, err
 	}
 	return row.ID, echo, nil
+}
+
+// Run follows SavedReportViewSet.run: the report lookup, the TOOL_FUNCTIONS
+// check, the merge of the stored params with request.data['overrides']
+// (outside the try: TypeError/AttributeError are uncaught) and the tool call.
+// It returns the 200 result; tool exceptions are dto.ErrReportFailed and a
+// result with 'error' is *dto.ReportToolError.
+func (s *SavedReports) Run(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any) (any, error) {
+	association, _, err := s.scope(ctx, identity)
+	if err != nil {
+		return nil, err
+	}
+	row, err := s.find(ctx, identity, raw)
+	if err != nil {
+		return nil, err
+	}
+	if !dto.SavedReportTools[row.ToolName] {
+		return nil, &SavedReportUnknownTool{Tool: row.ToolName}
+	}
+	overrides := domain.RequestObject{}
+	switch data := body.(type) {
+	case nil:
+	case domain.RequestObject:
+		if value, present := data.Lookup("overrides"); present {
+			object, ok := value.(domain.RequestObject)
+			if !ok {
+				return nil, ErrSavedReportRaised // {**params, **overrides}: not a mapping
+			}
+			overrides = object
+		}
+	default:
+		return nil, ErrSavedReportRaised // .get on a non-dict body
+	}
+	stored, err := dto.ParseReferenceJSON([]byte(row.Params))
+	if err != nil {
+		return nil, err
+	}
+	params, ok := stored.(domain.RequestObject)
+	if !ok {
+		return nil, ErrSavedReportRaised
+	}
+	// {**report.params, **overrides}: later keys replace values in place.
+	merged := dto.PythonDict(append(append(domain.RequestObject{}, params...), overrides...))
+	var timeout int64
+	plan, err := dto.PlanReportTool(row.ToolName, merged, association, func() (dto.ReportSettings, error) {
+		settings, err := s.reportSettings(ctx)
+		timeout = settings.QueryTimeout * 1000
+		return settings, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	if plan.Immediate != nil {
+		return nil, plan.Immediate
+	}
+	results, err := s.store.RunReportStatements(ctx, timeout, plan.Statements)
+	var failed *domain.ReportQueryError
+	if errors.As(err, &failed) {
+		return nil, dto.ErrReportFailed
+	}
+	if err != nil {
+		return nil, err
+	}
+	return plan.Render(results)
+}
+
+// reportSettings is effective_integration('ai', decrypt=False): a
+// self-hosted instance's stored AI settings, otherwise the environment.
+func (s *SavedReports) reportSettings(ctx context.Context) (dto.ReportSettings, error) {
+	selfHosted, text, err := s.store.ReportIntegration(ctx)
+	if err != nil {
+		return dto.ReportSettings{}, err
+	}
+	if selfHosted && text != nil {
+		parsed, err := dto.ParseReferenceJSON([]byte(*text))
+		if err != nil {
+			return dto.ReportSettings{}, err
+		}
+		root, ok := parsed.(domain.RequestObject)
+		if !ok {
+			return dto.ReportSettings{}, dto.ErrReportNotPorted
+		}
+		if record, present := root.Lookup("ai"); present {
+			object, ok := record.(domain.RequestObject)
+			if !ok {
+				return dto.ReportSettings{}, dto.ErrReportNotPorted
+			}
+			if value, _ := object.Lookup("settings"); value != nil {
+				settings, ok := value.(domain.RequestObject)
+				if !ok {
+					return dto.ReportSettings{}, dto.ErrReportNotPorted
+				}
+				number := func(key string) (int64, error) {
+					value, present := settings.Lookup(key)
+					if !present {
+						return 0, dto.ErrReportFailed // KeyError
+					}
+					parsed, ok := value.(json.Number)
+					count, err := strconv.ParseInt(string(parsed), 10, 64)
+					if !ok || err != nil || count <= 0 {
+						return 0, dto.ErrReportNotPorted
+					}
+					return count, nil
+				}
+				maximum, err := number("max_results")
+				if err != nil {
+					return dto.ReportSettings{}, err
+				}
+				timeout, err := number("query_timeout")
+				return dto.ReportSettings{MaxResults: maximum, QueryTimeout: timeout}, err
+			}
+		}
+	}
+	environment := func(name string, fallback int64) (int64, error) {
+		text, present := os.LookupEnv(name)
+		if !present {
+			return fallback, nil
+		}
+		value, err := strconv.ParseInt(strings.TrimSpace(text), 10, 64)
+		if err != nil || value <= 0 {
+			return 0, dto.ErrReportNotPorted
+		}
+		return value, nil
+	}
+	maximum, err := environment("MCP_AGENT_MAX_RESULTS", 5000)
+	if err != nil {
+		return dto.ReportSettings{}, err
+	}
+	timeout, err := environment("MCP_AGENT_QUERY_TIMEOUT", 10)
+	return dto.ReportSettings{MaxResults: maximum, QueryTimeout: timeout}, err
 }
 
 func (s *SavedReports) Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string) error {

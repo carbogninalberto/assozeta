@@ -8,6 +8,10 @@ import (
 
 var ErrModuleTemplateNotFound = errors.New("No SportAssociationModuleTemplates matches the given query.")
 
+// ErrModuleTemplateTenant is the tenant scope's PermissionDenied for a related
+// sport_association of another tenant (DRF's generic 403).
+var ErrModuleTemplateTenant = errors.New("module template relation of another tenant")
+
 type ModuleTemplate struct {
 	ID                 string  `db:"sport_association_module_templates_id"`
 	AssociationID      string  `db:"sport_association_id"`
@@ -25,6 +29,10 @@ type ModuleTemplateAudit struct {
 	Action   int
 	Context  LoginAuditContext
 	At       time.Time
+	// Changes overrides the create/delete rendering (updates); Path overrides
+	// the index resolution path.
+	Changes map[string][2]string
+	Path    string
 }
 
 type ModuleTemplateStore interface {
@@ -38,6 +46,11 @@ type ModuleTemplateTransaction interface {
 	AssociationForOwner(context.Context, string, *string) (string, error)
 	ModuleTemplateIDExists(ctx context.Context, id string) (bool, error)
 	InsertModuleTemplate(context.Context, ModuleTemplate) error
+	// ModuleTemplate is the association's row by id (ErrModuleTemplateNotFound).
+	ModuleTemplate(ctx context.Context, association, id string) (ModuleTemplate, error)
+	// SportAssociationExists uses the default manager (deleted rows included).
+	SportAssociationExists(ctx context.Context, id string) (bool, error)
+	UpdateModuleTemplate(context.Context, ModuleTemplate) error
 	// DeleteModuleTemplates locks, deletes and returns the association's rows among ids.
 	DeleteModuleTemplates(ctx context.Context, association string, ids []string) ([]ModuleTemplate, error)
 	AppendModuleTemplateAudit(context.Context, ModuleTemplateAudit) error

@@ -110,6 +110,111 @@ func (s *ModuleTemplates) Add(ctx context.Context, identity domain.ResolvedIdent
 	return dto.ModuleTemplateRowFrom(row), s.finish(ctx, tx)
 }
 
+// Update is get_object, the partial serializer and save(). The related
+// sport_association is validated last (fields='__all__' lists forward
+// relations after the model fields) and the tenant scope's PermissionDenied
+// escapes the collected field errors. A new primary key makes Model.save()
+// insert a copy: auditlog's pre_save logs an update against None (indexed
+// through the changes, the row does not exist yet), post_save a create.
+func (s *ModuleTemplates) Update(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any, form bool, audit domain.LoginAuditContext) (dto.ModuleTemplateRow, error) {
+	if err := ctx.Err(); err != nil {
+		return dto.ModuleTemplateRow{}, err
+	}
+	tx, association, err := s.begin(ctx, identity)
+	if err != nil {
+		return dto.ModuleTemplateRow{}, err
+	}
+	defer tx.Rollback()
+	id, err := paymentInfoParseUUID(raw)
+	if err != nil {
+		return dto.ModuleTemplateRow{}, ErrModuleTemplateLookup
+	}
+	current, err := tx.ModuleTemplate(ctx, association, id.String())
+	if err != nil {
+		return dto.ModuleTemplateRow{}, err
+	}
+	input := dto.ParseModuleTemplateUpdate(body, form)
+	if input.ID != nil && *input.ID != current.ID {
+		exists, err := tx.ModuleTemplateIDExists(ctx, *input.ID)
+		if err != nil {
+			return dto.ModuleTemplateRow{}, err
+		}
+		if exists {
+			input.Errors["sport_association_module_templates_id"] = []string{dto.ModuleTemplateUniqueID}
+		}
+	}
+	if input.Association != nil {
+		exists, err := tx.SportAssociationExists(ctx, *input.Association)
+		if err != nil {
+			return dto.ModuleTemplateRow{}, err
+		}
+		switch {
+		case !exists:
+			input.Errors["sport_association"] = []string{"related-does-not-exist:" + input.AssociationRaw}
+		case *input.Association != association:
+			return dto.ModuleTemplateRow{}, domain.ErrModuleTemplateTenant
+		}
+	}
+	if len(input.Errors) > 0 {
+		return dto.ModuleTemplateRow{}, &ModuleTemplateValidation{Errors: input.Errors}
+	}
+	row := input.Apply(current)
+	at := s.now().UTC().Truncate(time.Microsecond)
+	auditContext := paymentCategoryAuditContext(identity, audit)
+	if row.ID != current.ID {
+		if err = tx.InsertModuleTemplate(ctx, row); err != nil {
+			return dto.ModuleTemplateRow{}, err
+		}
+		changes := moduleTemplateChanges(nil, row)
+		if err = tx.AppendModuleTemplateAudit(ctx, domain.ModuleTemplateAudit{Template: row, Action: 1, Context: auditContext, At: at,
+			Changes: changes, Path: "changes_json.sport_association"}); err != nil {
+			return dto.ModuleTemplateRow{}, err
+		}
+		if err = tx.AppendModuleTemplateAudit(ctx, domain.ModuleTemplateAudit{Template: row, Action: 0, Context: auditContext, At: at}); err != nil {
+			return dto.ModuleTemplateRow{}, err
+		}
+		return dto.ModuleTemplateRowFrom(row), s.finish(ctx, tx)
+	}
+	if err = tx.UpdateModuleTemplate(ctx, row); err != nil {
+		return dto.ModuleTemplateRow{}, err
+	}
+	if changes := moduleTemplateChanges(&current, row); len(changes) > 0 {
+		if err = tx.AppendModuleTemplateAudit(ctx, domain.ModuleTemplateAudit{Template: row, Action: 1, Context: auditContext, At: at,
+			Changes: changes}); err != nil {
+			return dto.ModuleTemplateRow{}, err
+		}
+	}
+	return dto.ModuleTemplateRowFrom(row), s.finish(ctx, tx)
+}
+
+// moduleTemplateChanges is auditlog's diff: changed fields as [str(old),
+// str(new)]; against no stored row, None values are omitted.
+func moduleTemplateChanges(before *domain.ModuleTemplate, after domain.ModuleTemplate) map[string][2]string {
+	text := func(value *string) string {
+		if value == nil {
+			return "None"
+		}
+		return *value
+	}
+	changes := map[string][2]string{}
+	next := dto.ModuleTemplateAuditValues(after)
+	if before == nil {
+		for name, value := range next {
+			if value != nil {
+				changes[name] = [2]string{"None", *value}
+			}
+		}
+		return changes
+	}
+	previous := dto.ModuleTemplateAuditValues(*before)
+	for name, value := range next {
+		if old, new := text(previous[name]), text(value); old != new {
+			changes[name] = [2]string{old, new}
+		}
+	}
+	return changes
+}
+
 // Delete is get_object (queryset scope, then the pk lookup) and delete().
 func (s *ModuleTemplates) Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error {
 	if err := ctx.Err(); err != nil {

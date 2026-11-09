@@ -17,6 +17,7 @@ import (
 type ModuleTemplateService interface {
 	List(context.Context, domain.ResolvedIdentity) ([]dto.ModuleTemplateRow, error)
 	Add(context.Context, domain.ResolvedIdentity, any, bool, domain.LoginAuditContext) (dto.ModuleTemplateRow, error)
+	Update(context.Context, domain.ResolvedIdentity, string, any, bool, domain.LoginAuditContext) (dto.ModuleTemplateRow, error)
 	Delete(context.Context, domain.ResolvedIdentity, string, domain.LoginAuditContext) error
 	BulkDelete(context.Context, domain.ResolvedIdentity, any, domain.LoginAuditContext) error
 }
@@ -46,6 +47,9 @@ func (h *ModuleTemplatesHandler) Add(c echo.Context) error {
 func (h *ModuleTemplatesHandler) Delete(c echo.Context) error {
 	return h.serve(c, "delete", http.MethodDelete, "DELETE, OPTIONS")
 }
+func (h *ModuleTemplatesHandler) Update(c echo.Context) error {
+	return h.serve(c, "update", http.MethodPatch, "PATCH, DELETE, OPTIONS")
+}
 func (h *ModuleTemplatesHandler) BulkDelete(c echo.Context) error {
 	return h.serve(c, "bulk_delete", http.MethodDelete, "DELETE, OPTIONS")
 }
@@ -70,7 +74,10 @@ func (h *ModuleTemplatesHandler) serve(c echo.Context, action, method, allow str
 	if !allowed {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
-	if request.Method == http.MethodDelete && method != http.MethodDelete {
+	if request.Method == http.MethodDelete && action == "update" {
+		// delete() with the route's pk.
+		action = "delete"
+	} else if request.Method == http.MethodDelete && method != http.MethodDelete {
 		// delete() without a pk: get_object raises an AssertionError.
 		return messageReadsError(c, errors.New("module template delete without pk"))
 	}
@@ -101,18 +108,31 @@ func (h *ModuleTemplatesHandler) serve(c echo.Context, action, method, allow str
 		return paymentCategoryError(c, err)
 	}
 	switch action {
-	case "add":
+	case "add", "update":
 		media, _, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
 		form := media == "application/x-www-form-urlencoded" || media == "multipart/form-data"
-		row, err := h.templates.Add(ctx, *identity, body, form, audit)
-		var invalid *service.ModuleTemplateValidation
-		if errors.As(err, &invalid) {
-			return c.JSON(400, paymentCategoryValidationMessages(request, invalid.Errors))
+		var row dto.ModuleTemplateRow
+		status := 201
+		if action == "add" {
+			row, err = h.templates.Add(ctx, *identity, body, form, audit)
+		} else {
+			row, err = h.templates.Update(ctx, *identity, c.Param("pk"), body, form, audit)
+			status = 200
 		}
-		if err != nil {
+		var invalid *service.ModuleTemplateValidation
+		switch {
+		case errors.As(err, &invalid):
+			return c.JSON(400, paymentCategoryValidationMessages(request, invalid.Errors))
+		case errors.Is(err, domain.ErrModuleTemplateTenant):
+			return restError(c, &domain.PermissionDenied{Detail: messageReadsPermissionDetail(request)})
+		case errors.Is(err, service.ErrModuleTemplateLookup):
+			return restError(c, &restInputError{Status: 404, Detail: restText(request, "notfound")})
+		case errors.Is(err, domain.ErrModuleTemplateNotFound):
+			return restError(c, &restInputError{Status: 404, Detail: err.Error()})
+		case err != nil:
 			return messageReadsError(c, err)
 		}
-		return c.JSON(201, row)
+		return c.JSON(status, row)
 	case "delete":
 		err = h.templates.Delete(ctx, *identity, c.Param("pk"), audit)
 	default:
