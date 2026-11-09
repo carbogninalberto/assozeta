@@ -770,6 +770,13 @@ func run() (runErr error) {
 		subscriptionNotifier, time.Now, nil), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
 		paymentCategoryOperations)
 	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	// subscription/<uid>/transfer: the recipient's notification through the same notifier.
+	subscriptionTransferHandler := handler.NewSubscriptionTransferHandler(service.NewSubscriptionTransfers(repository.NewSubscriptionTransfers(db),
+		subscriptionNotifier, tasks, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
+		service.OAuthAccountSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
+			IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug}, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/:uid/transfer", subscriptionTransferHandler.Transfer, middleware.DjangoSessionAudit(sessionAuthentication))
 	realtimeHub := service.NewRealtimeHub()
 	pubsubOptions := storeOptions
 	pubsubOptions.ReadTimeout = -1

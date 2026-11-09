@@ -36,16 +36,17 @@ func unsupported(format string, args ...any) error {
 
 // Templates rendered by the ported views.
 const (
-	CollaboratorInvite  = "email/account/email_welcome_collaborator_message.html"
-	PaymentPending      = "email/payment/pending.html"
-	PaymentReceipt      = "email/payment/payment_receipt.html"
-	AccountWelcome      = "email/account/email_welcome_message.html"
-	AccountReset        = "email/account/email_reset_message.html"
-	AccountResetConfirm = "email/account/email_confirm_reset_message.html"
-	PartialRegistration = "email/account/email_user_partial_registration.html"
-	CertificateExpiring = "email/account/email_subscription_medical_certificate_expiring.html"
-	CertificateExpired  = "email/account/email_subscription_medical_certificate_expired.html"
-	ReminderEvent       = "email/reminders/event.html"
+	CollaboratorInvite     = "email/account/email_welcome_collaborator_message.html"
+	PaymentPending         = "email/payment/pending.html"
+	PaymentReceipt         = "email/payment/payment_receipt.html"
+	AccountWelcome         = "email/account/email_welcome_message.html"
+	AccountReset           = "email/account/email_reset_message.html"
+	AccountResetConfirm    = "email/account/email_confirm_reset_message.html"
+	PartialRegistration    = "email/account/email_user_partial_registration.html"
+	CertificateExpiring    = "email/account/email_subscription_medical_certificate_expiring.html"
+	CertificateExpired     = "email/account/email_subscription_medical_certificate_expired.html"
+	ReminderEvent          = "email/reminders/event.html"
+	AccountWelcomePassword = "email/account/email_welcome_password_message.html"
 )
 
 type node interface{}
@@ -382,7 +383,7 @@ var (
 
 // Names lists the embedded templates.
 var names = []string{"email/_base.html", CollaboratorInvite, PaymentPending, PaymentReceipt, AccountWelcome, AccountReset, AccountResetConfirm,
-	PartialRegistration, CertificateExpiring, CertificateExpired, ReminderEvent}
+	PartialRegistration, CertificateExpiring, CertificateExpired, ReminderEvent, AccountWelcomePassword}
 
 func templates() (map[string]*template, error) {
 	loadOnce.Do(func() {
