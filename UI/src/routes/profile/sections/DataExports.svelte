@@ -225,7 +225,7 @@
                     </li>
                 {/if}
                 {#each exports as exp (exp.document_id)}
-                    <li class="export-row">
+                    <li class="export-row" data-document-id={exp.document_id} title={exp.filename || undefined}>
                         <div class="si-row-main">
                             <strong>{formatDate(exp.created_at || exp.date)}</strong>
                             <p class="si-muted si-small">{exp.file_size_bytes != null ? formatSize(exp.file_size_bytes) : 'ZIP'}</p>
