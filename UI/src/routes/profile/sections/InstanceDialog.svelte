@@ -79,7 +79,7 @@
     .si-dialog-panel { display: flex; flex-direction: column; max-height: inherit; height: 100%; }
     .si-dialog:not(.drawer) .si-dialog-panel { max-height: calc(100dvh - 2rem); }
     .si-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.125rem 1.25rem .5rem; }
-    .si-dialog-head h2 { font-size: 1.125rem; font-weight: 600; margin: 0; overflow-wrap: anywhere; }
+    .si-dialog-head h2 { font-size: 1.35rem; font-weight: 600; margin: 0; overflow-wrap: anywhere; }
     .si-dialog-close { display: inline-flex; padding: .4rem; border: 0; border-radius: .5rem; background: none; color: var(--text-secondary); }
     .si-dialog-close:hover { background: var(--bg-hover); color: var(--text-primary); }
     .si-dialog-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }

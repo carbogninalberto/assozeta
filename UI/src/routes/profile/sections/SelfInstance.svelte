@@ -6,6 +6,7 @@
     import {readStoredStatus, applicationReady} from './independentStatus.js';
     import {createCompletionRefresh, mergeRunnerStatus, restartResult} from './updateStatus.js';
     import {v4 as uuidv4} from 'uuid';
+    import {SquaresFour, Archive, ArrowsClockwise, GearSix, IdentificationCard, EnvelopeSimple, Plugs, Robot, LinkSimple, Power} from 'phosphor-svelte';
     import './selfInstance.css';
     import InstanceBanner from './InstanceBanner.svelte';
     import InstanceMenu from './InstanceMenu.svelte';
@@ -24,8 +25,8 @@
 
     // Top-level tabs; settings has its own sub-sections. The URL keeps the
     // sub-section id (tab=email…) so earlier links keep working.
-    const tabs = [['overview', 'Panoramica'], ['backups', 'Backup'], ['updates', 'Aggiornamenti'], ['settings', 'Impostazioni']];
-    const settingsSections = [['branding', 'Identità'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['ai', 'Bot AI'], ['pairing', 'Bakney']];
+    const tabs = [['overview', 'Panoramica', SquaresFour], ['backups', 'Backup', Archive], ['updates', 'Aggiornamenti', ArrowsClockwise], ['settings', 'Impostazioni', GearSix]];
+    const settingsSections = [['branding', 'Identità', IdentificationCard], ['email', 'Email', EnvelopeSimple], ['integrations', 'Integrazioni', Plugs], ['ai', 'Bot AI', Robot], ['pairing', 'Bakney', LinkSimple]];
     const settingsIds = settingsSections.map(([id]) => id);
     let tab = 'overview';
     let settingsSection = 'branding';
@@ -396,10 +397,10 @@
 
         {#if info}
             <div class="tabs" role="tablist" aria-label="Sezioni istanza">
-                {#each tabs as [id, title]}
+                {#each tabs as [id, title, icon]}
                     <button type="button" role="tab" id={`instance-tab-${id}`} aria-controls={`instance-panel-${id}`} aria-selected={tab === id} tabindex={tab === id ? 0 : -1}
                         on:click={() => navigate(id)} on:keydown={event => onTabKeydown(event, tabs, tab, navigate)}>
-                        {title}{#if id === 'settings' && changes}<span class="dirty-dot" aria-label="modifiche non salvate"></span>{/if}
+                        <svelte:component this={icon} size={20} weight={tab === id ? 'duotone' : 'regular'} aria-hidden="true" />{title}{#if id === 'settings' && changes}<span class="dirty-dot" aria-label="modifiche non salvate"></span>{/if}
                     </button>
                 {/each}
             </div>
@@ -430,10 +431,10 @@
             <div id="instance-panel-settings" role="tabpanel" aria-labelledby="instance-tab-settings" hidden={tab !== 'settings'}>
                 <div class="settings">
                     <div class="settings-nav" role="tablist" aria-label="Impostazioni" aria-orientation="vertical">
-                        {#each settingsSections as [id, title]}
+                        {#each settingsSections as [id, title, icon]}
                             <button type="button" role="tab" id={`instance-settings-${id}`} aria-controls={`instance-settings-panel-${id}`} aria-selected={settingsSection === id} tabindex={settingsSection === id ? 0 : -1}
                                 on:click={() => navigate(id)} on:keydown={event => onTabKeydown(event, settingsSections, settingsSection, navigate)}>
-                                {title}{#if settingsDirty[id]}<span class="dirty-dot" aria-label="modifiche non salvate"></span>{/if}
+                                <svelte:component this={icon} size={22} weight="duotone" aria-hidden="true" /><span>{title}</span>{#if settingsDirty[id]}<span class="dirty-dot" aria-label="modifiche non salvate"></span>{/if}
                             </button>
                         {/each}
                     </div>
@@ -465,32 +466,33 @@
     <p>L’app non sarà disponibile per circa un minuto. Dati e sessione restano; le modifiche non salvate si perdono.</p>
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" data-autofocus on:click={() => restartOpen = false}>Annulla</button>
-        <button type="button" class="btn btn-primary" disabled={!!restartBlocked} on:click={restartApplication}>Riavvia</button>
+        <button type="button" class="btn btn-primary si-btn" disabled={!!restartBlocked} on:click={restartApplication}><Power size={18} weight="duotone" />Riavvia</button>
     </svelte:fragment>
 </InstanceDialog>
 
 <style>
-    .instance-body { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+    .instance-body { display: flex; flex-direction: column; gap: 1.75rem; min-width: 0; }
     [hidden] { display: none !important; }
     .page-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
     .page-title { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; min-width: 0; }
-    .page-title h1 { font-size: 1.75rem; font-weight: 700; margin: 0; }
+    .page-title h1 { font-size: 2rem; font-weight: 700; margin: 0; }
     .page-name { min-width: 0; }
     .instance-name { overflow-wrap: anywhere; }
     .skeleton-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1rem; }
 
-    .tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--border-color); overflow-x: auto; scrollbar-width: none; contain: inline-size; }
+    .tabs { display: flex; gap: 2rem; border-bottom: 1px solid var(--border-color); overflow-x: auto; scrollbar-width: none; contain: inline-size; }
     .tabs::-webkit-scrollbar { display: none; }
-    .tabs [role='tab'] { position: relative; flex-shrink: 0; padding: .625rem .875rem; border: 0; background: none; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+    /* The highlight is the tab's own bottom border, laid over the divider and as wide as the label. */
+    .tabs [role='tab'] { display: inline-flex; align-items: center; gap: .5rem; flex-shrink: 0; margin: 0 0 -1px; padding: .85rem 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--text-secondary); font-size: 1.15rem; font-weight: 600; white-space: nowrap; }
     .tabs [role='tab']:hover { color: var(--text-primary); }
-    .tabs [role='tab'][aria-selected='true'] { color: var(--primary-text, var(--primary)); }
-    .tabs [role='tab'][aria-selected='true']::after { content: ''; position: absolute; left: .5rem; right: .5rem; bottom: -1px; height: 2px; border-radius: 2px; background: var(--primary); }
+    .tabs [role='tab'][aria-selected='true'] { color: var(--primary-text, var(--primary)); border-bottom-color: var(--primary); }
     .tabs [role='tab']:focus-visible, .settings-nav [role='tab']:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: .4rem; }
-    .dirty-dot { display: inline-block; width: .45rem; height: .45rem; margin-left: .4rem; border-radius: 50%; background: #d08a2e; vertical-align: .15rem; }
+    .dirty-dot { display: inline-block; width: .5rem; height: .5rem; margin-left: .1rem; border-radius: 50%; background: var(--si-warning); }
 
-    .settings { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 1.5rem; align-items: start; }
-    .settings-nav { display: flex; flex-direction: column; gap: .125rem; position: sticky; top: 1rem; }
-    .settings-nav [role='tab'] { display: flex; align-items: center; padding: .5rem .75rem; border: 0; border-radius: .5rem; background: none; color: var(--text-secondary); font-weight: 600; text-align: left; }
+    .settings { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 2rem; align-items: start; }
+    .settings-nav { display: flex; flex-direction: column; gap: .35rem; position: sticky; top: 1rem; }
+    .settings-nav [role='tab'] { display: flex; align-items: center; gap: .75rem; padding: .85rem 1rem; border: 0; border-radius: .65rem; background: none; color: var(--text-secondary); font-size: 1.15rem; font-weight: 600; text-align: left; }
+    .settings-nav [role='tab'] :global(svg) { flex-shrink: 0; }
     .settings-nav [role='tab']:hover { background: var(--bg-hover); color: var(--text-primary); }
     .settings-nav [role='tab'][aria-selected='true'] { background: var(--light-primary); color: var(--primary-text, var(--primary)); }
     .settings-body { min-width: 0; }
@@ -500,8 +502,9 @@
         .settings-nav { position: static; flex-direction: row; overflow-x: auto; scrollbar-width: none; contain: inline-size; }
         .settings-nav::-webkit-scrollbar { display: none; }
         .settings-nav [role='tab'] { flex-shrink: 0; white-space: nowrap; }
-        .page-title h1 { font-size: 1.5rem; }
-        .tabs { gap: 0; }
-        .tabs [role='tab'] { padding: .625rem .5rem; font-size: .9375rem; }
+        .page-title h1 { font-size: 1.75rem; }
+        .tabs { gap: 1.25rem; }
+        .tabs [role='tab'] { padding: .75rem 0; font-size: 1.08rem; }
+        .settings-nav [role='tab'] { padding: .65rem .85rem; }
     }
 </style>

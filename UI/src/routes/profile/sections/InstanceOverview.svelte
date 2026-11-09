@@ -1,6 +1,6 @@
 <script>
     // Panoramica: is everything fine, and what is the one thing to do next.
-    import {CheckCircle, WarningCircle, XCircle, Circle, CaretRight} from 'phosphor-svelte';
+    import {CheckCircle, WarningCircle, XCircle, Circle, CaretRight, ArrowsClockwise} from 'phosphor-svelte';
     import InstanceDialog from './InstanceDialog.svelte';
     import DiagnosticResult from './DiagnosticResult.svelte';
     import {formatRelative, formatDate, latestBackup, backupFreshness} from './instanceFormat.js';
@@ -118,7 +118,7 @@
 
 <InstanceDialog bind:open={checksOpen} title="Stato dei servizi" variant="drawer">
     <div class="drawer-actions">
-        <button type="button" class="btn btn-primary" disabled={diagnosticBusy || !!runBlockedReason} on:click={onRunDiagnostics}>{diagnosticBusy ? 'Verifica in corso…' : 'Verifica ora'}</button>
+        <button type="button" class="btn btn-primary si-btn" disabled={diagnosticBusy || !!runBlockedReason} on:click={onRunDiagnostics}><ArrowsClockwise size={18} weight="duotone" />{diagnosticBusy ? 'Verifica in corso…' : 'Verifica ora'}</button>
         {#if diagnosticBusy}<span class="si-reason" role="status">Circa 30 secondi</span>{:else if runBlockedReason}<span class="si-reason">{runBlockedReason}</span>{:else if diagnostics?.checked_at}<span class="si-reason">Ultima verifica {formatRelative(diagnostics.checked_at)}</span>{/if}
     </div>
     {#if diagnosticError}<p class="text-danger" role="alert">{diagnosticError}</p>{/if}
@@ -132,10 +132,10 @@
     .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
     .tile { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: .4rem; min-width: 0; padding: 1rem 2.25rem 1rem 1.125rem; text-align: left; border: 1px solid var(--border-color); border-radius: .75rem; background: var(--bg-card); color: var(--text-primary); transition: border-color .15s, box-shadow .15s; }
     .tile:hover { border-color: var(--primary-border, var(--primary)); box-shadow: var(--shadow-sm); }
-    .tile-label { font-size: .8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text-secondary); }
-    .tile-value { display: inline-flex; align-items: center; gap: .4rem; font-size: 1.125rem; font-weight: 600; overflow-wrap: anywhere; }
+    .tile-label { font-size: .925rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text-secondary); }
+    .tile-value { display: inline-flex; align-items: center; gap: .4rem; font-size: 1.35rem; font-weight: 600; overflow-wrap: anywhere; }
     .tile-value .si-icon { margin: 0; }
-    .tile-meta { font-size: .875rem; color: var(--text-secondary); }
+    .tile-meta { font-size: 1rem; color: var(--text-secondary); }
     .tile .si-skeleton { width: 60%; height: 1.25rem; }
     .tile-go { position: absolute; right: .875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
     .next { display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem; border-radius: .75rem; background: var(--bg-hover); }

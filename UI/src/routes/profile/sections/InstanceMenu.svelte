@@ -8,6 +8,8 @@
     export let label = 'Altre azioni';
     export let disabled = false;
     export let align = 'end';
+    // 'sm' beside small buttons (table rows), default beside regular buttons.
+    export let size = '';
 
     const id = `si-menu-${Math.random().toString(36).slice(2)}`;
     let open = false;
@@ -63,9 +65,9 @@
 <svelte:window on:click={onWindowClick} />
 
 <div class="si-menu" bind:this={root}>
-    <button bind:this={button} type="button" class="si-menu-button" aria-label={label} aria-haspopup="menu" aria-expanded={open} aria-controls={id}
+    <button bind:this={button} type="button" class="btn btn-icon btn-light si-menu-button" class:btn-sm={size === 'sm'} aria-label={label} aria-haspopup="menu" aria-expanded={open} aria-controls={id}
         {disabled} on:click={() => toggle()} on:keydown={onButtonKeydown}>
-        <slot name="button"><DotsThree size={22} weight="bold" /></slot>
+        <slot name="button"><DotsThree size={size === 'sm' ? 18 : 22} weight="bold" /></slot>
     </button>
     {#if open}
         <ul bind:this={list} {id} class="si-menu-list {align}" role="menu" aria-label={label} on:keydown={onKeydown}>
@@ -83,14 +85,13 @@
 
 <style>
     .si-menu { position: relative; display: inline-flex; }
-    .si-menu-button { display: inline-flex; align-items: center; justify-content: center; min-width: 2.25rem; height: 2.25rem; padding: 0 .4rem; border: 1px solid var(--border-color); border-radius: .5rem; background: var(--bg-card); color: var(--text-primary); }
-    .si-menu-button:hover:not(:disabled), .si-menu-button[aria-expanded='true'] { background: var(--bg-hover); }
-    .si-menu-button:disabled { opacity: .5; }
+    .si-menu-button { flex-shrink: 0; }
+    .si-menu-button[aria-expanded='true'] { background: var(--bg-active); }
     .si-menu-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     .si-menu-list { position: absolute; top: calc(100% + .35rem); z-index: 20; min-width: 14rem; max-width: min(20rem, calc(100vw - 2rem)); margin: 0; padding: .35rem; list-style: none; background: var(--bg-dropdown, var(--bg-card)); border: 1px solid var(--border-color); border-radius: .625rem; box-shadow: var(--shadow-md); }
     .si-menu-list.end { right: 0; }
     .si-menu-list.start { left: 0; }
-    [role='menuitem'] { display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: .5rem .65rem; border: 0; border-radius: .4rem; background: none; color: var(--text-primary); text-align: left; font-weight: 500; }
+    [role='menuitem'] { font-size: 1.08rem; display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: .5rem .65rem; border: 0; border-radius: .4rem; background: none; color: var(--text-primary); text-align: left; font-weight: 500; }
     [role='menuitem']:hover, [role='menuitem']:focus { background: var(--bg-hover); outline: none; }
     [role='menuitem']:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); }
     [role='menuitem'].danger { color: var(--danger, #d92d20); }

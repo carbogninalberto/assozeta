@@ -1,6 +1,6 @@
 // Prose belongs to authored MDX; this module only records reviewed implementation evidence.
 export const settingsAdditionalReviewedSources = Object.freeze({
-  "UI/src/routes/profile/ProfileMenu.svelte": "c083936170965608775be53540477754b033d3940313bfce54b09a9dfe426847",
+  "UI/src/routes/profile/ProfileMenu.svelte": "5bb6b5afa551d786105d4ccea32a42358182e8cff50ddc6662bddb6e79c73e13",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
   "UI/src/routes/profile/sections/Account.svelte": "d1ca0c771a8044a47daaad294ba07ead7618e8cda9c1123ea6dd9c3a9791c200",
   "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",

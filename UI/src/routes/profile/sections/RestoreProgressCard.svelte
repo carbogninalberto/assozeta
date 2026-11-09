@@ -61,7 +61,7 @@
     .indeterminate { animation: drift 2s ease-in-out infinite; }
     .meta { display: flex; flex-wrap: wrap; gap: .25rem .75rem; margin: 0; }
     .meta span + span::before { content: '·'; margin-right: .75rem; }
-    .phases { display: flex; flex-wrap: wrap; gap: .375rem 1rem; list-style: none; margin: .25rem 0 0; padding: 0; font-size: .875rem; color: var(--text-muted); }
+    .phases { display: flex; flex-wrap: wrap; gap: .375rem 1rem; list-style: none; margin: .25rem 0 0; padding: 0; font-size: 1rem; color: var(--text-muted); }
     .phases li { display: inline-flex; align-items: center; gap: .4rem; }
     .dot { display: inline-grid; place-items: center; width: 1rem; height: 1rem; border-radius: 50%; border: 1.5px solid currentColor; }
     .current { color: var(--primary-text, var(--primary)); font-weight: 600; }
