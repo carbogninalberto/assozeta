@@ -8274,12 +8274,35 @@
         "target": "collaborators_delete",
         "syntax": "path"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/collaborator_delete.go",
+        "BE_GO/internal/repository/collaborator_delete.go",
+        "BE_GO/internal/repository/collaborator_delete_collector.go",
+        "BE_GO/internal/repository/collaborator_delete_collector_test.go",
+        "BE_GO/internal/repository/collaborator_delete_graph.json",
+        "BE_GO/internal/service/collaborator_delete.go",
+        "BE_GO/internal/handler/collaborator_delete.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/course_subscriptions.go",
+        "BE_GO/internal/dto/course_subscriptions.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [
-        "BE/application/audit_context.py",
+        "BE/application/views/collaborator_views.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/subscriptions_models.py",
         "BE/application/signals.py",
-        "BE/application/models/user_models.py"
+        "BE/application/audit_context.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/mixin.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation.py",
+        "TESTS/adapters/django/collaborator_delete_go_graph.py"
       ],
       "contract": {
         "methods": [
@@ -8287,53 +8310,49 @@
           "OPTIONS"
         ],
         "external_paths": [
-          "/api/v1/collaborators/{uid}/delete"
+          "/api/v1/collaborators/<uid>/delete",
+          "/api/v2/collaborators/<uid>/delete",
+          "/api/collaborators/<uid>/delete"
         ],
-        "request": "Existing UUID path; body unused by deletion.",
-        "response": "200 JSON {\"msg\":\"collaborator deleted.\"}; direct users and invitation records remain distinct targets.",
-        "errors": "Authored native cases include foreign/missing 400, invalid UUID 400, anonymous 401, method 405 and seven actual PostgreSQL fault 500 responses.",
-        "authentication": "Existing IsAuthenticated and resolved effective user; complete actor/impersonation matrix pending.",
-        "permissions": "Existing permission registry and sport-association admission retained; no new target-role policy.",
-        "resource_scope": "Direct user: connected_user equals resolved owner. Invitation: user equals resolved owner. Confirmed bug fix also scopes accepted-invite email lookup to connected_user.",
-        "side_effects": "Django hard deletion and synchronous DELETE audit/index. Core user/invite plus eight representative cascade/protection cases pass; remaining financial hooks, full audit values, transitive/history/external effects remain open.",
-        "transaction": "Confirmed bug fix: atomic_audit_mutation encloses both deletes and audits/indexes. Owner-first and scoped target row locks; observed reparent and duplicate-delete tests pass.",
+        "request": "Path uid (is_valid_uuid: hyphenated, uppercase or hex forms); body never read; X-Group-Id filters the receivers' group-aware managers.",
+        "response": "200 {'msg': 'collaborator deleted.'}.",
+        "errors": "401 DRF challenge; 403 admin without a session, restricted collaborator (Missing permission: other.users.collaborators.delete, before method dispatch), owner scoped to an athlete, athletes (User is not a sport association, before the UUID check); 405 other methods; 400 ['badly formed hexadecimal UUID string']; 400 ['Collaborator not found'] for unknown, foreign, soft-deleted or self ids and foreign invitations; the stable 500 page for ProtectedError (DataRestore, BillingSubscription, BillingPayment), deferred foreign keys failing at commit (Associate.user, index rows to an association deleted after them, entries whose actor is the deleted user) and refused graphs.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry collaborators/*/delete -> other.users.collaborators.delete; request.user.is_sport_association.",
+        "resource_scope": "Live user with connected_user=request.user and user_id=uid (.first()), else CollaborationInvites with user=request.user; accepted invitation: live user with the exact invitation email and connected_user=request.user, lowest key.",
+        "side_effects": "Django Collector hard deletes over the User/CollaborationInvites graph: CASCADE closure, SET_NULL on kept rows, fast deletes, pre_delete receivers (payments, installments, course subscriptions) and one auditlog delete entry per deleted instance (twice for rows deleted again by the receivers) with AuditLogIndex through changes['sport_association'] when that live association exists, else the actor's association.",
+        "transaction": "atomic_audit_mutation: one transaction; locks the owner, then the target user or invitation, then the accepted account; deferred foreign keys checked at commit.",
         "execution_owner": "django"
       },
       "tests": [
-        "TESTS/contracts/test_collaborator_delete.py",
-        "TESTS/adapters/django/collaborator_delete.py",
-        "TESTS/adapters/django/collaborator_delete_locks.py",
-        "TESTS/adapters/django/collaborator_delete_graph.py",
-        "TESTS/adapters/django/collaborator_delete_cascades.py",
-        "TESTS/adapters/django/collaborator_delete_admission.py",
-        "TESTS/adapters/django/collaborator_delete_email_links.py",
-        "TESTS/test_collaborator_delete_email_links.py"
+        "TESTS/fixtures/collaborator_delete_go_http.json",
+        "TESTS/fixtures/generate_collaborator_delete_go_http.py",
+        "TESTS/contracts/test_collaborator_delete_go_http.py",
+        "TESTS/adapters/django/collaborator_delete_go_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/collaborator-delete-go.md",
         {
-          "command": "python -m TESTS.adapters.django.accounts --only collaborator-delete",
-          "revision": "source-bound parent-integrated receipt; see source_sha256",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/collaborator-delete/http-results.json"
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 46/46; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/collaborator-delete-go-http-native-r13/results.json",
+          "receipt_sha256": "c8712b04e9376e0dd6abfeede0982053d7797ae8c81a52a847133be6373f377e"
         },
         {
-          "command": "LC_ALL=C LANG=C python -m TESTS.adapters.django.accounts --only collaborator-delete",
-          "revision": "f4b00c5 plus source_sha256 in exact parent receipt",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/delete-parent-audit.json"
+          "revision": "committing change",
+          "result": "GREEN: 46/46 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact full-state effects, auditlog's own delete diff and repr as oracle and Django's entry order.",
+          "artifact": "quality-reports/go-migration/collaborator-delete-go-http-versioned-r1/results.json",
+          "receipt_sha256": "65178f6ff5b7c93ab49b54da4c79163f423659feb7cebba9a4910c51fa2b5f56"
         },
         {
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/collaborator-delete/http-results.json",
-          "revision": "29ac4838 plus exact source_sha256 for email-link oracle",
-          "scope": "Eight email-link reference cases with exact state/cache/audit; duplicate lowest-PK selection is characterization with unresolved durable identity. No Go mutation acceptance.",
-          "command": "python TESTS/adapters/django/accounts.py --only collaborator-delete"
+          "revision": "committing change with delete_installment_of_payment reading installments without the live (NOT deleted) manager filter (collaborator_delete_collector.go)",
+          "result": "Mutation control: fails Go on collaborator-delete-go-financial-receivers (audit.entries: the soft-deleted installment is deleted and logged by the payment receiver).",
+          "artifact": "quality-reports/go-migration/collaborator-delete-go-http-mutation-r1/results.json",
+          "receipt_sha256": "7ee3414f8b802462a6e557bac5c878f47ea64b05ed8e04bcf9676f5878dcc382"
         }
       ],
       "notes": [
-        "Django reference correction only; Go DELETE is not implemented. Eighteen actual HTTP cases, seven trigger faults, five observed PostgreSQL contention cases, 128-model/cache checks and cleanup pass.",
-        "Original unsafe ownership and partial-commit failures, plus actual no-row-lock failure, retained. No complete deletion parity, acceptance-race, ambiguous-email, cascade/history, frontend or installed acceptance claim. See collaborator-delete.md.",
-        "Parent final replay passes 52 admission cases, eight representative cascade/protection cases, 18 core cases and five observed PostgreSQL contention cases; all 128 models, cache, source stability and cleanup checked. Current schema metadata records 197 ORM relations, 197 PostgreSQL NO ACTION foreign keys and 89 potential User cascade model types; metadata is not executed cascade coverage. The optional native Go probe returns 404; no Go parity."
+        "Implementing: Go runs collaborators_delete with a port of Django's deletion Collector driven by BE_GO/internal/repository/collaborator_delete_graph.json, generated from the models' _meta by TESTS/adapters/django/collaborator_delete_go_graph.py (89 models reachable from User through CASCADE plus Payment and CourseSubscriptionInstallment; the family fails on drift). CASCADE/SET_NULL/PROTECT/DO_NOTHING, Django's fast deletes, Collector.sort, pre_delete receivers delete_installment_of_payment (self-disconnecting), delete_related_payment and delete_related_course_payment (FieldError path logged) with nested collectors and group-aware managers, and auditlog's per-row delete entry plus index row in Django's order (rows deleted twice are logged twice). Reproduced: ProtectedError 500 before writes; Associate.user and index rows pointing at an association deleted later in the same delete, and a collaborator deleting itself, fail at the deferred commit (500, nothing kept); accepted invitations delete the live account with the exact email connected to the owner (lowest key). Not ported (refused with 500 before the collector writes, whole transaction rolled back): any model the graph marks with a receiver, on_delete, key, audit option, __str__ or audit value type the port does not implement; none of the current 89 models is marked."
       ]
     },
     {
