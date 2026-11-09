@@ -90,7 +90,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -107,9 +107,11 @@
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/manuale-commands.md"
+      ],
       "notes": [
-        "ledger-structural review: Manual build tooling called only from docs/scripts/manuale.py, but without a code guard; left open. check-manual validates the image bundle and is not equivalent."
+        "Proposed deprecated (manuale-commands.md): no caller in selfhost, entrypoints, workflows or scripts; docs/scripts/manuale.py imports application/manuale/index.py and calls build_index/promote in-process. Output embeds a NumPy/LAPACK SVD whose rounded values differ between BLAS platforms, so a byte-identical Go port is not possible."
       ]
     },
     {
@@ -127,26 +129,55 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/manuale/main.go",
+        "BE_GO/pkg/manual/captures.go",
+        "BE_GO/pkg/manual/pyjson.go"
+      ],
+      "dependencies": [
+        "BE/application/manuale/index.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
+        "request": "CLI --run RUN --output OUTPUT (required; --name value or --name=value).",
+        "response": "stdout \"Capture variance measured for N checkpoints.\"; CommandError lines for non-passed reports, hash mismatch and drift under identical inputs (report written first); traceback paths exit 1 without a report; argparse errors exit 2.",
         "errors": null,
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "Reads RUN/capture-baseline/*.json, RUN reports and PNGs; writes OUTPUT as json.dumps(indent=2).",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/manuale_commands.py",
+        "BE_GO/pkg/manual/captures_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/manuale-commands.md",
+        {
+          "revision": "RED receipt, BE_GO/cmd/manuale removed",
+          "result": "RED: Django 81/81 authored cases (39 sync_manuale_corpus, 42 compare_manuale_captures); Go command absent.",
+          "artifact": "quality-reports/go-migration/manuale-commands-red/results.json",
+          "receipt_sha256": "8e9e10208fe942c57e27c4afa8f53cb0a1233b7f664102798796d18a5994ebaa"
+        },
+        {
+          "revision": "a5afeb15",
+          "result": "GREEN: 81/81 actual manage.py process vs race-built Go binary on fresh copies of the same fixture: exit status, stdout, CommandError/argparse message, every file (bytes, mode, link, mtime class) and local publisher requests identical; 2 compare cases are explicit Go refusals (JPEG, 16-bit PNG).",
+          "artifact": "quality-reports/go-migration/manuale-commands/results.json",
+          "receipt_sha256": "944e1f349b404df3fb931de41b07dc826446f53b86cb8f70aebac88b9442e641"
+        },
+        {
+          "revision": "a5afeb15 with the mean channel difference divided by pixels instead of channels",
+          "result": "Mutation control: CAUGHT, 13 cases fail.",
+          "artifact": "quality-reports/go-migration/manuale-commands-mutation-compare/results.json",
+          "receipt_sha256": "92400f0be7bc690535674a82f5982aef4ff6064b3bc5c035612b32cdfaeb546b"
+        }
+      ],
       "notes": [
-        "ledger-structural review: Manual CI tooling called only from docs/scripts/manuale.py, without a code guard; left open."
+        "Implementing: Go binary manuale compare-captures; docs/scripts/manuale.py still runs the Django command. Refused before writing (exit 1): non-PNG images, 16-bit PNG, grayscale below 8 bits, palette indices beyond PLTE, lone UTF-16 surrogates, JSON nested deeper than 900 levels. Not ported: Django global options, argparse abbreviations, traceback text."
       ]
     },
     {
@@ -256,9 +287,11 @@
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/manuale-commands.md"
+      ],
       "notes": [
-        "ledger-structural review: Manual evaluation tooling (MCP stdio plus the agent provider) without a code guard; left open."
+        "Not ported (manuale-commands.md): CI runs it via docs/scripts/manuale.py evaluate (manuale.yml), so not deprecable. It evaluates the Python stack itself (manage.py run_mcp_server over stdio, application.agent.core.Agent with NoModel, application.manuale.answers); Go has no agent, so a Go command would evaluate a different system. Left open."
       ]
     },
     {
@@ -738,26 +771,61 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/manuale/main.go",
+        "BE_GO/pkg/manual/refresh.go",
+        "BE_GO/pkg/manual/availability.go",
+        "BE_GO/pkg/manual/canonical.go",
+        "BE_GO/internal/config/manual.go"
+      ],
+      "dependencies": [
+        "BE/application/manuale/sync.py",
+        "BE/application/manuale/index.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
+        "request": "CLI: no options (Go also --env-file PATH). Settings MANUAL_CORPUS_BASE_URL, MANUAL_APPLICATION_REVISION/CODE_REVISION, RUNNING_VERSION/VERSION, MANUAL_INDEX_PATH, MANUAL_SOURCE_ROOT, ASSOZETA_MANUAL_RUN_ID.",
+        "response": "stdout \"Published manual corpus updated: <identity>\"; every failure stderr \"CommandError: Published corpus unavailable or incompatible; previous index retained.\" exit 1; argparse errors exit 2.",
         "errors": null,
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "side_effects": "GET BASE/REVISION/quote(RELEASE).json and screenshot URLs; installs content-addressed PNGs, retires/prunes assets, promotes canonical index + newline.",
+        "transaction": "Filesystem: shared .sync.lock flock; atomic rename after all screenshots are installed.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/manuale_commands.py",
+        "BE_GO/pkg/manual/captures_test.go",
+        "BE_GO/pkg/manual/refresh_test.go",
+        "TESTS/adapters/django/manual_refresh_lock.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/manuale-commands.md",
+        {
+          "revision": "RED receipt, BE_GO/cmd/manuale removed",
+          "result": "RED: Django 81/81 authored cases (39 sync_manuale_corpus, 42 compare_manuale_captures); Go command absent.",
+          "artifact": "quality-reports/go-migration/manuale-commands-red/results.json",
+          "receipt_sha256": "8e9e10208fe942c57e27c4afa8f53cb0a1233b7f664102798796d18a5994ebaa"
+        },
+        {
+          "revision": "a5afeb15",
+          "result": "GREEN: 81/81 actual manage.py process vs race-built Go binary on fresh copies of the same fixture: exit status, stdout, CommandError/argparse message, every file (bytes, mode, link, mtime class) and local publisher requests identical; 2 compare cases are explicit Go refusals (JPEG, 16-bit PNG).",
+          "artifact": "quality-reports/go-migration/manuale-commands/results.json",
+          "receipt_sha256": "944e1f349b404df3fb931de41b07dc826446f53b86cb8f70aebac88b9442e641"
+        },
+        {
+          "revision": "a5afeb15 with the promoted index written without the trailing newline",
+          "result": "Mutation control: CAUGHT, 13 cases fail.",
+          "artifact": "quality-reports/go-migration/manuale-commands-mutation-sync/results.json",
+          "receipt_sha256": "87f734417fa261ddc248d53d1196cab46c3f40c4c10d822edde293ae52747f68"
+        }
+      ],
       "notes": [
-        "ledger-structural review: Production (selfhost start and sync-manual). pkg/manual/refresh.go implements the synchronizer with cross-runtime lock evidence (manual-reader.md), but no Go command exists; not credited."
+        "Implementing: Go binary manuale sync-corpus; selfhost still runs the Django command and the binary is not yet in the Go image. Not ported: Django global options, argparse abbreviations, traceback text for exceptions outside OSError/ValueError/KeyError/TypeError (Go prints the CommandError line), publisher user agent."
       ]
     },
     {
@@ -22339,25 +22407,78 @@
         "target": "profile_update_subscription_template",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/profile_template.go",
+        "BE_GO/internal/dto/profile_template.go",
+        "BE_GO/internal/repository/profile_template.go",
+        "BE_GO/internal/service/profile_template.go",
+        "BE_GO/internal/handler/profile_template.go",
+        "BE_GO/internal/bs4prettify/prettify.go",
+        "BE_GO/pkg/storage/loginimage/pixels.go",
+        "BE_GO/pkg/storage/loginimage/processor.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/profile_views.py",
+        "BE/application/serializers/auth_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/utils.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/instance/registration_features.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/profile/update/subscription/template",
+          "/api/v2/profile/update/subscription/template",
+          "/api/profile/update/subscription/template"
+        ],
+        "request": "JSON {'sport_association': null | dict}; the dict must carry all 23 keys the view reads (additional_sections, regulation, demand, six show_* flags, logo, subscription_fee, multiple_subscription_fee, subscription_fee_plans, membership_fee, multiple_membership_fee, membership_fee_plans, enable_quotes_management, enabled_for, additional_fields, stripe_available_methods, invoice_template, subscription_template, extra_text_invoices); no validation.",
+        "response": "200 {'role', 'user_data': UserAuthSerializer(request.user) + preview_and_custom_features + compressed avatar (+ sport_association with the 590x130 logo for a role-1 owner)}.",
+        "errors": "Stable 500 page for a missing key, non-dict body or value, TypeError/AttributeError/ValueError in the conversions, an athlete or owner without active association, and conversion or database errors inside save() (audit entry kept).",
+        "authentication": "Bearer JWT; impersonation sessions.",
+        "permissions": "IsAuthenticated; registry other.settings.update; not an athlete view; collaborators act as the owner.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user), impersonation-scoped.",
+        "side_effects": "Full SportAssociation save of the assigned fields; one auditlog entry (sportassociation, index path self) when values differ.",
+        "transaction": "Not atomic: auditlog's pre_save entry is written before the UPDATE and survives its failure.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/profile_template_http.json",
+        "TESTS/fixtures/generate_profile_template_http.py",
+        "TESTS/contracts/test_profile_template_http.py",
+        "TESTS/adapters/django/profile_template_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/profile-template.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 45/45; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-template-http-native-r7/results.json",
+          "receipt_sha256": "a20bca0911109acbc5c43f2da2d6c4b3c13eb34c3e5b71aa288ede4bd307b9c4"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 45/45 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact association fields, auditlog entries (pre_save, kept on failed saves) and index rows.",
+          "artifact": "quality-reports/go-migration/profile-template-http-versioned-r1/results.json",
+          "receipt_sha256": "d6527880185ed9b3098947d61368da71ab4e499ef613d7245c7049425e55e5b9"
+        },
+        {
+          "revision": "committing change without the empty-plan rule that switches multiple_subscription_fee/multiple_membership_fee off",
+          "result": "Mutation control: fails Go on profile-template-empty-values (response multiple_subscription_fee differs).",
+          "artifact": "quality-reports/go-migration/profile-template-http-mutation-r1/results.json",
+          "receipt_sha256": "31940776075887e2c07e1ebff2e9db0b0964c05603ed3573c3b42c8a3b488f3b"
+        }
+      ],
+      "notes": [
+        "Implementing: profile-template family (docs/architecture/go-migration/profile-template.md): the subscription-template save. Section, regulation and demand HTML through a port of bs4 4.13.3 prettify() (html.parser) for a proven subset; logo through compress_base64 at 590x130 (loginimage now takes a width x height bound); fees and plans through float() and DecimalField conversion (prec 9 for floats, numeric(9,2) rounding); one save() whose auditlog pre_save entry survives conversion or database errors (savepoint in Go). Response: role, UserAuthSerializer with registration features and the 200x200 avatar, the re-read association with the 590x130 logo. Not ported (500 page before any write): HTML outside the prettify subset, section names outside the str.upper() subset, float() strings outside ASCII decimal/exponent/inf/nan, integers above 15 digits, non-string logos, containers in text or flag fields, NUL or lone surrogates, multipart bodies, images the processor cannot decode."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:saved-reports/<str:pk>/delete -> SavedReportViewSet.as_view({'delete': 'delete'})",
