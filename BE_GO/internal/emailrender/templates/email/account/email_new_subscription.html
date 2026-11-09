@@ -1,0 +1,13 @@
+{% extends "email/_base.html" %}
+{% block title %}Abbiamo un aggiornamento importante su {{ brand.app_name }}{% endblock %}
+{% block preheader %}Abbiamo un aggiornamento importante su {{ brand.app_name }}{% endblock %}
+{% block aria_label %}Abbiamo un aggiornamento importante su {{ brand.app_name }}{% endblock %}
+{% block content %}
+<p style="margin: 0 0 24px">Ciao,<br>Abbiamo un aggiornamento per te su <b>{{ brand.app_name }}</b>.<br>L'atleta <b>{{ athlete_first_name }} {{ athlete_last_name }}</b> ha compilato un modulo di richiesta di iscrizione all'associazione <b>{{ sport_association.denomination }}</b>.<br>Ricordati di controllare il libro soci per approvare o rifiutare la richiesta.</p>
+<p><a href="{{ app_host }}" class="email-button hover-bg-indigo-500" style="background-color: {{ brand.primary }}; color: {{ brand.foreground }}; text-decoration: none; display: inline-block; border-radius: 4px; padding: 14px 16px; text-align: center; font-weight: 600">Accedi a {{ brand.app_name }}</a></p>
+<hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0">
+<p>Se hai problemi, copia ed incolla il seguente link:</p>
+<p>{{ app_host }}</p>
+<p>Se hai ricevuto per errore questa email, ignorala.</p>
+<p>Un saluto,<br>Il team di <b>{{ brand.app_name }}</b></p>
+{% endblock %}

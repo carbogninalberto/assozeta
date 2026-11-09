@@ -119,6 +119,15 @@ def fee_assigned(recipient, fee_name, amount, association):
             'association_name': association}
 
 
+NEW_SUBSCRIPTION = 'email/account/email_new_subscription.html'
+
+
+def new_subscription(first, last, denomination, host=APP):
+    # subscription create / approval reminder (send_email_template in the worker)
+    return {'athlete_first_name': first, 'athlete_last_name': last, 'sport_association': obj(denomination=denomination),
+            'app_host': s(host), 'settings': WHITELABEL_SETTINGS}
+
+
 CASES = [
     ('collaborator-cloud', COLLABORATOR, collaborator(s('ASD Esempio')), 'it', 'cloud'),
     ('collaborator-none-config', COLLABORATOR, collaborator(s("L'Aquila & <Co>")), 'it', 'none'),
@@ -167,6 +176,10 @@ CASES = [
     ('fee-assigned-other', FEE_ASSIGNED, fee_assigned('Zoë <b>', {'t': 'bool', 'v': True}, flt(1e-07), s("L'Aquila")), 'it', 'self-logo'),
     ('welcome-password-none', WELCOME_PASSWORD, welcome_password(s('Nora'), NONE, 'NORNUOQWERTY12', s('n@example.test'), '00000000',
                                                                  NONE), 'it', 'none'),
+    ('new-subscription', NEW_SUBSCRIPTION, new_subscription(s('Giulia'), s('Rossi'), s('ASD Esempio')), 'it', 'cloud'),
+    ('new-subscription-escaped', NEW_SUBSCRIPTION, new_subscription(s("D'Amico <b>"), NONE, s('Società "Uno" & C.'),
+                                                                    host='http://h/x?a=1&b=2'), 'it', 'self-logo'),
+    ('new-subscription-missing', NEW_SUBSCRIPTION, {'app_host': s(APP)}, 'it', 'none'),
 ]
 
 
