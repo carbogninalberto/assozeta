@@ -38669,7 +38669,7 @@
         "file": "BE/core/settings.py",
         "line": 177,
         "symbol": "bakney-pairing-maintenance",
-        "sha256": "90267c8503cf7d8c620f1c5d9df0dca3d7b9d18d05fe8c96a5e8385969fb3db7"
+        "sha256": "c6d2a9d8539abfd76752ed61d6ab9cd21321ffe35c1fb76911ebdd36ff92dbe3"
       },
       "source_present": true,
       "declaration": {
@@ -38738,6 +38738,10 @@
           "result": "passed: schedule_due differential",
           "artifact": "quality-reports/go-migration/schedule-due/results.json",
           "receipt_sha256": "63f29c1f7caae26a91ef15a0593dab6f97903bd054caf0e424577d66f3be7c6f"
+        },
+        {
+          "command": "TESTS.adapters.go.schedule_due + occurrence + bakney_maintenance_worker_process",
+          "result": "green on the current tree after BE/core/settings.py gained the env-gated task routing (2026-11-09); schedule definition unchanged"
         }
       ],
       "notes": [
@@ -42960,28 +42964,85 @@
           "max_retries": "3"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/send_mail_async.go",
+        "BE_GO/internal/repository/celery_consumer.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/pyjson.go",
+        "BE_GO/internal/celery/routes.go",
+        "BE_GO/internal/smtpsend/django_message.go",
+        "BE_GO/cmd/celery-consumer/main.go"
+      ],
+      "dependencies": [
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/email_configuration.py",
+        "BE/application/models/user_models.py",
+        "BE/communications/models.py",
+        "BE/instance/models.py",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/repository/restore_admission.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/smtpsend/backend.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message (JSON, base64 body) on the assozeta-go queue, routed there only when GO_TASK_QUEUE_TASKS lists core.tasks.send_mail_async (empty by default); kwargs or up to five positional args bound to (subject, message, from_email, recipient_list, sport_association_id) plus fail_silently, html_message, reply_to, skip_association_check.",
+        "response": "TaskResult row as django_celery_results writes it with result_extended off: SUCCESS result null meta {\"children\": []}; RETRY/FAILURE with the kombu-JSON exception; REVOKED TaskRevokedError('expired').",
+        "errors": "Any exception in the body: self.retry(exc, countdown=int(180 * 2 ** retries)) republishing the same id with retries+1, root/parent ids, origin, reply_to and the restore stamp; on the fourth failure the original exception fails the task. CoordinatedTask: busy lock or pending restore defers 15 s (same retries, RETRY Busy, itself as child); a restore completed after assozeta_published_at fails with StaleDataTask before any effect.",
+        "authentication": "Internal task message without an HTTP actor.",
+        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "SportAssociation.objects (deleted excluded) by pk; CommunicationConfiguration existence for that association; InstanceConfiguration.objects.first() for the email source.",
+        "side_effects": "EmailMultiAlternatives through instance.email_configuration.EmailBackend with the environment source (Django SMTP backend dialogue, MIME bytes per smtpsend.RenderDjangoMessage), then EmailLog(recipient_list[0], subject, 'Sent', association). kombu ack emulation: unacked hash/index, early ack, visibility restore under unacked_mutex, warm-shutdown restore of held eta messages.",
+        "transaction": "Autocommit statements as in Django; the result row is stored after the retry message is published.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_process.py",
+        "TESTS/adapters/go/django_mail_golden.py",
+        "TESTS/adapters/go/celery_producer_golden.py",
+        "BE/instance/tests/test_celery_task_routing.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/celery/celery_test.go",
+        "BE_GO/internal/smtpsend/django_message_test.go",
+        "BE_GO/internal/service/send_mail_async_test.go"
+      ],
+      "evidence": [
+        "Differential consumer harness: each message built by Django's routed producer is executed once by a real Django Celery worker (-Q assozeta-go, django-db, CoordinatedTask, production EmailBackend) and once by the race-built cmd/celery-consumer on the same seed (private PostgreSQL current schema, private Redis, fake SMTP); SMTP transcripts, complete managed-model state incl. TaskResult/EmailLog, and every broker key compared. 14 scenarios: system-backend sends (plain, html+reply-to+two recipients, skip check with configuration, deleted association), auth failure retry (+180 s), connection refused retry (+360 s), last-retry FAILURE, StaleDataTask, pending-restore deferral (+15 s), future eta held and restored, expired REVOKED, visibility-timeout restore, and two handoffs to the celery queue (configuration path with its child executed by Go; fail_silently). RED: consumer without the registration (Timed out: Go consumer: plain text without association). GREEN 14/14. Mutation caught: retry message without assozeta_published_at. See docs/architecture/go-migration/celery-consumer.md.",
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py",
+          "revision": "go/celery-consumer on 85888791 (merged codex/go-backend-parity 3adc9ced)",
+          "result": "passed: 14 differential scenarios against the actual Django worker",
+          "artifact": "quality-reports/go-migration/celery-consumer-process/results.json",
+          "receipt_sha256": "04f26e47c9bb6e13105543ef2fa1842beba72483337b47bc2db818545c816bc1"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_process.py (consumer without the send_mail_async registration)",
+          "revision": "go/celery-consumer on 85888791",
+          "result": "red: Django oracle passed, Go timed out (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-process-red/results.json",
+          "receipt_sha256": "8c216e0003e485c8636f9ea149a7ceee9862f86541504e7e94fb8e5a40aea2cd"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='SMTP authentication failure' python -I TESTS/adapters/go/celery_consumer_process.py with BE_GO/internal/celery/message.go dropping assozeta_published_at from republished headers",
+          "revision": "go/celery-consumer on 85888791",
+          "result": "caught: Go differs from Django on the held retry message",
+          "artifact": "quality-reports/go-migration/celery-consumer-process-mutation/results.json",
+          "receipt_sha256": "1d6a7eed38db47ebbb7bbe59d52b51a35deec29a9da79fb0658ea900a6dd15e3"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Registered as core.tasks.send_mail_async; without a configuration it sends through Django EmailMultiAlternatives and instance.email_configuration.EmailBackend, writes EmailLog and retries with self.retry (max 3, countdown 180*2**retries)."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Registered as core.tasks.send_mail_async; without a configuration it sends through Django EmailMultiAlternatives and instance.email_configuration.EmailBackend, writes EmailLog and retries with self.retry (max 3, countdown 180*2**retries).",
+        "celery-consumer: Go consumption is opt-in per task name through GO_TASK_QUEUE_TASKS (Django task_routes and the Go producer route listed names to assozeta-go; empty by default, no routes, payloads unchanged). cmd/celery-consumer runs send_mail_async for the system-backend path; the CommunicationConfiguration.send_email path, the instance email source, fail_silently, other keyword arguments and messages outside the rendered MIME subset are handed off unchanged to the celery queue before any effect. Documented differences: no prefetch beyond free slots, no remote control/revoke-by-id, database errors stored as OperationalError('database error'), approximate messages for SMTPServerDisconnected/SMTPRecipientsRefused/SMTPNotSupportedError/TLS errors, TLS trust via Go system roots. execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/celery-consumer.md."
       ]
     },
     {
