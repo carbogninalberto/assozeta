@@ -594,6 +594,17 @@ type consumerRestoreExportService struct {
 	events           []consumerRestoreExportProgress
 	dir              string
 	zipPath, zipName string
+	// plan and archiveName, when set, are RecoveryExport's: its exclusions and
+	// the create_zip name (instance.restore.execution).
+	plan        *associationexport.Plan
+	archiveName string
+}
+
+func (e *consumerRestoreExportService) exportPlan() *associationexport.Plan {
+	if e.plan != nil {
+		return e.plan
+	}
+	return e.s.plan
 }
 
 func (e *consumerRestoreExportService) remove() {
@@ -639,7 +650,7 @@ func (e *consumerRestoreExportService) prepare(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	exporter := &associationexport.Exporter{Plan: s.plan, Association: e.call.association, Owner: e.association.Owner,
+	exporter := &associationexport.Exporter{Plan: e.exportPlan(), Association: e.call.association, Owner: e.association.Owner,
 		Credentials: e.call.credentials, PasswordFor: func(id string) bool { return e.call.passwords[id] },
 		Progress: func(index, total int, name string) {
 			e.report(ctx, 5+50*index/max(total, 1), "model_serialization", "Esportazione dati: "+name, index, total,
@@ -671,6 +682,9 @@ func (e *consumerRestoreExportService) prepare(ctx context.Context) error {
 	e.report(ctx, 87, "zip_creation", "Preparazione archivio ZIP", nil, nil, nil)
 	zipName := "export_" + e.call.association + "_" + s.now().UTC().Format("20060102_150405") + ".zip"
 	e.zipName = zipName
+	if e.archiveName != "" {
+		zipName = e.archiveName
+	}
 	e.zipPath = filepath.Join(s.settings.TempDir, zipName)
 	if err = e.createZip(ctx, dir, e.zipPath); err != nil {
 		return err
@@ -809,8 +823,8 @@ func (e *consumerRestoreExportService) manifest(dir string) error {
 		statistics = append(statistics, associationexport.Item{Key: stat.Name, Value: stat.Count})
 		counts[stat.Name] = stat.Count
 	}
-	models := make([]any, 0, len(s.plan.Models))
-	for _, model := range s.plan.Models {
+	models := make([]any, 0, len(e.exportPlan().Models))
+	for _, model := range e.exportPlan().Models {
 		models = append(models, associationexport.Dict{{Key: "name", Value: model.Name}, {Key: "count", Value: counts[model.Name]},
 			{Key: "file", Value: model.File}})
 	}

@@ -91,6 +91,9 @@ type Model struct {
 	Columns            []string `json:"columns"`
 	M2M                []M2M    `json:"m2m"`
 	DocumentAttributes []string `json:"document_attributes"`
+	// RecoveryFields are the keys instance.restore.execution.RecoveryExport
+	// writes when its exclusions (User only) differ from EXCLUDED_FIELDS.
+	RecoveryFields []Field `json:"recovery_fields"`
 }
 
 // Plan is the generated export plan.
@@ -111,6 +114,20 @@ type Plan struct {
 // documentM2M are the relations _collect_document_references adds.
 var documentM2M = map[string]bool{"_m2m_documents": true, "_m2m_attachments": true, "_m2m_attached_documents": true,
 	"_m2m_attached_membership_documents": true}
+
+// Recovery is the plan of RecoveryExport: every model with its recovery
+// fields where they differ.
+func (p *Plan) Recovery() *Plan {
+	recovery := *p
+	recovery.Models = make([]Model, len(p.Models))
+	for i, model := range p.Models {
+		if model.RecoveryFields != nil {
+			model.Fields = model.RecoveryFields
+		}
+		recovery.Models[i] = model
+	}
+	return &recovery
+}
 
 // LoadPlan decodes the embedded plan.
 func LoadPlan() (*Plan, error) {

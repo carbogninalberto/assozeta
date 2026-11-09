@@ -282,6 +282,10 @@ type consumerImportRun struct {
 	ownerUserID     string
 	media           []consumerImportMedia
 	parsed          map[string][]any
+	// objectOrder keeps imported_objects' per-model insertion order (dicts).
+	objectOrder map[string][]string
+	// replace is set when the run is a data restore's ReplacementImporter.
+	replace *restoreReplacement
 }
 
 type consumerImportDeferred struct {
@@ -745,16 +749,36 @@ func (r *consumerImportRun) records(name string) ([]any, error) {
 	return list, nil
 }
 
-func (r *consumerImportRun) generateUUID(old string) string {
-	r.uuidMapping[old] = old
-	return old
+// generateUUID is _generate_uuid (ReplacementImporter maps the source
+// association and owner to the local ones).
+func (r *consumerImportRun) generateUUID(old, model string) string {
+	value := old
+	if r.replace != nil {
+		switch {
+		case model == "SportAssociation" && old == r.associationID:
+			value = r.replace.target
+		case model == "User" && old == r.ownerUserID:
+			value = r.replace.owner
+		}
+	}
+	r.uuidMapping[old] = value
+	return value
 }
 
 func (r *consumerImportRun) register(model, oldPK string, instance *importeffects.Instance) {
 	if r.importedObjects[model] == nil {
 		r.importedObjects[model] = map[string]*importeffects.Instance{}
 	}
+	if r.objectOrder == nil {
+		r.objectOrder = map[string][]string{}
+	}
+	if _, seen := r.importedObjects[model][oldPK]; !seen {
+		r.objectOrder[model] = append(r.objectOrder[model], oldPK)
+	}
 	r.importedObjects[model][oldPK] = instance
+	if r.replace != nil {
+		r.replace.registered(model, oldPK)
+	}
 	if model == "Document" {
 		r.documentMapping[oldPK] = instance
 	}
@@ -922,7 +946,10 @@ func (r *consumerImportRun) createOwnerUser() error {
 	if err != nil {
 		return err
 	}
-	id := r.generateUUID(old)
+	if r.replace != nil {
+		return r.replace.createOwnerUser(r, old)
+	}
+	id := r.generateUUID(old, "User")
 	if !importeffects.CanonicalUUID(id) {
 		return errConsumerImportUnsupported
 	}
@@ -1068,7 +1095,10 @@ func (r *consumerImportRun) importSportAssociation() error {
 	if err != nil {
 		return err
 	}
-	id := r.generateUUID(old)
+	if r.replace != nil {
+		return r.replace.importSportAssociation(r, data, old)
+	}
+	id := r.generateUUID(old, "SportAssociation")
 	if !importeffects.CanonicalUUID(id) {
 		return errConsumerImportUnsupported
 	}
@@ -1211,6 +1241,12 @@ func (r *consumerImportRun) saveImportedMessage(instance *importeffects.Instance
 // createModelInstance is _create_model_instance (nil for the skipped owner).
 func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data domain.RequestObject) (*importeffects.Instance, error) {
 	name := model.Name
+	if r.replace != nil {
+		var err error
+		if data, err = r.replace.normalizeOptionalLinks(model, data); err != nil {
+			return nil, err
+		}
+	}
 	r.modelCache[name] = true
 	pkField := r.s.plan.PKFields[name]
 	var oldPK any
@@ -1222,7 +1258,7 @@ func (r *consumerImportRun) createModelInstance(model *importeffects.Model, data
 			if err != nil {
 				return nil, err
 			}
-			data = importSet(data, pkField, r.generateUUID(text))
+			data = importSet(data, pkField, r.generateUUID(text, name))
 		}
 	}
 	oldText := ""
@@ -1458,11 +1494,19 @@ func (r *consumerImportRun) importFolders(records []any) error {
 	}
 	r.setStat("Folder", count)
 	r.importedModels["Folder"] = true
+	if r.replace != nil {
+		for key := range seen {
+			r.replace.processed["Folder\x00"+key] = true
+		}
+	}
 	return nil
 }
 
 // resolveDeferredFKs is _resolve_deferred_fks (pass 2).
 func (r *consumerImportRun) resolveDeferredFKs() error {
+	if r.replace != nil {
+		r.replace.publish(restoreProgressEvent{phase: "finalizing", detail: "Ricostruzione dei collegamenti"})
+	}
 	resolved, failed := int64(0), int64(0)
 	for _, model := range r.deferredOrder(func(i int) string { return r.deferredFKs[i].model }, len(r.deferredFKs)) {
 		plan := r.s.plan.Model(model)
@@ -1575,6 +1619,9 @@ func (r *consumerImportRun) importM2M() error {
 // importFiles is _import_files (pass 4): the database part runs here, the
 // uploads are listed for Run with the names default_storage.save returns.
 func (r *consumerImportRun) importFiles() error {
+	if r.replace != nil {
+		return r.replace.importFiles(r)
+	}
 	count := int64(0)
 	for _, name := range r.archive.names {
 		if !strings.HasPrefix(name, "files/") || strings.HasSuffix(name, "/") {
@@ -1640,7 +1687,7 @@ func (r *consumerImportRun) importDocumentFile(member, old, filename string) err
 	model := r.s.plan.Model("Document")
 	document := r.documentMapping[old]
 	if document == nil {
-		id := r.generateUUID(old)
+		id := r.generateUUID(old, "Document")
 		document = r.importedObjects["Document"][old]
 		if document == nil {
 			if !importeffects.CanonicalUUID(id) {
