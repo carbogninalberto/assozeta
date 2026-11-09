@@ -231,3 +231,24 @@ func (t identityTransport) RoundTrip(request *http.Request) (*http.Response, err
 	}
 	return response, err
 }
+
+// TotalBytes sums the size of every object in the bucket, whatever the
+// location (instance/backups.py object_bytes: list_objects_v2 pages).
+func (s *S3) TotalBytes(ctx context.Context) (int64, error) {
+	client, err := s.client(ctx)
+	if err != nil {
+		return 0, err
+	}
+	var total int64
+	pages := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{Bucket: aws.String(s.options.Bucket)})
+	for pages.HasMorePages() {
+		page, err := pages.NextPage(ctx)
+		if err != nil {
+			return 0, err
+		}
+		for _, object := range page.Contents {
+			total += aws.ToInt64(object.Size)
+		}
+	}
+	return total, nil
+}

@@ -258,6 +258,10 @@ func run() (runErr error) {
 	if err != nil {
 		return err
 	}
+	instanceBackupsHandler, err := composeInstanceBackups(cfg, db, cache, instanceAdminHandler)
+	if err != nil {
+		return err
+	}
 	bakneySSOHandler, closeBakneySSO, err := composeBakneySSO(cfg, db, cache, tokens, accounts, identities, instanceService, images)
 	if err != nil {
 		return err
@@ -781,6 +785,9 @@ func run() (runErr error) {
 	e.Any("/instance/admin/integrations/:provider/test", instanceOutboundHandler.IntegrationTest, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/email/test", instanceOutboundHandler.EmailTest, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/releases", instanceOutboundHandler.Releases, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups", instanceBackupsHandler.Overview, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/download-token", instanceBackupsHandler.Token, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/backups/:name/download", instanceBackupsHandler.Download, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore", dataRestoreHandler.Root, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore/backups", dataRestoreHandler.Backups, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/data-restore/:id/download", dataRestoreHandler.Download, middleware.DjangoSessionAudit(sessionAuthentication))

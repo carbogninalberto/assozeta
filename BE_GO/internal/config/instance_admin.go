@@ -15,6 +15,9 @@ type InstanceAdminSettings struct {
 	AppURL            string `json:"-"`
 	ConfiguredVersion string
 	DeploymentMode    string
+	// UpdaterDirectory is ASSOZETA_UPDATER_DIRECTORY (env.str, default
+	// '/run/assozeta-updater'): the update runner's socket and token.
+	UpdaterDirectory string
 	// Environment email (email_configuration.effective_email).
 	EmailHost, EmailUsername string `json:"-"`
 	EmailPassword            string `json:"-"`
@@ -53,6 +56,9 @@ func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error)
 		return s, err
 	}
 	if s.DeploymentMode, err = environmentString(values, "ASSOZETA_DEPLOYMENT_MODE", "development", false); err != nil {
+		return s, err
+	}
+	if s.UpdaterDirectory, err = environmentString(values, "ASSOZETA_UPDATER_DIRECTORY", "/run/assozeta-updater", false); err != nil {
 		return s, err
 	}
 	// EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER and EMAIL_HOST_PASSWORD are
