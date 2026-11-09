@@ -73,7 +73,7 @@
         <div class="card-body {$isMobile ? '' : 'position-fixed'} navi-body-settings p-0 px-md-8 py-md-4">
             {#if $role === 'administrator'}
                 <nav aria-label="Amministrazione" class="navi navi-bold navi-hover navi-active navi-link-rounded py-4">
-                    {#each [{page:'self-instance',label:'Self Instance',icon:GearSix},{page:'data-management',label:'Gestione Dati',icon:Database}] as item}
+                    {#each [{page:'self-instance',label:'Istanza',icon:GearSix},{page:'data-management',label:'Gestione Dati',icon:Database}] as item}
                         <div class="navi-item mb-2">
                             <a href={`/#/profile?page=${item.page}`} on:click|preventDefault={() => changeSubPage(item.page)} class="navi-link py-4" class:active={$subPage === item.page}>
                                 <span class="menu-icon mr-3"><svelte:component this={item.icon} size={24} weight="duotone" /></span>
@@ -210,7 +210,7 @@
                         <a href="/#/profile?page=self-instance" on:click|preventDefault={() => changeSubPage('self-instance')}
                             class="navi-link py-4 {$subPage === 'self-instance' ? 'active' : ''}">
                             <span class="menu-icon m-0 mr-md-3"><Database size="24" weight="duotone" /></span>
-                            <span class="navi-text font-size-lg">Self Instance</span>
+                            <span class="navi-text font-size-lg">Istanza</span>
                         </a>
                     </div>
                 {/if}

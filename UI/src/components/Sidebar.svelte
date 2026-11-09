@@ -133,7 +133,7 @@
                 {#key $permissions}
                 {#if $role === 'administrator'}
                     {#each [
-                        {page: 'self-instance', label: 'Self Instance', href: '/#/profile?page=self-instance', icon: GearSix},
+                        {page: 'self-instance', label: 'Istanza', href: '/#/profile?page=self-instance', icon: GearSix},
                         {page: 'data-management', label: 'Gestione Dati', href: '/#/profile?page=data-management', icon: Files},
                         {page: 'impersonation', label: 'Impersona utenti', href: '/#/tools/sport-associations-manager', icon: UserFocus}
                     ] as item}

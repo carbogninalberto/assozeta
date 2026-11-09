@@ -1,5 +1,17 @@
 import {test, expect} from '@playwright/test';
 
+// Restart lives in the header "Azioni istanza" menu; a disabled item keeps its reason.
+const restartItem = async page => {
+    const menu = page.getByRole('button', {name: 'Azioni istanza'});
+    if (await menu.getAttribute('aria-expanded') !== 'true') await menu.click();
+    return page.getByRole('menuitem', {name: 'Riavvia applicazione'});
+};
+const expectRestart = async (page, enabled) => {
+    await expect.poll(async () => { const item = await restartItem(page); const value = await item.getAttribute('aria-disabled') !== 'true'; await page.keyboard.press('Escape'); return value; }).toBe(enabled);
+};
+const confirmButton = page => page.getByRole('dialog', {name: 'Riavviare l’applicazione?'}).getByRole('button', {name: 'Riavvia', exact: true});
+const settings = async (page, label) => { await page.getByRole('tablist', {name: 'Sezioni istanza'}).getByRole('tab', {name: 'Impostazioni'}).click(); await page.getByRole('tablist', {name: 'Impostazioni'}).getByRole('tab', {name: label}).click(); };
+
 test.beforeEach(async ({page, request, context}) => {
     await request.post('/api/fixture/reset');
     await context.addCookies([{name: 'fixture-cookie', value: 'keep-session', url: 'http://127.0.0.1:5194'}]);
@@ -19,8 +31,7 @@ test('full reload retrieves deployed assets and preserves route, session and pre
     expect((await request.get('/static/css/app-bundle.css')).headers()['cache-control']).toBe('no-cache');
     expect((await request.get('/global.css')).headers()['cache-control']).toBe('no-cache');
     await expect(page.getByLabel('Versione frontend')).toHaveText('Frontend 1');
-    const reload = page.getByRole('button', {name: 'Ricarica applicazione', exact: true});
-    await expect(reload).toBeEnabled();
+    await expectRestart(page, true);
     await expect.poll(async () => (await (await request.get('/api/fixture/state')).json()).connections).toBeGreaterThan(0);
     const before = await (await request.get('/api/fixture/state')).json();
     const originalScript = await page.locator('script[type="module"]').getAttribute('src');
@@ -30,13 +41,13 @@ test('full reload retrieves deployed assets and preserves route, session and pre
         localStorage.setItem('assozeta_config_timestamp', '1');
     });
     await request.post('/api/fixture/state', {data: {version: 2}});
-    await reload.click();
-    await expect(page.getByRole('dialog')).toContainText('Tutti i container');
+    await (await restartItem(page)).click();
+    await expect(page.getByRole('dialog')).toContainText('circa un minuto');
     await expect(page.getByRole('dialog')).toHaveCSS('opacity', '1');
-    await page.screenshot({path: testInfo.outputPath('self-instance-restart-confirmation-desktop.png'), fullPage: true, animations: 'disabled'});
-    await Promise.all([page.waitForEvent('load'), page.getByRole('button', {name: 'Riavvia e ricarica', exact: true}).click()]);
+    await page.screenshot({path: testInfo.outputPath('self-instance-restart-confirmation-desktop.png'), animations: 'disabled'});
+    await Promise.all([page.waitForEvent('load'), confirmButton(page).click()]);
     await expect(page.getByLabel('Versione frontend')).toHaveText('Frontend 2');
-    await expect(page.locator('.overview-tile').getByText('Associazione Aurora', {exact: true})).toBeVisible();
+    await expect(page.locator('.instance-name')).toHaveText('Associazione Aurora');
     expect(await page.locator('script[type="module"]').getAttribute('src')).not.toBe(originalScript);
     expect(page.url()).toBe('http://127.0.0.1:5194/?keep=1#/profile/self-instance');
     expect(await page.evaluate(() => window.oldDocumentSentinel)).toBeUndefined();
@@ -53,37 +64,37 @@ test('full reload retrieves deployed assets and preserves route, session and pre
 
 test('unsaved edits and an in-flight save block reload', async ({page}) => {
     await page.goto('/#/profile/self-instance');
-    const reload = page.getByRole('button', {name: 'Ricarica applicazione', exact: true});
-    await expect(reload).toBeEnabled();
-    await page.getByRole('group', {name: 'Sezioni Self Instance'}).getByRole('button', {name: 'Identità e logo', exact: true}).click();
+    await expectRestart(page, true);
+    await settings(page, 'Identità');
     await page.getByLabel('Nome', {exact: true}).fill('Nuovo nome');
-    await expect(reload).toBeDisabled();
-    await expect(page.getByText('Salva o annulla le modifiche prima di ricaricare.', {exact: false})).toBeVisible();
+    await expectRestart(page, false);
+    await (await restartItem(page)).focus();
+    await expect(page.getByText('Salva o annulla prima le modifiche.', {exact: true})).toBeVisible();
+    await page.keyboard.press('Escape');
     await page.getByLabel('Nome', {exact: true}).fill('Associazione Aurora');
-    await expect(reload).toBeEnabled();
+    await expectRestart(page, true);
     await page.getByLabel('Nome', {exact: true}).fill('Nome salvato');
-    await page.getByRole('button', {name: 'Salva impostazioni', exact: true}).click();
-    await expect(reload).toBeDisabled();
-    await expect(reload).toBeEnabled();
-    await reload.click();
-    await expect(page.getByRole('dialog')).toContainText('Tutti i container');
-    await Promise.all([page.waitForEvent('load'), page.getByRole('button', {name: 'Riavvia e ricarica', exact: true}).click()]);
+    await page.getByRole('button', {name: 'Salva identità', exact: true}).click();
+    await expect(page.getByRole('button', {name: 'Salva identità', exact: true})).toBeDisabled();
+    await expectRestart(page, true);
+    await (await restartItem(page)).click();
+    await expect(page.getByRole('dialog')).toContainText('circa un minuto');
+    await Promise.all([page.waitForEvent('load'), confirmButton(page).click()]);
     // Refresh preserves the selected tab; verify the saved form before opening
     // the overview instead of expecting navigation to reset implicitly.
     await expect(page).toHaveURL(/#\/profile\?page=self-instance&tab=branding$/);
     await expect(page.getByLabel('Nome', {exact: true})).toHaveValue('Nome salvato');
-    await page.getByRole('group', {name: 'Sezioni Self Instance'}).getByRole('button', {name: 'Panoramica', exact: true}).click();
-    await expect(page.locator('.overview-tile').getByText('Nome salvato', {exact: true})).toBeVisible();
+    await expect(page.locator('.instance-name')).toHaveText('Nome salvato');
 });
 
 test('cancelling confirmation performs no mutation or navigation', async ({page, request}) => {
     await page.goto('/#/profile/self-instance');
-    await page.getByRole('button', {name: 'Ricarica applicazione', exact: true}).click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toContainText('temporaneamente non disponibile per tutti');
+    await (await restartItem(page)).click();
+    const dialog = page.getByRole('dialog', {name: 'Riavviare l’applicazione?'});
+    await expect(dialog).toContainText('non sarà disponibile');
     await expect(dialog).toContainText('modifiche non salvate');
-    await expect(dialog).toContainText('dati salvati e la sessione saranno mantenuti');
-    await page.getByRole('button', {name: 'Annulla', exact: true}).click();
+    await expect(dialog).toContainText('Dati e sessione restano');
+    await dialog.getByRole('button', {name: 'Annulla', exact: true}).click();
     await expect(dialog).not.toBeVisible();
     expect((await (await request.get('/api/fixture/state')).json()).writes).toBe(0);
     await expect(page.getByLabel('Versione frontend')).toHaveText('Frontend 1');
@@ -93,7 +104,8 @@ for (const stage of ['backup', 'recovery_required']) {
     test(`restart is blocked during ${stage}`, async ({page, request}) => {
         await request.post('/api/fixture/state', {data: {stage}});
         await page.goto('/#/profile/self-instance');
-        await expect(page.getByRole('button', {name: 'Ricarica applicazione', exact: true})).toBeDisabled();
+        await expect(page.getByRole('heading', {name: 'Istanza', exact: true})).toBeVisible();
+        await expectRestart(page, false);
         expect((await (await request.get('/api/fixture/state')).json()).writes).toBe(0);
     });
 }
@@ -101,8 +113,8 @@ for (const stage of ['backup', 'recovery_required']) {
 test('API downtime prevents a new restart', async ({page, request}) => {
     await request.post('/api/fixture/state', {data: {stage: 'backup', unavailable: true}});
     await page.goto('/#/profile/self-instance');
-    await expect(page.getByRole('region', {name: 'Stato aggiornamenti'})).toContainText('Backup dei dati');
-    await expect(page.getByRole('button', {name: 'Ricarica applicazione', exact: true})).toBeDisabled();
+    await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Backup dei dati');
+    await expect(page.getByRole('button', {name: 'Azioni istanza'})).toHaveCount(0);
     expect((await (await request.get('/api/fixture/state')).json()).writes).toBe(0);
 });
 
@@ -110,14 +122,14 @@ for (const restartBehavior of ['success', 'lost-response']) {
     test(`confirmed restart recovers through downtime and ${restartBehavior} without duplicates`, async ({page, request}) => {
         await request.post('/api/fixture/state', {data: {restartBehavior}});
         await page.goto('/#/profile/self-instance');
-        const reload = page.getByRole('button', {name: 'Ricarica applicazione', exact: true});
-        await reload.click();
+        await expectRestart(page, true);
+        await (await restartItem(page)).click();
         const loaded = page.waitForEvent('load');
-        await page.getByRole('button', {name: 'Riavvia e ricarica', exact: true}).click();
-        await expect(reload).toBeDisabled();
-        await expect(page.getByText('Riavvio dell’installazione in corso.', {exact: false})).toBeVisible();
+        await confirmButton(page).click();
+        await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Riavvio in corso');
+        await expectRestart(page, false);
         await loaded;
-        await expect(reload).toBeEnabled();
+        await expectRestart(page, true);
         const state = await (await request.get('/api/fixture/state')).json();
         expect(state.writes).toBe(1);
         expect(state.status.history[0].kind).toBe('restart');
@@ -129,8 +141,8 @@ test('failed restart keeps the page open with actionable feedback', async ({page
     await request.post('/api/fixture/state', {data: {restartBehavior: 'failed'}});
     await page.goto('/#/profile/self-instance');
     await page.evaluate(() => {window.documentSentinel = true;});
-    await page.getByRole('button', {name: 'Ricarica applicazione', exact: true}).click();
-    await page.getByRole('button', {name: 'Riavvia e ricarica', exact: true}).click();
+    await (await restartItem(page)).click();
+    await confirmButton(page).click();
     await expect(page.getByRole('alert').first()).toContainText('Verifica i container e i log del server.');
     expect(await page.evaluate(() => window.documentSentinel)).toBe(true);
     expect((await (await request.get('/api/fixture/state')).json()).writes).toBe(1);
@@ -140,24 +152,24 @@ test('timeout offers a status-only retry without another restart', async ({page,
     await request.post('/api/fixture/state', {data: {restartBehavior: 'stall'}});
     await page.goto('/#/profile/self-instance');
     await page.clock.install();
-    await page.getByRole('button', {name: 'Ricarica applicazione', exact: true}).click();
-    await page.getByRole('button', {name: 'Riavvia e ricarica', exact: true}).click();
-    await expect(page.getByText('Riavvio dell’installazione in corso.', {exact: false})).toBeVisible();
+    await (await restartItem(page)).click();
+    await confirmButton(page).click();
+    await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Riavvio in corso');
     await page.clock.fastForward(601000);
-    await expect(page.getByRole('alert').filter({hasText: 'non è stato verificato entro 10 minuti'})).toBeVisible();
-    await page.getByRole('button', {name: 'Verifica di nuovo lo stato', exact: true}).click();
-    await expect(page.getByRole('button', {name: 'Ricarica applicazione', exact: true})).toBeDisabled();
+    await expect(page.getByRole('alert').filter({hasText: 'Riavvio non confermato'})).toBeVisible();
+    await page.getByRole('button', {name: 'Verifica di nuovo', exact: true}).click();
+    await expectRestart(page, false);
     expect((await (await request.get('/api/fixture/state')).json()).writes).toBe(1);
 });
 
 test('reload action fits a mobile viewport', async ({page}, testInfo) => {
     await page.setViewportSize({width: 390, height: 844});
     await page.goto('/#/profile/self-instance');
-    await expect(page.getByRole('button', {name: 'Ricarica applicazione', exact: true})).toBeEnabled();
-    await expect(page.getByRole('button', {name: 'Apri diagnostica', exact: true})).toBeEnabled();
+    await expectRestart(page, true);
+    await expect(page.getByRole('button', {name: /^Servizi/})).toBeEnabled();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
-    await page.getByRole('button', {name: 'Ricarica applicazione', exact: true}).click();
+    await (await restartItem(page)).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCSS('opacity', '1');
-    await page.screenshot({path: testInfo.outputPath('self-instance-reload-mobile.png'), fullPage: true, animations: 'disabled'});
+    await page.screenshot({path: testInfo.outputPath('self-instance-reload-mobile.png'), animations: 'disabled'});
 });

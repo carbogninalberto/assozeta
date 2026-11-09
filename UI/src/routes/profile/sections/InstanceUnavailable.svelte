@@ -4,7 +4,8 @@
     import {getApiHost} from 'store/instanceStore.js';
     import {readStoredStatus} from './independentStatus.js';
     import {mergeRunnerStatus} from './updateStatus.js';
-    import InstanceUpdateStatus from './InstanceUpdateStatus.svelte';
+    import InstanceBanner from './InstanceBanner.svelte';
+    import './selfInstance.css';
 
     let owner = false;
     let runner = {available: false, active: null, history: []};
@@ -46,12 +47,12 @@
 
 <main class="container py-8">
     <div class="card card-custom"><div class="card-body">
-        <h1>{owner ? 'Self Instance' : 'Applicazione temporaneamente non disponibile'}</h1>
+        <h1>{owner ? 'Istanza' : 'Applicazione temporaneamente non disponibile'}</h1>
         {#if owner}
-            <InstanceUpdateStatus {runner} {reconnecting} apiUnavailable />
+            <InstanceBanner {runner} {reconnecting} apiUnavailable />
         {:else}
             <p role="status">Riconnessione in corso. La sessione verrà mantenuta durante il riavvio dei servizi.</p>
         {/if}
-        <button class="btn btn-light-primary" on:click={() => window.location.reload()}>Riprova ad aprire l’applicazione</button>
+        <button class="btn btn-light-primary mt-4" on:click={() => window.location.reload()}>Riprova ad aprire l’applicazione</button>
     </div></div>
 </main>

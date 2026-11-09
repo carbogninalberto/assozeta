@@ -40,14 +40,14 @@ try {
     await server.listen();
     browser = await chromium.launch({headless: true});
     for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}]) {
-        const context = await browser.newContext({viewport});
+        const context = await browser.newContext({viewport, acceptDownloads: true});
         const page = await context.newPage();
         const errors = [];
         page.on('pageerror', error => {errors.push(error.message); console.error(error.stack);});
         let email = {source: 'environment', revision: 0, host: '', port: 465, security: 'ssl', username: '', from_email: '', sender_name: '', password_configured: false, restart_required: false};
         let diagnostics = {overall: 'not_checked', checked_at: null, checks: [
-            {id: 'database', label: 'Database', core: true, status: 'not_checked', message: 'Esegui la diagnostica.', level: 'connectivity'},
-            {id: 'email', label: 'Configurazione email', core: false, status: 'not_checked', message: 'Esegui la diagnostica.', level: 'configuration'},
+            {id: 'database', label: 'Database', core: true, status: 'not_checked', message: 'Esegui la diagnostica.', level: 'connectivity', section: 'diagnostics'},
+            {id: 'email', label: 'Configurazione email', core: false, status: 'not_checked', message: 'Esegui la diagnostica.', level: 'configuration', section: 'email'},
         ], integrations: [{id: 'stripe', label: 'Stripe', status: 'not_configured', message: 'Integrazione facoltativa non configurata.', level: 'configuration', core: false}]};
         const integrationEnvironment = {
             stripe: {source: 'environment', revision: 0, enabled: true, public_key: 'pk_test_environment', secret_key_configured: true, webhook_secret_configured: true},
@@ -59,23 +59,29 @@ try {
         let failSave = false;
         let failRun = false;
         let sent = 0;
-        let runnerHistory = Array.from({length: 20}, (_, index) => ({id: `fixture-operation-${index}`, source_version: '1.0.2', target_version: '1.0.3', stage: 'completed', actor_id: 'fixture-owner', created_at: '2026-09-18T12:00:00Z'}));
+        let runnerActive = null;
+        let runnerHistory = Array.from({length: 20}, (_, index) => ({id: `fixture-operation-${index}`, source_version: '1.0.2', target_version: '1.0.3', stage: 'completed', status: 'succeeded', actor_id: 'fixture-owner', created_at: '2026-09-18T12:00:00Z'}));
         const latestRelease = {id: 4, tag: 'v1.0.4', name: 'Miglioramenti dell’istanza', published_at: '2026-09-23T12:00:00Z', artifacts_ready: true, url: 'https://example.test/release',
             notes: '# Novità della versione\n\n' + 'Migliorata la gestione degli aggiornamenti e la consultazione delle versioni precedenti.\n\n'.repeat(30) + 'Fine delle note di rilascio.'};
         const GIB = 1024 ** 3;
         const backupArchive = 'assozeta-20261106T200459Z.tar.gz';
-        const backupOverview = {available: true, retention: {automatic: 3},
-            archives: [
-                {name: backupArchive, size: 3 * GIB, created_at: '2026-11-06T20:04:59+00:00', version: '1.0.3', origin: 'manual', keep: false, last_upgrade: false, pending_upgrade: false, location: 'local'},
-                {name: 'assozeta-20261101T020000Z.tar.gz', size: 3 * GIB, created_at: '2026-11-01T02:00:00+00:00', version: '1.0.2', origin: 'pre-upgrade', keep: false, last_upgrade: true, pending_upgrade: false, location: 'local'},
-                {name: 'assozeta-20261001T020000Z.tar.gz', size: 2 * GIB, created_at: '2026-10-01T02:00:00+00:00', version: null, origin: 'unknown', keep: false, last_upgrade: false, pending_upgrade: false, location: 'local'},
-            ],
+        const hoursAgo = hours => new Date(Date.now() - hours * 3600000).toISOString();
+        let backupArchives = [
+            {name: backupArchive, size: 3 * GIB, created_at: hoursAgo(24 * 9), version: '1.0.3', origin: 'manual', keep: false, last_upgrade: false, pending_upgrade: false, location: 'local'},
+            {name: 'assozeta-20261101T020000Z.tar.gz', size: 3 * GIB, created_at: hoursAgo(24 * 14), version: '1.0.2', origin: 'pre-upgrade', keep: false, last_upgrade: true, pending_upgrade: false, location: 'local'},
+            {name: 'assozeta-20261001T020000Z.tar.gz', size: 2 * GIB, created_at: hoursAgo(24 * 40), version: null, origin: 'unknown', keep: false, last_upgrade: false, pending_upgrade: false, location: 'local'},
+        ];
+        let schedule = {enabled: false, frequency: 'daily', time: '03:00', weekday: 0, next_run: null, last_run: null};
+        let retention = {automatic: 3};
+        const backupOverview = () => ({available: true, retention, schedule, archives: backupArchives,
+            actions: {create: true, keep: true, delete: true},
             disk: {total: 40 * GIB, used: 33 * GIB, free: 7 * GIB, backups: 8 * GIB, database: GIB, objects: 3 * GIB},
-            next_backup: {estimated: 4 * GIB, required: 9 * GIB, fits: false}};
+            next_backup: {estimated: 4 * GIB, required: 9 * GIB, fits: false}});
         const backupPasswords = [];
+        const backupCalls = [];
         await page.route('**/api/instance/**', async route => {
             const request = route.request();
-            const endpoint = new URL(request.url()).pathname.replace('/api/instance', '');
+            const endpoint = decodeURIComponent(new URL(request.url()).pathname.replace('/api/instance', ''));
             const method = request.method();
             let value = {};
             let status = 200;
@@ -87,8 +93,32 @@ try {
             }
             if (endpoint === '/admin') value = {config: {oem: {name: 'Diagnostic Club', abbreviation: 'DC', primaryColor: '#234582', supportEmail: 'help@example.test'}}, running_version: '1.0.3', configured_version: '1.0.3', mode: 'production'};
             else if (endpoint === '/admin/releases') value = {history: [latestRelease], pending: [latestRelease], latest: latestRelease, relation: 'behind'};
-            else if (endpoint === '/admin/updates') value = {available: true, can_update: true, active: null, history: runnerHistory};
-            else if (endpoint === '/admin/backups' && method === 'GET') value = backupOverview;
+            else if (endpoint === '/admin/updates') value = {available: true, can_update: true, can_restart: true, active: runnerActive, history: runnerHistory};
+            else if (endpoint === '/admin/backups' && method === 'GET') value = backupOverview();
+            else if (endpoint === '/admin/backups' && method === 'POST') {
+                backupCalls.push('create');
+                runnerActive = {id: 'fixture-backup', kind: 'backup', stage: 'backup', status: 'running', target_version: '1.0.3', created_at: new Date().toISOString()};
+                value = {operation: runnerActive}; status = 202;
+            }
+            else if (endpoint === '/admin/backups/schedule' && method === 'PUT') {
+                const input = request.postDataJSON();
+                backupCalls.push(`schedule:${input.enabled}:${input.frequency}:${input.time}:${input.keep}`);
+                schedule = {...schedule, enabled: input.enabled, frequency: input.frequency, time: input.time, weekday: input.weekday, next_run: input.enabled ? hoursAgo(-12) : null};
+                retention = {automatic: input.keep};
+                value = {schedule, retention};
+            }
+            else if (endpoint.startsWith('/admin/backups/assozeta-') && method === 'PATCH') {
+                const name = endpoint.split('/').at(-1);
+                backupCalls.push(`keep:${name}:${request.postDataJSON().keep}`);
+                backupArchives = backupArchives.map(item => item.name === name ? {...item, keep: request.postDataJSON().keep} : item);
+                value = backupArchives.find(item => item.name === name);
+            }
+            else if (endpoint.startsWith('/admin/backups/assozeta-') && method === 'DELETE') {
+                const name = endpoint.split('/').at(-1);
+                backupCalls.push(`delete:${name}`);
+                backupArchives = backupArchives.filter(item => item.name !== name);
+                value = {deleted: name};
+            }
             else if (endpoint === '/admin/backups/download-token' && method === 'POST') {
                 const input = request.postDataJSON();
                 backupPasswords.push(input.password);
@@ -128,6 +158,9 @@ try {
                         delete email.password;
                         value = email;
                     }
+                } else if (method === 'DELETE') {
+                    email = {...email, source: 'environment', revision: email.revision + 1};
+                    value = email;
                 } else value = email;
             } else if (endpoint === '/admin/email/test') {
                 const input = request.postDataJSON();
@@ -141,65 +174,99 @@ try {
                 }
                 if (status === 200) value = diagnostics;
             } else throw new Error(`Unexpected request ${method} ${endpoint}`);
-            await route.fulfill({status, contentType: 'application/json', body: JSON.stringify(value)});
+            await route.fulfill({status, contentType: 'application/json', body: status === 204 ? '' : JSON.stringify(value)});
         });
-        const navigate = label => page.getByRole('group', {name: 'Sezioni Self Instance'}).getByRole('button', {name: label, exact: true}).click();
+        const tabs = page.getByRole('tablist', {name: 'Sezioni istanza'});
+        const settingsNav = page.getByRole('tablist', {name: 'Impostazioni'});
+        const navigate = label => tabs.getByRole('tab', {name: label}).click();
+        const settings = async label => { await navigate('Impostazioni'); await settingsNav.getByRole('tab', {name: label}).click(); };
+        const noOverflow = async label => assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${label}: horizontal overflow`);
+        // Dialogs live in the top layer, which full-page captures do not composite correctly.
+        const shot = async name => { const dialog = await page.locator('dialog[open]').count(); if (dialog) await page.waitForTimeout(400); await page.screenshot({path: path.join(output, `${name}-${viewport.width}.png`), fullPage: !dialog}); };
+
+        // Panoramica: three status tiles and one next step.
         await page.goto('http://127.0.0.1:5198/');
-        await expect(page.getByRole('heading', {name: 'Panoramica', exact: true})).toBeVisible();
-        await expect(page.getByText('Salute non ancora verificata')).toBeVisible();
-        await expect(page.getByRole('heading', {name: 'Cronologia aggiornamenti', exact: true})).toHaveCount(0);
-        const emailNavigation = page.getByRole('group', {name: 'Sezioni Self Instance'}).getByRole('button', {name: 'Email', exact: true});
-        await emailNavigation.focus();
-        await page.keyboard.press('Enter');
-        await expect(emailNavigation).toHaveAttribute('aria-pressed', 'true');
+        await expect(page.getByRole('heading', {name: 'Istanza', exact: true})).toBeVisible();
+        await expect(tabs.getByRole('tab', {name: 'Panoramica'})).toHaveAttribute('aria-selected', 'true');
+        await expect(page.getByText('Non ancora verificati')).toBeVisible();
+        await expect(page.getByText('9 giorni fa', {exact: true})).toBeVisible();
+        await expect(page.getByText('L’ultimo backup è di 9 giorni fa.')).toBeVisible();
+        await expect(page.getByRole('button', {name: /^Versione/})).toContainText('Disponibile v1.0.4');
+        await expect(page.getByRole('region', {name: 'Stato operazioni'})).toHaveCount(1);
+        await noOverflow('overview');
+        await shot('overview');
+
+        // Keyboard: arrows move between tabs.
+        await tabs.getByRole('tab', {name: 'Panoramica'}).focus();
+        await page.keyboard.press('ArrowRight');
+        await expect(tabs.getByRole('tab', {name: 'Backup'})).toBeFocused();
+        await expect(tabs.getByRole('tab', {name: 'Backup'})).toHaveAttribute('aria-selected', 'true');
+
+        // Email settings: save, conflict, reload, test without sending, reset through a dialog.
+        await settings('Email');
         await expect(page.getByRole('heading', {name: 'Email di sistema', exact: true})).toBeVisible();
         await expect(page.getByRole('button', {name: 'Salva email', exact: true})).toBeDisabled();
-        await page.getByText('Password e opzioni avanzate', {exact: true}).click();
-        await setSwitch(page, 'email-clear-password', 'Rimuovi la password salvata', true);
-        await setSwitch(page, 'email-clear-password', 'Rimuovi la password salvata', false);
         await page.getByLabel('Server SMTP', {exact: true}).fill('smtp.example.test');
         await page.getByLabel('Email mittente', {exact: true}).fill('sender@example.test');
         await page.getByLabel('Nome mittente', {exact: true}).fill('Club');
-        await expect(page.getByRole('button', {name: 'Verifica connessione SMTP'})).toBeDisabled();
+        await expect(page.getByRole('button', {name: 'Verifica connessione'})).toBeDisabled();
+        await expect(page.getByText('Salva prima le modifiche.').first()).toBeVisible();
         await navigate('Panoramica');
-        await navigate('Email •');
+        await expect(tabs.getByRole('tab', {name: /Impostazioni/})).toContainText('Impostazioni');
+        await expect(tabs.locator('.dirty-dot')).toHaveCount(1);
+        await settings('Email');
         await expect(page.getByLabel('Server SMTP', {exact: true})).toHaveValue('smtp.example.test');
         failSave = true;
         await page.getByRole('button', {name: 'Salva email', exact: true}).click();
-        await expect(page.getByRole('alert')).toContainText('Configurazione modificata');
+        await expect(page.getByRole('alert').filter({hasText: 'Configurazione modificata'})).toBeVisible();
         await expect(page.getByRole('button', {name: 'Salva email', exact: true})).toBeEnabled();
         failSave = false;
         await page.getByRole('button', {name: 'Salva email', exact: true}).click();
         await expect(page.getByRole('button', {name: 'Salva email', exact: true})).toBeDisabled();
         await page.reload();
-        await navigate('Email');
+        await settings('Email');
         await expect(page.getByLabel('Server SMTP', {exact: true})).toHaveValue('smtp.example.test');
-        await page.getByText('Ripristina le impostazioni di ambiente', {exact: true}).click();
-        await setSwitch(page, 'email-confirmReset', 'Confermo il ripristino della configurazione di ambiente', true);
-        await setSwitch(page, 'email-confirmReset', 'Confermo il ripristino della configurazione di ambiente', false);
-        await page.getByRole('button', {name: 'Verifica connessione SMTP'}).click();
+        await page.getByRole('button', {name: 'Verifica connessione'}).click();
         await expect(page.getByText('Connessione SMTP riuscita. Nessun messaggio inviato.')).toBeVisible();
         assert.equal(sent, 0);
         await page.getByLabel('Destinatario di prova').fill('chosen@example.test');
         await page.getByRole('button', {name: 'Invia email di prova', exact: true}).click();
         await expect(page.getByText('Il server SMTP ha accettato il messaggio. Verifica la casella.')).toBeVisible();
         assert.equal(sent, 1);
-        await page.screenshot({path: path.join(output, `email-${viewport.width}.png`), fullPage: true});
-        await navigate('Diagnostica');
-        await expect(page.locator('.diagnostic-result:visible .verified')).toHaveCount(0);
-        failRun = true;
-        await page.getByRole('button', {name: 'Esegui diagnostica', exact: true}).click();
-        await expect(page.getByRole('alert')).toContainText('Servizio temporaneamente non disponibile');
-        failRun = false;
-        await page.getByRole('button', {name: 'Esegui diagnostica', exact: true}).click();
-        await expect(page.getByText('Database non disponibile. Controlla il servizio.')).toBeVisible();
-        await expect(page.locator('.diagnostic-result:visible').filter({hasText: 'Configurazione email'})).toContainText('Non configurato');
-        assert.equal(sent, 1, 'Routine diagnostics must never send mail');
-        await page.screenshot({path: path.join(output, `diagnostics-${viewport.width}.png`), fullPage: true});
+        await noOverflow('email');
+        await shot('email');
+        await page.getByRole('button', {name: 'Altre azioni email'}).click();
+        await page.getByRole('menuitem', {name: /Ripristina valori del server/}).click();
+        const resetDialog = page.getByRole('dialog', {name: 'Ripristinare i valori del server?'});
+        await expect(resetDialog.getByRole('button', {name: 'Annulla'})).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expect(resetDialog).toHaveCount(0);
+        await expect(page.getByRole('button', {name: 'Altre azioni email'})).toBeFocused();
+        await page.getByRole('button', {name: 'Altre azioni email'}).click();
+        await page.getByRole('menuitem', {name: /Ripristina valori del server/}).click();
+        await resetDialog.getByRole('button', {name: 'Ripristina'}).click();
+        await expect(page.getByText('Valori del server', {exact: true})).toBeVisible();
+
+        // Services: failed run reports an error, then the checks and the overview reflect the result.
         await navigate('Panoramica');
-        await expect(page.getByText('Servizi da ripristinare')).toBeVisible();
-        await navigate('Integrazioni');
-        await expect(page.getByText('Integrazione facoltativa non configurata.')).toBeVisible();
+        await page.getByRole('button', {name: /Servizi/}).click();
+        const checks = page.getByRole('dialog', {name: 'Stato dei servizi'});
+        await expect(checks.locator('.diagnostic-result .verified')).toHaveCount(0);
+        failRun = true;
+        await checks.getByRole('button', {name: 'Verifica ora'}).click();
+        await expect(checks.getByRole('alert')).toContainText('Servizio temporaneamente non disponibile');
+        failRun = false;
+        await checks.getByRole('button', {name: 'Verifica ora'}).click();
+        await expect(checks.getByText('Database non disponibile. Controlla il servizio.')).toBeVisible();
+        await expect(checks.locator('.diagnostic-result').filter({hasText: 'Configurazione email'})).toContainText('Non configurato');
+        assert.equal(sent, 1, 'Routine diagnostics must never send mail');
+        await shot('services');
+        await checks.getByRole('button', {name: 'Chiudi'}).click();
+        await expect(page.getByText('Servizi con problemi')).toBeVisible();
+        await expect(page.getByRole('heading', {name: 'Da sistemare'})).toBeVisible();
+
+        // Integrations: environment values, masked secrets, conflict, saves, reset.
+        await settings('Integrazioni');
         await expect(page.getByLabel('Chiave pubblica Stripe', {exact: true})).toHaveValue('pk_test_environment');
         await expect(page.getByLabel('Chiave segreta Stripe', {exact: true})).toHaveValue('');
         await expect(page.getByLabel('Firma webhook Stripe', {exact: true})).toHaveValue('');
@@ -213,11 +280,12 @@ try {
         }
         await page.getByLabel('Chiave pubblica Stripe', {exact: true}).fill('pk_test_changed');
         await page.getByLabel('Chiave segreta Stripe', {exact: true}).fill('sk_test_changed');
-        await navigate('Panoramica'); await navigate('Integrazioni •');
+        await navigate('Panoramica'); await settings('Integrazioni');
+        await expect(settingsNav.getByRole('tab', {name: /Integrazioni/}).locator('.dirty-dot')).toHaveCount(1);
         await expect(page.getByLabel('Chiave segreta Stripe', {exact: true})).toHaveValue('sk_test_changed');
         failIntegrationSave = true;
         await page.getByRole('button', {name: 'Salva Stripe', exact: true}).click();
-        await expect(page.getByRole('alert')).toContainText('Integrazione modificata');
+        await expect(page.getByRole('alert').filter({hasText: 'Integrazione modificata'})).toBeVisible();
         await expect(page.getByLabel('Chiave segreta Stripe', {exact: true})).toHaveValue('sk_test_changed');
         failIntegrationSave = false;
         await page.getByRole('button', {name: 'Salva Stripe', exact: true}).click();
@@ -228,91 +296,147 @@ try {
             await page.getByRole('button', {name: `Salva ${title}`, exact: true}).click();
             await expect(page.getByRole('button', {name: `Salva ${title}`, exact: true})).toBeDisabled();
         }
-        await page.reload();await navigate('Integrazioni');
+        await page.reload(); await settings('Integrazioni');
         await expect(page.getByLabel('Chiave pubblica Stripe', {exact: true})).toHaveValue('pk_test_changed');
         await expect(page.getByLabel('Client ID Google', {exact: true})).toHaveValue('saved.apps.googleusercontent.com');
         await expect(page.getByLabel('Client ID Apple', {exact: true})).toHaveValue('com.example.saved');
         await expect(page.getByText(/Il pulsante Apple nella pagina di accesso web non è disponibile/)).toBeVisible();
-        await page.screenshot({path: path.join(output, `integrations-${viewport.width}.png`), fullPage: true});
-        await page.getByText('Ripristina Stripe da .env', {exact: true}).click();
-        await expect(page.getByRole('button', {name: 'Ripristina Stripe', exact: true})).toBeDisabled();
-        await setSwitch(page, 'stripe-confirm-reset', 'Confermo il ripristino di Stripe da .env', true);
-        await page.getByRole('button', {name: 'Ripristina Stripe', exact: true}).click();
+        await noOverflow('integrations');
+        await shot('integrations');
+        await page.getByRole('button', {name: 'Altre azioni Stripe'}).click();
+        await page.getByRole('menuitem', {name: /Ripristina valori del server/}).click();
+        await page.getByRole('dialog').getByRole('button', {name: 'Ripristina Stripe', exact: true}).click();
         await expect(page.getByLabel('Chiave pubblica Stripe', {exact: true})).toHaveValue('pk_test_environment');
-        await navigate('Backup e ripristino');
-        await expect(page.getByRole('heading', {name: 'Backup e ripristino', exact: true})).toBeVisible();
-        await expect(page.getByRole('img', {name: /Disco del server: 33 GB usati su 40 GB, 7 GB liberi/})).toBeVisible();
-        await expect(page.getByRole('alert').filter({hasText: 'Il prossimo backup potrebbe non entrare nel disco'})).toBeVisible();
-        await expect(page.getByText('La rotazione conserva gli ultimi 3 backup automatici.', {exact: false})).toBeVisible();
-        const backupRows = page.locator('.backups-table tbody tr');
+
+        // Backup: disk, list, download with password, keep, delete, schedule, create.
+        await navigate('Backup');
+        await expect(page.getByRole('heading', {name: 'Backup', exact: true})).toBeVisible();
+        await expect(page.getByRole('img', {name: /Disco: 33 GB usati su 40 GB, 7 GB liberi/})).toBeVisible();
+        await expect(page.getByRole('alert').filter({hasText: 'Spazio insufficiente per il prossimo backup'})).toBeVisible();
+        await expect(page.getByRole('button', {name: 'Crea backup', exact: true})).toBeDisabled();
+        const backupRows = page.locator('table.backups tbody tr');
         await expect(backupRows).toHaveCount(3);
         await expect(backupRows.nth(0)).toContainText('Manuale');
-        await expect(backupRows.nth(1)).toContainText('Prima di un aggiornamento');
+        await expect(backupRows.nth(1)).toContainText('Prima dell’aggiornamento');
         await expect(backupRows.nth(1)).toContainText('Ultimo aggiornamento riuscito');
-        await expect(backupRows.nth(2)).toContainText('Non registrata');
-        await backupRows.nth(0).getByRole('button', {name: /^Scarica il backup del/}).click();
-        await expect(page.getByLabel('Conferma la tua password')).toBeFocused();
-        await expect(page.getByRole('note')).toContainText('non è cifrato');
-        await page.screenshot({path: path.join(output, `backups-${viewport.width}.png`), fullPage: true});
-        await page.getByLabel('Conferma la tua password').fill('wrong');
-        await page.getByRole('button', {name: 'Scarica backup', exact: true}).click();
-        await expect(page.getByText('Password non corretta.', {exact: true})).toBeVisible();
-        await expect(page.getByLabel('Conferma la tua password')).toHaveValue('');
-        await page.getByLabel('Conferma la tua password').fill('fixture-secret');
+        await expect(backupRows.nth(2)).toContainText('—');
+        await noOverflow('backups');
+        await shot('backups');
+        await backupRows.nth(0).getByRole('button', {name: /^Azioni backup del/}).click();
+        await page.getByRole('menuitem', {name: 'Scarica', exact: true}).click();
+        const download = page.getByRole('dialog', {name: 'Scarica backup'});
+        await expect(download.getByLabel('Conferma la tua password')).toBeFocused();
+        await expect(download.getByRole('note')).toContainText('non è cifrato');
+        await shot('backup-download');
+        await download.getByLabel('Conferma la tua password').fill('wrong');
+        await download.getByRole('button', {name: 'Scarica backup', exact: true}).click();
+        await expect(download.getByText('Password non corretta.', {exact: true})).toBeVisible();
+        await expect(download.getByLabel('Conferma la tua password')).toHaveValue('');
+        await download.getByLabel('Conferma la tua password').fill('fixture-secret');
         const backupDownload = page.waitForEvent('download');
-        await page.getByRole('button', {name: 'Scarica backup', exact: true}).click();
+        await page.keyboard.press('Enter');
         assert.equal((await backupDownload).suggestedFilename(), backupArchive);
-        await expect(page.getByLabel('Conferma la tua password')).toHaveCount(0);
+        await expect(download).toHaveCount(0);
         assert.deepEqual(backupPasswords, ['wrong', 'fixture-secret']);
         backupPasswords.length = 0;
-        await navigate('Aggiornamenti');
-        await expect(page.getByRole('heading', {name: 'Cronologia aggiornamenti', exact: true})).toBeVisible();
-        const updates = page.locator('.updates-sections');
-        await expect(updates.getByRole('heading').first()).toHaveText('Versione e aggiornamenti');
-        const panels = updates.locator('details.instance-accordion');
-        await expect(panels).toHaveCount(3);
-        for (const panel of await panels.all()) await expect(panel).toHaveJSProperty('open', false);
-        await page.screenshot({path: path.join(output, `updates-collapsed-${viewport.width}.png`), fullPage: true});
-        const operationHistory = panels.filter({has: page.getByRole('heading', {name: 'Cronologia aggiornamenti', exact: true})});
-        await operationHistory.locator(':scope > summary').focus();
-        await page.keyboard.press('Enter');
-        await expect(operationHistory).toHaveJSProperty('open', true);
-        const historyContent = operationHistory.getByRole('region');
-        assert(await historyContent.evaluate(element => element.scrollHeight > element.clientHeight), 'Long update history must scroll');
-        assert(await historyContent.evaluate(element => element.getBoundingClientRect().height <= innerHeight * .65 + 1), 'History height must respect the viewport');
-        await historyContent.focus();
-        await page.keyboard.press('End');
-        await expect.poll(() => historyContent.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
-        await operationHistory.locator(':scope > summary').click();
-        await expect(operationHistory).toHaveJSProperty('open', false);
-        const notesPanel = panels.filter({has: page.getByRole('heading', {name: 'Note di rilascio', exact: true})});
-        await notesPanel.locator(':scope > summary').click();
-        await notesPanel.locator('.release-notes > summary').click();
-        const notesContent = notesPanel.getByRole('region');
-        assert(await notesContent.evaluate(element => element.scrollHeight > element.clientHeight), 'Long release notes must scroll');
-        await notesContent.scrollIntoViewIfNeeded();
-        await notesContent.evaluate(element => element.scrollTop = element.scrollHeight);
-        await expect(notesPanel.getByText('Fine delle note di rilascio.', {exact: true})).toBeInViewport();
-        await page.screenshot({path: path.join(output, `updates-expanded-${viewport.width}.png`), fullPage: true});
-        await page.getByRole('button', {name: 'Esamina aggiornamento a v1.0.4', exact: true}).click();
-        await expect(page.getByRole('heading', {name: 'Aggiorna a v1.0.4', exact: true})).toBeVisible();
-        assert(await page.locator('.review-notes').evaluate(element => element.scrollHeight > element.clientHeight));
-        await expect(page.getByRole('button', {name: 'Conferma aggiornamento a v1.0.4', exact: true})).toBeEnabled();
-        await page.locator('.review-panel').getByRole('button', {name: 'Annulla', exact: true}).click();
-        await navigate('Identità e logo');
-        await expect(page.getByRole('heading', {name: 'Identità dell’istanza', exact: true})).toBeVisible();
-        for (const label of ['Panoramica', 'Email', 'Diagnostica', 'Aggiornamenti', 'Backup e ripristino', 'Integrazioni', 'Identità e logo']) {
-            await navigate(label);
-            assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${label}: horizontal overflow`);
-        }
-        runnerHistory = [{...runnerHistory[0], stage: 'recovery_required', recovery: 'Ripristina il backup verificato.'}];
+
+        await backupRows.nth(0).getByRole('button', {name: /^Azioni backup del/}).click();
+        await page.getByRole('menuitem', {name: 'Conserva', exact: true}).click();
+        await expect(backupRows.nth(0).getByText('Conservato')).toHaveCount(1);
+        await backupRows.nth(2).getByRole('button', {name: /^Azioni backup del/}).click();
+        await page.getByRole('menuitem', {name: 'Elimina', exact: true}).click();
+        const remove = page.getByRole('dialog', {name: 'Eliminare il backup?'});
+        await expect(remove.getByRole('button', {name: 'Annulla'})).toBeFocused();
+        await remove.getByRole('button', {name: 'Elimina'}).click();
+        await expect(backupRows).toHaveCount(2);
+
+        const scheduleCard = page.getByRole('form', {name: 'Backup automatici'});
+        await expect(scheduleCard.getByText('Disattivati')).toBeVisible();
+        await setSwitch(scheduleCard, 'backup-schedule-enabled', 'Attiva backup automatici', true);
+        await scheduleCard.getByLabel('Frequenza', {exact: true}).selectOption('weekly');
+        await scheduleCard.getByLabel('Giorno', {exact: true}).selectOption({label: 'Domenica'});
+        await scheduleCard.getByLabel('Ora', {exact: true}).fill('02:30');
+        await scheduleCard.getByLabel('Da conservare').fill('5');
+        await scheduleCard.getByRole('button', {name: 'Salva pianificazione'}).click();
+        await expect(scheduleCard.getByText(/^Prossimo:/)).toBeVisible();
+        await expect(scheduleCard.getByRole('button', {name: 'Salva pianificazione'})).toBeDisabled();
+        await shot('backups-schedule');
+
+        backupArchives = backupArchives.map(item => ({...item, created_at: item === backupArchives[0] ? hoursAgo(1) : item.created_at}));
         await page.reload();
-        await expect(page.getByRole('heading', {name: 'Ultimo aggiornamento', exact: true})).toBeVisible();
-        await expect(page.getByText('Ripristina il backup verificato.', {exact: true})).toBeVisible();
+        await navigate('Backup');
+        assert.deepEqual(backupCalls.slice(0, 3), [`keep:${backupArchive}:true`, 'delete:assozeta-20261001T020000Z.tar.gz', 'schedule:true:weekly:02:30:5']);
+
+        // Updates: one version line, release notes drawer, compact history, review dialog.
         await navigate('Aggiornamenti');
-        await expect(page.getByText('Ripristina il backup verificato.', {exact: true}).filter({visible: true})).toBeVisible();
+        await expect(page.getByRole('heading', {name: 'Versione installata'})).toBeVisible();
+        await expect(page.locator('#instance-panel-updates').getByText('Disponibile v1.0.4')).toBeVisible();
+        const history = page.getByRole('list', {name: 'Cronologia'});
+        await expect(history.getByRole('listitem')).toHaveCount(5);
+        await page.getByRole('button', {name: 'Mostra tutte (20)'}).click();
+        await expect(history.getByRole('listitem')).toHaveCount(20);
+        await page.getByRole('button', {name: 'Note di rilascio'}).click();
+        const notes = page.getByRole('dialog', {name: 'Note di rilascio'});
+        await expect(notes.getByText('Fine delle note di rilascio.', {exact: true})).toBeAttached();
+        await shot('release-notes');
+        await page.keyboard.press('Escape');
+        await expect(notes).toHaveCount(0);
+        await page.getByRole('button', {name: 'Aggiorna a v1.0.4', exact: true}).click();
+        const review = page.getByRole('dialog', {name: 'Aggiorna a v1.0.4'});
+        assert(await review.locator('.review-notes').evaluate(element => element.scrollHeight > element.clientHeight));
+        await expect(review.getByRole('button', {name: 'Avvia aggiornamento', exact: true})).toBeEnabled();
+        await shot('update-review');
+        await review.getByRole('button', {name: 'Annulla', exact: true}).click();
+        await expect(review).toHaveCount(0);
+        await noOverflow('updates');
+        await shot('updates');
+
+        await settings('Identità');
+        await expect(page.getByRole('heading', {name: 'Identità', exact: true})).toBeVisible();
+        await noOverflow('identity');
+        await shot('identity');
+        await settings('Bakney');
+        await expect(page.getByRole('button', {name: 'Genera codice'})).toBeVisible();
+        await noOverflow('bakney');
+
+        // Header menu: restart shows a short confirmation.
+        await page.getByRole('button', {name: 'Azioni istanza'}).click();
+        await page.getByRole('menuitem', {name: /Riavvia applicazione/}).click();
+        await expect(page.getByRole('dialog', {name: 'Riavviare l’applicazione?'})).toBeVisible();
+        await page.keyboard.press('Escape');
+
+        // Creating a backup shows progress in the banner and the list.
+        await navigate('Backup');
+        await page.route(/\/api\/instance\/admin\/backups(\?.*)?$/, async route => {
+            if (route.request().method() !== 'GET') return route.fallback();
+            await route.fulfill({contentType: 'application/json', body: JSON.stringify({...backupOverview(), next_backup: {estimated: GIB, required: 3 * GIB, fits: true}})});
+        });
+        await page.getByRole('button', {name: 'Altre azioni backup'}).click();
+        await page.getByRole('menuitem', {name: 'Aggiorna elenco'}).click();
+        await expect(page.getByRole('button', {name: 'Crea backup', exact: true})).toBeEnabled();
+        await page.getByRole('button', {name: 'Crea backup', exact: true}).click();
+        await page.getByRole('dialog', {name: 'Creare un backup ora?'}).getByRole('button', {name: 'Crea backup'}).click();
+        await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Backup in corso');
+        await expect(page.getByText('Backup in corso…')).toBeVisible();
+        await expect(page.getByRole('button', {name: 'Crea backup', exact: true})).toBeDisabled();
+        await shot('backup-running');
+        assert(backupCalls.includes('create'));
+        runnerActive = null;
+        runnerHistory = [{id: 'fixture-backup', kind: 'backup', stage: 'completed', status: 'succeeded', target_version: '1.0.3', created_at: new Date().toISOString(), updated_at: new Date().toISOString()}, ...runnerHistory];
+        await expect(page.getByRole('region', {name: 'Stato operazioni'})).toContainText('Backup completato', {timeout: 10000});
+
+        // A recovery requirement is shown on every tab.
+        runnerHistory = [{...runnerHistory[1], stage: 'recovery_required', recovery: 'Ripristina il backup verificato.'}];
+        await page.reload();
+        await expect(page.getByRole('region', {name: 'Stato operazioni'}).getByText('Ripristina il backup verificato.', {exact: true})).toBeVisible();
+        await navigate('Aggiornamenti');
+        await expect(page.getByText('Ripristina il backup verificato.', {exact: true}).first()).toBeVisible();
+        for (const label of ['Panoramica', 'Backup', 'Aggiornamenti', 'Impostazioni']) {
+            await navigate(label);
+            await noOverflow(label);
+        }
         assert.deepEqual(errors, []);
-        reports.push({viewport, passed: true, scope: 'Real Svelte components, fixture API; keyboard navigation, saves/reloads, failed saves, SMTP actions, failed diagnostics, integration environment values, masked secrets, saves/reloads, failed saves, explicit resets, update history/recovery visibility, overflow.'});
+        reports.push({viewport, passed: true, scope: 'Real Svelte components, fixture API; tab keyboard navigation, status tiles and next step, saves/reloads, failed saves, SMTP actions, dialogs and focus, failed diagnostics, integration environment values, masked secrets, explicit resets, backup download/keep/delete/schedule/create, update review, history, recovery visibility, overflow.'});
         await context.close();
     }
     await fs.writeFile(path.join(output, 'report.json'), JSON.stringify(reports, null, 2));
