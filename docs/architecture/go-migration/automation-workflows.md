@@ -1,9 +1,10 @@
-# Automation workflow routes — list, details, add and delete implementing; update characterized
+# Automation workflow routes — list, details, add, delete and update implementing
 
 Five `communications/workflows/...` routes in `BE/communications/views.py`
 (`communication_workflows_list`, `_add`, `_details`, `_update`, `_delete`) are
-characterized from source. List, details, add and delete are implemented in Go
-(`BE_GO/internal/*/automation_workflow*.go`); update is not.
+characterized from source. All five are implemented in Go
+(`BE_GO/internal/*/automation_workflow*.go`); update is described in
+[workflow update](workflow-update.md).
 
 **Read evidence (TDD):** the authored 20-case `TESTS/fixtures/workflows_http.json`
 passed on Django on the first run, Go then failed with 404 before any Go code,
@@ -73,3 +74,5 @@ decision.
 2. Update additionally needs the workflow task family (`check_workflows_trigger_cron`,
    `workflow_block_execute`) on the durable Go job system with execution
    ownership, since enabling a cron workflow enqueues delayed work.
+   Until then the Go update refuses that path before any write (see
+   [workflow update](workflow-update.md)).

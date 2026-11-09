@@ -17,6 +17,7 @@ type AutomationWorkflowWriteService interface {
 	Admit(context.Context, domain.ResolvedIdentity) error
 	Add(context.Context, domain.ResolvedIdentity, any, bool, domain.LoginAuditContext) (string, error)
 	Delete(context.Context, domain.ResolvedIdentity, string, domain.LoginAuditContext) error
+	Update(context.Context, domain.ResolvedIdentity, string, any, bool, domain.LoginAuditContext) error
 }
 
 type AutomationWorkflowWritesHandler struct {
@@ -89,4 +90,39 @@ func (h *AutomationWorkflowWritesHandler) serve(c echo.Context, method, operatio
 		return messageReadsError(c, err)
 	}
 	return c.JSON(200, map[string]string{"msg": "workflow deleted."})
+}
+
+// Update serves communication_workflows_update (PATCH).
+func (h *AutomationWorkflowWritesHandler) Update(c echo.Context) error {
+	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodPatch, "communication_workflows_update")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if err = h.writes.Admit(request.Context(), *identity); err != nil {
+		return messageReadsError(c, err)
+	}
+	if request.Method == http.MethodOptions {
+		return messageReadsOptions(c, "Communication Workflows Update")
+	}
+	if request.Method != http.MethodPatch {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	write, release, err := admitRESTWrite(c, h.operations, h.audit)
+	if write == nil {
+		return err
+	}
+	defer release()
+	err = h.writes.Update(write.Context, *identity, c.Param("workflow_id"), write.Body, write.Form, write.Audit)
+	switch {
+	case err == nil:
+		return c.JSON(200, map[string]string{"msg": "workflow updated."})
+	case errors.Is(err, domain.ErrAutomationWorkflowNotFound):
+		return c.JSON(404, map[string]string{"msg": "workflow not found."})
+	case errors.Is(err, dto.ErrAutomationWorkflowInvalid):
+		return c.JSON(400, map[string]string{"msg": "workflow not valid."})
+	case errors.Is(err, domain.ErrAutomationWorkflowUpdateNotPorted), errors.Is(err, dto.ErrAutomationWorkflowFormTreeNotPorted):
+		c.Logger().Error(err)
+	}
+	return messageReadsError(c, err)
 }

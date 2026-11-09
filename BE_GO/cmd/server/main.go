@@ -506,6 +506,7 @@ func run() (runErr error) {
 	e.Any("/templates/bulk-delete", moduleTemplatesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/templates/:pk/delete", moduleTemplatesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/:workflow_id/delete", workflowWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/workflows/:workflow_id/update", workflowWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/list", workflowReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/:workflow_id/details", workflowReadsHandler.Details, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/email-logs/list", emailLogsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))

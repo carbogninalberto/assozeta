@@ -1,0 +1,1908 @@
+{
+ "matrix_version": 1,
+ "scope": "Workflow update authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "workflows": {
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000962001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Benvenuto",
+   "description": "Vecchia",
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "new_subscription",
+     "data": {
+      "b": 1,
+      "a": [
+       true,
+       null,
+       1.5
+      ]
+     }
+    },
+    {
+     "id": "message",
+     "value": "email",
+     "data": {
+      "subject": "Ciao à"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "enabled": {
+   "id": "a1000000-0000-4000-8000-000000962002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Attivo",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "new_subscription",
+     "data": {
+      "b": 1,
+      "a": [
+       true,
+       null,
+       1.5
+      ]
+     }
+    },
+    {
+     "id": "message",
+     "value": "email",
+     "data": {
+      "subject": "Ciao à"
+     }
+    }
+   ],
+   "enabled": true,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_past": {
+   "id": "a1000000-0000-4000-8000-000000962003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2020-01-01T10:00",
+      "triggered": true,
+      "target": "all"
+     }
+    },
+    {
+     "id": "message",
+     "value": "email",
+     "data": {
+      "subject": "Ciao à"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_past_untriggered": {
+   "id": "a1000000-0000-4000-8000-000000962004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2021-03-04 05:06:07.5",
+      "triggered": false
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_bad_time": {
+   "id": "a1000000-0000-4000-8000-000000962005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "domani",
+      "triggered": true
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_aware": {
+   "id": "a1000000-0000-4000-8000-000000962006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2020-01-01T10:00:00+01:00"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_no_data": {
+   "id": "a1000000-0000-4000-8000-000000962007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron"
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_string_data": {
+   "id": "a1000000-0000-4000-8000-000000962008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": "triggered"
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_time_number": {
+   "id": "a1000000-0000-4000-8000-000000962009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": 20200101
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_bad_date": {
+   "id": "a1000000-0000-4000-8000-000000962010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2020-13-01T10:00"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "empty_tree": {
+   "id": "a1000000-0000-4000-8000-000000962011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "null_node_single": {
+   "id": "a1000000-0000-4000-8000-000000962012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": null
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "null_node_pair": {
+   "id": "a1000000-0000-4000-8000-000000962013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": null
+    },
+    {
+     "id": "message",
+     "value": "email",
+     "data": {
+      "subject": "Ciao à"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "missing_value": {
+   "id": "a1000000-0000-4000-8000-000000962014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger"
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "string_node": {
+   "id": "a1000000-0000-4000-8000-000000962015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    "testo"
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000962016",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estero",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "new_subscription",
+     "data": {
+      "b": 1,
+      "a": [
+       true,
+       null,
+       1.5
+      ]
+     }
+    },
+    {
+     "id": "message",
+     "value": "email",
+     "data": {
+      "subject": "Ciao à"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  }
+ },
+ "cases": [
+  {
+   "name": "workflow-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "workflow-update-admin-without-session",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "workflow-update-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/workflows/a1000000-0000-4000-8000-000000962001/update'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-update-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-update-athlete-forbidden",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-update-owner-without-association-malformed",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/communications/workflows/nope/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "workflow-update-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "workflow-update-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "workflow-update-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "workflow-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Communication Workflows Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "workflow-update-malformed-id",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/not-a-uuid/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-update-missing-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962999/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "workflow not found."
+   },
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-update-foreign-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962016/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "workflow not found."
+   },
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-update-foreign-owner-not-found",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "workflow not found."
+   },
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-update-invalid-blank-name",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "name": "   "
+   }
+  },
+  {
+   "name": "workflow-update-invalid-long-name",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   }
+  },
+  {
+   "name": "workflow-update-invalid-null-name",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "name": null
+   }
+  },
+  {
+   "name": "workflow-update-invalid-bool-name",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "name": true
+   }
+  },
+  {
+   "name": "workflow-update-invalid-tree-object",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "automation_tree": {}
+   }
+  },
+  {
+   "name": "workflow-update-invalid-tree-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "automation_tree": null
+   }
+  },
+  {
+   "name": "workflow-update-invalid-tree-string",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "automation_tree": "[]"
+   }
+  },
+  {
+   "name": "workflow-update-invalid-sms-message",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "automation_tree": [
+     {
+      "id": "message",
+      "value": "sms"
+     }
+    ]
+   }
+  },
+  {
+   "name": "workflow-update-invalid-enabled-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "enabled": "maybe"
+   }
+  },
+  {
+   "name": "workflow-update-invalid-enabled-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "enabled": null
+   }
+  },
+  {
+   "name": "workflow-update-invalid-id-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "automation_workflow_id": "nope"
+   }
+  },
+  {
+   "name": "workflow-update-invalid-id-duplicate",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "automation_workflow_id": "a1000000-0000-4000-8000-000000962016"
+   }
+  },
+  {
+   "name": "workflow-update-invalid-association-unknown",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000962999"
+   }
+  },
+  {
+   "name": "workflow-update-invalid-association-bool",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": true
+   }
+  },
+  {
+   "name": "workflow-update-invalid-list-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "workflow-update-invalid-null-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "workflow-update-foreign-association-forbidden",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "workflow-update-deleted-association-relation-forbidden",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701003"
+   }
+  },
+  {
+   "name": "workflow-update-foreign-association-before-other-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "automation_workflow_id": "nope",
+    "name": "",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "workflow-update-fields-owner",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Nuovo è",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "z": "ultimo",
+        "a": "primo"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "name": [
+        "Benvenuto",
+        "Nuovo è"
+       ],
+       "description": [
+        "Vecchia",
+        "None"
+       ],
+       "automation_tree": [
+        "[{\"data\": {\"a\": [true, null, 1.5], \"b\": 1}, \"id\": \"trigger\", \"value\": \"new_subscription\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]",
+        "[{\"data\": {\"a\": \"primo\", \"z\": \"ultimo\"}, \"id\": \"trigger\", \"value\": \"new_subscription\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "name": "Nuovo è",
+    "description": null,
+    "automation_tree": [
+     {
+      "id": "trigger",
+      "value": "new_subscription",
+      "data": {
+       "z": "ultimo",
+       "a": "primo"
+      }
+     }
+    ],
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "automation_workflow_id": "a1000000-0000-4000-8000-000000962001",
+    "created_at": "2020-01-01T00:00:00Z",
+    "updated_at": "2020-01-01T00:00:00Z",
+    "unknown": "ignored"
+   }
+  },
+  {
+   "name": "workflow-update-empty-body-full-collaborator-no-audit",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Nuovo è",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "z": "ultimo",
+        "a": "primo"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": []
+   },
+   "body": {}
+  },
+  {
+   "name": "workflow-update-same-tree-other-key-order-no-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Nuovo è",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "z": "ultimo",
+        "a": "primo"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": []
+   },
+   "body": {
+    "automation_tree": [
+     {
+      "data": {
+       "a": "primo",
+       "z": "ultimo"
+      },
+      "value": "new_subscription",
+      "id": "trigger"
+     }
+    ]
+   }
+  },
+  {
+   "name": "workflow-update-form-fields",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Modulo",
+     "description": "",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "z": "ultimo",
+        "a": "primo"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "name": [
+        "Nuovo è",
+        "Modulo"
+       ],
+       "description": [
+        "None",
+        ""
+       ]
+      }
+     }
+    ]
+   },
+   "raw_body": "name=Modulo&description=&enabled=false",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "admin",
+    "session": "admin_owner",
+    "label": "plain",
+    "row": {
+     "name": "Modulo",
+     "description": "Spazi",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "z": "ultimo",
+        "a": "primo"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "description": [
+        "",
+        "Spazi"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "description": "  Spazi  "
+   }
+  },
+  {
+   "name": "workflow-update-enable-plain-trigger-schedules-nothing",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Modulo",
+     "description": "Spazi",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "z": "ultimo",
+        "a": "primo"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enabled-again-no-trigger",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Ancora",
+     "description": "Spazi",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "z": "ultimo",
+        "a": "primo"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "name": [
+        "Modulo",
+        "Ancora"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": "true",
+    "name": "Ancora"
+   }
+  },
+  {
+   "name": "workflow-update-disable-enabled",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "session": null,
+    "label": "enabled",
+    "row": {
+     "name": "Attivo",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "b": 1,
+        "a": [
+         true,
+         null,
+         1.5
+        ]
+       }
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Ciao à"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "True",
+        "False"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": false
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-past-resets-triggered",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962003/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_past",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2020-01-01T10:00",
+        "triggered": false,
+        "target": "all"
+       }
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Ciao à"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     },
+     {
+      "changes": {
+       "automation_tree": [
+        "[{\"data\": {\"target\": \"all\", \"time\": \"2020-01-01T10:00\", \"triggered\": true}, \"id\": \"trigger\", \"value\": \"cron\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]",
+        "[{\"data\": {\"target\": \"all\", \"time\": \"2020-01-01T10:00\", \"triggered\": false}, \"id\": \"trigger\", \"value\": \"cron\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-past-untriggered",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962004/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_past_untriggered",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2021-03-04 05:06:07.5",
+        "triggered": false
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": 1
+   }
+  },
+  {
+   "name": "workflow-update-enable-with-new-cron-tree",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "enabled",
+    "row": {
+     "name": "Attivo",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2019-05-06T07:08:09",
+        "triggered": false,
+        "target": "approved"
+       }
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Ciao à"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ],
+       "automation_tree": [
+        "[{\"data\": {\"a\": [true, null, 1.5], \"b\": 1}, \"id\": \"trigger\", \"value\": \"new_subscription\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]",
+        "[{\"data\": {\"target\": \"approved\", \"time\": \"2019-05-06T07:08:09\", \"triggered\": true}, \"id\": \"trigger\", \"value\": \"cron\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]"
+       ]
+      }
+     },
+     {
+      "changes": {
+       "automation_tree": [
+        "[{\"data\": {\"target\": \"approved\", \"time\": \"2019-05-06T07:08:09\", \"triggered\": true}, \"id\": \"trigger\", \"value\": \"cron\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]",
+        "[{\"data\": {\"target\": \"approved\", \"time\": \"2019-05-06T07:08:09\", \"triggered\": false}, \"id\": \"trigger\", \"value\": \"cron\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true,
+    "automation_tree": [
+     {
+      "id": "trigger",
+      "value": "cron",
+      "data": {
+       "time": "2019-05-06T07:08:09",
+       "triggered": true,
+       "target": "approved"
+      }
+     },
+     {
+      "id": "message",
+      "value": "email",
+      "data": {
+       "subject": "Ciao à"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-invalid-time-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962005/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_bad_time",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "domani",
+        "triggered": false
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     },
+     {
+      "changes": {
+       "automation_tree": [
+        "[{\"data\": {\"time\": \"domani\", \"triggered\": true}, \"id\": \"trigger\", \"value\": \"cron\"}]",
+        "[{\"data\": {\"time\": \"domani\", \"triggered\": false}, \"id\": \"trigger\", \"value\": \"cron\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enabled-after-error-no-trigger",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962005/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_bad_time",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "domani",
+        "triggered": false
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": []
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-aware-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962006/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_aware",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2020-01-01T10:00:00+01:00"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-no-data-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962007/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_no_data",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron"
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-string-data-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962008/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_string_data",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": "triggered"
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-time-number-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962009/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_time_number",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": 20200101
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-bad-date-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962010/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_bad_date",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2020-13-01T10:00"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-empty-tree-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962011/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "empty_tree",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-null-node-pair-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "null_node_pair",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": null
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Ciao à"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-missing-value-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962014/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "missing_value",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger"
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-string-node-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962015/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "string_node",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      "testo"
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-null-node-single",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962012/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "null_node_single",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": null
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-restricted-after-updates-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962002/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/workflows/a1000000-0000-4000-8000-000000962002/update'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {}
+  }
+ ]
+}

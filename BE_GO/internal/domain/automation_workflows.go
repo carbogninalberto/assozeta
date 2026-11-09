@@ -9,6 +9,15 @@ import (
 
 var ErrAutomationWorkflowNotFound = errors.New("workflow not found.")
 
+// ErrAutomationWorkflowUpdateNotPorted refuses, before any write, an update whose
+// Django behaviour is not ported: a cron trigger enabled for a future or
+// unclassified time (Celery check_workflows_trigger_cron) or a changed key.
+var ErrAutomationWorkflowUpdateNotPorted = errors.New("workflow update not ported")
+
+// ErrAutomationWorkflowTrigger reproduces trigger() raising after the update
+// was saved (HTTP 500; the saves stay, requests are not atomic).
+var ErrAutomationWorkflowTrigger = errors.New("workflow trigger failed after save")
+
 type AutomationWorkflowRecord struct {
 	ID            string          `db:"automation_workflow_id"`
 	AssociationID string          `db:"sport_association_id"`
@@ -44,6 +53,9 @@ type AutomationWorkflowTransaction interface {
 	InsertAutomationWorkflow(context.Context, AutomationWorkflowRecord) error
 	AutomationWorkflowForUpdate(ctx context.Context, id, association string) (AutomationWorkflowRecord, error)
 	DeleteAutomationWorkflow(ctx context.Context, id, association string) error
+	// AssociationExists checks any stored association (the relation's default manager).
+	AssociationExists(ctx context.Context, id string) (bool, error)
+	UpdateAutomationWorkflow(context.Context, AutomationWorkflowRecord) error
 	AppendAutomationWorkflowAudit(context.Context, AutomationWorkflowAudit) error
 	Commit() error
 	Rollback() error
