@@ -123,6 +123,18 @@ func subscriptionReadsPaymentsInfo(payments domain.SubscriptionReadsPayments) (b
 	return payments.Unpaid == 0, map[string]any{"total": SubscriptionReadsFloat(payments.Total), "to_be_paid": SubscriptionReadsFloat(payments.ToPay)}
 }
 
+// subscriptionReadsPaymentsSums is SubscriptionSerializer.get_payments_info:
+// sum() of the Decimal amounts (rendered as floats), the int 0 of an empty sum.
+func subscriptionReadsPaymentsSums(payments domain.SubscriptionReadsPayments) (bool, map[string]any) {
+	sum := func(count int64, text string) any {
+		if count == 0 {
+			return 0
+		}
+		return SubscriptionReadsFloat(text)
+	}
+	return payments.Unpaid == 0, map[string]any{"total": sum(payments.Count, payments.Total), "to_be_paid": sum(payments.Unpaid, payments.ToPay)}
+}
+
 // SubscriptionReadsFastItem is SubscriptionFastOptimizedSerializer (renewal from the annotation).
 func SubscriptionReadsFastItem(row domain.SubscriptionReadsRow, payments domain.SubscriptionReadsPayments, now time.Time) (map[string]any, error) {
 	tags, err := subscriptionReadsTags(row.Tags)
@@ -177,7 +189,7 @@ func SubscriptionReadsArchivedItem(row domain.SubscriptionReadsRow, payments dom
 	item["user"] = SubscriptionReadsUser(row)
 	item["associate"] = subscriptionReadsAssociateInfo(row.Associate)
 	item["tags"] = tags
-	item["all_payments_paid"], item["payments_info"] = subscriptionReadsPaymentsInfo(payments)
+	item["all_payments_paid"], item["payments_info"] = subscriptionReadsPaymentsSums(payments)
 	var age any
 	if row.Associate != nil {
 		age = PersonaAge(row.Associate.BornDate, subscriptionReadsDay(now.UTC()))

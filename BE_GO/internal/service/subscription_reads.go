@@ -204,6 +204,29 @@ func (s *SubscriptionReads) rows(ctx context.Context, ids []string, group *strin
 	return rows, nil
 }
 
+// Serialized is SubscriptionSerializer(many=True).data of ids in order
+// (renewal_available, a read-only field without attribute, is skipped).
+func (s *SubscriptionReads) Serialized(ctx context.Context, ids []string, group *string) ([]any, error) {
+	rows, err := s.rows(ctx, ids, group)
+	if err != nil {
+		return nil, err
+	}
+	now := s.now()
+	items := make([]any, 0, len(rows))
+	for _, row := range rows {
+		payments, err := s.store.Payments(ctx, row.AssociateID, group)
+		if err != nil {
+			return nil, err
+		}
+		item, err := dto.SubscriptionReadsArchivedItem(row, payments, now)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, nil
+}
+
 // subscriptionReadsAssociateColumns are Associate's concrete fields (and
 // forward relation names and attnames) as values_list() renders them.
 var subscriptionReadsAssociateColumns = func() map[string]string {

@@ -78,6 +78,47 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## python-codicefiscale 0.10.3
+
+`BE_GO/internal/codicefiscale/data.txt.gz` is the birthplace lookup index
+(municipality, country and code keys with each record's code and validity
+dates) derived from the package's `data/municipalities.json` and
+`data/countries.json` by `tools/go-migration/codicefiscale_data.py`.
+
+License: `MIT`. Source license:
+`python_codicefiscale-0.10.3.dist-info/LICENSE.txt`, SHA-256
+`be6eeb7c9827aef107b201a7e48468877043b73377f5d0aacc9d8a92a608fdce`.
+
+Copyright (c) 2017-present Fabio Caccamo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## text-unidecode 1.3
+
+`BE_GO/internal/codicefiscale/unidecode_table.go` holds the package's
+transliterations for U+0001-U+052F, U+1E00-U+1EFF, U+2000-U+206F and
+U+20A0-U+20CF (taken from `data.bin` by the same generator).
+
+License: GPL (v2 or later) or the Artistic License, at the user's choice.
+Source license: `text_unidecode-1.3.dist-info/LICENSE.txt`, SHA-256
+`3938e7535c3e4ef7e6363de9b693fe3bafe3c4a5e5f4925cd48375096fe7afd5`.
+
 ## Catalog provenance
 
 The pinned source root used for authoring was the sibling checkout's
