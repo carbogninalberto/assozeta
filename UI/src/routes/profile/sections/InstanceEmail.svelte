@@ -110,7 +110,7 @@
                     <label>Porta<input class="form-control" type="number" bind:value={draft.port} min="1" max="65535" required /></label>
                     <label>Sicurezza<select class="form-control" bind:value={draft.security}>{#if config.security === 'invalid'}<option value="invalid" disabled>Scegli TLS o SSL</option>{/if}<option value="ssl">SSL/TLS</option><option value="tls">STARTTLS</option><option value="none">Nessuna</option></select></label>
                     <label>Nome utente<input class="form-control" bind:value={draft.username} maxlength="254" autocomplete="off" /></label>
-                    <label>Password<input class="form-control" type="password" bind:value={password} disabled={clearPassword} autocomplete="new-password" maxlength="4096" placeholder={config.password_configured ? 'Salvata · lascia vuoto per mantenerla' : 'Non impostata'} /></label>
+                    <label>Password<input class="form-control" type="password" bind:value={password} disabled={clearPassword} autocomplete="new-password" maxlength="4096" placeholder={config.password_configured ? 'Salvata (lascia vuoto)' : 'Non impostata'} /></label>
                     <div class="si-field password-clear">
                         {#if config.password_configured}<Switch id="email-clear-password" label="Rimuovi la password salvata" bind:checked={clearPassword} on:change={() => {if (clearPassword) password = '';}} />{/if}
                     </div>

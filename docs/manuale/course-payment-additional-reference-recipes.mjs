@@ -32,7 +32,7 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
     "UI/src/routes/profile/sections/SelfInstance.svelte": "60b2d0b1022ea22730c7879ff7d01b2137db59e913709b6446cb57021f11a1ad",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte": "3fb8d12712e3088142b367b144dca0c70151a2c2692ad8dd69eacc88a4720332",
-    "UI/src/routes/profile/sections/InstanceIntegration.svelte": "eddd0a8db6dcbc071daad1782b207f743acdc0bd20300de04f863b801b5f4ba7",
+    "UI/src/routes/profile/sections/InstanceIntegration.svelte": "c31891be4cb643de8756243e090ef1e48a67d3411c6b66b748f6cbd02fc041fe",
     "BE/instance/integrations.py": "c7bb11e0eb4e587b5334b2661c6ca2def5118b93c4dcb12373cc399e83a8ef59",
     "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
     "BE/application/utils/stripe_utils.py": "5eb9238ba059bd0e2247235dc33cbd2502c38d8cb1e81f793583b34e270b9bab",
