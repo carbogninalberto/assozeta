@@ -14206,25 +14206,74 @@
         "target": "modules_custom_link_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_responses.go",
+        "BE_GO/internal/repository/modules_responses.go",
+        "BE_GO/internal/service/modules_responses.go",
+        "BE_GO/internal/handler/modules_responses.go",
+        "BE_GO/cmd/server/modules_responses.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "Default (S3) storage settings and the instance-logo S3 writer",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/<custom_link>/info",
+          "/api/v2/modules/<custom_link>/info",
+          "/api/modules/<custom_link>/info"
+        ],
+        "request": "Path custom_link; optional query response_id (last value).",
+        "response": "200 {'data': ModulesSerializer(module), 'response_data': ModuleResponseSerializer(response or None) or None}.",
+        "errors": "400 ['badly formed hexadecimal UUID string'] for response_id; 403 registry / scoped session / admin without session; 404 {'error': 'module not found'} and {'error': 'module not active'}.",
+        "authentication": "AllowAny (no permission_classes); identity resolution still applies to authenticated requests.",
+        "permissions": "Registry association.modules.read.",
+        "resource_scope": "Module by exact custom_link; response by id. request.user is not read.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_responses_http.json",
+        "TESTS/fixtures/generate_modules_responses_http.py",
+        "TESTS/contracts/test_modules_responses_http.py",
+        "TESTS/adapters/django/modules_responses_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-native-r2/results.json",
+          "receipt_sha256": "50a57c9d1405aeefb18c9ce97690e706a177f56dd23099e07ddabe5dccee9c66"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-versioned-r2/results.json",
+          "receipt_sha256": "5de6341328288fe4f542d6d14fb3ce13d44fca4baff92aa04a95c1032058201c"
+        },
+        {
+          "revision": "committing change without the association filter in the Go response lookup",
+          "result": "Mutation control: fails Go on approve-foreign-response",
+          "artifact": "quality-reports/go-migration/modules-responses-http-mutation-r2/results.json",
+          "receipt_sha256": "b5475aa9cbc9e6c805c8de3e79311008a521e28f1e8b2c1f2dff574105c6ecd7"
+        }
+      ],
+      "notes": [
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/<str:module_id>/delete -> modules_delete",
@@ -14520,25 +14569,74 @@
         "target": "modules_response_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_responses.go",
+        "BE_GO/internal/repository/modules_responses.go",
+        "BE_GO/internal/service/modules_responses.go",
+        "BE_GO/internal/handler/modules_responses.go",
+        "BE_GO/cmd/server/modules_responses.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "Default (S3) storage settings and the instance-logo S3 writer",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/<module_id>/response/add",
+          "/api/v2/modules/<module_id>/response/add",
+          "/api/modules/<module_id>/response/add"
+        ],
+        "request": "Path module_id (is_valid_uuid); any JSON body stored as the response.",
+        "response": "200 {'msg': 'response added', 'module_response_id': id}.",
+        "errors": "400 bad UUID; 403 registry / scoped session; 404 module not found / not enabled / max responses reached / only users; 500 a response without progressive number, JSON null.",
+        "authentication": "AllowAny (no permission_classes); identity resolution still applies to authenticated requests.",
+        "permissions": "Registry association.modules.create.",
+        "resource_scope": "Module by id; the authenticated request.user becomes the response's user.",
+        "side_effects": "Creates the response (create entry), saves the user (update entry), update_queue saves (update entries); module.sport_association or actor index.",
+        "transaction": "Autocommit in Django; one transaction in Go.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_responses_http.json",
+        "TESTS/fixtures/generate_modules_responses_http.py",
+        "TESTS/contracts/test_modules_responses_http.py",
+        "TESTS/adapters/django/modules_responses_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-native-r2/results.json",
+          "receipt_sha256": "50a57c9d1405aeefb18c9ce97690e706a177f56dd23099e07ddabe5dccee9c66"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-versioned-r2/results.json",
+          "receipt_sha256": "5de6341328288fe4f542d6d14fb3ce13d44fca4baff92aa04a95c1032058201c"
+        },
+        {
+          "revision": "committing change without the association filter in the Go response lookup",
+          "result": "Mutation control: fails Go on approve-foreign-response",
+          "artifact": "quality-reports/go-migration/modules-responses-http-mutation-r2/results.json",
+          "receipt_sha256": "b5475aa9cbc9e6c805c8de3e79311008a521e28f1e8b2c1f2dff574105c6ecd7"
+        }
+      ],
+      "notes": [
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/<str:module_id>/update -> modules_update",
@@ -14879,25 +14977,75 @@
         "target": "modules_response_add_attachment",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_responses.go",
+        "BE_GO/internal/repository/modules_responses.go",
+        "BE_GO/internal/service/modules_responses.go",
+        "BE_GO/internal/handler/modules_responses.go",
+        "BE_GO/cmd/server/modules_responses.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "Default (S3) storage settings and the instance-logo S3 writer",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/response/<module_response_id>/add-attachment",
+          "/api/v2/modules/response/<module_response_id>/add-attachment",
+          "/api/modules/response/<module_response_id>/add-attachment"
+        ],
+        "request": "POST JSON {'filename', 'base64'} (data URI prefix allowed); DELETE JSON {'document_id'}.",
+        "response": "200 {'msg': 'attachment added'} / {'msg': 'attachment deleted'}.",
+        "errors": "400 bad UUID; 403 registry / scoped session; 404 {'error': 'document not found'}; 500 decode errors and a missing response (after the document and object exist for POST), malformed document_id, list/str bodies that index.",
+        "authentication": "AllowAny (no permission_classes); identity resolution still applies to authenticated requests.",
+        "permissions": "Registry association.modules.update for POST and DELETE.",
+        "resource_scope": "Response and document resolved by id.",
+        "side_effects": "POST: Document create (entry), S3 object <timestamp>/<document_id>/<filename>, attachment link. DELETE: every link of the document and the document (delete entry).",
+        "transaction": "POST commits the document before the upload and the link; DELETE one transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_responses_http.json",
+        "TESTS/fixtures/generate_modules_responses_http.py",
+        "TESTS/contracts/test_modules_responses_http.py",
+        "TESTS/adapters/django/modules_responses_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-native-r2/results.json",
+          "receipt_sha256": "50a57c9d1405aeefb18c9ce97690e706a177f56dd23099e07ddabe5dccee9c66"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-versioned-r2/results.json",
+          "receipt_sha256": "5de6341328288fe4f542d6d14fb3ce13d44fca4baff92aa04a95c1032058201c"
+        },
+        {
+          "revision": "committing change without the association filter in the Go response lookup",
+          "result": "Mutation control: fails Go on approve-foreign-response",
+          "artifact": "quality-reports/go-migration/modules-responses-http-mutation-r2/results.json",
+          "receipt_sha256": "b5475aa9cbc9e6c805c8de3e79311008a521e28f1e8b2c1f2dff574105c6ecd7"
+        }
+      ],
+      "notes": [
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/response/<str:module_response_id>/approve -> modules_response_approve",
@@ -14914,25 +15062,74 @@
         "target": "modules_response_approve",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_responses.go",
+        "BE_GO/internal/repository/modules_responses.go",
+        "BE_GO/internal/service/modules_responses.go",
+        "BE_GO/internal/handler/modules_responses.go",
+        "BE_GO/cmd/server/modules_responses.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "Default (S3) storage settings and the instance-logo S3 writer",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/response/<module_response_id>/approve",
+          "/api/v2/modules/response/<module_response_id>/approve",
+          "/api/modules/response/<module_response_id>/approve"
+        ],
+        "request": "Path module_response_id (is_valid_uuid).",
+        "response": "200 {'msg': 'response approved'}.",
+        "errors": "400 bad UUID; 401; 403 registry / scoped session / athletes; 404 {'error': 'response not found'}; 500 no active association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.modules.update.",
+        "resource_scope": "Response whose module belongs to request.user.sport_association.",
+        "side_effects": "approved=True (entry when changed) and update_queue for queue modules.",
+        "transaction": "Autocommit in Django; one transaction in Go.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_responses_http.json",
+        "TESTS/fixtures/generate_modules_responses_http.py",
+        "TESTS/contracts/test_modules_responses_http.py",
+        "TESTS/adapters/django/modules_responses_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-native-r2/results.json",
+          "receipt_sha256": "50a57c9d1405aeefb18c9ce97690e706a177f56dd23099e07ddabe5dccee9c66"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-versioned-r2/results.json",
+          "receipt_sha256": "5de6341328288fe4f542d6d14fb3ce13d44fca4baff92aa04a95c1032058201c"
+        },
+        {
+          "revision": "committing change without the association filter in the Go response lookup",
+          "result": "Mutation control: fails Go on approve-foreign-response",
+          "artifact": "quality-reports/go-migration/modules-responses-http-mutation-r2/results.json",
+          "receipt_sha256": "b5475aa9cbc9e6c805c8de3e79311008a521e28f1e8b2c1f2dff574105c6ecd7"
+        }
+      ],
+      "notes": [
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/response/<str:module_response_id>/delete -> modules_response_delete",
@@ -14949,25 +15146,74 @@
         "target": "modules_response_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/modules_responses.go",
+        "BE_GO/internal/repository/modules_responses.go",
+        "BE_GO/internal/service/modules_responses.go",
+        "BE_GO/internal/handler/modules_responses.go",
+        "BE_GO/cmd/server/modules_responses.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "Modules reads serialization and the association profile",
+        "Default (S3) storage settings and the instance-logo S3 writer",
+        "application_module",
+        "application_moduleresponses",
+        "application_moduleresponses_attachments",
+        "docmanager_document"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/modules/response/<module_response_id>/delete",
+          "/api/v2/modules/response/<module_response_id>/delete",
+          "/api/modules/response/<module_response_id>/delete"
+        ],
+        "request": "Path module_response_id (is_valid_uuid).",
+        "response": "200 {'msg': 'response deleted'}.",
+        "errors": "400 bad UUID; 401; 403 registry / scoped session / athletes; 404 {'error': 'response not found'}; 500 no active association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.modules.delete.",
+        "resource_scope": "Response whose module belongs to request.user.sport_association.",
+        "side_effects": "Deletes the response and its attachment links (delete entry, actor index); update_queue for queue modules.",
+        "transaction": "Autocommit in Django; one transaction in Go.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/modules_responses_http.json",
+        "TESTS/fixtures/generate_modules_responses_http.py",
+        "TESTS/contracts/test_modules_responses_http.py",
+        "TESTS/adapters/django/modules_responses_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/modules-responses.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-native-r2/results.json",
+          "receipt_sha256": "50a57c9d1405aeefb18c9ce97690e706a177f56dd23099e07ddabe5dccee9c66"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and stored objects.",
+          "artifact": "quality-reports/go-migration/modules-responses-http-versioned-r2/results.json",
+          "receipt_sha256": "5de6341328288fe4f542d6d14fb3ce13d44fca4baff92aa04a95c1032058201c"
+        },
+        {
+          "revision": "committing change without the association filter in the Go response lookup",
+          "result": "Mutation control: fails Go on approve-foreign-response",
+          "artifact": "quality-reports/go-migration/modules-responses-http-mutation-r2/results.json",
+          "receipt_sha256": "b5475aa9cbc9e6c805c8de3e79311008a521e28f1e8b2c1f2dff574105c6ecd7"
+        }
+      ],
+      "notes": [
+        "Implementing: modules/<module_id>/export stays on Django (every success path is an XLSX workbook). Refused with the 500 page before any write: form/multipart bodies on response/add and add-attachment; add-attachment POST with non-string filename/base64, filenames that are empty, ./.., contain / \\ or NUL, exceed 255 characters or end in an encoding suffix, or a taken storage name with AWS_S3_FILE_OVERWRITE off; add-attachment DELETE with a non-string non-null document_id or of a document another table references; info for a module of an association that is not active."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:oauth2/check/email -> oauth2_check_email",
