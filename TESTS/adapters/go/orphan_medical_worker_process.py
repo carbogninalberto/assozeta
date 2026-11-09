@@ -229,14 +229,13 @@ class OrphanRehearsal(Rehearsal):
                 key for key in before['storage'] if f'/{U(201)}/' in key or f'/{U(202)}/' in key}, sorted(after['storage'])
             assert '[DEPLOY TASK] OK!' in printed
         elif variant == 'stop-document':
-            # PostgreSQL's plan for the unordered LEFT OUTER JOIN reaches the
-            # certificate without document after the others: the stop ends the loop.
-            assert certificates == {1, 2, 7}, sorted(certificates)
-            assert len(entries) == 15 and "error 'NoneType' object has no attribute 'creation_date'" in printed, printed
+            # With fresh statistics the cursor returns the seed order: the
+            # certificate without document stops the loop after the first deletion.
+            assert certificates == {1, 2, 3, 4, 5, 6, 7}, sorted(certificates)
+            assert len(entries) == 3 and "error 'NoneType' object has no attribute 'creation_date'" in printed, printed
         else:
-            # This plan also reaches the document outside the location last.
-            assert certificates == {1, 2, 8}, (sorted(certificates), printed)
-            assert len(entries) == 15 and "error Attempted access to '/fuori.pdf' denied." in printed, printed
+            assert certificates == {1, 2, 3, 4, 5, 6, 8}, (sorted(certificates), printed)
+            assert len(entries) == 3 and "error Attempted access to '/fuori.pdf' denied." in printed, printed
 
     def connect(self, name):
         connection = psycopg2.connect(host=str(self.work), user='contracts', dbname=DATABASE,

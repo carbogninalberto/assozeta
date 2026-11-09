@@ -16,7 +16,7 @@ import (
 )
 
 // QuoteAssign is association_quote_assign() as Beat publishes it (no
-// arguments): for every live association with multiple fees and an advanced
+// arguments): for each live association with multiple fees and an advanced
 // plan, the plans starting today (UTC) assign a quota payment to each
 // balance-year subscriber of the previous plan that has none, and every
 // assigned member other than the owner is sent email/payment/fee_assigned.html

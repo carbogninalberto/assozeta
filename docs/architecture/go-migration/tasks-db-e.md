@@ -121,6 +121,7 @@ ends the whole task. Go keeps candidate discovery only
 running the legacy deletion would need the Document cascade characterized
 first. The `auto-delete-orphan-medical-certificate` schedule stays
 unsupported.
+Now ported in [tasks-db-f](tasks-db-f.md), with the same cascade refusal.
 
 ## Evidence
 
