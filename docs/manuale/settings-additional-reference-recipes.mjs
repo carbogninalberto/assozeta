@@ -12,7 +12,7 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/subscribe/wizard/Step1.svelte": "50bbcd39de0d80293f59f6a0953a2498efd488ebf062582ae6b964c4b9a4c4f5",
   "UI/src/routes/subscribe/wizard/Step2.svelte": "871d4ff3b52672efd93b0348c3b587d355aeaa31edd60696d777e1b5db35a128",
   "UI/src/routes/subscribe/wizard/Step0.svelte": "6219f8340109f6637059137a679d7e73d272b95a61893a0e2aa2f58d071064a9",
-  "BE/application/tasks.py": "869fe4be173a93e015be7166c72e0b08a0d4b1140b00cf8510926e58087aba70",
+  "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
   "BE/core/celery.py": "71f6f716fd8681bbc5e3dfc9f35773c24e90ddcf045b22b7dec43d6dcb3f7352",
   "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
   "BE/application/views/course_views.py": "79bfbd622601a9d17c811c76cc99e2a4b1ac9d38a05a67b190e0b233c2672baa",

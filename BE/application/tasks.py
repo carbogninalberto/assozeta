@@ -24,6 +24,7 @@ from django.db import transaction, OperationalError
 
 from application.models import AttendanceRegistry, AttendanceDay, Payment, \
     Reminders
+from application.models.payment_models import Invoice
 from application.models.carnet_models import CarnetSubscription
 from application.models.courses_models import CourseSubscription, CourseSubscriptionInstallment, Course
 from application.models.subscriptions_models import Subscription, MedicalCertificate, SubscriptionToken
@@ -510,100 +511,118 @@ def _check_and_mark_payment(payment):
         raise  # Re-raise to be caught by the executor
 
 
+def _remove_unpaid_payments(payment_ids):
+    """Delete the unpaid payments among ``payment_ids`` and the invoices only they use.
+
+    Paid payments and their invoices are accounting records and stay untouched.
+    """
+    unpaid = Payment._base_manager.filter(pk__in=payment_ids, paid=False)
+    invoice_ids = set(unpaid.exclude(invoice__isnull=True).values_list('invoice_id', flat=True))
+    unpaid_ids = list(unpaid.values_list('pk', flat=True))
+    shared_invoice_ids = set(
+        Payment._base_manager.filter(invoice_id__in=invoice_ids)
+        .exclude(pk__in=unpaid_ids)
+        .values_list('invoice_id', flat=True)
+    )
+    Payment._base_manager.filter(pk__in=unpaid_ids).delete()
+    Invoice._base_manager.filter(pk__in=invoice_ids - shared_invoice_ids).delete()
+
+
+def _purge_deleted_subscription(subscription):
+    course_subscriptions = CourseSubscription._base_manager.filter(subscription=subscription)
+    installments = CourseSubscriptionInstallment._base_manager.filter(
+        course_subscription__in=course_subscriptions
+    )
+    payment_ids = {subscription.payment_id}
+    payment_ids.update(course_subscriptions.values_list('payment_id', flat=True))
+    payment_ids.update(installments.values_list('payment_id', flat=True))
+    payment_ids.discard(None)
+
+    _remove_unpaid_payments(payment_ids)
+    # Detach the remaining (paid) payments so removing the course rows never touches them.
+    installments.update(payment=None)
+    course_subscriptions.update(payment=None)
+
+    signature_storage_key = subscription.signature_storage_key
+    Subscription._base_manager.filter(pk=subscription.pk).delete()
+    if signature_storage_key:
+        transaction.on_commit(
+            lambda: Subscription.delete_signature_key_if_unreferenced(signature_storage_key),
+            robust=True
+        )
+
+
 @shared_task(name="clear_deleted_subscription")
 def clear_deleted_subscription():
-    try:
-        print("[DEPLOY TASK] clear deleted subscription data")
-        # getting all the subscriptions that are deleted
-        subscriptions_qs = Subscription.objects.filter(deleted=True)
-        print("[DEPLOY TASK] {} subscriptions to delete".format(subscriptions_qs.count()))
-        subscriptions = subscriptions_qs.iterator(chunk_size=20)
-        for subscription in subscriptions:
-            print("-" * 50)
-            print("[DEPLOY TASK] deleting subscription {}".format(subscription.subscription_id))
-            # getting the course subscription (it might be empty)
-            course_subscriptions = CourseSubscription.objects.filter(subscription=subscription)
-            # checking all the course subscriptions one by one
-            for course_subscription in course_subscriptions:
-                print("[DEPLOY TASK] deleting course subscription {}".format(
-                    course_subscription.course_subscription_id))
-                # there are some associated payments
-                if course_subscription.payment is not None:
-                    print("[DEPLOY TASK] deleting payment {}".format(course_subscription.payment.payment_id))
-                    # there are some associated invoices to the payment
-                    if course_subscription.payment.invoice is not None:
-                        print("[DEPLOY TASK] deleting invoice {}".format(course_subscription.payment.invoice.invoice_id))
-                        # delete the associated invoice
-                        course_subscription.payment.invoice.delete()
-                    # finally delete the payment
-                    course_subscription.payment.delete()
-                # check if there are installments
-                if course_subscription.multi_payments:
-                    print("[DEPLOY TASK] deleting installments")
-                    # retrieve all installments
-                    installments = CourseSubscriptionInstallment.objects.filter(course_subscription=course_subscription)
-                    print("[DEPLOY TASK] {} installments to delete".format(installments.count()))
-                    for installment in installments:
-                        print("[DEPLOY TASK] deleting installment {}".format(installment.installment_id))
-                        # check if installment was paid
-                        if installment.payment is not None:
-                            print("[DEPLOY TASK] deleting payment {}".format(installment.payment.payment_id))
-                            # installment has an associated invoice
-                            if installment.payment.invoice is not None:
-                                print("[DEPLOY TASK] deleting invoice {}".format(installment.payment.invoice.invoice_id))
-                                installment.payment.invoice.delete()
-                            # delete the payment
-                            installment.payment.delete()
-                        # finally delete the installment
-                        installment.delete()
-                # finally unsubscribe from the course
-                course_subscription.delete()
-            # check if there is a pyament for the subscription
-            if subscription.payment is not None:
-                print("[DEPLOY TASK] deleting subscription payment {}".format(subscription.payment.payment_id))
-                # check if there is an invoice
-                if subscription.payment.invoice is not None:
-                    print("[DEPLOY TASK] deleting subscription invoice {}".format(
-                        subscription.payment.invoice.invoice_id))
-                    # delete the invoice
-                    subscription.payment.invoice.delete()
-                # delete the subscription payment
-                subscription.payment.delete()
-        # finally delete the association subscriptions
-        subscriptions.delete()
-        print("[DEPLOY TASK] OK!")
-    except Exception as e:
-        print(f"[DEPLOY TASK] error {e}")
+    """Remove subscriptions marked as deleted, keeping paid payments and invoices."""
+    subscription_ids = list(
+        Subscription._base_manager.filter(deleted=True).values_list('pk', flat=True)
+    )
+    logger.info("clear_deleted_subscription: %s subscriptions to remove", len(subscription_ids))
+    removed = 0
+    for subscription_id in subscription_ids:
+        try:
+            with transaction.atomic():
+                subscription = (
+                    Subscription._base_manager.select_for_update()
+                    .filter(pk=subscription_id, deleted=True)
+                    .first()
+                )
+                if subscription is None:
+                    continue
+                _purge_deleted_subscription(subscription)
+            removed += 1
+        except Exception:
+            logger.exception(
+                "clear_deleted_subscription: could not remove subscription",
+                extra={'subscription_id': str(subscription_id)}
+            )
+    logger.info("clear_deleted_subscription: removed %s subscriptions", removed)
+    return removed
+
+
+def _archive_subscription(subscription):
+    subscription.archived = True
+    subscription.save(update_fields=['archived'])
+    payment = subscription.payment
+    if payment is None:
+        return
+    payment.archived = True
+    payment.save(update_fields=['archived'])
+    if payment.invoice is not None:
+        payment.invoice.archived = True
+        payment.invoice.save(update_fields=['archived'])
 
 
 @shared_task(name="auto_archive_subscription")
 def auto_archive_subscription():
-    try:
-        print("[DEPLOY TASK] archive subscription automatically")
-        # getting all the subscriptions that are not deleted and are not archived
-        subscriptions_qs = Subscription.objects.filter(archived=False, deleted=False).select_related(
-            'sport_association__user', 'payment__invoice'
-        )
-        print(f"[DEPLOY TASK] found {subscriptions_qs.count()} subscriptions")
-        subscriptions = subscriptions_qs.iterator(chunk_size=100)
-        for subscription in subscriptions:
-            if subscription.sport_association.user.auto_archive:
-                date_from, date_to = BalanceSheetData.get_range_from_year_and_starting_date(
-                    date=subscription.creation_date,
-                    starting_day=subscription.sport_association.user.balance_sheet_start_day,
-                    starting_month=subscription.sport_association.user.balance_sheet_start_month
-                )
-                if datetime.now() > date_to:
-                    print(f"[DEPLOY TASK] archive subscription {subscription.id}")
-                    subscription.archived = True
-                    subscription.save()
-                    subscription.payment.archived = True
-                    subscription.payment.save()
-                    subscription.payment.invoice.archived = True
-                    subscription.payment.invoice.save()
-        print("[DEPLOY TASK] OK!")
-    except Exception as e:
-        print(f"[DEPLOY TASK] error {e}")
+    """Archive subscriptions whose balance year has ended, for associations that enable it."""
+    now = timezone.now()
+    subscriptions = Subscription._base_manager.filter(
+        archived=False, deleted=False, sport_association__user__auto_archive=True
+    ).select_related('sport_association__user', 'payment__invoice')
+    archived = 0
+    for subscription in subscriptions.iterator(chunk_size=100):
+        try:
+            owner = subscription.sport_association.user
+            _, year_end = BalanceSheetData.get_range_from_year_and_starting_date(
+                date=timezone.localtime(subscription.creation_date),
+                starting_day=owner.balance_sheet_start_day,
+                starting_month=owner.balance_sheet_start_month
+            )
+            # year_end is the start of the last day of the balance year.
+            if now < year_end + timedelta(days=1):
+                continue
+            with transaction.atomic():
+                _archive_subscription(subscription)
+            archived += 1
+        except Exception:
+            logger.exception(
+                "auto_archive_subscription: could not archive subscription",
+                extra={'subscription_id': str(subscription.pk)}
+            )
+    logger.info("auto_archive_subscription: archived %s subscriptions", archived)
+    return archived
 
 
 @shared_task(name="auto_move_users_to_base_plan")
