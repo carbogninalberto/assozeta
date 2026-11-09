@@ -21,6 +21,8 @@ type modelAuditEntry struct {
 	Context                       domain.LoginAuditContext
 	AssociationID, ResolutionPath *string
 	At                            time.Time
+	// ObjectID is auditlog's object_id: the key of an integer primary key, else NULL.
+	ObjectID *int64
 }
 
 func appendModelAudit(ctx context.Context, tx *sqlx.Tx, event modelAuditEntry) error {
@@ -54,9 +56,9 @@ func appendModelAuditForApp(ctx context.Context, tx *sqlx.Tx, appLabel string, e
 	err = tx.GetContext(ctx, &id, `INSERT INTO auditlog_logentry
  (content_type_id,object_pk,object_id,object_repr,serialized_data,action,changes_text,changes,
  actor_id,cid,remote_addr,remote_port,timestamp,additional_data,actor_email)
- SELECT id,$1,NULL,$2,NULL,$10,'',$3::jsonb,$4::uuid,$5,$6::inet,$7::text::integer,$8,$12::jsonb,$9
+ SELECT id,$1,$14::bigint,$2,NULL,$10,'',$3::jsonb,$4::uuid,$5,$6::inet,$7::text::integer,$8,$12::jsonb,$9
  FROM django_content_type WHERE app_label=$13 AND model=$11 RETURNING id`,
-		event.Key, event.Representation, string(changes), event.Context.ActorID, event.Context.CorrelationID, event.Context.RemoteAddress, remotePort, event.At, event.Context.ActorEmail, event.Action, event.Model, additionalData, appLabel)
+		event.Key, event.Representation, string(changes), event.Context.ActorID, event.Context.CorrelationID, event.Context.RemoteAddress, remotePort, event.At, event.Context.ActorEmail, event.Action, event.Model, additionalData, appLabel, event.ObjectID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return errors.New("audit model content type missing")
 	}

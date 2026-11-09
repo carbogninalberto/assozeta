@@ -328,6 +328,27 @@ func run() (runErr error) {
 	e.Any("/collaborators/add", emailRenderHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/:uid/request", emailRenderHandler.Request, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice/:uid/send", emailRenderHandler.Send, middleware.DjangoSessionAudit(sessionAuthentication))
+	// oauth2_reset_password's own redis.Redis(..., db=2).
+	resetOptions := *redisOptions
+	resetOptions.DB = 2
+	resetOptions.Dialer = redisclient.DialContext(&resetOptions)
+	resetTokens := redis.NewClient(&resetOptions)
+	defer resetTokens.Close()
+	oauthAccountsHandler := handler.NewOAuthAccountsHandler(service.NewOAuthAccounts(repository.NewOAuthAccounts(db),
+		repository.NewOAuthResetTokens(resetTokens), tasks, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()), tokens,
+		service.NewLoginResponses(service.NewLoginProfiles(repository.NewLoginProfiles(db), time.Now),
+			service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), repository.NewLoginResponseSettings(db),
+			service.NewMembershipCardConfigurations(repository.NewMembershipCardConfigurations(db), time.Now), images,
+			domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled}),
+		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now),
+		service.NewSocialClientIDs(repository.NewSocialConfiguration(db), cfg.GoogleClientID, cfg.AppleClientID),
+		service.OAuthAccountSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
+			IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug}, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/oauth2/signup", oauthAccountsHandler.Signup, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/oauth2/partial-signup", oauthAccountsHandler.PartialSignup, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/oauth2/reset", oauthAccountsHandler.Reset, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/oauth2/delete-account", oauthAccountsHandler.DeleteAccount, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionWritesHandler := handler.NewSubscriptionWritesHandler(service.NewSubscriptionEdits(repository.NewSubscriptionEdits(db), time.Now, uuid.NewString),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/edit", subscriptionWritesHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
