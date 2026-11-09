@@ -882,8 +882,12 @@ func run() (runErr error) {
 	defer realtimeRedis.Close()
 	stopRealtime := runRealtimeSubscription(realtimeRedis, realtimeHub)
 	defer stopRealtime()
+	agentSockets, err := composeAgent(cfg, db, cache, instanceAdminService, manualSource)
+	if err != nil {
+		return err
+	}
 	webSockets := handler.NewWebSocketHandler(service.NewWebSocketIdentities(accounts, tokens, identities),
-		service.NewNotificationManager(notificationStore), realtimeHub, cfg.Version)
+		service.NewNotificationManager(notificationStore), realtimeHub, cfg.Version).WithAgent(agentSockets)
 	server := &http.Server{Addr: cfg.ListenAddress, Handler: webSockets.Routes(e), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

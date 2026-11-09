@@ -40,9 +40,10 @@ func mcpErrorResult(message string) domain.RequestObject { return mcpObj("error"
 
 // mcpToolOutcome maps a planning/execution error to the call_tool result:
 // exceptions are {'error': str(e)}, not-ported inputs are refused.
-func mcpToolOutcome(err error) (any, error) {
+func mcpToolOutcome(ctx context.Context, err error) (any, error) {
 	var raised *dto.MCPToolException
 	if errors.As(err, &raised) {
+		markMCPRaised(ctx)
 		return mcpErrorResult(raised.Message), nil
 	}
 	if errors.Is(err, dto.ErrReportNotPorted) || errors.Is(err, dto.ErrReportFailed) {
@@ -65,11 +66,11 @@ func (t *BusinessMCPTools) runPlan(ctx context.Context, plan dto.ReportPlan, tim
 	}
 	results, err := t.store.RunReportStatements(ctx, timeoutMS, plan.Statements)
 	if err != nil {
-		return mcpToolOutcome(err)
+		return mcpToolOutcome(ctx, err)
 	}
 	value, err := plan.Render(results)
 	if err != nil {
-		return mcpToolOutcome(err)
+		return mcpToolOutcome(ctx, err)
 	}
 	return value, nil
 }
@@ -83,7 +84,7 @@ func (t *BusinessMCPTools) query(ctx context.Context, tool string, kwargs domain
 		return settings, err
 	})
 	if err != nil {
-		return mcpToolOutcome(err)
+		return mcpToolOutcome(ctx, err)
 	}
 	return t.runPlan(ctx, plan, timeout)
 }
@@ -102,11 +103,11 @@ func mcpKwargs(arguments domain.RequestObject, names ...string) domain.RequestOb
 var mcpQueryArguments = []string{"model_name", "fields", "filters", "exclude", "or_filters", "joins", "order_by", "limit", "offset",
 	"include_archived"}
 
-func (t *BusinessMCPTools) schema(arguments domain.RequestObject) (any, error) {
+func (t *BusinessMCPTools) schema(ctx context.Context, arguments domain.RequestObject) (any, error) {
 	value, _ := arguments.Lookup("model_name")
 	plan, err := dto.MCPSchema(value)
 	if err != nil {
-		return mcpToolOutcome(err)
+		return mcpToolOutcome(ctx, err)
 	}
 	if plan.Immediate != nil {
 		return mcpErrorResult(plan.Immediate.Message), nil
@@ -376,7 +377,7 @@ func (t *BusinessMCPTools) exportMultiSheet(ctx context.Context, arguments domai
 	}
 	// QueryBuilder(sport_association_id) reads the settings once.
 	if _, err := loadReportSettings(ctx, t.store); err != nil {
-		return mcpToolOutcome(err)
+		return mcpToolOutcome(ctx, err)
 	}
 	prepared := 0
 	for i, item := range items {
@@ -690,7 +691,7 @@ func (t *BusinessMCPTools) attendanceCourseMatrix(ctx context.Context, course at
 func (t *BusinessMCPTools) attendance(ctx context.Context, arguments domain.RequestObject) (any, error) {
 	courses, failure, err := t.attendanceCourses(ctx, arguments)
 	if err != nil {
-		return mcpToolOutcome(err)
+		return mcpToolOutcome(ctx, err)
 	}
 	if failure != nil {
 		return failure, nil
@@ -710,7 +711,7 @@ func (t *BusinessMCPTools) attendance(ctx context.Context, arguments domain.Requ
 	if len(courses) == 1 {
 		matrix, err := t.attendanceCourseMatrix(ctx, courses[0], from, to)
 		if err != nil {
-			return mcpToolOutcome(err)
+			return mcpToolOutcome(ctx, err)
 		}
 		if matrix == nil {
 			return mcpObj("error", "Nessuna giornata di presenza trovata per questo corso nel periodo indicato.",
@@ -741,7 +742,7 @@ func (t *BusinessMCPTools) attendance(ctx context.Context, arguments domain.Requ
 	for _, course := range courses {
 		matrix, err := t.attendanceCourseMatrix(ctx, course, from, to)
 		if err != nil {
-			return mcpToolOutcome(err)
+			return mcpToolOutcome(ctx, err)
 		}
 		if matrix != nil {
 			matrices = append(matrices, matrix)
