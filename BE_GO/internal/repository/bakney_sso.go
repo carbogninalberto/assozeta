@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -21,6 +22,19 @@ type BakneySSOTransaction struct{ tx *ownedTransaction }
 func (r *BakneySSO) Begin(ctx context.Context) (*BakneySSOTransaction, error) {
 	tx, err := beginOwnedTransaction(ctx, r.db, nil)
 	if err != nil {
+		return nil, err
+	}
+	return &BakneySSOTransaction{tx: tx}, nil
+}
+
+// BeginJob is Begin for a worker job: effects are fenced by the job lease.
+func (r *BakneySSO) BeginJob(ctx context.Context, job domain.Job) (*BakneySSOTransaction, error) {
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return nil, err
+	}
+	if err = fenceJobEffects(ctx, tx.tx, job.ID, job.LeaseToken); err != nil {
+		_ = tx.Rollback()
 		return nil, err
 	}
 	return &BakneySSOTransaction{tx: tx}, nil
@@ -212,4 +226,49 @@ func (t *BakneySSOTransaction) Linked(ctx context.Context, userID, associationID
 func (t *BakneySSOTransaction) SetLastLogin(ctx context.Context, userID string, at time.Time) error {
 	_, err := t.tx.tx.ExecContext(ctx, `UPDATE bakney_user SET last_login=$2 WHERE user_id=$1::uuid`, userID, at)
 	return err
+}
+
+// Revocations is BakneyRevocation.objects.order_by('created_at')[:20].
+func (t *BakneySSOTransaction) Revocations(ctx context.Context) ([]domain.BakneyRevocation, error) {
+	var rows []domain.BakneyRevocation
+	err := t.tx.tx.SelectContext(ctx, &rows, `SELECT pairing_id::text AS pairing_id,remote_pairing_id::text AS remote_pairing_id,authority,
+ secret_encrypted FROM instance_bakneyrevocation ORDER BY created_at ASC LIMIT 20`)
+	return rows, err
+}
+
+func (t *BakneySSOTransaction) DeleteRevocation(ctx context.Context, pairingID string) error {
+	_, err := t.tx.tx.ExecContext(ctx, `DELETE FROM instance_bakneyrevocation WHERE pairing_id=$1::uuid`, pairingID)
+	return err
+}
+
+// DeleteExpired is one of deliver_revocations' cleanups: rows of the table
+// whose expires_at is before the cutoff.
+func (t *BakneySSOTransaction) DeleteExpired(ctx context.Context, table string, cutoff time.Time) error {
+	var statement string
+	switch table {
+	case "challenges":
+		statement = `DELETE FROM instance_bakneychallenge WHERE expires_at<$1`
+	case "nonces":
+		statement = `DELETE FROM instance_bakneynonce WHERE expires_at<$1`
+	case "logins":
+		statement = `DELETE FROM instance_bakneylogin WHERE expires_at<$1`
+	default:
+		return errors.New("unknown bakney table")
+	}
+	_, err := t.tx.tx.ExecContext(ctx, statement, cutoff)
+	return err
+}
+
+// PairingNeedsSync is BakneyPairing.objects.filter(state__in=('pending', 'paired'),
+// remote_pairing_id__isnull=False).exists().
+func (t *BakneySSOTransaction) PairingNeedsSync(ctx context.Context) (bool, error) {
+	var exists bool
+	err := t.tx.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM instance_bakneypairing WHERE state IN ('pending','paired')
+ AND remote_pairing_id IS NOT NULL)`)
+	return exists, err
+}
+
+// CompleteJob records the worker job's completion in this fenced transaction.
+func (t *BakneySSOTransaction) CompleteJob(ctx context.Context, id, token uuid.UUID) error {
+	return completeJob(ctx, t.tx.tx, id, token, nil)
 }

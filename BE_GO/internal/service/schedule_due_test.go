@@ -36,7 +36,7 @@ var scheduleSubset = []string{
 var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateAssociateAge,
 	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest,
 	domain.JobAutoMarkAttendance, domain.JobSendUserPartialRegistrationEmail, domain.JobSendExpiringCertificateEmail,
-	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders}
+	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings}
 
 type dueFixtureInput struct {
 	Kind        string  `json:"kind"`

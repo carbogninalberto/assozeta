@@ -25,6 +25,14 @@ func (s bakneySSOStore) Begin(ctx context.Context) (service.BakneySSOTransaction
 	return tx, nil
 }
 
+func (s bakneySSOStore) BeginJob(ctx context.Context, job domain.Job) (service.BakneySSOTransaction, error) {
+	tx, err := s.repository.BeginJob(ctx, job)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
+}
+
 type bakneyAdministrators struct{ bootstrap *service.InstanceBootstrap }
 
 // Allowed is PairingAdministrator: is_instance_administrator on the actor.

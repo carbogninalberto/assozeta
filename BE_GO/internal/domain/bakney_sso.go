@@ -72,3 +72,7 @@ type BakneyMembership struct {
 	OwnerDeleted bool   `db:"owner_deleted"`
 	OwnerRole    int    `db:"owner_role"`
 }
+
+// JobMaintainBakneyPairings is instance.sso.tasks.maintain_bakney_pairings,
+// published by its persisted Beat name (bakney-pairing-maintenance, every 60 s).
+const JobMaintainBakneyPairings = "instance.sso.tasks.maintain_bakney_pairings"

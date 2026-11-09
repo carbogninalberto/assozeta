@@ -88,7 +88,8 @@ The `bakney/v1/` mount is registered as its five routes. Django remains the exec
 - TLS verification uses the system roots (Python: the certifi bundle).
 - A collaborator's session POST may create the membership card configuration in its own transaction (Django: inside the
   request transaction).
-- `maintain_bakney_pairings` and its 60-second schedule: see [sso-pairing task](#periodic-task) below.
+- `maintain_bakney_pairings`: an unhandled exception fails the Celery task once; the Go job goes back to the executor
+  (three operational attempts).
 
 ## Evidence
 
@@ -104,8 +105,9 @@ SimpleJWT and `build_login_response`, the DRF throttle entry, and the complete m
 `last_login` may change, exactly as authored).
 
 - RED (`native-r1`): Django 172/172; Go 404 on the first case.
-- GREEN (`versioned-r1`): 172/172 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
-- Mutation (`mutation-r1`): dropping the expiry condition of the commit's challenge lookup fails Go on
+- GREEN (`versioned-r2`, after the task changes; `versioned-r1` before them): 172/172 on native Django, native Go, Caddy
+  `/api/v1` and `/api/v2`.
+- Mutation (`mutation-r2`; also `mutation-r1`): dropping the expiry condition of the commit's challenge lookup fails Go on
   `sso-pairing-commit-expired-challenge` (200 instead of 409).
 - `go test ./internal/service -run TestBakney` (Django goldens for the protocol functions, Fernet both ways, signatures,
   cookies) and `go test ./internal/repository -run TestPicklePythonFloats` (CPython pickle bytes).
@@ -114,4 +116,30 @@ SimpleJWT and `build_login_response`, the DRF throttle entry, and the complete m
 
 ## Periodic task
 
-`maintain_bakney_pairings` (Beat `bakney-pairing-maintenance`, every 60 s) is not ported in this slice; Django keeps it.
+`maintain_bakney_pairings` (`instance/sso/tasks.py`, Beat `bakney-pairing-maintenance`, a 60-second interval) is
+registered in the native worker (version 1, job kind = the persisted Beat task name
+`instance.sso.tasks.maintain_bakney_pairings`) and in `domain.PeriodicJobKind`, so the inert persisted-Beat scheduler
+publishes it like the [tasks-db](tasks-db-c.md) jobs (seconds intervals are already in the evaluator subset). Django
+remains the default owner; nothing seeds schedules or activates Go ownership.
+
+- `deliver_revocations`: the first 20 revocations by `created_at` (read once); each is sent as
+  `{pairing_id, secret, action: 'disconnect'}` to `<stored authority>/pairing/v1/status` (the configured-authority check is
+  skipped for revocations; the stored authority must still be normalized). A `revoked` answer naming the remote id, or a
+  401, deletes the row; any other answer or `SSOError` (no remote id, undecryptable secret, unavailable) keeps it. Then
+  expired challenges, nonces expired more than five minutes ago and expired logins are deleted. Each delete is its own
+  fenced transaction (Django autocommit).
+- Then, when a pending or paired pairing with a remote id exists, one atomic block: `locked_pairing` and `synchronize`;
+  an `SSOError` is swallowed with its effects kept (a 401 disconnects and queues the revocation). The job completes in
+  this last transaction.
+- Payload, version and tenant are validated before any effect (`{}`, 1, nil association).
+
+Evidence (`TESTS/adapters/go/bakney_maintenance_worker_process.py`, receipts in ignored
+`quality-reports/go-migration/bakney-maintenance-worker-process-*`): race-built worker and migrate on the current
+Django schema in private PostgreSQL with a private authority stub; four seeds (revocation answers and order, cleanups,
+verified sync; 401 disconnect; no pending pairing; pending answer for another generation) are first processed by the
+actual Django task with authored path assertions; the Go job must leave the identical complete managed-model state
+(run timestamps normalized) and send byte-identical requests with the same headers. Seven groups: default Django owner,
+the four seeds, invalid version/payload/tenant, replay. RED (`red-r1`): without the registration the job stays pending.
+GREEN (`green-r2`) 7/7. Mutation (`mutation-r1`): the five-minute nonce grace removed makes the main seed differ.
+Re-run green after the shared scheduler/worker changes: `schedule_due.py` (46 differential cases now also run for this
+task), `occurrence.py` (publishes its version 1 intent), `worker_process.py`, `auto_mark_worker_process.py`.

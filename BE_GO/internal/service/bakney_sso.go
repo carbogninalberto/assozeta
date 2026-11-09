@@ -45,12 +45,18 @@ type BakneySSOTransaction interface {
 	Membership(context.Context, string) (*domain.BakneyMembership, error)
 	Linked(context.Context, string, string, string) (bool, error)
 	SetLastLogin(context.Context, string, time.Time) error
+	Revocations(context.Context) ([]domain.BakneyRevocation, error)
+	DeleteRevocation(context.Context, string) error
+	DeleteExpired(context.Context, string, time.Time) error
+	PairingNeedsSync(context.Context) (bool, error)
+	CompleteJob(context.Context, uuid.UUID, uuid.UUID) error
 	Commit() error
 	Rollback() error
 }
 
 type BakneySSOStore interface {
 	Begin(context.Context) (BakneySSOTransaction, error)
+	BeginJob(context.Context, domain.Job) (BakneySSOTransaction, error)
 }
 
 // BakneySSOLogins issue the local session of a ready login (JWTTokenService).
@@ -324,12 +330,22 @@ func (s *BakneySSO) disconnect(ctx context.Context, st *bakneyState) error {
 
 // upstream is protocol.upstream for a pairing (status/token actions).
 func (s *BakneySSO) upstream(ctx context.Context, p *domain.BakneyPairing, action string, payload [][2]string) (domain.RequestObject, error) {
-	authority, err := bakneyAuthority(s.settings)
-	if err != nil {
-		return nil, err
-	}
-	if p.Authority != authority {
-		return nil, ssoError("configuration_required", 409)
+	return s.upstreamTo(ctx, domain.BakneyRevocation{RemotePairingID: p.RemotePairingID, Authority: p.Authority,
+		SecretEncrypted: p.SecretEncrypted}, action, payload, false)
+}
+
+// upstreamTo is protocol.upstream; revocation=True with the disconnect action
+// skips the configured-authority check (a queued revocation keeps the
+// authority it was paired with).
+func (s *BakneySSO) upstreamTo(ctx context.Context, p domain.BakneyRevocation, action string, payload [][2]string, revocation bool) (domain.RequestObject, error) {
+	if !(revocation && action == "disconnect") {
+		authority, err := bakneyAuthority(s.settings)
+		if err != nil {
+			return nil, err
+		}
+		if p.Authority != authority {
+			return nil, ssoError("configuration_required", 409)
+		}
 	}
 	parts, err := pythonURLSplit(p.Authority)
 	if err != nil {
@@ -355,9 +371,10 @@ func (s *BakneySSO) upstream(ctx context.Context, p *domain.BakneyPairing, actio
 	}
 	keys, values["pairing_id"], values["secret"] = append(keys, "pairing_id", "secret"), *p.RemotePairingID, secret
 	endpoint := "status"
-	if action == "status" {
-		keys, values["action"] = append(keys, "action"), "status"
-	} else {
+	switch action {
+	case "status", "disconnect":
+		keys, values["action"] = append(keys, "action"), action
+	default:
 		endpoint = action
 	}
 	return s.authority.post(ctx, p.Authority+"/pairing/v1/"+endpoint, pythonJSONStrings(keys, values))
@@ -1180,4 +1197,89 @@ func sameStrings(value any, expected []string) bool {
 		}
 	}
 	return true
+}
+
+// ---------------------------------------------------------------------------
+// tasks.maintain_bakney_pairings
+// ---------------------------------------------------------------------------
+
+// Maintain is the maintain_bakney_pairings task: deliver_revocations, then
+// one synchronization of a pending or paired pairing. Django runs the
+// revocation deletes and cleanups in autocommit (each its own fenced
+// transaction here) and the synchronization in one atomic block whose
+// SSOError is swallowed (its effects, such as a disconnect, are kept).
+func (s *BakneySSO) Maintain(ctx context.Context, job domain.Job) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	var payload map[string]json.RawMessage
+	if job.AssociationID != uuid.Nil || job.ID == uuid.Nil || job.LeaseToken == uuid.Nil || job.State != "running" ||
+		job.Kind != domain.JobMaintainBakneyPairings || job.Version != 1 || len(job.Payload) > 65536 ||
+		json.Unmarshal(job.Payload, &payload) != nil || payload == nil || len(payload) != 0 {
+		return domain.ErrJobInvalid
+	}
+	effect := func(apply func(BakneySSOTransaction) error) error {
+		tx, err := s.store.BeginJob(ctx, job)
+		if err != nil {
+			return err
+		}
+		if err := apply(tx); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+		return tx.Commit()
+	}
+	var revocations []domain.BakneyRevocation
+	if err := effect(func(tx BakneySSOTransaction) (err error) { revocations, err = tx.Revocations(ctx); return err }); err != nil {
+		return err
+	}
+	for _, notification := range revocations {
+		result, err := s.upstreamTo(ctx, notification, "disconnect", nil, true)
+		var ssoErr *BakneySSOError
+		switch {
+		case errors.As(err, &ssoErr):
+			if ssoErr.Code != "pairing_rejected" {
+				continue
+			}
+		case err != nil:
+			return err
+		default:
+			status, _ := result.Lookup("status")
+			remote, _ := result.Lookup("pairing_id")
+			if status != "revoked" || remote != bakneyText(notification.RemotePairingID) {
+				continue
+			}
+		}
+		if err := effect(func(tx BakneySSOTransaction) error { return tx.DeleteRevocation(ctx, notification.PairingID) }); err != nil {
+			return err
+		}
+	}
+	for _, cleanup := range []struct {
+		table string
+		grace time.Duration
+	}{{"challenges", 0}, {"nonces", 5 * time.Minute}, {"logins", 0}} {
+		cutoff := s.clock().Add(-cleanup.grace)
+		if err := effect(func(tx BakneySSOTransaction) error { return tx.DeleteExpired(ctx, cleanup.table, cutoff) }); err != nil {
+			return err
+		}
+	}
+	var pending bool
+	if err := effect(func(tx BakneySSOTransaction) (err error) { pending, err = tx.PairingNeedsSync(ctx); return err }); err != nil {
+		return err
+	}
+	// The job completes in the transaction of its last effect.
+	return effect(func(tx BakneySSOTransaction) error {
+		if pending {
+			st, err := s.lockedPairing(ctx, tx)
+			if err == nil && (st.pairing.State == "pending" || st.pairing.State == "paired") && st.pairing.RemotePairingID != nil {
+				err = s.synchronize(ctx, st)
+			}
+			var ssoErr *BakneySSOError
+			if err != nil && !errors.As(err, &ssoErr) {
+				return err
+			}
+			// An SSOError is swallowed: retain the last checked_at; login always requires a live check.
+		}
+		return tx.CompleteJob(ctx, job.ID, job.LeaseToken)
+	})
 }
