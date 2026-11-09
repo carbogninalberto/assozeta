@@ -94,6 +94,19 @@ func TestEncodeRepublish(t *testing.T) {
 	if again.ParentID != "parent" || again.RootID != "root" {
 		t.Fatal("child ids not kept")
 	}
+	// request.args is a tuple: positional arguments sent as a list are shown as a tuple.
+	m.Args = []any{"a", "b"}
+	payload, _ = EncodeRepublish(m, Republish{Retries: 1, ETA: eta, DeliveryTag: "t"})
+	again, _ = ParseMessage(payload)
+	if argsrepr, _ := again.Headers.Get("argsrepr"); argsrepr != "('a', 'b')" {
+		t.Fatalf("argsrepr %v", argsrepr)
+	}
+	m.Args = []any{"a"}
+	payload, _ = EncodeRepublish(m, Republish{Retries: 1, ETA: eta, DeliveryTag: "t"})
+	again, _ = ParseMessage(payload)
+	if argsrepr, _ := again.Headers.Get("argsrepr"); argsrepr != "('a',)" {
+		t.Fatalf("argsrepr %v", argsrepr)
+	}
 }
 
 func TestParseRefusals(t *testing.T) {
