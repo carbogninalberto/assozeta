@@ -24,6 +24,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -247,6 +248,13 @@ func run() (runErr error) {
 	docmanagerReadsHandler := handler.NewDocmanagerReadsHandler(service.NewDocmanagerReads(repository.NewDocmanagerReads(db),
 		composeDocumentObjects(cfg), service.NewActorAuthentication(accounts, tokens), cfg.SessionSecret, time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
+
+	// document/<kind>/<uid> PDF routes: the Puppeteer FastRender service (PUPPETEER_HOST/PORT) prints
+	// CURRENT_HOST_PUPPETEER/<view>; DOCUMENT_BYPASS_TOKEN is HasBypassAuthorizationHeader's token.
+	documentRenderHandler := handler.NewDocumentRenderHandler(service.NewDocumentRender(repository.NewDocumentRender(db),
+		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
+		documentRenderSettings(cfg), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 
 	apiSchemaHandler := handler.NewAPISchemaHandler(service.NewActorAuthentication(accounts, tokens), identities, cfg.CSRFCookieSecure)
 	documentUploadsHandler := composeDocumentUploads(cfg, db, sessions, service.NewActorAuthentication(accounts, tokens), identities,
@@ -621,6 +629,12 @@ func run() (runErr error) {
 	e.Any("/document/medical/certificate/", documentUploadsHandler.CertificateDocument, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/move", documentArchiveHandler.Move, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/delete", documentArchiveHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/subscription/:uid", documentRenderHandler.Subscription, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/invoice/:uid", documentRenderHandler.Invoice, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/einvoice/:uid", documentRenderHandler.Einvoice, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/compensation/:uid", documentRenderHandler.Compensation, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/template/:uid", documentRenderHandler.Template, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/medical-appointment/:uid", documentRenderHandler.MedicalAppointment, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/retrieve/:uid", docmanagerReadsHandler.Retrieve, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/:uid/delete", docmanagerReadsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/delete", foldersHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))

@@ -17,6 +17,7 @@ INSTANCE_ADMIN_ENVIRONMENT = (
     'EMAIL_HOST_USER', 'EMAIL_HOST_PASSWORD', 'EMAIL_USE_TLS', 'EMAIL_USE_SSL', 'AI_MODEL', 'AI_CHEAP_MODEL', 'AI_BASE_URL',
     'MCP_AGENT_MAX_ITERATIONS', 'MCP_AGENT_MAX_RESULTS', 'MCP_AGENT_QUERY_TIMEOUT', 'MCP_AGENT_WS_RATE_LIMIT',
     'MCP_AGENT_WS_TIMEOUT', 'MCP_AGENT_HISTORY_CAP')
+DOCUMENT_RENDER_ENVIRONMENT = ('PUPPETEER_HOST', 'PUPPETEER_PORT', 'CURRENT_HOST_PUPPETEER', 'DOCUMENT_BYPASS_TOKEN', 'EMAIL_HOST_SUPPORT')
 
 
 @contextmanager
@@ -52,6 +53,8 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
         **{name: os.environ[name] for name in INSTANCE_ADMIN_ENVIRONMENT if name in os.environ},
         # A family-owned Stripe API stub (stripe-routes service_context); unset in production.
         **({'STRIPE_API_BASE': os.environ['STRIPE_API_BASE']} if 'STRIPE_API_BASE' in os.environ else {}),
+        # The PDF renderer (a family-owned stub in document-render) and the document settings Django reads.
+        **{name: os.environ[name] for name in DOCUMENT_RENDER_ENVIRONMENT if name in os.environ},
     }
     command = [str(executable)]
     observation_path = work / "query-observations.jsonl" if query_observation else None
