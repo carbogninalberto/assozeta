@@ -88,6 +88,19 @@ class AssociationImpersonationTests(TestCase):
         self.assertNotIn(self.owner.pk, eligible)
         self.start(subscriber)
 
+    def test_self_hosted_owner_sees_every_athlete_like_the_admin(self):
+        from instance.models import InstanceConfiguration
+        InstanceConfiguration.objects.create(domain='club.example.com', name='Club', self_hosted=True,
+                                             primary_association=self.association)
+        eligible = set(eligible_users(self.owner).values_list('pk', flat=True))
+        admin_athletes = set(eligible_users(self.admin).filter(role=User.ATHLETE).values_list('pk', flat=True))
+        self.assertSetEqual(eligible, admin_athletes | {self.collaborator.pk})
+        self.assertIn(self.unrelated.pk, eligible)
+        self.start(self.unrelated)
+        # A second association on the same install keeps the linked-members scope.
+        self.authenticate(self.other_owner)
+        self.assertNotIn(self.unrelated.pk, set(eligible_users(self.other_owner).values_list('pk', flat=True)))
+
     def test_search_matches_every_word_in_any_order(self):
         self.athlete.first_name, self.athlete.last_name = 'Mario', 'Rossi'
         self.athlete.save()
