@@ -1,0 +1,8362 @@
+{
+ "matrix_version": 1,
+ "scope": "invoice HTML views",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "associations": {
+  "alpha": {
+   "user": "a1000000-0000-4000-8000-000000986001",
+   "id": "a1000000-0000-4000-8000-000000986002",
+   "email": "alfa-ricevute@example.test",
+   "denomination": "ASD Alfa & Figli",
+   "tax_code": "01234567890",
+   "logo": "data:image/png;base64,QUJD",
+   "document_header": "<p class=\"intestazione\">Spett.le <span class=\"mention\" data-type=\"mention\" key=\"sport_association.denomination\">@x</span> per <span class=\"mention\" data-type=\"mention\" key=\"associate.first_name\">@x</span> (tutore <span class=\"mention\" data-type=\"mention\" key=\"main_tutor.last_name\">@x</span>) - @dataodierna</p>",
+   "invoice_footer": "<p>Corsi: <span class=\"mention\" data-type=\"mention\" key=\"other.courses_list\">@x</span></p>",
+   "extra_text_invoices": "<p>Nota per <span class=\"mention\" data-type=\"mention\" key=\"main_tutor.first_name\">@x</span> &amp; soci</p>",
+   "invoice_template": null,
+   "subscription_fee_plans": [
+    {
+     "id": "p1",
+     "name": "Piano Base"
+    },
+    {
+     "id": 2,
+     "name": "Piano Due"
+    }
+   ],
+   "membership_fee_plans": [
+    {
+     "name": "senza id"
+    },
+    {
+     "id": "m1",
+     "name": "Tessera Annuale"
+    }
+   ],
+   "enumerate_invoices": true,
+   "hide_category_name": false,
+   "default_category": null
+  },
+  "classic": {
+   "user": "a1000000-0000-4000-8000-000000986003",
+   "id": "a1000000-0000-4000-8000-000000986004",
+   "email": "classico-ricevute@example.test",
+   "denomination": "Club Classico",
+   "tax_code": "09876543210",
+   "logo": null,
+   "document_header": null,
+   "invoice_footer": null,
+   "extra_text_invoices": "<p><br></p>  ",
+   "invoice_template": "invoice_classic.html",
+   "subscription_fee_plans": [],
+   "membership_fee_plans": [],
+   "enumerate_invoices": false,
+   "hide_category_name": true,
+   "default_category": "quota"
+  },
+  "fallback": {
+   "user": "a1000000-0000-4000-8000-000000986005",
+   "id": "a1000000-0000-4000-8000-000000986006",
+   "email": "ripiego-ricevute@example.test",
+   "denomination": "Ripiego <srl>",
+   "tax_code": "22222222222",
+   "logo": "",
+   "document_header": "<p><br></p>",
+   "invoice_footer": "",
+   "extra_text_invoices": "",
+   "invoice_template": "altro.html",
+   "subscription_fee_plans": [
+    "x"
+   ],
+   "membership_fee_plans": [
+    {
+     "id": "m1",
+     "name": "Mai letta"
+    }
+   ],
+   "enumerate_invoices": false,
+   "hide_category_name": false,
+   "default_category": null
+  }
+ },
+ "categories": {
+  "quota": {
+   "id": "a1000000-0000-4000-8000-000000986010",
+   "name": "Quota Associativa",
+   "tax_deductible": true,
+   "deleted": false
+  },
+  "kit": {
+   "id": "a1000000-0000-4000-8000-000000986011",
+   "name": "Kit & Maglia",
+   "tax_deductible": false,
+   "deleted": false
+  },
+  "kitdup": {
+   "id": "a1000000-0000-4000-8000-000000986012",
+   "name": "KIT & maglia",
+   "tax_deductible": true,
+   "deleted": false
+  },
+  "corsi": {
+   "id": "a1000000-0000-4000-8000-000000986013",
+   "name": "Corsi",
+   "tax_deductible": true,
+   "deleted": true
+  },
+  "empty": {
+   "id": "a1000000-0000-4000-8000-000000986014",
+   "name": "",
+   "tax_deductible": false,
+   "deleted": false
+  }
+ },
+ "associates": {
+  "mario": {
+   "id": "a1000000-0000-4000-8000-000000986020",
+   "first": "Mario",
+   "last": "Rossi",
+   "tax_code": "RSSMRA80A01L219X",
+   "sex": "M",
+   "born": "1980-01-01",
+   "born_city": "Torino",
+   "address": "Via Po 2",
+   "city": "Torino",
+   "cap": "10123",
+   "phone": "+39 333 0000000",
+   "email": "mario@example.test",
+   "is_minor": false
+  },
+  "giulia": {
+   "id": "a1000000-0000-4000-8000-000000986021",
+   "first": "Giulia",
+   "last": "Bianchi",
+   "tax_code": "bncgli15h55l219k",
+   "sex": "F",
+   "born": "2015-06-15",
+   "born_city": "Asti",
+   "address": null,
+   "city": "Asti",
+   "cap": null,
+   "phone": null,
+   "email": "giulia@example.test",
+   "is_minor": false
+  },
+  "paolo": {
+   "id": "a1000000-0000-4000-8000-000000986022",
+   "first": "Paolo",
+   "last": "Bianchi",
+   "tax_code": "BNCPLA75C03L219Z",
+   "sex": "M",
+   "born": "1975-03-03",
+   "born_city": "Straße",
+   "address": "Corso Francia 9",
+   "city": "Torino",
+   "cap": "10138",
+   "phone": "011 123",
+   "email": null,
+   "is_minor": false
+  },
+  "luca": {
+   "id": "a1000000-0000-4000-8000-000000986023",
+   "first": "Luca",
+   "last": "Verdi",
+   "tax_code": null,
+   "sex": "A",
+   "born": "2016-02-02",
+   "born_city": null,
+   "address": null,
+   "city": null,
+   "cap": null,
+   "phone": null,
+   "email": null,
+   "is_minor": true
+  }
+ },
+ "tutors": [
+  [
+   "giulia",
+   "paolo",
+   true
+  ]
+ ],
+ "suppliers": {
+  "acme": {
+   "id": "a1000000-0000-4000-8000-000000986025",
+   "name": "ACME <srl>",
+   "address": "Via X 1",
+   "tax_code": "IT123"
+  }
+ },
+ "instructors": {
+  "anna": {
+   "id": "a1000000-0000-4000-8000-000000986026",
+   "first": "Anna",
+   "last": "D'Amico"
+  }
+ },
+ "courses": {
+  "nuoto": {
+   "id": "a1000000-0000-4000-8000-000000986027",
+   "title": "Nuoto & Acqua"
+  },
+  "yoga": {
+   "id": "a1000000-0000-4000-8000-000000986028",
+   "title": "Yoga"
+  },
+  "untitled": {
+   "id": "a1000000-0000-4000-8000-000000986029",
+   "title": null
+  }
+ },
+ "carnets": {
+  "dieci": {
+   "id": "a1000000-0000-4000-8000-000000986030",
+   "title": "Carnet 10 ingressi"
+  }
+ },
+ "subscriptions": {
+  "subplan": {
+   "id": "a1000000-0000-4000-8000-000000986040",
+   "associate": "giulia",
+   "type": 1,
+   "start": "2025-09-01",
+   "end": "2026-08-31",
+   "meta": {
+    "plan_id": "p1",
+    "membership_plan_id": "m1"
+   },
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": "Scuola & co",
+    "city": "Torino",
+    "province": "to",
+    "address": "Via Scuola 3",
+    "cap": "10100",
+    "country": "it",
+    "tax_code": null,
+    "email": "scuola@example.test"
+   },
+   "association": "alpha",
+   "group": null
+  },
+  "subnamed": {
+   "id": "a1000000-0000-4000-8000-000000986041",
+   "associate": "mario",
+   "type": 2,
+   "start": null,
+   "end": "2027-06-30",
+   "meta": {
+    "plan_id": 2,
+    "plan_name": "Scelto",
+    "membership_plan_name": null
+   },
+   "custom_data": {
+    "is_multiple": 1,
+    "type_of_associate": "altro",
+    "denomination": "Gruppo"
+   },
+   "association": "alpha",
+   "group": null
+  },
+  "subnoplan": {
+   "id": "a1000000-0000-4000-8000-000000986042",
+   "associate": "luca",
+   "type": 3,
+   "start": null,
+   "end": null,
+   "meta": {
+    "membership_plan_id": "m1"
+   },
+   "custom_data": null,
+   "association": "alpha",
+   "group": null
+  },
+  "coursesub": {
+   "id": "a1000000-0000-4000-8000-000000986043",
+   "associate": "luca",
+   "type": 1,
+   "start": "2026-01-10",
+   "end": "2026-06-30",
+   "meta": null,
+   "custom_data": {},
+   "association": "alpha",
+   "group": null
+  },
+  "listcustom": {
+   "id": "a1000000-0000-4000-8000-000000986044",
+   "associate": "mario",
+   "type": 1,
+   "start": null,
+   "end": null,
+   "meta": null,
+   "custom_data": [
+    1
+   ],
+   "association": "alpha",
+   "group": null
+  },
+  "untitled": {
+   "id": "a1000000-0000-4000-8000-000000986045",
+   "associate": "mario",
+   "type": 1,
+   "start": null,
+   "end": null,
+   "meta": null,
+   "custom_data": null,
+   "association": "alpha",
+   "group": null
+  },
+  "badplans": {
+   "id": "a1000000-0000-4000-8000-000000986046",
+   "associate": "mario",
+   "type": 2,
+   "start": "2026-02-01",
+   "end": "2026-02-28",
+   "meta": {
+    "plan_id": "zz",
+    "membership_plan_id": "m1"
+   },
+   "custom_data": {
+    "is_multiple": false
+   },
+   "association": "fallback",
+   "group": null
+  }
+ },
+ "memberships": [
+  [
+   "a1000000-0000-4000-8000-000000986050",
+   "subplan",
+   "2026-01-01",
+   "2026-12-31"
+  ],
+  [
+   "a1000000-0000-4000-8000-000000986051",
+   null,
+   "2024-01-01",
+   "2024-12-31"
+  ],
+  [
+   "a1000000-0000-4000-8000-000000986052",
+   "subnamed",
+   "2026-09-01",
+   "2027-08-31"
+  ]
+ ],
+ "invoices": {
+  "supplier": {
+   "id": "a1000000-0000-4000-8000-000000986201",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "instructor": {
+   "id": "a1000000-0000-4000-8000-000000986202",
+   "association": "alpha",
+   "activity": "0.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": null,
+   "cancelled": true,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "nobody": {
+   "id": "a1000000-0000-4000-8000-000000986203",
+   "association": "alpha",
+   "activity": "1234.56",
+   "membership": "0.01",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "otherassoc": {
+   "id": "a1000000-0000-4000-8000-000000986204",
+   "association": "alpha",
+   "activity": "12.00",
+   "membership": "3.50",
+   "description": null,
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": "paolo",
+   "deleted": false,
+   "group": null
+  },
+  "subscription": {
+   "id": "a1000000-0000-4000-8000-000000986205",
+   "association": "alpha",
+   "activity": "30.00",
+   "membership": "20.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "course": {
+   "id": "a1000000-0000-4000-8000-000000986206",
+   "association": "alpha",
+   "activity": "25.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "coursemeta": {
+   "id": "a1000000-0000-4000-8000-000000986207",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "courselabel": {
+   "id": "a1000000-0000-4000-8000-000000986208",
+   "association": "classic",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "installment": {
+   "id": "a1000000-0000-4000-8000-000000986209",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "carnet": {
+   "id": "a1000000-0000-4000-8000-000000986210",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 0,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "fallback": {
+   "id": "a1000000-0000-4000-8000-000000986211",
+   "association": "fallback",
+   "activity": "0.00",
+   "membership": "5.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "carnetmissing": {
+   "id": "a1000000-0000-4000-8000-000000986212",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "badtype": {
+   "id": "a1000000-0000-4000-8000-000000986213",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "strsum": {
+   "id": "a1000000-0000-4000-8000-000000986214",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "missingcat": {
+   "id": "a1000000-0000-4000-8000-000000986215",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "metadict": {
+   "id": "a1000000-0000-4000-8000-000000986216",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "nopayment": {
+   "id": "a1000000-0000-4000-8000-000000986217",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "twopayments": {
+   "id": "a1000000-0000-4000-8000-000000986218",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "deletedpayment": {
+   "id": "a1000000-0000-4000-8000-000000986219",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000986220",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": true,
+   "group": null
+  },
+  "group": {
+   "id": "a1000000-0000-4000-8000-000000986221",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": "own_group"
+  },
+  "listcustom": {
+   "id": "a1000000-0000-4000-8000-000000986222",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "untitled": {
+   "id": "a1000000-0000-4000-8000-000000986223",
+   "association": "alpha",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  },
+  "badplans": {
+   "id": "a1000000-0000-4000-8000-000000986224",
+   "association": "fallback",
+   "activity": "10.00",
+   "membership": "0.00",
+   "description": "Salvata",
+   "number": 7,
+   "cancelled": false,
+   "selected_tutor": null,
+   "deleted": false,
+   "group": null
+  }
+ },
+ "payments": [
+  {
+   "id": "a1000000-0000-4000-8000-000000986101",
+   "invoice": "supplier",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": null,
+   "notes": "Nota 1\nNota <2>",
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": "kit",
+   "meta_categories": null,
+   "associate": null,
+   "supplier": "acme",
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986102",
+   "invoice": "instructor",
+   "association": "alpha",
+   "type": "transfer",
+   "subject": 0,
+   "description": "",
+   "notes": null,
+   "date": null,
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": "anna",
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986103",
+   "invoice": "nobody",
+   "association": "alpha",
+   "type": "pos",
+   "subject": 0,
+   "description": "Rimborso <spese>",
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": "empty",
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986104",
+   "invoice": "otherassoc",
+   "association": "alpha",
+   "type": "online",
+   "subject": 0,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": "quota",
+   "meta_categories": [
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000000986011",
+     "amount": 2.5
+    },
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000000986012",
+     "amount": 3
+    }
+   ],
+   "associate": "mario",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986105",
+   "invoice": "subscription",
+   "association": "alpha",
+   "type": "sepa-transfer",
+   "subject": 1,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": "quota",
+   "meta_categories": [
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000000986011",
+     "amount": 5
+    },
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000000986011",
+     "amount": -1
+    }
+   ],
+   "associate": "giulia",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986106",
+   "invoice": "course",
+   "association": "alpha",
+   "type": "stripe",
+   "subject": 2,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": [
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000000986013",
+     "amount": 1.1
+    }
+   ],
+   "associate": "luca",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986107",
+   "invoice": "coursemeta",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 2,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": "kit",
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": {
+    "description": "Corso estivo"
+   },
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986108",
+   "invoice": "courselabel",
+   "association": "classic",
+   "type": "cash",
+   "subject": 2,
+   "description": "Lunedì",
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": {
+    "label": "Pilates"
+   },
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986109",
+   "invoice": "installment",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 2,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": "kit",
+   "meta_categories": null,
+   "associate": "mario",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986110",
+   "invoice": "carnet",
+   "association": "alpha",
+   "type": "default",
+   "subject": 2,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": "luca",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986111",
+   "invoice": "fallback",
+   "association": "fallback",
+   "type": "cash",
+   "subject": 0,
+   "description": "X & Y",
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": "mario",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986112",
+   "invoice": "carnetmissing",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 2,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986113",
+   "invoice": "badtype",
+   "association": "alpha",
+   "type": "bitcoin",
+   "subject": 0,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986114",
+   "invoice": "strsum",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": "kit",
+   "meta_categories": [
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000000986011",
+     "amount": "3"
+    }
+   ],
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986115",
+   "invoice": "missingcat",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": [
+    {
+     "payment_category_id": "a1000000-0000-4000-8000-000000986999",
+     "amount": 1
+    }
+   ],
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986116",
+   "invoice": "metadict",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": {
+    "payment_category_id": "a1000000-0000-4000-8000-000000986011"
+   },
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986117",
+   "invoice": "twopayments",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986118",
+   "invoice": "twopayments",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": "seconda",
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986119",
+   "invoice": "deletedpayment",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": "viva",
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986120",
+   "invoice": "deletedpayment",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": true,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986121",
+   "invoice": "deleted",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986122",
+   "invoice": "group",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 0,
+   "description": "gruppo",
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": null,
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": "own_group"
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986123",
+   "invoice": "listcustom",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 1,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": "mario",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986124",
+   "invoice": "untitled",
+   "association": "alpha",
+   "type": "cash",
+   "subject": 1,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": "mario",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000986125",
+   "invoice": "badplans",
+   "association": "fallback",
+   "type": "cash",
+   "subject": 1,
+   "description": null,
+   "notes": null,
+   "date": "2026-03-04T10:00:00+00:00",
+   "category": null,
+   "meta_categories": null,
+   "associate": "mario",
+   "supplier": null,
+   "instructor": null,
+   "course": null,
+   "meta": null,
+   "deleted": false,
+   "group": null
+  }
+ ],
+ "subscription_payments": {
+  "subplan": "a1000000-0000-4000-8000-000000986105",
+  "listcustom": "a1000000-0000-4000-8000-000000986123",
+  "untitled": "a1000000-0000-4000-8000-000000986124",
+  "badplans": "a1000000-0000-4000-8000-000000986125"
+ },
+ "course_subscriptions": [
+  [
+   "a1000000-0000-4000-8000-000000986060",
+   "nuoto",
+   "coursesub",
+   "a1000000-0000-4000-8000-000000986106",
+   false
+  ],
+  [
+   "a1000000-0000-4000-8000-000000986061",
+   "yoga",
+   null,
+   "a1000000-0000-4000-8000-000000986107",
+   false
+  ],
+  [
+   "a1000000-0000-4000-8000-000000986062",
+   "nuoto",
+   "subnamed",
+   null,
+   false
+  ],
+  [
+   "a1000000-0000-4000-8000-000000986063",
+   "untitled",
+   "untitled",
+   null,
+   false
+  ],
+  [
+   "a1000000-0000-4000-8000-000000986064",
+   "yoga",
+   "untitled",
+   null,
+   false
+  ]
+ ],
+ "installments": [
+  [
+   "a1000000-0000-4000-8000-000000986065",
+   "a1000000-0000-4000-8000-000000986062",
+   "a1000000-0000-4000-8000-000000986109"
+  ]
+ ],
+ "carnet_subscriptions": [
+  [
+   "a1000000-0000-4000-8000-000000986066",
+   "dieci",
+   "subnoplan",
+   "a1000000-0000-4000-8000-000000986110"
+  ],
+  [
+   "a1000000-0000-4000-8000-000000986067",
+   null,
+   null,
+   "a1000000-0000-4000-8000-000000986112"
+  ]
+ ],
+ "customer_invoices": {
+  "basic": {
+   "id": "a1000000-0000-4000-8000-000000986301",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 1,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Quota annuale",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 100.0,
+     "vat": 22.0
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "mixed": {
+   "id": "a1000000-0000-4000-8000-000000986302",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 2,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "09876543210",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": "12345678901",
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": null,
+   "lines": [
+    {
+     "description": "Corso <nuoto> & \"acqua\"",
+     "quantity": 2,
+     "unit_of_measure": "ore",
+     "unit_price": 19.99,
+     "vat": 22
+    },
+    {
+     "description": "Libro",
+     "quantity": 3,
+     "unit_of_measure": "pz",
+     "unit_price": "0.125",
+     "vat": "4"
+    },
+    {
+     "description": "Servizio",
+     "quantity": 1.5,
+     "unit_of_measure": "h",
+     "unit_price": 33.333,
+     "vat": 10.0
+    },
+    {
+     "description": "Altro",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 0.005,
+     "vat": null
+    }
+   ],
+   "payment_condition": "TP01",
+   "payment_modality": "MP01",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000986303",
+   "association": "foreign",
+   "prefix": null,
+   "number": 3,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Cliente Estero",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Quota annuale",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 100.0,
+     "vat": 22.0
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "rounding": {
+   "id": "a1000000-0000-4000-8000-000000986304",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 4,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Arrotondamento",
+     "quantity": 3,
+     "unit_of_measure": "pz",
+     "unit_price": 2.675,
+     "vat": 22
+    },
+    {
+     "description": "Metà",
+     "quantity": 1,
+     "unit_of_measure": "pz",
+     "unit_price": "0.005",
+     "vat": 22
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "nopec": {
+   "id": "a1000000-0000-4000-8000-000000986305",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 5,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": null,
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": "ABC1234",
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Quota annuale",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 100.0,
+     "vat": 22.0
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "novat": {
+   "id": "a1000000-0000-4000-8000-000000986306",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 6,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": null,
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Quota annuale",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 100.0,
+     "vat": 22.0
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "zerovat": {
+   "id": "a1000000-0000-4000-8000-000000986307",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 7,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Esente",
+     "quantity": 1,
+     "unit_of_measure": "pz",
+     "unit_price": 10,
+     "vat": "0"
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "zerovatint": {
+   "id": "a1000000-0000-4000-8000-000000986312",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 12,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Aliquota zero intera",
+     "quantity": 1,
+     "unit_of_measure": "pz",
+     "unit_price": 10,
+     "vat": 0
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "missingkey": {
+   "id": "a1000000-0000-4000-8000-000000986308",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 8,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Senza prezzo",
+     "quantity": 1,
+     "unit_of_measure": "pz",
+     "vat": 22
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "nolines": {
+   "id": "a1000000-0000-4000-8000-000000986309",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 9,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": null,
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "badprovince": {
+   "id": "a1000000-0000-4000-8000-000000986310",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 10,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "Quota annuale",
+     "quantity": 1,
+     "unit_of_measure": "unita",
+     "unit_price": 100.0,
+     "vat": 22.0
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  },
+  "longdescription": {
+   "id": "a1000000-0000-4000-8000-000000986311",
+   "association": "alpha",
+   "prefix": "FPR",
+   "number": 11,
+   "fiscal_year": 2026,
+   "assignor_prefix_vat_number": "IT",
+   "assignor_vat_number": "01234567890",
+   "assignor_tax_code": "01234567890",
+   "assignor_denomination": "ASD Alfa & Figli",
+   "assignor_fiscal_regime": "RF01",
+   "assignor_address": "Via Roma 1",
+   "assignor_postal_code": "10100",
+   "assignor_city": "Torino",
+   "assignor_province": "TO",
+   "assignor_country": "IT",
+   "assignor_contact_email": "alfa@example.test",
+   "assignor_contact_phone": "0111234567",
+   "assignor_fax": null,
+   "transferor_prefix_vat_number": "IT",
+   "transferor_vat_number": null,
+   "transferor_tax_code": "RSSMRA80A01L219X",
+   "transferor_denomination": "Mario Rossi <Ditta>",
+   "transferor_fiscal_regime": "RF01",
+   "transferor_address": "Via Po 2",
+   "transferor_postal_code": "10123",
+   "transferor_city": "Torino",
+   "transferor_province": "TO",
+   "transferor_country": "IT",
+   "transferor_contact_email": "mario.pec@example.test",
+   "transferor_contact_phone": null,
+   "transferor_fax": null,
+   "country_transmitter_prefix": "IT",
+   "id_transmitter": null,
+   "transmitting_format": "FPR12",
+   "document_type": "TD01",
+   "currency": "EUR",
+   "transmitting_date": "2026-03-04",
+   "causal": "Quota & servizi",
+   "lines": [
+    {
+     "description": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "quantity": 1,
+     "unit_of_measure": "pz",
+     "unit_price": 1,
+     "vat": 22
+    }
+   ],
+   "payment_condition": "TP02",
+   "payment_modality": "MP05",
+   "payment_expiry_date": "2026-04-30"
+  }
+ },
+ "cases": [
+  {
+   "name": "invoice-views-invoice-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/invoice/a1000000-0000-4000-8000-000000986201/view'. Contact administrator to grant access."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Invoice View",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/?token=a1000000-0000-4000-8000-000000986999",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-bypass-invalid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {
+    "Authorization": "not-the-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-bypass-non-ascii",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {
+    "Authorization": "tokèn"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986201"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "ACME <srl>"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via X 1"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "IT123"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "str",
+         "v": "Nota 1\nNota <2>"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986201"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "ACME <srl>"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via X 1"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "IT123"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "str",
+         "v": "Nota 1\nNota <2>"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-athlete-direct",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986201"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "ACME <srl>"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via X 1"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "IT123"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "str",
+         "v": "Nota 1\nNota <2>"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986201"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "ACME <srl>"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via X 1"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "IT123"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "str",
+         "v": "Nota 1\nNota <2>"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-bypass",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986201"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "ACME <srl>"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via X 1"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "IT123"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "str",
+         "v": "Nota 1\nNota <2>"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986201"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "ACME <srl>"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via X 1"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "IT123"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "str",
+         "v": "Nota 1\nNota <2>"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-uppercase-uid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/A1000000-0000-4000-8000-000000986201/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "A1000000-0000-4000-8000-000000986201"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "ACME <srl>"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via X 1"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "IT123"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "str",
+         "v": "Nota 1\nNota <2>"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-italian",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {
+    "Accept-Language": "it"
+   },
+   "status": 200,
+   "response": "<html>",
+   "content_language": "it",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "it",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986201"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "ACME <srl>"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via X 1"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "IT123"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "str",
+         "v": "Nota 1\nNota <2>"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>ACME &lt;srl&gt;</b> con causale <b>Kit &amp; Maglia</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-instructor-cancelled",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986202/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986202"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "0.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": "opacity:0.7;text-decoration: line-through;"
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": ""
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento di <b>Anna D&#x27;Amico</b> con causale <b>Pagamento</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Bonifico"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p><br/><br/><b>RICEVUTA ANNULLATA (non è più valida)</b>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-other-without-recipient",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986203/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986203"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "1234.57"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Rimborso <spese>"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>Rimborso &lt;spese&gt;</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "1234.56"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.01"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "POS"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-other-associate-selected-tutor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986204/view/",
+   "headers": {
+    "Accept-Language": "it"
+   },
+   "status": 200,
+   "response": "<html>",
+   "content_language": "it",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "it",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986204"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per Paolo &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "15.50"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Quota Associativa"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Mario"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Rossi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "RSSMRA80A01L219X"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "M"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "1980-01-01"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Po 2"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10123"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "str",
+            "v": "+39 333 0000000"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "mario@example.test"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Mario Rossi"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "obj",
+            "v": [
+             [
+              "first_name",
+              {
+               "t": "str",
+               "v": "Paolo"
+              }
+             ],
+             [
+              "last_name",
+              {
+               "t": "str",
+               "v": "Bianchi"
+              }
+             ],
+             [
+              "tax_code",
+              {
+               "t": "str",
+               "v": "BNCPLA75C03L219Z"
+              }
+             ],
+             [
+              "sex",
+              {
+               "t": "str",
+               "v": "M"
+              }
+             ],
+             [
+              "born_date",
+              {
+               "t": "date",
+               "v": "1975-03-03"
+              }
+             ],
+             [
+              "born_city",
+              {
+               "t": "str",
+               "v": "Straße"
+              }
+             ],
+             [
+              "address",
+              {
+               "t": "str",
+               "v": "Corso Francia 9"
+              }
+             ],
+             [
+              "address_city",
+              {
+               "t": "str",
+               "v": "Torino"
+              }
+             ],
+             [
+              "address_cap",
+              {
+               "t": "str",
+               "v": "10138"
+              }
+             ],
+             [
+              "phone",
+              {
+               "t": "str",
+               "v": "011 123"
+              }
+             ],
+             [
+              "email",
+              {
+               "t": "none"
+              }
+             ],
+             [
+              "get_full_name",
+              {
+               "t": "call",
+               "v": {
+                "t": "str",
+                "v": "Paolo Bianchi"
+               }
+              }
+             ]
+            ]
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "dict",
+      "v": [
+       [
+        "quota associativa",
+        {
+         "t": "float",
+         "v": 6.5
+        }
+       ],
+       [
+        "kit & maglia",
+        {
+         "t": "float",
+         "v": 2.5
+        }
+       ],
+       [
+        "kit & maglia (1)",
+        {
+         "t": "int",
+         "v": 3
+        }
+       ]
+      ]
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>Quota Associativa</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "12.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "3.50"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Online"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per Mario (tutore Bianchi) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-subscription-plans",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986205/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986205"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per Paolo &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "50.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Quota Associativa"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Giulia"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Bianchi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "bncgli15h55l219k"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "F"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "2015-06-15"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Asti"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Asti"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "giulia@example.test"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Giulia Bianchi"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "obj",
+            "v": [
+             [
+              "first_name",
+              {
+               "t": "str",
+               "v": "Paolo"
+              }
+             ],
+             [
+              "last_name",
+              {
+               "t": "str",
+               "v": "Bianchi"
+              }
+             ],
+             [
+              "tax_code",
+              {
+               "t": "str",
+               "v": "BNCPLA75C03L219Z"
+              }
+             ],
+             [
+              "sex",
+              {
+               "t": "str",
+               "v": "M"
+              }
+             ],
+             [
+              "born_date",
+              {
+               "t": "date",
+               "v": "1975-03-03"
+              }
+             ],
+             [
+              "born_city",
+              {
+               "t": "str",
+               "v": "Straße"
+              }
+             ],
+             [
+              "address",
+              {
+               "t": "str",
+               "v": "Corso Francia 9"
+              }
+             ],
+             [
+              "address_city",
+              {
+               "t": "str",
+               "v": "Torino"
+              }
+             ],
+             [
+              "address_cap",
+              {
+               "t": "str",
+               "v": "10138"
+              }
+             ],
+             [
+              "phone",
+              {
+               "t": "str",
+               "v": "011 123"
+              }
+             ],
+             [
+              "email",
+              {
+               "t": "none"
+              }
+             ],
+             [
+              "get_full_name",
+              {
+               "t": "call",
+               "v": {
+                "t": "str",
+                "v": "Paolo Bianchi"
+               }
+              }
+             ]
+            ]
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "dict",
+      "v": [
+       [
+        "kit & maglia",
+        {
+         "t": "int",
+         "v": 5
+        }
+       ],
+       [
+        "kit & maglia (1)",
+        {
+         "t": "int",
+         "v": -1
+        }
+       ]
+      ]
+     },
+     "custom_data": {
+      "t": "dict",
+      "v": [
+       [
+        "type_of_associate",
+        {
+         "t": "str",
+         "v": "asd-o-ssd"
+        }
+       ],
+       [
+        "denomination",
+        {
+         "t": "str",
+         "v": "Scuola & co"
+        }
+       ],
+       [
+        "city",
+        {
+         "t": "str",
+         "v": "Torino"
+        }
+       ],
+       [
+        "province",
+        {
+         "t": "str",
+         "v": "to"
+        }
+       ],
+       [
+        "address",
+        {
+         "t": "str",
+         "v": "Via Scuola 3"
+        }
+       ],
+       [
+        "cap",
+        {
+         "t": "str",
+         "v": "10100"
+        }
+       ],
+       [
+        "country",
+        {
+         "t": "str",
+         "v": "it"
+        }
+       ],
+       [
+        "tax_code",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "email",
+        {
+         "t": "str",
+         "v": "scuola@example.test"
+        }
+       ],
+       [
+        "is_multiple",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Salvata"
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "30.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "20.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Bonifico SEPA"
+     },
+     "sub": {
+      "t": "obj",
+      "v": [
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ]
+      ]
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": "25/26"
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2026"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "Piano Base"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": true
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": true
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per Giulia (tutore Bianchi) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-course-in-memory-category",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986206/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986206"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "25.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Nuoto & Acqua"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Luca"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Verdi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "A"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "2016-02-02"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Luca Verdi"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "str",
+      "v": "Nuoto & Acqua"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "dict",
+      "v": [
+       [
+        "nuoto & acqua",
+        {
+         "t": "float",
+         "v": 23.9
+        }
+       ],
+       [
+        "corsi",
+        {
+         "t": "float",
+         "v": 1.1
+        }
+       ]
+      ]
+     },
+     "custom_data": {
+      "t": "dict",
+      "v": []
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": true
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Salvata"
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "25.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Stripe"
+     },
+     "sub": {
+      "t": "obj",
+      "v": [
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ]
+      ]
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": "2026"
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": ""
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per Luca (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: Nuoto &amp; Acqua</p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-course-meta-description",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986207/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986207"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "str",
+      "v": "Corso estivo"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": true
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Salvata"
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-course-label-classic",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986208/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice_classic.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986208"
+     },
+     "extra_text_invoices": {
+      "t": "none"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Lunedì"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "str",
+      "v": "Pilates, Lunedì"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": false
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": true
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Club Classico"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Salvata"
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-installment-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986209/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986209"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Kit & Maglia"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Mario"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Rossi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "RSSMRA80A01L219X"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "M"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "1980-01-01"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Po 2"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10123"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "str",
+            "v": "+39 333 0000000"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "mario@example.test"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Mario Rossi"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": false
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "str",
+      "v": "Nuoto & Acqua"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "dict",
+      "v": [
+       [
+        "is_multiple",
+        {
+         "t": "bool",
+         "v": true
+        }
+       ],
+       [
+        "type_of_associate",
+        {
+         "t": "str",
+         "v": "altro"
+        }
+       ],
+       [
+        "denomination",
+        {
+         "t": "str",
+         "v": "Gruppo"
+        }
+       ]
+      ]
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": true
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Salvata"
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "obj",
+      "v": [
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ]
+      ]
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": "2027"
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "26/27"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "Scelto"
+     },
+     "got_membership_plan_name": {
+      "t": "none"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": true
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per Mario (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: Nuoto &amp; Acqua</p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-carnet",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986210/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986210"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "name",
+           {
+            "t": "str",
+            "v": "Carnet 10 ingressi"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Luca"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Verdi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "A"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "2016-02-02"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Luca Verdi"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": true
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "str",
+      "v": "Carnet 10 ingressi"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": true
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Salvata"
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Non specificato"
+     },
+     "sub": {
+      "t": "obj",
+      "v": [
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 3
+        }
+       ]
+      ]
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": ""
+     },
+     "override_label": {
+      "t": "bool",
+      "v": true
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": true
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per Luca (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-fallback-template",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986211/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986211"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": ""
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "5.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "X & Y"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Mario"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Rossi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "RSSMRA80A01L219X"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "M"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "1980-01-01"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Po 2"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10123"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "str",
+            "v": "+39 333 0000000"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "mario@example.test"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Mario Rossi"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": false
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": false
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Ripiego <srl>"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>X &amp; Y</b> per l'associazione <b>Ripiego &lt;srl&gt;</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "5.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p><br/></p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-plans-stop-at-exception",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986224/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986224"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": ""
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Mario"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Rossi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "RSSMRA80A01L219X"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "M"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "1980-01-01"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Po 2"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10123"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "str",
+            "v": "+39 333 0000000"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "mario@example.test"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Mario Rossi"
+            }
+           }
+          ],
+          [
+           "tutor",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "is_minor",
+           {
+            "t": "bool",
+            "v": false
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": false
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "dict",
+      "v": [
+       [
+        "is_multiple",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": true
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": ""
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Ripiego <srl>"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Salvata"
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "obj",
+      "v": [
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ]
+      ]
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": "2026"
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": ""
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": true
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": true
+     },
+     "header": {
+      "t": "str",
+      "v": "<p><br/></p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-deleted-second-payment",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986219/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986219"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "viva"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>viva</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-group-own",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986221/view/",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986221"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "gruppo"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>gruppo</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-group-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986221/view/",
+   "headers": {
+    "X-Group-Id": "not-a-group"
+   },
+   "status": 200,
+   "response": "<html>",
+   "content_language": "en",
+   "html": {
+    "template": "document/application/invoice.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000986221"
+     },
+     "extra_text_invoices": {
+      "t": "str",
+      "v": "<p>Nota per  &amp; soci</p>"
+     },
+     "total_amount": {
+      "t": "decimal",
+      "v": "10.00"
+     },
+     "body_style": {
+      "t": "str",
+      "v": ""
+     },
+     "payment": {
+      "t": "obj",
+      "v": [
+       [
+        "payment_category",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "gruppo"
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "supplier",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "payment_date",
+        {
+         "t": "datetime",
+         "v": "2026-03-04T10:00:00+00:00"
+        }
+       ],
+       [
+        "notes",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "subject",
+        {
+         "t": "int",
+         "v": 0
+        }
+       ]
+      ]
+     },
+     "course_name": {
+      "t": "none"
+     },
+     "enumerate_invoices": {
+      "t": "bool",
+      "v": true
+     },
+     "payment_categories": {
+      "t": "none"
+     },
+     "custom_data": {
+      "t": "none"
+     },
+     "stamp_free": {
+      "t": "bool",
+      "v": false
+     },
+     "invoice": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "number",
+        {
+         "t": "int",
+         "v": 7
+        }
+       ],
+       [
+        "description",
+        {
+         "t": "str",
+         "v": "Ricevuta di pagamento con causale <b>gruppo</b> per l'associazione <b>ASD Alfa &amp; Figli</b>."
+        }
+       ],
+       [
+        "activity_fee",
+        {
+         "t": "decimal",
+         "v": "10.00"
+        }
+       ],
+       [
+        "membership_fee",
+        {
+         "t": "decimal",
+         "v": "0.00"
+        }
+       ]
+      ]
+     },
+     "payment_method": {
+      "t": "str",
+      "v": "Contanti"
+     },
+     "sub": {
+      "t": "none"
+     },
+     "sub_memebership": {
+      "t": "none"
+     },
+     "sub_period": {
+      "t": "str",
+      "v": ""
+     },
+     "sub_membership_period": {
+      "t": "str",
+      "v": "2024"
+     },
+     "override_label": {
+      "t": "bool",
+      "v": false
+     },
+     "got_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_membership_plan_name": {
+      "t": "str",
+      "v": "-"
+     },
+     "got_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "got_membership_plan": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli per  (tutore ) - $today</p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Corsi: </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-views-invoice-group-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986221/view/",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-group-filters-supplier",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-carnet-without-carnet",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986212/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-unknown-payment-type",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986213/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-meta-string-amount",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986214/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-meta-unknown-category",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986215/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-meta-not-a-list",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986216/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-without-payment",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986217/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-two-payments",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986218/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-deleted",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986220/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-custom-data-list",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986222/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-course-without-title",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986223/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986999/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/not-a-uuid/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-invoice-scoped-athlete-hidden",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000986201/view/",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/einvoice/a1000000-0000-4000-8000-000000986301/view'. Contact administrator to grant access."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Einvoice View",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/?token=a1000000-0000-4000-8000-000000986999",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-bypass-invalid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {
+    "Authorization": "not-the-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-bypass-non-ascii",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {
+    "Authorization": "tokèn"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "basic"
+  },
+  {
+   "name": "invoice-views-einvoice-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "basic"
+  },
+  {
+   "name": "invoice-views-einvoice-bypass",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "basic"
+  },
+  {
+   "name": "invoice-views-einvoice-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "basic"
+  },
+  {
+   "name": "invoice-views-einvoice-mixed-rates",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986302/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "mixed"
+  },
+  {
+   "name": "invoice-views-einvoice-other-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986303/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "foreign"
+  },
+  {
+   "name": "invoice-views-einvoice-group-header-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "basic"
+  },
+  {
+   "name": "invoice-views-einvoice-half-up-rounding",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986304/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "rounding"
+  },
+  {
+   "name": "invoice-views-einvoice-falsy-vat-defaults",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986312/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "en",
+   "einvoice": "zerovatint"
+  },
+  {
+   "name": "invoice-views-einvoice-italian",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986301/view/",
+   "headers": {
+    "Accept-Language": "it"
+   },
+   "status": 200,
+   "response": "<einvoice>",
+   "content_language": "it",
+   "einvoice": "basic"
+  },
+  {
+   "name": "invoice-views-einvoice-without-pec",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986305/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-assignor-without-vat",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986306/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-zero-vat",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986307/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-line-without-price",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986308/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-without-lines",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986309/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-empty-province",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986310/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-long-description",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986311/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000986999/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  },
+  {
+   "name": "invoice-views-einvoice-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/12/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "content_language": "en"
+  }
+ ]
+}
