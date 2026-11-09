@@ -98,5 +98,6 @@ Each item was confirmed by an authored family passing on Django. Cite the family
 ## Not portable yet (refuse explicitly before any write)
 
 S3 document uploads (Document + storage save), printing tasks (`print_document_*`), Celery
-task dispatch, and synchronous PDF generation. Defer routes that need them or refuse the
+dispatch the producer does not cover (see `docs/architecture/go-migration/celery-producer.md`: plain `.delay`/`apply_async` of
+supported argument types is portable with `internal/celery` and `family_harness.celery_published`), and synchronous PDF generation. Defer routes that need them or refuse the
 specific input with a 500 before writing, and document it.

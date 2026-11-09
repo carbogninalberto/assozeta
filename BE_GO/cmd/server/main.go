@@ -16,6 +16,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -115,6 +116,13 @@ func run() (runErr error) {
 	redisOptions.Dialer = redisclient.DialContext(redisOptions)
 	cache := redis.NewClient(redisOptions)
 	defer cache.Close()
+	// Django's CELERY_BROKER_URL is the same Redis without a database number (DB 0).
+	brokerOptions := *redisOptions
+	brokerOptions.DB = 0
+	brokerOptions.Dialer = redisclient.DialContext(&brokerOptions)
+	broker := redis.NewClient(&brokerOptions)
+	defer broker.Close()
+	tasks := celery.NewProducer(celery.RedisBroker{Client: broker})
 	tokens, err := jwt.New([]byte(cfg.JWTSigningKey), []byte(cfg.JWTVerifyingKey), time.Now)
 	if err != nil {
 		return errors.New("invalid JWT signing or verification configuration")
@@ -296,6 +304,9 @@ func run() (runErr error) {
 	e.Any("/subscription/:uid/reject", subscriptionLifecycleHandler.Reject, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/archive", subscriptionLifecycleHandler.Archive, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/delete", subscriptionLifecycleHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	subscriptionApproveHandler := handler.NewSubscriptionApproveHandler(service.NewSubscriptionApprovals(repository.NewSubscriptionLifecycles(db), tasks, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/:uid/approve", subscriptionApproveHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionWritesHandler := handler.NewSubscriptionWritesHandler(service.NewSubscriptionEdits(repository.NewSubscriptionEdits(db), time.Now, uuid.NewString),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/edit", subscriptionWritesHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))

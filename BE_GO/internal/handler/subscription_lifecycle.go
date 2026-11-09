@@ -18,8 +18,7 @@ type SubscriptionLifecycleService interface {
 }
 
 // SubscriptionLifecycleHandler serves subscription/<uid>/reject, archive and
-// delete (@api_view(['POST'])). subscription/<uid>/approve is not ported: its
-// success path dispatches a Celery task.
+// delete (@api_view(['POST'])); SubscriptionApproveHandler shares its prologue.
 type SubscriptionLifecycleHandler struct {
 	lifecycles SubscriptionLifecycleService
 	actors     *service.ActorAuthentication
