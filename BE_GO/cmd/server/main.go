@@ -766,10 +766,17 @@ func run() (runErr error) {
 	// and mirrored for Go sockets (internal/channels), on Redis database 0.
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
 		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
-	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks,
-		subscriptionNotifier, time.Now, nil), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
-		paymentCategoryOperations)
+	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil)
+	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(subscriptionCreates, service.NewActorAuthentication(accounts, tokens),
+		identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	// subscription/renew and associates-draft approve run create_subscription (subscription-renew.md).
+	subscriptionRenewHandler := handler.NewSubscriptionRenewHandler(
+		service.NewSubscriptionRenewals(repository.NewSubscriptionRenewals(db), subscriptionCreates),
+		service.NewSubscriptionDraftApprovals(repository.NewSubscriptionDraftApprovals(db), subscriptionCreates),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/renew", subscriptionRenewHandler.Renew, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/associates-draft/list/approve", subscriptionRenewHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
 	realtimeHub := service.NewRealtimeHub()
 	pubsubOptions := storeOptions
 	pubsubOptions.ReadTimeout = -1

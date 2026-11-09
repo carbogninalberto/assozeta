@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -139,7 +140,8 @@ func subscriptionCreateRefuse(data domain.RequestObject) error {
 	if value, _ := data.Lookup("preregistration"); value == true {
 		return domain.ErrSubscriptionCreateNotPorted
 	}
-	if account, ok := data[subscriptionCreateIndex(data, "new_user_account")].Value.(domain.RequestObject); ok {
+	accountValue, _ := data.Lookup("new_user_account")
+	if account, ok := accountValue.(domain.RequestObject); ok {
 		if value, present := account.Lookup("new_member"); present {
 			if flag, code := dtoBoolean(value); code == "" && flag {
 				// A new member account and its welcome e-mail are not ported.
@@ -147,16 +149,20 @@ func subscriptionCreateRefuse(data domain.RequestObject) error {
 			}
 		}
 	}
-	if signature, ok := data[subscriptionCreateIndex(data, "signature")].Value.(domain.RequestObject); ok {
+	signatureValue, _ := data.Lookup("signature")
+	if signature, ok := signatureValue.(domain.RequestObject); ok {
 		if parsed, invalid := dto.ParseSignatureRequest(signature); invalid == nil && parsed.Signed {
 			// Uploading the signature to storage is not ported.
 			return domain.ErrSubscriptionCreateNotPorted
 		}
 	}
 	if medical, ok := data.Lookup("medical_certificate"); ok {
-		if object, isObject := medical.(domain.RequestObject); isObject && objectHas(object, "certificate_expring_date") {
-			// The expiration update and the placeholder certificate image are not ported.
-			return domain.ErrSubscriptionCreateNotPorted
+		if object, isObject := medical.(domain.RequestObject); isObject {
+			// The expiration update and the placeholder certificate image are not
+			// ported; a None date raises inside their try blocks and changes nothing.
+			if expiration, present := object.Lookup("certificate_expring_date"); present && expiration != nil {
+				return domain.ErrSubscriptionCreateNotPorted
+			}
 		}
 	}
 	if custom, ok := data.Lookup("custom_data"); ok {
@@ -264,6 +270,12 @@ func (a subscriptionAudit) updated(ctx context.Context, model, representation, k
 type subscriptionCreated struct {
 	id, association, associateName string
 	result                         SubscriptionCreateResult
+	// The renewal's clean-up reads the saved associate and the dates.
+	first, last, tax *string
+	start, end       *domain.CalendarDate
+	userID           string
+	// validated is validate_broadcast's result when it already ran (approve).
+	validated *bool
 }
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
@@ -293,13 +305,17 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	user := identity.ScopeUser
 	now := s.now().UTC()
 	today := subscriptionCreateDay(now)
-	associate, ok := data[subscriptionCreateIndex(data, "associate_data")].Value.(domain.RequestObject)
+	associateValue, present := data.Lookup("associate_data")
+	if !present {
+		return nil, pythonKeyError("associate_data")
+	}
+	associate, ok := associateValue.(domain.RequestObject)
 	if !ok {
-		return nil, server
+		return nil, pythonSubscriptError(associateValue)
 	}
 	bornValue, present := associate.Lookup("born_date")
 	if !present {
-		return nil, server
+		return nil, pythonKeyError("born_date")
 	}
 	if _, isText := bornValue.(string); !isText && bornValue != nil {
 		// str() of numbers and containers through dateutil is not ported.
@@ -310,11 +326,16 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	if result != dto.DateutilParsed {
+		if bornValue == nil {
+			return nil, &domain.SubscriptionCreateFailure{Text: "Unknown string format: None"}
+		}
+		if text := bornValue.(string); strings.TrimFunc(text, unicode.IsSpace) == "" {
+			return nil, &domain.SubscriptionCreateFailure{Text: "String does not contain a date: " + text}
+		}
 		return nil, server
 	}
 	age := relativeYears(calendarTime(today), born)
-	tutorIndex := subscriptionCreateIndex(data, "associate_tutor_data")
-	tutorValue := data[tutorIndex].Value
+	tutorValue, _ := data.Lookup("associate_tutor_data")
 	var tutor domain.RequestObject
 	if tutorValue != nil {
 		if tutor, ok = tutorValue.(domain.RequestObject); !ok {
@@ -323,23 +344,32 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		if tutor, associate, err := subscriptionCreateNormalize(tutor, associate, age); err != nil {
 			return nil, err
 		} else {
-			data[tutorIndex].Value, data[subscriptionCreateIndex(data, "associate_data")].Value = tutor, associate
+			data = objectSet(objectSet(data, "associate_tutor_data", tutor), "associate_data", associate)
 		}
-		tutor = data[tutorIndex].Value.(domain.RequestObject)
-		associate = data[subscriptionCreateIndex(data, "associate_data")].Value.(domain.RequestObject)
+		tutorValue, _ = data.Lookup("associate_tutor_data")
+		tutor = tutorValue.(domain.RequestObject)
+		associateValue, _ = data.Lookup("associate_data")
+		associate = associateValue.(domain.RequestObject)
 	}
-	// data['medical_certificate']['medical_id'], read before the association.
+	// The serializers read new_user_account and signature first.
+	for _, key := range []string{"new_user_account", "signature"} {
+		if !objectHas(data, key) {
+			return nil, pythonKeyError(key)
+		}
+	}
+	// data['medical_certificate']['medical_id'], read before the association;
+	// a None certificate fails later, in the elif.
 	var medicalID any
+	medicalNull := false
 	if medical, present := data.Lookup("medical_certificate"); present {
 		if medical != nil {
 			object, isObject := medical.(domain.RequestObject)
 			if !isObject {
-				return nil, server
+				return nil, pythonAttributeError(medical, "keys")
 			}
 			medicalID, _ = object.Lookup("medical_id")
 		} else {
-			// The elif's data['medical_certificate'].keys() on None.
-			return nil, server
+			medicalNull = true
 		}
 	}
 	if user.Role == domain.RoleAthlete {
@@ -350,14 +380,22 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		return nil, err
 	}
 	if count != 1 {
-		return nil, server
+		return nil, subscriptionAssociationGet(count)
 	}
 	association := settings.AssociationID
+	if named, present := data.Lookup("sport_association"); present {
+		// User.objects.get(username=...) and its SportAssociation; a miss keeps request.user's.
+		if err := s.namedAssociation(ctx, tx, named, association); err != nil {
+			return nil, err
+		}
+	}
 	associate = objectSet(associate, "sport_association", association)
 	associate = objectSet(associate, "user", user.ID)
+	data = objectSet(data, "associate_data", associate)
 	if tutor != nil {
 		tutor = objectSet(tutor, "sport_association", association)
 		tutor = objectSet(tutor, "user", user.ID)
+		data = objectSet(data, "associate_tutor_data", tutor)
 	}
 	rule := domain.CalendarRule{StartDay: settings.StartDay, StartMonth: settings.StartMonth, CustomEnd: settings.CustomEnd,
 		EndDay: settings.EndDay, EndMonth: settings.EndMonth}
@@ -378,7 +416,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if custom, present := data.Lookup("custom_data"); present && custom != nil {
 		if _, isObject := custom.(domain.RequestObject); !isObject {
 			// data.get('custom_data', {}).get(...) on a non-dict.
-			return nil, server
+			return nil, pythonAttributeError(custom, "get")
 		}
 	}
 	existing, err := tx.Existing(ctx, association, names[0], names[1], names[2], subscriptionCreateDay(season.Start), subscriptionCreateDay(season.End))
@@ -447,8 +485,13 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if err = audit.associate(ctx, saved.ID, 1, false, associateChanges(old, *saved), ownAssociation, "direct"); err != nil {
 		return nil, err
 	}
-	if _, invalid := dto.ParseSignatureRequest(data[subscriptionCreateIndex(data, "signature")].Value); invalid != nil {
+	signatureValue, _ := data.Lookup("signature")
+	if _, invalid := dto.ParseSignatureRequest(signatureValue); invalid != nil {
 		return nil, &domain.SubscriptionCreateInvalid{Fields: invalid}
+	}
+	if medicalNull {
+		// The elif's data['medical_certificate'].keys() on None.
+		return nil, pythonAttributeError(nil, "keys")
 	}
 	var medical *string
 	if medicalID != nil {
@@ -456,9 +499,9 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		if !isText {
 			return nil, domain.ErrSubscriptionCreateNotPorted
 		}
-		parsed, err := uuid.Parse(text)
+		parsed, err := paymentInfoParseUUID(text)
 		if err != nil {
-			return nil, server
+			return nil, djangoInvalidUUID(text)
 		}
 		id := parsed.String()
 		found, owner, err := tx.Certificate(ctx, id)
@@ -486,7 +529,10 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if value, present := associate.Lookup("type"); present && value != nil {
 		if value != "" {
 			parsed, ok := dto.SubscriptionCreateInt(value)
-			if !ok || !parsed.IsInt64() {
+			if !ok {
+				return nil, pythonIntError(value)
+			}
+			if !parsed.IsInt64() {
 				return nil, server
 			}
 			subscriptionType = parsed.Int64()
@@ -564,7 +610,10 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if value, present := associate.Lookup("role"); present && value != nil {
 		if value != "" {
 			parsed, ok := dto.SubscriptionCreateInt(value)
-			if !ok || !parsed.IsInt64() {
+			if !ok {
+				return nil, pythonIntError(value)
+			}
+			if !parsed.IsInt64() {
 				return nil, server
 			}
 			role = parsed.Int64()
@@ -573,7 +622,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if value, present := associate.Lookup("subscription_number"); present && value != nil {
 		parsed, ok := dto.SubscriptionCreateInt(value)
 		if !ok {
-			return nil, server
+			return nil, pythonIntError(value)
 		}
 		number = parsed
 	}
@@ -705,7 +754,8 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	}
 	name := strings.TrimSpace(subscriptionCreateValue(saved.FirstName) + " " + subscriptionCreateValue(saved.LastName))
 	return &subscriptionCreated{id: subscriptionID, association: association, associateName: name,
-		result: SubscriptionCreateResult{PaymentID: paymentID, Amount: amountJSON}}, nil
+		result: SubscriptionCreateResult{PaymentID: paymentID, Amount: amountJSON}, first: saved.FirstName, last: saved.LastName,
+		tax: saved.TaxCode, start: dates.Start, end: dates.End, userID: user.ID}, nil
 }
 
 // subscriptionCreateValue is '%s' of a CharField value.
@@ -733,7 +783,6 @@ func (s *SubscriptionCreates) actorAssociation(ctx context.Context, tx domain.Su
 // subscriptionCreateNormalize is create_subscription's tutor block: address
 // copies, e-mail clean-up and sex upper-casing.
 func subscriptionCreateNormalize(tutor, associate domain.RequestObject, age int) (domain.RequestObject, domain.RequestObject, error) {
-	server := domain.ErrSubscriptionCreateServer
 	for _, name := range []string{"address_city", "address_cap"} {
 		inAssociate, inTutor := objectHas(associate, name), objectHas(tutor, name)
 		if !inAssociate && inTutor {
@@ -754,7 +803,7 @@ func subscriptionCreateNormalize(tutor, associate domain.RequestObject, age int)
 		}
 		text, isText := value.(string)
 		if !isText {
-			return nil, server
+			return nil, pythonAttributeError(value, "strip")
 		}
 		text = strings.ReplaceAll(strings.ReplaceAll(dto.PythonStrip(text), " ", ""), "..", ".")
 		object = objectSet(object, "email", text)
@@ -773,14 +822,14 @@ func subscriptionCreateNormalize(tutor, associate domain.RequestObject, age int)
 	upper := func(object domain.RequestObject) (domain.RequestObject, error) {
 		value, present := object.Lookup("sex")
 		if !present {
-			return nil, server
+			return nil, pythonKeyError("sex")
 		}
 		if value == nil {
 			return object, nil
 		}
 		text, isText := value.(string)
 		if !isText {
-			return nil, server
+			return nil, pythonAttributeError(value, "upper")
 		}
 		if !dto.AssociateTaxCodeASCII(text) {
 			return nil, domain.ErrSubscriptionCreateNotPorted
@@ -849,8 +898,7 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 		return nil, &domain.SubscriptionCreateInvalid{Fields: fields}
 	}
 	if write.AssociateID != nil && *write.AssociateID != "" {
-		// The update-or-create by associate_id is not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		return s.saveAssociateByID(ctx, tx, audit, write, association, minorOf)
 	}
 	ownAssociation := &association
 	tax := write.Text["tax_code"]
@@ -1117,7 +1165,13 @@ func (s *SubscriptionCreates) afterCommit(ctx context.Context, identity domain.R
 	}
 	if s.notifications != nil {
 		message := fmt.Sprintf("Nuova Iscrizione aggiunta per %s.", created.associateName)
-		if err := s.notifications.Send(work, identity.ScopeUser.ID, "subscription", message, created.association, request.Audit); err != nil {
+		send := func() error {
+			if created.validated != nil {
+				return s.notifications.Deliver(work, identity.ScopeUser.ID, "subscription", message, created.association, *created.validated)
+			}
+			return s.notifications.Send(work, identity.ScopeUser.ID, "subscription", message, created.association, request.Audit)
+		}
+		if err := send(); err != nil {
 			s.logger.Error("subscription notification failed", "error", err)
 		}
 	}

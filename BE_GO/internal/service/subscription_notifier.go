@@ -43,11 +43,18 @@ var errNotificationPush = errors.New("notification push value not supported")
 // and pushes it to notifications_user_<id>; push failures are swallowed as in
 // _push_to_websocket and returned only for logging.
 func (n *SubscriptionNotifier) Send(ctx context.Context, user, kind, message, association string, audit domain.LoginAuditContext) error {
-	broadcast := "broadcast_" + user
-	subscribed, err := n.rows.ValidateBroadcast(ctx, user, broadcast, audit, n.now().UTC())
+	subscribed, err := n.rows.ValidateBroadcast(ctx, user, "broadcast_"+user, audit, n.now().UTC())
 	if err != nil {
 		return err
 	}
+	return n.Deliver(ctx, user, kind, message, association, subscribed)
+}
+
+// Deliver is Send after validate_broadcast's rows (subscribed: a new user
+// subscription, whose store is reset first).
+func (n *SubscriptionNotifier) Deliver(ctx context.Context, user, kind, message, association string, subscribed bool) error {
+	broadcast := "broadcast_" + user
+	var err error
 	if subscribed {
 		if err = n.redis.ResetNotifications(ctx, broadcast); err != nil {
 			return err
