@@ -5,8 +5,9 @@ composition roots alongside `cmd/server`. These are extensions of the specified
 Kuayle layout. The single image contains `/app/server`, `/app/worker`,
 `/app/migrate` and the separately documented [scheduler](../../docs/architecture/go-migration/scheduler-process.md);
 its default entrypoint and HTTP readiness check remain the server.
-The worker registers version-1 daily email balance reset, associate age update and
-expired subscription token cleanup. Age update has separate
+The worker registers version-1 daily email balance reset, associate age update,
+expired subscription token cleanup and audit log retention. Audit retention has
+[native evidence](../../docs/architecture/go-migration/tasks-db-a.md) only. Age update has separate
 [native and packaged evidence](../../docs/architecture/go-migration/age-worker-process.md);
 token cleanup has [native](../../docs/architecture/go-migration/token-worker-process.md)
 and [packaged evidence](../../docs/architecture/go-migration/token-worker-image.md).

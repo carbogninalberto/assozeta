@@ -21,7 +21,15 @@ var scheduleSubset = []string{
 	"utc_daily_same_date_before_minute", "utc_daily_previous_date_at_due_minute",
 	"utc_daily_start_future_date_same_hour", "utc_daily_start_same_date_same_hour",
 	"interval_initial_cursor", "interval_initial_started", "utc_daily_initial_before_slot", "utc_daily_initial_at_slot",
+	"utc_every_minute_same_minute", "utc_every_minute_next_slot", "utc_every_minute_missed_slots",
+	"utc_every_minute_hour_rollover", "utc_every_minute_day_rollover", "utc_every_minute_previous_date",
+	"utc_every_minute_future_cursor", "utc_every_minute_start_future", "utc_every_minute_initial_cursor",
 }
+
+// Timing is task-independent in ModelEntry; each published task must reach
+// the same decision as the daily reset for one persisted definition.
+var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateAssociateAge,
+	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs}
 
 type dueFixtureInput struct {
 	Kind        string  `json:"kind"`
@@ -131,17 +139,20 @@ func TestScheduleDuePortableContract(t *testing.T) {
 				row.Cron = &domain.PeriodicCron{Minute: input.Minute, Hour: input.Hour,
 					DayOfWeek: "*", DayOfMonth: "*", MonthOfYear: "*", Timezone: "UTC"}
 			}
-			before, _ := json.Marshal(row)
-			actual, err := EvaluateScheduleDue(row, scheduleTime(t, input.Now))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if actual.Due != item.Expected.Due || actual.NextCheckAfter.Seconds() != item.Expected.Next {
-				t.Fatalf("expected due=%v next=%v, observed %+v", item.Expected.Due, item.Expected.Next, actual)
-			}
-			after, _ := json.Marshal(row)
-			if string(before) != string(after) {
-				t.Fatal("pure evaluation mutated the source snapshot")
+			for _, task := range periodicTasks {
+				row.Task = task
+				before, _ := json.Marshal(row)
+				actual, err := EvaluateScheduleDue(row, scheduleTime(t, input.Now))
+				if err != nil {
+					t.Fatal(task, err)
+				}
+				if actual.Due != item.Expected.Due || actual.NextCheckAfter.Seconds() != item.Expected.Next {
+					t.Fatalf("%s: expected due=%v next=%v, observed %+v", task, item.Expected.Due, item.Expected.Next, actual)
+				}
+				after, _ := json.Marshal(row)
+				if string(before) != string(after) {
+					t.Fatal("pure evaluation mutated the source snapshot")
+				}
 			}
 			if observed != nil && !reflect.DeepEqual(observed[name], item.Expected) {
 				t.Fatalf("actual Django result differs from authored expectation: %+v", observed[name])
@@ -155,6 +166,11 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 	integer := 0
 	cases := map[string]func(*domain.PeriodicSchedule){
 		"other task":                func(s *domain.PeriodicSchedule) { s.Task = "send_reminders" },
+		"archive task":              func(s *domain.PeriodicSchedule) { s.Task = "auto_archive_subscription" },
+		"deleted subscription task": func(s *domain.PeriodicSchedule) { s.Task = "clear_deleted_subscription" },
+		"renewal task":              func(s *domain.PeriodicSchedule) { s.Task = "renew_memberships_payments" },
+		"quote task":                func(s *domain.PeriodicSchedule) { s.Task = "association_quote_assign" },
+		"export cleanup task":       func(s *domain.PeriodicSchedule) { s.Task = "cleanup_old_exports" },
 		"unregistered alias":        func(s *domain.PeriodicSchedule) { s.Task = "application.tasks.reset_communication_daily_email_balance" },
 		"one off":                   func(s *domain.PeriodicSchedule) { s.OneOff = true },
 		"absolute expiry":           func(s *domain.PeriodicSchedule) { s.ExpiresAt = &now },
@@ -194,6 +210,16 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 		"timezone":        func(c *domain.PeriodicCron) { c.Timezone = "Europe/Rome" },
 		"minute steps":    func(c *domain.PeriodicCron) { c.Minute = "*/15" },
 		"minute wildcard": func(c *domain.PeriodicCron) { c.Minute = "*" },
+		"hour wildcard":   func(c *domain.PeriodicCron) { c.Hour = "*" },
+		"every minute on one weekday": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.DayOfWeek = "*", "*", "1"
+		},
+		"every minute in Rome": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.Timezone = "*", "*", "Europe/Rome"
+		},
+		"archive calendar": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.DayOfMonth, c.MonthOfYear = "0", "1", "1-4", "1,6,9"
+		},
 		"hour list":       func(c *domain.PeriodicCron) { c.Hour = "0,12" },
 		"minute range":    func(c *domain.PeriodicCron) { c.Minute = "0-10" },
 		"invalid minute":  func(c *domain.PeriodicCron) { c.Minute = "60" },
@@ -277,5 +303,19 @@ func TestScheduleDueRejectsUnrepresentableTime(t *testing.T) {
 				t.Fatalf("%+v %v", decision, err)
 			}
 		})
+	}
+}
+
+func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
+	for _, task := range periodicTasks {
+		if kind, ok := domain.PeriodicJobKind(task); !ok || kind != task {
+			t.Fatalf("%s mapped to %q %v", task, kind, ok)
+		}
+	}
+	for _, task := range []string{"", "send_reminders", "auto_archive_subscription", "clear_deleted_subscription",
+		"application.tasks.delete_old_audit_logs", "Delete_old_audit_logs"} {
+		if kind, ok := domain.PeriodicJobKind(task); ok || kind != "" {
+			t.Fatalf("%q unexpectedly mapped to %q", task, kind)
+		}
 	}
 }

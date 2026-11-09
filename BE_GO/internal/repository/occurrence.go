@@ -151,7 +151,8 @@ func (t *occurrenceTransaction) Snapshot() domain.OccurrenceSnapshot {
 
 func (t *occurrenceTransaction) Publish(ctx context.Context) (domain.OccurrenceReceipt, error) {
 	var receipt domain.OccurrenceReceipt
-	if t.published || !t.source.Enabled || t.source.Task != domain.JobResetDailyEmailBalance {
+	kind, supported := domain.PeriodicJobKind(t.source.Task)
+	if t.published || !t.source.Enabled || !supported {
 		return receipt, domain.ErrJobConflict
 	}
 	var previous int64
@@ -172,8 +173,8 @@ func (t *occurrenceTransaction) Publish(ctx context.Context) (domain.OccurrenceR
 	}
 	digest := sha256.Sum256(raw)
 	// Three total attempts bound operational crash recovery; this is not Celery
-	// business retry parity. The daily-reset service still handles UPDATE errors.
-	job, err := t.jobs.Enqueue(ctx, t.tx, domain.JobIntent{ID: uuid.New(), AssociationID: uuid.Nil, Kind: domain.JobResetDailyEmailBalance, Version: 1,
+	// business retry parity. Each task service still handles its business errors.
+	job, err := t.jobs.Enqueue(ctx, t.tx, domain.JobIntent{ID: uuid.New(), AssociationID: uuid.Nil, Kind: kind, Version: 1,
 		Key: fmt.Sprintf("periodic:%d:%d", t.source.ID, sequence), Payload: json.RawMessage(`{}`), AvailableAt: t.now, MaxAttempts: 3})
 	if err != nil {
 		return receipt, err
