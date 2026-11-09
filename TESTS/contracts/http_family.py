@@ -45,13 +45,15 @@ def _sorted(value, path, field):
     return {**value, path[0]: _sorted(value[path[0]], path[1:], field)}
 
 
-def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), unordered=()):
+def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), unordered=(), normalize=None):
     """Check one authored case.
 
     allowed(case) -> the exact Allow method set (OPTIONS included by the caller).
     new / now: top-level response keys whose '$new' / '$now' placeholder accepts
     a generated string (the runner checks the effect) / a UTC 'Z' timestamp.
     unordered: (path tuple, identity field) pairs of unordered lists.
+    normalize(case, expected, actual) -> (expected, actual): optional family
+    hook applied before the unordered sort (for example verified signed tokens).
     """
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'],
                **substitute(case['headers'], sessions)}
@@ -90,6 +92,8 @@ def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), uno
             if expected.get(key) == '$now':
                 check(isinstance(actual, dict) and isinstance(actual.get(key), str) and actual[key].endswith('Z'), 'response.now-' + key)
                 expected = {**expected, key: actual[key]}
+    if normalize is not None:
+        expected, actual = normalize(case, expected, actual)
     for path, field in unordered:
         if isinstance(_at(expected, path), list):
             expected, actual = _sorted(expected, path, field), _sorted(actual, path, field)
