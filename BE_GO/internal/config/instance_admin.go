@@ -33,6 +33,9 @@ type InstanceAdminSettings struct {
 	// SetupToken is INSTANCE_SETUP_TOKEN (env.str, default ''), read by
 	// SetupTokenOrAuthenticated before the instance is configured.
 	SetupToken string `json:"-"`
+	// BAKNEY_SSO_API_BASE and BAKNEY_SSO_UI_ORIGIN (env.str, trailing '/'
+	// stripped), read by the Bakney pairing/SSO views.
+	BakneySSOAPIBase, BakneySSOUIOrigin string
 }
 
 func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error) {
@@ -101,6 +104,13 @@ func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error)
 	if s.SetupToken, err = environmentString(values, "INSTANCE_SETUP_TOKEN", "", false); err != nil {
 		return s, err
 	}
+	if s.BakneySSOAPIBase, err = environmentString(values, "BAKNEY_SSO_API_BASE", "https://app.bakney.com/api", false); err != nil {
+		return s, err
+	}
+	if s.BakneySSOUIOrigin, err = environmentString(values, "BAKNEY_SSO_UI_ORIGIN", "https://app.bakney.com", false); err != nil {
+		return s, err
+	}
+	s.BakneySSOAPIBase, s.BakneySSOUIOrigin = strings.TrimRight(s.BakneySSOAPIBase, "/"), strings.TrimRight(s.BakneySSOUIOrigin, "/")
 	return s, nil
 }
 

@@ -245,6 +245,11 @@ func run() (runErr error) {
 	})
 	instanceHandler := handler.NewInstanceBootstrapHandler(instanceService, service.NewActorAuthentication(accounts, tokens), identities)
 	instanceAdminHandler := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	bakneySSOHandler, closeBakneySSO, err := composeBakneySSO(cfg, db, cache, tokens, accounts, identities, instanceService, images)
+	if err != nil {
+		return err
+	}
+	defer closeBakneySSO()
 	instanceManifestHandler := handler.NewInstanceManifestHandler(service.NewInstanceManifest(repository.NewInstanceManifest(db)))
 	instanceLogoHandler := composeInstanceLogo(cfg)
 	instanceSetupHandler := composeInstanceSetup(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
@@ -712,6 +717,12 @@ func run() (runErr error) {
 	e.Any("/instance/admin/diagnostics", instanceAdminHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/updates", instanceAdminHandler.Updates, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/restarts", instanceAdminHandler.Restarts, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/bakney-pairing", bakneySSOHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/pairing/challenge", bakneySSOHandler.Challenge, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/pairing/commit", bakneySSOHandler.Commit, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/login-start", bakneySSOHandler.LoginStart, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/callback", bakneySSOHandler.Callback, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/session", bakneySSOHandler.Session, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/setup-token/validate", instanceSetupHandler.Validate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/configure", instanceSetupHandler.Configure, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/reconfigure", instanceSetupHandler.Reconfigure, middleware.DjangoSessionAudit(sessionAuthentication))

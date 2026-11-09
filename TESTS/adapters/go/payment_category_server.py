@@ -4,6 +4,7 @@ Image rehearsals supply the same context-manager interface with their packaged
 server. The response and persistence contracts stay owned by the neutral oracle.
 """
 from contextlib import contextmanager
+import json
 import os
 import socket
 import subprocess
@@ -60,6 +61,9 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
         **{name: os.environ[name] for name in GOOGLE_ENVIRONMENT if name in os.environ},
         # SessionMiddleware's cookie flag as this Django process resolved it (env.bool, default not DEBUG).
         'SESSION_COOKIE_SECURE': str(settings.SESSION_COOKIE_SECURE),
+        # Family-owned process settings (for example the sso-pairing authority stub
+        # and the development flags Django reads at request time); unset otherwise.
+        **json.loads(os.environ.get('GO_FIXTURE_ENVIRONMENT', '{}')),
     }
     command = [str(executable)]
     observation_path = work / "query-observations.jsonl" if query_observation else None
