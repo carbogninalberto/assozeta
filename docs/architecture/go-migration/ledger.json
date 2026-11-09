@@ -350,26 +350,71 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/migrate-subscription-signatures-to-s3/main.go",
+        "BE_GO/cmd/migrate-subscription-signatures-to-s3/term_bsd.go",
+        "BE_GO/cmd/migrate-subscription-signatures-to-s3/term_linux.go",
+        "BE_GO/internal/service/subscription_signature_migration.go",
+        "BE_GO/internal/repository/subscription_signature_migration.go",
+        "BE_GO/internal/domain/subscription_signature_migration.go",
+        "BE_GO/internal/service/subscription_sign.go",
+        "BE_GO/Dockerfile"
+      ],
+      "dependencies": [
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/exceptions.py",
+        "BE/application/migrations/0415_remove_subscription_signature.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
+        "request": "CLI --dry-run, --batch-size N (int, default 100); --name value or --name=value, unique abbreviations; -v/--verbosity, --traceback, --skip-checks, --no-color, --force-color accepted.",
+        "response": "Same stdout lines as Django (column absent message, DRY-RUN banner, Found, per-batch headers, per-row Migrated/Kept/Skipping/Error lines, summary); exit 0; --batch-size 0 exit 1 after Found; argparse errors exit 2.",
+        "errors": "Per-row exceptions are counted and printed as 'Error processing subscription <id>: <str(e)>' (InvalidSignatureError/StorageUnavailableError detail dicts, Subscription.save() ValueError texts, psycopg2 primary message).",
         "authentication": null,
         "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "resource_scope": "Every application_subscription row with a non-empty legacy signature column, resolved by id.",
+        "side_effects": "Base64 rows: HeadObject, PutObject image/png, PutObjectAcl public-read (AWS_S3_USE_OBJECT_ACL), signature_storage_key/signature_url; URL rows: signature_url; auditlog update entry (no actor) indexed direct; failed saves delete the stored object.",
+        "transaction": "Base64 rows: one transaction (entry, index, UPDATE); URL rows: autocommit (entry committed before the UPDATE).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/subscription_signature_migration_command.py",
+        "BE_GO/internal/service/subscription_signature_migration_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-signature-migration.md",
+        {
+          "revision": "committing change",
+          "result": "RED: Django 10/10 against authored exit status, stdout and per-row effects; Go command withheld.",
+          "artifact": "quality-reports/go-migration/subscription-signature-migration/red-r2/results.json",
+          "receipt_sha256": "ba3d33c657ee7047a090df28880d84d0da004e6e402dde910ee45e7239a0c557"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 10/10, Django and the race-built Go command identical in exit status, stdout, storage requests, bucket, model state, legacy column and audit/index rows.",
+          "artifact": "quality-reports/go-migration/subscription-signature-migration/green-r2/results.json",
+          "receipt_sha256": "f5585aecbf85c678854466ee564af4e90437eafcbefd19d7adb4050be155c4f3"
+        },
+        {
+          "revision": "committing change with the URL-branch save made atomic",
+          "result": "Mutation control: URL branch saved atomically fails Go on default batch (6 audit entries instead of 7); CAUGHT.",
+          "artifact": "quality-reports/go-migration/subscription-signature-migration/mutation-r1/results.json",
+          "receipt_sha256": "36338ef85ebf095561a72b8c1fafbd63a2fef9c9e669ca8dea237f1ab0423032"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN re-run after the merge: 10/10.",
+          "artifact": "quality-reports/go-migration/subscription-signature-migration/green-merged/results.json",
+          "receipt_sha256": "52b8f4d84bfe5f06ff0727580a263a3b041fe377966c3310efa118037f60c0f7"
+        }
+      ],
       "notes": [
-        "ledger-structural review: Still applicable: migration 0415 removes Subscription.signature in state only, so older databases keep the column. Writes to configured storage; not ported."
+        "Implementing: the Go command reproduces handle() against a database with the legacy column; Django-vs-Go command differential (10 cases, 18 legacy rows covering every outcome) on PostgreSQL and MinIO.",
+        "Not ported (explicit): an already-existing generated storage key stops the Go run with exit 1 (Django picks a random alternative name); --settings/--pythonpath/--help/--version and non-ASCII or beyond-int64 --batch-size exit 2; Django's stderr/traceback text; error text of database errors other than the server primary message and of a failing cleanup delete. See subscription-signature-migration.md."
       ]
     },
     {
@@ -730,42 +775,72 @@
           "BaseCommand"
         ]
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/relay-go-realtime/main.go",
+        "BE_GO/internal/service/relay_go_realtime.go",
+        "BE_GO/internal/repository/relay_go_realtime.go",
+        "BE_GO/internal/domain/relay_go_realtime.go",
+        "BE_GO/internal/channels/channels.go",
+        "BE_GO/internal/channels/python.go",
+        "BE_GO/Dockerfile"
+      ],
       "dependencies": [
-        "Go migration 4 outbox table public.assozeta_go_realtime_events"
+        "BE/notifications/go_realtime.py",
+        "BE/notifications/realtime_layer.py",
+        "BE/communications/staff_board.py",
+        "BE/core/settings.py",
+        "BE_GO/migrations/000004_realtime_events.up.sql"
       ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": "manage.py relay_go_realtime [--once] [--poll-seconds 2.0]; LISTEN assozeta_go_realtime plus polling.",
-        "response": "Claims pending version-1 rows FOR UPDATE SKIP LOCKED (limit 100) and group_sends allowlisted kinds (staff_board_changed -> staff_board_<target>); marks delivered_at, retries up to 30, then failed_code.",
-        "errors": "Unknown kind/version -> failed_code unsupported_event; layer failures retry, then delivery_exhausted.",
+        "request": "CLI --once, --poll-seconds SECONDS (float, default 2.0; '--name value' or '--name=value'), --env-file PATH. Without --once: LISTEN assozeta_go_realtime plus polling.",
+        "response": "--once prints str({'delivered': n, 'retry': n, 'failed': n}) and exits 0. Loop: drain while a batch delivers/fails without retries, then wait poll seconds or a notification.",
+        "errors": "Unknown kind or version -> failed_code unsupported_event; layer errors retry, then delivery_exhausted at attempts+1 >= 30; argparse errors exit 2 (texts not compared); database errors exit 1.",
         "authentication": null,
         "permissions": null,
         "resource_scope": "Outbox rows only.",
-        "side_effects": "Channels group_send through Django's configured layer, which now also mirrors the message to Go sockets.",
-        "transaction": "One transaction per batch; at least once.",
+        "side_effects": "channels_redis group_send (group trim, channel queues, capacity 100, expiry 60) plus the assozeta:realtime:v1 mirror on Redis DB 0 with REDIS_PASSWORD; outbox attempts, delivered_at=clock_timestamp(), failed_code.",
+        "transaction": "One transaction per batch: SELECT ... ORDER BY id LIMIT 100 FOR UPDATE SKIP LOCKED; at least once.",
         "execution_owner": "django"
       },
       "tests": [
+        "TESTS/adapters/go/relay_go_realtime_command.py",
+        "BE_GO/internal/service/relay_go_realtime_test.go",
         "BE/notifications/tests/test_go_realtime.py",
-        "TESTS/fixtures/websockets_http.json",
-        "TESTS/fixtures/generate_websockets_http.py",
-        "TESTS/contracts/test_websockets_http.py",
-        "TESTS/adapters/django/websockets_http.py"
+        "BE_GO/internal/channels/channels_test.go"
       ],
       "evidence": [
-        "docs/architecture/go-migration/websockets.md",
+        "docs/architecture/go-migration/relay-go-realtime.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 9/9 against authored counts, row outcomes and mirror groups; Go command absent.",
+          "artifact": "quality-reports/go-migration/relay-go-realtime/red-r3/results.json",
+          "receipt_sha256": "f54eb4790f4eb8063e7d0d4e78f50e1f23754f9c7e03df6dd3fafe6f391ad400"
+        },
         {
           "revision": "committing change",
-          "result": "Relay delivery observed on all four transports: an outbox row relayed by relay_once() reaches Django-connected and Go-connected sockets (websockets-notifications-owner-events, websockets-notifications-staff-board-recheck).",
-          "artifact": "quality-reports/go-migration/websockets-http-versioned-r1/results.json",
-          "receipt_sha256": "c6c250de8631e836ab41a8665a2d6388c17c586b52206733540e6d2bac0c8246"
+          "result": "GREEN: 9/9 identical exit status, stdout, outbox rows, Redis keys (decoded channel messages, group sets, TTLs) and mirror envelopes between manage.py relay_go_realtime --once and the race-built Go command.",
+          "artifact": "quality-reports/go-migration/relay-go-realtime/green-r3/results.json",
+          "receipt_sha256": "cd566d8d98d41852bfa52b88f7c54d63aa3032c02bfdbb6528ca9f3fad6826ad"
+        },
+        {
+          "revision": "committing change with exhaustion at attempts+1 > 30",
+          "result": "Mutation control: fails Go on 'channel layer unreachable: retry, then exhausted'.",
+          "artifact": "quality-reports/go-migration/relay-go-realtime/mutation-r2/results.json",
+          "receipt_sha256": "b2423dee49ca5a9a9a4e96675d0e50db165819dfb3cb87fbec120a09fe33d46e"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN re-run after the merge: 9/9.",
+          "artifact": "quality-reports/go-migration/relay-go-realtime/green-merged/results.json",
+          "receipt_sha256": "cd566d8d98d41852bfa52b88f7c54d63aa3032c02bfdbb6528ca9f3fad6826ad"
         }
       ],
       "notes": [
-        "Stays Django-owned by design: the relay must send through Django's channel layer and Go never writes the Channels encoding. Go sockets receive its output through the mirrored layer (websockets.md). No Go port intended while Django owns the channel layer."
+        "Implementing: BE_GO/cmd/relay-go-realtime sends through internal/channels (byte-equal GoMirroredRedisChannelLayer.group_send). selfhost/compose.yml still runs the Django command; execution owner stays django.",
+        "Not ported: Django global management options, argparse abbreviations and error texts; negative/NaN/infinite --poll-seconds refused at startup (Django fails at its first select); the layer-is-None retry branch (unreachable with the shipped CHANNEL_LAYERS); traceback text on database errors. Loop mode covered by unit tests, not by the process differential."
       ]
     },
     {
@@ -2411,9 +2486,15 @@
         "target": "include(router.urls)",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/urls.py",
+        "BE/application/views/archive_views.py",
+        "BE/application/views/course_views.py",
+        "BE/application/views/subscriptions_views.py",
+        "BE/application/views/personas_views.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -2428,9 +2509,11 @@
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/unknown-paths.md"
+      ],
       "notes": [
-        "Not satisfied (ledger-structural review): DefaultRouter generates routes that are not ledger route entries and that Go does not serve: <prefix>/ (GET list, POST create) and <prefix>/<pk>/ (GET, PUT, PATCH, DELETE) with .<format> suffixes for the eight registered viewsets, documents/bulk_delete/, and the API root."
+        "Characterized, not ported (unknown-paths.md, 'include(router.urls)'): DefaultRouter list/detail/format routes for 8 ModelViewSets, documents/bulk_delete/ and the AllowAny API root. Reachable and writing (list POST is a real create; detail DELETE is the stock destroy; PATCH and format routes 500 from the custom signatures), IsAuthenticated, no permission-registry mapping (restricted collaborators 403). No repository client calls them. Go answers them with the 404 page; a port needs per-viewset stock create/retrieve/destroy families."
       ]
     },
     {
@@ -2448,26 +2531,66 @@
         "target": "include('application.chat.urls')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/django_not_found.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/middleware/session_audit.go"
+      ],
+      "dependencies": [
+        "BE/application/chat/urls.py",
+        "BE/core/urls.py",
+        "BE/core/middleware.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
         "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
+        "external_paths": [
+          "/chat/"
+        ],
+        "request": "Any path under the include; children are their own ledger routes.",
+        "response": "Children: see their families. Unmatched paths: page_not_found 404 HTML page (every method), or the APPEND_SLASH 301 when path+\"/\" resolves; /api/ with a Bearer token: 500 page.",
+        "errors": "No 405 for unmatched paths (method checks belong to the child views).",
+        "authentication": "None for unmatched paths (no view runs).",
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "None for unmatched paths; an empty supplied session cookie is deleted.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/unknown_paths_http.json",
+        "TESTS/fixtures/generate_unknown_paths_http.py",
+        "TESTS/contracts/test_unknown_paths_http.py",
+        "TESTS/adapters/django/unknown_paths_http.py",
+        "BE_GO/internal/handler/django_not_found_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/unknown-paths.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 58/58; Go fails on unknown-paths-root-get (Echo JSON 404, Vary origin).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-red4/results.json",
+          "receipt_sha256": "50131dd7971ce6e3ef1e024097b6cff6eaf9e8b50af338f4ed088d6572f72dcc"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN: 58/58 on native Django, native Go, Caddy /api/v1 and /api/v2 (404 page, APPEND_SLASH 301, headers, unchanged state).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-versioned3/results.json",
+          "receipt_sha256": "a1405528baeedcd9de19614b29b3aac5d5f7576c76b21f03a30bb46accd5430d"
+        },
+        {
+          "revision": "committing change with the router detail pattern accepting '.' in the pk",
+          "result": "Mutation control: fails Go on unknown-paths-router-detail-dot (301 instead of 404).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-mutation1/results.json",
+          "receipt_sha256": "6ff04f2a1dcc525feaaf0e6932c8b8eac57ecd57822846f91d8882ac1cbb3aba"
+        },
+        "Child route chat/test/ implementing (docs/architecture/go-migration/chat-test.md)."
+      ],
       "notes": [
-        "Not satisfied (ledger-structural review): Its one route chat/test/ is uncharacterized."
+        "Implementing: its one child (chat/test/) is implementing, and unmatched paths (/chat/, /chat/<unknown>, /chat/test APPEND_SLASH) match Django in family unknown-paths."
       ]
     },
     {
@@ -2504,7 +2627,7 @@
       "tests": [],
       "evidence": [],
       "notes": [
-        "Not satisfied (ledger-structural review): 35 open application routes (33 uncharacterized, 2 needs_review)."
+        "Not satisfied (ledger-closure): payment/<str:uid>/info is needs_review, profile/update/subscription/template is uncharacterized (in progress), and include(router.urls) is not ported. 298 other routes implementing, 2 deprecated. Unmatched paths at the root match Django (family unknown-paths, docs/architecture/go-migration/unknown-paths.md)."
       ]
     },
     {
@@ -2522,26 +2645,66 @@
         "target": "include('communications.urls')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/django_not_found.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/middleware/session_audit.go"
+      ],
+      "dependencies": [
+        "BE/communications/urls.py",
+        "BE/core/urls.py",
+        "BE/core/middleware.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
         "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
+        "external_paths": [
+          "/communications/"
+        ],
+        "request": "Any path under the include; children are their own ledger routes.",
+        "response": "Children: see their families. Unmatched paths: page_not_found 404 HTML page (every method), or the APPEND_SLASH 301 when path+\"/\" resolves; /api/ with a Bearer token: 500 page.",
+        "errors": "No 405 for unmatched paths (method checks belong to the child views).",
+        "authentication": "None for unmatched paths (no view runs).",
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "None for unmatched paths; an empty supplied session cookie is deleted.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/unknown_paths_http.json",
+        "TESTS/fixtures/generate_unknown_paths_http.py",
+        "TESTS/contracts/test_unknown_paths_http.py",
+        "TESTS/adapters/django/unknown_paths_http.py",
+        "BE_GO/internal/handler/django_not_found_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/unknown-paths.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 58/58; Go fails on unknown-paths-root-get (Echo JSON 404, Vary origin).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-red4/results.json",
+          "receipt_sha256": "50131dd7971ce6e3ef1e024097b6cff6eaf9e8b50af338f4ed088d6572f72dcc"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN: 58/58 on native Django, native Go, Caddy /api/v1 and /api/v2 (404 page, APPEND_SLASH 301, headers, unchanged state).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-versioned3/results.json",
+          "receipt_sha256": "a1405528baeedcd9de19614b29b3aac5d5f7576c76b21f03a30bb46accd5430d"
+        },
+        {
+          "revision": "committing change with the router detail pattern accepting '.' in the pk",
+          "result": "Mutation control: fails Go on unknown-paths-router-detail-dot (301 instead of 404).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-mutation1/results.json",
+          "receipt_sha256": "6ff04f2a1dcc525feaaf0e6932c8b8eac57ecd57822846f91d8882ac1cbb3aba"
+        },
+        "All 19 child routes of BE/communications/urls.py are implementing in the ledger (checked against the Django resolver: same 19 paths)."
+      ],
       "notes": [
-        "Not satisfied (ledger-structural review): 2 communications routes uncharacterized (send/email, send/post)."
+        "Implementing: all 19 child routes implementing; unmatched paths under communications/ (prefix, unknown child, known path with extra segment) match Django in family unknown-paths."
       ]
     },
     {
@@ -2559,26 +2722,66 @@
         "target": "include('docmanager.urls')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/django_not_found.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/middleware/session_audit.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/urls.py",
+        "BE/core/urls.py",
+        "BE/core/middleware.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
         "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
+        "external_paths": [
+          "/document/"
+        ],
+        "request": "Any path under the include; children are their own ledger routes.",
+        "response": "Children: see their families. Unmatched paths: page_not_found 404 HTML page (every method), or the APPEND_SLASH 301 when path+\"/\" resolves; /api/ with a Bearer token: 500 page.",
+        "errors": "No 405 for unmatched paths (method checks belong to the child views).",
+        "authentication": "None for unmatched paths (no view runs).",
         "permissions": null,
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "None for unmatched paths; an empty supplied session cookie is deleted.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/unknown_paths_http.json",
+        "TESTS/fixtures/generate_unknown_paths_http.py",
+        "TESTS/contracts/test_unknown_paths_http.py",
+        "TESTS/adapters/django/unknown_paths_http.py",
+        "BE_GO/internal/handler/django_not_found_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/unknown-paths.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 58/58; Go fails on unknown-paths-root-get (Echo JSON 404, Vary origin).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-red4/results.json",
+          "receipt_sha256": "50131dd7971ce6e3ef1e024097b6cff6eaf9e8b50af338f4ed088d6572f72dcc"
+        },
+        {
+          "revision": "committing change merged with codex/go-backend-parity",
+          "result": "GREEN: 58/58 on native Django, native Go, Caddy /api/v1 and /api/v2 (404 page, APPEND_SLASH 301, headers, unchanged state).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-versioned3/results.json",
+          "receipt_sha256": "a1405528baeedcd9de19614b29b3aac5d5f7576c76b21f03a30bb46accd5430d"
+        },
+        {
+          "revision": "committing change with the router detail pattern accepting '.' in the pk",
+          "result": "Mutation control: fails Go on unknown-paths-router-detail-dot (301 instead of 404).",
+          "artifact": "quality-reports/go-migration/unknown-paths-http-mutation1/results.json",
+          "receipt_sha256": "6ff04f2a1dcc525feaaf0e6932c8b8eac57ecd57822846f91d8882ac1cbb3aba"
+        },
+        "All 16 child routes of BE/docmanager/urls.py are implementing in the ledger (checked against the Django resolver: same 16 paths); see docmanager-reads.md, document-views.md, document-render.md."
+      ],
       "notes": [
-        "Not satisfied (ledger-structural review): 13 docmanager routes uncharacterized."
+        "Implementing: all 16 child routes implementing; unmatched paths and the APPEND_SLASH redirects to document/medical/certificate/ and document/<kind>/<uid>/view/ (every method, query kept) match Django in family unknown-paths."
       ]
     },
     {
@@ -2714,7 +2917,7 @@
       "tests": [],
       "evidence": [],
       "notes": [
-        "Not satisfied (ledger-structural review): 8 instance routes uncharacterized."
+        "Not satisfied (ledger-closure): Django's instance.urls has 27 routes; the ledger has 24 (all implementing). admin/backups, admin/backups/download-token and admin/backups/<str:name>/download (BackupOverviewView, BackupDownloadTokenView, BackupDownloadView, added on main) have no ledger route entry and no Go route. Unmatched paths under instance/ match Django (family unknown-paths)."
       ]
     },
     {
@@ -39571,25 +39774,41 @@
       "declaration": {
         "call": "before_task_publish.connect(stamp_published_task, weak=False)"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/celery/python.go"
+      ],
+      "dependencies": [
+        "BE/instance/restore/task_base.py",
+        "BE/core/celery.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
         "request": null,
-        "response": null,
+        "response": "Every message Go publishes carries headers['assozeta_published_at'] = time.time() as the last header (float repr), as stamp_published_task's setdefault adds it.",
         "errors": null,
         "authentication": null,
         "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "resource_scope": "Every Celery message the Go producer publishes.",
+        "side_effects": "Header on the published message; Django workers (CoordinatedTask) refuse it with StaleDataTask when a restore completed later.",
+        "transaction": "Stamp taken once per message before the first attempt; publish retries resend the same bytes.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE_GO/internal/celery/celery_test.go",
+        "BE_GO/internal/celery/testdata/kombu_messages.json",
+        "TESTS/adapters/go/celery_producer_golden.py",
+        "TESTS/adapters/django/family_harness.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/celery-producer.md",
+        "docs/architecture/go-migration/subscription-approve.md"
+      ],
+      "notes": [
+        "Implementing: Producer.Publish (the only Go path that pushes Celery messages; every publishing service goes through celery.Publisher) stamps the header for every task via Encode. Byte parity with the real before_task_publish handler: TestEncodeMatchesKombu re-encodes kombu-captured payloads including the stamp (go test ./internal/celery passes at this revision); TestPublishStampsAndRetries pins one stamp across retries. family_harness.celery_published checks the stamp within the request window for every publishing family, and subscription-approve's GREEN runs a real Django worker that accepts the message and refuses it with StaleDataTask after a later restore. Go never republishes an existing message, so setdefault's keep-existing branch only applies to Django's own retries."
+      ]
     },
     {
       "id": "task:BE/application/printing_tasks.py:print_document_compensation",
@@ -41500,7 +41719,7 @@
           "name": "'send_updated_certificate_email'"
         }
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -41519,9 +41738,7 @@
       "tests": [],
       "evidence": [],
       "notes": [
-        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-c: the only call site (BE/application/views/subscriptions_views.py, send_updated_certificate_email.delay) is commented out, so the task has no producer, and the Go worker consumes only its own job table. Not registered. See docs/architecture/go-migration/tasks-db-c.md."
+        "Unreachable in Django (ledger-closure, git grep over BE and BE_GO): Its only call site (BE/application/views/subscriptions_views.py, send_updated_certificate_email.delay) is commented out and has been since the repository's first commit; no send_task by name, no beat_schedule entry, no PeriodicTask row created by code or migrations (the Django admin that could add one is not mounted), and BE_GO publishes it nowhere (it appears only in Go tests as an unsupported schedule). No Go port is needed; revisit if a producer is added."
       ]
     },
     {
@@ -41777,7 +41994,7 @@
           "name": "'save_binary_to_storage'"
         }
       },
-      "status": "uncharacterized",
+      "status": "deprecated",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -41796,9 +42013,7 @@
       "tests": [],
       "evidence": [],
       "notes": [
-        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. No producer (the only call is commented out); not registered."
+        "Unreachable in Django (ledger-closure, git grep over BE and BE_GO): Its only call site (BE/application/tasks.py, save_binary_to_storage.delay) is commented out (its import is commented too); no send_task by name, no beat_schedule entry, no PeriodicTask row created by code or migrations, and BE_GO publishes it nowhere. bytes arguments are not JSON-serializable with the configured serializer, so the call could not publish as written (tasks-db-e.md). No Go port is needed; revisit if a producer is added."
       ]
     },
     {
