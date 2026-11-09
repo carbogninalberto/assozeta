@@ -48,6 +48,13 @@ type Task struct {
 	Expires *time.Time
 	// Queue overrides DefaultQueue (a direct queue with the same routing key).
 	Queue string
+	// ID is apply_async(task_id=...): the message id (and root_id and
+	// correlation_id) instead of a fresh uuid4.
+	ID string
+	// TimeLimit and SoftTimeLimit are the task's time_limit/soft_time_limit
+	// options (@shared_task(time_limit=..., soft_time_limit=...)), which
+	// Celery copies into the timelimit header.
+	TimeLimit, SoftTimeLimit *int64
 }
 
 // Envelope holds the per-publish random and clock values of one message.
@@ -104,7 +111,7 @@ func Encode(task Task, envelope Envelope) ([]byte, error) {
 	}
 	headers := Dict{
 		{"lang", "py"}, {"task", task.Name}, {"id", envelope.ID}, {"shadow", nil}, {"eta", optionalTime(task.ETA)},
-		{"expires", optionalTime(task.Expires)}, {"group", nil}, {"group_index", nil}, {"retries", 0}, {"timelimit", []any{nil, nil}},
+		{"expires", optionalTime(task.Expires)}, {"group", nil}, {"group_index", nil}, {"retries", 0}, {"timelimit", []any{optionalSeconds(task.TimeLimit), optionalSeconds(task.SoftTimeLimit)}},
 		{"root_id", envelope.ID}, {"parent_id", nil}, {"argsrepr", argsrepr}, {"kwargsrepr", kwargsrepr}, {"origin", envelope.Origin},
 		{"ignore_result", false}, {"replaced_task_nesting", 0}, {"stamped_headers", nil}, {"stamps", Dict{}},
 	}
@@ -128,6 +135,13 @@ func Encode(task Task, envelope Envelope) ([]byte, error) {
 		return nil, err
 	}
 	return append(out, '}'), nil
+}
+
+func optionalSeconds(value *int64) any {
+	if value == nil {
+		return nil
+	}
+	return *value
 }
 
 // Broker stores one encoded message on a queue.
@@ -188,7 +202,11 @@ var retryDelays = []time.Duration{0, 200 * time.Millisecond, 400 * time.Millisec
 // is taken once, before the first attempt, like Celery's retries.
 func (p *Producer) Publish(ctx context.Context, task Task) (string, error) {
 	now := p.now()
-	envelope := Envelope{ID: p.newID(), DeliveryTag: p.newID(), ReplyTo: p.replyTo, Origin: p.origin,
+	id := task.ID
+	if id == "" {
+		id = p.newID()
+	}
+	envelope := Envelope{ID: id, DeliveryTag: p.newID(), ReplyTo: p.replyTo, Origin: p.origin,
 		PublishedAt: float64(now.UnixNano()) / 1e9}
 	if task.Expires != nil {
 		seconds := task.Expires.Sub(now).Seconds()

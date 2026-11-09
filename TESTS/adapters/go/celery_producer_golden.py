@@ -59,6 +59,10 @@ CASES = [
     # apply_async(args=[...]) with a list: argsrepr is the list's repr.
     {'name': 'list-args', 'task': 'print_document_invoice', 'args': [s(U2), {'t': 'none', 'v': None}, {'t': 'bool', 'v': False}],
      'kwargs': [], 'args_list': True},
+    # restore_instance_data.apply_async(args=[id], task_id=id): the task's time limits and the given id.
+    {'name': 'task-id-time-limits', 'task': 'instance.restore.execute', 'args': [s('d7000000-0000-4000-8000-000000000101')],
+     'kwargs': [], 'args_list': True, 'task_id': 'd7000000-0000-4000-8000-000000000101',
+     'task_options': {'time_limit': 3600, 'soft_time_limit': 3300}},
 ]
 
 
@@ -130,8 +134,8 @@ def main():
         for case in CASES:
             def body(*args, **kwargs):
                 return None
-            task = app.task(name=case['task'])(body)
-            options = {}
+            task = app.task(name=case['task'], **case.get('task_options', {}))(body)
+            options = {'task_id': case['task_id']} if 'task_id' in case else {}
             if 'countdown' in case:
                 options['countdown'] = case['countdown']
             if 'expires_in' in case:
