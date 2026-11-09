@@ -55,6 +55,10 @@ type Server struct {
 	// LocalHostname is the EHLO/HELO argument; empty means LocalName().
 	LocalHostname string
 	Dial          func(ctx context.Context, network, address string) (net.Conn, error)
+	// TLSConfig, when set, replaces smtplib's unverified default context
+	// (ssl.create_default_context(), as Django's SMTP backend passes); its
+	// ServerName defaults to Host.
+	TLSConfig *tls.Config
 }
 
 // Error is a failure Python raises from smtplib (or while encoding a command);
@@ -132,6 +136,10 @@ type client struct {
 	ehlo     bool
 	count    int
 	stop     func() bool
+	tls      *tls.Config
+	// handshake records a failed TLS handshake: Python has then detached
+	// the plain socket, so a later QUIT cannot be sent.
+	handshake bool
 }
 
 func open(ctx context.Context, s Server) (*client, error) {
@@ -150,7 +158,7 @@ func open(ctx context.Context, s Server) (*client, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := &client{ctx: ctx, raw: raw, conn: raw, timeout: timeout, host: s.Host, features: map[string]string{}}
+	c := &client{ctx: ctx, raw: raw, conn: raw, timeout: timeout, host: s.Host, features: map[string]string{}, tls: s.TLSConfig}
 	c.stop = context.AfterFunc(ctx, func() { _ = raw.Close() })
 	if s.Encryption == "SSL" {
 		if err = c.wrap(); err != nil {
@@ -184,9 +192,17 @@ func open(ctx context.Context, s Server) (*client, error) {
 // wrap applies the settings of smtplib's default client context
 // (ssl._create_stdlib_context), the host as server name.
 func (c *client) wrap() error {
-	conn := tls.Client(c.conn, &tls.Config{ServerName: c.host, InsecureSkipVerify: true, MinVersion: tls.VersionTLS12}) //nolint:gosec // parity with smtplib's default context
+	config := &tls.Config{ServerName: c.host, InsecureSkipVerify: true, MinVersion: tls.VersionTLS12} //nolint:gosec // parity with smtplib's default context
+	if c.tls != nil {
+		config = c.tls.Clone()
+		if config.ServerName == "" {
+			config.ServerName = c.host
+		}
+	}
+	conn := tls.Client(c.conn, config)
 	_ = conn.SetDeadline(time.Now().Add(c.timeout))
 	if err := conn.HandshakeContext(c.ctx); err != nil {
+		c.handshake = true
 		return err
 	}
 	_ = conn.SetDeadline(time.Time{})
@@ -540,10 +556,15 @@ func (c *client) rset() {
 
 // sendmail follows SMTP.sendmail for a str message without options.
 func (c *client) sendmail(from string, to []string, message string) error {
+	return c.sendmailBytes(from, to, []byte(fixEOLs(message)))
+}
+
+// sendmailBytes follows SMTP.sendmail for a bytes message (sent as given)
+// without options.
+func (c *client) sendmailBytes(from string, to []string, data []byte) error {
 	if err := c.ehloOrHeloIfNeeded(); err != nil {
 		return err
 	}
-	data := fixEOLs(message)
 	var options string
 	if c.esmtp && c.hasExtn("size") {
 		options = " size=" + strconv.Itoa(len(data))
@@ -585,7 +606,7 @@ func (c *client) sendmail(from string, to []string, message string) error {
 	if code != 354 {
 		return replyFailure("SMTPDataError", code, msg)
 	}
-	quoted := quotePeriods([]byte(data))
+	quoted := quotePeriods(data)
 	if !bytes.HasSuffix(quoted, []byte("\r\n")) {
 		quoted = append(quoted, '\r', '\n')
 	}

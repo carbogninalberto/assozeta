@@ -2110,26 +2110,88 @@
         "target": "include('instance.sso.urls')",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/bakney_sso.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/internal/repository/drf_throttle.go",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/handler/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "BE/instance/sso/views.py",
+        "BE/instance/sso/service.py",
+        "BE/instance/sso/protocol.py",
+        "BE/instance/sso/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/pkg/jwt/jwt.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/bakney/v1/pairing/challenge",
+          "/bakney/v1/pairing/commit",
+          "/bakney/v1/login-start",
+          "/bakney/v1/callback",
+          "/bakney/v1/session",
+          "/api/v1/bakney/v1/",
+          "/api/v2/bakney/v1/"
+        ],
+        "request": "challenge/commit: exact protocol fields (int expires_at within 120 s, 43-char nonce, canonical UUIDs, configured origin/callback, commit proof). login-start: exact {protocol, pairing_id, attempt_id}. callback: exact {code, state} with the handoff cookie. session: cookie; POST Origin, X-SSO-CSRF and {confirm_for}.",
+        "response": "challenge/commit {protocol, instance_id, proof}; login-start/callback 302 (handoff URL with S256 code_challenge, or /#/bakney-login[?error=code]) with the HttpOnly Lax cookie; session GET {user, csrf_token, confirm_for}, POST the JWT login response with BKN_AUTH and handoff cookie deletion.",
+        "errors": "{'error': code} with the SSOError status, or a redirect error for login-start/callback; 405/406/415/429 DRF.",
+        "authentication": "None (authentication_classes = []); current_users reads BKN_AUTH and Bearer with SimpleJWT.",
+        "permissions": "AllowAny; HandoffThrottle 30/min per view class and client.",
+        "resource_scope": "Instance-wide pairing; local athlete/collaborator linked to the paired association.",
+        "side_effects": "BakneyPairing/Challenge/Nonce/Login rows, user.last_login, outbound status/token calls, DRF throttle cache entry.",
+        "transaction": "transaction.atomic around dispatch with InstanceConfiguration FOR UPDATE; handled responses (including redirects) commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/sso_pairing_http.json",
+        "TESTS/fixtures/generate_sso_pairing_http.py",
+        "TESTS/contracts/test_sso_pairing_http.py",
+        "TESTS/adapters/django/sso_pairing_http.py",
+        "BE_GO/internal/service/bakney_sso_protocol_test.go",
+        "BE_GO/internal/service/testdata/bakney_sso_golden.json",
+        "BE_GO/internal/repository/drf_throttle_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-native-r1/results.json",
+          "receipt_sha256": "dce28dec920f7c399e28da955e62dcfabbc2ccbf4aa44f305fc1c5ceea582372"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 against a per-run Bakney authority stub with exact effects.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-versioned-r3/results.json",
+          "receipt_sha256": "ee69ec81d801a226087db59814bab873a3c2727273e33fb1bc617986207b18c8"
+        },
+        {
+          "revision": "commit challenge lookup without its expires_at condition",
+          "result": "Mutation control: fails Go on sso-pairing-commit-expired-challenge (200 instead of 409)",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-mutation-r3/results.json",
+          "receipt_sha256": "449d19b1f32d38607785f37c8a7930e31c6bb3104be23a255f2c6453c6bb479d"
+        }
+      ],
       "notes": [
-        "Not satisfied (ledger-structural review): All 5 SSO routes uncharacterized."
+        "Implementing: the five bakney/v1 routes are registered individually in Go; family sso-pairing with admin/bakney-pairing."
       ]
     },
     {
@@ -24238,25 +24300,68 @@
         "target": "subscription_transfer",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_transfer.go",
+        "BE_GO/internal/repository/subscription_transfer.go",
+        "BE_GO/internal/service/subscription_transfer.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/handler/subscription_transfer.go",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/emailrender/templates/email/account/email_welcome_password_message.html",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/<uid>/transfer",
+          "/api/v2/subscription/<uid>/transfer",
+          "/api/subscription/<uid>/transfer"
+        ],
+        "request": "POST JSON or form {recipient: <user uuid>} or {email: <address>}.",
+        "response": "201 {subscription, expires_at, requester, recipient, token, status: 2}.",
+        "errors": "400 [badly formed hexadecimal UUID string]; 404 {msg: Subscription not found.}; 403 {msg: You are not the owner of the subscription.}; 400 pending transfer {msg}; 409 {msg: You cannot transfer the subscription to yourself.}; 400 empty (recipient not found); 400 {msg: Email is required.}; 403 User is not a sport association (athlete e-mail branch, after the account); 403 registry / admin session / scoped session; 405; 500 non-dict body, unconvertible recipient, non-string e-mail, refused inputs (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.update; collaborators act as the owner; the subscription's user must be request.user.",
+        "resource_scope": "Subscription by id through the group-aware manager (X-Group-Id) and the impersonation association; recipient any non-deleted user other than the requester.",
+        "side_effects": "Expiry update of all transfers past their expiry (no audit); optional athlete account (create entry) and send_mail_async Celery message; notification broadcast rows, Redis DB 0 list, user_broadcasts cache, Channels notification_push and mirrored envelope; SubscriptionTransfer create+accept, subscription/associate/tutor user updates and a relation made primary, with audit entries and index rows.",
+        "transaction": "Not atomic: every statement and save() commits on its own.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_transfer_http.json",
+        "TESTS/fixtures/generate_subscription_transfer_http.py",
+        "TESTS/contracts/test_subscription_transfer_http.py",
+        "TESTS/adapters/django/subscription_transfer_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-transfer.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-transfer-http-red-r2/results.json",
+          "receipt_sha256": "afc6cd1caf2ad54ae5908ce4d0df20eab5f9f6052eaab1d41cb84d37c186857b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-transfer-http-versioned-r1/results.json",
+          "receipt_sha256": "162f85c5fa057b2241c0003a075504c7fd3b1ca77d665aa5d1a2eac5198897fa"
+        },
+        {
+          "revision": "expiring only PENDING transfers (adding AND status=1 to the expiry update)",
+          "result": "Mutation control: fails Go on subscription-transfer-pending-transfer (the accepted transfer whose expiry passed keeps status 2).",
+          "artifact": "quality-reports/go-migration/subscription-transfer-http-mutation-r1/results.json",
+          "receipt_sha256": "28c38c6b0c362be2778eb1482b874cee587703feedd508f199c368df15911d07"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/<uid>/transfer for owners, collaborators and athletes owning the subscription: the global expiry update, pending check, recipient lookup (UUIDField conversions) or the e-mail branch (main tutor made primary, random athlete account with its create entry, welcome e-mail rendered with emailrender and published as send_mail_async; athletes get the 403 after the account), the recipient's notification (broadcast rows, Redis store, cache, Channels push and mirrored envelope), then the transfer create, subscription/associate/tutor user saves and the acceptance, each autocommitted with its audit entry. Empty subscription dates on a path reaching Subscription.save() and non-ASCII username prefixes or e-mail domains are refused with a 500 before the first write. See docs/architecture/go-migration/subscription-transfer.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/<str:uid>/update -> subscription_update",
@@ -31588,25 +31693,82 @@
         "target": "LoginCallbackView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/bakney_sso.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/internal/repository/drf_throttle.go",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/handler/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "BE/instance/sso/views.py",
+        "BE/instance/sso/service.py",
+        "BE/instance/sso/protocol.py",
+        "BE/instance/sso/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/pkg/jwt/jwt.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/bakney/v1/callback",
+          "/api/v1/bakney/v1/callback",
+          "/api/v2/bakney/v1/callback",
+          "/api/bakney/v1/callback"
+        ],
+        "request": "Handoff cookie of a started login; query exactly {code, state} (32-128 URL-safe characters, state equal to the login's).",
+        "response": "302 to /#/bakney-login with the handoff cookie re-set for 120 s.",
+        "errors": "Every SSOError redirects to /#/bakney-login?error=<code> (handoff_expired, invalid_handoff, forwarding_disabled, handoff_rejected, invalid_response, account_unavailable, account_not_eligible, membership_required, ...); 405/406/429 DRF.",
+        "authentication": "None (authentication_classes = []).",
+        "permissions": "AllowAny; HandoffThrottle 30/min per view class and client (429 with Retry-After).",
+        "resource_scope": "Instance-wide BakneyPairing of the first InstanceConfiguration.",
+        "side_effects": "Login consumed (failed, verifier cleared) before redemption; status synchronization; outbound POST <authority>/pairing/v1/token {callback_uri, code, code_verifier, pairing_id, secret}; login ready for the local user for 2 minutes.",
+        "transaction": "transaction.atomic around dispatch with InstanceConfiguration FOR UPDATE; handled responses (including redirects) commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/sso_pairing_http.json",
+        "TESTS/fixtures/generate_sso_pairing_http.py",
+        "TESTS/contracts/test_sso_pairing_http.py",
+        "TESTS/adapters/django/sso_pairing_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-native-r1/results.json",
+          "receipt_sha256": "dce28dec920f7c399e28da955e62dcfabbc2ccbf4aa44f305fc1c5ceea582372"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 against a per-run Bakney authority stub (exact outbound requests, verified proofs and PKCE, issued tokens) with exact effects.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-versioned-r3/results.json",
+          "receipt_sha256": "ee69ec81d801a226087db59814bab873a3c2727273e33fb1bc617986207b18c8"
+        },
+        {
+          "revision": "commit challenge lookup without its expires_at condition",
+          "result": "Mutation control: fails Go on sso-pairing-commit-expired-challenge (200 instead of 409)",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-mutation-r3/results.json",
+          "receipt_sha256": "449d19b1f32d38607785f37c8a7930e31c6bb3104be23a255f2c6453c6bb479d"
+        }
+      ],
+      "notes": [
+        "Implementing: Bakney pairing and SSO handoff views: SecureView headers, DRF HandoffThrottle sharing Django's pickled cache entry, per-request transaction with the locked configuration, status/token calls to the Bakney authority, HMAC handshake proofs, Fernet secrets, PKCE handoff cookies/redirects and the local JWT login response. Not ported: DEBUG technical 500 page, UTF-16/32 or NaN authority JSON, IDNA hosts (error page), certifi trust store."
+      ]
     },
     {
       "id": "route:BE/instance/sso/urls.py:login-start -> LoginStartView.as_view()",
@@ -31623,25 +31785,82 @@
         "target": "LoginStartView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/bakney_sso.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/internal/repository/drf_throttle.go",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/handler/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "BE/instance/sso/views.py",
+        "BE/instance/sso/service.py",
+        "BE/instance/sso/protocol.py",
+        "BE/instance/sso/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/pkg/jwt/jwt.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/bakney/v1/login-start",
+          "/api/v1/bakney/v1/login-start",
+          "/api/v2/bakney/v1/login-start",
+          "/api/bakney/v1/login-start"
+        ],
+        "request": "Query exactly {protocol, pairing_id (remote id), attempt_id (canonical UUID)}, each once; the request origin (X-Forwarded-Proto/Host) must equal APP_URL's origin.",
+        "response": "302 to <ui origin>/handoff.html#attempt_id=..&callback_uri=..&state=..&code_challenge_method=S256&code_challenge=<base64url(sha256(verifier))> with the handoff cookie (HttpOnly, Lax, 300 s; __Host- Secure outside HTTP development).",
+        "errors": "Every SSOError redirects to /#/bakney-login?error=<code> (configuration_required, revalidation_required, invalid_pairing, forwarding_disabled, pairing_rejected, authority errors, invalid_handoff); 405/406/429 DRF.",
+        "authentication": "None (authentication_classes = []).",
+        "permissions": "AllowAny; HandoffThrottle 30/min per view class and client (429 with Retry-After).",
+        "resource_scope": "Instance-wide BakneyPairing of the first InstanceConfiguration.",
+        "side_effects": "Status synchronization (pairing saves, disconnect on 401); the previous cookie's login deleted; a login stored (cookie digest, state, Fernet-encrypted verifier, 5 minutes); outbound POST <authority>/pairing/v1/status.",
+        "transaction": "transaction.atomic around dispatch with InstanceConfiguration FOR UPDATE; handled responses (including redirects) commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/sso_pairing_http.json",
+        "TESTS/fixtures/generate_sso_pairing_http.py",
+        "TESTS/contracts/test_sso_pairing_http.py",
+        "TESTS/adapters/django/sso_pairing_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-native-r1/results.json",
+          "receipt_sha256": "dce28dec920f7c399e28da955e62dcfabbc2ccbf4aa44f305fc1c5ceea582372"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 against a per-run Bakney authority stub (exact outbound requests, verified proofs and PKCE, issued tokens) with exact effects.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-versioned-r3/results.json",
+          "receipt_sha256": "ee69ec81d801a226087db59814bab873a3c2727273e33fb1bc617986207b18c8"
+        },
+        {
+          "revision": "commit challenge lookup without its expires_at condition",
+          "result": "Mutation control: fails Go on sso-pairing-commit-expired-challenge (200 instead of 409)",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-mutation-r3/results.json",
+          "receipt_sha256": "449d19b1f32d38607785f37c8a7930e31c6bb3104be23a255f2c6453c6bb479d"
+        }
+      ],
+      "notes": [
+        "Implementing: Bakney pairing and SSO handoff views: SecureView headers, DRF HandoffThrottle sharing Django's pickled cache entry, per-request transaction with the locked configuration, status/token calls to the Bakney authority, HMAC handshake proofs, Fernet secrets, PKCE handoff cookies/redirects and the local JWT login response. Not ported: DEBUG technical 500 page, UTF-16/32 or NaN authority JSON, IDNA hosts (error page), certifi trust store."
+      ]
     },
     {
       "id": "route:BE/instance/sso/urls.py:pairing/challenge -> PairingChallengeView.as_view()",
@@ -31658,25 +31877,81 @@
         "target": "PairingChallengeView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/bakney_sso.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/internal/repository/drf_throttle.go",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/handler/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "BE/instance/sso/views.py",
+        "BE/instance/sso/service.py",
+        "BE/instance/sso/protocol.py",
+        "BE/instance/sso/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/pkg/jwt/jwt.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/bakney/v1/pairing/challenge",
+          "/api/v1/bakney/v1/pairing/challenge",
+          "/api/v2/bakney/v1/pairing/challenge",
+          "/api/bakney/v1/pairing/challenge"
+        ],
+        "request": "Exactly {protocol, pairing_id, association_id, instance_id, origin, callback_uri, generation, nonce, expires_at}: protocol bakney-pairing-v1, canonical UUIDs, the paired association, instance_id '', the configured origin and callback, a 43-character nonce, an int expires_at within 120 s.",
+        "response": "{protocol, instance_id, proof}: HMAC-SHA256 'challenge' proof over the binding with the pairing secret.",
+        "errors": "{'error': code}: configuration_required 409, revalidation_required 409, invalid_pairing 409 (not generated/pending or remote id set), invalid_request 400, replayed_request 409; request.data parse errors; 405/415/429.",
+        "authentication": "None (authentication_classes = []).",
+        "permissions": "AllowAny; HandoffThrottle 30/min per view class and client (429 with Retry-After).",
+        "resource_scope": "Instance-wide BakneyPairing of the first InstanceConfiguration.",
+        "side_effects": "Single-use challenge nonce; challenge digest upserted with the request expiry; pairing state pending (saved); get_or_create pairing.",
+        "transaction": "transaction.atomic around dispatch with InstanceConfiguration FOR UPDATE; handled responses (including redirects) commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/sso_pairing_http.json",
+        "TESTS/fixtures/generate_sso_pairing_http.py",
+        "TESTS/contracts/test_sso_pairing_http.py",
+        "TESTS/adapters/django/sso_pairing_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-native-r1/results.json",
+          "receipt_sha256": "dce28dec920f7c399e28da955e62dcfabbc2ccbf4aa44f305fc1c5ceea582372"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 against a per-run Bakney authority stub (exact outbound requests, verified proofs and PKCE, issued tokens) with exact effects.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-versioned-r3/results.json",
+          "receipt_sha256": "ee69ec81d801a226087db59814bab873a3c2727273e33fb1bc617986207b18c8"
+        },
+        {
+          "revision": "commit challenge lookup without its expires_at condition",
+          "result": "Mutation control: fails Go on sso-pairing-commit-expired-challenge (200 instead of 409)",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-mutation-r3/results.json",
+          "receipt_sha256": "449d19b1f32d38607785f37c8a7930e31c6bb3104be23a255f2c6453c6bb479d"
+        }
+      ],
+      "notes": [
+        "Implementing: Bakney pairing and SSO handoff views: SecureView headers, DRF HandoffThrottle sharing Django's pickled cache entry, per-request transaction with the locked configuration, status/token calls to the Bakney authority, HMAC handshake proofs, Fernet secrets, PKCE handoff cookies/redirects and the local JWT login response. Not ported: DEBUG technical 500 page, UTF-16/32 or NaN authority JSON, IDNA hosts (error page), certifi trust store."
+      ]
     },
     {
       "id": "route:BE/instance/sso/urls.py:pairing/commit -> PairingCommitView.as_view()",
@@ -31693,25 +31968,81 @@
         "target": "PairingCommitView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/bakney_sso.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/internal/repository/drf_throttle.go",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/handler/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "BE/instance/sso/views.py",
+        "BE/instance/sso/service.py",
+        "BE/instance/sso/protocol.py",
+        "BE/instance/sso/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/pkg/jwt/jwt.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/bakney/v1/pairing/commit",
+          "/api/v1/bakney/v1/pairing/commit",
+          "/api/v2/bakney/v1/pairing/commit",
+          "/api/bakney/v1/pairing/commit"
+        ],
+        "request": "Exactly {protocol, pairing_id, association_id, instance_id, origin, callback_uri, generation, nonce, expires_at, proof}: protocol bakney-pairing-v1, canonical UUIDs, the paired association, instance_id the local instance id, the configured origin and callback, a 43-character nonce, an int expires_at within 120 s. proof: the 'commit' HMAC (64 lowercase hex).",
+        "response": "{protocol, instance_id, proof}: the 'ack' HMAC over the binding.",
+        "errors": "{'error': code}: invalid_proof 403, invalid_pairing 409 (no unexpired matching challenge, wrong state), replayed_request 409, invalid_request 400, configuration_required/revalidation_required 409; 405/415/429.",
+        "authentication": "None (authentication_classes = []).",
+        "permissions": "AllowAny; HandoffThrottle 30/min per view class and client (429 with Retry-After).",
+        "resource_scope": "Instance-wide BakneyPairing of the first InstanceConfiguration.",
+        "side_effects": "Commit nonce consumed; remote pairing id and generation stored, state pending; the pairing's challenges deleted.",
+        "transaction": "transaction.atomic around dispatch with InstanceConfiguration FOR UPDATE; handled responses (including redirects) commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/sso_pairing_http.json",
+        "TESTS/fixtures/generate_sso_pairing_http.py",
+        "TESTS/contracts/test_sso_pairing_http.py",
+        "TESTS/adapters/django/sso_pairing_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-native-r1/results.json",
+          "receipt_sha256": "dce28dec920f7c399e28da955e62dcfabbc2ccbf4aa44f305fc1c5ceea582372"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 against a per-run Bakney authority stub (exact outbound requests, verified proofs and PKCE, issued tokens) with exact effects.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-versioned-r3/results.json",
+          "receipt_sha256": "ee69ec81d801a226087db59814bab873a3c2727273e33fb1bc617986207b18c8"
+        },
+        {
+          "revision": "commit challenge lookup without its expires_at condition",
+          "result": "Mutation control: fails Go on sso-pairing-commit-expired-challenge (200 instead of 409)",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-mutation-r3/results.json",
+          "receipt_sha256": "449d19b1f32d38607785f37c8a7930e31c6bb3104be23a255f2c6453c6bb479d"
+        }
+      ],
+      "notes": [
+        "Implementing: Bakney pairing and SSO handoff views: SecureView headers, DRF HandoffThrottle sharing Django's pickled cache entry, per-request transaction with the locked configuration, status/token calls to the Bakney authority, HMAC handshake proofs, Fernet secrets, PKCE handoff cookies/redirects and the local JWT login response. Not ported: DEBUG technical 500 page, UTF-16/32 or NaN authority JSON, IDNA hosts (error page), certifi trust store."
+      ]
     },
     {
       "id": "route:BE/instance/sso/urls.py:session -> LoginSessionView.as_view()",
@@ -31728,25 +32059,83 @@
         "target": "LoginSessionView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/bakney_sso.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/internal/repository/drf_throttle.go",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/handler/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "BE/instance/sso/views.py",
+        "BE/instance/sso/service.py",
+        "BE/instance/sso/protocol.py",
+        "BE/instance/sso/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/pkg/jwt/jwt.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/bakney/v1/session",
+          "/api/v1/bakney/v1/session",
+          "/api/v2/bakney/v1/session",
+          "/api/bakney/v1/session"
+        ],
+        "request": "Handoff cookie of a ready login. POST: Origin equal to the configured origin, X-SSO-CSRF equal to the login state, body exactly {confirm_for: the other current users, sorted}.",
+        "response": "GET {user: {id, name}, csrf_token, confirm_for}. POST the JWT login response (JWTTokenService) with BKN_AUTH (HttpOnly, Strict, access lifetime) and the handoff cookie deleted.",
+        "errors": "{'error': code}: handoff_expired 400, invalid_handoff 403/400, invalid_request 400, account_switch_required 409, forwarding_disabled 403, account_*/membership_required 403, revalidation_required 409; request.data parse errors; 405/406/429.",
+        "authentication": "None (authentication_classes = []); current_users reads the BKN_AUTH cookie and the Bearer header with SimpleJWT.",
+        "permissions": "AllowAny; HandoffThrottle 30/min per view class and client (429 with Retry-After).",
+        "resource_scope": "Instance-wide BakneyPairing of the first InstanceConfiguration.",
+        "side_effects": "POST: status synchronization, user.last_login, login consumed; the collaborator membership card configuration may be created.",
+        "transaction": "transaction.atomic around dispatch with InstanceConfiguration FOR UPDATE; handled responses (including redirects) commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/sso_pairing_http.json",
+        "TESTS/fixtures/generate_sso_pairing_http.py",
+        "TESTS/contracts/test_sso_pairing_http.py",
+        "TESTS/adapters/django/sso_pairing_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-native-r1/results.json",
+          "receipt_sha256": "dce28dec920f7c399e28da955e62dcfabbc2ccbf4aa44f305fc1c5ceea582372"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 against a per-run Bakney authority stub (exact outbound requests, verified proofs and PKCE, issued tokens) with exact effects.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-versioned-r3/results.json",
+          "receipt_sha256": "ee69ec81d801a226087db59814bab873a3c2727273e33fb1bc617986207b18c8"
+        },
+        {
+          "revision": "commit challenge lookup without its expires_at condition",
+          "result": "Mutation control: fails Go on sso-pairing-commit-expired-challenge (200 instead of 409)",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-mutation-r3/results.json",
+          "receipt_sha256": "449d19b1f32d38607785f37c8a7930e31c6bb3104be23a255f2c6453c6bb479d"
+        }
+      ],
+      "notes": [
+        "Implementing: Bakney pairing and SSO handoff views: SecureView headers, DRF HandoffThrottle sharing Django's pickled cache entry, per-request transaction with the locked configuration, status/token calls to the Bakney authority, HMAC handshake proofs, Fernet secrets, PKCE handoff cookies/redirects and the local JWT login response. Not ported: DEBUG technical 500 page, UTF-16/32 or NaN authority JSON, IDNA hosts (error page), certifi trust store."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:access -> InstanceAccessView.as_view()",
@@ -31925,25 +32314,82 @@
         "target": "PairingAdminView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/bakney_sso.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/internal/repository/drf_throttle.go",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/handler/bakney_sso.go",
+        "BE_GO/cmd/server/bakney_sso.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/config/instance_admin.go"
+      ],
+      "dependencies": [
+        "BE/instance/sso/views.py",
+        "BE/instance/sso/service.py",
+        "BE/instance/sso/protocol.py",
+        "BE/instance/sso/models.py",
+        "BE/instance/permissions.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/pkg/jwt/jwt.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/bakney-pairing",
+          "/api/v2/instance/admin/bakney-pairing",
+          "/api/instance/admin/bakney-pairing"
+        ],
+        "request": "GET none; POST exactly {action: generate|disconnect|sync, pairing_id: current local pairing id} (JSON or form, last value).",
+        "response": "Snapshot {protocol, instance_id, pairing_id, origin, state, association, forwarding_enabled, checked_at, notification_pending} plus sync_error (GET) or secret (generate).",
+        "errors": "401/403 'Only the instance owner or an administrator can administer Bakney pairing.'; 429 throttle; {'error': code} with the SSOError status; request.data parse errors.",
+        "authentication": "core.authentication.ScopedJWTAuthentication; instance paths never impersonate.",
+        "permissions": "PairingAdministrator: is_instance_administrator on the authenticated actor.",
+        "resource_scope": "Instance-wide BakneyPairing of the first InstanceConfiguration.",
+        "side_effects": "get_or_create pairing; synchronize saves, disconnect (revocation queued, logins/challenges deleted), rotate; outbound POST <authority>/pairing/v1/status; DRF throttle cache entry.",
+        "transaction": "transaction.atomic around dispatch with InstanceConfiguration FOR UPDATE; handled responses commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/sso_pairing_http.json",
+        "TESTS/fixtures/generate_sso_pairing_http.py",
+        "TESTS/contracts/test_sso_pairing_http.py",
+        "TESTS/adapters/django/sso_pairing_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 172/172; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-native-r1/results.json",
+          "receipt_sha256": "dce28dec920f7c399e28da955e62dcfabbc2ccbf4aa44f305fc1c5ceea582372"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 172/172 on native Django, native Go, Caddy /api/v1 and /api/v2 against a per-run Bakney authority stub (exact outbound requests, verified proofs and PKCE, issued tokens) with exact effects.",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-versioned-r3/results.json",
+          "receipt_sha256": "ee69ec81d801a226087db59814bab873a3c2727273e33fb1bc617986207b18c8"
+        },
+        {
+          "revision": "commit challenge lookup without its expires_at condition",
+          "result": "Mutation control: fails Go on sso-pairing-commit-expired-challenge (200 instead of 409)",
+          "artifact": "quality-reports/go-migration/sso-pairing-http-mutation-r3/results.json",
+          "receipt_sha256": "449d19b1f32d38607785f37c8a7930e31c6bb3104be23a255f2c6453c6bb479d"
+        }
+      ],
+      "notes": [
+        "Implementing: Bakney pairing and SSO handoff views: SecureView headers, DRF HandoffThrottle sharing Django's pickled cache entry, per-request transaction with the locked configuration, status/token calls to the Bakney authority, HMAC handshake proofs, Fernet secrets, PKCE handoff cookies/redirects and the local JWT login response. Not ported: DEBUG technical 500 page, UTF-16/32 or NaN authority JSON, IDNA hosts (error page), certifi trust store."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/data-restore -> DataRestoreView.as_view()",
@@ -32279,25 +32725,74 @@
         "target": "EmailTestView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/instanceprobe/http.go",
+        "BE_GO/internal/instanceprobe/pyjson.go",
+        "BE_GO/internal/instanceprobe/probes.go",
+        "BE_GO/internal/instanceprobe/releases.go",
+        "BE_GO/internal/dto/instance_outbound.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/repository/instance_outbound.go",
+        "BE_GO/internal/repository/instance_release_cache.go",
+        "BE_GO/internal/smtpsend/backend.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/email/test",
+          "/api/v2/instance/admin/email/test",
+          "/api/instance/admin/email/test"
+        ],
+        "request": "POST {revision, action: connect|send, recipient?} (JSON).",
+        "response": "{status, level, message, checked_at} of the probe.",
+        "errors": "401; 403; 405; 400 serializer errors; 409 stale revision (before and after the probe); 429 Retry-After 20 leased; 500 configuration missing or settings outside the ported subset (before the lease).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsInstanceOwner; Cache-Control: no-store on every DRF response.",
+        "resource_scope": "Singleton InstanceConfiguration email settings.",
+        "side_effects": "claim_operation lease (operation_leases.email_test = now + 20); SMTP connection (STARTTLS/SSL verified, login) and for send one message; diagnostic_results.email_test stored.",
+        "transaction": "Lease in its own NOWAIT transaction; result stored under select_for_update after a revision recheck; the request is not atomic.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_outbound_http.json",
+        "TESTS/fixtures/generate_instance_outbound_http.py",
+        "TESTS/contracts/test_instance_outbound_http.py",
+        "TESTS/adapters/django/instance_outbound_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-outbound.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-native-r2/results.json",
+          "receipt_sha256": "9b432ec0cd51a780a1ed88a360188fdd669bec2288217472defbe03c4dd9388b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json",
+          "receipt_sha256": "731c3953110604168bbbdda077f3798356130dc2f164d6f5b8e02164d2084f8f"
+        },
+        {
+          "revision": "keeping the first value of a release id repeated in the feed (instead of Python's dict assignment, last value)",
+          "result": "Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name).",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json",
+          "receipt_sha256": "72fa18aef0cf297800b5a41d68a0e1ada4a3ff5edd8f50514b49952d6c3bb67c"
+        }
+      ],
+      "notes": [
+        "Implementing: GitHub release feed with the catalog in Django's cache (byte-identical protocol 4 pickle), SMTP connection/send test through Django's SMTP backend semantics and provider checks (Google/Apple keys, Stripe balance, AI models) through the proxy environment and SSL_CERT_FILE; leases via claim_operation. Unsupported stored shapes, AI base URLs requests would rewrite and test messages outside the rendered subset are refused with a 500 before the lease; UTF-16/32 provider or feed bodies and unsupported feed values after it. Diagnostics POST and data-restore stay on Django. See docs/architecture/go-migration/instance-outbound.md."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/integrations/<str:provider> -> IntegrationSettingsView.as_view()",
@@ -32404,25 +32899,74 @@
         "target": "IntegrationTestView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/instanceprobe/http.go",
+        "BE_GO/internal/instanceprobe/pyjson.go",
+        "BE_GO/internal/instanceprobe/probes.go",
+        "BE_GO/internal/instanceprobe/releases.go",
+        "BE_GO/internal/dto/instance_outbound.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/repository/instance_outbound.go",
+        "BE_GO/internal/repository/instance_release_cache.go",
+        "BE_GO/internal/smtpsend/backend.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/integrations/<provider>/test",
+          "/api/v2/instance/admin/integrations/<provider>/test",
+          "/api/instance/admin/integrations/<provider>/test"
+        ],
+        "request": "POST {revision} (JSON).",
+        "response": "{status, level, message, checked_at} of the provider probe.",
+        "errors": "401; 403; 405 (GET/PUT); 404 unknown provider; 400 revision errors (list); 400 disabled; 409 stale revision (before and after the probe); 429 Retry-After 20 leased; 500 list body, stored shapes or AI URLs outside the ported subset.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsInstanceOwner; Cache-Control: no-store.",
+        "resource_scope": "Singleton InstanceConfiguration integration settings of the provider.",
+        "side_effects": "claim_operation lease (integration_<provider>); outbound GET to Google/Apple keys, Stripe balance or the AI models endpoint; diagnostic_results.integration_tests[provider] stored.",
+        "transaction": "Lease in its own NOWAIT transaction; result stored under select_for_update after a revision recheck.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_outbound_http.json",
+        "TESTS/fixtures/generate_instance_outbound_http.py",
+        "TESTS/contracts/test_instance_outbound_http.py",
+        "TESTS/adapters/django/instance_outbound_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-outbound.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-native-r2/results.json",
+          "receipt_sha256": "9b432ec0cd51a780a1ed88a360188fdd669bec2288217472defbe03c4dd9388b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json",
+          "receipt_sha256": "731c3953110604168bbbdda077f3798356130dc2f164d6f5b8e02164d2084f8f"
+        },
+        {
+          "revision": "keeping the first value of a release id repeated in the feed (instead of Python's dict assignment, last value)",
+          "result": "Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name).",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json",
+          "receipt_sha256": "72fa18aef0cf297800b5a41d68a0e1ada4a3ff5edd8f50514b49952d6c3bb67c"
+        }
+      ],
+      "notes": [
+        "Implementing: GitHub release feed with the catalog in Django's cache (byte-identical protocol 4 pickle), SMTP connection/send test through Django's SMTP backend semantics and provider checks (Google/Apple keys, Stripe balance, AI models) through the proxy environment and SSL_CERT_FILE; leases via claim_operation. Unsupported stored shapes, AI base URLs requests would rewrite and test messages outside the rendered subset are refused with a 500 before the lease; UTF-16/32 provider or feed bodies and unsupported feed values after it. Diagnostics POST and data-restore stay on Django. See docs/architecture/go-migration/instance-outbound.md."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/logo -> OwnerLogoView.as_view()",
@@ -32530,25 +33074,75 @@
         "target": "InstanceReleasesView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/instanceprobe/http.go",
+        "BE_GO/internal/instanceprobe/pyjson.go",
+        "BE_GO/internal/instanceprobe/probes.go",
+        "BE_GO/internal/instanceprobe/releases.go",
+        "BE_GO/internal/dto/instance_outbound.go",
+        "BE_GO/internal/service/instance_outbound.go",
+        "BE_GO/internal/repository/instance_outbound.go",
+        "BE_GO/internal/repository/instance_release_cache.go",
+        "BE_GO/internal/smtpsend/backend.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/handler/instance_outbound.go",
+        "BE_GO/cmd/server/instance_outbound.go",
+        "BE_GO/cmd/server/instance_admin.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/releases",
+          "/api/v2/instance/admin/releases",
+          "/api/instance/admin/releases"
+        ],
+        "request": "GET ?page=<int, last value, default 1>&refresh=1 (last value).",
+        "response": "release_summary: {repository, latest, relation, pending, history (10 per page), page, next_page, total}.",
+        "errors": "401; 403 Only the instance owner or an administrator...; 405; 400 [\"Invalid release history page.\"]; 503 {error} rate limit / HTTP <code> / unavailable / invalid catalog; 500 feed items Django does not catch.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsInstanceOwner on the authenticated actor (administration path, no impersonation).",
+        "resource_scope": "Installation-wide release catalog.",
+        "side_effects": "Outbound GET api.github.com release pages on a cache miss or an admitted refresh; cache.set(catalog, 600) after a fetch; cache.add(refresh bound, True, 30) for refresh=1 on a hit.",
+        "transaction": "No database writes.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_outbound_http.json",
+        "TESTS/fixtures/generate_instance_outbound_http.py",
+        "TESTS/contracts/test_instance_outbound_http.py",
+        "TESTS/adapters/django/instance_outbound_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-outbound.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 106/106; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-native-r2/results.json",
+          "receipt_sha256": "9b432ec0cd51a780a1ed88a360188fdd669bec2288217472defbe03c4dd9388b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 106/106 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, outbound requests, SMTP transcripts and cache bytes.",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-versioned-r3/results.json",
+          "receipt_sha256": "731c3953110604168bbbdda077f3798356130dc2f164d6f5b8e02164d2084f8f"
+        },
+        {
+          "revision": "keeping the first value of a release id repeated in the feed (instead of Python's dict assignment, last value)",
+          "result": "Mutation control: fails Go on instance-outbound-releases-two-pages (pending[33].name).",
+          "artifact": "quality-reports/go-migration/instance-outbound-http-mutation-r2/results.json",
+          "receipt_sha256": "72fa18aef0cf297800b5a41d68a0e1ada4a3ff5edd8f50514b49952d6c3bb67c"
+        }
+      ],
+      "notes": [
+        "Implementing: GitHub release feed with the catalog in Django's cache (byte-identical protocol 4 pickle), SMTP connection/send test through Django's SMTP backend semantics and provider checks (Google/Apple keys, Stripe balance, AI models) through the proxy environment and SSL_CERT_FILE; leases via claim_operation. Unsupported stored shapes, AI base URLs requests would rewrite and test messages outside the rendered subset are refused with a 500 before the lease; UTF-16/32 provider or feed bodies and unsupported feed values after it. Diagnostics POST and data-restore stay on Django. See docs/architecture/go-migration/instance-outbound.md."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/restarts -> InstanceRestartsView.as_view()",
@@ -34731,32 +35325,57 @@
           "CELERY_BEAT_SCHEDULE"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/cmd/scheduler/main.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for task instance.sso.tasks.maintain_bakney_pairings with a 60-second interval and default transport metadata.",
+        "response": "Published receipt or not-due timing result.",
+        "errors": "Unsupported definition, busy source, inactive ownership, restore barrier, SQL failures leave no partial publication.",
+        "authentication": "Internal scheduler only.",
+        "permissions": "Shared lifecycle lease and Go ownership generation.",
+        "resource_scope": "Instance-wide, nil association.",
+        "side_effects": "Atomic v1 job (empty payload, three attempts, key periodic:<source>:<sequence>) and occurrence receipt.",
+        "transaction": "Read-committed; owner FOR SHARE, source FOR UPDATE NOWAIT; writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change",
+          "result": "schedule_due.py: 46 differential cases also run for instance.sso.tasks.maintain_bakney_pairings against the Celery 5.6.2 / Beat 2.8.1 oracle; 57 rejection cases.",
+          "artifact": "quality-reports/go-migration/schedule-due/results.json",
+          "receipt_sha256": "0397e0c278f38fd855d07bacf0ef2f507e68d7c3ebbe8f14d62ccdf7dd40fb3c"
+        },
+        {
+          "revision": "committing change",
+          "result": "occurrence.py: the task publishes its exact version 1 intent once per slot.",
+          "artifact": "quality-reports/go-migration/occurrence/results.json",
+          "receipt_sha256": "7080af06262e439fadb12516da10fc4685d6ae31790cf365b214192e1684ac2a"
+        }
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
+        "Implementing via sso-pairing: domain.PeriodicJobKind maps the task (60 s interval) to the registered worker job; Django remains the default owner."
       ]
     },
     {
@@ -38510,27 +39129,66 @@
           "ignore_result": "True"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/bakney_sso.go",
+        "BE_GO/internal/repository/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso.go",
+        "BE_GO/internal/service/bakney_sso_protocol.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go",
+        "BE_GO/cmd/worker/bakney_sso.go"
+      ],
+      "dependencies": [
+        "BE/instance/sso/service.py",
+        "BE/instance/sso/protocol.py",
+        "BE/instance/sso/models.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/job_ownership.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python arguments; exact kind/version 1, empty object payload, nil association, running fenced job.",
+        "response": "Django None; completed Go job with NULL result.",
+        "errors": "SSOErrors swallowed with their effects kept; other exceptions, lost lease and SQL failures go back to the executor.",
+        "authentication": "Internal task without an HTTP actor.",
+        "permissions": "No public publisher; invalid scope/payload/version rejected before SQL.",
+        "resource_scope": "First 20 revocations by created_at; expired challenges, nonces (5 min grace), logins; the first configuration's pairing.",
+        "side_effects": "Disconnect POST per revocation (deleted on revoked+matching id or 401); expiry deletes; status synchronization.",
+        "transaction": "Each delete its own fenced transaction (Django autocommit); synchronization in one fenced block that also completes the job.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/bakney_maintenance_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/sso-pairing.md",
+        {
+          "revision": "committing change without the worker registration",
+          "result": "RED: Django oracles and the default-owner group pass; the native job stays pending.",
+          "artifact": "quality-reports/go-migration/bakney-maintenance-worker-process-red-r1/results.json",
+          "receipt_sha256": "c98fcf908e7c63ab09ed667d01f93d8de975345c81d9dced6d6390ea4d585e89"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 7/7 groups (default Django owner, four seeds matching the Django task state and byte-identical authority requests, invalid envelopes, replay).",
+          "artifact": "quality-reports/go-migration/bakney-maintenance-worker-process-green-r3/results.json",
+          "receipt_sha256": "642aa1e811927759a14cd453e23cddeff937e8d5e716fd457258d70a1102b739"
+        },
+        {
+          "revision": "five-minute nonce grace removed",
+          "result": "Mutation control: Go state differs from the Django task on the main seed.",
+          "artifact": "quality-reports/go-migration/bakney-maintenance-worker-process-mutation-r1/results.json",
+          "receipt_sha256": "c98fcf908e7c63ab09ed667d01f93d8de975345c81d9dced6d6390ea4d585e89"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Implementing via sso-pairing: worker job version 1, kind = persisted Beat name; an unhandled exception goes back to the executor (three operational attempts) where Celery fails once."
       ]
     },
     {

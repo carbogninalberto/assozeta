@@ -244,7 +244,16 @@ func run() (runErr error) {
 		FederationRegistration: cfg.FederationRegistrationEnabled, MultipleRegistration: cfg.MultipleRegistrationEnabled,
 	})
 	instanceHandler := handler.NewInstanceBootstrapHandler(instanceService, service.NewActorAuthentication(accounts, tokens), identities)
-	instanceAdminHandler := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	instanceAdminHandler, instanceAdminService := composeInstanceAdmin(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	instanceOutboundHandler, err := composeInstanceOutbound(db, cache, instanceAdminHandler, instanceAdminService)
+	if err != nil {
+		return err
+	}
+	bakneySSOHandler, closeBakneySSO, err := composeBakneySSO(cfg, db, cache, tokens, accounts, identities, instanceService, images)
+	if err != nil {
+		return err
+	}
+	defer closeBakneySSO()
 	instanceManifestHandler := handler.NewInstanceManifestHandler(service.NewInstanceManifest(repository.NewInstanceManifest(db)))
 	instanceLogoHandler := composeInstanceLogo(cfg)
 	instanceSetupHandler := composeInstanceSetup(cfg, db, instanceService, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
@@ -709,9 +718,18 @@ func run() (runErr error) {
 	e.Any("/instance/admin", instanceAdminHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/email", instanceAdminHandler.Email, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/integrations/:provider", instanceAdminHandler.Integration, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/integrations/:provider/test", instanceOutboundHandler.IntegrationTest, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/email/test", instanceOutboundHandler.EmailTest, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/releases", instanceOutboundHandler.Releases, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/diagnostics", instanceAdminHandler.Diagnostics, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/updates", instanceAdminHandler.Updates, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/restarts", instanceAdminHandler.Restarts, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/instance/admin/bakney-pairing", bakneySSOHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/pairing/challenge", bakneySSOHandler.Challenge, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/pairing/commit", bakneySSOHandler.Commit, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/login-start", bakneySSOHandler.LoginStart, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/callback", bakneySSOHandler.Callback, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/bakney/v1/session", bakneySSOHandler.Session, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/setup-token/validate", instanceSetupHandler.Validate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/configure", instanceSetupHandler.Configure, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/reconfigure", instanceSetupHandler.Reconfigure, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -777,6 +795,13 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/renew", subscriptionRenewHandler.Renew, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/associates-draft/list/approve", subscriptionRenewHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
+	// subscription/<uid>/transfer: the recipient's notification through the same notifier.
+	subscriptionTransferHandler := handler.NewSubscriptionTransferHandler(service.NewSubscriptionTransfers(repository.NewSubscriptionTransfers(db),
+		subscriptionNotifier, tasks, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
+		service.OAuthAccountSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
+			IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug}, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/:uid/transfer", subscriptionTransferHandler.Transfer, middleware.DjangoSessionAudit(sessionAuthentication))
 	realtimeHub := service.NewRealtimeHub()
 	pubsubOptions := storeOptions
 	pubsubOptions.ReadTimeout = -1

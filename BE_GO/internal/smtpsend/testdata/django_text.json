@@ -1,0 +1,272 @@
+{
+ "messages": [
+  {
+   "name": "0-to",
+   "sender_name": "Seed",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Seed <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "0-tt",
+   "sender_name": "Seed",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Seed <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "1-to",
+   "sender_name": "",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: from@example.test\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "1-tt",
+   "sender_name": "",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: from@example.test\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "2-to",
+   "sender_name": "Associazione Più",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?q?Associazione_Pi=C3=B9?= <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "2-tt",
+   "sender_name": "Associazione Più",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?q?Associazione_Pi=C3=B9?= <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "3-to",
+   "sender_name": "A \"q\" <x>",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"A \\\"q\\\" <x>\" <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "3-tt",
+   "sender_name": "A \"q\" <x>",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"A \\\"q\\\" <x>\" <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "4-to",
+   "sender_name": "Back\\slash",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Back\\\\slash\" <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "4-tt",
+   "sender_name": "Back\\slash",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Back\\\\slash\" <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "5-to",
+   "sender_name": "Prova, Uno",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Prova, Uno\" <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "5-tt",
+   "sender_name": "Prova, Uno",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Prova, Uno\" <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "6-to",
+   "sender_name": "àààààààààààààààààààààààààààààààààààààààààààààààà",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOg?=\r\n <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "6-tt",
+   "sender_name": "àààààààààààààààààààààààààààààààààààààààààààààààà",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOg?=\r\n <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "7-to",
+   "sender_name": "éééééééééé xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w6nDqcOpw6nDqcOpw6nDqcOpw6kgeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==?=\r\n <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "7-tt",
+   "sender_name": "éééééééééé xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w6nDqcOpw6nDqcOpw6nDqcOpw6kgeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==?=\r\n <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "8-to",
+   "sender_name": "Società \"Più\"",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?b?U29jaWV0w6AgIlBpw7ki?= <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "8-tt",
+   "sender_name": "Società \"Più\"",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?b?U29jaWV0w6AgIlBpw7ki?= <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "9-to",
+   "sender_name": "Nome molto lungo Nome molto lungo Nome molto lungo Nome molto lungo ",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Nome molto lungo Nome molto lungo Nome molto lungo Nome molto lungo\r\n  <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "9-tt",
+   "sender_name": "Nome molto lungo Nome molto lungo Nome molto lungo Nome molto lungo ",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Nome molto lungo Nome molto lungo Nome molto lungo Nome molto lungo\r\n  <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "10-to",
+   "sender_name": "a.b",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"a.b\" <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "10-tt",
+   "sender_name": "a.b",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"a.b\" <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "11-to",
+   "sender_name": "Semi;colon",
+   "from_email": "from@example.test",
+   "to": "to@example.test",
+   "message_id": "<179421383461.1059.1089588722576169830@host.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Semi;colon\" <from@example.test>\r\nTo: to@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: <179421383461.1059.1089588722576169830@host.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  },
+  {
+   "name": "11-tt",
+   "sender_name": "Semi;colon",
+   "from_email": "from@example.test",
+   "to": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test",
+   "message_id": "<179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>",
+   "subject": "=?utf-8?q?Assozeta_=E2=80=94_verifica_email?=",
+   "bytes": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Semi;colon\" <from@example.test>\r\nTo: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt@example.test\r\nDate: Mon, 09 Nov 2026 08:43:54 -0000\r\nMessage-ID: \r\n <179421383461.1059.1@hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.example>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email."
+  }
+ ],
+ "folds": [
+  {
+   "header": "From",
+   "value": "x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x ",
+   "folded": "x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x\r\n x x x x x x x x x x x x x x x x x x x x x x x x "
+  },
+  {
+   "header": "Subject",
+   "value": "a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c ",
+   "folded": "a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c\r\n a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c a;b;c "
+  },
+  {
+   "header": "To",
+   "value": "a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, ",
+   "folded": "a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, a@b.c,\r\n a@b.c, a@b.c, a@b.c, a@b.c, a@b.c, "
+  },
+  {
+   "header": "X",
+   "value": "word\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword",
+   "folded": "word\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\r\n\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword\tword"
+  },
+  {
+   "header": "Message-ID",
+   "value": "<mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm>",
+   "folded": "\r\n <mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm>"
+  },
+  {
+   "header": "From",
+   "value": "short <a@b.c>",
+   "folded": "short <a@b.c>"
+  },
+  {
+   "header": "X",
+   "value": "",
+   "folded": ""
+  },
+  {
+   "header": "X",
+   "value": "  leading spaces   leading spaces   leading spaces   leading spaces   leading spaces   leading spaces   leading spaces   leading spaces ",
+   "folded": "  leading spaces   leading spaces   leading spaces   leading spaces\r\n   leading spaces   leading spaces   leading spaces   leading spaces "
+  },
+  {
+   "header": "Subject",
+   "value": "one-very-long-token-one-very-long-token-one-very-long-token-one-very-long-token-one-very-long-token- tail",
+   "folded": "\r\n one-very-long-token-one-very-long-token-one-very-long-token-one-very-long-token-one-very-long-token-\r\n tail"
+  },
+  {
+   "header": "X",
+   "value": "a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d ",
+   "folded": "a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d a,b;c d\r\n a,b;c d a,b;c d a,b;c d "
+  }
+ ]
+}

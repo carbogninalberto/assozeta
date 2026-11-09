@@ -1167,7 +1167,7 @@ func (s *SubscriptionCreates) afterCommit(ctx context.Context, identity domain.R
 		message := fmt.Sprintf("Nuova Iscrizione aggiunta per %s.", created.associateName)
 		send := func() error {
 			if created.validated != nil {
-				return s.notifications.Deliver(work, identity.ScopeUser.ID, "subscription", message, created.association, *created.validated)
+				return s.notifications.SendValidated(work, identity.ScopeUser.ID, "subscription", message, created.association, *created.validated)
 			}
 			return s.notifications.Send(work, identity.ScopeUser.ID, "subscription", message, created.association, request.Audit)
 		}
