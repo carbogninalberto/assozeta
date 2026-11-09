@@ -15644,25 +15644,85 @@
         "target": "payment_approve",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_misc.go",
+        "BE_GO/internal/dto/payment_misc.go",
+        "BE_GO/internal/repository/payment_misc.go",
+        "BE_GO/internal/service/payment_misc.go",
+        "BE_GO/internal/handler/payment_misc.go",
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/tasks.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/serializers/subscriptions_serializers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/<uid>/approve",
+          "/api/v2/payment/<uid>/approve",
+          "/api/payment/<uid>/approve"
+        ],
+        "request": "Body payment_date, generate_invoice, send_receipt_email.",
+        "response": "{'data': {'payment': ...}} or {'data': {'msg': 'payment mark as payed.', 'payment': ...}} with the invoice rendered.",
+        "errors": "400 UUID; 403 'User not allowed.'; 500 refusals for the invoice task and unpaid income payments with a party.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "bookeeping.payments.update",
+        "resource_scope": "Association of request.user; payment group-aware.",
+        "side_effects": "Marks unpaid expenses and party-less payments paid (supplier invoice for expenses), audited.",
+        "transaction": "Atomic payment update.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_misc_http.json",
+        "TESTS/fixtures/generate_payment_misc_http.py",
+        "TESTS/contracts/test_payment_misc_http.py",
+        "TESTS/adapters/django/payment_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 85/85; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-red-r4/results.json",
+          "receipt_sha256": "e0c6fda47fdda59641211cb861a3a8bb2cfdc0607720dace26c6fb7ca6956555"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "f430aa1150d76c334e433f7acf8a0648bac773974d4d767cd07604cf209078dc"
+        },
+        {
+          "revision": "committing change without NOT s.archived in the simulation subscription selection",
+          "result": "Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "b82fb3037fe54d82b4a97d80d5e0931eba74c883dab0ffa1efe4309a2a00a593"
+        }
+      ],
+      "notes": [
+        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/<str:uid>/archive -> payment_archive",
@@ -16940,25 +17000,85 @@
         "target": "payment_sign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_misc.go",
+        "BE_GO/internal/dto/payment_misc.go",
+        "BE_GO/internal/repository/payment_misc.go",
+        "BE_GO/internal/service/payment_misc.go",
+        "BE_GO/internal/handler/payment_misc.go",
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/tasks.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/serializers/subscriptions_serializers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/sign",
+          "/api/v2/payment/sign",
+          "/api/payment/sign"
+        ],
+        "request": "Body with exactly payment_id and signature {there_is_signature, data}.",
+        "response": "200 {'status': 'success'} without a signature to store.",
+        "errors": "400 {'msg': 'validation errors.'}; 400 UUID / 'payment not found' lists; 400 serializer errors; 403 scoped body reference; 500 non-dict body; 500 refusal for a signature to store.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "bookeeping.payments.update",
+        "resource_scope": "scoped_queryset(Payment.objects) by id, group-aware.",
+        "side_effects": "None on ported paths.",
+        "transaction": "Read only on ported paths.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_misc_http.json",
+        "TESTS/fixtures/generate_payment_misc_http.py",
+        "TESTS/contracts/test_payment_misc_http.py",
+        "TESTS/adapters/django/payment_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 85/85; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-red-r4/results.json",
+          "receipt_sha256": "e0c6fda47fdda59641211cb861a3a8bb2cfdc0607720dace26c6fb7ca6956555"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "f430aa1150d76c334e433f7acf8a0648bac773974d4d767cd07604cf209078dc"
+        },
+        {
+          "revision": "committing change without NOT s.archived in the simulation subscription selection",
+          "result": "Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "b82fb3037fe54d82b4a97d80d5e0931eba74c883dab0ffa1efe4309a2a00a593"
+        }
+      ],
+      "notes": [
+        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/simulation/partial-quotes -> payment_simulation_partial_quotes",
@@ -16975,25 +17095,85 @@
         "target": "payment_simulation_partial_quotes",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_misc.go",
+        "BE_GO/internal/dto/payment_misc.go",
+        "BE_GO/internal/repository/payment_misc.go",
+        "BE_GO/internal/service/payment_misc.go",
+        "BE_GO/internal/handler/payment_misc.go",
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/tasks.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/serializers/subscriptions_serializers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/simulation/partial-quotes",
+          "/api/v2/payment/simulation/partial-quotes",
+          "/api/payment/simulation/partial-quotes"
+        ],
+        "request": "Query date (last value) parsed with strptime('%Y-%m-%d'); X-Group-Id.",
+        "response": "200 {subscription_plans_considered: [...], quotes_to_emit: [...]} (unordered quotes; exceptions inside the try keep what was collected).",
+        "errors": "403 athletes ('User is not a sport association'); 500 owners without a live association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "bookeeping.payments.read",
+        "resource_scope": "request.user.sport_association; subscriptions and quote checks group-aware.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_misc_http.json",
+        "TESTS/fixtures/generate_payment_misc_http.py",
+        "TESTS/contracts/test_payment_misc_http.py",
+        "TESTS/adapters/django/payment_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 85/85; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-red-r4/results.json",
+          "receipt_sha256": "e0c6fda47fdda59641211cb861a3a8bb2cfdc0607720dace26c6fb7ca6956555"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "f430aa1150d76c334e433f7acf8a0648bac773974d4d767cd07604cf209078dc"
+        },
+        {
+          "revision": "committing change without NOT s.archived in the simulation subscription selection",
+          "result": "Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "b82fb3037fe54d82b4a97d80d5e0931eba74c883dab0ffa1efe4309a2a00a593"
+        }
+      ],
+      "notes": [
+        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/simulation/partial-quotes-apply -> payment_simulation_partial_quotes_apply",
@@ -17010,25 +17190,85 @@
         "target": "payment_simulation_partial_quotes_apply",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_misc.go",
+        "BE_GO/internal/dto/payment_misc.go",
+        "BE_GO/internal/repository/payment_misc.go",
+        "BE_GO/internal/service/payment_misc.go",
+        "BE_GO/internal/handler/payment_misc.go",
+        "BE_GO/internal/domain/payment_state.go",
+        "BE_GO/internal/dto/payment_state.go",
+        "BE_GO/internal/repository/payment_state.go",
+        "BE_GO/internal/service/payment_state.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/utils/payments_utils.py",
+        "BE/application/tasks.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/serializers/subscriptions_serializers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/permissions_registry.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/simulation/partial-quotes-apply",
+          "/api/v2/payment/simulation/partial-quotes-apply",
+          "/api/payment/simulation/partial-quotes-apply"
+        ],
+        "request": "Query date; X-Group-Id (stored on created payments).",
+        "response": "200 {'msg': 'Partial quotes applied.'}",
+        "errors": "403 athletes; 500 owners without association; 500 refusal for quotes that would send e-mail.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "bookeeping.payments.update",
+        "resource_scope": "request.user.sport_association.",
+        "side_effects": "Creates subject-1 payments (default bank account, save defaults) with audited create entries.",
+        "transaction": "Django autocommits each create; Go commits the creations up to a Python exception and rolls back refusals.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_misc_http.json",
+        "TESTS/fixtures/generate_payment_misc_http.py",
+        "TESTS/contracts/test_payment_misc_http.py",
+        "TESTS/adapters/django/payment_misc_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-misc.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 85/85; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-red-r4/results.json",
+          "receipt_sha256": "e0c6fda47fdda59641211cb861a3a8bb2cfdc0607720dace26c6fb7ca6956555"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 85/85 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment and audit effects.",
+          "artifact": "quality-reports/go-migration/payment-misc-http-versioned-r1/results.json",
+          "receipt_sha256": "f430aa1150d76c334e433f7acf8a0648bac773974d4d767cd07604cf209078dc"
+        },
+        {
+          "revision": "committing change without NOT s.archived in the simulation subscription selection",
+          "result": "Mutation control: fails Go on payment-misc-simulation-march (quotes_to_emit length).",
+          "artifact": "quality-reports/go-migration/payment-misc-http-mutation-r1/results.json",
+          "receipt_sha256": "b82fb3037fe54d82b4a97d80d5e0931eba74c883dab0ffa1efe4309a2a00a593"
+        }
+      ],
+      "notes": [
+        "Implementing: partial quotes simulation and apply (owner-user quotes; other users' quotes send e-mail: refused with rollback), payment sign without a signature to store (storing one renders a PDF: refused), approve of invoiced payments without the invoice task (payment-state covers the other approve paths). See payment-misc.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/stats -> payment_stats",
