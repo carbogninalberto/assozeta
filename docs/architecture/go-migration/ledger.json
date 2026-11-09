@@ -270,28 +270,68 @@
           "BaseCommand"
         ]
       },
-      "status": "needs_review",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/manuale/evaluate.go",
+        "BE_GO/cmd/manuale/main.go",
+        "BE_GO/internal/service/evaluate_manuale.go",
+        "BE_GO/cmd/mcp-server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/management/commands/run_mcp_server.py",
+        "BE/application/agent/core.py",
+        "BE/application/agent/routing.py",
+        "BE/application/manuale/answers.py",
+        "BE/application/manuale/tools.py",
+        "BE/application/manuale/index.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
+        "request": "CLI --association-id ID --output OUTPUT [--query QUERY] (required pair; --name value or --name=value). Go-only: --env-file, --mcp-server.",
+        "response": "stdout \"Existing MCP and agent manual evaluation passed.\"; CommandError with the failed check (report written first, status failed + error); \"No evaluation cases for the verified corpus\" without a report; traceback paths (unknown/malformed association, unreadable index) exit 1 without a report; argparse errors exit 2.",
         "errors": null,
         "authentication": null,
         "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
+        "resource_scope": "One SportAssociation (non-deleted); MCP server started for str(pk); agent with the owner user_id.",
+        "side_effects": "Starts the MCP server over stdio; reads MANUAL_INDEX_PATH; no database writes; no model requests (NoModel / no provider); writes OUTPUT as json.dumps(report, ensure_ascii=False, indent=2) + newline, parent directories created.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/adapters/go/evaluate_manuale.py",
+        "TESTS/fixtures/evaluate-manuale-corpus.json",
+        "TESTS/adapters/django/evaluate_manuale_settings.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/manuale-commands.md"
+        "docs/architecture/go-migration/evaluate-manuale.md",
+        {
+          "revision": "RED receipt, base revision 3adc9ced BE_GO",
+          "result": "RED: Django 16/16 authored cases; Go 0/16 (no evaluate subcommand).",
+          "artifact": "quality-reports/go-migration/evaluate-manuale-red/results.json",
+          "receipt_sha256": "8d422b9cd3e8f3b5cfd1e417315fd0bcf4f03777039445e615ae79f81d930245"
+        },
+        {
+          "revision": "047feed4",
+          "result": "GREEN: 16/16 actual manage.py evaluate_manuale (Python MCP server + agent) vs race-built manuale evaluate (Go mcp-server + agent): exit status, stdout, CommandError/argparse message, stderr, report bytes, rows and model stub requests (none) identical.",
+          "artifact": "quality-reports/go-migration/evaluate-manuale/results.json",
+          "receipt_sha256": "5c7436e2940eec7abb38cb6fc9ea6351340039c42768d3e16364561fae8c22c9"
+        },
+        {
+          "revision": "047feed4 with the medical-certificate case gate requiring scenario and sections (|| to &&)",
+          "result": "Mutation control: CAUGHT, 4 cases differ.",
+          "artifact": "quality-reports/go-migration/evaluate-manuale-mutation/results.json",
+          "receipt_sha256": "60bdcd4fa8c108c3f80a8de00639cb765e8941aa4d2f543bf0ef415799973aef"
+        },
+        {
+          "revision": "047feed4",
+          "result": "Re-run of the shared cmd/manuale: manuale-commands 81/81 (2 Go refusals).",
+          "artifact": "quality-reports/go-migration/manuale-commands-evaluate-rerun/results.json",
+          "receipt_sha256": "f7a4f8194b2d6e562ab77b55f85920ceef78f99ad96f8a82e65c37f8f294d49c"
+        }
       ],
       "notes": [
-        "Not ported (manuale-commands.md): CI runs it via docs/scripts/manuale.py evaluate (manuale.yml), so not deprecable. It evaluates the Python stack itself (manage.py run_mcp_server over stdio, application.agent.core.Agent with NoModel, application.manuale.answers); Go has no agent, so a Go command would evaluate a different system. Left open."
+        "Implementing: Go manuale evaluate drives the Go MCP server and agent like the Django command drives the Python ones; docs/scripts/manuale.py still runs the Django command (manuale binary not in the Go image). Refused before the report (exit 1): non-JSON tool texts, non-object/non-string/non-integer tool values, agent inputs the Go agent refuses, corpora whose chunks/scenario_ids are not lists, lone surrogates. Not reproduced: tracebacks, argparse texts, Django global options and system-check warnings, MCP launch errno texts, multi-error exception groups; timeout path implemented but not exercised."
       ]
     },
     {
