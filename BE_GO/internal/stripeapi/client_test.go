@@ -155,3 +155,22 @@ func TestSessionRetriesWithTheSameKeyAndSendsTelemetry(t *testing.T) {
 		t.Fatalf("headers: %v", seen[2])
 	}
 }
+
+func TestEncodeFloatsLikeStripePython(t *testing.T) {
+	// urlencode(list(_api_encode(...))) for Coupon.create's float and other fixed-notation floats.
+	got, err := Encode([]Param{{Key: "percent_off", Value: Float(10.0)}, {Key: "duration", Value: "once"},
+		{Key: "name", Value: "Società Sportiva Dilettantistica Àlfa N"}})
+	if want := "percent_off=10.0&duration=once&name=Societ%C3%A0+Sportiva+Dilettantistica+%C3%80lfa+N"; err != nil || got != want {
+		t.Fatalf("Encode = %q, %v; want %q", got, err, want)
+	}
+	got, err = Encode([]Param{{Key: "a", Value: Float(0.5)}, {Key: "b", Value: Float(123.25)}, {Key: "c", Value: Float(1e15)},
+		{Key: "d", Value: Float(0.0001)}, {Key: "e", Value: Float(-2)}, {Key: "f", Value: Float(0)}})
+	if want := "a=0.5&b=123.25&c=1000000000000000.0&d=0.0001&e=-2.0&f=0.0"; err != nil || got != want {
+		t.Fatalf("Encode = %q, %v; want %q", got, err, want)
+	}
+	for _, value := range []float64{1e16, 1e-5} {
+		if _, err := Encode([]Param{{Key: "x", Value: Float(value)}}); !errors.Is(err, ErrNotPorted) {
+			t.Fatalf("exponent repr %v: %v", value, err)
+		}
+	}
+}

@@ -198,12 +198,31 @@ func scalar(value any) (string, error) {
 		return "False", nil
 	case int64:
 		return strconv.FormatInt(v, 10), nil
+	case Float:
+		return v.python()
 	case json.Number:
 		if _, err := strconv.ParseInt(string(v), 10, 64); err == nil {
 			return string(v), nil
 		}
 	}
 	return "", ErrNotPorted
+}
+
+// Float is a Python float parameter (str(float) in the form body). Only the
+// fixed-notation range of Python's repr (1e-4 <= |v| < 1e16, or 0) is ported.
+type Float float64
+
+func (f Float) python() (string, error) {
+	v := float64(f)
+	abs := math.Abs(v)
+	if math.IsNaN(v) || math.IsInf(v, 0) || (abs != 0 && (abs < 1e-4 || abs >= 1e16)) {
+		return "", ErrNotPorted
+	}
+	text := strconv.FormatFloat(v, 'f', -1, 64)
+	if !strings.Contains(text, ".") {
+		text += ".0"
+	}
+	return text, nil
 }
 
 // quote is urllib.parse.quote_plus (safe=”): Go's query escaping keeps the same
@@ -229,6 +248,17 @@ func (s *Session) CreatePaymentIntent(ctx context.Context, params []Param) (Obje
 		return nil, err
 	}
 	return s.request(ctx, http.MethodPost, "/v1/payment_intents", body)
+}
+
+// Create is <Resource>.create(api_key=..., **params): POST <path> with the
+// encoded parameters (stripe.Coupon.create: /v1/coupons,
+// stripe.PromotionCode.create: /v1/promotion_codes).
+func (s *Session) Create(ctx context.Context, path string, params []Param) (Object, error) {
+	body, err := Encode(params)
+	if err != nil {
+		return nil, err
+	}
+	return s.request(ctx, http.MethodPost, path, body)
 }
 
 func (s *Session) telemetry() string {

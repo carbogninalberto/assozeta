@@ -1109,6 +1109,51 @@
         "count": 0
       }
     },
+    "utc_daily_0010_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "10",
+        "hour": "0",
+        "now": "2026-10-22T00:09:59+00:00",
+        "last": "2026-10-21T00:10:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 1,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_0010_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "10",
+        "hour": "0",
+        "now": "2026-10-22T00:10:00+00:00",
+        "last": "2026-10-21T00:10:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_0010_missed_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "10",
+        "hour": "0",
+        "now": "2026-10-22T03:00:00+00:00",
+        "last": "2026-10-21T00:10:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 76200,
+        "enabled": true,
+        "count": 0
+      }
+    },
     "utc_every_15_minutes_before_slot": {
       "input": {
         "kind": "cron",
