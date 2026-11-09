@@ -9,7 +9,7 @@
     // self-hosted install (Istanza → Backup → Trasferisci dati).
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
-    import {SpinnerGap} from 'phosphor-svelte';
+    import {SpinnerGap, DownloadSimple, Trash} from 'phosphor-svelte';
     import {apiFetch} from 'utils/ApiMiddleware.js';
     import {getApiHost} from 'store/instanceStore.js';
     import {userData} from 'store/stores.js';
@@ -192,9 +192,9 @@
         </div>
         <div class="si-actions">
             <slot name="actions" />
-            <button type="button" class="btn btn-primary" title={startReason || undefined}
+            <button type="button" class="btn btn-primary si-btn" title={startReason || undefined}
                 disabled={startingExport || exporting || loadingExports || !!exportError || !loadedExports || !!startReason}
-                on:click={startExport}>{startingExport || exporting ? 'Export in corso…' : 'Esporta dati'}</button>
+                on:click={startExport}><DownloadSimple size={18} weight="duotone" />{startingExport || exporting ? 'Export in corso…' : 'Esporta dati'}</button>
         </div>
     </div>
     {#if loadedExports && startReason && !exporting}<p class="si-reason start-reason">{startReason}</p>{/if}
@@ -230,8 +230,8 @@
                             <strong>{formatDate(exp.created_at || exp.date)}</strong>
                             <p class="si-muted si-small">{exp.file_size_bytes != null ? formatSize(exp.file_size_bytes) : 'ZIP'}</p>
                         </div>
-                        <button type="button" class="btn btn-light btn-sm" aria-label={`Scarica export del ${formatDate(exp.created_at || exp.date)}`} on:click={() => downloadExport(exp)}>Scarica</button>
-                        <InstanceMenu label={`Azioni export del ${formatDate(exp.created_at || exp.date)}`}
+                        <button type="button" class="btn btn-light btn-sm si-btn" aria-label={`Scarica export del ${formatDate(exp.created_at || exp.date)}`} on:click={() => downloadExport(exp)}><DownloadSimple size={16} weight="duotone" />Scarica</button>
+                        <InstanceMenu size="sm" label={`Azioni export del ${formatDate(exp.created_at || exp.date)}`}
                             items={[{label: 'Elimina', danger: true, disabled: !canManage, hint: canManage ? '' : 'Non hai i permessi.', onSelect: () => askDelete(exp)}]} />
                     </li>
                 {/each}
@@ -250,7 +250,7 @@
     {/if}
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" data-autofocus disabled={deleting} on:click={closeDelete}>Annulla</button>
-        <button type="button" class="btn btn-danger" disabled={deleting} on:click={deleteExport}>{deleting ? 'Eliminazione…' : 'Elimina'}</button>
+        <button type="button" class="btn btn-danger si-btn" disabled={deleting} on:click={deleteExport}><Trash size={18} weight="duotone" />{deleting ? 'Eliminazione…' : 'Elimina'}</button>
     </svelte:fragment>
 </InstanceDialog>
 

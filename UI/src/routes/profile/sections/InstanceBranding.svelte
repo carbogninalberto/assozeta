@@ -1,4 +1,5 @@
 <script>
+    import {FloppyDisk} from 'phosphor-svelte';
     // Identità: name, colour, support email and logo in one card with one save bar.
     import {onDestroy} from 'svelte';
     import {toast} from 'svelte-sonner';
@@ -99,7 +100,7 @@
         </div>
         {#if error}<p class="text-danger mt-3 mb-0" role="alert">{error}</p>{/if}
         <div class="si-savebar" class:dirty={changes}>
-            <button type="submit" class="btn btn-primary" disabled={!changes}>{busy ? 'Salvataggio…' : 'Salva identità'}</button>
+            <button type="submit" class="btn btn-primary si-btn" disabled={!changes}><FloppyDisk size={18} weight="duotone" />{busy ? 'Salvataggio…' : 'Salva identità'}</button>
             {#if changes}<button type="button" class="btn btn-light" on:click={cancel}>Annulla</button><span class="si-dirty" role="status">Modifiche non salvate</span>{/if}
         </div>
     </fieldset>
@@ -107,9 +108,9 @@
 
 <style>
     fieldset { min-width: 0; }
-    .identity { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+    .identity { display: grid; grid-template-columns: 20rem minmax(0, 1fr); gap: 2rem; align-items: start; }
     .logo { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; min-width: 0; }
-    .logo-preview { display: flex; align-items: center; justify-content: center; width: 100%; height: 6.5rem; padding: .875rem; border-radius: .625rem; background: var(--bg-surface-secondary); border-bottom: 3px solid var(--brand); }
+    .logo-preview { display: flex; align-items: center; justify-content: center; width: 100%; height: 9rem; padding: 1.25rem 1.5rem; border-radius: .625rem; background: var(--bg-surface-secondary); border-bottom: 3px solid var(--brand); }
     .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
     .logo-pick { margin: 0; cursor: pointer; }
     input[type='file']:focus-visible + .si-hint, .logo:focus-within .logo-pick { outline: 2px solid var(--primary); outline-offset: 2px; }

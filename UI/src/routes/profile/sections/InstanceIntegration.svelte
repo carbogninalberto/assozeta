@@ -1,4 +1,5 @@
 <script>
+    import {ArrowCounterClockwise, FloppyDisk, Plugs} from 'phosphor-svelte';
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
     import Switch from '../../../components/inputs/Switch.svelte';
@@ -153,9 +154,9 @@
                     {#if provider === 'apple'}<p class="si-hint mt-2 mb-0">Il pulsante Apple nella pagina di accesso web non è disponibile.</p>{/if}
                 {/if}
                 <div class="si-savebar" class:dirty={changes}>
-                    <button type="submit" class="btn btn-primary" disabled={!changes}>{busy && !verifying ? 'Salvataggio…' : `Salva ${title}`}</button>
+                    <button type="submit" class="btn btn-primary si-btn" disabled={!changes}><FloppyDisk size={18} weight="duotone" />{busy && !verifying ? 'Salvataggio…' : `Salva ${title}`}</button>
                     {#if changes}<button type="button" class="btn btn-light" on:click={cancel}>Annulla</button>{/if}
-                    <button type="button" class="btn btn-light-primary" disabled={busy || loading || disabled || !!verifyBlocked} title={verifyBlocked} on:click={verify}>{verifying ? 'Verifica…' : `Verifica ${title}`}</button>
+                    <button type="button" class="btn btn-light-primary si-btn" disabled={busy || loading || disabled || !!verifyBlocked} title={verifyBlocked} on:click={verify}><Plugs size={18} weight="duotone" />{verifying ? 'Verifica…' : `Verifica ${title}`}</button>
                     {#if verifyBlocked}<span class="si-dirty">{verifyBlocked}</span>{/if}
                 </div>
             </fieldset>
@@ -168,7 +169,7 @@
     <p>Le impostazioni di {title} salvate qui vengono rimosse. Si torna ai valori del file .env.</p>
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" data-autofocus disabled={busy} on:click={() => resetOpen = false}>Annulla</button>
-        <button type="button" class="btn btn-danger" disabled={busy} on:click={resetEnvironment}>{busy ? 'Ripristino…' : `Ripristina ${title}`}</button>
+        <button type="button" class="btn btn-danger si-btn" disabled={busy} on:click={resetEnvironment}><ArrowCounterClockwise size={18} weight="duotone" />{busy ? 'Ripristino…' : `Ripristina ${title}`}</button>
     </svelte:fragment>
 </InstanceDialog>
 

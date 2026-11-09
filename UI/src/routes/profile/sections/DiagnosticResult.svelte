@@ -30,10 +30,10 @@
     .diagnostic-result.compact { padding: .75rem 0; border: 0; border-radius: 0; background: none; }
     .result-main { flex: 1; min-width: 0; }
     .result-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem 1rem; }
-    .result-state { font-size: .8125rem; font-weight: 600; color: var(--text-secondary); }
+    .result-state { font-size: .925rem; font-weight: 600; color: var(--text-secondary); }
     .ok .result-state { color: #0f8a65; }
     .warn .result-state { color: #a86b00; }
     .bad .result-state { color: var(--danger, #d92d20); }
     p { margin: .2rem 0 0; }
-    .result-meta { font-size: .8125rem; color: var(--text-secondary); }
+    .result-meta { font-size: .925rem; color: var(--text-secondary); }
 </style>

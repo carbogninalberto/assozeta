@@ -1,4 +1,5 @@
 <script>
+    import {ArrowCounterClockwise, FloppyDisk, PaperPlaneTilt, Plugs} from 'phosphor-svelte';
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
     import Switch from '../../../components/inputs/Switch.svelte';
@@ -118,7 +119,7 @@
                     <label>Nome mittente<input class="form-control" bind:value={draft.sender_name} maxlength="100" /></label>
                 </div>
                 <div class="si-savebar" class:dirty={changes}>
-                    <button class="btn btn-primary" type="submit" disabled={!changes}>{busy ? 'Salvataggio…' : 'Salva email'}</button>
+                    <button class="btn btn-primary si-btn" type="submit" disabled={!changes}><FloppyDisk size={18} weight="duotone" />{busy ? 'Salvataggio…' : 'Salva email'}</button>
                     {#if changes}<button class="btn btn-light" type="button" on:click={cancel}>Annulla</button><span class="si-dirty" role="status">Modifiche non salvate</span>{/if}
                 </div>
             </fieldset>
@@ -128,11 +129,11 @@
     {#if config}
         <div class="si-card" aria-labelledby="email-testing">
             <div class="si-card-head"><h3 id="email-testing" class="si-subtitle">Prova</h3>{#if testBlocked}<span class="si-reason">{testBlocked}</span>{/if}</div>
-            <button type="button" class="btn btn-light-primary" disabled={disabled || busy || loading || changes} on:click={() => test('connect')}>Verifica connessione</button>
+            <button type="button" class="btn btn-light-primary si-btn" disabled={disabled || busy || loading || changes} on:click={() => test('connect')}><Plugs size={18} weight="duotone" />Verifica connessione</button>
             <form class="test-form mt-3" on:submit|preventDefault={() => test('send')}>
                 <label class="si-sr-only" for="email-test-recipient">Destinatario di prova</label>
                 <input id="email-test-recipient" class="form-control" type="email" bind:value={recipient} required placeholder="Destinatario di prova" disabled={disabled || busy || loading} />
-                <button class="btn btn-light-primary" disabled={disabled || busy || loading || changes || !recipient}>Invia email di prova</button>
+                <button class="btn btn-light-primary si-btn" disabled={disabled || busy || loading || changes || !recipient}><PaperPlaneTilt size={18} weight="duotone" />Invia email di prova</button>
             </form>
             {#if testResult}<div class="mt-3" aria-live="polite"><DiagnosticResult check={{...testResult, label: 'Ultima prova'}} /></div>{/if}
         </div>
@@ -143,7 +144,7 @@
     <p>Le impostazioni email salvate qui vengono rimosse. Si torna ai valori del file .env.</p>
     <svelte:fragment slot="footer">
         <button type="button" class="btn btn-light" data-autofocus disabled={busy} on:click={() => resetOpen = false}>Annulla</button>
-        <button type="button" class="btn btn-danger" disabled={busy} on:click={resetEnvironment}>{busy ? 'Ripristino…' : 'Ripristina'}</button>
+        <button type="button" class="btn btn-danger si-btn" disabled={busy} on:click={resetEnvironment}><ArrowCounterClockwise size={18} weight="duotone" />{busy ? 'Ripristino…' : 'Ripristina'}</button>
     </svelte:fragment>
 </InstanceDialog>
 

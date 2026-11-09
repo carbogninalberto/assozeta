@@ -3,7 +3,7 @@
     // Settings open in a drawer; the recovery key is set up in a 3-step dialog.
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
-    import {CheckCircle} from 'phosphor-svelte';
+    import {CheckCircle, Copy, DownloadSimple, FloppyDisk, PencilSimple, Plugs} from 'phosphor-svelte';
     import Switch from '../../../components/inputs/Switch.svelte';
     import InstanceDialog from './InstanceDialog.svelte';
     import InstanceMenu from './InstanceMenu.svelte';
@@ -154,7 +154,7 @@
         </div>
         <div class="si-actions">
             {#if status.pill}<span class="si-pill {status.tone}">{status.pill}</span>{/if}
-            <button type="button" class="btn btn-light btn-sm" disabled={disabled || !config && !loadError} on:click={openDrawer}>{config?.configured ? 'Modifica' : 'Configura'}</button>
+            <button type="button" class="btn btn-light btn-sm si-btn" disabled={disabled || !config && !loadError} on:click={openDrawer}><PencilSimple size={16} weight="duotone" />{config?.configured ? 'Modifica' : 'Configura'}</button>
             {#if config?.configured}
                 <InstanceMenu label="Altre azioni copia remota" items={[
                     {label: testing ? 'Prova in corso…' : 'Prova connessione', disabled: testing, onSelect: () => test({})},
@@ -201,9 +201,9 @@
         {#if formError}<p class="text-danger mb-0" role="alert">{formError}</p>{/if}
     </form>
     <svelte:fragment slot="footer">
-        <button type="button" class="btn btn-light mr-auto" disabled={testing || saving || !draft.bucket || !draft.access_key} on:click={() => test()}>{testing ? 'Prova in corso…' : 'Prova connessione'}</button>
+        <button type="button" class="btn btn-light mr-auto si-btn" disabled={testing || saving || !draft.bucket || !draft.access_key} on:click={() => test()}><Plugs size={18} weight="duotone" />{testing ? 'Prova in corso…' : 'Prova connessione'}</button>
         <button type="button" class="btn btn-light" disabled={saving} on:click={() => { drawer = false; }}>Annulla</button>
-        <button type="submit" form="remote-backup-form" class="btn btn-primary" disabled={saving}>{saving ? 'Salvataggio…' : 'Salva'}</button>
+        <button type="submit" form="remote-backup-form" class="btn btn-primary si-btn" disabled={saving}><FloppyDisk size={18} weight="duotone" />{saving ? 'Salvataggio…' : 'Salva'}</button>
     </svelte:fragment>
 </InstanceDialog>
 
@@ -215,8 +215,8 @@
             <label class="si-field" for="remote-recovery-key">Chiave {recovery.key_id}</label>
             <textarea id="remote-recovery-key" class="form-control key" rows="3" readonly on:focus={event => event.target.select()}>{recovery.recovery_key}</textarea>
             <div class="si-actions mt-3">
-                <button type="button" class="btn btn-primary btn-sm" data-autofocus on:click={downloadKey}>Scarica file</button>
-                <button type="button" class="btn btn-light btn-sm" on:click={copyKey}>Copia</button>
+                <button type="button" class="btn btn-primary btn-sm si-btn" data-autofocus on:click={downloadKey}><DownloadSimple size={16} weight="duotone" />Scarica file</button>
+                <button type="button" class="btn btn-light btn-sm si-btn" on:click={copyKey}><Copy size={16} weight="duotone" />Copia</button>
             </div>
         {:else if working}
             <span class="si-skeleton" style="height: 4.5rem"></span>
@@ -247,10 +247,10 @@
 <style>
     .facts { display: flex; flex-wrap: wrap; gap: .5rem 2rem; margin: .5rem 0 0; }
     .facts div { min-width: 0; }
-    .facts dt { font-size: .8125rem; font-weight: 500; color: var(--text-secondary); }
+    .facts dt { font-size: .925rem; font-weight: 500; color: var(--text-secondary); }
     .facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
     .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 1rem; }
-    .key { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: .8125rem; resize: none; word-break: break-all; }
+    .key { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: .925rem; resize: none; word-break: break-all; }
     .tail { max-width: 10rem; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); text-transform: uppercase; letter-spacing: .1em; }
     .note { padding: .625rem .875rem; border-radius: .5rem; background: var(--light-warning); }
     .done { display: flex; align-items: center; gap: .5rem; font-weight: 600; color: var(--success, #12a37a); }
