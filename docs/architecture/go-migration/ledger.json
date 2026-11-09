@@ -34559,7 +34559,8 @@
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Task is not registered in the Go worker; Go rejects such persisted rows as unsupported without effects. Not ported by tasks-db-b: remains needs_review per the notes above (destructive Document cascade and storage deletion); Go keeps candidate discovery only. See docs/architecture/go-migration/tasks-db-b.md."
+        "Task is not registered in the Go worker; Go rejects such persisted rows as unsupported without effects. Not ported by tasks-db-b: remains needs_review per the notes above (destructive Document cascade and storage deletion); Go keeps candidate discovery only. See docs/architecture/go-migration/tasks-db-b.md.",
+        "tasks-db-e: still not registered; the legacy deletion cascades from Document.delete() to every referencing row and audits the certificate twice, and Go keeps candidate discovery only until that cascade is characterized. The schedule stays unsupported. See docs/architecture/go-migration/tasks-db-e.md."
       ]
     },
     {
@@ -34744,33 +34745,66 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task cleanup_old_exports with the declared 02:30 UTC daily cron or another supported definition, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide cleanup_old_exports version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic cleanup_old_exports v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps cleanup_old_exports to its registered version-1 worker job; the scalar daily cron is inside the evaluator subset. The Go schedule differential runs every supported case for the task against actual Celery 5.6.2/Beat 2.8.1 (71 oracle cases); RED: the evaluator rejected the task before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-e.md."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Task is not ported (storage file deletion); Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -37462,7 +37496,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Only called with .apply (eager, in the web request): no message is published; it stays a refused synchronous path of its routes."
       ]
     },
     {
@@ -37502,7 +37537,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Only called with .apply (eager, in the web request): no message is published; it stays a refused synchronous path of its routes."
       ]
     },
     {
@@ -37542,7 +37578,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by .delay in invoice and Stripe views (also called eagerly with .apply); body is requests.get(CURRENT_HOST/document/invoice/<id>?send_receipt_email=...) with errors swallowed."
       ]
     },
     {
@@ -37582,7 +37619,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Called directly as a function in subscription views: no message is published; it stays a refused synchronous path of its routes."
       ]
     },
     {
@@ -37791,7 +37829,8 @@
         "See BE_GO/internal/repository/medical_cleanup_candidates.md and BE_GO/pkg/storage/s3objects/README.md. Candidate discovery, key resolution and provider batch deletion are implemented dependencies; the destructive cleanup task remains needs_review with no Go body or production registration.",
         "Protect active uploads and every attachment path before destructive execution, including coexistence. Do not substitute an age cutoff. Implement durable file intent, once-only audit correction, recovery from unknown provider outcomes and versioned delete-marker replay, restore fencing and scheduler ownership. Credential/provider composition and live AWS/DigitalOcean evidence remain open.",
         "Static daily 03:00 declaration differs from empty initialized/persisted occurrences in the private fixture. Actual policy: UTC, acks_late false, max_retries 3, delay 180, no rate/time/soft-time limit. This is not production schedule or S3 proof.",
-        "Not ported by tasks-db-b: remains needs_review per the notes above (destructive Document cascade and storage deletion); Go keeps candidate discovery only. See docs/architecture/go-migration/tasks-db-b.md."
+        "Not ported by tasks-db-b: remains needs_review per the notes above (destructive Document cascade and storage deletion); Go keeps candidate discovery only. See docs/architecture/go-migration/tasks-db-b.md.",
+        "tasks-db-e: still not registered; the legacy deletion cascades from Document.delete() to every referencing row and audits the certificate twice, and Go keeps candidate discovery only until that cascade is characterized. The schedule stays unsupported. See docs/architecture/go-migration/tasks-db-e.md."
       ]
     },
     {
@@ -38039,28 +38078,56 @@
           "name": "'cleanup_old_exports'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/export_cleanup.go",
+        "BE_GO/internal/repository/export_cleanup.go",
+        "BE_GO/internal/service/export_cleanup.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/cmd/worker/export_cleanup.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/application/models/user_models.py",
+        "BE/docmanager/models.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE/instance/restore/task_base.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/repository/documents_archive.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python arguments; exact Go kind cleanup_old_exports, version 1, empty object payload, nil association and a running fenced job.",
+        "response": "Django {'deleted_count': n}; completed Go job with result {\"deleted_count\": n}.",
+        "errors": "Per-row storage errors (including SuspiciousOperation for a filepath outside AWS_LOCATION) are logged and skip the row. A run where any export document in scope has a reference besides its one archive row outside the SET_NULL foreign keys fails with task_failed before any effect. SQL failures go back to the executor where Django logs and continues.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "resource_scope": "SportAssociation.original_objects owning an archive row whose document filename starts with export_ (case-sensitive), unordered; per association the export rows ordered by -date.",
+        "side_effects": "Age pass (document creation_date before now-30d), then [3:] of the re-read rows: default_storage.delete(filepath) when set, archive delete audited (index changes_json.sport_association when the association is not deleted), document delete with SET_NULL references cleared, audited without index.",
+        "transaction": "Planning and reads in fenced READ COMMITTED transactions; per row one fenced transaction for storage delete + archive delete and one for the document delete, mirroring autocommit; completion fenced.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/export_cleanup_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py",
+        "TESTS/adapters/django/instance_logo.py"
+      ],
+      "evidence": [
+        "Native worker registration (version 1). TESTS/adapters/go/export_cleanup_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private pinned MinIO; the actual Django task runs first with S3Boto3Storage on the MinIO and authored assertions (result 5, remaining rows, bucket listing, cleared SET_NULL reference, 10 audit entries / 4 indexes); the Go job must leave the identical complete managed-model state (audit ids/timestamps normalized), bucket contents and result. Groups: default Django owner, native parity, invalid version/payload/tenant, later run deleting nothing, cascade refusal without effects. RED: job stays pending without the registration. GREEN 5/5. Mutation caught: EXPORT_MAX_COUNT 3 to 4. See docs/architecture/go-migration/tasks-db-e.md."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-a: deletes export files from default storage before deleting rows."
+        "Ported by tasks-db-e; document cascades beyond the SET_NULL references refuse the run. See docs/architecture/go-migration/tasks-db-e.md."
       ]
     },
     {
@@ -38391,7 +38458,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by invoice_views (.delay(files, association UUID)); body builds a ZIP through PrintingService.download_multiple_files and names it from the Rome clock."
       ]
     },
     {
@@ -38613,7 +38681,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body is requests.get(CURRENT_HOST/document/subscription/<id>) with the Authorization header, errors swallowed; the rendering is the route's."
       ]
     },
     {
@@ -38801,7 +38870,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. With a configuration the send runs in a threading.Timer 1-30 s after the task returns (the in-process call from send_reminders is ported in tasks-db-c)."
       ]
     },
     {
@@ -38841,7 +38911,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body renders the template named in the message; internal/emailrender embeds a fixed set."
       ]
     },
     {
@@ -38881,7 +38952,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body is one send_mail_async.apply_async from inside the task (needs the running task's root_id/parent_id)."
       ]
     },
     {
@@ -39384,7 +39456,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Registered as core.tasks.send_mail_async; without a configuration it sends through Django EmailMultiAlternatives and instance.email_configuration.EmailBackend, writes EmailLog and retries with self.retry (max 3, countdown 180*2**retries)."
       ]
     },
     {
@@ -39424,7 +39497,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. No producer (the only call is commented out); not registered."
       ]
     },
     {
@@ -39464,7 +39538,8 @@
       "evidence": [],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by PrintingService (.delay(file, pdf_base64)); default_storage.save with AWS_S3_FILE_OVERWRITE=False chooses an available name."
       ]
     },
     {
