@@ -1,8 +1,8 @@
-# Subscription and invoice list exports (CSV) — implementing with HTTP parity
+# Subscription and invoice list exports (CSV and XLSX) — implementing with HTTP parity
 
 `GET`/`POST subscription/list/export` (`subscription_list_export` with `_get_export_columns`, `_build_simplified_row`,
 `_build_full_row` and `_export_to_csv` in `BE/application/views/subscriptions_views.py`) and `GET invoice/list/export`
-(`invoice_list_export` in `BE/application/views/invoice_views.py`) are implemented in Go for their CSV outputs and the invoice
+(`invoice_list_export` in `BE/application/views/invoice_views.py`) are implemented in Go for their CSV and XLSX outputs and the invoice
 zip dispatch (`BE_GO/internal/{domain,repository,service,handler}/misc_exports.go`). Registry: `association.members.read` and
 `bookeeping.documents.invoices.read`. Django remains the execution owner.
 
@@ -35,6 +35,10 @@ zip dispatch (`BE_GO/internal/{domain,repository,service,handler}/misc_exports.g
 - A subscription without an associate raises (500) at its row: in a full export after the earlier rows' promotions.
 - With zero rows, `pandas.DataFrame([]).columns = cols` raises a length mismatch (500).
 - Response `{'data': {'filename': '[<today>] ISCRIZIONI a <denomination>.csv', 'type': 'csv', 'file': <base64>}}`.
+- `filetype` containing `xls`: `_export_to_excel` over the same rows ([xlsx-exports](xlsx-exports.md)): pandas' xlsxwriter
+  workbook, sheet `Libro Soci` with the index column, `set_column(i, i, len(col) + 10)` for i over the columns (the index
+  column takes the first width); `'.xls'` in the filename and type `xls`. Go builds the workbook from a dry pass before the
+  promotions, so an input the writer refuses answers the 500 page before any write.
 
 ## invoice/list/export
 
@@ -52,14 +56,15 @@ zip dispatch (`BE_GO/internal/{domain,repository,service,handler}/misc_exports.g
   the reads (no write precedes it); a broker failure is a 500. Response
   `{'data': {'file': '', 'message': 'Export dei file in corso, controlla la sezione Documenti e Modelli tra qualche minuto.'}}`.
   Django's worker builds the zip.
-- Any other `m` (except `xlsx`): `{'data': {'file': ''}}` after the same lookups.
+- `m=xlsx`: `get_excel_base64` over the same columns (names as Python values, None kept; fees as Decimals; the number or None).
+  Response `{'data': {'file': <base64>, 'type': 'xlsx', 'filename': '[<today>] RICEVUTE a <denomination>.xlsx'}}`.
+- Any other `m`: `{'data': {'file': ''}}` after the same lookups.
 
-## Not ported (refused with the 500 page before any lookup or write)
+## Not ported (refused with the 500 page before any write)
 
-- `subscription/list/export` with `filetype` containing `xls` and `invoice/list/export` with `m=xlsx`: the pandas/xlsxwriter
-  and `get_excel_base64` workbooks are not byte-reproducible (document properties and zip entries carry the generation time).
+- Workbook inputs the writer refuses ([xlsx-exports](xlsx-exports.md)).
 
-Not authored: the spreadsheet modes above, unknown subscription status flags, association-scoped sessions of non-athlete users,
+Not authored: workbook promotions (the authored xls cases run after the CSV promotions), unknown subscription status flags, association-scoped sessions of non-athlete users,
 equal subscription creation dates or invoice creation dates (Django leaves their order to the database).
 
 ## Evidence (TDD)
@@ -75,3 +80,6 @@ Celery message on the run's private broker).
 - Mutation (`mutation-r1`): taking each invoice's payment with the highest key instead of the lowest fails
   `misc-exports-inv-owner` (CAUGHT).
 - Shared code: none changed (new files and a route block in `main.go`).
+- XLSX (13 more cases, 70 in all; workbooks compared with `TESTS/contracts/xlsx.py`): RED `xlsx-red-r1` (Django 70/70, Go 500 on
+  `misc-exports-subs-xls-full`), GREEN `xlsx-versioned-r1` on all four transports, mutation `xlsx-mutation-r2`
+  (`len(col) + 2` widths fail `misc-exports-subs-xls-full`, CAUGHT).

@@ -1,8 +1,8 @@
-# Payment list export (CSV) — implementing with HTTP parity
+# Payment list export (CSV and XLSX) — implementing with HTTP parity
 
 `GET payment/list/export` (`payment_list_export` in `BE/application/views/payment_views.py`, with
 `CustomAccountSerializer.get_current_balance_from` in `BE/application/serializers/balance_sheet.py` and `smart_search` in
-`BE/application/utils/subscriptions_utils.py`) is implemented in Go for its CSV output
+`BE/application/utils/subscriptions_utils.py`) is implemented in Go for its CSV and XLSX outputs
 (`BE_GO/internal/{domain,repository,service,handler}/payment_export.go`). Registry: `bookeeping.payments.read`. It reuses
 payment-reads' filter query (`paymentReadsQuery`), range parsing (`paymentRange`), filter parsers, smart-search word
 preparation and the reads dispatch (`PaymentReadsHandler.serve`). Django remains the execution owner.
@@ -59,15 +59,23 @@ rows; the subscription export goes through pandas) and are not part of this fami
   a list holding `"label"`, a number or a bool raise (500).
 - Response `{'data': {'file': base64 CSV, 'type': 'csv', 'filename': '[<today UTC>] PAGAMENTI a <denomination>.csv'}}`.
   `m` other than `xlsx` is CSV.
+- `m=xlsx` ([xlsx-exports](xlsx-exports.md)): `get_excel_base64` over the column lists (zip truncates them to the shortest, so
+  activities shift as in the CSV): the user (None kept), status, type, dates, the invoice number (an int, None without one, `''`
+  without an invoice), the activities, the additional categories (`'payment_category_id' in mpc` first: a str meta yields
+  nothing, a dict meta raises when a key contains it, a list item raises when it is a number, bool or None, or a str or list
+  containing the key), the category name or `-`, the account name or `-` (also in the petty cash book, so its CSV 500 does not
+  happen), the flow, the course (the label as its Python value), the amount (Decimal), the notes (None kept) and, for the petty
+  cash book, the progressive balances (floats or `-`). Response `{'data': {'file': base64, 'type': 'xlsx', 'filename':
+  '[<today>] PAGAMENTI a <denomination>.xlsx'}}`.
 
 ## Not ported (refused with the 500 page)
 
-- `m=xlsx`: the openpyxl workbook (pandas numeric coercion, column widths) is not byte-reproducible (document properties
-  and zip entries carry the generation time), so Go refuses it before the association lookup.
+- `m=xlsx` inputs the writer refuses ([xlsx-exports](xlsx-exports.md)), and course labels that are bools, lists, objects or
+  integers beyond int64.
 - Infinite float search terms and smart-search terms with characters Python lower-cases differently (as payment-reads).
 - A course JSON `label` that is a list or an object (its Python repr) or a non-finite number.
 
-Not authored: `m=xlsx`, association-scoped sessions of non-athlete users (the scoped course subscription and installment
+Not authored: association-scoped sessions of non-athlete users (the scoped course subscription and installment
 filters are ported from `scoped_queryset`), additional categories that raise, equal payment dates (Django leaves their order
 to the database), more than one payment without a payment date in one export.
 
@@ -84,3 +92,6 @@ compares the base64 of the exact CSV bytes and accepts the server's UTC date in 
 - Mutation (`mutation-r1`): counting soft-deleted payments in the petty cash book's opening balances fails
   `payment-export-petty-spring` (CAUGHT).
 - Shared code: none changed (new files and a route block in `main.go`).
+- XLSX (`m=xlsx`, 15 more cases, 87 in all; workbooks compared with `TESTS/contracts/xlsx.py`): RED `xlsx-red-r1` (Django 87/87,
+  Go 500 on `payment-export-xlsx`), GREEN `xlsx-versioned-r1` on all four transports, mutation `xlsx-mutation-r2` ('' for a
+  payment without an account fails `payment-export-xlsx`, CAUGHT).
