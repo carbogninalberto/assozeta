@@ -2283,25 +2283,80 @@
         "target": "views.chat_test",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/chat_page.go",
+        "BE_GO/internal/handler/api_schema.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/handler/refresh.go",
+        "BE_GO/internal/middleware/csrf.go",
+        "BE_GO/internal/middleware/session_audit.go",
+        "BE_GO/internal/service/session_auth.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/chat/urls.py",
+        "BE/application/chat/views.py",
+        "BE/core/urls.py",
+        "BE/core/middleware.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/locking.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "external_paths": [
+          "/api/v1/chat/test/",
+          "/api/v2/chat/test/",
+          "/api/chat/test/"
+        ],
+        "request": "No body or query semantics; sessionid cookie (Django cache session); csrftoken cookie and X-CSRFToken for unsafe methods.",
+        "response": "302 Location /accounts/login/?next=<get_full_path quoted safe='/'>, text/html; charset=utf-8, empty body, without an authenticated session user; stable 500 page (TemplateDoesNotExist) with one. Vary: Cookie, origin, Accept-Language.",
+        "errors": "Unsafe methods failing CSRF: Django 403 csrf_403.html; Go refuses with the 500 page (not ported). /chat/test: 301 APPEND_SLASH.",
+        "authentication": "Django session (AuthenticationMiddleware via SessionMiddleware cache backend); Bearer tokens do not authenticate.",
+        "permissions": "login_required only.",
+        "resource_scope": "None.",
+        "side_effects": "None; an empty supplied session cookie is deleted in the response.",
+        "transaction": "Read-only session and user lookups.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/chat_test_http.json",
+        "TESTS/fixtures/generate_chat_test_http.py",
+        "TESTS/contracts/test_chat_test_http.py",
+        "TESTS/adapters/django/chat_test_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/chat-test.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 24/24; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/chat-test-http-native-r6/results.json",
+          "receipt_sha256": "622431dc5be5179c2750e11dc4389512bf8493e6835c21067971aa4bdefee12d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 24/24 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact Location, Set-Cookie, Vary and session/cache state.",
+          "artifact": "quality-reports/go-migration/chat-test-http-versioned-r2/results.json",
+          "receipt_sha256": "d76e5e6b4fb300a2869fd2dc6725c1ad0364dcd4ca1bd6785d37d06eb39a73bb"
+        },
+        {
+          "revision": "committing change with next quoted keeping ?=& (safe characters widened)",
+          "result": "Mutation control: fails Go on chat-test-anonymous-query (Location differs).",
+          "artifact": "quality-reports/go-migration/chat-test-http-mutation-r1/results.json",
+          "receipt_sha256": "dfefe201f3e8f6bddd107934ef308e1f3aa622b2ccb0f54dbd778cee3e00e9f4"
+        }
+      ],
+      "notes": [
+        "Implementing: chat-test family (docs/architecture/go-migration/chat-test.md): login_required page whose template chat/test.html does not exist; anonymous and non-authenticated sessions get the 302 to /accounts/login/?next=..., authenticated sessions the stable 500 page (TemplateDoesNotExist), /chat/test the APPEND_SLASH 301. Not ported: unsafe requests failing CSRF (Django's localized csrf_403.html page), refused with the 500 page."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:administration/impersonation -> impersonation_session",
@@ -11281,25 +11336,72 @@
         "target": "export_all_data",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/export_all_data.go",
+        "BE_GO/internal/repository/export_all_data.go",
+        "BE_GO/internal/service/export_all_data.go",
+        "BE_GO/internal/handler/export_all_data.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/internal/xlsxexport/stream_test.go",
+        "BE_GO/internal/pdfrender/header.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "xlsxexport.OpenpyxlRowsResponse (wb.save(HttpResponse))",
+        "pdfrender.HeaderBytes (Django header bytes)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/export-all-data",
+          "/api/v2/export-all-data",
+          "/api/export-all-data"
+        ],
+        "request": "POST (body ignored).",
+        "response": "xlsx workbook (sheets Iscrizioni and Pagamenti), Content-Disposition 'attachment; filename=export_<denomination>.xlsx'.",
+        "errors": "401; 403 admin without session, association-scoped context, athletes ('User is not a sport association'); 405; 500 without a live association, out-of-range choice values, subscription without associate, several course subscriptions for a payment, illegal characters, header values with control characters.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry EXCLUDED_ENDPOINTS.",
+        "resource_scope": "request.user.sport_association (live); scoped, group-aware subscriptions and payments.",
+        "side_effects": "none",
+        "transaction": "read-only",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/export_all_data_http.json",
+        "TESTS/fixtures/generate_export_all_data_http.py",
+        "TESTS/contracts/test_export_all_data_http.py",
+        "TESTS/adapters/django/export_all_data_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/export-all-data.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 17/17; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/export-all-data-http-native-r12/results.json",
+          "receipt_sha256": "1edcd18aad0c278adee460700c25fe6fd3805f855c343333530dcdaa7255bf21"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 17/17 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/export-all-data-http-versioned-r2/results.json",
+          "receipt_sha256": "565e8c355fc3e2d9b1bcab47bfa41e6280df59c2dccd862096cd6dde27e37084"
+        },
+        {
+          "revision": "keeping tutors without a group under an X-Group-Id header",
+          "result": "Mutation control: fails Go on export-all-data-group (sheet1.xml tutor columns)",
+          "artifact": "quality-reports/go-migration/export-all-data-http-mutation-r2/results.json",
+          "receipt_sha256": "b265667bfc3db8f1cbe084aeed353d803da3b32bdeb3378a619841beaf42d35b"
+        }
+      ],
+      "notes": [
+        "Implementing: str() of the subscription and payment fields with their related rows (choice labels with Python indexing, jsonb-ordered JSON reprs, '<Model> object (<pk>)' foreign keys). The streamed zip has data descriptors (flag 0x08). Content-Disposition values with control characters answer the 500 page. Unordered querysets keep Django's joins (the adapter analyzes the seeded tables so every transport plans them alike)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:folders/<str:pk>/delete -> FolderViewSet.as_view({'delete': 'delete'})",
@@ -20705,25 +20807,72 @@
         "target": "printing_generate",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/printing_generate.go",
+        "BE_GO/internal/repository/printing_generate.go",
+        "BE_GO/internal/service/printing_generate.go",
+        "BE_GO/internal/handler/printing_generate.go",
+        "BE_GO/internal/xlsxexport/openpyxl.go",
+        "BE_GO/internal/xlsxexport/pandas.go",
+        "BE_GO/internal/xlsxexport/value.go",
+        "BE_GO/internal/xlsxexport/zip.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "xlsxexport.PandasOpenpyxl (get_excel_base64)",
+        "Existing identity, admission and audit helpers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/printing/generate",
+          "/api/v2/printing/generate",
+          "/api/printing/generate"
+        ],
+        "request": "JSON or form body {type: <builder>, format: excel|pdf, filters: {year?, status?, period?: {from_date, to_date}}}.",
+        "response": "{file: base64 xlsx (get_excel_base64), filename: '[dd/mm/YYYY] <title> - <denomination>.xlsx'}; athletes an empty 403.",
+        "errors": "401; 403 registry/association-scoped context; 405; 400 missing type/format, unknown type, any builder or association exception ('Errore nella generazione della stampa.'), malformed JSON; 500 body without .get; 500 refused pdf format and refused workbook inputs (before any write).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.read.",
+        "resource_scope": "request.user.sport_association (live); group-aware subscriptions and payments.",
+        "side_effects": "rows of minors promote and save the first tutor relation (audited) when none is primary.",
+        "transaction": "autocommit per promotion",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/printing_generate_http.json",
+        "TESTS/fixtures/generate_printing_generate_http.py",
+        "TESTS/contracts/test_printing_generate_http.py",
+        "TESTS/adapters/django/printing_generate_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/printing-generate.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 91/91; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/printing-generate-http-native-r12/results.json",
+          "receipt_sha256": "d9c220af805448f15a203171a42342b4c12fd51e76a829dfbca5352ac1d0211f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 91/91 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/printing-generate-http-versioned-r2/results.json",
+          "receipt_sha256": "92731058c5d2091f68e117fbc345ba2e7a45b712f9573352e6a3add80f677398"
+        },
+        {
+          "revision": "sorting the medical reports by descending days to expiry",
+          "result": "Mutation control: fails Go on printing-generate-expiring-medical (sheet1.xml row order)",
+          "artifact": "quality-reports/go-migration/printing-generate-http-mutation-r1/results.json",
+          "receipt_sha256": "6ad22f614d7e645a229491160a68e96c983912600634285d6108df3cb8134f1c"
+        }
+      ],
+      "notes": [
+        "Implementing: Excel format of the eleven builders ported with Python request-value semantics and Associate.main_tutor's audited promotions (kept when a later step raises). The pdf format (in-process reportlab) is refused with the 500 page before any write; requests failing earlier keep their 400. Unordered querysets keep Django's joins (the adapter analyzes the seeded tables so every transport plans them alike)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/associates/course/<str:uid> -> profile_associates_course",
@@ -35763,32 +35912,66 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task instance.restore.cleanup with the declared 3600-second interval or another supported definition, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide instance.restore.cleanup version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic instance.restore.cleanup v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps instance.restore.cleanup to its registered version-1 worker job; the 3600-second interval is inside the evaluator subset. Four hourly interval cases added to TESTS/fixtures/scheduler-authority.json match actual Celery 5.6.2/Beat 2.8.1 (78 oracle cases); the Go differential runs every supported case for the task. RED: the evaluator rejected the task before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/restore-cleanup.md."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -40900,27 +41083,61 @@
           "name": "'instance.restore.cleanup'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/data_restore_cleanup.go",
+        "BE_GO/internal/repository/data_restore_cleanup.go",
+        "BE_GO/internal/service/data_restore_cleanup.go",
+        "BE_GO/internal/service/data_restore.go",
+        "BE_GO/internal/repository/data_restore.go",
+        "BE_GO/internal/repository/restore_lock.go",
+        "BE_GO/internal/config/data_restore.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/cmd/worker/data_restore_cleanup.go",
+        "BE_GO/cmd/worker/export_cleanup.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/tasks.py",
+        "BE/instance/restore/execution.py",
+        "BE/instance/restore/locking.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/models.py",
+        "BE/docmanager/models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/job_ownership.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python arguments; exact Go kind instance.restore.cleanup, version 1, empty object payload, nil association and a running fenced job.",
+        "response": "Django None; completed Go job with a NULL result (also when the restore lock is busy, unset or unopenable).",
+        "errors": "Busy lock ends the run without effects (Go retries a held lock for up to one second first). Storage errors inside cleanup(op) end that receipt's cleanup; storage errors in prune_storage fail the job after the effects made, as the task raises. Refused before any effect (task_failed): completed media that is not a JSON object of strings, or a name pruning could delete outside AWS_LOCATION. Database errors go back to the executor where cleanup(op) swallows them.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "resource_scope": "DataRestore.objects.exclude(state__in=ACTIVE), unordered; prune reads completed receipts with media, terminal backups ordered -created_at,-id and the Document/Subscription references under restores/.",
+        "side_effects": "Expire review receipts older than 24h (state cancelled, stage expired); cleanup(op) for failed/cancelled/completed (upload object and prefix, media prefix and media={} for non-completed); prune unreferenced media keys, recovery archives beyond DATA_RESTORE_RECOVERY_BACKUPS (default 1) newest completed, and stray recovery files. Every save is one UPDATE with updated_at. The lock file is created when missing and never written.",
+        "transaction": "Exclusive DATA_RESTORE_LOCK_PATH flock held for the run; each save in its own fenced READ COMMITTED transaction (Django autocommit); completion fenced. Runs on a separate one-slot executor without ordinary restore admission, as CoordinatedTask bypasses instance.restore.* tasks.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/data_restore_cleanup_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py",
+        "TESTS/adapters/go/worker_process.py",
+        "TESTS/adapters/django/instance_logo.py"
+      ],
+      "evidence": [
+        "Native worker registration (version 1) on its own executor. TESTS/adapters/go/data_restore_cleanup_worker_process.py builds race-instrumented worker/migrate on actual current Django models in private PostgreSQL with a private pinned MinIO and the restore lock file; the actual Django task runs first (S3Boto3Storage, DATA_RESTORE_LOCK_PATH) with authored assertions on eleven receipts, the bucket and the lock file; the Go job must leave the identical complete managed-model state (receipt updated_at normalized within the run window), bucket, lock file and NULL result. Groups: default Django owner, native parity, invalid version/payload/tenant, later run, held lock, DATA_RESTORE_RECOVERY_BACKUPS from the environment, media refusal. RED: the job is never claimed without the registration (ordinary admission defers claims while a receipt is queued). GREEN 7/7. Mutation caught: signature-URL references dropped. See docs/architecture/go-migration/restore-cleanup.md."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Ported by restore-cleanup; refusals and infrastructure differences in docs/architecture/go-migration/restore-cleanup.md."
       ]
     },
     {
