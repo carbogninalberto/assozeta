@@ -15680,25 +15680,100 @@
         "target": "oauth2_delete_account",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/oauth_accounts.go",
+        "BE_GO/internal/dto/oauth_signup.go",
+        "BE_GO/internal/repository/oauth_accounts.go",
+        "BE_GO/internal/service/oauth_accounts.go",
+        "BE_GO/internal/service/oauth_disposable_domains.txt",
+        "BE_GO/internal/handler/oauth_accounts.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/pkg/jwt/jwt.go",
+        "BE_GO/pkg/crypto/password.go",
+        "BE_GO/internal/service/social_configuration.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/auth_views.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/application/services/social_auth_service.py",
+        "BE/application/serializers/auth_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/disposable_email.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/tasks.py",
+        "BE/instance/integration_configuration.py",
+        "BE/instance/registration_features.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE/templates/email/_base.html",
+        "BE/templates/email/account/email_welcome_message.html",
+        "BE/templates/email/account/email_reset_message.html",
+        "BE/templates/email/account/email_confirm_reset_message.html",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/oauth2/delete-account",
+          "/api/v2/oauth2/delete-account",
+          "/api/oauth2/delete-account"
+        ],
+        "request": "No body is read.",
+        "response": "200 {\"msg\": \"Account will be deleted in 30 days.\"}",
+        "errors": "401 anonymous (before the method check); 403 impersonation sessions with an association boundary (athlete target, or 'Torna al tuo account per gestire le credenziali.'); 405.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; EXCLUDED_ENDPOINTS; administrators without a session act on their own account.",
+        "resource_scope": "request.user, or the acting collaborator when the scope is a collaborator's owner (also under an administrator's session).",
+        "side_effects": "delete_on = UTC today + 30 days; an update entry when the date changes (index user.sport_association, then actor.sport_association); send_email_text to the user.",
+        "transaction": "One commit for the update and its entry; published after the commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/oauth_accounts_http.json",
+        "TESTS/fixtures/generate_oauth_accounts_http.py",
+        "TESTS/contracts/test_oauth_accounts_http.py",
+        "TESTS/adapters/django/oauth_accounts_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/oauth2-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 109/109; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-native-r1/results.json",
+          "receipt_sha256": "4a05be9a61603688df2db87a63f8a96e0ed3319b97a8197aa674bbaf3b4a7fe5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 109/109 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, index, Redis DB 2 and Celery effects.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-versioned-r2/results.json",
+          "receipt_sha256": "10467007c559c6ba6c99baebb147724659f3dc545abe22a17be9ed3b934d29fa"
+        },
+        {
+          "revision": "dropping NOT deleted from the reset e-mail lookup (repository.OAuthAccounts.ResetUsers)",
+          "result": "Mutation control: fails Go on oauth-accounts-reset-shared-email (reset.tokens: a token is issued for the deleted account) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-mutation-r1/results.json",
+          "receipt_sha256": "08bca52ab88512389a8bd8d6361ffb2d6b10db4d438d66e2131387289a21c45e"
+        }
+      ],
+      "notes": [
+        "Implementing: signup (non-social path), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Refused before any write (500): the social path when a Google/Apple client id is configured (token verification calls the provider), non-ASCII signup e-mails and usernames, reset passwords with NUL or lone surrogates. HTTP cases run in English."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:oauth2/login -> oauth2_login",
@@ -16188,25 +16263,100 @@
         "target": "partial_signup",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/oauth_accounts.go",
+        "BE_GO/internal/dto/oauth_signup.go",
+        "BE_GO/internal/repository/oauth_accounts.go",
+        "BE_GO/internal/service/oauth_accounts.go",
+        "BE_GO/internal/service/oauth_disposable_domains.txt",
+        "BE_GO/internal/handler/oauth_accounts.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/pkg/jwt/jwt.go",
+        "BE_GO/pkg/crypto/password.go",
+        "BE_GO/internal/service/social_configuration.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/auth_views.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/application/services/social_auth_service.py",
+        "BE/application/serializers/auth_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/disposable_email.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/tasks.py",
+        "BE/instance/integration_configuration.py",
+        "BE/instance/registration_features.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE/templates/email/_base.html",
+        "BE/templates/email/account/email_welcome_message.html",
+        "BE/templates/email/account/email_reset_message.html",
+        "BE/templates/email/account/email_confirm_reset_message.html",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/oauth2/partial-signup",
+          "/api/v2/oauth2/partial-signup",
+          "/api/oauth2/partial-signup"
+        ],
+        "request": "JSON or form body; only email is read (a string).",
+        "response": "200 {\"msg\": \"Email added.\"}",
+        "errors": "400 JSON parse error; 403 scoped athlete session; 405; 500 for non-dict bodies, non-string or null e-mails (iexact does not prepare its value), e-mails over 254 characters.",
+        "authentication": "AllowAny: a supplied Bearer token still authenticates (invalid tokens 401) and becomes the audit actor; EXCLUDED_ENDPOINTS and the oauth2/ prefix: restricted collaborators and administrators without a session pass; impersonation sessions with an association boundary go through enforce_scoped_request (athlete targets 403).",
+        "permissions": "AllowAny (identity resolution only).",
+        "resource_scope": "UserPartial by e-mail (iexact).",
+        "side_effects": "Creates a UserPartial when none matches (create entry, object_id set, index through the actor's association) and publishes send_email_text to info@bakney.com.",
+        "transaction": "One commit for the row and its entry; published after the commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/oauth_accounts_http.json",
+        "TESTS/fixtures/generate_oauth_accounts_http.py",
+        "TESTS/contracts/test_oauth_accounts_http.py",
+        "TESTS/adapters/django/oauth_accounts_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/oauth2-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 109/109; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-native-r1/results.json",
+          "receipt_sha256": "4a05be9a61603688df2db87a63f8a96e0ed3319b97a8197aa674bbaf3b4a7fe5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 109/109 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, index, Redis DB 2 and Celery effects.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-versioned-r2/results.json",
+          "receipt_sha256": "10467007c559c6ba6c99baebb147724659f3dc545abe22a17be9ed3b934d29fa"
+        },
+        {
+          "revision": "dropping NOT deleted from the reset e-mail lookup (repository.OAuthAccounts.ResetUsers)",
+          "result": "Mutation control: fails Go on oauth-accounts-reset-shared-email (reset.tokens: a token is issued for the deleted account) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-mutation-r1/results.json",
+          "receipt_sha256": "08bca52ab88512389a8bd8d6361ffb2d6b10db4d438d66e2131387289a21c45e"
+        }
+      ],
+      "notes": [
+        "Implementing: signup (non-social path), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Refused before any write (500): the social path when a Google/Apple client id is configured (token verification calls the provider), non-ASCII signup e-mails and usernames, reset passwords with NUL or lone surrogates. HTTP cases run in English."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:oauth2/refresh-token -> oauth2_refresh_token",
@@ -16363,25 +16513,100 @@
         "target": "oauth2_reset_password",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/oauth_accounts.go",
+        "BE_GO/internal/dto/oauth_signup.go",
+        "BE_GO/internal/repository/oauth_accounts.go",
+        "BE_GO/internal/service/oauth_accounts.go",
+        "BE_GO/internal/service/oauth_disposable_domains.txt",
+        "BE_GO/internal/handler/oauth_accounts.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/pkg/jwt/jwt.go",
+        "BE_GO/pkg/crypto/password.go",
+        "BE_GO/internal/service/social_configuration.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/auth_views.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/application/services/social_auth_service.py",
+        "BE/application/serializers/auth_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/disposable_email.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/tasks.py",
+        "BE/instance/integration_configuration.py",
+        "BE/instance/registration_features.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE/templates/email/_base.html",
+        "BE/templates/email/account/email_welcome_message.html",
+        "BE/templates/email/account/email_reset_message.html",
+        "BE/templates/email/account/email_confirm_reset_message.html",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/oauth2/reset",
+          "/api/v2/oauth2/reset",
+          "/api/oauth2/reset"
+        ],
+        "request": "Exactly {email} (str()+strip(), iexact) or exactly {token, password}; JSON or form.",
+        "response": "200 {\"msg\": \"Email sent to the user if the email exists.\"} or {\"msg\": \"Password reset.\"}",
+        "errors": "400 {'msg': 'Invalid request.'} for other key sets, unknown tokens and passwords failing the pattern; 403 scoped athlete session; 405; 500 for non-dict bodies, token types redis-py rejects, non-string passwords, stored ids that are not UUIDs or name a deleted user; 500 (not ported) for passwords with NUL or lone surrogates.",
+        "authentication": "AllowAny: a supplied Bearer token still authenticates (invalid tokens 401) and becomes the audit actor; EXCLUDED_ENDPOINTS and the oauth2/ prefix: restricted collaborators and administrators without a session pass; impersonation sessions with an association boundary go through enforce_scoped_request (athlete targets 403).",
+        "permissions": "AllowAny (identity resolution only).",
+        "resource_scope": "Live users by e-mail (iexact, ordered by user_id, inactive included); the user named by the Redis DB 2 token.",
+        "side_effects": "Per matched user a token_hex(16) key in Redis DB 2 (ex=3600) and the reset e-mail; with a token: the password (PBKDF2-SHA256, no audit entry), the key deleted and the confirmation e-mail.",
+        "transaction": "Redis set then publish per user; password update, key delete, then publish.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/oauth_accounts_http.json",
+        "TESTS/fixtures/generate_oauth_accounts_http.py",
+        "TESTS/contracts/test_oauth_accounts_http.py",
+        "TESTS/adapters/django/oauth_accounts_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/oauth2-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 109/109; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-native-r1/results.json",
+          "receipt_sha256": "4a05be9a61603688df2db87a63f8a96e0ed3319b97a8197aa674bbaf3b4a7fe5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 109/109 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, index, Redis DB 2 and Celery effects.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-versioned-r2/results.json",
+          "receipt_sha256": "10467007c559c6ba6c99baebb147724659f3dc545abe22a17be9ed3b934d29fa"
+        },
+        {
+          "revision": "dropping NOT deleted from the reset e-mail lookup (repository.OAuthAccounts.ResetUsers)",
+          "result": "Mutation control: fails Go on oauth-accounts-reset-shared-email (reset.tokens: a token is issued for the deleted account) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-mutation-r1/results.json",
+          "receipt_sha256": "08bca52ab88512389a8bd8d6361ffb2d6b10db4d438d66e2131387289a21c45e"
+        }
+      ],
+      "notes": [
+        "Implementing: signup (non-social path), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Refused before any write (500): the social path when a Google/Apple client id is configured (token verification calls the provider), non-ASCII signup e-mails and usernames, reset passwords with NUL or lone surrogates. HTTP cases run in English."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:oauth2/signup -> oauth2_signup",
@@ -16398,25 +16623,100 @@
         "target": "oauth2_signup",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/oauth_accounts.go",
+        "BE_GO/internal/dto/oauth_signup.go",
+        "BE_GO/internal/repository/oauth_accounts.go",
+        "BE_GO/internal/service/oauth_accounts.go",
+        "BE_GO/internal/service/oauth_disposable_domains.txt",
+        "BE_GO/internal/handler/oauth_accounts.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/service/login_response.go",
+        "BE_GO/pkg/jwt/jwt.go",
+        "BE_GO/pkg/crypto/password.go",
+        "BE_GO/internal/service/social_configuration.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/auth_views.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/application/services/social_auth_service.py",
+        "BE/application/serializers/auth_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/disposable_email.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/tasks.py",
+        "BE/instance/integration_configuration.py",
+        "BE/instance/registration_features.py",
+        "BE/application/templatetags/instance_branding.py",
+        "BE/templates/email/_base.html",
+        "BE/templates/email/account/email_welcome_message.html",
+        "BE/templates/email/account/email_reset_message.html",
+        "BE/templates/email/account/email_confirm_reset_message.html",
+        "BE/core/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/middleware.py",
+        "BE/instance/restore/task_base.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/oauth2/signup",
+          "/api/v2/oauth2/signup",
+          "/api/oauth2/signup"
+        ],
+        "request": "JSON body: sport_association (bool, required, false), email (string), first_name, last_name, phone, username, password (UserSerializerSignup), optional collaboratorToken, subscription_transfer + subscription_transfer_token; token + username + backend selects the social path. Form bodies fail the bool check.",
+        "response": "200 login response: access_token, refresh_token, expires_in, token_type, role, user_data (UserAuthSerializer and, for collaborators, the association re-serialized with empty_sections and requires_welcome false), requires_welcome/tables_settings as build_login_response.",
+        "errors": "400 JSON parse error; 400 sport_association required / Must be a boolean; 403 sport_association true; 400 {'msg': 'You are nasty ...'} for disposable e-mails; 400 Unsupported backend; 401 {'error': 'Invalid social token'} without a configured provider (no Bearer challenge); 400 {'msg': 'Invalid request.', 'details': serializer errors}; 400 Collaboration invite not found / expired; 405; 500 for non-dict bodies, missing or non-string e-mails, e-mails without '@', a 'skrank.com' second part, invalid transfer tokens, a null invite expiry, missing first/last name, username unique violations after upper-casing, subscription_transfer true, an invite owner without a live association; 500 (not ported) for a configured social provider and non-ASCII e-mails/usernames.",
+        "authentication": "AllowAny: a supplied Bearer token still authenticates (invalid tokens 401) and becomes the audit actor; EXCLUDED_ENDPOINTS and the oauth2/ prefix: restricted collaborators and administrators without a session pass; impersonation sessions with an association boundary go through enforce_scoped_request (athlete targets 403).",
+        "permissions": "AllowAny (identity resolution only).",
+        "resource_scope": "UserPartial by e-mail (iexact, first by key); CollaborationInvites by token (first by key, null token matches null); username uniqueness over all users.",
+        "side_effects": "Deletes the matching UserPartial and the invite (delete entries), creates the User (create entry, index through the actor's association), may create the association's default card configuration (build_login_response), publishes send_mail_async (welcome).",
+        "transaction": "Not atomic: each delete/create commits with its audit entry; failures after a write keep it; the e-mail is published after the commits.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/oauth_accounts_http.json",
+        "TESTS/fixtures/generate_oauth_accounts_http.py",
+        "TESTS/contracts/test_oauth_accounts_http.py",
+        "TESTS/adapters/django/oauth_accounts_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/oauth2-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 109/109; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-native-r1/results.json",
+          "receipt_sha256": "4a05be9a61603688df2db87a63f8a96e0ed3319b97a8197aa674bbaf3b4a7fe5"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 109/109 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, index, Redis DB 2 and Celery effects.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-versioned-r2/results.json",
+          "receipt_sha256": "10467007c559c6ba6c99baebb147724659f3dc545abe22a17be9ed3b934d29fa"
+        },
+        {
+          "revision": "dropping NOT deleted from the reset e-mail lookup (repository.OAuthAccounts.ResetUsers)",
+          "result": "Mutation control: fails Go on oauth-accounts-reset-shared-email (reset.tokens: a token is issued for the deleted account) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-mutation-r1/results.json",
+          "receipt_sha256": "08bca52ab88512389a8bd8d6361ffb2d6b10db4d438d66e2131387289a21c45e"
+        }
+      ],
+      "notes": [
+        "Implementing: signup (non-social path), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Refused before any write (500): the social path when a Google/Apple client id is configured (token verification calls the provider), non-ASCII signup e-mails and usernames, reset passwords with NUL or lone surrogates. HTTP cases run in English."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:onboarding/update -> onboarding_update",
