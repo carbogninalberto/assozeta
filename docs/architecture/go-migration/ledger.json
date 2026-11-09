@@ -26294,25 +26294,68 @@
         "target": "subscription_sign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_sign.go",
+        "BE_GO/internal/dto/subscription_sign.go",
+        "BE_GO/internal/repository/subscription_sign.go",
+        "BE_GO/internal/service/subscription_sign.go",
+        "BE_GO/internal/handler/subscription_sign.go",
+        "BE_GO/cmd/server/subscription_sign.go",
+        "BE_GO/pkg/storage/documentobjects/acl.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/sign",
+          "/api/v2/subscription/sign",
+          "/api/subscription/sign"
+        ],
+        "request": "JSON or form object with exactly subscription_id and signature {there_is_signature, data}.",
+        "response": "200 {'status': 'success'}.",
+        "errors": "400 {'msg': 'validation errors.'} for other keys; 400 list from is_valid_uuid; 400 serializer field errors; 400 invalid_signature; 503 signature_storage; 500 for non-mapping bodies and unknown ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.members.update; athlete-facing in association-scoped sessions.",
+        "resource_scope": "scoped_queryset(Subscription.objects): group-aware, session association, athlete family rows; the row is resolved by id.",
+        "side_effects": "Signature row (create entry, actor.sport_association), signature object in default storage with optional public-read ACL, subscription signature columns and status PENDING (update entry, direct); after commit DeleteObject of the unreferenced old key, check_workflows_trigger(subscription_signed) and print_document_subscription Celery messages.",
+        "transaction": "transaction.atomic() with select_for_update; on_commit(robust=True) callbacks.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_sign_http.json",
+        "TESTS/fixtures/generate_subscription_sign_http.py",
+        "TESTS/contracts/test_subscription_sign_http.py",
+        "TESTS/adapters/django/subscription_sign_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-sign.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 46/46; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-native-r2/results.json",
+          "receipt_sha256": "69bdd96882036b7475c7dc823b7d493cfe150861175c09e7f496109e7df03b5c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 46/46 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage requests, objects, rows, audit and Celery effects.",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-versioned-r1/results.json",
+          "receipt_sha256": "8d42ed4163b922ec95302cf67dcc70952e31305ce8ea15507465297d7cd2b67e"
+        },
+        {
+          "revision": "counting only PENDING rows as references in delete_signature_key_if_unreferenced",
+          "result": "Mutation control: fails Go on subscription-sign-upload-keeps-referenced-object (the shared old object is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-mutation-r1/results.json",
+          "receipt_sha256": "9c3898eb38b19137a4c6721e6f3ec8aceead7e0167d3a4224bf151fa8443f739"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/sign: Signature row and signature upload (strict base64, subscriptions/<id>/signature_<timestamp>.png, HeadObject/PutObject, public-read ACL with AWS_S3_USE_OBJECT_ACL, public URL), status PENDING, then after commit the unreferenced old object, check_workflows_trigger(subscription_signed) and print_document_subscription. A generated key that already exists is refused with a 500 before any write. See docs/architecture/go-migration/subscription-sign.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/tags/<str:tag_id>/assign/<str:subscription_id> -> subscription_tags_assign",
@@ -37411,8 +37454,10 @@
         "decorator": "receiver(subscription_signed)",
         "arguments": "sender, **kwargs"
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/subscription_sign.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -37427,10 +37472,36 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/subscription_sign_http.json",
+        "TESTS/fixtures/generate_subscription_sign_http.py",
+        "TESTS/contracts/test_subscription_sign_http.py",
+        "TESTS/adapters/django/subscription_sign_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-sign.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 46/46; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-native-r2/results.json",
+          "receipt_sha256": "69bdd96882036b7475c7dc823b7d493cfe150861175c09e7f496109e7df03b5c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 46/46 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact storage requests, objects, rows, audit and Celery effects; exercised by subscription-sign-no-signature, subscription-sign-no-signature-flag-default, subscription-sign-no-signature-urn-uuid, subscription-sign-no-signature-group-collaborator, subscription-sign-other-association-row-no-signature, subscription-sign-upload-data-uri, subscription-sign-resign-replaces-own-object, subscription-sign-url-signature, subscription-sign-url-replaces-stored-key, subscription-sign-upload-keeps-referenced-object, subscription-sign-athlete-upload, subscription-sign-admin-impersonating-owner-upload, subscription-sign-owner-scoped-athlete-url-signature, subscription-sign-undated-row-keeps-dates.",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-versioned-r1/results.json",
+          "receipt_sha256": "8d42ed4163b922ec95302cf67dcc70952e31305ce8ea15507465297d7cd2b67e"
+        },
+        {
+          "revision": "counting only PENDING rows as references in delete_signature_key_if_unreferenced",
+          "result": "Mutation control: fails Go on subscription-sign-upload-keeps-referenced-object (the shared old object is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-sign-http-mutation-r1/results.json",
+          "receipt_sha256": "9c3898eb38b19137a4c6721e6f3ec8aceead7e0167d3a4224bf151fa8443f739"
+        }
+      ],
       "notes": [
-        "Only publishes check_workflows_trigger(trigger_type=subscription_signed). Not creditable yet: the sender (subscription signing view, on_commit) is not in any Go route. See docs/architecture/go-migration/tasks-db-b.md."
+        "Only publishes check_workflows_trigger(trigger_type=subscription_signed). Not creditable yet: the sender (subscription signing view, on_commit) is not in any Go route. See docs/architecture/go-migration/tasks-db-b.md.",
+        "Implementing via subscription-sign: Published by Go after the subscription/sign commit (check_workflows_trigger trigger_type=subscription_signed with UUID kwargs), compared with Django's message on every success case."
       ]
     },
     {
