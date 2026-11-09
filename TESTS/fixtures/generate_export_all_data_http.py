@@ -321,9 +321,9 @@ def payment_sheet(group, order, scoped):
     return rows
 
 
-# Database order of the unordered querysets (observed, see export-all-data.md).
+# Database order of the unordered querysets with the adapter's fresh statistics (observed, see export-all-data.md).
 SUBSCRIPTION_ORDER = ['anna', 'bruno', 'carla', 'zero']
-PAYMENT_ORDER = ['no-label', 'untitled', 'supplier', 'installment', 'label', 'transfer', 'full']
+PAYMENT_ORDER = ['full', 'transfer', 'untitled', 'no-label', 'label', 'installment', 'supplier']
 
 
 def workbook(group=None, subscriptions=SUBSCRIPTION_ORDER, payments=PAYMENT_ORDER, scoped=False):

@@ -27,6 +27,8 @@ and the response is {'file': <base64>, 'filename': '[<today>] <title> -
 <denomination>.xlsx'}; any other format but 'pdf' raises after the rows are
 built. The 'pdf' format renders with reportlab and is not authored here.
 
+The querysets have no ordering: the adapter analyzes the seeded tables so
+every transport plans them alike, and the rows come in insertion order.
 Dates are authored relative to the day of the run: the adapter seeds
 today + offset and the contract replaces '$today' and '$date:<offset>' with
 %d/%m/%Y dates. Run with ``python3 -I``.
@@ -106,7 +108,7 @@ MEMBERSHIPS = [
     {'id': next(ids), 'associate': 'nina', 'end': 2, 'type': 'CSEN', 'association': OWN},
     {'id': next(ids), 'associate': None, 'end': 2, 'type': 'Libero', 'association': OWN},
 ]
-MEMBERSHIP_ORDER = ['marco', 'anna', 'hans', 'nina', 'tobia', 'lia']
+MEMBERSHIP_ORDER = [4, 0, 1, 2, 3, 5, 6, 7]
 COURSES = {'nuoto': {'id': next(ids), 'title': 'Nuoto'}, 'yoga': {'id': next(ids), 'title': 'Yoga'}}
 CARNETS = {'dieci': {'id': next(ids), 'title': 'Carnet 10 ingressi'}}
 CATEGORIES = {'extra': {'id': next(ids), 'name': 'Quota extra'}}
@@ -244,11 +246,8 @@ def filtered(data, association, group, *, medical=False, only_members=False):
     if py_in('status', filters):
         wanted = status_set(py_get(filters, 'status'))
         rows = [(label, s) for label, s in rows if s['status'] in wanted]
-    # The query has no ordering: PostgreSQL answers the select_related joins
-    # with a hash join probed by the associates, so rows come in associate
-    # insertion order (subscriptions without an associate last).
-    order = list(ASSOCIATES)
-    rows.sort(key=lambda item: order.index(item[1]['associate']) if item[1]['associate'] else len(order))
+    # The query has no ordering: with the adapter's fresh statistics the
+    # rows come in insertion order.
     return [s for _, s in rows]
 
 
@@ -346,9 +345,9 @@ def expiring_memberships(data, association, group):
     subs = filtered(data, association, group)
     people = {s['associate'] for s in subs}
     members = [m for m in MEMBERSHIPS if m['associate'] is not None and m['associate'] in people and m['end'] is not None and m['end'] <= 30]
-    # The query has no ordering: PostgreSQL answers the IN (subquery) as a
-    # hashed semi-join, observed per associate in this order.
-    members.sort(key=lambda m: MEMBERSHIP_ORDER.index(m['associate']))
+    # No ordering: PostgreSQL answers the IN (subquery) with a hashed
+    # semi-join; observed order of the authored memberships.
+    members.sort(key=lambda m: MEMBERSHIP_ORDER.index(MEMBERSHIPS.index(m)))
     persons = [m['associate'] for m in members]
     phones = [phone_columns(p) for p in persons]
     rows = [[m['type'] for m in members]] + person_columns(persons, phones) + [

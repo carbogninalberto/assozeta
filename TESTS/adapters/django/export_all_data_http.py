@@ -120,6 +120,16 @@ def seed_rows(source, created):
                     course_subscription_installment_id=f'a1000000-0000-4000-8000-{2720000 + next(serial):012d}',
                     course_subscription=parent, payment=payment, payment_date=payment.creation_date))
 
+    # The export querysets have no ordering: fresh planner statistics make
+    # every transport's seed answer them with the same plans (and the rows in
+    # the same database order) from the first case on.
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute('ANALYZE application_associate, application_associatetutorrelation, application_medicalcertificate, '
+                       'application_subscription, application_payment, application_paymentcategory, application_invoice, '
+                       'application_supplierandcustomers, application_instructor, application_customaccounts, '
+                       'application_coursesubscription, application_coursesubscriptioninstallment')
+
 
 fixture_context = harness.fixture_context_for(contract, seed_rows)
 run_workload = harness.run_workload_for(contract)

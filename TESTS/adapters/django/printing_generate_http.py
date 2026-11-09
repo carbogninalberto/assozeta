@@ -119,6 +119,15 @@ def seed_rows(source, created):
                 course_subscription_installment_id=f"a1000000-0000-4000-8000-{int(row['id'][-12:]) + 600:012d}",
                 course_subscription=course_subscription, payment=payment, payment_date=moment(row['created'])))
 
+    # The report querysets have no ordering: fresh planner statistics make
+    # every transport's seed answer them with the same plans (and the rows in
+    # the same database order) from the first case on.
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute('ANALYZE application_associate, application_associatetutorrelation, application_medicalcertificate, '
+                       'application_subscription, application_subscriptionmembership, application_payment, application_invoice, '
+                       'application_paymentcategory')
+
 
 fixture_context = harness.fixture_context_for(contract, seed_rows)
 
