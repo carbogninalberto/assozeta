@@ -3612,7 +3612,8 @@
         "BE_GO/internal/handler/impersonation_management.go",
         "BE_GO/internal/service/impersonation_management.go",
         "BE_GO/internal/repository/impersonation_management.go",
-        "BE_GO/internal/service/impersonation_list.go"
+        "BE_GO/internal/service/impersonation_list.go",
+        "BE_GO/internal/repository/identity.go"
       ],
       "dependencies": [
         "BE/application/views/admin_views.py",
@@ -3663,11 +3664,26 @@
         "Hosted b225276 job 120775075723 in quality run 40061247470 passes native and Linux/amd64 packaged acceptance; artifact 12547443852 independently matches 826 build-context files and 1096 oracle hashes. Five native PostgreSQL groups,6 native / 20 container Redis controls, 24 shortened TTLs per full run, durable fallback rejection and cleanup pass. Image embeds PR merge 0f23a2f8c907d0b32fa3e47093940243ab2152c3; broader CI and migration acceptance remain separate.",
         "Parent native replay passes 24 overlap/revocation scenarios across Django/Django, Go/Go and both mixed directions, plus 16 shortened TTL reads and a separate real barrier-exception cleanup control. Actual advisory/table locks establish admitted boundaries; duplicate ended audits, multiple replacement sessions, persistent DEL failure and post-admission eligibility/revocation retain Django outcomes. All 128 managed models, exact audit/index/cache state, workers and locks are checked. These owner/athlete races use direct native URLs; ordinary 4×264 Caddy/native contracts and five PostgreSQL groups pass alongside them. See impersonation-management.md and ignored impersonation-concurrency/parent-audit.json.",
         "Hosted 4c912c6 job 120779815977 in run 40062822323 passes 24 native races and the sequential packaged matrix. Independent artifact audit matches 1253 distinct source paths, including all 826 build-context files, to the published commit; cleanup passes. Image/Caddy races remain unclaimed.",
-        "Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md."
+        "Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md.",
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json",
+          "receipt_sha256": "1df71cda7fcc26b35881edf62e7cbb9fab0d4d0f2113b3e22200d800e80f8ffb"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json",
+          "receipt_sha256": "f1b8aa2a34e3d0631ca1d7b14f4a4e814667ddb227f345975ba244978486e5ae"
+        }
       ],
       "notes": [
         "Current-schema implementing slice only; no verified or activation claim. Complete frontend behavior, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
-        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above."
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above.",
+        "Target eligibility (eligible_users) changed on main 6b20715d; the shared Go predicate (managementEligible, IdentityRelations.EligibleTarget) follows. Evidence: impersonation-users.md (identity cases and transitions, impersonation-management 264-case workloads)."
       ]
     },
     {
@@ -3685,7 +3701,7 @@
         "target": "impersonation_users",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/impersonation_management.go",
@@ -3693,14 +3709,17 @@
         "BE_GO/internal/handler/impersonation_management.go",
         "BE_GO/internal/service/impersonation_management.go",
         "BE_GO/internal/repository/impersonation_management.go",
-        "BE_GO/internal/service/impersonation_list.go"
+        "BE_GO/internal/service/impersonation_list.go",
+        "BE_GO/internal/repository/identity.go"
       ],
       "dependencies": [
         "BE/application/views/admin_views.py",
         "BE/application/impersonation.py",
         "BE/application/signals.py",
         "Existing JWT actor and identity resolution; shared Django-compatible Redis database 1 session codec",
-        "PostgreSQL users, associations, membership links, ACCESS audit and audit index"
+        "PostgreSQL users, associations, membership links, ACCESS audit and audit index",
+        "BE/instance/permissions.py (is_instance_owner)",
+        "application_subscription"
       ],
       "contract": {
         "methods": [
@@ -3734,7 +3753,13 @@
         "BE_GO/internal/repository/impersonation_management_integration_test.go",
         "TESTS/adapters/django/impersonation_concurrency.py",
         "TESTS/adapters/django/impersonation_browser.py",
-        "TESTS/browser/impersonation.mjs"
+        "TESTS/browser/impersonation.mjs",
+        "TESTS/fixtures/generate_impersonation_users_http.py",
+        "TESTS/fixtures/impersonation_users_http.json",
+        "TESTS/contracts/test_impersonation_users_http.py",
+        "TESTS/adapters/django/impersonation_users_http.py",
+        "TESTS/adapters/django/identity.py",
+        "BE_GO/internal/service/identity_integration_test.go"
       ],
       "evidence": [
         "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
@@ -3742,12 +3767,47 @@
         "Hosted b225276 job 120775075723 in quality run 40061247470 passes native and Linux/amd64 packaged acceptance; artifact 12547443852 independently matches 826 build-context files and 1096 oracle hashes. Five native PostgreSQL groups,6 native / 20 container Redis controls, 24 shortened TTLs per full run, durable fallback rejection and cleanup pass. Image embeds PR merge 0f23a2f8c907d0b32fa3e47093940243ab2152c3; broader CI and migration acceptance remain separate.",
         "Parent native replay passes 24 overlap/revocation scenarios across Django/Django, Go/Go and both mixed directions, plus 16 shortened TTL reads and a separate real barrier-exception cleanup control. Actual advisory/table locks establish admitted boundaries; duplicate ended audits, multiple replacement sessions, persistent DEL failure and post-admission eligibility/revocation retain Django outcomes. All 128 managed models, exact audit/index/cache state, workers and locks are checked. These owner/athlete races use direct native URLs; ordinary 4×264 Caddy/native contracts and five PostgreSQL groups pass alongside them. See impersonation-management.md and ignored impersonation-concurrency/parent-audit.json.",
         "Hosted 4c912c6 job 120779815977 in run 40062822323 passes 24 native races and the sequential packaged matrix. Independent artifact audit matches 1253 distinct source paths, including all 826 build-context files, to the published commit; cleanup passes. Image/Caddy races remain unclaimed.",
-        "Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md."
+        "Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md.",
+        {
+          "command": "python tools/go-migration/family.py run impersonation-users",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 28/28; Go fails impersonation-users-instance-owner-every-athlete (users length).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-red/results.json",
+          "receipt_sha256": "26e528171a7cd576b84ac06d2c477251a4b1cbb38c413fc6b31f19868365ebff"
+        },
+        {
+          "command": "python tools/go-migration/family.py run impersonation-users --versioned",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: 28/28 on native Django, native Go, Caddy /api/v1 and /api/v2 (instance owner, member and subscriber eligibility, ten-word search).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-green/results.json",
+          "receipt_sha256": "ebe4e3911c79b28c1e2d2759d889288da35386b6480d90a9b41c5d30e97b4c3a"
+        },
+        {
+          "command": "python tools/go-migration/family.py mutation impersonation-users (words[:10] -> words[:11] in managementSearchWords)",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "Mutation CAUGHT: Go fails impersonation-users-search-eleventh-word-ignored.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-mutation/results.json",
+          "receipt_sha256": "15c87ed468c174e27ab1b56b314a7f4ad8c1e38fa57ad46cb17b0b6b6718c993"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json",
+          "receipt_sha256": "1df71cda7fcc26b35881edf62e7cbb9fab0d4d0f2113b3e22200d800e80f8ffb"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json",
+          "receipt_sha256": "f1b8aa2a34e3d0631ca1d7b14f4a4e814667ddb227f345975ba244978486e5ae"
+        }
       ],
       "notes": [
         "Current-schema implementing slice only; no verified or activation claim. Complete frontend behavior, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
         "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above.",
-        "Django behavior changed on main: Go parity must be re-verified."
+        "Re-verified after main 6b20715d (payments-impersonation-reverify): the self-hosted instance owner selects every athlete, other owners also athletes with a non-deleted subscription of the association; search splits into up to ten words, each matching one field. Go managementEligible/managementSearchWords and IdentityRelations.EligibleTarget. See docs/architecture/go-migration/impersonation-users.md."
       ]
     },
     {
@@ -4156,7 +4216,8 @@
         "BE_GO/internal/handler/impersonation_management.go",
         "BE_GO/internal/service/impersonation_management.go",
         "BE_GO/internal/repository/impersonation_management.go",
-        "BE_GO/internal/service/impersonation_list.go"
+        "BE_GO/internal/service/impersonation_list.go",
+        "BE_GO/internal/repository/identity.go"
       ],
       "dependencies": [
         "BE/application/views/admin_views.py",
@@ -4215,11 +4276,26 @@
           "result": "passed",
           "artifact": "quality-reports/go-migration/parallel-delivery-20261025/active-expiry-parent-audit.json",
           "scope": "32 native concurrency cases, including8 active-expiry cases;4x264 native/versioned HTTP. No packaged/Caddy expiry-race or full-route claim."
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json",
+          "receipt_sha256": "1df71cda7fcc26b35881edf62e7cbb9fab0d4d0f2113b3e22200d800e80f8ffb"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json",
+          "receipt_sha256": "f1b8aa2a34e3d0631ca1d7b14f4a4e814667ddb227f345975ba244978486e5ae"
         }
       ],
       "notes": [
         "Current-schema implementing slice only; no verified or activation claim. Complete frontend behavior, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
-        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above."
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above.",
+        "Target eligibility (eligible_users) changed on main 6b20715d; the shared Go predicate (managementEligible, IdentityRelations.EligibleTarget) follows. Evidence: impersonation-users.md (identity cases and transitions, impersonation-management 264-case workloads)."
       ]
     },
     {
@@ -4237,7 +4313,7 @@
         "target": "impersonation_users",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/impersonation_management.go",
@@ -4245,14 +4321,17 @@
         "BE_GO/internal/handler/impersonation_management.go",
         "BE_GO/internal/service/impersonation_management.go",
         "BE_GO/internal/repository/impersonation_management.go",
-        "BE_GO/internal/service/impersonation_list.go"
+        "BE_GO/internal/service/impersonation_list.go",
+        "BE_GO/internal/repository/identity.go"
       ],
       "dependencies": [
         "BE/application/views/admin_views.py",
         "BE/application/impersonation.py",
         "BE/application/signals.py",
         "Existing JWT actor and identity resolution; shared Django-compatible Redis database 1 session codec",
-        "PostgreSQL users, associations, membership links, ACCESS audit and audit index"
+        "PostgreSQL users, associations, membership links, ACCESS audit and audit index",
+        "BE/instance/permissions.py (is_instance_owner)",
+        "application_subscription"
       ],
       "contract": {
         "methods": [
@@ -4286,7 +4365,13 @@
         "BE_GO/internal/repository/impersonation_management_integration_test.go",
         "TESTS/adapters/django/impersonation_concurrency.py",
         "TESTS/adapters/django/impersonation_browser.py",
-        "TESTS/browser/impersonation.mjs"
+        "TESTS/browser/impersonation.mjs",
+        "TESTS/fixtures/generate_impersonation_users_http.py",
+        "TESTS/fixtures/impersonation_users_http.json",
+        "TESTS/contracts/test_impersonation_users_http.py",
+        "TESTS/adapters/django/impersonation_users_http.py",
+        "TESTS/adapters/django/identity.py",
+        "BE_GO/internal/service/identity_integration_test.go"
       ],
       "evidence": [
         "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
@@ -4294,12 +4379,47 @@
         "Hosted b225276 job 120775075723 in quality run 40061247470 passes native and Linux/amd64 packaged acceptance; artifact 12547443852 independently matches 826 build-context files and 1096 oracle hashes. Five native PostgreSQL groups,6 native / 20 container Redis controls, 24 shortened TTLs per full run, durable fallback rejection and cleanup pass. Image embeds PR merge 0f23a2f8c907d0b32fa3e47093940243ab2152c3; broader CI and migration acceptance remain separate.",
         "Parent native replay passes 24 overlap/revocation scenarios across Django/Django, Go/Go and both mixed directions, plus 16 shortened TTL reads and a separate real barrier-exception cleanup control. Actual advisory/table locks establish admitted boundaries; duplicate ended audits, multiple replacement sessions, persistent DEL failure and post-admission eligibility/revocation retain Django outcomes. All 128 managed models, exact audit/index/cache state, workers and locks are checked. These owner/athlete races use direct native URLs; ordinary 4×264 Caddy/native contracts and five PostgreSQL groups pass alongside them. See impersonation-management.md and ignored impersonation-concurrency/parent-audit.json.",
         "Hosted 4c912c6 job 120779815977 in run 40062822323 passes 24 native races and the sequential packaged matrix. Independent artifact audit matches 1253 distinct source paths, including all 826 build-context files, to the published commit; cleanup passes. Image/Caddy races remain unclaimed.",
-        "Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md."
+        "Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md.",
+        {
+          "command": "python tools/go-migration/family.py run impersonation-users",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 28/28; Go fails impersonation-users-instance-owner-every-athlete (users length).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-red/results.json",
+          "receipt_sha256": "26e528171a7cd576b84ac06d2c477251a4b1cbb38c413fc6b31f19868365ebff"
+        },
+        {
+          "command": "python tools/go-migration/family.py run impersonation-users --versioned",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: 28/28 on native Django, native Go, Caddy /api/v1 and /api/v2 (instance owner, member and subscriber eligibility, ten-word search).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-green/results.json",
+          "receipt_sha256": "ebe4e3911c79b28c1e2d2759d889288da35386b6480d90a9b41c5d30e97b4c3a"
+        },
+        {
+          "command": "python tools/go-migration/family.py mutation impersonation-users (words[:10] -> words[:11] in managementSearchWords)",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "Mutation CAUGHT: Go fails impersonation-users-search-eleventh-word-ignored.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-impersonation-users-mutation/results.json",
+          "receipt_sha256": "15c87ed468c174e27ab1b56b314a7f4ad8c1e38fa57ad46cb17b0b6b6718c993"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 49 identity cases and 10 eligibility/configuration transitions pass; Go identity replay fails instance-owner-unlinked-athlete and owner-impersonates-subscriber.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-identity-red/results.json",
+          "receipt_sha256": "1df71cda7fcc26b35881edf62e7cbb9fab0d4d0f2113b3e22200d800e80f8ffb"
+        },
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: Django 50 identity cases and 10 transitions replayed by Go; impersonation management 264-case workloads on native Django, native Go, Caddy /api/v1 and /api/v2; repository integration tests pass.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-identity-impersonation-management-green/results.json",
+          "receipt_sha256": "f1b8aa2a34e3d0631ca1d7b14f4a4e814667ddb227f345975ba244978486e5ae"
+        }
       ],
       "notes": [
         "Current-schema implementing slice only; no verified or activation claim. Complete frontend behavior, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
         "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above.",
-        "Django behavior changed on main: Go parity must be re-verified."
+        "Re-verified after main 6b20715d (payments-impersonation-reverify): the self-hosted instance owner selects every athlete, other owners also athletes with a non-deleted subscription of the association; search splits into up to ten words, each matching one field. Go managementEligible/managementSearchWords and IdentityRelations.EligibleTarget. See docs/architecture/go-migration/impersonation-users.md."
       ]
     },
     {
@@ -24292,7 +24412,7 @@
         "target": "stripe_multiple_pay",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24370,11 +24490,46 @@
           "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
           "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
           "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 100/100; Go fails stripe-routes-pay-succeeded-marks-supplier-invoice (invoiced payment not saved paid).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-red/results.json",
+          "receipt_sha256": "536fce509f255a34e8ad170e3693b1dbe658cf171ec9c358b63d04940d3f4840"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes --versioned",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2: update_fields save (paid, payment_date, type 'stripe') before the paid flow, invoiced payments saved paid, defaults read by the invoice description, on-commit print_document_invoice checked by a broker-side committed-state observer, nothing published on rollback.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-green/results.json",
+          "receipt_sha256": "689bbe6f33e654b41e1ba3adb455c0ec1e83c8e4b626c7d17a78cd534480416b"
+        },
+        {
+          "command": "python tools/go-migration/family.py mutation stripe-routes (stripeMarkPaid gated on payments without invoice)",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "Mutation CAUGHT: Go fails stripe-routes-pay-succeeded-marks-supplier-invoice.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation/results.json",
+          "receipt_sha256": "83e4283fcc8d7e93dc6df15a7a075c82acb13437b6b944f1f15e8d057300d523"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes (manual mutation: print task published inside the transaction, restored by hash)",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "Mutation CAUGHT: Go fails stripe-routes-webhook-charge-subscription-without-categories (celery.committed).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation-precommit/results.json",
+          "receipt_sha256": "595b28634833b5f0715460b3ef09db4846994aea80997a4e22faffae16d9187d"
+        },
+        {
+          "command": "python tools/go-migration/family.py run payment-state",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "Rerun (shared payment_paid_flow.go): 147/147 native Django and Go.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-rerun-payment-state/results.json",
+          "receipt_sha256": "1e542bc94b2eb92cb748997fee627fec36dc94b5c5afc9911d994dcba4e214e0"
         }
       ],
       "notes": [
         "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Django behavior changed on main: Go parity must be re-verified."
+        "Re-verified after main 6b20715d (payments-impersonation-reverify): mark_payment_as_paid saves an unpaid payment (invoiced or not) with paid, payment_date and type 'stripe' via update_fields first (Go stripeMarkPaid), the invoice description reads the in-memory Payment.save() defaults, and print_document_invoice is published after the commit (Go: with the notification, after it); a rolled-back mark publishes nothing. The mark_as_paid_payments_checking_stripe task is ported by tasks-db-f."
       ]
     },
     {
@@ -24491,7 +24646,7 @@
         "target": "stripe_pay",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24569,11 +24724,46 @@
           "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
           "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
           "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 100/100; Go fails stripe-routes-pay-succeeded-marks-supplier-invoice (invoiced payment not saved paid).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-red/results.json",
+          "receipt_sha256": "536fce509f255a34e8ad170e3693b1dbe658cf171ec9c358b63d04940d3f4840"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes --versioned",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2: update_fields save (paid, payment_date, type 'stripe') before the paid flow, invoiced payments saved paid, defaults read by the invoice description, on-commit print_document_invoice checked by a broker-side committed-state observer, nothing published on rollback.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-green/results.json",
+          "receipt_sha256": "689bbe6f33e654b41e1ba3adb455c0ec1e83c8e4b626c7d17a78cd534480416b"
+        },
+        {
+          "command": "python tools/go-migration/family.py mutation stripe-routes (stripeMarkPaid gated on payments without invoice)",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "Mutation CAUGHT: Go fails stripe-routes-pay-succeeded-marks-supplier-invoice.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation/results.json",
+          "receipt_sha256": "83e4283fcc8d7e93dc6df15a7a075c82acb13437b6b944f1f15e8d057300d523"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes (manual mutation: print task published inside the transaction, restored by hash)",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "Mutation CAUGHT: Go fails stripe-routes-webhook-charge-subscription-without-categories (celery.committed).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation-precommit/results.json",
+          "receipt_sha256": "595b28634833b5f0715460b3ef09db4846994aea80997a4e22faffae16d9187d"
+        },
+        {
+          "command": "python tools/go-migration/family.py run payment-state",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "Rerun (shared payment_paid_flow.go): 147/147 native Django and Go.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-rerun-payment-state/results.json",
+          "receipt_sha256": "1e542bc94b2eb92cb748997fee627fec36dc94b5c5afc9911d994dcba4e214e0"
         }
       ],
       "notes": [
         "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Django behavior changed on main: Go parity must be re-verified."
+        "Re-verified after main 6b20715d (payments-impersonation-reverify): mark_payment_as_paid saves an unpaid payment (invoiced or not) with paid, payment_date and type 'stripe' via update_fields first (Go stripeMarkPaid), the invoice description reads the in-memory Payment.save() defaults, and print_document_invoice is published after the commit (Go: with the notification, after it); a rolled-back mark publishes nothing. The mark_as_paid_payments_checking_stripe task is ported by tasks-db-f."
       ]
     },
     {
@@ -24591,7 +24781,7 @@
         "target": "stripe_webhook",
         "syntax": "path"
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/stripeapi/client.go",
         "BE_GO/internal/stripeapi/webhook.go",
@@ -24669,11 +24859,46 @@
           "result": "Mutation control: fails Go on stripe-routes-webhook-charge-installment.",
           "artifact": "quality-reports/go-migration/stripe-routes-http-mutation-pf1/results.json",
           "receipt_sha256": "4b17f068a08cf176df648f28b453c309217625dc1237624744ae6415a177ae88"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django 100/100; Go fails stripe-routes-pay-succeeded-marks-supplier-invoice (invoiced payment not saved paid).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-red/results.json",
+          "receipt_sha256": "536fce509f255a34e8ad170e3693b1dbe658cf171ec9c358b63d04940d3f4840"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes --versioned",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2: update_fields save (paid, payment_date, type 'stripe') before the paid flow, invoiced payments saved paid, defaults read by the invoice description, on-commit print_document_invoice checked by a broker-side committed-state observer, nothing published on rollback.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-green/results.json",
+          "receipt_sha256": "689bbe6f33e654b41e1ba3adb455c0ec1e83c8e4b626c7d17a78cd534480416b"
+        },
+        {
+          "command": "python tools/go-migration/family.py mutation stripe-routes (stripeMarkPaid gated on payments without invoice)",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "Mutation CAUGHT: Go fails stripe-routes-pay-succeeded-marks-supplier-invoice.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation/results.json",
+          "receipt_sha256": "83e4283fcc8d7e93dc6df15a7a075c82acb13437b6b944f1f15e8d057300d523"
+        },
+        {
+          "command": "python tools/go-migration/family.py run stripe-routes (manual mutation: print task published inside the transaction, restored by hash)",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "Mutation CAUGHT: Go fails stripe-routes-webhook-charge-subscription-without-categories (celery.committed).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-routes-mutation-precommit/results.json",
+          "receipt_sha256": "595b28634833b5f0715460b3ef09db4846994aea80997a4e22faffae16d9187d"
+        },
+        {
+          "command": "python tools/go-migration/family.py run payment-state",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "Rerun (shared payment_paid_flow.go): 147/147 native Django and Go.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-rerun-payment-state/results.json",
+          "receipt_sha256": "1e542bc94b2eb92cb748997fee627fec36dc94b5c5afc9911d994dcba4e214e0"
         }
       ],
       "notes": [
         "Implementing: Implementing: Outbound Stripe requests pinned against a private stub. mark_payment_as_paid runs fully (invoice, payment save, course subscription/installment flag, print_document_invoice, notification), marking where the views call it. Unencodable stripe_available_methods, non-string payment ids/associations in multiple-pay objects, non-scalar webhook payment_intent values and paid-flow inputs outside the ported conversions are refused (500). The mark_as_paid_payments_checking_stripe task is not ported (task harness, thread-order numbering).",
-        "Django behavior changed on main: Go parity must be re-verified."
+        "Re-verified after main 6b20715d (payments-impersonation-reverify): mark_payment_as_paid saves an unpaid payment (invoiced or not) with paid, payment_date and type 'stripe' via update_fields first (Go stripeMarkPaid), the invoice description reads the in-memory Payment.save() defaults, and print_document_invoice is published after the commit (Go: with the notification, after it); a rolled-back mark publishes nothing. The mark_as_paid_payments_checking_stripe task is ported by tasks-db-f."
       ]
     },
     {
@@ -45158,7 +45383,7 @@
           "name": "'mark_as_paid_payments_checking_stripe'"
         }
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/stripe_paid_check.go",
         "BE_GO/internal/repository/stripe_paid_check.go",
@@ -45223,13 +45448,41 @@
           "result": "passed: stripe_paid_check_worker_process parity groups against the actual Django task",
           "artifact": "quality-reports/go-migration/stripe-paid-check-worker-process/results.json",
           "receipt_sha256": "612752aa5d221e3c11e2a99a895f9cb5658eee76441c1ea01b865bc7b04595d3"
+        },
+        {
+          "command": "python -m TESTS.adapters.go.stripe_paid_check_worker_process",
+          "revision": "go/payments-impersonation-reverify working tree before 1cd5225c",
+          "result": "RED: Django one-thread oracle passes the updated authored checks (published invoices 8, 9, 10; paid 0, 7, 9, 10, 12; audit order); Go state differs.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-paid-check-red/results.json",
+          "receipt_sha256": "22a9a6b9dfc930f8def58cb07eafa3b244469c7c0660efa8dfee80a5f0395f9d"
+        },
+        {
+          "command": "python -m TESTS.adapters.go.stripe_paid_check_worker_process",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "GREEN: 6/6 parity groups against the actual Django task (state, Stripe requests, on-commit print bodies, notifications).",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-stripe-paid-check-green/results.json",
+          "receipt_sha256": "5b494d6bb7a12b45f2108c911d8d730ba35979eb05d65be898c41a5c05d890b6"
+        },
+        {
+          "command": "python -m TESTS.adapters.go.tasks_db_d_worker_process",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "Rerun (shared stripe_routes.go): 12/12.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-rerun-tasks-db-d-worker-process/results.json",
+          "receipt_sha256": "dd332a978a241238f0c0df983a007c38c11554c01e3a0f4d236e7081d853b820"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
+          "revision": "go/payments-impersonation-reverify 1f5bebec (merged codex/go-backend-parity 54165962)",
+          "result": "Rerun (print_document_invoice consumer): 30/30.",
+          "artifact": "quality-reports/go-migration/payments-impersonation-reverify-rerun-celery-consumer-print-process/results.json",
+          "receipt_sha256": "59f4a0335b61690f58e55bd25816edcce40c9e6b0ae0ee4de7a04032ce5b3a6f"
         }
       ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
         "Ported by tasks-db-f: Go serializes the ten-thread pool in payment_id order; the parity proof is against a one-thread Django run. See docs/architecture/go-migration/tasks-db-f.md.",
-        "Django behavior changed on main: Go parity must be re-verified."
+        "Re-verified after main 6b20715d (payments-impersonation-reverify): the mark's update_fields save (paid, payment_date; type already 'stripe') also applies to payments that already have an invoice, print_document_invoice runs on the task block's commit (nothing for a rolled-back payment), authored checks pin published invoices, paid set and audit order."
       ]
     },
     {
