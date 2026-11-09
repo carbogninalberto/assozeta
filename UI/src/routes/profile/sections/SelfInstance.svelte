@@ -246,7 +246,9 @@
                 apiUnavailable = true;
             }
         }
-        if (!status?.available) {
+        // The status socket is the same runner: ask it only when the API itself
+        // did not answer (updates and restarts take the API down).
+        if (!status) {
             const independent = await readStoredStatus(originalFetch);
             if (independent.kind === 'owner') status = independent.status;
             else if (independent.kind === 'denied') {

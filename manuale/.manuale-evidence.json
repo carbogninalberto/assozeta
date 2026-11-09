@@ -5023,11 +5023,11 @@
       "title": "Collegare il tuo account Stripe",
       "content_sha256": "b21544bb87be9a0c369fb3c45cca9667523e352edb4a3f2c574b748d94407c1b",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "7e193a92f7c025820a5d94c78f4e4b0307de3a643302d9a3f9c10d5ee511f874",
+      "recipe_sha256": "059769132d2847764c1a3eaf734fe2adc6ecc89fe1bd394ea54e359529b251dc",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "600567f2feea351a14dd94da42c66c9411028a6578544a4176c93f45c321dc8d",
-        "sha256": "7e193a92f7c025820a5d94c78f4e4b0307de3a643302d9a3f9c10d5ee511f874",
+        "previous_sha256": "7e193a92f7c025820a5d94c78f4e4b0307de3a643302d9a3f9c10d5ee511f874",
+        "sha256": "059769132d2847764c1a3eaf734fe2adc6ecc89fe1bd394ea54e359529b251dc",
         "purpose": "editorial-review-only"
       }
     },
@@ -5155,11 +5155,11 @@
       "title": "Come attivare Stripe",
       "content_sha256": "d255305518a51993005a0d55ceefc47df09ad1ad76a0858fe76a59df2c14b27f",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "2903e0ecb5a2e0fd6836cad7236dc32de7fd4fb81f620d22bc6171e514eac60b",
+      "recipe_sha256": "a95bbb7cccfe703e5ebbbe1e81e17609a600ae832b9fbec87f3156dd693e4379",
       "content_source": "authored-mdx",
       "recipe_review": {
-        "previous_sha256": "cc763466e9426ef43c563ad8af865af3f00901a1bf1a99fe92432788f215db20",
-        "sha256": "2903e0ecb5a2e0fd6836cad7236dc32de7fd4fb81f620d22bc6171e514eac60b",
+        "previous_sha256": "2903e0ecb5a2e0fd6836cad7236dc32de7fd4fb81f620d22bc6171e514eac60b",
+        "sha256": "a95bbb7cccfe703e5ebbbe1e81e17609a600ae832b9fbec87f3156dd693e4379",
         "purpose": "editorial-review-only"
       }
     },
