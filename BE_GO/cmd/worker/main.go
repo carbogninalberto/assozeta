@@ -53,7 +53,7 @@ func run(arguments []string) error {
 	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered task deadline")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention, user deletion requests (publishes send_email_text to the Celery broker), attendance auto-marking, partial registration, certificate and reminder e-mails (publish send_mail_async or send through the association SMTP configuration), Bakney pairing maintenance (revocation delivery and authority status synchronization). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
+			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention, user deletion requests (publishes send_email_text to the Celery broker), attendance auto-marking, partial registration, certificate and reminder e-mails (publish send_mail_async or send through the association SMTP configuration), Bakney pairing maintenance (revocation delivery and authority status synchronization), old export cleanup (deletes export files from the S3 default storage). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
 			return nil
 		}
 		return errors.New("invalid worker arguments")
@@ -97,6 +97,7 @@ func run(arguments []string) error {
 	emails := service.NewEmailTasks(repository.NewEmailTasks(db), tasks, service.SMTPMailer{}, service.EmailTaskSettings{
 		AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
 		DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now, logger)
+	exports := service.NewExportCleanup(repository.NewExportCleanups(db), composeExportCleanupObjects(cfg), time.Now, logger)
 	bakney, closeBakney := composeBakneyMaintenance(cfg, db)
 	defer closeBakney()
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
@@ -115,6 +116,7 @@ func run(arguments []string) error {
 			domain.JobSendExpiredCertificateEmail:      {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiredCertificates},
 			domain.JobSendReminders:                    {Version: 1, Timeout: *taskTimeout, Run: emails.RunReminders},
 			domain.JobMaintainBakneyPairings:           {Version: 1, Timeout: *taskTimeout, Run: bakney.Maintain},
+			domain.JobCleanupOldExports:                {Version: 1, Timeout: *taskTimeout, Run: exports.Run},
 		},
 		service.JobExecutorOptions{Owner: "worker-" + uuid.NewString(), Concurrency: *concurrency,
 			Lease: *lease, RenewInterval: *renew, StoreTimeout: *storeTimeout, PollInterval: *poll,
