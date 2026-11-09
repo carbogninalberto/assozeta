@@ -402,6 +402,10 @@ func run() (runErr error) {
 	paymentExportHandler := handler.NewPaymentExportHandler(service.NewPaymentExport(repository.NewPaymentExport(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/payment/list/export", paymentExportHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
+	miscExportsHandler := handler.NewMiscExportsHandler(service.NewMiscExports(repository.NewMiscExports(db), tasks, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/list/export", miscExportsHandler.SubscriptionExport, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/invoice/list/export", miscExportsHandler.InvoiceExport, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionReadsHandler := handler.NewSubscriptionReadsHandler(service.NewSubscriptionReads(repository.NewSubscriptionReads(db),
 		repository.NewCourseSubscriptions(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/subscription/list", subscriptionReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -451,6 +455,13 @@ func run() (runErr error) {
 	e.Any("/course/:uid/calendar/update", courseCalendarHandler.CalendarUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/calendar/events", courseCalendarHandler.Events, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/calendar/events/update", courseCalendarHandler.EventsUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
+	miscRoutesHandler := handler.NewMiscRoutesHandler(service.NewCalendarExport(repository.NewCourseCalendars(db), time.Now),
+		service.NewCommunicationsPost(repository.NewMiscRoutes(db), time.Now, uuid.NewString),
+		service.NewSubscriptionCard(repository.NewMiscRoutes(db), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/calendar/events/export", miscRoutesHandler.CalendarExport, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/send/post", miscRoutesHandler.Post, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/:uid/card", miscRoutesHandler.Card, middleware.DjangoSessionAudit(sessionAuthentication))
 	courseAttendanceHandler := handler.NewCourseAttendanceHandler(service.NewCourseAttendance(repository.NewCourseAttendance(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/course/:uid/attendees", courseAttendanceHandler.Attendees, middleware.DjangoSessionAudit(sessionAuthentication))
