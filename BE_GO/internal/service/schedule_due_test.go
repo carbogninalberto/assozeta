@@ -369,3 +369,85 @@ func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
 		}
 	}
 }
+
+// scheduleDueConsumerOwned are effective Beat tasks the native Go scheduler
+// does not publish: Django Beat keeps publishing them, and the Go Celery
+// consumer runs them when GO_TASK_QUEUE_TASKS routes them (celery-consumer.md).
+var scheduleDueConsumerOwned = map[string]bool{"instance.backups.notify_failures": true}
+
+// Every declaration of the effective schedule (core/celery.py, measured by the
+// scheduler-authority oracle) is either a supported persisted definition for
+// a registered Go job or explicitly consumer-owned and refused here.
+func TestScheduleDueEffectiveDeclarations(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "..", "TESTS", "fixtures", "scheduler-authority.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Cases struct {
+			Configuration struct {
+				Expected struct {
+					EffectiveNames []string `json:"effective_names"`
+					Declarations   map[string]struct {
+						Task     string `json:"task"`
+						Schedule struct {
+							Kind        string  `json:"kind"`
+							Seconds     float64 `json:"seconds"`
+							Minute      string  `json:"minute"`
+							Hour        string  `json:"hour"`
+							DayOfWeek   string  `json:"day_of_week"`
+							DayOfMonth  string  `json:"day_of_month"`
+							MonthOfYear string  `json:"month_of_year"`
+						} `json:"schedule"`
+						Args []any `json:"args"`
+					} `json:"declarations"`
+				} `json:"expected"`
+			} `json:"configuration_authority"`
+		} `json:"cases"`
+	}
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	expected := fixture.Cases.Configuration.Expected
+	if len(expected.EffectiveNames) == 0 || len(expected.EffectiveNames) != len(expected.Declarations) {
+		t.Fatalf("the effective schedule must be the declarations: %v", expected.EffectiveNames)
+	}
+	now := time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
+	owned := 0
+	for _, name := range expected.EffectiveNames {
+		declaration, ok := expected.Declarations[name]
+		if !ok || declaration.Task == "" || len(declaration.Args) != 0 {
+			t.Fatalf("%s: declaration outside the characterized shape", name)
+		}
+		row := basicSchedule()
+		row.Task = declaration.Task
+		switch schedule := declaration.Schedule; schedule.Kind {
+		case "interval":
+			if schedule.Seconds != float64(int64(schedule.Seconds)) {
+				t.Fatalf("%s: fractional interval", name)
+			}
+			row.Interval = &domain.PeriodicInterval{Every: int64(schedule.Seconds), Period: "seconds"}
+		case "cron":
+			row.Interval = nil
+			row.Cron = &domain.PeriodicCron{Minute: schedule.Minute, Hour: schedule.Hour, DayOfWeek: schedule.DayOfWeek,
+				DayOfMonth: schedule.DayOfMonth, MonthOfYear: schedule.MonthOfYear, Timezone: "UTC"}
+		default:
+			t.Fatalf("%s: schedule kind %q", name, schedule.Kind)
+		}
+		_, mapped := domain.PeriodicJobKind(declaration.Task)
+		_, err := EvaluateScheduleDue(row, now)
+		if scheduleDueConsumerOwned[declaration.Task] {
+			owned++
+			if mapped || !errors.Is(err, domain.ErrScheduleUnsupported) {
+				t.Fatalf("%s: a consumer-owned task must be refused by the Go scheduler (mapped=%v, err=%v)", name, mapped, err)
+			}
+			continue
+		}
+		if !mapped || err != nil {
+			t.Fatalf("%s: effective declaration not published by Go (mapped=%v, err=%v)", name, mapped, err)
+		}
+	}
+	if owned != len(scheduleDueConsumerOwned) {
+		t.Fatalf("consumer-owned tasks missing from the effective schedule: %d", owned)
+	}
+}

@@ -269,8 +269,9 @@ its killed parent. See [operational migration evidence](operational-migrations.m
 This prepares the schema without activating Go background processing.
 
 Forty-eight actual Django scheduler scenarios now characterize effective settings,
-persisted schedules, due/DST semantics and publication state. The 21 declarations
-resolve to one configured fresh entry plus Beat's implicit cleanup; historical
+persisted schedules, due/DST semantics and publication state. Since main a7afd7ee
+the 22 core/celery.py declarations are the effective fresh schedule plus Beat's
+implicit cleanup (98 cases, see [beat-reverify](beat-reverify.md)); historical
 rows remain a separate authority. Failed publication can persist a reserved
 cursor. The pure Go evaluator passes 23 differential timing cases, 37 unsupported
 input rejections and five calendar/precision checks. Its supported subset is

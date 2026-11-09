@@ -301,11 +301,101 @@ the import.
 
 - Unit tests: `go test ./internal/importeffects` (CPython set order goldens, audit rendering, plan, season ranges).
 
-## Step 4: `instance.restore.execute` (not ported)
+## Step 4: `instance.restore.execute`
 
-It stays on Django's worker. What an exact port still needs beyond steps 1–3: the exclusive operation lock, the
-Go-transaction barrier, the receipt state machine and progress cache (small parts), the archive validation of
-`archive.py` against the export/import registry and every field's `to_python`, a recovery export (step 2's service with
-`RecoveryExport`'s exclusions), Django's `Collector` deletion plan and cascades of the current association graph
-(`replacement.py`, with the `pre_delete` receivers of `application/signals.py` and auditlog delete entries), the step 3
-import in replacement mode through `internal/importeffects`, media staging and pruning.
+`BE/instance/tasks.py` `restore_instance_data(operation_id)` (`bind`, `acks_late`, `reject_on_worker_lost`, time limits
+3600/3300 s, `max_retries=None`, no CoordinatedTask admission) with `execution.execute`, `archive.Archive`,
+`replacement.deletion_plan`/`ReplacementImporter`/`replace`, `locking.operation_lock`, `server_barrier`,
+`progress.RestoreProgress` and `task_base.defer_for_maintenance` runs on the Go consumer when `GO_TASK_QUEUE_TASKS` lists
+it. Go: `internal/service/consumer_restore_instance.go` (task, replacement hooks, progress),
+`consumer_restore_archive.go` (`Archive.validate`), `internal/repository/restore_deletion.go` with
+`restore_deletion_graph.json` (the deletion plan on the Collector port of collaborator-delete),
+`repository/consumer_restore_instance.go` (receipt, barrier, user links, cleanup store),
+`importeffects/force_update.go`; registration in `cmd/celery-consumer/consumer_restore.go`.
+
+### What Django does (and Go reproduces)
+
+1. `operation_lock(exclusive=True, required=True)`: unset path, unopenable volume or a held lock raise `Busy`; then
+   `drain_go_transactions` (5 s statement timeout on `pg_advisory_xact_lock(1095981639, 1381192786)`; any database
+   error is `Busy`). `Busy` → `defer_for_maintenance(countdown=10)`: the same message republished with its retries
+   unchanged and eta +10 s, its id among the children, RETRY with the `Busy` exception (`celeryworker.Retry.Maintenance`).
+2. `DataRestore.objects.get`: a missing receipt is a FAILURE `DataRestore.DoesNotExist` (acks_late acknowledges). Completed,
+   failed or cancelled receipts get `cleanup(op)` and `None`; other inactive states return `None`.
+3. Checks inside the `try`: three attempts, `InstanceConfiguration...get()` (not exactly one row: the generic message),
+   `require_single`, the association and `is_instance_administrator(op.owner)`, `RUNNING_VERSION`. A RestoreError keeps
+   its message, any other exception gives `Ripristino non riuscito...`; the failure path refreshes the receipt, saves
+   `failed`, publishes `failed` and the `finally` runs `cleanup(op)`.
+4. `save_operation(running, backup, attempts+1)`, progress `validating`; `local_copy` of the upload and its SHA-256;
+   `Archive.validate()` (entry limits from `DATA_RESTORE_MAX_*`, paths, symlinks, manifest format and errors,
+   retired sections, declared files and counts, required models, the single association and owner, manifest identity,
+   legacy tutors, `_validate_graph` with each field's `to_python`, attachments, `testzip`); unconfirmed missing media.
+5. `RecoveryExport`: step 2's export with the recovery exclusions (`plan.json` `recovery_fields`: Payment keeps
+   `payment_intent_id`), its progress mapped to the `backup` phase, `save_to_storage` validating the archive (missing
+   relations or attachments refuse), the upload to `restores/<op>/recovery/<uuid>.zip` and `backup_path`/`backup_sha256`.
+6. `deletion_plan(backup)`: per IMPORT_ORDER model the `related_objects` outsider checks, `Collector.collect` of the
+   scope (fast roots included), the collected models and fast deletes against the scope.
+7. `stage = files`, `stage_media` (`clean_prefix`, one upload per attachment under `restores/<op>/media/<uuid>/`,
+   progress in bytes), `media`, `stage = restoring`.
+8. `replace()` in one transaction: `Collector.delete()` (pre_delete receivers, fast deletes, SET_NULL, deletes, auditlog
+   delete entries and index rows), `import_all()` as `ReplacementImporter` (local association and owner keys, the archived
+   association saved with `force_update` — no audit entry: the fresh instance is still `_state.adding` —, optional links
+   cleared, staged keys on every imported document and subscription), `restore_user_links` (detachment rows, deactivated
+   collaborators, recovered detachments, owner payment categories), the relation check, then the `completed` receipt
+   inside the transaction. After the commit: `cache.clear()`, progress `completed`, `cleanup(op)`, `prune_storage()`.
+
+Go performs every read and the replacement's database work in Plan (in the prefork child, before the job is accepted),
+keeping the transaction open; Run performs the effects in Django's order and commits after the staging.
+
+### Handed off to Django (before any effect)
+
+Arguments other than one canonical UUID string; a lock file the consumer cannot open for another reason; a database
+error while reading; an upload path outside `AWS_LOCATION` or an empty one; a non-positive `DATA_RESTORE_MAX_*` value;
+archives Go's ZIP reader or JSON decoder rejects (ZIP64, duplicate, backslash or non-UTF-8 names, encrypted or
+non-deflate members, non-UTF-8 or BOM JSON, `NaN`), `to_python` inputs whose outcome Python decides with rules not
+reproduced (`int()`/`UUID()` text with signs, underscores, `0x` or non-ASCII digits, non-canonical date/time text);
+legacy platform invoices; tutor records the validation would reassign, clear or ignore; non-ASCII tax codes; a deleted
+primary association; credential hashes the export does not decide; models the deletion graph marks unsupported;
+values `internal/importeffects` does not reproduce (CourseSubscription records among them); a storage name that is
+taken; a completed receipt's media that pruning could not handle; any database error inside the replacement
+transaction (the constraint violations included).
+
+### Documented differences
+
+- The replacement's database work runs in Plan, before the receipt's `running` save: a worker loss or a handoff after
+  that transaction started has consumed sequence values (Folder ids, through-table and detachment ids) that Django's run
+  has not reached; the restore harness puts the sequences back before comparing.
+- Progress is throttled by wall-clock time in both: the number of intermediate cache snapshots and WebSocket events and
+  the snapshot's `sequence` differ; the final snapshot is compared.
+- The recovery archive's DOS times and manifest `export_date` differ per run, and so its SHA-256 (stored in the
+  receipt); it is compared member by member.
+- Storage or database failures after the first effect end in the generic failed receipt, as Django's `except Exception`;
+  their logged text is not reproduced.
+- Objects of 8 MiB or more: Django uploads them in multipart parts (different ETag); Go stores one `PutObject`.
+
+### Evidence
+
+`TESTS/adapters/go/celery_consumer_restore_process.py` (private PostgreSQL, Redis, MinIO; Django side a real prefork worker
+with the production cache, channel layer and S3 storage; plans and `restore_deletion_graph.json` checked for drift). The
+backup is written by Django's own export from an earlier state of the instance's association; the current state differs
+(renamed tag, other payments and documents, an extra connected collaborator, another denomination) and an earlier
+completed restore leaves a recovery archive and a staged attachment to prune. Compared: every managed row and through
+table, audit entries and index rows, TaskResult, broker, cache and every bucket object, the recovery archive member by
+member. 22 scenarios: a full replacement; a completed receipt delivered again; a receipt under review; a missing
+receipt; a held lock and a busy barrier (RETRY +10 s); three attempts; another version; an owner who no longer
+administers; a second association; a changed upload; a truncated archive; another manifest version; a manifest naming
+another association; unconfirmed and confirmed missing attachments; circular folders rolled back; a value the database
+rejects and course subscriptions handed off; an unknown keyword handed off; a worker killed at the `files` stage and the
+acks_late redelivery completing with two attempts; a concurrent delivery deferred while the restore holds the lock.
+
+- Oracle: Django alone 22/22 (`consumer-restore-instance-oracle`).
+- RED: consumer without the registration; Django passed, Go did not consume the message and timed out on the first
+  scenario (`consumer-restore-instance-process-red`).
+- GREEN: 22/22 on the tree merged with `codex/go-backend-parity` e1e81f3a (`consumer-restore-instance-process/results.json`).
+  The merged Django changes (server backups, the beat schedule in `core/celery.py`) leave `restore_instance_data`, the
+  `restore` package and the import/export services unchanged.
+- Mutation (CAUGHT): `restore_user_links` without the deactivation of the collaborators the archive does not list; the
+  detached user's row differed (`consumer-restore-instance-process-mutation`).
+- Re-run after the shared changes (`celeryworker.Retry.Maintenance`, `importeffects.SaveForceUpdate`, the import's
+  replacement hooks, the export's recovery plan, `config` archive limits, the registration): import, export,
+  capabilities and `celery_consumer_process.py` (receipts `consumer-restore-instance-rerun-*`).
+- Unit tests: `go test ./internal/service -run TestRestore` (format_size, UUID text, to_python outcomes, identities).

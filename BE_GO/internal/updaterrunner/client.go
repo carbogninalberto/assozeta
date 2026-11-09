@@ -4,6 +4,7 @@ package updaterrunner
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -98,8 +99,9 @@ func (c timedConn) Write(p []byte) (int, error) {
 }
 
 // do sends one http.client request: 'Host: localhost', 'Accept-Encoding:
-// identity', the given headers, no User-Agent and no body.
-func do(ctx context.Context, directory, method, path string, headers map[string]string, timeout time.Duration) (*http.Response, error) {
+// identity', the given headers, no User-Agent, and the body with its
+// Content-Length when there is one.
+func do(ctx context.Context, directory, method, path string, headers map[string]string, body []byte, timeout time.Duration) (*http.Response, error) {
 	for i := 0; i < len(path); i++ {
 		if path[i] >= 0x7f || path[i] <= ' ' {
 			return nil, unreachable() // putrequest: non-ASCII or control characters in the URL (ValueError)
@@ -111,7 +113,11 @@ func do(ctx context.Context, directory, method, path string, headers map[string]
 		return nil, unreachable()
 	}
 	timed := timedConn{Conn: conn, timeout: timeout}
-	request, err := http.NewRequestWithContext(ctx, method, "http://localhost"+path, nil)
+	var content io.Reader
+	if body != nil {
+		content = bytes.NewReader(body)
+	}
+	request, err := http.NewRequestWithContext(ctx, method, "http://localhost"+path, content)
 	if err != nil {
 		_ = conn.Close()
 		return nil, unreachable()
@@ -156,6 +162,12 @@ func (c closer) Close() error {
 // Unavailable for the directory and transport failures. The caller decodes
 // the JSON body (a decoding ValueError is Unavailable too).
 func (c Client) Call(ctx context.Context, method, path string) (*Reply, error) {
+	return c.CallPayload(ctx, method, path, nil)
+}
+
+// CallPayload is call_runner(method, path, payload) with the payload already
+// encoded as json.dumps(payload) (nil sends no body, as payload=None).
+func (c Client) CallPayload(ctx context.Context, method, path string, payload []byte) (*Reply, error) {
 	directory, err := c.directory()
 	if err != nil {
 		return nil, err
@@ -165,7 +177,7 @@ func (c Client) Call(ctx context.Context, method, path string) (*Reply, error) {
 		return nil, err
 	}
 	response, err := do(ctx, directory, method, path, map[string]string{
-		"Authorization": "Bearer " + bearer, "Content-Type": "application/json"}, 5*time.Second)
+		"Authorization": "Bearer " + bearer, "Content-Type": "application/json"}, payload, 5*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +199,7 @@ func (c Client) Open(ctx context.Context, path string) (*Stream, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := do(ctx, directory, http.MethodGet, path, map[string]string{"Authorization": "Bearer " + bearer}, 300*time.Second)
+	response, err := do(ctx, directory, http.MethodGet, path, map[string]string{"Authorization": "Bearer " + bearer}, nil, 300*time.Second)
 	if err != nil {
 		return nil, err
 	}

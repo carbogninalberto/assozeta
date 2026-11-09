@@ -4416,7 +4416,154 @@
      "target_pk": "document_id"
     }
    ],
-   "document_attributes": []
+   "document_attributes": [],
+   "recovery_fields": [
+    {
+     "key": "payment_id",
+     "column": "payment_id",
+     "kind": "uuid"
+    },
+    {
+     "key": "type",
+     "column": "type",
+     "kind": "text"
+    },
+    {
+     "key": "subject",
+     "column": "subject",
+     "kind": "int"
+    },
+    {
+     "key": "amount",
+     "column": "amount",
+     "kind": "decimal"
+    },
+    {
+     "key": "creation_date",
+     "column": "creation_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "payment_date",
+     "column": "payment_date",
+     "kind": "datetime"
+    },
+    {
+     "key": "paid",
+     "column": "paid",
+     "kind": "bool"
+    },
+    {
+     "key": "expense",
+     "column": "expense",
+     "kind": "bool"
+    },
+    {
+     "key": "description",
+     "column": "description",
+     "kind": "text"
+    },
+    {
+     "key": "payment_category_id",
+     "column": "payment_category_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "meta_payment_categories",
+     "column": "meta_payment_categories",
+     "kind": "json"
+    },
+    {
+     "key": "invoice_id",
+     "column": "invoice_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "user_id",
+     "column": "user_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "associate_id",
+     "column": "associate_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "supplier_id",
+     "column": "supplier_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "instructor_id",
+     "column": "instructor_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "sport_association_id",
+     "column": "sport_association_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "payment_intent_id",
+     "column": "payment_intent_id",
+     "kind": "text"
+    },
+    {
+     "key": "archived",
+     "column": "archived",
+     "kind": "bool"
+    },
+    {
+     "key": "invoice_fiscal_code",
+     "column": "invoice_fiscal_code",
+     "kind": "text"
+    },
+    {
+     "key": "meta",
+     "column": "meta",
+     "kind": "json"
+    },
+    {
+     "key": "notes",
+     "column": "notes",
+     "kind": "text"
+    },
+    {
+     "key": "custom_accounts_id",
+     "column": "custom_accounts_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "signature_id",
+     "column": "signature_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "deleted",
+     "column": "deleted",
+     "kind": "bool"
+    },
+    {
+     "key": "group_id",
+     "column": "group_id",
+     "kind": "fk",
+     "target": "uuid"
+    },
+    {
+     "key": "course",
+     "column": "course",
+     "kind": "json"
+    }
+   ]
   },
   {
    "model": "Invoice",

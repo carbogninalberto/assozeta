@@ -182,16 +182,41 @@ type InstanceBackupsAccess struct {
 	At      time.Time
 }
 
-// AppendAccess writes the entry outside any transaction, then the
+// AppendAccess writes the download ACCESS entry (see AppendAudit).
+func (r *InstanceBackups) AppendAccess(ctx context.Context, event InstanceBackupsAccess) error {
+	return r.AppendAudit(ctx, InstanceBackupsAuditEntry{Target: event.Target, Action: 3, Change: "backup_download",
+		Value: event.Backup, ActorID: event.ActorID, Extra: map[string]any{"backup": event.Backup}, Audit: event.Audit, At: event.At})
+}
+
+// InstanceBackupsAuditEntry is LogEntry.objects.log_create(config,
+// action=Action, actor=actor, changes={Change: [empty, Value]},
+// additional_data={'actor_id': actor, **Extra}, force_log=True), as the
+// views' audit() helper writes it (UPDATE) and the download token (ACCESS).
+type InstanceBackupsAuditEntry struct {
+	Target  InstanceBackupsLogTarget
+	Action  int
+	Change  string
+	Value   string
+	ActorID string
+	Extra   map[string]any
+	Audit   domain.LoginAuditContext
+	At      time.Time
+}
+
+// AppendAudit writes the entry outside any transaction, then the
 // AuditLogIndex signal: no resolver is registered for the configuration and
 // the changes hold no sport_association, so the actor's first active
 // association is used (best effort, as the signal swallows its errors).
-func (r *InstanceBackups) AppendAccess(ctx context.Context, event InstanceBackupsAccess) error {
-	changes, err := json.Marshal(map[string][2]string{"backup_download": {"", event.Backup}})
+func (r *InstanceBackups) AppendAudit(ctx context.Context, event InstanceBackupsAuditEntry) error {
+	changes, err := json.Marshal(map[string][2]string{event.Change: {"", event.Value}})
 	if err != nil {
 		return err
 	}
-	additional, err := json.Marshal(map[string]string{"backup": event.Backup, "actor_id": event.ActorID})
+	fields := map[string]any{"actor_id": event.ActorID}
+	for key, value := range event.Extra {
+		fields[key] = value
+	}
+	additional, err := json.Marshal(fields)
 	if err != nil {
 		return err
 	}
@@ -202,10 +227,11 @@ func (r *InstanceBackups) AppendAccess(ctx context.Context, event InstanceBackup
 	var id int64
 	err = r.db.GetContext(ctx, &id, `INSERT INTO auditlog_logentry
  (content_type_id,object_pk,object_id,object_repr,serialized_data,action,changes_text,changes,actor_id,cid,remote_addr,remote_port,timestamp,additional_data,actor_email)
- SELECT id,$1,$2,$3,NULL,3,'',$4::jsonb,$5::uuid,$6,$7::inet,$8::text::integer,$9,$10::jsonb,NULL
+ SELECT id,$1,$2,$3,NULL,$11,'',$4::jsonb,$5::uuid,$6,$7::inet,$8::text::integer,$9,$10::jsonb,NULL
  FROM django_content_type WHERE app_label='instance' AND model='instanceconfiguration' RETURNING id`,
 		strconv.FormatInt(event.Target.ID, 10), event.Target.ID, "Instance: "+event.Target.Name+" ("+event.Target.Domain+")",
-		string(changes), event.ActorID, event.Audit.CorrelationID, event.Audit.RemoteAddress, remotePort, event.At, string(additional))
+		string(changes), event.ActorID, event.Audit.CorrelationID, event.Audit.RemoteAddress, remotePort, event.At, string(additional),
+		event.Action)
 	if errors.Is(err, sql.ErrNoRows) {
 		return errors.New("audit model content type missing")
 	}
