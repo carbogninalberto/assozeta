@@ -16,6 +16,6 @@
   - `Module.objects.filter(custom_link=...)` matches exactly (case and whitespace sensitive) in every association, including deleted associations and modules without one; a match is the same 400 unless the `module` request header equals `str(module.module_id)` (lower-case hyphenated), then `200 {'valid': True}`; no match is `200 {'valid': True}`.
 - Every route answers OPTIONS (`Modules List`, `Modules Overview`, `Modules Check Link`, empty description) and 405 for other methods, with `Allow: GET, OPTIONS`.
 
-Not ported: `modules/<custom_link>/info` (`modules_custom_link_info`) has no `permission_classes`, so it runs with the project default `AllowAny` and also serves anonymous requests; it is left to Django (Go has no route for it) until its public semantics are reviewed and characterized separately. The module writes (`add`, `update`, `duplicate`, `delete`, responses, attachments, `export`) are separate families.
+`modules/<custom_link>/info` (`modules_custom_link_info`, AllowAny), the module responses and attachments are ported by [modules-responses](modules-responses.md); the module writes (`add`, `update`, `duplicate`, `delete`) are [modules-writes](modules-writes.md) and `export` stays on Django.
 
 Evidence: `TESTS/fixtures/modules_reads_http.json` (81 cases, reads: the complete state must not change). RED: Django 81/81, Go 404. GREEN: 81/81 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Dropping the association filter from the overview lookup fails `overview-foreign-owner`.

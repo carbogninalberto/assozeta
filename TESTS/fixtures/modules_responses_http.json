@@ -1,0 +1,4499 @@
+{
+ "matrix_version": 1,
+ "scope": "Module responses info/add/approve/delete/add-attachment authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "location": "modules-responses-fixture",
+ "modules": {
+  "open": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-aperto",
+   "created": "2026-08-01T10:00:00.250000Z",
+   "title": "Aperto è",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": "Grazie",
+   "allow_attachments": true,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643001"
+  },
+  "closed": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-chiuso",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": false,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643002"
+  },
+  "approval": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-approvazione",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": true,
+   "start": "2000-01-01",
+   "end": "2999-12-31",
+   "always_active": false,
+   "max_responses": 0,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {
+    "amount": 5
+   },
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643003"
+  },
+  "full": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-pieno",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": 1,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643004"
+  },
+  "queue": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-coda",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": true,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": 1,
+   "queue_mode": true,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643005"
+  },
+  "users": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-utenti",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": true,
+   "payment_required": true,
+   "payment_data": {
+    "amount": 10,
+    "methods": [
+     "card"
+    ]
+   },
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643006"
+  },
+  "foreign": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "link": "risposte-estero",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643007"
+  },
+  "foreign_closed": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "link": "risposte-estero-chiuso",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": "2000-01-01",
+   "end": "2000-12-31",
+   "always_active": false,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643008"
+  },
+  "orphan": {
+   "association": null,
+   "link": "risposte-orfano",
+   "created": "2026-09-01T08:00:00Z",
+   "title": null,
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": {},
+   "id": "a1000000-0000-4000-8000-000000643009"
+  },
+  "nullnum": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": "risposte-nullo",
+   "created": "2026-09-01T08:00:00Z",
+   "title": "Modulo",
+   "require_approval": false,
+   "start": null,
+   "end": null,
+   "always_active": true,
+   "max_responses": null,
+   "queue_mode": false,
+   "only_users": false,
+   "payment_required": false,
+   "payment_data": {},
+   "response_message": null,
+   "allow_attachments": false,
+   "elements": [
+    {
+     "type": "heading",
+     "props": {
+      "label": "Titolo"
+     }
+    },
+    {
+     "type": "text",
+     "props": {
+      "label": "Nome",
+      "name": "nome"
+     }
+    }
+   ],
+   "id": "a1000000-0000-4000-8000-000000643010"
+  }
+ },
+ "documents": {
+  "d1": {
+   "id": "a1000000-0000-4000-8000-000000643011",
+   "filename": "certificato è.pdf",
+   "token": "a1000000-0000-4000-8000-000000643012"
+  },
+  "d2": {
+   "id": "a1000000-0000-4000-8000-000000643013",
+   "filename": "foto.png",
+   "token": "a1000000-0000-4000-8000-000000643014"
+  },
+  "d3": {
+   "id": "a1000000-0000-4000-8000-000000643015",
+   "filename": "libero.txt",
+   "token": "a1000000-0000-4000-8000-000000643016"
+  },
+  "d4": {
+   "id": "a1000000-0000-4000-8000-000000643017",
+   "filename": "condiviso.pdf",
+   "token": "a1000000-0000-4000-8000-000000643018"
+  },
+  "d5": {
+   "id": "a1000000-0000-4000-8000-000000643019",
+   "filename": "anonimo.txt",
+   "token": "a1000000-0000-4000-8000-000000643020"
+  }
+ },
+ "responses": {
+  "open_r1": {
+   "created": "2026-09-02T10:00:00.500000Z",
+   "queue": null,
+   "response": {
+    "nome": "Anna è",
+    "eta": 12
+   },
+   "approved": true,
+   "user": "athlete",
+   "attachments": [
+    "d1"
+   ],
+   "id": "a1000000-0000-4000-8000-000000643021",
+   "module": "open",
+   "number": 0
+  },
+  "del_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": [
+    1,
+    "due"
+   ],
+   "approved": false,
+   "user": null,
+   "attachments": [
+    "d2"
+   ],
+   "id": "a1000000-0000-4000-8000-000000643022",
+   "module": "open",
+   "number": 1
+  },
+  "att_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [
+    "d4"
+   ],
+   "id": "a1000000-0000-4000-8000-000000643023",
+   "module": "open",
+   "number": 2
+  },
+  "full_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643024",
+   "module": "full",
+   "number": 0
+  },
+  "q1": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": 1,
+   "response": {
+    "nome": "Uno"
+   },
+   "approved": false,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643025",
+   "module": "queue",
+   "number": 0
+  },
+  "q2": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": 2,
+   "response": {
+    "nome": "Due"
+   },
+   "approved": false,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643026",
+   "module": "queue",
+   "number": 1
+  },
+  "q3": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": 3,
+   "response": {
+    "nome": "Tre"
+   },
+   "approved": false,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643027",
+   "module": "queue",
+   "number": 2
+  },
+  "qa": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643028",
+   "module": "queue",
+   "number": 3
+  },
+  "foreign_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {
+    "nome": "Estero"
+   },
+   "approved": false,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643029",
+   "module": "foreign",
+   "number": 0
+  },
+  "other_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [
+    "d4"
+   ],
+   "id": "a1000000-0000-4000-8000-000000643030",
+   "module": "foreign",
+   "number": 1
+  },
+  "orphan_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": false,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643031",
+   "module": "orphan",
+   "number": 0
+  },
+  "nullnum_r": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {},
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643032",
+   "module": "nullnum",
+   "number": null
+  }
+ },
+ "cases": [
+  {
+   "name": "modules-responses-info-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.modules.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-wrong-method",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-info-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Modules Custom Link Info",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-unknown-link",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/nessuno/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-case-sensitive-link",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/RISPOSTE-APERTO/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-module-word-link",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/add/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-not-active",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-chiuso/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not active"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-foreign-expired",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/risposte-estero-chiuso/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not active"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-not-active-bad-response-id",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-chiuso/info?response_id=abc",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-unknown-bad-response-id",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/nessuno/info?response_id=abc",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-empty-response-id",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643021",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": {
+     "module_response_id": "a1000000-0000-4000-8000-000000643021",
+     "module": "a1000000-0000-4000-8000-000000643001",
+     "creation_date": "2026-09-02T10:00:00.500000Z",
+     "progressive_response_number": 0,
+     "queue_position": null,
+     "response": {
+      "nome": "Anna è",
+      "eta": 12
+     },
+     "approved": true,
+     "user": "a1000000-0000-4000-8000-000000700004",
+     "payment": null,
+     "attachments": [
+      "a1000000-0000-4000-8000-000000643011"
+     ],
+     "attachments_docs": [
+      {
+       "document_id": "a1000000-0000-4000-8000-000000643011",
+       "filename": "certificato è.pdf",
+       "token": "a1000000-0000-4000-8000-000000643012"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-of-another-module",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643029",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": {
+     "module_response_id": "a1000000-0000-4000-8000-000000643029",
+     "module": "a1000000-0000-4000-8000-000000643007",
+     "creation_date": "2026-09-02T10:00:00Z",
+     "progressive_response_number": 0,
+     "queue_position": null,
+     "response": {
+      "nome": "Estero"
+     },
+     "approved": false,
+     "user": null,
+     "payment": null,
+     "attachments": [],
+     "attachments_docs": []
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-hex-upper",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=A1000000000040008000000000643023",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": {
+     "module_response_id": "a1000000-0000-4000-8000-000000643023",
+     "module": "a1000000-0000-4000-8000-000000643001",
+     "creation_date": "2026-09-02T10:00:00Z",
+     "progressive_response_number": 2,
+     "queue_position": null,
+     "response": {},
+     "approved": true,
+     "user": null,
+     "payment": null,
+     "attachments": [
+      "a1000000-0000-4000-8000-000000643017"
+     ],
+     "attachments_docs": [
+      {
+       "document_id": "a1000000-0000-4000-8000-000000643017",
+       "filename": "condiviso.pdf",
+       "token": "a1000000-0000-4000-8000-000000643018"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-unknown",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643999",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": {
+     "module_response_id": null,
+     "module": null,
+     "creation_date": null,
+     "progressive_response_number": null,
+     "queue_position": null,
+     "response": null,
+     "approved": false,
+     "user": null,
+     "payment": null,
+     "attachments": []
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-last-value",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=abc&response_id=a1000000-0000-4000-8000-000000643022",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-aperto",
+     "creation_date": "2026-08-01T10:00:00.250000Z",
+     "title": "Aperto è",
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": {
+     "module_response_id": "a1000000-0000-4000-8000-000000643022",
+     "module": "a1000000-0000-4000-8000-000000643001",
+     "creation_date": "2026-09-02T10:00:00Z",
+     "progressive_response_number": 1,
+     "queue_position": null,
+     "response": [
+      1,
+      "due"
+     ],
+     "approved": false,
+     "user": null,
+     "payment": null,
+     "attachments": [
+      "a1000000-0000-4000-8000-000000643013"
+     ],
+     "attachments_docs": [
+      {
+       "document_id": "a1000000-0000-4000-8000-000000643013",
+       "filename": "foto.png",
+       "token": "a1000000-0000-4000-8000-000000643014"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-dated",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-approvazione/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643003",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": "risposte-approvazione",
+     "creation_date": "2026-09-01T08:00:00Z",
+     "title": "Modulo",
+     "require_approval": true,
+     "start_date": "2000-01-01",
+     "end_date": "2999-12-31",
+     "always_active": false,
+     "max_responses": 0,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {
+      "amount": 5
+     },
+     "response_message": null,
+     "allow_attachments": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ]
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-orphan",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/risposte-orfano/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643009",
+     "enabled": true,
+     "sport_association": null,
+     "custom_link": "risposte-orfano",
+     "creation_date": "2026-09-01T08:00:00Z",
+     "title": null,
+     "require_approval": false,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": false,
+     "only_users": false,
+     "payment_required": false,
+     "payment_data": {},
+     "response_message": null,
+     "allow_attachments": false,
+     "elements": {}
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.modules.create"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-add-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-add-wrong-method",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-add-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Modules Response Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-add-malformed",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/abc/response/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-add-unknown",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643999/response/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not found"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-add-not-enabled",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643002/response/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not enabled"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-add-foreign-expired",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643008/response/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "module not enabled"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-add-max-reached",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643004/response/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "max responses reached"
+   },
+   "effect": null,
+   "body": {
+    "nome": "x"
+   }
+  },
+  {
+   "name": "modules-responses-add-only-users-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643006/response/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "only users"
+   },
+   "effect": null,
+   "body": {
+    "nome": "x"
+   }
+  },
+  {
+   "name": "modules-responses-add-null-progressive-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643010/response/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "nome": "x"
+   }
+  },
+  {
+   "name": "modules-responses-add-null-body-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "modules-responses-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": null,
+    "created": {
+     "module": "open",
+     "number": 3,
+     "queue": null,
+     "response": {
+      "nome": "Bruno è",
+      "eta": 30,
+      "consensi": [
+       true,
+       null,
+       1.5
+      ],
+      "z": {
+       "b": 1,
+       "a": "\n"
+      }
+     },
+     "approved": true,
+     "user": null
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643001"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "3"
+       ],
+       "response": [
+        "None",
+        "{\"consensi\": [true, null, 1.5], \"eta\": 30, \"nome\": \"Bruno \\u00e8\", \"z\": {\"a\": \"\\n\", \"b\": 1}}"
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new1"
+   },
+   "body": {
+    "nome": "Bruno è",
+    "eta": 30,
+    "consensi": [
+     true,
+     null,
+     1.5
+    ],
+    "z": {
+     "b": 1,
+     "a": "\n"
+    }
+   }
+  },
+  {
+   "name": "modules-responses-add-owner-approval-dated",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643003/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": "owner",
+    "created": {
+     "module": "approval",
+     "number": 0,
+     "queue": null,
+     "response": {
+      "nome": "Proprietario"
+     },
+     "approved": false,
+     "user": "owner"
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643003"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "0"
+       ],
+       "response": [
+        "None",
+        "{\"nome\": \"Proprietario\"}"
+       ],
+       "approved": [
+        "None",
+        "False"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new2"
+   },
+   "body": {
+    "nome": "Proprietario"
+   }
+  },
+  {
+   "name": "modules-responses-add-athlete-only-users-payment",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643006/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": "athlete",
+    "created": {
+     "module": "users",
+     "number": 0,
+     "queue": null,
+     "response": {
+      "nome": "Atleta"
+     },
+     "approved": true,
+     "user": "athlete"
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643006"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "0"
+       ],
+       "response": [
+        "None",
+        "{\"nome\": \"Atleta\"}"
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700004"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new3"
+   },
+   "body": {
+    "nome": "Atleta"
+   }
+  },
+  {
+   "name": "modules-responses-add-full-collaborator-foreign-module",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643007/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": "full_collaborator",
+    "created": {
+     "module": "foreign",
+     "number": 2,
+     "queue": null,
+     "response": {},
+     "approved": true,
+     "user": "owner"
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643007"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "2"
+       ],
+       "response": [
+        "None",
+        "{}"
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701002",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701002",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new4"
+   },
+   "body": {}
+  },
+  {
+   "name": "modules-responses-add-anonymous-orphan",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643009/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": null,
+    "created": {
+     "module": "orphan",
+     "number": 1,
+     "queue": null,
+     "response": [
+      "a",
+      1
+     ],
+     "approved": true,
+     "user": null
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643009"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "1"
+       ],
+       "response": [
+        "None",
+        "[\"a\", 1]"
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "label": "$new5"
+   },
+   "body": [
+    "a",
+    1
+   ]
+  },
+  {
+   "name": "modules-responses-add-owner-orphan",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643009/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": "owner",
+    "created": {
+     "module": "orphan",
+     "number": 2,
+     "queue": null,
+     "response": "testo",
+     "approved": true,
+     "user": "owner"
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643009"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "2"
+       ],
+       "response": [
+        "None",
+        "\"testo\""
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "label": "$new6"
+   },
+   "body": "testo"
+  },
+  {
+   "name": "modules-responses-add-anonymous-queue",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643005/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": null,
+    "created": {
+     "module": "queue",
+     "number": 4,
+     "queue": 4,
+     "response": {
+      "nome": "Quattro"
+     },
+     "approved": false,
+     "user": null
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643005"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "4"
+       ],
+       "response": [
+        "None",
+        "{\"nome\": \"Quattro\"}"
+       ],
+       "approved": [
+        "None",
+        "False"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "queue_position": [
+        "None",
+        "4"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new7"
+   },
+   "body": {
+    "nome": "Quattro"
+   }
+  },
+  {
+   "name": "modules-responses-add-admin-impersonating-queue-hex",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/modules/A1000000000040008000000000643005/response/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": "admin",
+    "created": {
+     "module": "queue",
+     "number": 5,
+     "queue": 5,
+     "response": {
+      "nome": "Cinque"
+     },
+     "approved": false,
+     "user": "owner"
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643005"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "5"
+       ],
+       "response": [
+        "None",
+        "{\"nome\": \"Cinque\"}"
+       ],
+       "approved": [
+        "None",
+        "False"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "queue_position": [
+        "None",
+        "5"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new8"
+   },
+   "body": {
+    "nome": "Cinque"
+   }
+  },
+  {
+   "name": "modules-responses-add-empty-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response added",
+    "module_response_id": "$new"
+   },
+   "effect": {
+    "kind": "response",
+    "actor": null,
+    "created": {
+     "module": "open",
+     "number": 4,
+     "queue": null,
+     "response": {},
+     "approved": true,
+     "user": null
+    },
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "module_response_id": [
+        "None",
+        "$id"
+       ],
+       "module": [
+        "None",
+        "a1000000-0000-4000-8000-000000643001"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "progressive_response_number": [
+        "None",
+        "4"
+       ],
+       "response": [
+        "None",
+        "{}"
+       ],
+       "approved": [
+        "None",
+        "True"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ],
+    "label": "$new9"
+   }
+  },
+  {
+   "name": "modules-responses-approve-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.modules.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Modules Response Approve",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/abc/approve",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-athlete-malformed",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/modules/response/abc/approve",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-athlete-denied",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-deleted-association-owner",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-foreign-response",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643029/approve",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-orphan-response",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643031/approve",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643999/approve",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-approve-owner-queue",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response approved"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "q1",
+      "action": 1,
+      "changes": {
+       "approved": [
+        "False",
+        "True"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "q1",
+      "action": 1,
+      "changes": {
+       "queue_position": [
+        "1",
+        "None"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "q2",
+      "action": 1,
+      "changes": {
+       "queue_position": [
+        "2",
+        "1"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "q3",
+      "action": 1,
+      "changes": {
+       "queue_position": [
+        "3",
+        "2"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new7",
+      "action": 1,
+      "changes": {
+       "queue_position": [
+        "4",
+        "3"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new8",
+      "action": 1,
+      "changes": {
+       "queue_position": [
+        "5",
+        "4"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "modules-responses-approve-repeat",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643025/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response approved"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "owner",
+    "audit": []
+   }
+  },
+  {
+   "name": "modules-responses-approve-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643029/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response approved"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "foreign_owner",
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "foreign_r",
+      "action": 1,
+      "changes": {
+       "approved": [
+        "False",
+        "True"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701002",
+      "path": "module.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "modules-responses-approve-full-collaborator-hex",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/modules/response/a1000000000040008000000000643022/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response approved"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "full_collaborator",
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "del_r",
+      "action": 1,
+      "changes": {
+       "approved": [
+        "False",
+        "True"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "modules-responses-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.modules.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Modules Response Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-athlete-denied",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-foreign-response",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643030/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643999/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-owner-queue",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "owner",
+    "deleted_responses": [
+     "q2"
+    ],
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "q2",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "q3",
+      "action": 1,
+      "changes": {
+       "queue_position": [
+        "2",
+        "1"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new7",
+      "action": 1,
+      "changes": {
+       "queue_position": [
+        "3",
+        "2"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     },
+     {
+      "model": "ModuleResponses",
+      "key": "$new8",
+      "action": 1,
+      "changes": {
+       "queue_position": [
+        "4",
+        "3"
+       ]
+      },
+      "index": "a1000000-0000-4000-8000-000000701001",
+      "path": "module.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "modules-responses-delete-repeat",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643026/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-delete-admin-impersonating-with-attachment",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643022/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "response deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "admin",
+    "deleted_responses": [
+     "del_r"
+    ],
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "del_r",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "modules-responses-delete-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643029/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "response deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "foreign_owner",
+    "deleted_responses": [
+     "foreign_r"
+    ],
+    "audit": [
+     {
+      "model": "ModuleResponses",
+      "key": "foreign_r",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "modules-responses-attach-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-attach-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.modules.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-attach-restricted-delete-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.modules.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-attach-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-attach-wrong-method",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-attach-put-method",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-attach-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Modules Response Add Attachment",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-attach-malformed",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/abc/add-attachment",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "filename": "a.txt",
+    "base64": "YQ=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-malformed",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/abc/add-attachment",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643015"
+   }
+  },
+  {
+   "name": "modules-responses-attach-nothing-sent",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": null,
+   "body": {
+    "filename": "a.txt"
+   }
+  },
+  {
+   "name": "modules-responses-attach-unknown-response-nothing-sent",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643999/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-attach-list-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": null,
+   "body": [
+    "filename"
+   ]
+  },
+  {
+   "name": "modules-responses-attach-string-body-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": "filename base64"
+  },
+  {
+   "name": "modules-responses-attach-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "nota.txt",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "nota.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-owner-data-uri-padding",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "pixel è.png",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "pixel è.png"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 20,
+     "sha256": "d51696591e6a664adeecee08d772d017975c6d8d466d015246afd911ca06d7e8",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "pixel è.png",
+    "base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAE",
+    "ignorato": 1
+   }
+  },
+  {
+   "name": "modules-responses-attach-full-collaborator-junk-characters",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/modules/response/A1000000-0000-4000-8000-000000643021/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": "full_collaborator",
+    "filename": "senza estensione",
+    "link": "open_r1",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "senza estensione"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "application/octet-stream",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "senza estensione",
+    "base64": "Y2l!hbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-unknown-response-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643999/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": "athlete",
+    "filename": "orfano.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "orfano.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 6,
+     "sha256": "a92b0ec45df06c01cb2aa5e53691ccbe0a4a7c67ef92a81e0cb8d6e8ebdf5000",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "orfano.txt",
+    "base64": "b3JmYW5v"
+   }
+  },
+  {
+   "name": "modules-responses-attach-bad-padding-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": null,
+    "filename": "rotto.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "rotto.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "rotto.txt",
+    "base64": "abcde"
+   }
+  },
+  {
+   "name": "modules-responses-attach-non-ascii-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "document",
+    "actor": "owner",
+    "filename": "accento.txt",
+    "link": null,
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "accento.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": null
+   },
+   "body": {
+    "filename": "accento.txt",
+    "base64": "çiao"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-missing-key",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "modules-responses-attach-delete-null-document",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": null
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-unknown-document",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643999"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-unknown-response-unknown-document",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643999/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643999"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-list-without-key",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": [
+    "x"
+   ]
+  },
+  {
+   "name": "modules-responses-attach-delete-list-key-server-error",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "document_id"
+   ]
+  },
+  {
+   "name": "modules-responses-attach-delete-malformed-document-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": "xyz"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-unknown-response-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643999/add-attachment",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643011"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-owner-unlinked",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "owner",
+    "deleted_documents": [
+     "d3"
+    ],
+    "removed_links": [],
+    "audit": [
+     {
+      "model": "Document",
+      "key": "d3",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643015"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-repeat",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643015"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-full-collaborator-shared",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "full_collaborator",
+    "deleted_documents": [
+     "d4"
+    ],
+    "removed_links": [
+     [
+      "att_r",
+      "d4"
+     ],
+     [
+      "other_r",
+      "d4"
+     ]
+    ],
+    "audit": [
+     {
+      "model": "Document",
+      "key": "d4",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "document_id": "A1000000-0000-4000-8000-000000643017"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-anonymous-other-response",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643027/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": null,
+    "deleted_documents": [
+     "d5"
+    ],
+    "removed_links": [],
+    "audit": [
+     {
+      "model": "Document",
+      "key": "d5",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643019"
+   }
+  }
+ ]
+}
