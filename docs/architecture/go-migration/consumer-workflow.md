@@ -41,9 +41,10 @@ already published stay published. CoordinatedTask admission applies as for every
   - `wait`: `int(amount) * 60/3600/86400` for `minutes`/`hours`/`days` and the next block with that countdown (`0` means
     no eta). Another type with a next block raises (countdown unbound).
 - Messages are published with `app.send_task` inside the worker: `root_id` is the request's root, `parent_id` its id, a
-  fresh publish stamp, and the routes of `GO_TASK_QUEUE_TASKS` (`send_email_html` goes to `celery` unless listed). They do
-  **not** appear in the result's `meta.children`: `CoordinatedTask.__call__` runs the body through `Task.__call__`, which
-  pushes its own request context, so the stored SUCCESS row keeps `{"children": []}`.
+  fresh publish stamp, and the routes of `GO_TASK_QUEUE_TASKS` (`send_email_html` goes to `celery` unless listed). In the
+  production (prefork) worker each one is appended to `task.request.children` and stored, in publish order, in the
+  result's `meta.children` (Go: `Request.AddChild` after each publish). The first oracle, a worker thread inside the
+  harness, stored `{"children": []}` because there `Task.__call__` pushes a fresh request.
 
 ## Go
 
@@ -102,3 +103,18 @@ of a non-string trigger type.
 - Re-run after the shared changes (`celery.Task` root/parent fields, `cmd/celery-consumer` registration): `celery_consumer_process.py`
   (send_mail_async) 14/14; `go test ./internal/celery` (producer goldens unchanged).
 - Unit tests: `go test ./internal/service -run WorkflowTasks`, `./internal/celery -run EncodeParentIDs`.
+
+### Prefork re-check (`consumer-prefork-recheck`)
+
+The harness runs the Django oracle as a `celery worker -P prefork -c 1` subprocess by default (production has no `-P`
+in `selfhost/compose.yml`, so Linux uses prefork); `CELERY_CONSUMER_ORACLE=thread` keeps the earlier in-thread worker.
+The authored check now requires each stored row's `meta.children` to list the messages that task published, in order.
+
+- Django prefork oracle alone: 20/20 (`consumer-prefork-recheck-workflow-oracle`).
+- RED: only `meta.children` differed on the first scenario (Django `T: [T.0]`, `T.0: [T.0.0, T.0.1]`; Go `[]`)
+  (`consumer-prefork-recheck-workflow-red`).
+- GREEN: 20/20 (`consumer-prefork-recheck-workflow-green`).
+- Mutation (CAUGHT): `AddChild` skipped for eta publishes (`service/workflow_tasks.go`); the first block's row lost
+  `[T.0.0, T.0.1]` (`consumer-prefork-recheck-workflow-mutation`).
+- Re-run of the other consumer harnesses: see consumer-email.md.
+

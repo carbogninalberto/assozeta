@@ -128,8 +128,10 @@ switches to quoted-printable beyond). Golden: `TESTS/adapters/go/django_mail_gol
 `TESTS/adapters/go/celery_consumer_process.py` (receipts in `quality-reports/go-migration/celery-consumer-process*`):
 private PostgreSQL with the current Django schema, private Redis (DB 0, password), a fake SMTP server recording client
 bytes. Each scenario publishes with Django's producer (routed by `go_task_routes('core.tasks.send_mail_async')`), pushes
-the identical bytes to a real Django worker (`celery.contrib.testing.worker`, solo pool, `-Q assozeta-go`, django-db,
-CoordinatedTask, production EmailBackend) and, after re-seeding, to the race-built Go consumer, then compares after each
+the identical bytes to a real Django worker (since `consumer-prefork-recheck`: a `celery worker -P prefork -c 1
+-Q assozeta-go` subprocess, as production runs it, via `consumer_prefork_oracle_settings.py`; `CELERY_CONSUMER_ORACLE=thread`
+selects the original `celery.contrib.testing.worker` solo thread; django-db, CoordinatedTask, production EmailBackend)
+and, after re-seeding, to the race-built Go consumer, then compares after each
 worker stopped: SMTP transcripts (Message-ID, Date, boundary, EHLO name and SIZE normalized), the complete managed-model
 state with TaskResult and EmailLog rows (timestamps within the run window), and every broker key (queues with decoded,
 order-preserving messages; unacked hash and index; bindings), with random publish values normalized after a shape check
@@ -171,10 +173,11 @@ and a Django worker on `celery` must then reach the Django-only final state; in 
    value, `*celeryworker.Retry` (the task's own `self.retry` policy), or `*celeryworker.Exception` (Python class, module and
    args). Register it in `cmd/celery-consumer/main.go`.
 3. **Messages the task publishes**: use a producer with the routes, `celery.Task.RootID = request.RootID or request.ID`
-   and `ParentID = request.ID` (Celery's `send_task`/`apply_async` inside a running task). Do not call
-   `Request.AddChild`: `CoordinatedTask.__call__` runs the body through `Task.__call__`, which pushes its own request,
-   so body publishes never reach the stored `meta.children` (only the maintenance deferral, raised before the body, does).
-   First used by [consumer-workflow](consumer-workflow.md).
+   and `ParentID = request.ID` (Celery's `send_task`/`apply_async` inside a running task), then call
+   `Request.AddChild(id)` with the published id: the production prefork worker stores body publishes (and the retry
+   message, which `celeryworker` adds itself) in `meta.children`. A publish from another thread (a `threading.Timer`)
+   has no current task and is not recorded. Compare against the prefork oracle; the in-thread testing worker records
+   none of them. First used by [consumer-workflow](consumer-workflow.md).
 4. **Run** RED (without the registration), GREEN, a semantic mutation, and re-run the families that share touched code.
 5. **Enable** per name with `GO_TASK_QUEUE_TASKS` only after GREEN.
 

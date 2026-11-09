@@ -6,12 +6,14 @@ routed to ``assozeta-go`` by ``GO_TASK_QUEUE_TASKS``. Private PostgreSQL (actual
 Django current schema) and a private Redis broker, as celery_consumer_process.py.
 
 Each scenario builds one message with Django's own producer, then runs it once on
-a real worker of the Django Celery app (solo pool, ``-Q assozeta-go``, django-db,
-CoordinatedTask) and once, on the same seed, on the race-built Go consumer. The
+a real worker of the Django Celery app (a prefork worker subprocess as in production,
+``-Q assozeta-go``, django-db, CoordinatedTask; CELERY_CONSUMER_ORACLE=thread selects
+the earlier in-thread solo worker) and once, on the same seed, on the race-built Go consumer. The
 messages the tasks publish (``send_task`` inside the worker) are part of the result:
 ``workflow_block_execute`` children are routed back to ``assozeta-go`` and executed
 by the same worker (eta children are held and restored at shutdown);
-``send_email_html`` goes to the unconsumed ``celery`` queue.
+``send_email_html`` goes to the unconsumed ``celery`` queue. In the prefork worker each
+message a task publishes is recorded, in publish order, in its stored ``meta.children``.
 
 Compared after each worker stopped: the complete managed-model state (TaskResult
 rows, the auditlog entry and index of get_main_tutor's promotion), and every broker
@@ -493,8 +495,12 @@ class Harness(base.Harness):
         results = {row['task_id']: row for row in observed['task_results']}
         assert len(results) == scenario.rows, results
         assert all(row['status'] == 'SUCCESS' for row in results.values()), results
-        # Messages published from the task body never reach request.children (Task.__call__ pushes its own request).
-        assert all(row['meta'] == {'children': []} for row in results.values()), results
+        # The prefork worker records each message the task publishes (in publish order, labelled T.0, T.1, ...) in
+        # meta.children; the thread oracle's Task.__call__ pushes its own request, so it records none.
+        for label, row in results.items():
+            published = sum(1 for item in observed['published'] if json.loads(item)['headers']['parent_id'] == label)
+            expected = [[[f'{label}.{i}', None], None] for i in range(published)] if base.ORACLE == 'prefork' else []
+            assert row['meta'] == {'children': expected}, (label, row['meta'])
         assert json.loads(results['T']['result']) == scenario.result, results['T']
         messages = [json.loads(item) for item in observed['published']]
         names = {}
@@ -579,13 +585,13 @@ def main():
                     report.write_text(json.dumps(result, indent=2) + '\n')
     expected = [s.name for s in SCENARIOS if not only or only in s.name]
     assert harness.completed == expected, 'not every scenario completed'
-    paths = ['TESTS/adapters/go/celery_consumer_workflow_process.py', 'TESTS/adapters/go/celery_consumer_process.py',
+    paths = ['TESTS/adapters/go/celery_consumer_workflow_process.py', 'TESTS/adapters/go/celery_consumer_process.py', *base.ORACLE_SOURCES,
              'BE/application/tasks.py', 'BE/communications/models.py', 'BE/application/models/user_models.py',
              'BE/core/task_routing.py', 'BE/instance/restore/task_base.py']
     paths += sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'BE_GO').rglob('*.go')
                     if any(part in str(p) for part in ('internal/celery/', 'internal/celeryworker/', 'cmd/celery-consumer/',
                                                        'workflow_tasks')))
-    result.update(success=True, partial=bool(only), race_instrumented=not DJANGO_ONLY, django_only=DJANGO_ONLY,
+    result.update(success=True, partial=bool(only), race_instrumented=not DJANGO_ONLY, django_only=DJANGO_ONLY, oracle=base.ORACLE,
                   source_hashes={p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths})
     report.write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps({k: v for k, v in result.items() if k != 'source_hashes'}))

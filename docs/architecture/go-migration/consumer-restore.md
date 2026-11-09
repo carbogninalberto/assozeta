@@ -41,10 +41,12 @@ Messages with time limits are inside the decoded subset only for prefork tasks (
 - At shutdown the consumer waits `--drain-timeout` for running tasks; a prefork child still running then is left to
   finish on its own and its acks_late message, still unacknowledged, comes back through the visibility restore (Celery's
   warm shutdown waits without limit).
-- Observed while characterizing (not changed here): with the production worker started as a separate process
-  (`celery worker`, prefork or solo pool), a message published from inside the task body — including `Task.retry` — is
-  recorded in the stored result's `meta.children`. The earlier consumer harnesses ran the worker in a thread of the
-  harness process and saw no children for body publishes. The prefork tasks follow the separate-process oracle.
+- Observed while characterizing: with the production worker started as a separate process (`celery worker`, prefork
+  or solo pool), a message published from inside the task body — including `Task.retry` — is recorded in the stored
+  result's `meta.children`. The earlier consumer harnesses ran the worker in a thread of the harness process and saw no
+  children for body publishes. The prefork tasks follow the separate-process oracle. `consumer-prefork-recheck` moved
+  the send_mail_async, e-mail and workflow harnesses to the prefork oracle and made Go record those children for every
+  task (consumer-email.md, consumer-workflow.md).
 
 ### Evidence
 
