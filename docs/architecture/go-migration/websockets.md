@@ -88,8 +88,9 @@ directions exist:
 - **Go writes → any socket.** Unchanged: Go appends `assozeta_go_realtime_events`
   in the business transaction; `python manage.py relay_go_realtime`
   (`BE/notifications/go_realtime.py`) claims the row and calls the channel
-  layer's `group_send`. The relay stays Django-owned by design (it must speak
-  through Django's channel layer), so `relay_go_realtime` is not ported.
+  layer's `group_send`. Go now has an equivalent command,
+  `BE_GO/cmd/relay-go-realtime`, sending through `internal/channels`
+  (see relay-go-realtime.md); the compose relay service still runs Django's.
 - **Django `group_send` → Go sockets.** New
   `BE/notifications/realtime_layer.py` `GoMirroredRedisChannelLayer` (now the
   configured backend) performs the normal Channels delivery and then publishes

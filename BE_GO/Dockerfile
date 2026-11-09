@@ -10,6 +10,8 @@ RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server && \
     CGO_ENABLED=0 go build -trimpath -o /migrate ./cmd/migrate && \
     CGO_ENABLED=0 go build -trimpath -o /check-manual ./cmd/check-manual && \
     CGO_ENABLED=0 go build -trimpath -o /create-instance-superuser ./cmd/create-instance-superuser && \
+    CGO_ENABLED=0 go build -trimpath -o /migrate-subscription-signatures-to-s3 ./cmd/migrate-subscription-signatures-to-s3 && \
+    CGO_ENABLED=0 go build -trimpath -o /relay-go-realtime ./cmd/relay-go-realtime && \
     CGO_ENABLED=0 go build -trimpath -o /mcp-server ./cmd/mcp-server
 
 # Keep the codec independent of Go's CGO toolchain and isolate codec faults in a
@@ -50,6 +52,8 @@ COPY --from=builder /scheduler /app/scheduler
 COPY --from=builder /migrate /app/migrate
 COPY --from=builder /check-manual /app/check-manual
 COPY --from=builder /create-instance-superuser /app/create-instance-superuser
+COPY --from=builder /migrate-subscription-signatures-to-s3 /app/migrate-subscription-signatures-to-s3
+COPY --from=builder /relay-go-realtime /app/relay-go-realtime
 COPY --from=builder /mcp-server /app/mcp-server
 COPY --from=codec-builder /image-codec /app/image-codec
 COPY --from=codec-builder /codec-version /app/licenses/libjpeg-turbo-version.txt

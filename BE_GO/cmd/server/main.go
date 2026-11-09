@@ -291,7 +291,12 @@ func run() (runErr error) {
 	e.HideBanner = true
 	e.HidePort = true
 	// Django's CORS middleware admits preflight before URL resolution/session.
-	e.Pre(middleware.QueryObservation(queryObserver), handler.InstanceBootstrapLocale(), middleware.DjangoCORS(cfg.CORSAllowAll, cfg.CORSAllowedOrigins), middleware.DjangoRestoreAdmission(restoreAdmission), middleware.DjangoSecurityHeaders())
+	e.Pre(middleware.QueryObservation(queryObserver), handler.InstanceBootstrapLocale(), handler.DjangoUnmatchedLocale(e), middleware.DjangoCORS(cfg.CORSAllowAll, cfg.CORSAllowedOrigins), middleware.DjangoRestoreAdmission(restoreAdmission), middleware.DjangoSecurityHeaders())
+	// URLs no Django pattern resolves: page_not_found or APPEND_SLASH (unknown-paths.md).
+	unmatched := middleware.DjangoSessionAudit(sessionAuthentication)(handler.DjangoNotFound)
+	e.HTTPErrorHandler = handler.DjangoHTTPErrorHandler(e)
+	e.Use(handler.DjangoEmptySegment(unmatched))
+	e.Any("/*", unmatched)
 	// Caddy strips the external API prefix; register only upstream paths here.
 	e.Any("/collaborators/list", collaboratorListHandler.Read, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/collaborators/:uid/update", collaboratorWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
