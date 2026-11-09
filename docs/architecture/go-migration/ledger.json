@@ -36262,34 +36262,67 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task association_quote_assign with the declared 03:00 UTC daily cron or another supported definition, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide association_quote_assign version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic association_quote_assign v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps association_quote_assign to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Task is not ported (member email); Go rejects persisted rows for it as unsupported without effects. See docs/architecture/go-migration/tasks-db-a.md.",
-        "Task is not registered in the Go worker; Go rejects such persisted rows as unsupported without effects (tasks-db-d occurrence check). See docs/architecture/go-migration/tasks-db-d.md."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -36353,34 +36386,67 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task auto_delete_orphan_medical_certificate with the declared 03:00 UTC daily cron or another supported definition, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide auto_delete_orphan_medical_certificate version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic auto_delete_orphan_medical_certificate v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps auto_delete_orphan_medical_certificate to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Task is not registered in the Go worker; Go rejects such persisted rows as unsupported without effects. Not ported by tasks-db-b: remains needs_review per the notes above (destructive Document cascade and storage deletion); Go keeps candidate discovery only. See docs/architecture/go-migration/tasks-db-b.md.",
-        "tasks-db-e: still not registered; the legacy deletion cascades from Document.delete() to every referencing row and audits the certificate twice, and Go keeps candidate discovery only until that cascade is characterized. The schedule stays unsupported. See docs/architecture/go-migration/tasks-db-e.md."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -37070,33 +37136,67 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go",
+        "BE_GO/internal/domain/occurrence.go",
+        "BE_GO/internal/repository/occurrence.go",
+        "BE_GO/internal/service/occurrence.go",
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go",
+        "BE_GO/cmd/scheduler/main.go",
+        "BE_GO/internal/domain/schedule_loop.go",
+        "BE_GO/internal/service/schedule_loop.go",
+        "BE_GO/internal/repository/schedule_schema.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Explicit persisted source ID for exact task mark_as_paid_payments_checking_stripe with the declared */20 minute UTC cron or another supported definition, and default empty transport metadata. Does not seed the static declaration.",
+        "response": "Published receipt or not-due timing result; raw NextCheckAfter requires bounded polling.",
+        "errors": "Unsupported definition, invalid time, busy/deleted source, inactive ownership, restore barrier, SQL and commit failures leave no partial publication.",
+        "authentication": "Internal trusted scheduler/service composition only; no public transport.",
+        "permissions": "Required shared lifecycle lease and durable Go ownership generation; no operator activation implemented.",
+        "resource_scope": "Instance-wide mark_as_paid_payments_checking_stripe version 1 intent, nil association; reads one explicitly selected existing Beat source.",
+        "side_effects": "Atomic mark_as_paid_payments_checking_stripe v1 job (empty payload, three operational attempts, key periodic:<source>:<sequence>), retained occurrence receipt and existing last_run_at/total_run_count/date_changed; no PeriodicTasks marker change.",
+        "transaction": "Read-committed transaction locks owner FOR SHARE then source FOR UPDATE NOWAIT and interval/cron FOR SHARE NOWAIT; clock sampled afterward. All three writes commit together.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py",
+        "BE_GO/internal/service/occurrence_test.go",
+        "BE_GO/internal/repository/occurrence_integration_test.go",
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py",
+        "TESTS/adapters/go/server_fence.py",
+        "TESTS/adapters/go/restore_drain_pooler.py",
+        "TESTS/adapters/django/restore_server_barrier.py",
+        "BE_GO/internal/service/schedule_loop_test.go",
+        "BE_GO/cmd/scheduler/main_test.go",
+        "TESTS/adapters/go/scheduler_process.py",
+        "TESTS/adapters/go/scheduler_image.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "domain.PeriodicJobKind maps mark_as_paid_payments_checking_stripe to its registered version-1 worker job; the definition is inside the evaluator subset. Six authored cases (utc_daily_0300_*, utc_every_20_minutes_*) match actual Celery 5.6.2/Beat 2.8.1 (84 oracle cases); the Go differential passes 59 supported cases for each of nineteen tasks and 53 rejection cases. RED: adding the task to the differential fails every case before the mapping. The occurrence group publishes its exact v1 intent. See docs/architecture/go-migration/tasks-db-f.md."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations.",
-        "Task is not registered in the Go worker; Go rejects such persisted rows as unsupported without effects (tasks-db-d rejection and occurrence checks). See docs/architecture/go-migration/tasks-db-d.md."
+        "Static declaration is not the effective fresh schedule and is never seeded; Go publishes only from a persisted supported row. Single scheduling ownership and handoff remain required."
       ]
     },
     {
@@ -39672,29 +39772,65 @@
           "name": "'association_quote_assign'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/quote_assign.go",
+        "BE_GO/internal/repository/quote_assign.go",
+        "BE_GO/internal/service/quote_assign.go",
+        "BE_GO/internal/service/payment_misc.go",
+        "BE_GO/internal/service/payment_writes.go",
+        "BE_GO/internal/repository/payment_misc.go",
+        "BE_GO/internal/service/email_tasks.go",
+        "BE_GO/internal/emailrender/template.go",
+        "BE_GO/internal/emailrender/templates/email/payment/fee_assigned.html",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/celery/celery.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/cmd/worker/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/utils/api_utils.py",
+        "BE/templates/email/payment/fee_assigned.html",
+        "BE/templates/email/_base.html",
+        "BE/communications/models.py",
+        "BE/application/audit_resolvers.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE/instance/restore/task_base.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Beat call without arguments: exact Go kind association_quote_assign, version 1, empty object payload, nil association and a running fenced job (the date/sport_association arguments have no Go producer).",
+        "response": "Django None; completed Go job with SQL NULL result.",
+        "errors": "An invalid balance-year start, a plan the loop cannot read, or a subscription without associate (after its payment is created) ends the run with earlier payments kept. Refused before any effect (task_failed): plan conversions the apply route does not port, plan names/fees the renderer does not take, SMTP messages outside smtpsend. Database errors go back to the executor.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "resource_scope": "Live associations with plans, multiple fees and an advanced plan (server-side cursor, unordered); per active plan of today (UTC) the balance-year subscriptions whose payment meta icontains the previous plan (Django column list, no ORDER BY).",
+        "side_effects": "Per subscription without an existing quote: Payment.objects.create (default bank account, Payment.save defaults, audited create indexed direct, no actor), committed alone; for members other than the owner email/payment/fee_assigned.html via send_email_html (SMTP after a 1-30 s delay with the balance save, or send_mail_async).",
+        "transaction": "Planning and reads in fenced READ COMMITTED transactions; each create in its own fenced transaction; delayed SMTP sends outside the job (the worker waits for them); completion fenced.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/quote_assign_worker_process.py",
+        "TESTS/adapters/go/email_tasks_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py",
+        "TESTS/adapters/go/email_render_golden.py",
+        "BE_GO/internal/emailrender/golden_test.go"
+      ],
+      "evidence": [
+        "Native worker registration (version 1). TESTS/adapters/go/quote_assign_worker_process.py: race-built worker/migrate on actual current Django models in private PostgreSQL, Redis and a STARTTLS fake SMTP server; the actual Django task runs first (production broker) with authored assertions (10 payments, 7 send_mail_async messages, 1 delayed SMTP delivery and balance save, 11 audit entries); Go must match the state (payment keys, audit ids/times normalized), message bodies and SMTP transcripts. Groups: default owner, native parity, later run, stop on a subscription without associate, invalid version/payload/tenant, unported fee refused, SMTP subject refused. RED: job pending after the oracles. GREEN 7/7. fee_assigned.html golden renders in go test ./internal/emailrender. See docs/architecture/go-migration/tasks-db-f.md."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-a: each created fee payment for a member sends a templated email.",
-        "Not ported by tasks-db-d: needs email/payment/fee_assigned.html in emailrender and a generalized send_email_html (SMTP timer or send_mail_async) in the shared e-mail task service. See docs/architecture/go-migration/tasks-db-d.md."
+        "Ported by tasks-db-f; refusals and infrastructure differences in docs/architecture/go-migration/tasks-db-f.md."
       ]
     },
     {
@@ -39784,8 +39920,17 @@
           "name": "'auto_delete_orphan_medical_certificate'"
         }
       },
-      "status": "needs_review",
+      "status": "implementing",
       "go": [
+        "BE_GO/internal/domain/orphan_medical_cleanup.go",
+        "BE_GO/internal/repository/orphan_medical_cleanup.go",
+        "BE_GO/internal/service/orphan_medical_cleanup.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/internal/repository/documents_archive.go",
+        "BE_GO/internal/repository/export_cleanup.go",
+        "BE_GO/cmd/worker/export_cleanup.go",
+        "BE_GO/cmd/worker/main.go",
         "BE_GO/internal/domain/medical_cleanup.go",
         "BE_GO/internal/repository/medical_cleanup_candidates.go",
         "BE_GO/pkg/storage/documentkey/medical.go",
@@ -39797,32 +39942,38 @@
         "BE_GO/pkg/storage/s3credentials/process.go"
       ],
       "dependencies": [
-        "BE/application/models/subscriptions_models.py",
-        "BE/docmanager/models.py",
-        "BE/application/models/invoices_models.py",
-        "BE/application/models/user_models.py",
-        "BE/application/models/courses_models.py",
-        "BE/application/models/modules_models.py",
-        "BE/application/services/subscription_service.py",
         "BE/application/impersonation_scope.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/modules_models.py",
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/services/subscription_service.py",
         "BE/application/signals.py",
+        "BE/application/tasks.py",
+        "BE/core/celery.py",
         "BE/core/settings.py",
-        "BE/core/celery.py"
+        "BE/docmanager/models.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/model_delete_audit.go"
       ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": "Legacy task has no arguments; Go has only a read-only UUID-cursor page of 1..512 logical document candidates.",
-        "response": "Legacy task returns None after success or handled error. Go discovery returns document metadata/certificate counts and does not execute or complete a task.",
-        "errors": "Legacy NULL document/storage/SQL errors are caught; file deletion can precede SQL rollback. Go page/context/SQL errors return without partial results.",
-        "authentication": "Trusted instance-wide background discovery; not an HTTP actor/resource grant.",
-        "permissions": "No group/association visibility restriction may hide a protecting reference.",
-        "resource_scope": "Legacy excludes only Subscription.medical references, including archived/deleted subscriptions. Go discovery additionally protects every current Document FK/M2M and canonical draft medical IDs, across associations/historical flags. Pending upload and concurrent attachment coordination remain unresolved.",
-        "side_effects": "Legacy deletes file first, then Document cascade, then MedicalCertificate again, producing duplicate medical DELETE audits and potentially clearing unrelated references. Go discovery writes no rows/files/audits and does not authorize deletion.",
-        "transaction": "One SQL snapshot per Go discovery page; explicit DB or caller transaction, no locks. Durable provider/DB intent, fencing, rollback/recovery and upload/attachment leases remain required.",
+        "request": "No Python arguments: exact Go kind auto_delete_orphan_medical_certificate, version 1, empty object payload, nil association and a running fenced job.",
+        "response": "Django None; completed Go job with SQL NULL result.",
+        "errors": "A certificate without document or a name outside AWS_LOCATION (SuspiciousOperation) ends the run with earlier deletions kept; a storage delete error ends it too. Refused before any effect (task_failed): a document of an orphan certificate referenced outside the SET_NULL keys by anything but its one certificate, or a date/name outside the key helpers. Database errors go back to the executor.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "resource_scope": "MedicalCertificate rows no Subscription row references (any state), select_related document, through the same server-side cursor as Django's iterator (unordered).",
+        "side_effects": "Per certificate: default_storage.delete(<timestamp>/<document id>/<filename>), document.delete() (certificate delete audited, SET_NULL references cleared, document delete audited), a second certificate delete entry; no index rows.",
+        "transaction": "Planning in one fenced READ COMMITTED transaction (cursor snapshot); per certificate one fenced transaction for document.delete() and one for the second delete entry; completion fenced.",
         "execution_owner": "django"
       },
       "tests": [
+        "TESTS/adapters/go/orphan_medical_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py",
+        "TESTS/adapters/django/instance_logo.py",
         "TESTS/adapters/django/medical_orphan_cleanup.py",
         "TESTS/adapters/django/medical_cleanup_candidates.py",
         "BE_GO/internal/repository/medical_cleanup_candidates_integration_test.go",
@@ -39856,14 +40007,15 @@
         "44 authored production-Python S3Storage/Boto3 AssumeRole comparisons pass over a private STS endpoint independently verifying complete SigV4 signatures, source identities/tokens, request fields and counts. Tested source-profile/environment roles preserve durations, session names and parameter rejection; malformed/missing/expired responses fail without panic or private error exposure. Existing credential selection, Go race/vet and MinIO regressions pass. MFA, metadata/ECS roles, SSO, web identity, full INI/refresh semantics and production composition remain open. See quality-reports/go-migration/storage-roles/.",
         "STS differential coverage now has 62 authored cases, including 18 MFA cases using actual S3Storage/Boto3 and independently checked local signatures. Explicit context-aware callbacks preserve configured device, literal code, validation order, nested/environment roles, one attempt per provider and no reprompt after failure/actual expiry. Go race tests verify 32 waiters, first-waiter cancellation, pre-cancelled admission, one callback and at most one STS request; callback errors stay fixed. Existing 44 credential-selection cases and Go race/vet pass. Production composition, early refresh and other provider chains remain open. See quality-reports/go-migration/storage-mfa/.",
         "STS differential coverage now has 82 authored cases: twenty additional ECS/IMDS role-source cases verify exact identity/signatures, container token-file precedence, IMDSv2 and allowed/disabled v1 fallback, disabled/incomplete metadata, MFA, nested roles and escaped/prefixed endpoint precedence. A public SDK option hook preserves selected source credentials; IMDS middleware restores endpoint prefixes. Two race groups verify 64 callers cause one source fetch and one STS call (ECS=2 HTTP, IMDSv2=4). Existing selection, Go race/vet and MinIO regressions pass. Direct/default metadata chains, complete renewal/errors, live policy and production composition remain open. See quality-reports/go-migration/storage-metadata/.",
-        "38 authored S3Storage/Boto3 web-identity cases pass over local STS: unsigned requests, session names, tested profile/environment/static priorities, nested source signatures, literal UTF-8/universal-newline token files, symlinks and malformed/denied/missing/expired responses. A 1 MiB file cap is an oracle-recorded correction; exact-limit success and nonblocking FIFO rejection are checked. Two 64-caller waves observe actual credential expiry and atomic token rotation with one STS call per wave. Existing 82 role and 44 selection cases, seven MinIO groups, Go vet/race and workflow/inventory checks pass. Full provider precedence/INI/renewal, live IdP/AWS policy and production composition remain open. See quality-reports/go-migration/storage-web-identity/."
+        "38 authored S3Storage/Boto3 web-identity cases pass over local STS: unsigned requests, session names, tested profile/environment/static priorities, nested source signatures, literal UTF-8/universal-newline token files, symlinks and malformed/denied/missing/expired responses. A 1 MiB file cap is an oracle-recorded correction; exact-limit success and nonblocking FIFO rejection are checked. Two 64-caller waves observe actual credential expiry and atomic token rotation with one STS call per wave. Existing 82 role and 44 selection cases, seven MinIO groups, Go vet/race and workflow/inventory checks pass. Full provider precedence/INI/renewal, live IdP/AWS policy and production composition remain open. See quality-reports/go-migration/storage-web-identity/.",
+        "Native worker registration (version 1). TESTS/adapters/go/orphan_medical_worker_process.py: race-built worker/migrate on actual current Django models in private PostgreSQL and pinned MinIO; three Django oracles (main: 5 certificates deleted, 15 audit entries, cleared SET_NULL references; a certificate without document and a name outside the location each stop after the first deletion); Go must match the complete state (audit ids/times normalized) and bucket. Groups: default owner, the three variants, invalid envelopes, later run, cascade refusal. RED: job pending after the oracles. GREEN 7/7. See docs/architecture/go-migration/tasks-db-f.md."
       ],
       "notes": [
         "See BE_GO/internal/repository/medical_cleanup_candidates.md and BE_GO/pkg/storage/s3objects/README.md. Candidate discovery, key resolution and provider batch deletion are implemented dependencies; the destructive cleanup task remains needs_review with no Go body or production registration.",
         "Protect active uploads and every attachment path before destructive execution, including coexistence. Do not substitute an age cutoff. Implement durable file intent, once-only audit correction, recovery from unknown provider outcomes and versioned delete-marker replay, restore fencing and scheduler ownership. Credential/provider composition and live AWS/DigitalOcean evidence remain open.",
         "Static daily 03:00 declaration differs from empty initialized/persisted occurrences in the private fixture. Actual policy: UTC, acks_late false, max_retries 3, delay 180, no rate/time/soft-time limit. This is not production schedule or S3 proof.",
-        "Not ported by tasks-db-b: remains needs_review per the notes above (destructive Document cascade and storage deletion); Go keeps candidate discovery only. See docs/architecture/go-migration/tasks-db-b.md.",
-        "tasks-db-e: still not registered; the legacy deletion cascades from Document.delete() to every referencing row and audits the certificate twice, and Go keeps candidate discovery only until that cascade is characterized. The schedule stays unsupported. See docs/architecture/go-migration/tasks-db-e.md."
+        "tasks-db-e: still not registered; the legacy deletion cascades from Document.delete() to every referencing row and audits the certificate twice, and Go keeps candidate discovery only until that cascade is characterized. The schedule stays unsupported. See docs/architecture/go-migration/tasks-db-e.md.",
+        "Ported by tasks-db-f with the cleanup_old_exports cascade refusal; candidate discovery (medical_cleanup_candidates.go) stays separate. See docs/architecture/go-migration/tasks-db-f.md."
       ]
     },
     {
@@ -40664,28 +40816,63 @@
           "name": "'mark_as_paid_payments_checking_stripe'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/stripe_paid_check.go",
+        "BE_GO/internal/repository/stripe_paid_check.go",
+        "BE_GO/internal/service/stripe_paid_check.go",
+        "BE_GO/internal/service/payment_paid_flow.go",
+        "BE_GO/internal/repository/payment_paid_flow.go",
+        "BE_GO/internal/service/stripe_routes.go",
+        "BE_GO/internal/service/tasks_db_d.go",
+        "BE_GO/internal/stripeapi/client.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/repository/notification_store.go",
+        "BE_GO/internal/channels/channels.go",
+        "BE_GO/cmd/worker/tasks_db_f.go",
+        "BE_GO/cmd/worker/main.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/application/views/stripe_views.py",
+        "BE/application/utils/stripe_utils.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/services/invoice_service.py",
+        "BE/notifications/services.py",
+        "BE/notifications/utils.py",
+        "BE/notifications/realtime_layer.py",
+        "BE/application/audit_resolvers.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py",
+        "BE_GO/internal/repository/jobs.go",
+        "BE_GO/internal/repository/model_audit.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python arguments: exact Go kind mark_as_paid_payments_checking_stripe, version 1, empty object payload, nil association and a running fenced job.",
+        "response": "Django None; completed Go job with SQL NULL result.",
+        "errors": "Without direct credentials nothing happens. Per payment: StripeError, empty intent or other status leave it; an intent without status, a vanished payment or a payment without user (after the invoice task is published) roll the block back and the loop continues. Refused before any effect (task_failed): a payment whose mark flow (dry run, rolled back, nothing published) reaches a path Go does not port. Database errors and unmodelled exceptions go back to the executor.",
+        "authentication": "Internal instance-wide task; mark_payment_as_paid runs with a request whose user is payment.user and no Authorization header (no auditlog actor).",
+        "permissions": "No public publisher; invalid association scope, payload or version rejects before SQL.",
+        "resource_scope": "Live unpaid payments with an intent, listed once; Go processes them in payment_id order where Django runs a ten-thread pool (completion order).",
+        "side_effects": "Per succeeded intent: type=stripe save(update_fields) audited; first supplier invoice marked paid; for an unpaid payment without invoice the Stripe paid flow (invoice with the next balance-year number, payment save, course branch, print_document_invoice.delay(invoice, None) before commit, validate_broadcast) and after commit the notification (Redis DB 0 list, user_broadcasts cache, Channels push).",
+        "transaction": "One fenced READ COMMITTED transaction per payment (the atomic block with select_for_update); the Stripe call inside it; completion fenced.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/stripe_paid_check_worker_process.py",
+        "TESTS/adapters/go/tasks_db_d_worker_process.py",
+        "TESTS/adapters/go/age_worker_fixture.py"
+      ],
+      "evidence": [
+        "Native worker registration (version 1). TESTS/adapters/go/stripe_paid_check_worker_process.py: race-built worker/migrate on actual current Django models in private PostgreSQL, Redis and the Stripe stub; the actual Django task runs first with its pool forced to one thread (ThreadPoolExecutor patched in the adapter only) on a seed whose query order is the payment_id order (asserted from the Stripe request log); Go, processing in payment_id order, must match state (invoices 8-10), Stripe requests, print_document_invoice bodies in order, notification store/cache entries and mirrored pushes. Groups: default owner, native parity, later run, unconfigured credentials, invalid envelopes, unported fee refused. RED: job pending after the oracles. GREEN 6/6. Mutation caught: descending payment_id order swaps invoice numbers. Production Django order is nondeterministic (thread completion). See docs/architecture/go-migration/tasks-db-f.md."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "Not ported by tasks-db-d: a ten-thread pool runs the full mark_payment_as_paid per unpaid payment (invoice numbering, print_document_invoice.delay(invoice, None), course/carnet saves, NotificationService); invoice numbers depend on thread completion order. Needs its own family. The Go scheduler rejects its Beat rows as unsupported. See docs/architecture/go-migration/tasks-db-d.md."
+        "Ported by tasks-db-f: Go serializes the ten-thread pool in payment_id order; the parity proof is against a one-thread Django run. See docs/architecture/go-migration/tasks-db-f.md."
       ]
     },
     {
