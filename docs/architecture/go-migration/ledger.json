@@ -41106,28 +41106,70 @@
           "name": "'print_document_compensation'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_print_tasks.go",
+        "BE_GO/cmd/celery-consumer/consumer_print.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/config/environment_value.go"
+      ],
+      "dependencies": [
+        "BE/application/printing_tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists print_document_compensation); args/kwargs bound to (payment_id, auth_token).",
+        "response": "TaskResult SUCCESS result null meta {\"children\": []}; StaleDataTask FAILURE or RETRY Busy (deferral +15 s) from CoordinatedTask admission.",
+        "errors": "Every exception of the body is swallowed (status, refused connection, InvalidHeader for a non-string or leading-blank token).",
+        "authentication": "Internal task message; the token is forwarded as the Authorization header (None drops it).",
+        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "No database access.",
+        "side_effects": "One GET CURRENT_HOST/document/compensation/<str(id)> (redirects followed, body read, no timeout).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_print_process.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/service/consumer_print_tasks_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
+          "revision": "go/consumer-print on afdd778f (merged codex/go-backend-parity 1d50a56e)",
+          "result": "passed: 30 differential scenarios against the actual Django worker (race-built consumer)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process/results.json",
+          "receipt_sha256": "08fed5796de4b4f63919bb45628b28dd4db7d3f927cf52d9775047fbbbe3f686"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py (consumer without consumerPrintRegister)",
+          "revision": "go/consumer-print on 0ef7960a (pre-merge working tree)",
+          "result": "red: Django oracle passed, Go timed out on the first scenario (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-red/results.json",
+          "receipt_sha256": "8e102a9817110c8b3515012dae1fab7d463d450ad9ccefe64c93cef56a1af369"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='export zips the readable' python -I TESTS/adapters/go/celery_consumer_print_process.py with consumer_export_invoices_zip.go numbering entries by written count",
+          "revision": "go/consumer-print on 2f485422 (merged codex/go-backend-parity 576447ee)",
+          "result": "caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-mutation/results.json",
+          "receipt_sha256": "a334b90c218a417babdab5e082f3b32c42f7952cfc9d85ba900eb5c3c7e323a9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Only called with .apply (eager, in the web request): no message is published; it stays a refused synchronous path of its routes."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Only called with .apply (eager, in the web request): no message is published; it stays a refused synchronous path of its routes.",
+        "consumer-print: cmd/celery-consumer runs the message-consumed print_document_compensation when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/compensation/<id>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md."
       ]
     },
     {
@@ -41147,28 +41189,70 @@
           "name": "'print_document_customer_invoice'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_print_tasks.go",
+        "BE_GO/cmd/celery-consumer/consumer_print.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/config/environment_value.go"
+      ],
+      "dependencies": [
+        "BE/application/printing_tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists print_document_customer_invoice); args/kwargs bound to (customer_invoice_id, auth_token).",
+        "response": "TaskResult SUCCESS result null meta {\"children\": []}; StaleDataTask FAILURE or RETRY Busy (deferral +15 s) from CoordinatedTask admission.",
+        "errors": "Every exception of the body is swallowed (status, refused connection, InvalidHeader for a non-string or leading-blank token).",
+        "authentication": "Internal task message; the token is forwarded as the Authorization header (None drops it).",
+        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "No database access.",
+        "side_effects": "One GET CURRENT_HOST/document/einvoice/<str(id)> (redirects followed, body read, no timeout).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_print_process.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/service/consumer_print_tasks_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
+          "revision": "go/consumer-print on afdd778f (merged codex/go-backend-parity 1d50a56e)",
+          "result": "passed: 30 differential scenarios against the actual Django worker (race-built consumer)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process/results.json",
+          "receipt_sha256": "08fed5796de4b4f63919bb45628b28dd4db7d3f927cf52d9775047fbbbe3f686"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py (consumer without consumerPrintRegister)",
+          "revision": "go/consumer-print on 0ef7960a (pre-merge working tree)",
+          "result": "red: Django oracle passed, Go timed out on the first scenario (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-red/results.json",
+          "receipt_sha256": "8e102a9817110c8b3515012dae1fab7d463d450ad9ccefe64c93cef56a1af369"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='export zips the readable' python -I TESTS/adapters/go/celery_consumer_print_process.py with consumer_export_invoices_zip.go numbering entries by written count",
+          "revision": "go/consumer-print on 2f485422 (merged codex/go-backend-parity 576447ee)",
+          "result": "caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-mutation/results.json",
+          "receipt_sha256": "a334b90c218a417babdab5e082f3b32c42f7952cfc9d85ba900eb5c3c7e323a9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Only called with .apply (eager, in the web request): no message is published; it stays a refused synchronous path of its routes."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Only called with .apply (eager, in the web request): no message is published; it stays a refused synchronous path of its routes.",
+        "consumer-print: cmd/celery-consumer runs the message-consumed print_document_customer_invoice when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/einvoice/<id>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md."
       ]
     },
     {
@@ -41188,28 +41272,70 @@
           "name": "'print_document_invoice'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_print_tasks.go",
+        "BE_GO/cmd/celery-consumer/consumer_print.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/config/environment_value.go"
+      ],
+      "dependencies": [
+        "BE/application/printing_tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists print_document_invoice); args/kwargs bound to (invoice_id, auth_token, send_receipt_email=False).",
+        "response": "TaskResult SUCCESS result null meta {\"children\": []}; StaleDataTask FAILURE or RETRY Busy (deferral +15 s) from CoordinatedTask admission.",
+        "errors": "Every exception of the body is swallowed (status, refused connection, InvalidHeader for a non-string or leading-blank token).",
+        "authentication": "Internal task message; the token is forwarded as the Authorization header (None drops it).",
+        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "No database access.",
+        "side_effects": "One GET CURRENT_HOST/document/invoice/<str(id)>?send_receipt_email=<str(flag)> (redirects followed, body read, no timeout).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_print_process.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/service/consumer_print_tasks_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
+          "revision": "go/consumer-print on afdd778f (merged codex/go-backend-parity 1d50a56e)",
+          "result": "passed: 30 differential scenarios against the actual Django worker (race-built consumer)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process/results.json",
+          "receipt_sha256": "08fed5796de4b4f63919bb45628b28dd4db7d3f927cf52d9775047fbbbe3f686"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py (consumer without consumerPrintRegister)",
+          "revision": "go/consumer-print on 0ef7960a (pre-merge working tree)",
+          "result": "red: Django oracle passed, Go timed out on the first scenario (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-red/results.json",
+          "receipt_sha256": "8e102a9817110c8b3515012dae1fab7d463d450ad9ccefe64c93cef56a1af369"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='export zips the readable' python -I TESTS/adapters/go/celery_consumer_print_process.py with consumer_export_invoices_zip.go numbering entries by written count",
+          "revision": "go/consumer-print on 2f485422 (merged codex/go-backend-parity 576447ee)",
+          "result": "caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-mutation/results.json",
+          "receipt_sha256": "a334b90c218a417babdab5e082f3b32c42f7952cfc9d85ba900eb5c3c7e323a9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by .delay in invoice and Stripe views (also called eagerly with .apply); body is requests.get(CURRENT_HOST/document/invoice/<id>?send_receipt_email=...) with errors swallowed."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by .delay in invoice and Stripe views (also called eagerly with .apply); body is requests.get(CURRENT_HOST/document/invoice/<id>?send_receipt_email=...) with errors swallowed.",
+        "consumer-print: cmd/celery-consumer runs the message-consumed print_document_invoice when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/invoice/<id>?send_receipt_email=<str(flag)>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md."
       ]
     },
     {
@@ -41229,28 +41355,70 @@
           "name": "'print_document_medical_appointment'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_print_tasks.go",
+        "BE_GO/cmd/celery-consumer/consumer_print.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/config/environment_value.go"
+      ],
+      "dependencies": [
+        "BE/application/printing_tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists print_document_medical_appointment); args/kwargs bound to (medical_appointment_id, auth_token).",
+        "response": "TaskResult SUCCESS result null meta {\"children\": []}; StaleDataTask FAILURE or RETRY Busy (deferral +15 s) from CoordinatedTask admission.",
+        "errors": "Every exception of the body is swallowed (status, refused connection, InvalidHeader for a non-string or leading-blank token).",
+        "authentication": "Internal task message; the token is forwarded as the Authorization header (None drops it).",
+        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "No database access.",
+        "side_effects": "One GET CURRENT_HOST/document/medical-appointment/<str(id)> (redirects followed, body read, no timeout).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_print_process.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/service/consumer_print_tasks_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
+          "revision": "go/consumer-print on afdd778f (merged codex/go-backend-parity 1d50a56e)",
+          "result": "passed: 30 differential scenarios against the actual Django worker (race-built consumer)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process/results.json",
+          "receipt_sha256": "08fed5796de4b4f63919bb45628b28dd4db7d3f927cf52d9775047fbbbe3f686"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py (consumer without consumerPrintRegister)",
+          "revision": "go/consumer-print on 0ef7960a (pre-merge working tree)",
+          "result": "red: Django oracle passed, Go timed out on the first scenario (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-red/results.json",
+          "receipt_sha256": "8e102a9817110c8b3515012dae1fab7d463d450ad9ccefe64c93cef56a1af369"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='export zips the readable' python -I TESTS/adapters/go/celery_consumer_print_process.py with consumer_export_invoices_zip.go numbering entries by written count",
+          "revision": "go/consumer-print on 2f485422 (merged codex/go-backend-parity 576447ee)",
+          "result": "caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-mutation/results.json",
+          "receipt_sha256": "a334b90c218a417babdab5e082f3b32c42f7952cfc9d85ba900eb5c3c7e323a9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Called directly as a function in subscription views: no message is published; it stays a refused synchronous path of its routes."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Called directly as a function in subscription views: no message is published; it stays a refused synchronous path of its routes.",
+        "consumer-print: cmd/celery-consumer runs the message-consumed print_document_medical_appointment when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/medical-appointment/<id>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md."
       ]
     },
     {
@@ -42472,28 +42640,83 @@
           "name": "'export_invoices_to_zip'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_export_invoices_zip.go",
+        "BE_GO/internal/repository/consumer_export_zip.go",
+        "BE_GO/internal/pyzip/pyzip.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/celery-consumer/consumer_print.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/config/environment_value.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/application/utils/printing.py",
+        "BE/docmanager/models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/signals.py",
+        "BE/application/audit_resolvers.py",
+        "BE_GO/internal/repository/documents_writes.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/pkg/storage/documentkey/upload.go",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE_GO/internal/service/job_restore_admission.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists export_invoices_to_zip); files (None or list of UUIDs/strings), sport_association (None, UUID or string).",
+        "response": "SUCCESS null in every case (the body swallows exceptions); CoordinatedTask StaleDataTask/RETRY Busy.",
+        "errors": "Stops at the first error keeping earlier writes: a malformed file id before any write; a missing/deleted/malformed association after the Document; unreadable sources skipped; a storage error on the archive after the rows.",
+        "authentication": "Internal task message.",
+        "permissions": "None beyond the queue; restore admission.",
+        "resource_scope": "Document.objects.filter(document_id__in=files) (unordered); SportAssociation.objects (deleted excluded) by pk.",
+        "side_effects": "Document(filename=<Europe/Rome %Y-%m-%d_%H-%M>_ricevute.zip) with its auditlog create entry (not indexed), SportAssociationDocumentsArchive with its entry (indexed direct), ZIP_DEFLATED archive \"<idx+1>_<filename>\" of the readable sources stored at <timestamp>/<id>/<filename> (application/zip, CacheControl).",
+        "transaction": "Autocommit per row with its auditlog entry, as Django.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_print_process.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "TESTS/adapters/go/pyzip_golden.py",
+        "BE_GO/internal/pyzip/pyzip_test.go",
+        "BE_GO/internal/service/consumer_print_tasks_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
+          "revision": "go/consumer-print on afdd778f (merged codex/go-backend-parity 1d50a56e)",
+          "result": "passed: 30 differential scenarios against the actual Django worker (race-built consumer)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process/results.json",
+          "receipt_sha256": "08fed5796de4b4f63919bb45628b28dd4db7d3f927cf52d9775047fbbbe3f686"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py (consumer without consumerPrintRegister)",
+          "revision": "go/consumer-print on 0ef7960a (pre-merge working tree)",
+          "result": "red: Django oracle passed, Go timed out on the first scenario (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-red/results.json",
+          "receipt_sha256": "8e102a9817110c8b3515012dae1fab7d463d450ad9ccefe64c93cef56a1af369"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='export zips the readable' python -I TESTS/adapters/go/celery_consumer_print_process.py with consumer_export_invoices_zip.go numbering entries by written count",
+          "revision": "go/consumer-print on 2f485422 (merged codex/go-backend-parity 576447ee)",
+          "result": "caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-mutation/results.json",
+          "receipt_sha256": "a334b90c218a417babdab5e082f3b32c42f7952cfc9d85ba900eb5c3c7e323a9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by invoice_views (.delay(files, association UUID)); body builds a ZIP through PrintingService.download_multiple_files and names it from the Rome clock."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by invoice_views (.delay(files, association UUID)); body builds a ZIP through PrintingService.download_multiple_files and names it from the Rome clock.",
+        "consumer-print: Go runs export_invoices_to_zip; the ZIP headers match Python zipfile (golden) but the deflate stream is compress/flate, so compressed bytes, sizes, object size and ETag differ; archives needing ZIP64 fail after the rows and archives of 8 MiB or more are one PutObject (Django multipart); database errors are stored as OperationalError instead of being swallowed. Handed off before any effect: non-list files, non-UUID/string elements or associations, 32-character strings only int(x, 16) would decide. See docs/architecture/go-migration/consumer-print.md."
       ]
     },
     {
@@ -42787,28 +43010,70 @@
           "name": "'print_document_subscription'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_print_tasks.go",
+        "BE_GO/cmd/celery-consumer/consumer_print.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/config/environment_value.go"
+      ],
+      "dependencies": [
+        "BE/application/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/internal/service/invoice_sync_print.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery protocol 2 message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists print_document_subscription); args/kwargs bound to (subscription_id, auth_token).",
+        "response": "TaskResult SUCCESS result null meta {\"children\": []}; StaleDataTask FAILURE or RETRY Busy (deferral +15 s) from CoordinatedTask admission.",
+        "errors": "Every exception of the body is swallowed (status, refused connection, InvalidHeader for a non-string or leading-blank token).",
+        "authentication": "Internal task message; the token is forwarded as the Authorization header (None drops it).",
+        "permissions": "None beyond the queue; restore admission through DATA_RESTORE_LOCK_PATH.",
+        "resource_scope": "No database access.",
+        "side_effects": "One GET CURRENT_HOST/document/subscription/<str(id)> (redirects followed, body read, no timeout).",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_print_process.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/service/consumer_print_tasks_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
+          "revision": "go/consumer-print on afdd778f (merged codex/go-backend-parity 1d50a56e)",
+          "result": "passed: 30 differential scenarios against the actual Django worker (race-built consumer)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process/results.json",
+          "receipt_sha256": "08fed5796de4b4f63919bb45628b28dd4db7d3f927cf52d9775047fbbbe3f686"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py (consumer without consumerPrintRegister)",
+          "revision": "go/consumer-print on 0ef7960a (pre-merge working tree)",
+          "result": "red: Django oracle passed, Go timed out on the first scenario (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-red/results.json",
+          "receipt_sha256": "8e102a9817110c8b3515012dae1fab7d463d450ad9ccefe64c93cef56a1af369"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='export zips the readable' python -I TESTS/adapters/go/celery_consumer_print_process.py with consumer_export_invoices_zip.go numbering entries by written count",
+          "revision": "go/consumer-print on 2f485422 (merged codex/go-backend-parity 576447ee)",
+          "result": "caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-mutation/results.json",
+          "receipt_sha256": "a334b90c218a417babdab5e082f3b32c42f7952cfc9d85ba900eb5c3c7e323a9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body is requests.get(CURRENT_HOST/document/subscription/<id>) with the Authorization header, errors swallowed; the rendering is the route's."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Body is requests.get(CURRENT_HOST/document/subscription/<id>) with the Authorization header, errors swallowed; the rendering is the route's.",
+        "consumer-print: cmd/celery-consumer runs the message-consumed print_document_subscription when GO_TASK_QUEUE_TASKS routes it to assozeta-go: requests.get(CURRENT_HOST/document/subscription/<id>) with the Authorization token and requests' default headers, every error swallowed (SUCCESS null). Handed off before any effect: wrong arity or keywords, ids outside UUIDs/unreserved URL characters, tokens with control, non-ASCII or trailing blank characters. The eager .apply calls inside routes are separate (route ports). execution_owner stays django until a deployment sets GO_TASK_QUEUE_TASKS. See docs/architecture/go-migration/consumer-print.md."
       ]
     },
     {
@@ -44224,28 +44489,74 @@
           "name": "'save_to_storage'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/consumer_save_to_storage.go",
+        "BE_GO/pkg/storage/documentkey/save.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/celery-consumer/consumer_print.go",
+        "BE_GO/cmd/celery-consumer/main.go",
+        "BE_GO/internal/celeryworker/worker.go",
+        "BE_GO/internal/celery/message.go",
+        "BE_GO/internal/celery/transport.go",
+        "BE_GO/internal/config/environment_value.go"
+      ],
+      "dependencies": [
+        "BE/docmanager/tasks.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/core/task_routing.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/restore/locking.py",
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/pkg/pymime/pymime.go",
+        "BE_GO/pkg/storage/documentkey/stored.go"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Celery message on assozeta-go (routed only when GO_TASK_QUEUE_TASKS lists save_to_storage); (file_path, pdf_base64) strings.",
+        "response": "SUCCESS null; FAILURE with binascii.Error, django.core.exceptions.SuspiciousFileOperation, botocore.errorfactory.<Code> or botocore.exceptions.ClientError (botocore message); CoordinatedTask StaleDataTask/RETRY Busy.",
+        "errors": "Exceptions are re-raised (no retry policy). S3 errors botocore retries (network, 5xx, throttling) are stored as ClientError(\"storage error\") (documented difference).",
+        "authentication": "Internal task message.",
+        "permissions": "None beyond the queue; restore admission.",
+        "resource_scope": "S3 default storage under AWS_LOCATION.",
+        "side_effects": "base64.b64decode, then default_storage.save: validate_file_name, clean_name, HeadObject (get_available_name), one PutObject with guess_type ContentType/ContentEncoding, CacheControl max-age=86400, AWS_DEFAULT_ACL.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/go/celery_consumer_print_process.py",
+        "BE_GO/internal/celery/consumer_test.go",
+        "BE_GO/internal/service/consumer_print_tasks_test.go",
+        "BE_GO/pkg/storage/documentkey/save_test.go"
+      ],
+      "evidence": [
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py",
+          "revision": "go/consumer-print on afdd778f (merged codex/go-backend-parity 1d50a56e)",
+          "result": "passed: 30 differential scenarios against the actual Django worker (race-built consumer)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process/results.json",
+          "receipt_sha256": "08fed5796de4b4f63919bb45628b28dd4db7d3f927cf52d9775047fbbbe3f686"
+        },
+        {
+          "command": "python -I TESTS/adapters/go/celery_consumer_print_process.py (consumer without consumerPrintRegister)",
+          "revision": "go/consumer-print on 0ef7960a (pre-merge working tree)",
+          "result": "red: Django oracle passed, Go timed out on the first scenario (all messages handed off)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-red/results.json",
+          "receipt_sha256": "8e102a9817110c8b3515012dae1fab7d463d450ad9ccefe64c93cef56a1af369"
+        },
+        {
+          "command": "CELERY_CONSUMER_ONLY='export zips the readable' python -I TESTS/adapters/go/celery_consumer_print_process.py with consumer_export_invoices_zip.go numbering entries by written count",
+          "revision": "go/consumer-print on 2f485422 (merged codex/go-backend-parity 576447ee)",
+          "result": "caught: Go differs from Django (2_ricevuta-2.pdf instead of 3_ricevuta-2.pdf)",
+          "artifact": "quality-reports/go-migration/celery-consumer-print-process-mutation/results.json",
+          "receipt_sha256": "a334b90c218a417babdab5e082f3b32c42f7952cfc9d85ba900eb5c3c7e323a9"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
         "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by PrintingService (.delay(file, pdf_base64)); default_storage.save with AWS_S3_FILE_OVERWRITE=False chooses an available name."
+        "tasks-db-e ownership decision: consumption stays with Django's Celery worker. All tasks share the default 'celery' Redis list (no task_routes, worker without -Q), so a Go consumer cannot take only selected task names; exclusive Go ownership needs per-task routing on every producer, plus django-db result rows, kombu ack/visibility, ETA, CoordinatedTask admission and retry parity. Go publishes the message byte-compatibly through internal/celery. See docs/architecture/go-migration/tasks-db-e.md. Published by PrintingService (.delay(file, pdf_base64)); default_storage.save with AWS_S3_FILE_OVERWRITE=False chooses an available name.",
+        "consumer-print: Go runs save_to_storage for string arguments; handed off before any effect: base64 outside the standard-alphabet subset, names with backslashes/NUL/invalid UTF-8, content of 8 MiB or more (multipart upload), a name that already exists without AWS_S3_FILE_OVERWRITE (random alternative name). The existence check runs before admission. See docs/architecture/go-migration/consumer-print.md."
       ]
     },
     {
