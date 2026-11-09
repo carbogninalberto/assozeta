@@ -465,25 +465,88 @@
           "BaseCommand"
         ]
       },
-      "status": "needs_review",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/agentllm/client.go",
+        "BE_GO/internal/service/agent.go",
+        "BE_GO/internal/service/agent_provider.go",
+        "BE_GO/internal/service/agent_routing.go",
+        "BE_GO/internal/service/agent_manual.go",
+        "BE_GO/internal/service/agent_tools.go",
+        "BE_GO/internal/service/agent_runtime.go",
+        "BE_GO/internal/service/agent_system_prompt.txt",
+        "BE_GO/internal/service/business_mcp_raised.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/dto/agent_json.go",
+        "BE_GO/internal/handler/businessmcp/agent_tools.go",
+        "BE_GO/internal/repository/agent_store.go",
+        "BE_GO/cmd/run-agent/main.go",
+        "BE_GO/Dockerfile"
+      ],
+      "dependencies": [
+        "BE/application/chat/consumers.py",
+        "BE/application/chat/throttling.py",
+        "BE/application/agent/core.py",
+        "BE/application/agent/routing.py",
+        "BE/application/agent/prompts.py",
+        "BE/application/agent/callbacks.py",
+        "BE/application/agent/providers/ai_provider.py",
+        "BE/application/manuale/answers.py",
+        "BE/application/manuale/tools.py",
+        "BE/application/mcp_server/server.py",
+        "BE/instance/integration_configuration.py",
+        "BE/instance/restore/locking.py",
+        "openai 2.54.0 / httpx 0.28.1 (request, retries, SSE)",
+        "Business MCP tools (mcp-server.md) and manual tools (manual-reader.md)",
+        "BE/application/management/commands/run_agent.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "--association-id <uuid>; stdin lines (input('\\n> ')); exit/quit/esci, clear/reset/pulisci.",
+        "response": "stdout: banner, prompts, CLICallback output (ANSI status, tool calls indent=2 truncated at 500, chunks, export and saved-report lines); stderr: not found, AI disabled, [Errore] lines. Exit 0.",
+        "errors": "Missing association and disabled AI on stderr (exit 0). Invalid UUID, unreadable configuration and processing exceptions exit 1 (Django tracebacks not reproduced); argparse texts and Django global options not reproduced.",
+        "authentication": "Process scoped by --association-id; no user (save_report/list_reports use the model's user_id argument).",
+        "permissions": "None beyond the association scope.",
+        "resource_scope": "SportAssociation by id (not deleted).",
+        "side_effects": "Outbound chat completions; SavedReport create via save_report.",
+        "transaction": "Autocommit; restore lease per tool call.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/ws_agent_http.json",
+        "TESTS/fixtures/generate_ws_agent_http.py",
+        "TESTS/contracts/test_ws_agent_http.py",
+        "TESTS/adapters/django/ws_agent_http.py",
+        "TESTS/ws_client.py",
+        "BE_GO/internal/service/agent_routing_test.go",
+        "BE_GO/internal/service/testdata/agent_routes.json"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/ws-agent.md",
+        {
+          "revision": "committing change with the ws/agent/ route removed from the Go WebSocket router",
+          "result": "RED: Django 54/54 (48 sessions, 6 run_agent transcripts); Go 500 on the first handshake (ws/agent/ unrouted).",
+          "artifact": "quality-reports/go-migration/ws-agent-http-red-regen/results.json",
+          "receipt_sha256": "5baa8f157e6bdeb7438144100dd0a5acc175ce5265a5b96bcd47eea72a305e83"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 54/54 on native Django and native Go, 48/48 WebSocket sessions on Caddy /api/v1 and /api/v2, with the exact outbound requests to the stub endpoint, agent cache entries, saved report rows and unchanged model state.",
+          "artifact": "quality-reports/go-migration/ws-agent-http-green-regen/results.json",
+          "receipt_sha256": "f1dc465f8a1cf89160fdf3f840d093fe56c36f5cf0547a4ae283d9bf53208d4c"
+        },
+        {
+          "revision": "committing change with 409 removed from the SDK retry statuses (agentllm.shouldRetry)",
+          "result": "Mutation control: fails Go on ws-agent-provider-errors.",
+          "artifact": "quality-reports/go-migration/ws-agent-http-mutation-regen/results.json",
+          "receipt_sha256": "6fa04b8ca86607e758a74907583d50c224b6cfd145b65acecccea10c39da154b"
+        }
+      ],
+      "notes": [
+        "Implementing: ws-agent family (ws-agent.md); /app/run-agent in the Go image. Six authored transcripts compared byte for byte (stdout; stderr without Django log records, Django with --skip-checks)."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/run_manuale_attendance.py:run_manuale_attendance",
@@ -34561,25 +34624,79 @@
         "target": "BackupOverviewView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/instance_backups.go",
+        "BE_GO/internal/service/instance_backups.go",
+        "BE_GO/internal/dto/instance_backups.go",
+        "BE_GO/internal/repository/instance_backups.go",
+        "BE_GO/internal/updaterrunner/client.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/server/instance_backups.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/backups.py",
+        "BE/instance/updater_client.py",
+        "BE/instance/permissions.py",
+        "BE/instance/models.py",
+        "BE/instance/urls.py",
+        "BE/application/utils/printing.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/backups",
+          "/api/v2/instance/admin/backups",
+          "/api/instance/admin/backups"
+        ],
+        "request": "Query refresh (last value; '1' re-measures the sizes).",
+        "response": "200 {available, archives, retention, disk ({**runner disk, database, objects}), next_backup ({estimated, required, fits} or null)}; 200 {available: false, reason} when the runner is unavailable or answers 404.",
+        "errors": "Runner rejection: {error: str(message)} with its status when >= 500, else 503; non-object runner bodies, non-object disk, string free, missing cached keys and non-finite numbers: 500 page.",
+        "authentication": "Bearer JWT; administration path (no impersonation, impersonation header from a non-administrator is 403).",
+        "permissions": "IsInstanceOwner on the authenticated actor (active, not deleted, self-hosted instance, superuser or primary association owner), before method dispatch.",
+        "resource_scope": "Instance-wide.",
+        "side_effects": "Django cache instance:backup-data-sizes:v1 (pickle protocol 4, 600 s) when missing or refreshed; update runner GET /backups.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_backups_http.json",
+        "TESTS/fixtures/generate_instance_backups_http.py",
+        "TESTS/contracts/test_instance_backups_http.py",
+        "TESTS/adapters/django/instance_backups_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-backups.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 123/123; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-backups-http-red-regen/results.json",
+          "receipt_sha256": "148a71703d25563ac9be566611d71b8b9ab6d6071625ee9d822d4c9ed6a35ead"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 123/123 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests, cache bytes and TTLs, audit entries and stored hashes.",
+          "artifact": "quality-reports/go-migration/instance-backups-http-green-regen/results.json",
+          "receipt_sha256": "69e842945b8c4210c0a161f868cb65d7098827abe45d84116e9b2346ca0ee771"
+        },
+        {
+          "revision": "committing change with the attempt limit compared as attempts > 5",
+          "result": "Mutation control: fails Go on instance-backups-token-too-many (password checked and attempt counted instead of 429).",
+          "artifact": "quality-reports/go-migration/instance-backups-http-mutation-regen/results.json",
+          "receipt_sha256": "ad2fbede7c39af3d5e17cc86adf55755c248ab674303c8e395df4fb345f3ce46"
+        }
+      ],
+      "notes": [
+        "Implementing: instance-backups family (docs/architecture/go-migration/instance-backups.md): owner overview of the update runner's backup inventory (Unix socket, bearer token, production mode) with the cached database and bucket sizes and the next-backup estimate; password-confirmed download token (five-attempt window, ACCESS audit entry, signed 5-minute token); single-use token download relaying the runner's archive. Not ported (500 page before any write): non-JSON token bodies, runner bodies Python decodes but Go does not (UTF-16/32, surrogates, NaN/Infinity, deep nesting), cached sizes or attempt counters outside the decoded subset, claimed actors needing int(..., 16) extras, runner Content-Length forms Go's HTTP parser rejects."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/backups/<str:name>/download -> BackupDownloadView.as_view()",
@@ -34596,25 +34713,78 @@
         "target": "BackupDownloadView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/instance_backups.go",
+        "BE_GO/internal/service/instance_backups.go",
+        "BE_GO/internal/dto/instance_backups.go",
+        "BE_GO/internal/repository/instance_backups.go",
+        "BE_GO/internal/updaterrunner/client.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/server/instance_backups.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/backups.py",
+        "BE/instance/updater_client.py",
+        "BE/instance/permissions.py",
+        "BE/instance/models.py",
+        "BE/instance/urls.py",
+        "BE/application/utils/printing.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/backups/<name>/download",
+          "/api/v2/instance/admin/backups/<name>/download",
+          "/api/instance/admin/backups/<name>/download"
+        ],
+        "request": "Query download_token (last value).",
+        "response": "200 application/gzip stream with the runner's Content-Length, attachment Content-Disposition, Cache-Control no-store, Referrer-Policy no-referrer.",
+        "errors": "403 invalid or expired link, unauthorized actor, used link; 404 'Backup non trovato.' for a runner 404; 503 for other runner rejections or an unavailable runner; 500 page for an untimed token, a malformed claimed actor or a non-object runner error body. HEAD is 405.",
+        "authentication": "None (authentication_classes = []).",
+        "permissions": "AllowAny; the signed token's actor must be an instance administrator.",
+        "resource_scope": "Instance-wide archives.",
+        "side_effects": "Django cache instance:backup-download-used:<id> (pickled True, 360 s); update runner GET /backups/<name>.",
+        "transaction": "None.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_backups_http.json",
+        "TESTS/fixtures/generate_instance_backups_http.py",
+        "TESTS/contracts/test_instance_backups_http.py",
+        "TESTS/adapters/django/instance_backups_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-backups.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 123/123; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-backups-http-red-regen/results.json",
+          "receipt_sha256": "148a71703d25563ac9be566611d71b8b9ab6d6071625ee9d822d4c9ed6a35ead"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 123/123 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests, cache bytes and TTLs, audit entries and stored hashes.",
+          "artifact": "quality-reports/go-migration/instance-backups-http-green-regen/results.json",
+          "receipt_sha256": "69e842945b8c4210c0a161f868cb65d7098827abe45d84116e9b2346ca0ee771"
+        },
+        {
+          "revision": "committing change with the attempt limit compared as attempts > 5",
+          "result": "Mutation control: fails Go on instance-backups-token-too-many (password checked and attempt counted instead of 429).",
+          "artifact": "quality-reports/go-migration/instance-backups-http-mutation-regen/results.json",
+          "receipt_sha256": "ad2fbede7c39af3d5e17cc86adf55755c248ab674303c8e395df4fb345f3ce46"
+        }
+      ],
+      "notes": [
+        "Implementing: instance-backups family (docs/architecture/go-migration/instance-backups.md): owner overview of the update runner's backup inventory (Unix socket, bearer token, production mode) with the cached database and bucket sizes and the next-backup estimate; password-confirmed download token (five-attempt window, ACCESS audit entry, signed 5-minute token); single-use token download relaying the runner's archive. Not ported (500 page before any write): non-JSON token bodies, runner bodies Python decodes but Go does not (UTF-16/32, surrogates, NaN/Infinity, deep nesting), cached sizes or attempt counters outside the decoded subset, claimed actors needing int(..., 16) extras, runner Content-Length forms Go's HTTP parser rejects."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/backups/download-token -> BackupDownloadTokenView.as_view()",
@@ -34631,25 +34801,78 @@
         "target": "BackupDownloadTokenView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/instance_backups.go",
+        "BE_GO/internal/service/instance_backups.go",
+        "BE_GO/internal/dto/instance_backups.go",
+        "BE_GO/internal/repository/instance_backups.go",
+        "BE_GO/internal/updaterrunner/client.go",
+        "BE_GO/internal/config/instance_admin.go",
+        "BE_GO/pkg/storage/documentobjects/s3.go",
+        "BE_GO/cmd/server/instance_backups.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/instance/backups.py",
+        "BE/instance/updater_client.py",
+        "BE/instance/permissions.py",
+        "BE/instance/models.py",
+        "BE/instance/urls.py",
+        "BE/application/utils/printing.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/admin/backups/download-token",
+          "/api/v2/instance/admin/backups/download-token",
+          "/api/instance/admin/backups/download-token"
+        ],
+        "request": "JSON {name: archive name (RegexField, trimmed), password: CharField(max_length=256, not trimmed)}.",
+        "response": "200 {download_token: signing.dumps({name, actor, id}, salt='instance.backups.download'), expires_in: 300}.",
+        "errors": "400 serializer errors; 429 after five failed attempts in the window; 400 {error: 'Password non corretta.'}.",
+        "authentication": "Bearer JWT; administration path.",
+        "permissions": "IsInstanceOwner on the authenticated actor.",
+        "resource_scope": "The actor's own password and attempt counter.",
+        "side_effects": "Django cache attempts key (add 0 for 900 s, incr; deleted on success); password rehash on an outdated hash; auditlog ACCESS entry on the instance configuration with its AuditLogIndex (actor.sport_association).",
+        "transaction": "None (log entry and index best effort, as the signal).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance_backups_http.json",
+        "TESTS/fixtures/generate_instance_backups_http.py",
+        "TESTS/contracts/test_instance_backups_http.py",
+        "TESTS/adapters/django/instance_backups_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-backups.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 123/123; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instance-backups-http-red-regen/results.json",
+          "receipt_sha256": "148a71703d25563ac9be566611d71b8b9ab6d6071625ee9d822d4c9ed6a35ead"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 123/123 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact runner requests, cache bytes and TTLs, audit entries and stored hashes.",
+          "artifact": "quality-reports/go-migration/instance-backups-http-green-regen/results.json",
+          "receipt_sha256": "69e842945b8c4210c0a161f868cb65d7098827abe45d84116e9b2346ca0ee771"
+        },
+        {
+          "revision": "committing change with the attempt limit compared as attempts > 5",
+          "result": "Mutation control: fails Go on instance-backups-token-too-many (password checked and attempt counted instead of 429).",
+          "artifact": "quality-reports/go-migration/instance-backups-http-mutation-regen/results.json",
+          "receipt_sha256": "ad2fbede7c39af3d5e17cc86adf55755c248ab674303c8e395df4fb345f3ce46"
+        }
+      ],
+      "notes": [
+        "Implementing: instance-backups family (docs/architecture/go-migration/instance-backups.md): owner overview of the update runner's backup inventory (Unix socket, bearer token, production mode) with the cached database and bucket sizes and the next-backup estimate; password-confirmed download token (five-attempt window, ACCESS audit entry, signed 5-minute token); single-use token download relaying the runner's archive. Not ported (500 page before any write): non-JSON token bodies, runner bodies Python decodes but Go does not (UTF-16/32, surrogates, NaN/Infinity, deep nesting), cached sizes or attempt counters outside the decoded subset, claimed actors needing int(..., 16) extras, runner Content-Length forms Go's HTTP parser rejects."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin/bakney-pairing -> PairingAdminView.as_view()",
@@ -43015,28 +43238,96 @@
         "target": "consumers.AgentConsumer.as_asgi()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/agentllm/client.go",
+        "BE_GO/internal/service/agent.go",
+        "BE_GO/internal/service/agent_provider.go",
+        "BE_GO/internal/service/agent_routing.go",
+        "BE_GO/internal/service/agent_manual.go",
+        "BE_GO/internal/service/agent_tools.go",
+        "BE_GO/internal/service/agent_runtime.go",
+        "BE_GO/internal/service/agent_system_prompt.txt",
+        "BE_GO/internal/service/business_mcp_raised.go",
+        "BE_GO/internal/service/business_mcp.go",
+        "BE_GO/internal/service/business_mcp_query.go",
+        "BE_GO/internal/dto/agent_json.go",
+        "BE_GO/internal/handler/businessmcp/agent_tools.go",
+        "BE_GO/internal/repository/agent_store.go",
+        "BE_GO/internal/handler/websocket_agent.go",
+        "BE_GO/internal/handler/websocket.go",
+        "BE_GO/internal/repository/agent_cache.go",
+        "BE_GO/cmd/server/agent.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/chat/consumers.py",
+        "BE/application/chat/throttling.py",
+        "BE/application/agent/core.py",
+        "BE/application/agent/routing.py",
+        "BE/application/agent/prompts.py",
+        "BE/application/agent/callbacks.py",
+        "BE/application/agent/providers/ai_provider.py",
+        "BE/application/manuale/answers.py",
+        "BE/application/manuale/tools.py",
+        "BE/application/mcp_server/server.py",
+        "BE/instance/integration_configuration.py",
+        "BE/instance/restore/locking.py",
+        "openai 2.54.0 / httpx 0.28.1 (request, retries, SSE)",
+        "Business MCP tools (mcp-server.md) and manual tools (manual-reader.md)",
+        "Caddy routes /ws/* and /api/v1/ws/* to Django and /api/v2/ws/* to Go; switching /ws/agent/ is a separate activation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET (WebSocket upgrade)"
+        ],
+        "external_paths": [
+          "/ws/agent/",
+          "/api/v1/ws/agent/",
+          "/api/v2/ws/agent/"
+        ],
+        "request": "JWTAuthMiddleware handshake (websockets.md). JSON text frames {\"type\": ping|user_message|cancel|clear_history|save_report|delete_report|list_reports, ...}.",
+        "response": "Welcome message (three texts); pong; status frames (thinking, querying, cancelling, cancelled, idle, history_cleared); message_chunk/message_end/tool_call/manual_section/export_ready/report_saved/error/done from the agent loop; report_list, report_deleted, report_saved for saved reports. Python json.dumps text.",
+        "errors": "Closes before accept (HTTP 403): anonymous 4001, AI unavailable or disabled without manual 4004, concurrent session 4002, no association 4003. Error frames: unknown type, AI required, busy, configuration unavailable, throttled, timeout, internal, restore Busy, report messages. Non-object JSON, binary frames, unhashable types and non-string fields raise (TCP close, slot kept). Unported inputs (ws-agent.md) end the connection.",
+        "authentication": "JWTAuthMiddleware as for every path; impersonated scoped athletes/restricted collaborators close 4003.",
+        "permissions": "Authenticated user with an association (User.sport_association); saved reports scoped to the association and the user.",
+        "resource_scope": "Association of the user (owner, or the collaborator's owner); tools bound to that association; manual maintainer authority from the instance configuration.",
+        "side_effects": "Django cache: ws_concurrent (300 s), ws_throttle (60 s), agent_save_info (pickle, 3600 s). SavedReport create/delete. Outbound POST <base_url>/chat/completions with the AsyncOpenAI headers and body.",
+        "transaction": "Autocommit; restore lease (shared flock + restore_pending) for the request task and the save/delete handlers, again per tool call and per save/delete.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/ws_agent_http.json",
+        "TESTS/fixtures/generate_ws_agent_http.py",
+        "TESTS/contracts/test_ws_agent_http.py",
+        "TESTS/adapters/django/ws_agent_http.py",
+        "TESTS/ws_client.py",
+        "BE_GO/internal/service/agent_routing_test.go",
+        "BE_GO/internal/service/testdata/agent_routes.json"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/websockets.md"
+        "docs/architecture/go-migration/ws-agent.md",
+        {
+          "revision": "committing change with the ws/agent/ route removed from the Go WebSocket router",
+          "result": "RED: Django 54/54 (48 sessions, 6 run_agent transcripts); Go 500 on the first handshake (ws/agent/ unrouted).",
+          "artifact": "quality-reports/go-migration/ws-agent-http-red-regen/results.json",
+          "receipt_sha256": "5baa8f157e6bdeb7438144100dd0a5acc175ce5265a5b96bcd47eea72a305e83"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 54/54 on native Django and native Go, 48/48 WebSocket sessions on Caddy /api/v1 and /api/v2, with the exact outbound requests to the stub endpoint, agent cache entries, saved report rows and unchanged model state.",
+          "artifact": "quality-reports/go-migration/ws-agent-http-green-regen/results.json",
+          "receipt_sha256": "f1dc465f8a1cf89160fdf3f840d093fe56c36f5cf0547a4ae283d9bf53208d4c"
+        },
+        {
+          "revision": "committing change with 409 removed from the SDK retry statuses (agentllm.shouldRetry)",
+          "result": "Mutation control: fails Go on ws-agent-provider-errors.",
+          "artifact": "quality-reports/go-migration/ws-agent-http-mutation-regen/results.json",
+          "receipt_sha256": "6fa04b8ca86607e758a74907583d50c224b6cfd145b65acecccea10c39da154b"
+        }
       ],
       "notes": [
-        "Not ported (websockets.md): user_message runs the agent loop and calls the configured LLM provider whenever AI is enabled; the other paths depend on the same agent core, manual search, throttle, concurrency guard and AI integration configuration. Go treats ws/agent/ as unrouted (500 before accept, after the middleware); Caddy must keep routing it to Django."
+        "Implementing: ws-agent family (ws-agent.md). Not ported (refused): odd stream chunk shapes, non-integer configuration values, base URLs httpx rewrites, unported business tool inputs, non-string save_report tool_name. Not reproduced: header order/case, retry jitter, log records."
       ]
     },
     {
