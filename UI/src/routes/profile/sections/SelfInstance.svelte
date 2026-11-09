@@ -85,6 +85,9 @@
     let releaseError = '';
     let checkingReleases = false;
     let releases = [];
+    // The release catalog is fetched only for the tabs that show it.
+    let releasesRequested = false;
+    $: if (info && !releasesRequested && (tab === 'overview' || tab === 'updates')) { releasesRequested = true; loadReleases(); }
     let runner = {available: false, active: null, history: []};
     let reconnecting = false;
     let apiUnavailable = false;
@@ -274,7 +277,6 @@
             try {
                 if (!info) {
                     await loadInfo();
-                    await loadReleases();
                     error = '';
                 }
                 await completionRefresh.run(() => loadInfo(), () => loadReleases(true));
@@ -349,7 +351,7 @@
             catch (e) { error = e.message; }
             finally { loading = false; }
             if (disposed) return;
-            await Promise.all([info ? loadReleases() : Promise.resolve(), info ? loadDiagnostics() : Promise.resolve(), info ? loadBackups() : Promise.resolve(), loadRunner()]);
+            await Promise.all([info ? loadDiagnostics() : Promise.resolve(), info ? loadBackups() : Promise.resolve(), loadRunner()]);
             async function poll() {
                 if (disposed) return;
                 await loadRunner();

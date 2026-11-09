@@ -247,7 +247,8 @@ test('email tests require saved settings and reset requires explicit confirmatio
 
 test('instance updates wait for email drafts and ongoing email or diagnostic checks', () => {
     const f = form('SelfInstance', {getApiHost: () => '/api', createCompletionRefresh: () => ({})});
-    f.run("info = {mode: 'production'}; catalog = {relation: 'behind', latest: {artifacts_ready: true}}; runner = {available: true, can_update: true, active: null}");
+    // The catalog is given here; do not let the tab fetch it again.
+    f.run("releasesRequested = true; info = {mode: 'production'}; catalog = {relation: 'behind', latest: {artifacts_ready: true}}; runner = {available: true, can_update: true, active: null}");
     f.flush();
     assert.equal(f.run('updateBlocked'), '');
     f.run('emailChanges = true'); f.flush();
