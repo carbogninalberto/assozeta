@@ -573,23 +573,29 @@ func (s *EmailTasks) reminder(ctx context.Context, job domain.Job, reminder doma
 	return writer.Commit()
 }
 
-// sendEmailHTML is send_email_html called in-process: with a configuration
+// sendEmailHTML is send_reminders' send_email_html call.
+func (s *EmailTasks) sendEmailHTML(ctx context.Context, job domain.Job, reminder domain.EventReminder, message string, recipients []*string, replyTo []string) error {
+	return s.SendEmailHTML(ctx, job, reminder.AssociationID, s.reminderSubject(reminder), message, recipients, replyTo)
+}
+
+// SendEmailHTML is send_email_html(html_message, subject, recipient_list,
+// sport_association_id, reply_to) called in-process: with a configuration
 // the send runs after a random 1-30 s delay outside the task (Timer); without
 // one, send_mail_async is published. Its own try/except swallows failures.
-func (s *EmailTasks) sendEmailHTML(ctx context.Context, job domain.Job, reminder domain.EventReminder, message string, recipients []*string, replyTo []string) error {
+func (s *EmailTasks) SendEmailHTML(ctx context.Context, job domain.Job, association uuid.UUID, subject, message string, recipients []*string,
+	replyTo []string) error {
 	reader, err := s.store.BeginEmailTask(ctx, &job)
 	if err != nil {
 		return err
 	}
 	defer reader.Rollback()
-	configuration, err := reader.FirstCommunicationConfiguration(ctx, reminder.AssociationID)
+	configuration, err := reader.FirstCommunicationConfiguration(ctx, association)
 	if err != nil {
 		return err
 	}
 	if err = reader.Rollback(); err != nil {
 		return err
 	}
-	subject := s.reminderSubject(reminder)
 	if configuration != nil {
 		loaded := *configuration
 		s.timers.Add(1)
@@ -598,7 +604,7 @@ func (s *EmailTasks) sendEmailHTML(ctx context.Context, job domain.Job, reminder
 			timerCtx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 			if err := s.configurationSend(timerCtx, nil, loaded, subject, message, recipients, replyTo); err != nil {
-				s.logger.Warn("delayed reminder send failed", "code", "reminder_delayed_send_failed")
+				s.logger.Warn("delayed e-mail send failed", "code", "send_email_html_delayed_failed")
 			}
 		})
 		return nil
@@ -607,14 +613,45 @@ func (s *EmailTasks) sendEmailHTML(ctx context.Context, job domain.Job, reminder
 	for i, recipient := range recipients {
 		list[i] = optionalValue(recipient)
 	}
+	reply := make([]any, len(replyTo))
+	for i, address := range replyTo {
+		reply[i] = address
+	}
 	if _, err = s.publisher.Publish(ctx, celery.Task{Name: "send_mail_async", Kwargs: celery.Dict{
 		{Key: "subject", Value: subject}, {Key: "message", Value: message}, {Key: "from_email", Value: s.settings.DefaultFromEmail},
 		{Key: "recipient_list", Value: list}, {Key: "html_message", Value: message}, {Key: "fail_silently", Value: false},
-		{Key: "sport_association_id", Value: reminder.AssociationID}, {Key: "reply_to", Value: []any{replyTo[0]}},
+		{Key: "sport_association_id", Value: association}, {Key: "reply_to", Value: reply},
 	}}); err != nil && ctx.Err() != nil {
 		return ctx.Err()
 	}
 	return nil
+}
+
+// CheckEmailHTML reports, before any effect, a send_email_html call whose
+// SMTP path would need a message outside the smtpsend subset.
+func (s *EmailTasks) CheckEmailHTML(ctx context.Context, job domain.Job, association uuid.UUID, subject string, recipients []*string,
+	replyTo []string) error {
+	reader, err := s.store.BeginEmailTask(ctx, &job)
+	if err != nil {
+		return err
+	}
+	defer reader.Rollback()
+	configuration, err := reader.FirstCommunicationConfiguration(ctx, association)
+	if err != nil || configuration == nil {
+		return err
+	}
+	return s.checkConfigurationSend(*configuration, subject, recipients, replyTo)
+}
+
+// RenderEmail is render_to_string(name, context) in the worker (instance
+// branding, LANGUAGE_CODE); inputs the renderer refuses are ErrEmailTaskUnsupported.
+func (s *EmailTasks) RenderEmail(ctx context.Context, job domain.Job, name string, context map[string]any) (string, error) {
+	reader, err := s.store.BeginEmailTask(ctx, &job)
+	if err != nil {
+		return "", err
+	}
+	defer reader.Rollback()
+	return s.render(ctx, reader, name, context)
 }
 
 // --- smtpsend adapter -------------------------------------------------------------

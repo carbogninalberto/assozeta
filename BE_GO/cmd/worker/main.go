@@ -53,7 +53,7 @@ func run(arguments []string) error {
 	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered task deadline")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention, user deletion requests (publishes send_email_text to the Celery broker), attendance auto-marking, partial registration, certificate and reminder e-mails (publish send_mail_async or send through the association SMTP configuration), Bakney pairing maintenance (revocation delivery and authority status synchronization), old export cleanup (deletes export files from the S3 default storage), data restore cleanup (instance.restore.cleanup under the exclusive restore lock; deletes temporary restore objects from the S3 default storage), Stripe payment type and coupon tasks (Stripe API) and membership renewals (Django cache lock, publishes its renew_memberships_payments retry). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
+			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion, expired subscription token cleanup, audit log retention, user deletion requests (publishes send_email_text to the Celery broker), attendance auto-marking, partial registration, certificate and reminder e-mails (publish send_mail_async or send through the association SMTP configuration), Bakney pairing maintenance (revocation delivery and authority status synchronization), old export cleanup (deletes export files from the S3 default storage), data restore cleanup (instance.restore.cleanup under the exclusive restore lock; deletes temporary restore objects from the S3 default storage), Stripe payment type and coupon tasks (Stripe API), membership renewals (Django cache lock, publishes its renew_memberships_payments retry), association quota assignment (member e-mails), the Stripe check of unpaid payments (paid flow with invoice, print_document_invoice and notifications) and orphan medical certificate cleanup (S3 default storage). Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
 			return nil
 		}
 		return errors.New("invalid worker arguments")
@@ -98,6 +98,8 @@ func run(arguments []string) error {
 		AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
 		DefaultTeamEmail: cfg.DefaultTeamEmail, IsWhitelabel: cfg.IsWhitelabel}, time.Now, logger)
 	exports := service.NewExportCleanup(repository.NewExportCleanups(db), composeExportCleanupObjects(cfg), time.Now, logger)
+	quotes := service.NewQuoteAssign(repository.NewQuoteAssigns(db), emails, cfg.WhitelabelName, time.Now, logger)
+	orphans := service.NewOrphanMedicalCleanup(repository.NewOrphanMedicalCleanups(db), composeExportCleanupObjects(cfg), time.Now, logger)
 	bakney, closeBakney := composeBakneyMaintenance(cfg, db)
 	cache, err := tasksDBDCache(cfg)
 	if err != nil {
@@ -105,6 +107,10 @@ func run(arguments []string) error {
 	}
 	defer cache.Close()
 	stripeTasks := composeTasksDBD(cfg, db, tasks, cache, logger)
+	paidChecks, err := composeStripePaidCheck(cfg, db, tasks, broker, cache, logger)
+	if err != nil {
+		return errors.New("invalid worker notification configuration")
+	}
 	defer closeBakney()
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
@@ -114,21 +120,24 @@ func run(arguments []string) error {
 		MaintenanceInterval: *maintenance, DrainTimeout: *drain}
 	executor, err := service.NewJobExecutor(jobs, admission,
 		map[string]service.JobDefinition{
-			domain.JobResetDailyEmailBalance:           {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
-			domain.JobUpdateAssociateAge:               {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
-			domain.JobClearExpiredSubscriptionTokens:   {Version: 1, Timeout: *taskTimeout, Run: tokens.Run},
-			domain.JobDeleteOldAuditLogs:               {Version: 1, Timeout: *taskTimeout, Run: retention.Run},
-			domain.JobDeleteUsersWithRequest:           {Version: 1, Timeout: *taskTimeout, Run: deletions.Run},
-			domain.JobAutoMarkAttendance:               {Version: 1, Timeout: *taskTimeout, Run: attendance.Run},
-			domain.JobSendUserPartialRegistrationEmail: {Version: 1, Timeout: *taskTimeout, Run: emails.RunPartialRegistrations},
-			domain.JobSendExpiringCertificateEmail:     {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiringCertificates},
-			domain.JobSendExpiredCertificateEmail:      {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiredCertificates},
-			domain.JobSendReminders:                    {Version: 1, Timeout: *taskTimeout, Run: emails.RunReminders},
-			domain.JobMaintainBakneyPairings:           {Version: 1, Timeout: *taskTimeout, Run: bakney.Maintain},
-			domain.JobCleanupOldExports:                {Version: 1, Timeout: *taskTimeout, Run: exports.Run},
-			domain.JobChangeTypeOfStripePayments:       {Version: 1, Timeout: max(*taskTimeout, tasksDBDLongTimeout), Run: stripeTasks.RunChangeTypeOfStripePayments},
-			domain.JobGenerateCouponIfNotExists:        {Version: 1, Timeout: *taskTimeout, Run: stripeTasks.RunGenerateCouponIfNotExists},
-			domain.JobRenewMembershipsPayments:         {Version: 1, Timeout: *taskTimeout, Run: stripeTasks.RunRenewMembershipsPayments},
+			domain.JobResetDailyEmailBalance:             {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
+			domain.JobUpdateAssociateAge:                 {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
+			domain.JobClearExpiredSubscriptionTokens:     {Version: 1, Timeout: *taskTimeout, Run: tokens.Run},
+			domain.JobDeleteOldAuditLogs:                 {Version: 1, Timeout: *taskTimeout, Run: retention.Run},
+			domain.JobDeleteUsersWithRequest:             {Version: 1, Timeout: *taskTimeout, Run: deletions.Run},
+			domain.JobAutoMarkAttendance:                 {Version: 1, Timeout: *taskTimeout, Run: attendance.Run},
+			domain.JobSendUserPartialRegistrationEmail:   {Version: 1, Timeout: *taskTimeout, Run: emails.RunPartialRegistrations},
+			domain.JobSendExpiringCertificateEmail:       {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiringCertificates},
+			domain.JobSendExpiredCertificateEmail:        {Version: 1, Timeout: *taskTimeout, Run: emails.RunExpiredCertificates},
+			domain.JobSendReminders:                      {Version: 1, Timeout: *taskTimeout, Run: emails.RunReminders},
+			domain.JobMaintainBakneyPairings:             {Version: 1, Timeout: *taskTimeout, Run: bakney.Maintain},
+			domain.JobCleanupOldExports:                  {Version: 1, Timeout: *taskTimeout, Run: exports.Run},
+			domain.JobChangeTypeOfStripePayments:         {Version: 1, Timeout: max(*taskTimeout, tasksDBDLongTimeout), Run: stripeTasks.RunChangeTypeOfStripePayments},
+			domain.JobGenerateCouponIfNotExists:          {Version: 1, Timeout: *taskTimeout, Run: stripeTasks.RunGenerateCouponIfNotExists},
+			domain.JobRenewMembershipsPayments:           {Version: 1, Timeout: *taskTimeout, Run: stripeTasks.RunRenewMembershipsPayments},
+			domain.JobAutoDeleteOrphanMedicalCertificate: {Version: 1, Timeout: *taskTimeout, Run: orphans.Run},
+			domain.JobAssociationQuoteAssign:             {Version: 1, Timeout: *taskTimeout, Run: quotes.Run},
+			domain.JobMarkAsPaidPaymentsCheckingStripe:   {Version: 1, Timeout: *taskTimeout, Run: paidChecks.Run},
 		},
 		executorOptions)
 	if err != nil {
