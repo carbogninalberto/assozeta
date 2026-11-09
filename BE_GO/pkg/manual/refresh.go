@@ -125,89 +125,101 @@ func manualFileLock(ctx context.Context, file *os.File) error {
 	}
 }
 func (l *Loader) synchronize(ctx context.Context) error {
+	_, err := l.synchronizeCorpus(ctx)
+	return err
+}
+
+// Synchronize is sync_manuale_corpus: it downloads the release corpus for the
+// configured revision and release, installs its screenshots, promotes it and
+// returns the promoted corpus identity.
+func (l *Loader) Synchronize(ctx context.Context) (string, error) {
+	return l.synchronizeCorpus(ctx)
+}
+
+func (l *Loader) synchronizeCorpus(ctx context.Context) (string, error) {
 	if ctx == nil {
-		return errEvidence
+		return "", errEvidence
 	}
 	if ctx.Err() != nil {
-		return ctx.Err()
+		return "", ctx.Err()
 	}
 	url, err := l.corpusURL()
 	if err != nil {
-		return err
+		return "", err
 	}
 	root := filepath.Dir(l.settings.IndexPath)
 	if err = os.MkdirAll(root, 0777); err != nil {
-		return err
+		return "", err
 	}
 	lock, err := os.OpenFile(filepath.Join(root, ".sync.lock"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer lock.Close()
 	if err = manualFileLock(ctx, lock); err != nil {
-		return err
+		return "", err
 	}
 	defer syscall.Flock(int(lock.Fd()), syscall.LOCK_UN)
 	payload, err := l.download(ctx, url, maxCorpusBytes, 5*time.Second)
 	if err != nil {
-		return err
+		return "", err
 	}
 	// Validate through the same sealed-index parser as installed/runtime reads.
 	// This private candidate is never an active index and is removed on all exits.
 	candidate, err := os.CreateTemp(root, ".manual-candidate-")
 	if err != nil {
-		return err
+		return "", err
 	}
 	name := candidate.Name()
 	defer os.Remove(name)
 	if _, err = candidate.Write(payload); err != nil {
 		candidate.Close()
-		return err
+		return "", err
 	}
 	if err = candidate.Close(); err != nil {
-		return err
+		return "", err
 	}
 	index, _, err := l.index(ctx, name)
 	if err != nil {
-		return err
+		return "", err
 	}
 	meta, err := object(index["metadata"])
 	if err != nil {
-		return err
+		return "", err
 	}
 	if meta["publication_status"] != "published" || meta["code_state"] != "committed" || meta["manual_state"] != "committed" || !hex40.MatchString(text(meta["manual_revision"])) || !version(meta, l.settings) {
-		return errEvidence
+		return "", errEvidence
 	}
 	chunks, ok := index["chunks"].([]any)
 	if !ok {
-		return errEvidence
+		return "", errEvidence
 	}
 	stale, err := stalePublicSections(ctx, index, chunks, l.settings.SourceRoot)
 	if err != nil || len(stale) > 0 {
-		return errEvidence
+		return "", errEvidence
 	}
 	images := []map[string]any{}
 	hashes := map[string]bool{}
 	for _, raw := range chunks {
 		chunk, err := object(raw)
 		if err != nil {
-			return err
+			return "", err
 		}
 		records, ok := chunk["screenshots"].([]any)
 		if !ok {
-			return errEvidence
+			return "", errEvidence
 		}
 		for _, raw := range records {
 			image, err := object(raw)
 			if err != nil {
-				return err
+				return "", err
 			}
 			digest := text(image["sha256"])
 			if !hex64.MatchString(digest) {
-				return errEvidence
+				return "", errEvidence
 			}
 			if _, err = l.validateDownloadURL(text(image["url"])); err != nil {
-				return err
+				return "", err
 			}
 			if !hashes[digest] {
 				hashes[digest] = true
@@ -232,25 +244,29 @@ func (l *Loader) synchronize(ctx context.Context) error {
 		close(failures)
 		for err := range failures {
 			if err != nil {
-				return err
+				return "", err
 			}
 		}
 		if ctx.Err() != nil {
-			return ctx.Err()
+			return "", ctx.Err()
 		}
 	}
 	if err = l.retirePreviousAssets(ctx, hashes); err != nil {
-		return err
+		return "", err
 	}
 	data, err := canonical(index)
 	if err != nil {
-		return err
+		return "", err
 	}
-	if err = promoteManualBytes(ctx, l.settings.IndexPath, data); err != nil {
-		return err
+	// Django's promote writes the canonical JSON followed by a newline.
+	if err = promoteManualBytes(ctx, l.settings.IndexPath, append(data, '\n')); err != nil {
+		return "", err
 	}
 	l.pruneAssets(hashes)
-	return ctx.Err()
+	if err = ctx.Err(); err != nil {
+		return "", err
+	}
+	return text(index["identity"]), nil
 }
 func pngHeader(data []byte) bool {
 	return len(data) >= 24 && bytes.Equal(data[:8], []byte("\x89PNG\r\n\x1a\n")) && string(data[12:16]) == "IHDR"
