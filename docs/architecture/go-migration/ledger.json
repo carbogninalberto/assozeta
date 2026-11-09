@@ -25066,25 +25066,70 @@
         "target": "subscription_associates_draft_approve",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_renew.go",
+        "BE_GO/internal/domain/subscription_create.go",
+        "BE_GO/internal/repository/subscription_renew.go",
+        "BE_GO/internal/service/subscription_renew.go",
+        "BE_GO/internal/service/subscription_create.go",
+        "BE_GO/internal/service/subscription_create_python.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/handler/subscription_renew.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/associates-draft/list/approve",
+          "/api/v2/subscription/associates-draft/list/approve",
+          "/api/subscription/associates-draft/list/approve"
+        ],
+        "request": "POST JSON {associate_import_draft_ids, subscription_details {type, role, plan_id, membership_plan_id}, all}.",
+        "response": "{msg: '<n> su <m> atleti approvati.', approved: n}.",
+        "errors": "401 empty for athletes; 400 {msg: 'bad request, missing drafts to approve.'}; 400 {msg: 'Dati mancanti, iscrizione non approvata.'}; 403 registry / admin session; 405; 500 non-dict body or details, non-iterable ids, no association, a draft without associate (earlier drafts kept); 500 refused inputs (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.create; collaborators act as the owner.",
+        "resource_scope": "Drafts of request.user.sport_association.",
+        "side_effects": "APPROVING status rows replaced and deleted; per approved draft the create_subscription rows, the draft deleted (entry with str(data)), notification rows; after commit Celery messages and notifications.",
+        "transaction": "Django: not atomic, one transaction per create_subscription. Go: one transaction with a savepoint per draft, after-commit work at the end.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_renew_http.json",
+        "TESTS/fixtures/generate_subscription_renew_http.py",
+        "TESTS/contracts/test_subscription_renew_http.py",
+        "TESTS/adapters/django/subscription_renew_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-renew.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 54/54; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-red-r7/results.json",
+          "receipt_sha256": "38505812e7630513646c6d5faf816babc9fe51e11a95cfeba172ed383b02ac71"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 54/54 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-versioned-r3/results.json",
+          "receipt_sha256": "4cc12dede0914abcf75237e2edf7654ee10620400c304093baccaf6759b67f43"
+        },
+        {
+          "revision": "letting the renewal payment clean-up also match the newly created payment (dropping the payment_id exclusion)",
+          "result": "Mutation control: fails Go on subscription-renew-renew-basic (the new payment is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-mutation-r1/results.json",
+          "receipt_sha256": "df7fe15c552bbc02f3019d0bb47154f2537e3b56ba3dac9a2f76f1410dbe2fd5"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/renew and subscription/associates-draft/list/approve for owners and collaborators through the create_subscription port, extended with AssociateSerializer.create's associate_id branch, the sport_association username lookup, None certificate expirations and Python str(e) texts. Renew: one transaction (create, unpaid same-person payment clean-up with the Payment delete cascade, user by e-mail, tag links), 400 {status: error, msg: str(e)}, on_commit work after commit. Approve: one transaction with a savepoint per draft (swallowed exceptions, draft delete entry rendering the in-memory data as str(dict), APPROVING status rows, crash before the try keeps earlier work), notifications and Celery after commit. Athlete renewals, another association in sport_association, renewal courses, string/non-string tag ids, invoiced payments in the clean-up, unknown str(e) texts, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-renew.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/calculate-tax-code -> subscription_calculate_tax_code",
@@ -26169,25 +26214,70 @@
         "target": "subscription_renew",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_renew.go",
+        "BE_GO/internal/domain/subscription_create.go",
+        "BE_GO/internal/repository/subscription_renew.go",
+        "BE_GO/internal/service/subscription_renew.go",
+        "BE_GO/internal/service/subscription_create.go",
+        "BE_GO/internal/service/subscription_create_python.go",
+        "BE_GO/internal/service/subscription_notifier.go",
+        "BE_GO/internal/handler/subscription_renew.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/subscription/renew",
+          "/api/v2/subscription/renew",
+          "/api/subscription/renew"
+        ],
+        "request": "POST JSON create_subscription data {new_user_account, associate_data (associate_id), associate_tutor_data, signature, medical_certificate, custom_data, additional_fields, plan_id, membership_plan_id, sport_association, user, tags, courses}.",
+        "response": "{status: success, payment_id}.",
+        "errors": "400 {status: error, msg: str(e)} for Python exceptions (rolled back); 400 serializer errors / {msg, code: '400'}; 403 registry / admin session; 405; 409 duplicate; 500 athletes without sport_association; 500 refused inputs (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated; registry association.members.create; collaborators act as the owner.",
+        "resource_scope": "request.user.sport_association; associates by id or by tax code within it; payments of the association; tags by id.",
+        "side_effects": "create_subscription rows and audit; deleted unpaid payments (Payment delete cascade); subscription user update; tag links; after commit check_workflows_trigger(new_subscription), print_document_subscription, notification rows/Redis/Channels.",
+        "transaction": "One atomic transaction around create_subscription and the post-processing; on_commit work after it.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/subscription_renew_http.json",
+        "TESTS/fixtures/generate_subscription_renew_http.py",
+        "TESTS/contracts/test_subscription_renew_http.py",
+        "TESTS/adapters/django/subscription_renew_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/subscription-renew.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 54/54; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-red-r7/results.json",
+          "receipt_sha256": "38505812e7630513646c6d5faf816babc9fe51e11a95cfeba172ed383b02ac71"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 54/54 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-versioned-r3/results.json",
+          "receipt_sha256": "4cc12dede0914abcf75237e2edf7654ee10620400c304093baccaf6759b67f43"
+        },
+        {
+          "revision": "letting the renewal payment clean-up also match the newly created payment (dropping the payment_id exclusion)",
+          "result": "Mutation control: fails Go on subscription-renew-renew-basic (the new payment is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-mutation-r1/results.json",
+          "receipt_sha256": "df7fe15c552bbc02f3019d0bb47154f2537e3b56ba3dac9a2f76f1410dbe2fd5"
+        }
+      ],
+      "notes": [
+        "Implementing: subscription/renew and subscription/associates-draft/list/approve for owners and collaborators through the create_subscription port, extended with AssociateSerializer.create's associate_id branch, the sport_association username lookup, None certificate expirations and Python str(e) texts. Renew: one transaction (create, unpaid same-person payment clean-up with the Payment delete cascade, user by e-mail, tag links), 400 {status: error, msg: str(e)}, on_commit work after commit. Approve: one transaction with a savepoint per draft (swallowed exceptions, draft delete entry rendering the in-memory data as str(dict), APPROVING status rows, crash before the try keeps earlier work), notifications and Celery after commit. Athlete renewals, another association in sport_association, renewal courses, string/non-string tag ids, invoiced payments in the clean-up, unknown str(e) texts, form bodies and X-Group-Id are refused with a 500 before anything is committed. See docs/architecture/go-migration/subscription-renew.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:subscription/sign -> subscription_sign",
@@ -37052,7 +37142,11 @@
         "TESTS/fixtures/subscription_create_http.json",
         "TESTS/fixtures/generate_subscription_create_http.py",
         "TESTS/contracts/test_subscription_create_http.py",
-        "TESTS/adapters/django/subscription_create_http.py"
+        "TESTS/adapters/django/subscription_create_http.py",
+        "TESTS/fixtures/subscription_renew_http.json",
+        "TESTS/fixtures/generate_subscription_renew_http.py",
+        "TESTS/contracts/test_subscription_renew_http.py",
+        "TESTS/adapters/django/subscription_renew_http.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/subscription-create.md",
@@ -37073,11 +37167,31 @@
           "result": "Mutation control: fails Go on subscription-create-zero-fee-no-payment (SubscriptionMembership start_date).",
           "artifact": "quality-reports/go-migration/subscription-create-http-mutation-r1/results.json",
           "receipt_sha256": "05240b812e059d72528cf8fb39c381501b81e26fba35563e60b6adce54798089"
+        },
+        "docs/architecture/go-migration/subscription-renew.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 54/54; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-red-r7/results.json",
+          "receipt_sha256": "38505812e7630513646c6d5faf816babc9fe51e11a95cfeba172ed383b02ac71"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 54/54 on native Django, native Go, Caddy /api/v1 and /api/v2; exercised by subscription-renew-renew-basic, subscription-renew-renew-new-associate-id-and-user, subscription-renew-approve-listed, subscription-renew-approve-all.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-versioned-r3/results.json",
+          "receipt_sha256": "4cc12dede0914abcf75237e2edf7654ee10620400c304093baccaf6759b67f43"
+        },
+        {
+          "revision": "letting the renewal payment clean-up also match the newly created payment (dropping the payment_id exclusion)",
+          "result": "Mutation control: fails Go on subscription-renew-renew-basic (the new payment is deleted).",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-mutation-r1/results.json",
+          "receipt_sha256": "df7fe15c552bbc02f3019d0bb47154f2537e3b56ba3dac9a2f76f1410dbe2fd5"
         }
       ],
       "notes": [
         "Only publishes check_workflows_trigger(trigger_type=new_subscription). Not creditable yet: the sender (SubscriptionManager.create on_commit) is not in any Go route; a Go port of subscription creation must publish it after commit (recipe: subscription-approve / celery-producer.md). See docs/architecture/go-migration/tasks-db-b.md.",
-        "Implementing via subscription-create: new_subscription on commit publishes check_workflows_trigger(trigger_type='new_subscription', sport_association_id=UUID, subscription_id=UUID) from Go for subscription/add."
+        "Implementing via subscription-create: new_subscription on commit publishes check_workflows_trigger(trigger_type='new_subscription', sport_association_id=UUID, subscription_id=UUID) from Go for subscription/add.",
+        "Implementing via subscription-renew: new_subscription on commit publishes check_workflows_trigger(trigger_type='new_subscription', sport_association_id=UUID, subscription_id=UUID) from Go for subscription/renew and associates-draft approve."
       ]
     },
     {
