@@ -789,11 +789,7 @@ func dataRestoreApply(op *domain.DataRestoreReceipt, changes repository.DataRest
 
 // deleteObject is default_storage.delete(name).
 func (s *DataRestore) deleteObject(ctx context.Context, name string) error {
-	key, err := documentkey.S3Key(name, s.objects.Location())
-	if err != nil {
-		return err
-	}
-	return s.objects.Delete(ctx, key)
+	return dataRestoreDeleteObject(ctx, s.objects, name)
 }
 
 // cleanup is execution.cleanup: the upload object and the operation's
@@ -825,16 +821,39 @@ func (s *DataRestore) cleanup(ctx context.Context, op *domain.DataRestoreReceipt
 
 // cleanPrefix is execution.clean_prefix over S3Storage.listdir.
 func (s *DataRestore) cleanPrefix(ctx context.Context, prefix string) error {
-	listed, err := documentkey.S3Key(prefix, s.objects.Location())
+	return dataRestoreCleanPrefix(ctx, s.objects, prefix)
+}
+
+// DataRestoreStorage is the part of the S3 default storage that
+// execution.cleanup, clean_prefix and prune_storage use.
+type DataRestoreStorage interface {
+	Location() string
+	Delete(ctx context.Context, key string) error
+	List(ctx context.Context, prefix, delimiter string) ([]string, []string, error)
+}
+
+// dataRestoreDeleteObject is default_storage.delete(name).
+func dataRestoreDeleteObject(ctx context.Context, objects DataRestoreStorage, name string) error {
+	key, err := documentkey.S3Key(name, objects.Location())
 	if err != nil {
 		return err
+	}
+	return objects.Delete(ctx, key)
+}
+
+// dataRestoreListdir is S3Storage.listdir(prefix): the directory and file
+// names relative to the prefix.
+func dataRestoreListdir(ctx context.Context, objects DataRestoreStorage, prefix string) ([]string, []string, error) {
+	listed, err := documentkey.S3Key(prefix, objects.Location())
+	if err != nil {
+		return nil, nil, err
 	}
 	if listed != "" && !strings.HasSuffix(listed, "/") {
 		listed += "/"
 	}
-	directories, keys, err := s.objects.List(ctx, listed, "/")
+	directories, keys, err := objects.List(ctx, listed, "/")
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	relative := func(name string) (string, error) {
 		base := path.Clean(listed)
@@ -844,24 +863,40 @@ func (s *DataRestore) cleanPrefix(ctx context.Context, prefix string) error {
 		}
 		return cleaned[len(base)+1:], nil
 	}
+	var dirs, files []string
 	for _, key := range keys {
 		if key == listed {
 			continue
 		}
 		name, err := relative(key)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
-		if err := s.deleteObject(ctx, prefix+"/"+name); err != nil {
-			return err
-		}
+		files = append(files, name)
 	}
 	for _, directory := range directories {
 		name, err := relative(directory)
 		if err != nil {
+			return nil, nil, err
+		}
+		dirs = append(dirs, name)
+	}
+	return dirs, files, nil
+}
+
+// dataRestoreCleanPrefix is execution.clean_prefix over S3Storage.listdir.
+func dataRestoreCleanPrefix(ctx context.Context, objects DataRestoreStorage, prefix string) error {
+	directories, files, err := dataRestoreListdir(ctx, objects, prefix)
+	if err != nil {
+		return err
+	}
+	for _, name := range files {
+		if err := dataRestoreDeleteObject(ctx, objects, prefix+"/"+name); err != nil {
 			return err
 		}
-		if err := s.cleanPrefix(ctx, prefix+"/"+name); err != nil {
+	}
+	for _, name := range directories {
+		if err := dataRestoreCleanPrefix(ctx, objects, prefix+"/"+name); err != nil {
 			return err
 		}
 	}

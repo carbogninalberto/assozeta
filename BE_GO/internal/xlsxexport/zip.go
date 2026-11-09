@@ -24,6 +24,15 @@ const (
 // ZIP_DEFLATED: create_system 3, versions 20, flags 0 (sizes in the local
 // header, no data descriptor), no extra fields, local time stamps.
 func writeZip(entries []zipEntry, now time.Time) ([]byte, error) {
+	return writeZipFlags(entries, now, 0)
+}
+
+// zipDataDescriptor is general purpose flag bit 3: what zipfile writes to a
+// stream it cannot seek (wb.save(HttpResponse)): zero CRC and sizes in the
+// local header, then a signed data descriptor after the data.
+const zipDataDescriptor = 0x8
+
+func writeZipFlags(entries []zipEntry, now time.Time, flags uint16) ([]byte, error) {
 	var out bytes.Buffer
 	writer := zip.NewWriter(&out)
 	local := now.Local()
@@ -44,6 +53,7 @@ func writeZip(entries []zipEntry, now time.Time) ([]byte, error) {
 		header := &zip.FileHeader{
 			Name:               entry.name,
 			Method:             zip.Deflate,
+			Flags:              flags,
 			CreatorVersion:     3<<8 | 20,
 			ReaderVersion:      20,
 			ExternalAttrs:      entry.external,

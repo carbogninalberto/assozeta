@@ -1336,6 +1336,63 @@
         "count": 0
       }
     },
+    "interval_hourly_wait": {
+      "input": {
+        "kind": "interval",
+        "every": 3600,
+        "last": "2026-10-22T11:30:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 1800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_hourly_missed_slots": {
+      "input": {
+        "kind": "interval",
+        "every": 3600,
+        "last": "2026-10-22T09:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 3600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_hourly_at_slot": {
+      "input": {
+        "kind": "interval",
+        "every": 3600,
+        "last": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 3600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_hourly_initial_cursor": {
+      "input": {
+        "kind": "interval",
+        "every": 3600,
+        "last": null,
+        "date_changed": "2026-10-22T11:59:30+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 3570,
+        "enabled": true,
+        "count": 0
+      }
+    },
     "utc_daily_0300_before_slot": {
       "input": {
         "kind": "cron",

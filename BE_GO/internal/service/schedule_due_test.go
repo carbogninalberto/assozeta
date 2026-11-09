@@ -30,6 +30,7 @@ var scheduleSubset = []string{
 	"utc_every_15_minutes_hour_rollover", "utc_every_15_minutes_day_rollover", "utc_every_15_minutes_previous_date",
 	"utc_every_15_minutes_off_slot_cursor", "utc_every_15_minutes_future_cursor", "utc_every_15_minutes_start_future",
 	"utc_every_15_minutes_initial_cursor", "utc_every_45_minutes_hour_rollover", "utc_every_45_minutes_same_hour",
+	"interval_hourly_wait", "interval_hourly_missed_slots", "interval_hourly_at_slot", "interval_hourly_initial_cursor",
 	"utc_daily_0300_before_slot", "utc_daily_0300_at_slot", "utc_daily_0300_missed_slot",
 	"utc_every_20_minutes_before_slot", "utc_every_20_minutes_at_slot", "utc_every_20_minutes_hour_rollover",
 }
@@ -41,6 +42,7 @@ var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateA
 	domain.JobAutoMarkAttendance, domain.JobSendUserPartialRegistrationEmail, domain.JobSendExpiringCertificateEmail,
 	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings, domain.JobCleanupOldExports,
 	domain.JobChangeTypeOfStripePayments, domain.JobGenerateCouponIfNotExists, domain.JobRenewMembershipsPayments,
+	domain.JobCleanupDataRestores,
 	domain.JobAssociationQuoteAssign, domain.JobMarkAsPaidPaymentsCheckingStripe, domain.JobAutoDeleteOrphanMedicalCertificate}
 
 type dueFixtureInput struct {

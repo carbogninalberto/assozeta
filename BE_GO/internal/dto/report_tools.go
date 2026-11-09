@@ -4,20 +4,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
-	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
-// The MCP tool functions SavedReportViewSet.run calls (application/mcp_server).
-// Ported: the QueryBuilder paths of query_data, count_data, get_field_values
-// and aggregate_data for the Tags, PaymentCategory and Carnet models with
-// direct (non-traversing) fields, plus get_schema's unknown-model answer.
-// Everything else is refused explicitly (ErrReportNotPorted) before any query.
+// The MCP tool functions of application/mcp_server (QueryBuilder in
+// query_builder.py, security.py, schema.py) on the generic engine of
+// mcp_query.go: query_data, count_data, get_field_values, aggregate_data
+// and get_schema for every whitelisted model. Inputs whose Django behaviour
+// is not ported are refused (ErrReportNotPorted) before any query; tool
+// exceptions are *MCPToolException (errors.Is ErrReportFailed) with
+// Django's str(e).
 
 var (
 	// ErrReportFailed is an exception inside the tool: the view's JSON 500.
@@ -31,153 +32,6 @@ type ReportToolError struct{ Message string }
 
 func (e *ReportToolError) Error() string { return e.Message }
 
-type reportKind int
-
-const (
-	reportUUID reportKind = iota
-	reportText
-	reportInt
-	reportBool
-	reportDecimal
-	reportDateTime
-	reportJSON
-)
-
-type reportField struct {
-	Name, Attname string
-	Kind          reportKind
-	Null          bool
-	// FK marks a forward relation: Name is the relation, Attname the column.
-	FK bool
-	// Choices are the labels _build_choice_map applies (Italian overrides).
-	Choices map[int64]string
-	Min     int64
-	Max     int64
-	// Digits and Places are the DecimalField's max_digits/decimal_places.
-	Digits, Places int
-}
-
-type reportModel struct {
-	Label, Name, Table string
-	Fields             []reportField // get_fields() order of the concrete fields
-	Reverse            []string      // reverse relation names
-	SoftDelete         []string
-	PK                 string
-}
-
-func (m *reportModel) field(name string) (*reportField, bool) {
-	for i := range m.Fields {
-		if m.Fields[i].Name == name || m.Fields[i].Attname == name {
-			return &m.Fields[i], true
-		}
-	}
-	return nil, false
-}
-
-func (m *reportModel) reverse(name string) bool {
-	for _, item := range m.Reverse {
-		if item == name {
-			return true
-		}
-	}
-	return false
-}
-
-// known is the name set of _validate_fields_for_model/_validate_group_by:
-// every get_fields() name plus the forward relations' attnames.
-func (m *reportModel) known(name string) bool {
-	_, ok := m.field(name)
-	return ok || m.reverse(name)
-}
-
-var reportModels = map[string]*reportModel{
-	"application.Tags": {Label: "application.Tags", Name: "Tags", Table: "application_tags", PK: "tag_id",
-		Reverse: []string{"subscription"},
-		Fields: []reportField{{Name: "tag_id", Attname: "tag_id", Kind: reportUUID}, {Name: "tag_name", Attname: "tag_name", Kind: reportText},
-			{Name: "sport_association", Attname: "sport_association_id", Kind: reportUUID, FK: true},
-			{Name: "creation_date", Attname: "creation_date", Kind: reportDateTime}}},
-	"application.PaymentCategory": {Label: "application.PaymentCategory", Name: "PaymentCategory", Table: "application_paymentcategory",
-		PK: "payment_category_id", SoftDelete: []string{"archived"},
-		Reverse: []string{"users_default_category", "users_default_category_courses", "payment", "campsandretreatsperiodsservice"},
-		Fields: []reportField{{Name: "payment_category_id", Attname: "payment_category_id", Kind: reportUUID},
-			{Name: "name", Attname: "name", Kind: reportText}, {Name: "creation_date", Attname: "creation_date", Kind: reportDateTime},
-			{Name: "sport_association", Attname: "sport_association_id", Kind: reportUUID, FK: true, Null: true},
-			{Name: "expense", Attname: "expense", Kind: reportBool}, {Name: "tax_deductible", Attname: "tax_deductible", Kind: reportBool},
-			{Name: "archived", Attname: "archived", Kind: reportBool},
-			{Name: "type", Attname: "type", Kind: reportInt, Min: 0, Max: 32767, Choices: map[int64]string{1: "Istituzionale", 2: "Commerciale"}},
-			{Name: "vat_management", Attname: "vat_management_id", Kind: reportUUID, FK: true, Null: true},
-			{Name: "deleted", Attname: "deleted", Kind: reportBool}}},
-	"application.Carnet": {Label: "application.Carnet", Name: "Carnet", Table: "application_carnet", PK: "carnet_id",
-		Reverse: []string{"carnetsubscription"},
-		Fields: []reportField{{Name: "carnet_id", Attname: "carnet_id", Kind: reportUUID},
-			{Name: "title", Attname: "title", Kind: reportText, Null: true}, {Name: "description", Attname: "description", Kind: reportText, Null: true},
-			{Name: "user_id", Attname: "user_id_id", Kind: reportUUID, FK: true, Null: true},
-			{Name: "sport_association", Attname: "sport_association_id", Kind: reportUUID, FK: true, Null: true},
-			{Name: "lessons_number", Attname: "lessons_number", Kind: reportInt, Min: 0, Max: 32767},
-			{Name: "fee", Attname: "fee", Kind: reportDecimal, Digits: 9, Places: 2},
-			{Name: "creation_date", Attname: "creation_date", Kind: reportDateTime},
-			{Name: "public", Attname: "public", Kind: reportBool}, {Name: "meta", Attname: "meta", Kind: reportJSON, Null: true}}},
-}
-
-// reportWhitelist is security.MODEL_WHITELIST in declaration order.
-var reportWhitelist = []string{"application.SportAssociation", "application.Associate", "application.Group", "application.Subscription",
-	"application.Course", "application.CourseSubscription", "application.Payment", "application.PaymentCategory", "application.Invoice",
-	"application.InvoiceRows", "application.MedicalCertificate", "application.Instructor", "application.BalanceSheet",
-	"application.CustomAccounts", "application.Tags", "application.CourseTags", "application.Carnet", "application.CarnetSubscription",
-	"application.Module", "application.AttendanceRegistry", "application.AttendanceDay", "application.Reminders"}
-
-var reportBlacklist = map[string]bool{"password": true, "token": true, "secret": true, "api_key": true, "stripe_account_id": true,
-	"stripe_customer_id": true, "stripe_onboarded": true, "two_fa_secret": true, "two_fa_enabled": true, "two_fa_backup_codes": true,
-	"signature_url": true, "signature_storage_key": true, "configuration": true, "collaborator_permissions": true,
-	"dashboard_layout": true, "push_subscriptions": true, "social_auth": true, "last_login": true, "is_superuser": true,
-	"is_staff": true, "groups": true, "user_permissions": true}
-
-// reportAllowed is security.is_field_allowed.
-func reportAllowed(name string) bool {
-	if reportBlacklist[name] {
-		return false
-	}
-	for _, prefix := range []string{"stripe_", "two_fa", "social_auth_"} {
-		if strings.HasPrefix(name, prefix) {
-			return false
-		}
-	}
-	return true
-}
-
-// reportResolveModel is _resolve_model: a non-whitelisted name raises; a
-// whitelisted model outside the ported set is refused.
-func reportResolveModel(value any) (*reportModel, error) {
-	name, ok := value.(string)
-	if !ok {
-		// TypeError, an unhashable lookup or no whitelist match: ValueError.
-		return nil, ErrReportFailed
-	}
-	label := ""
-	if strings.Contains(name, ".") {
-		for _, item := range reportWhitelist {
-			if item == name {
-				label = item
-			}
-		}
-	} else {
-		for _, item := range reportWhitelist {
-			if strings.SplitN(item, ".", 2)[1] == name {
-				label = item
-				break
-			}
-		}
-	}
-	if label == "" {
-		return nil, ErrReportFailed
-	}
-	model, ported := reportModels[label]
-	if !ported {
-		return nil, ErrReportNotPorted
-	}
-	return model, nil
-}
-
 // ReportSettings are QueryBuilder's effective_integration('ai') values.
 type ReportSettings struct {
 	MaxResults   int64
@@ -189,7 +43,9 @@ type ReportPlan struct {
 	Statements []domain.ReportStatement
 	// Immediate is a result that needs no query (a 400 error dict).
 	Immediate *ReportToolError
-	Render    func(results [][][]*string) (any, error)
+	// Value is a result that needs no query (get_schema).
+	Value  any
+	Render func(results [][][]*string) (any, error)
 }
 
 type reportArgs struct{ values []any }
@@ -199,73 +55,77 @@ func (a *reportArgs) add(value any) string {
 	return "$" + strconv.Itoa(len(a.values))
 }
 
-func quote(column string) string { return `"` + column + `"` }
-
-// ---------------------------------------------------------------------------
-// Tool dispatch
-// ---------------------------------------------------------------------------
-
 // PlanReportTool binds the merged params like the Python call
 // tool_fn(sport_association_id=..., **params) and plans the tool.
 func PlanReportTool(tool string, params domain.RequestObject, association string, settings func() (ReportSettings, error)) (ReportPlan, error) {
 	if _, present := params.Lookup("sport_association_id"); present {
 		return ReportPlan{}, ErrReportFailed // multiple values for keyword argument
 	}
-	get := func(name string) (any, bool) { return params.Lookup(name) }
 	switch tool {
 	case "get_schema":
-		return planReportSchema(params)
+		value, _ := params.Lookup("model_name")
+		return MCPSchema(value)
 	case "query_data", "count_data", "aggregate_data", "get_field_values":
 	default:
 		// export_data, export_multi_sheet and get_attendance_matrix build files.
 		return ReportPlan{}, ErrReportNotPorted
 	}
-	modelName, present := get("model_name")
-	if !present {
+	if _, present := params.Lookup("model_name"); !present {
 		return ReportPlan{}, ErrReportFailed // missing required positional argument
 	}
-	var fieldName any
-	if tool == "get_field_values" {
-		if fieldName, present = get("field_name"); !present {
-			return ReportPlan{}, ErrReportFailed
-		}
+	if _, present := params.Lookup("field_name"); tool == "get_field_values" && !present {
+		return ReportPlan{}, ErrReportFailed
 	}
+	return PlanMCPTool(tool, params, association, settings)
+}
+
+// PlanMCPTool runs QueryBuilder for a bound call (the arguments are the
+// function's keyword arguments; required ones are present).
+func PlanMCPTool(tool string, params domain.RequestObject, association string, settings func() (ReportSettings, error)) (ReportPlan, error) {
 	// QueryBuilder.__init__ reads the integration settings before _resolve_model.
 	config, err := settings()
 	if err != nil {
 		return ReportPlan{}, err
 	}
-	model, err := reportResolveModel(modelName)
+	modelName, _ := params.Lookup("model_name")
+	model, entry, err := mcpResolveModel(modelName)
 	if err != nil {
 		return ReportPlan{}, err
 	}
 	if tool == "get_field_values" {
-		text, ok := fieldName.(string)
+		value, _ := params.Lookup("field_name")
+		name, ok := value.(string)
 		if !ok {
-			return ReportPlan{}, reportAttributeError(fieldName)
+			return ReportPlan{}, mcpNotPorted("field_name type")
 		}
-		if !reportAllowed(strings.Split(text, "__")[0]) {
-			return ReportPlan{}, ErrReportFailed
+		if !reportAllowed(strings.Split(name, "__")[0]) {
+			return ReportPlan{}, mcpRaise("Field '%s' is not allowed", name)
 		}
 	}
-	args := &reportArgs{}
-	where, err := model.where(args, association, params)
+	archived, _ := params.Lookup("include_archived")
+	q, err := mcpBaseQuery(model, entry, association, PythonTruthy(archived))
 	if err != nil {
+		return ReportPlan{}, err
+	}
+	if err = q.applyFilters(params); err != nil {
 		return ReportPlan{}, err
 	}
 	switch tool {
 	case "count_data":
-		return ReportPlan{Statements: []domain.ReportStatement{{SQL: `SELECT COUNT(*)::text FROM ` + model.Table + where, Args: args.values, Text: 1}},
+		if q.compileErr != nil {
+			return ReportPlan{}, q.compileErr
+		}
+		return ReportPlan{Statements: []domain.ReportStatement{q.countStatement()},
 			Render: func(results [][][]*string) (any, error) {
 				return domain.RequestObject{{Name: "count", Value: json.Number(*results[0][0][0])}}, nil
 			}}, nil
 	case "query_data":
-		return model.planQuery(args, where, params, config)
+		return q.planQuery(params, config)
 	case "get_field_values":
-		return model.planFieldValues(args, where, fieldName.(string), params)
-	default:
-		return model.planAggregate(args, where, params)
+		value, _ := params.Lookup("field_name")
+		return q.planFieldValues(value.(string), params)
 	}
+	return q.planAggregate(params)
 }
 
 // PythonDict is json.loads' dict for an object with repeated keys: the first
@@ -286,379 +146,36 @@ func PythonDict(object domain.RequestObject) domain.RequestObject {
 	return result
 }
 
-// reportAttributeError: a method call (.split, .items, .get, .lower,
-// .replace) on a value of the wrong type raises AttributeError.
-func reportAttributeError(any) error { return ErrReportFailed }
+var reportBlacklist = map[string]bool{"password": true, "token": true, "secret": true, "api_key": true, "stripe_account_id": true,
+	"stripe_customer_id": true, "stripe_onboarded": true, "two_fa_secret": true, "two_fa_enabled": true, "two_fa_backup_codes": true,
+	"signature_url": true, "signature_storage_key": true, "configuration": true, "collaborator_permissions": true,
+	"dashboard_layout": true, "push_subscriptions": true, "social_auth": true, "last_login": true, "is_superuser": true,
+	"is_staff": true, "groups": true, "user_permissions": true}
 
-func planReportSchema(params domain.RequestObject) (ReportPlan, error) {
-	value, _ := params.Lookup("model_name")
-	if !PythonTruthy(value) || value == "null" {
-		return ReportPlan{}, ErrReportNotPorted // get_full_schema()
+// reportAllowed is security.is_field_allowed.
+func reportAllowed(name string) bool {
+	if reportBlacklist[name] {
+		return false
 	}
-	var text string
-	switch v := value.(type) {
-	case string:
-		text = v
-		for _, item := range reportWhitelist {
-			if item == "application."+v || item == v {
-				return ReportPlan{}, ErrReportNotPorted // the model schema
-			}
+	for _, prefix := range []string{"stripe_", "two_fa", "social_auth_"} {
+		if strings.HasPrefix(name, prefix) {
+			return false
 		}
-	case bool:
-		text = PythonStr(v)
-	case json.Number:
-		if strings.ContainsAny(string(v), ".eE") {
-			return ReportPlan{}, ErrReportNotPorted
-		}
-		text = PythonStr(v)
-	default:
-		return ReportPlan{}, ErrReportFailed // unhashable in MODEL_WHITELIST
 	}
-	return ReportPlan{Immediate: &ReportToolError{Message: "Model " + text + " not found"}}, nil
+	return true
 }
 
-// ---------------------------------------------------------------------------
-// Filters
-// ---------------------------------------------------------------------------
-
-// where is _base_queryset (tenant, soft delete unless include_archived)
-// followed by _apply_filters.
-func (m *reportModel) where(args *reportArgs, association string, params domain.RequestObject) (string, error) {
-	clauses := []string{quote("sport_association_id") + " = " + args.add(association) + "::uuid"}
-	archived, _ := params.Lookup("include_archived")
-	if !PythonTruthy(archived) {
-		for _, name := range m.SoftDelete {
-			clauses = append(clauses, "NOT "+quote(name))
-		}
+// mcpAttributeError is the AttributeError of a method call on a value of
+// the wrong type.
+func mcpAttributeError(value any, method string) error {
+	switch value.(type) {
+	case []any, string, bool, json.Number, domain.RequestObject:
+		return mcpRaise("'%s' object has no attribute '%s'", pythonTypeName(value), method)
+	case nil:
+		return mcpRaise("'NoneType' object has no attribute '%s'", method)
 	}
-	if value, _ := params.Lookup("filters"); PythonTruthy(value) {
-		group, err := m.group(args, value, false)
-		if err != nil {
-			return "", err
-		}
-		if group != "" {
-			clauses = append(clauses, group)
-		}
-	}
-	if value, _ := params.Lookup("exclude"); PythonTruthy(value) {
-		group, err := m.group(args, value, true)
-		if err != nil {
-			return "", err
-		}
-		if group != "" {
-			clauses = append(clauses, "NOT ("+group+")")
-		}
-	}
-	if value, _ := params.Lookup("or_filters"); PythonTruthy(value) {
-		if items, ok := value.([]any); ok {
-			var alternatives []string
-			for _, item := range items {
-				object, ok := item.(domain.RequestObject)
-				if !ok {
-					continue
-				}
-				group, err := m.group(args, object, false)
-				if err != nil {
-					return "", err
-				}
-				if group != "" {
-					alternatives = append(alternatives, "("+group+")")
-				}
-			}
-			if len(alternatives) > 0 {
-				clauses = append(clauses, "("+strings.Join(alternatives, " OR ")+")")
-			}
-		}
-	}
-	return " WHERE " + strings.Join(clauses, " AND "), nil
+	return mcpNotPorted("attribute error")
 }
-
-// group is validate_filter_fields + _coerce_filter_values + Q(**kwargs): the
-// AND of the kept conditions ("" when every key was dropped).
-func (m *reportModel) group(args *reportArgs, value any, negated bool) (string, error) {
-	object, ok := value.(domain.RequestObject)
-	if !ok {
-		return "", reportAttributeError(value) // .items() on a non-dict
-	}
-	var conditions []string
-	for _, item := range PythonDict(object) {
-		if !reportAllowed(strings.Split(item.Name, "__")[0]) {
-			continue
-		}
-		condition, err := m.condition(args, item.Name, item.Value, negated)
-		if err != nil {
-			return "", err
-		}
-		conditions = append(conditions, condition)
-	}
-	return strings.Join(conditions, " AND "), nil
-}
-
-var reportLookups = map[string]bool{"exact": true, "iexact": true, "contains": true, "icontains": true, "gt": true, "gte": true,
-	"lt": true, "lte": true, "in": true, "isnull": true, "startswith": true, "istartswith": true, "endswith": true, "iendswith": true,
-	"range": true}
-
-func (m *reportModel) resolve(name string) (*reportField, error) {
-	if name == "pk" {
-		field, _ := m.field(m.PK)
-		return field, nil
-	}
-	if field, ok := m.field(name); ok {
-		return field, nil
-	}
-	if m.reverse(name) {
-		return nil, ErrReportNotPorted
-	}
-	return nil, ErrReportFailed // FieldError: cannot resolve keyword
-}
-
-func (m *reportModel) condition(args *reportArgs, key string, value any, negated bool) (string, error) {
-	parts := strings.Split(key, "__")
-	field, err := m.resolve(parts[0])
-	if err != nil {
-		return "", err
-	}
-	lookup := "exact"
-	switch {
-	case len(parts) == 2 && reportLookups[parts[1]]:
-		lookup = parts[1]
-	case len(parts) > 1:
-		return "", ErrReportNotPorted // relation traversal, transforms, other lookups
-	}
-	if field.Kind == reportJSON {
-		return "", ErrReportNotPorted
-	}
-	if field.FK && lookup != "exact" && lookup != "in" && lookup != "isnull" {
-		return "", ErrReportNotPorted
-	}
-	column := quote(field.Attname)
-	if value == nil {
-		if lookup == "exact" || lookup == "iexact" {
-			return column + " IS NULL", nil
-		}
-		return "", ErrReportFailed // Cannot use None as a query value
-	}
-	var sql string
-	switch lookup {
-	case "isnull":
-		flag, ok := value.(bool)
-		if !ok {
-			return "", ErrReportNotPorted
-		}
-		if flag {
-			return column + " IS NULL", nil
-		}
-		return column + " IS NOT NULL", nil
-	case "in", "range":
-		items, ok := value.([]any)
-		if !ok {
-			return "", ErrReportNotPorted
-		}
-		var placeholders []string
-		for _, item := range items {
-			if item == nil && lookup == "in" {
-				continue // In drops None
-			}
-			prepared, err := field.prepare(item, false)
-			if err != nil {
-				return "", err
-			}
-			placeholders = append(placeholders, args.add(prepared)+field.cast())
-		}
-		if lookup == "range" {
-			if len(items) != 2 || len(placeholders) != 2 {
-				return "", ErrReportNotPorted
-			}
-			sql = column + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]
-		} else if len(placeholders) == 0 {
-			sql = "FALSE" // EmptyResultSet
-		} else {
-			sql = column + " IN (" + strings.Join(placeholders, ", ") + ")"
-		}
-	case "iexact", "contains", "icontains", "startswith", "istartswith", "endswith", "iendswith":
-		if field.Kind != reportText {
-			return "", ErrReportNotPorted
-		}
-		text, ok := value.(string)
-		if !ok {
-			return "", ErrReportNotPorted
-		}
-		if lookup == "iexact" {
-			sql = "UPPER(" + column + "::text) = UPPER(" + args.add(text) + ")"
-			break
-		}
-		escaped := strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(text)
-		switch lookup {
-		case "contains", "icontains":
-			escaped = "%" + escaped + "%"
-		case "startswith", "istartswith":
-			escaped += "%"
-		default:
-			escaped = "%" + escaped
-		}
-		if strings.HasPrefix(lookup, "i") {
-			sql = "UPPER(" + column + "::text) LIKE UPPER(" + args.add(escaped) + ")"
-		} else {
-			sql = column + "::text LIKE " + args.add(escaped)
-		}
-	default:
-		if field.Kind == reportUUID && lookup != "exact" {
-			return "", ErrReportNotPorted
-		}
-		if field.Kind == reportBool && lookup != "exact" {
-			return "", ErrReportNotPorted
-		}
-		prepared, err := field.prepare(value, true)
-		if err != nil {
-			return "", err
-		}
-		operator := map[string]string{"exact": "=", "gt": ">", "gte": ">=", "lt": "<", "lte": "<="}[lookup]
-		sql = column + " " + operator + " " + args.add(prepared) + field.cast()
-	}
-	if negated && field.Null {
-		// exclude() on a nullable column keeps NULL rows.
-		sql = "(" + sql + " AND " + column + " IS NOT NULL)"
-	}
-	return sql, nil
-}
-
-func (f *reportField) cast() string {
-	switch f.Kind {
-	case reportUUID:
-		return "::uuid"
-	case reportInt:
-		return "::integer"
-	case reportBool:
-		return "::boolean"
-	case reportDecimal:
-		return "::numeric"
-	case reportDateTime:
-		return "::timestamptz"
-	}
-	return "::text"
-}
-
-var (
-	reportPythonInt = regexp.MustCompile(`^[ \t\n\r\v\f]*[+-]?[0-9]+[ \t\n\r\v\f]*$`)
-	reportDecimalRe = regexp.MustCompile(`^-?([0-9]+)(?:\.([0-9]+))?$`)
-	reportDateTimes = []struct {
-		pattern *regexp.Regexp
-		layout  string
-	}{
-		{regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$`), "2006-01-02T15:04:05"},
-		{regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$`), "2006-01-02T15:04"},
-		{regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$`), "2006-01-02 15:04:05"},
-		{regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`), "2006-01-02"},
-	}
-)
-
-// prepare is _coerce_filter_values (top-level strings only) followed by the
-// field's get_prep_value; it returns the SQL parameter.
-func (f *reportField) prepare(value any, top bool) (any, error) {
-	switch f.Kind {
-	case reportUUID:
-		text, ok := value.(string)
-		if !ok {
-			return nil, ErrReportNotPorted
-		}
-		return reportUUIDValue(text)
-	case reportText:
-		text, ok := value.(string)
-		if !ok {
-			return nil, ErrReportNotPorted
-		}
-		return text, nil
-	case reportBool:
-		flag, ok := value.(bool)
-		if !ok {
-			return nil, ErrReportNotPorted
-		}
-		return flag, nil
-	case reportInt:
-		var text string
-		switch v := value.(type) {
-		case json.Number:
-			text = string(v)
-			if strings.ContainsAny(text, ".eE") {
-				return nil, ErrReportNotPorted
-			}
-		case string:
-			// int(value), both in the coercion and in IntegerField.get_prep_value.
-			if !reportPythonInt.MatchString(v) {
-				for _, r := range v {
-					if r > 127 || r == '_' || r < 0x20 {
-						return nil, ErrReportNotPorted
-					}
-				}
-				return nil, ErrReportFailed
-			}
-			text = strings.TrimSpace(v)
-		default:
-			return nil, ErrReportNotPorted
-		}
-		number, ok := new(big.Int).SetString(strings.TrimPrefix(text, "+"), 10)
-		if !ok || !number.IsInt64() || number.Int64() < f.Min || number.Int64() > f.Max {
-			return nil, ErrReportNotPorted // out-of-range integer lookups
-		}
-		return number.Int64(), nil
-	case reportDecimal:
-		var text string
-		switch v := value.(type) {
-		case json.Number:
-			text = string(v)
-		case string:
-			if !top {
-				return nil, ErrReportNotPorted
-			}
-			text = v
-		default:
-			return nil, ErrReportNotPorted
-		}
-		match := reportDecimalRe.FindStringSubmatch(text)
-		if match == nil || len(match[2]) > f.Places || len(strings.TrimLeft(match[1], "0"))+len(match[2]) > f.Digits {
-			return nil, ErrReportNotPorted
-		}
-		return text, nil
-	case reportDateTime:
-		text, ok := value.(string)
-		if !ok || !top {
-			return nil, ErrReportNotPorted
-		}
-		for _, format := range reportDateTimes {
-			if !format.pattern.MatchString(text) {
-				continue
-			}
-			moment, err := time.ParseInLocation(format.layout, text, time.UTC)
-			if err != nil {
-				return nil, ErrReportNotPorted
-			}
-			return moment, nil
-		}
-		return nil, ErrReportNotPorted
-	}
-	return nil, ErrReportNotPorted
-}
-
-// reportUUIDValue is uuid.UUID(hex=...) for canonical spellings; other
-// spellings Python could still accept are refused.
-func reportUUIDValue(text string) (string, error) {
-	hex := strings.ReplaceAll(strings.ReplaceAll(text, "urn:", ""), "uuid:", "")
-	hex = strings.ReplaceAll(strings.Trim(hex, "{}"), "-", "")
-	if len(hex) != 32 {
-		return "", ErrReportFailed
-	}
-	for _, r := range hex {
-		if !strings.ContainsRune("0123456789abcdefABCDEF", r) {
-			return "", ErrReportNotPorted
-		}
-	}
-	lower := strings.ToLower(hex)
-	return lower[:8] + "-" + lower[8:12] + "-" + lower[12:16] + "-" + lower[16:20] + "-" + lower[20:], nil
-}
-
-// ---------------------------------------------------------------------------
-// Values
-// ---------------------------------------------------------------------------
 
 // pythonIter is `for item in value` for the parsed JSON types.
 func pythonIter(value any) ([]any, error) {
@@ -678,36 +195,809 @@ func pythonIter(value any) ([]any, error) {
 		}
 		return items, nil
 	}
-	return nil, ErrReportFailed
+	return nil, mcpNotPorted("iteration of a scalar")
 }
 
-// render is the SQL expression whose text Render turns into the Python value.
-func (f *reportField) render(expression string) string {
-	if f.Kind == reportDateTime {
-		return `to_char(` + expression + ` AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US')`
+// mcpStrings iterates a list argument whose items get .split/.lstrip.
+func mcpStrings(value any, method string) ([]string, error) {
+	items, err := pythonIter(value)
+	if err != nil {
+		return nil, err
 	}
-	return expression + "::text"
+	texts := make([]string, 0, len(items))
+	for _, item := range items {
+		text, ok := item.(string)
+		if !ok {
+			return nil, mcpAttributeError(item, method)
+		}
+		texts = append(texts, text)
+	}
+	return texts, nil
 }
 
-// value is _serialize_value of the column text (nil: None).
-func (f *reportField) value(text *string) (any, error) {
+// ---------------------------------------------------------------------------
+// _apply_filters
+// ---------------------------------------------------------------------------
+
+// filterLeaves is validate_filter_fields + _coerce_filter_values.
+func (q *mcpQuery) filterLeaves(value any) ([]mcpLeaf, error) {
+	object, ok := value.(domain.RequestObject)
+	if !ok {
+		return nil, mcpAttributeError(value, "items")
+	}
+	var leaves []mcpLeaf
+	for _, item := range PythonDict(object) {
+		if !reportAllowed(strings.Split(item.Name, "__")[0]) {
+			continue
+		}
+		leaves = append(leaves, mcpLeaf{key: item.Name, value: mcpCoerce(q.model, item.Name, item.Value)})
+	}
+	return leaves, nil
+}
+
+func (q *mcpQuery) applyFilters(params domain.RequestObject) error {
+	if value, _ := params.Lookup("filters"); PythonTruthy(value) {
+		leaves, err := q.filterLeaves(value)
+		if err != nil {
+			return err
+		}
+		if err = q.addQ(mcpQ(leaves)); err != nil {
+			return err
+		}
+	}
+	if value, _ := params.Lookup("exclude"); PythonTruthy(value) {
+		leaves, err := q.filterLeaves(value)
+		if err != nil {
+			return err
+		}
+		node := mcpQ(leaves)
+		node.negated = true
+		if err = q.addQ(node); err != nil {
+			return err
+		}
+	}
+	if value, _ := params.Lookup("or_filters"); PythonTruthy(value) {
+		items, ok := value.([]any)
+		if !ok {
+			return nil
+		}
+		var combined *mcpNode
+		for _, item := range items {
+			if _, isDict := item.(domain.RequestObject); !isDict {
+				continue
+			}
+			leaves, err := q.filterLeaves(item)
+			if err != nil {
+				return err
+			}
+			combined = mcpCombineOr(combined, mcpQ(leaves))
+		}
+		if combined != nil && len(combined.children) > 0 {
+			if err := q.addQ(combined); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// mcpCombineOr is Q.__or__ (Q._combine and tree.Node.add squashing).
+func mcpCombineOr(left, right *mcpNode) *mcpNode {
+	if left == nil || len(left.children) == 0 {
+		return right
+	}
+	if len(right.children) == 0 {
+		return left
+	}
+	result := &mcpNode{or: true}
+	for _, side := range []*mcpNode{left, right} {
+		if !side.negated && (side.or || len(side.children) == 1) {
+			result.children = append(result.children, side.children...)
+		} else {
+			result.children = append(result.children, side)
+		}
+	}
+	return result
+}
+
+// ---------------------------------------------------------------------------
+// Statements
+// ---------------------------------------------------------------------------
+
+func (q *mcpQuery) concreteColumns() []string {
+	var columns []string
+	for _, field := range q.model.Fields {
+		if field.Concrete {
+			columns = append(columns, mcpColumn(q.base(), field.Column))
+		}
+	}
+	return columns
+}
+
+// countStatement is QuerySet.count() of the distinct queryset.
+func (q *mcpQuery) countStatement() domain.ReportStatement {
+	var selects []string
+	for i, column := range q.concreteColumns() {
+		selects = append(selects, column+` AS "col`+strconv.Itoa(i+1)+`"`)
+	}
+	sql := `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL() + `) subquery`
+	return domain.ReportStatement{SQL: sql, Args: q.args.values, Text: 1}
+}
+
+// mcpColumnOut is one rendered output column.
+type mcpColumnOut struct {
+	key   string
+	expr  mcpExpr
+	alias string
+}
+
+// wrap renders the outer text projection over an inner query whose output
+// columns are aliased c0..cN.
+func mcpWrap(inner string, columns []mcpColumnOut, args []any) domain.ReportStatement {
+	selects := make([]string, len(columns))
+	for i, column := range columns {
+		selects[i] = mcpRender(column.expr, `q."`+column.alias+`"`)
+	}
+	return domain.ReportStatement{SQL: `SELECT ` + strings.Join(selects, ", ") + ` FROM (` + inner + `) q`, Args: args, Text: len(columns)}
+}
+
+// mcpRender is the SQL text rendering of a value of the expression's type.
+func mcpRender(expr mcpExpr, sql string) string {
+	switch expr.kind {
+	case "datetime":
+		return `to_char(` + sql + ` AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US')`
+	case "date":
+		return `to_char(` + sql + `, 'YYYY-MM-DD')`
+	}
+	return sql + `::text`
+}
+
+// ---------------------------------------------------------------------------
+// query_data (execute_query)
+// ---------------------------------------------------------------------------
+
+// mcpOrder is one validated order_by item.
+type mcpOrder struct {
+	name       string
+	descending bool
+}
+
+// validateOrder is the blacklist filter of execute_query followed by
+// Query.add_ordering's names_to_path check of each item.
+func (q *mcpQuery) validateOrder(value any) ([]mcpOrder, error) {
+	if !PythonTruthy(value) {
+		return nil, nil
+	}
+	items, err := mcpStrings(value, "lstrip")
+	if err != nil {
+		return nil, err
+	}
+	var orders []mcpOrder
+	for _, item := range items {
+		clean := strings.TrimLeft(item, "-")
+		if !reportAllowed(strings.Split(clean, "__")[0]) {
+			continue
+		}
+		if item == "?" {
+			return nil, mcpNotPorted("random ordering")
+		}
+		name := strings.TrimPrefix(item, "-")
+		if _, err := mcpNamesToPath(q.model, strings.Split(name, "__"), true, false); err != nil {
+			return nil, err
+		}
+		orders = append(orders, mcpOrder{name: name, descending: name != item})
+	}
+	return orders, nil
+}
+
+// orderExpr is SQLCompiler.find_ordering_name.
+func (q *mcpQuery) orderExpr(order mcpOrder) (mcpExpr, error) {
+	pieces := strings.Split(order.name, "__")
+	info, err := q.setupJoins(pieces, nil, true, true)
+	if err != nil {
+		return mcpExpr{}, err
+	}
+	final := info.path.final
+	if final.Relation && len(info.transforms) == 0 && order.name != "pk" && final.Attname != pieces[len(pieces)-1] {
+		if related := final.relatedModel(); related != nil && len(related.Ordering) > 0 {
+			return mcpExpr{}, mcpNotPorted("ordering by a relation with Meta.ordering")
+		}
+	}
+	target, alias, _ := q.trimJoins(info)
+	expr, err := q.targetExpr(info, target, alias)
+	if err != nil {
+		return expr, err
+	}
+	for _, transform := range info.transforms {
+		next, err := expr.transform(transform)
+		if err != nil {
+			if info.path.finalIsField() && info.lastErr != nil && !mcpTransformKnown(expr, transform) {
+				return expr, info.lastErr
+			}
+			return expr, err
+		}
+		expr = next
+	}
+	return expr, nil
+}
+
+// mcpInteger is a limit/offset value (Python ints; integral floats behave
+// like ints in slicing).
+func mcpInteger(value any) (int64, error) {
+	switch v := value.(type) {
+	case json.Number:
+		if strings.ContainsAny(string(v), ".eE") {
+			number, err := strconv.ParseFloat(string(v), 64)
+			if err != nil || math.Trunc(number) != number || math.Abs(number) > 1<<40 {
+				return 0, mcpNotPorted("non-integral limit or offset")
+			}
+			return int64(number), nil
+		}
+		number, err := strconv.ParseInt(string(v), 10, 64)
+		if err != nil || number > 1<<40 || number < -(1<<40) {
+			return 0, mcpNotPorted("limit or offset out of range")
+		}
+		return number, nil
+	}
+	return 0, mcpNotPorted(fmt.Sprintf("limit or offset %T", value))
+}
+
+// slice is effective_limit = min(limit or MAX, MAX) and qs[offset:offset+limit].
+func mcpSlice(params domain.RequestObject, maximum int64) (int64, int64, error) {
+	limit := maximum
+	if value, _ := params.Lookup("limit"); PythonTruthy(value) {
+		switch value.(type) {
+		case string, []any, domain.RequestObject:
+			// min(limit, MAX) compares MAX < limit.
+			return 0, 0, mcpRaise("'<' not supported between instances of 'int' and '%s'", pythonTypeName(value))
+		}
+		number, err := mcpInteger(value)
+		if err != nil {
+			return 0, 0, err
+		}
+		if number < limit {
+			limit = number
+		}
+	}
+	var offset int64
+	if value, present := params.Lookup("offset"); present {
+		if value == nil {
+			return 0, 0, mcpRaise("unsupported operand type(s) for +: 'NoneType' and 'int'")
+		}
+		number, err := mcpInteger(value)
+		if err != nil {
+			return 0, 0, err
+		}
+		offset = number
+	}
+	if offset < 0 || offset+limit < 0 {
+		return 0, 0, mcpRaise("Negative indexing is not supported.")
+	}
+	if limit < 0 {
+		return 0, 0, mcpNotPorted("negative limit")
+	}
+	return limit, offset, nil
+}
+
+// queryFields is _validate_fields_for_model: the value keys, and whether
+// values() got explicit fields (no fields: every concrete attname).
+func (q *mcpQuery) queryFields(value any) ([]string, bool, error) {
+	if !PythonTruthy(value) {
+		var names []string
+		for _, field := range q.model.Fields {
+			if !field.Relation && reportAllowed(field.Name) {
+				names = append(names, field.Name)
+			}
+		}
+		return names, true, nil
+	}
+	items, err := mcpStrings(value, "split")
+	if err != nil {
+		return nil, false, err
+	}
+	var names []string
+	seen := map[string]bool{}
+	for _, item := range items {
+		root := strings.Split(item, "__")[0]
+		if !q.model.known(root) || !reportAllowed(root) {
+			continue
+		}
+		if seen[item] {
+			return nil, false, mcpNotPorted("duplicate field")
+		}
+		seen[item] = true
+		names = append(names, item)
+	}
+	if len(names) == 0 {
+		var attnames []string
+		for _, field := range q.model.Fields {
+			if field.Concrete {
+				attnames = append(attnames, field.Attname)
+			}
+		}
+		return attnames, false, nil
+	}
+	return names, true, nil
+}
+
+// planQuery is QueryBuilder.execute_query after the filters.
+func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
+	if joins, _ := params.Lookup("joins"); PythonTruthy(joins) {
+		// select_related/prefetch_related: values() ignores both.
+		if _, err := pythonIter(joins); err != nil {
+			return ReportPlan{}, err
+		}
+	}
+	if q.compileErr != nil {
+		return ReportPlan{}, q.compileErr
+	}
+	count := q.countStatement()
+	orderValue, _ := params.Lookup("order_by")
+	orders, err := q.validateOrder(orderValue)
+	if err != nil {
+		return ReportPlan{}, err
+	}
+	fieldsValue, _ := params.Lookup("fields")
+	names, explicit, err := q.queryFields(fieldsValue)
+	if err != nil {
+		return ReportPlan{}, err
+	}
+	labels := mcpChoiceMap(q.model, nil)
+	if explicit {
+		labels = mcpChoiceMap(q.model, names)
+	}
+	limit, offset, err := mcpSlice(params, config.MaxResults)
+	if err != nil {
+		return ReportPlan{}, err
+	}
+	var columns []mcpColumnOut
+	var selects []string
+	for i, name := range names {
+		var expr mcpExpr
+		if explicit {
+			expr, err = q.resolveField(name)
+		} else {
+			field := q.model.getField(name)
+			expr, err = q.targetExpr(&mcpJoinInfo{path: mcpPath{final: field}}, mcpColumnTarget(field), q.base())
+		}
+		if err != nil {
+			return ReportPlan{}, err
+		}
+		alias := "c" + strconv.Itoa(i)
+		columns = append(columns, mcpColumnOut{key: name, expr: expr, alias: alias})
+		selects = append(selects, expr.sql+` AS "`+alias+`"`)
+	}
+	var keys []string
+	for i, order := range orders {
+		expr, err := q.orderExpr(order)
+		if err != nil {
+			return ReportPlan{}, err
+		}
+		reference := expr.sql
+		found := false
+		for _, column := range columns {
+			if column.expr.sql == expr.sql {
+				found = true
+			}
+		}
+		if !found {
+			selects = append(selects, expr.sql+` AS "__o`+strconv.Itoa(i)+`"`)
+		}
+		if order.descending {
+			reference += " DESC"
+		} else {
+			reference += " ASC"
+		}
+		keys = append(keys, reference)
+	}
+	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL()
+	if len(keys) > 0 {
+		inner += ` ORDER BY ` + strings.Join(keys, ", ")
+	}
+	inner += ` LIMIT ` + strconv.FormatInt(limit, 10)
+	if offset > 0 {
+		inner += ` OFFSET ` + strconv.FormatInt(offset, 10)
+	}
+	statement := mcpWrap(inner, columns, q.args.values)
+	return ReportPlan{Statements: []domain.ReportStatement{count, statement},
+		Render: func(results [][][]*string) (any, error) {
+			total, _ := strconv.ParseInt(*results[0][0][0], 10, 64)
+			data := []any{}
+			for _, record := range results[1] {
+				row := domain.RequestObject{}
+				for i, column := range columns {
+					value, err := mcpValue(column.expr, record[i])
+					if err != nil {
+						return nil, err
+					}
+					row = append(row, domain.RequestField{Name: column.key, Value: value})
+				}
+				if err := mcpApplyLabels(row, labels); err != nil {
+					return nil, err
+				}
+				data = append(data, row)
+			}
+			return domain.RequestObject{{Name: "count", Value: json.Number(strconv.FormatInt(total, 10))},
+				{Name: "has_more", Value: offset+limit < total}, {Name: "data", Value: data}}, nil
+		}}, nil
+}
+
+// ---------------------------------------------------------------------------
+// get_field_values
+// ---------------------------------------------------------------------------
+
+func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject) (ReportPlan, error) {
+	labels := mcpChoiceMap(q.model, []string{name})
+	counted := q.clone()
+	expr, err := counted.resolveField(name)
+	if err != nil {
+		return ReportPlan{}, err
+	}
+	if counted.compileErr != nil {
+		return ReportPlan{}, counted.compileErr
+	}
+	total := domain.ReportStatement{SQL: `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + expr.sql + ` AS "c0" FROM ` + counted.from() +
+		counted.whereSQL() + `) subquery`, Args: counted.args.values, Text: 1}
+	listed := q.clone()
+	expr, err = listed.resolveField(name)
+	if err != nil {
+		return ReportPlan{}, err
+	}
+	order, err := listed.orderExpr(mcpOrder{name: name})
+	if err != nil {
+		return ReportPlan{}, err
+	}
+	limit := ""
+	value, present := params.Lookup("limit")
+	switch {
+	case !present:
+		limit = " LIMIT 100"
+	case value == nil:
+	default:
+		number, err := mcpInteger(value)
+		if err != nil {
+			return ReportPlan{}, err
+		}
+		if number < 0 {
+			return ReportPlan{}, mcpRaise("Negative indexing is not supported.")
+		}
+		limit = " LIMIT " + strconv.FormatInt(number, 10)
+	}
+	selects := expr.sql + ` AS "c0"`
+	if order.sql != expr.sql {
+		selects += ", " + order.sql + ` AS "__o0"`
+	}
+	inner := `SELECT DISTINCT ` + selects + ` FROM ` + listed.from() + listed.whereSQL() + ` ORDER BY ` + order.sql + ` ASC` + limit
+	column := mcpColumnOut{key: name, expr: expr, alias: "c0"}
+	return ReportPlan{Statements: []domain.ReportStatement{total, mcpWrap(inner, []mcpColumnOut{column}, listed.args.values)},
+		Render: func(results [][][]*string) (any, error) {
+			items := []any{}
+			mapping := labels[name]
+			for _, record := range results[1] {
+				value, err := mcpValue(expr, record[0])
+				if err != nil {
+					return nil, err
+				}
+				switch value.(type) {
+				case domain.RequestObject:
+					return nil, mcpRaise("unhashable type: 'dict'")
+				case []any:
+					return nil, mcpRaise("unhashable type: 'list'")
+				}
+				if label, ok := mcpLabel(mapping, value); ok {
+					value = label
+				}
+				items = append(items, value)
+			}
+			return domain.RequestObject{{Name: "values", Value: items}, {Name: "total_distinct", Value: json.Number(*results[0][0][0])}}, nil
+		}}, nil
+}
+
+// ---------------------------------------------------------------------------
+// aggregate_data
+// ---------------------------------------------------------------------------
+
+type mcpAggregate struct {
+	alias, function string
+	field           string // "" for Count('*')
+	expr            mcpExpr
+}
+
+func (a mcpAggregate) sql(argument string) (string, error) {
+	if a.field == "" {
+		return "COUNT(*)", nil
+	}
+	switch a.function {
+	case "count":
+	case "sum", "avg":
+		if a.expr.kind != "int" && a.expr.kind != "decimal" && a.expr.kind != "float" {
+			return "", fmt.Errorf("%w: PostgreSQL has no SUM/AVG of %s", ErrReportFailed, a.expr.kind) // a database error
+		}
+	default:
+		switch a.expr.kind {
+		case "int", "decimal", "float", "text", "date", "datetime":
+		default:
+			return "", fmt.Errorf("%w: PostgreSQL has no MIN/MAX of %s", ErrReportFailed, a.expr.kind) // a database error
+		}
+	}
+	return strings.ToUpper(a.function) + "(" + argument + ")", nil
+}
+
+// out is the aggregate's output expression type.
+func (a mcpAggregate) out() mcpExpr {
+	switch {
+	case a.field == "" || a.function == "count":
+		return mcpExpr{kind: "int"}
+	case a.function == "avg":
+		return mcpExpr{kind: "float"}
+	}
+	return mcpExpr{kind: a.expr.kind}
+}
+
+var mcpForbiddenAlias = func(alias string) bool {
+	for _, r := range alias {
+		if strings.ContainsRune("'`\"[];#", r) || r <= 0x1f || (r >= 0x7f && r <= 0x9f) || PythonIsSpace(r) {
+			return true
+		}
+	}
+	return strings.Contains(alias, "--") || strings.Contains(alias, "/*") || strings.Contains(alias, "*/")
+}
+
+const mcpAliasError = "Column aliases cannot contain whitespace characters, hashes, control characters, quotation marks, semicolons, or SQL comments."
+
+func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error) {
+	value, _ := params.Lookup("aggregations")
+	if !PythonTruthy(value) {
+		return ReportPlan{Immediate: &ReportToolError{Message: "No aggregations specified"}}, nil
+	}
+	items, err := pythonIter(value)
+	if err != nil {
+		return ReportPlan{}, err
+	}
+	var aggregates []mcpAggregate
+	for _, item := range items {
+		object, ok := item.(domain.RequestObject)
+		if !ok {
+			return ReportPlan{}, mcpAttributeError(item, "get")
+		}
+		object = PythonDict(object)
+		function, present := object.Lookup("function")
+		if !present {
+			function = ""
+		}
+		name, ok := function.(string)
+		if !ok {
+			return ReportPlan{}, mcpAttributeError(function, "lower")
+		}
+		name = strings.ToLower(name)
+		fieldValue, present := object.Lookup("field")
+		if !present {
+			fieldValue = "*"
+		}
+		alias, present := object.Lookup("alias")
+		if !present {
+			alias = name + "_" + PythonStr(fieldValue)
+			if _, isText := fieldValue.(string); !isText {
+				return ReportPlan{}, mcpNotPorted("aggregate field type")
+			}
+		}
+		aliasText, ok := alias.(string)
+		if !ok {
+			return ReportPlan{}, mcpAttributeError(alias, "replace")
+		}
+		aliasText = strings.ReplaceAll(strings.ReplaceAll(aliasText, ".", "_"), "-", "_")
+		if name != "count" && name != "sum" && name != "avg" && name != "min" && name != "max" {
+			continue
+		}
+		fieldText, ok := fieldValue.(string)
+		if !ok {
+			return ReportPlan{}, mcpAttributeError(fieldValue, "split")
+		}
+		aggregate := mcpAggregate{alias: aliasText, function: name}
+		if !(fieldText == "*" && name == "count") {
+			if !reportAllowed(strings.Split(fieldText, "__")[0]) {
+				continue
+			}
+			aggregate.field = fieldText
+		}
+		replaced := false
+		for i := range aggregates {
+			if aggregates[i].alias == aliasText {
+				aggregates[i], replaced = aggregate, true
+			}
+		}
+		if !replaced {
+			aggregates = append(aggregates, aggregate)
+		}
+	}
+	if len(aggregates) == 0 {
+		return ReportPlan{Immediate: &ReportToolError{Message: "No valid aggregations"}}, nil
+	}
+	groupValue, _ := params.Lookup("group_by")
+	if !PythonTruthy(groupValue) {
+		return q.planFlatAggregate(aggregates)
+	}
+	groupNames, err := mcpStrings(groupValue, "split")
+	if err != nil {
+		return ReportPlan{}, err
+	}
+	var groups []string
+	for _, name := range groupNames {
+		root := strings.Split(name, "__")[0]
+		if !reportAllowed(root) || !q.model.known(root) {
+			continue
+		}
+		if mcpContains(groups, name) {
+			return ReportPlan{}, mcpNotPorted("duplicate group_by")
+		}
+		groups = append(groups, name)
+	}
+	if len(groups) == 0 {
+		return ReportPlan{Immediate: &ReportToolError{Message: "No valid group_by fields"}}, nil
+	}
+	labels := mcpChoiceMap(q.model, groups)
+	var columns []mcpColumnOut
+	var selects, groupBy []string
+	for i, name := range groups {
+		expr, err := q.resolveField(name)
+		if err != nil {
+			return ReportPlan{}, err
+		}
+		alias := "c" + strconv.Itoa(i)
+		columns = append(columns, mcpColumnOut{key: name, expr: expr, alias: alias})
+		selects = append(selects, expr.sql+` AS "`+alias+`"`)
+		groupBy = append(groupBy, expr.sql)
+	}
+	for _, aggregate := range aggregates {
+		if mcpContains(groups, aggregate.alias) {
+			return ReportPlan{}, mcpRaise("The annotation '%s' conflicts with a field on the model.", aggregate.alias)
+		}
+	}
+	for i := range aggregates {
+		if mcpForbiddenAlias(aggregates[i].alias) {
+			return ReportPlan{}, mcpRaise(mcpAliasError)
+		}
+		argument := ""
+		if aggregates[i].field != "" {
+			expr, err := q.resolveField(aggregates[i].field)
+			if err != nil {
+				return ReportPlan{}, err
+			}
+			aggregates[i].expr, argument = expr, expr.sql
+		}
+		sql, err := aggregates[i].sql(argument)
+		if err != nil {
+			return ReportPlan{}, err
+		}
+		alias := "a" + strconv.Itoa(i)
+		columns = append(columns, mcpColumnOut{key: aggregates[i].alias, expr: aggregates[i].out(), alias: alias})
+		selects = append(selects, sql+` AS "`+alias+`"`)
+	}
+	var keys []string
+	for i, name := range groups {
+		expr, err := q.orderExpr(mcpOrder{name: name})
+		if err != nil {
+			return ReportPlan{}, err
+		}
+		if !mcpContains(groupBy, expr.sql) {
+			groupBy = append(groupBy, expr.sql)
+			selects = append(selects, expr.sql+` AS "__o`+strconv.Itoa(i)+`"`)
+		}
+		keys = append(keys, expr.sql+" ASC")
+	}
+	if q.compileErr != nil {
+		return ReportPlan{}, q.compileErr
+	}
+	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL() + ` GROUP BY ` +
+		strings.Join(groupBy, ", ") + ` ORDER BY ` + strings.Join(keys, ", ")
+	return ReportPlan{Statements: []domain.ReportStatement{mcpWrap(inner, columns, q.args.values)},
+		Render: func(results [][][]*string) (any, error) {
+			data := []any{}
+			for _, record := range results[0] {
+				row := domain.RequestObject{}
+				for i, column := range columns {
+					value, err := mcpValue(column.expr, record[i])
+					if err != nil {
+						return nil, err
+					}
+					row = append(row, domain.RequestField{Name: column.key, Value: value})
+				}
+				if err := mcpApplyLabels(row, labels); err != nil {
+					return nil, err
+				}
+				data = append(data, row)
+			}
+			return domain.RequestObject{{Name: "data", Value: data}, {Name: "count", Value: json.Number(strconv.Itoa(len(data)))}}, nil
+		}}, nil
+}
+
+// planFlatAggregate is QuerySet.aggregate() on the distinct queryset: the
+// referenced columns join the DISTINCT subquery as __colN.
+func (q *mcpQuery) planFlatAggregate(aggregates []mcpAggregate) (ReportPlan, error) {
+	var selects []string
+	for i, column := range q.concreteColumns() {
+		selects = append(selects, column+` AS "col`+strconv.Itoa(i+1)+`"`)
+	}
+	var outer []string
+	var columns []mcpColumnOut
+	references := 0
+	for i := range aggregates {
+		if mcpForbiddenAlias(aggregates[i].alias) {
+			return ReportPlan{}, mcpRaise(mcpAliasError)
+		}
+		argument := ""
+		if aggregates[i].field != "" {
+			expr, err := q.resolveField(aggregates[i].field)
+			if err != nil {
+				return ReportPlan{}, err
+			}
+			references++
+			name := "__col" + strconv.Itoa(references)
+			selects = append(selects, expr.sql+` AS "`+name+`"`)
+			aggregates[i].expr, argument = expr, `"`+name+`"`
+		}
+		sql, err := aggregates[i].sql(argument)
+		if err != nil {
+			return ReportPlan{}, err
+		}
+		alias := "a" + strconv.Itoa(i)
+		outer = append(outer, sql+` AS "`+alias+`"`)
+		columns = append(columns, mcpColumnOut{key: aggregates[i].alias, expr: aggregates[i].out(), alias: alias})
+	}
+	if q.compileErr != nil {
+		return ReportPlan{}, q.compileErr
+	}
+	inner := `SELECT ` + strings.Join(outer, ", ") + ` FROM (SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() +
+		q.whereSQL() + `) subquery`
+	return ReportPlan{Statements: []domain.ReportStatement{mcpWrap(inner, columns, q.args.values)},
+		Render: func(results [][][]*string) (any, error) {
+			row := domain.RequestObject{}
+			for i, column := range columns {
+				value, err := mcpValue(column.expr, results[0][0][i])
+				if err != nil {
+					return nil, err
+				}
+				row = append(row, domain.RequestField{Name: column.key, Value: value})
+			}
+			return row, nil
+		}}, nil
+}
+
+// ---------------------------------------------------------------------------
+// Values
+// ---------------------------------------------------------------------------
+
+// mcpValue is _serialize_value of the column text (nil: None).
+func mcpValue(expr mcpExpr, text *string) (any, error) {
 	if text == nil {
 		return nil, nil
 	}
-	switch f.Kind {
-	case reportUUID:
+	switch expr.kind {
+	case "uuid":
 		return *text, nil
-	case reportText:
+	case "text":
 		return reportUnescape(*text)
-	case reportInt:
+	case "int":
+		if strings.Contains(*text, ".") {
+			number, ok := new(big.Float).SetString(*text)
+			if !ok || !number.IsInt() {
+				return nil, mcpNotPorted("non-integral integer output")
+			}
+			integer, _ := number.Int(nil)
+			return json.Number(integer.String()), nil
+		}
 		return json.Number(*text), nil
-	case reportBool:
+	case "bool":
 		return *text == "true", nil
-	case reportDecimal:
+	case "decimal", "float":
 		return reportFloat(*text)
-	case reportDateTime:
-		return reportISO(*text), nil
-	case reportJSON:
+	case "date":
+		return *text, nil
+	case "datetime":
+		return strings.TrimSuffix(*text, ".000000") + "+00:00", nil
+	case "time":
+		return mcpTimeISO(*text)
+	case "json":
 		parsed, err := ParseReferenceJSON([]byte(*text))
 		if err != nil {
 			return nil, err
@@ -717,7 +1007,19 @@ func (f *reportField) value(text *string) (any, error) {
 		}
 		return parsed, nil
 	}
-	return nil, ErrReportNotPorted
+	return nil, mcpNotPorted("output type " + expr.kind)
+}
+
+// mcpTimeISO turns PostgreSQL's time text into time.isoformat().
+func mcpTimeISO(text string) (any, error) {
+	main, fraction, found := strings.Cut(text, ".")
+	if len(main) != 8 {
+		return nil, mcpNotPorted("time output")
+	}
+	if !found || strings.Trim(fraction, "0") == "" {
+		return main, nil
+	}
+	return main + "." + (fraction + "000000")[:6], nil
 }
 
 func reportFloat(text string) (any, error) {
@@ -728,13 +1030,8 @@ func reportFloat(text string) (any, error) {
 	return json.Number(PythonFloatStr(number)), nil
 }
 
-// reportISO turns to_char's UTC text into datetime.isoformat().
-func reportISO(text string) string {
-	return strings.TrimSuffix(text, ".000000") + "+00:00"
-}
-
 var reportEntities = map[string]string{"amp;": "&", "AMP;": "&", "lt;": "<", "LT;": "<", "gt;": ">", "GT;": ">", "quot;": `"`,
-	"QUOT;": `"`, "apos;": "'", "nbsp;": " "}
+	"QUOT;": `"`, "apos;": "'", "nbsp;": " "}
 
 // reportUnescape is html.unescape for text with '&' (the common named
 // references); numeric and other references are refused.
@@ -769,491 +1066,114 @@ func reportUnescape(text string) (any, error) {
 	return out.String(), nil
 }
 
-// labels is _build_choice_map for the selected expressions.
-func (m *reportModel) labels(row domain.RequestObject) domain.RequestObject {
-	for i, item := range row {
-		field, ok := m.field(item.Name)
-		if !ok || field.Choices == nil || field.Name != item.Name {
+// ---------------------------------------------------------------------------
+// Choice labels
+// ---------------------------------------------------------------------------
+
+// mcpItalianChoices is ITALIAN_CHOICE_OVERRIDES.
+var mcpItalianChoices = map[string][]mcpChoice{
+	"Associate.sex":           {{"A", "Altro"}, {"M", "Maschio"}, {"F", "Femmina"}},
+	"Course.status_flag":      {{json.Number("1"), "Archiviato"}, {json.Number("2"), "Attivo"}, {json.Number("3"), "Interno"}},
+	"Course.course_type":      {{json.Number("1"), "Standard"}, {json.Number("2"), "Quote multiple"}, {json.Number("3"), "Tesseramento"}},
+	"CourseSubscription.type": {{json.Number("1"), "Standard"}, {json.Number("2"), "Quote multiple"}, {json.Number("3"), "Tesseramento"}},
+	"Payment.type": {{"default", "Predefinito"}, {"cash", "Contanti"}, {"transfer", "Bonifico"}, {"online", "Online"},
+		{"sepa-transfer", "Bonifico SEPA"}, {"stripe", "Stripe"}, {"pos", "POS"}},
+	"PaymentCategory.type":      {{json.Number("1"), "Istituzionale"}, {json.Number("2"), "Commerciale"}},
+	"BalanceSheet.status_flag":  {{json.Number("1"), "Bozza"}, {json.Number("2"), "Approvato"}},
+	"AttendanceRegistry.status": {{json.Number("1"), "Bozza"}, {json.Number("2"), "Pubblicato"}},
+}
+
+type mcpLabels map[string][]mcpChoice
+
+// mcpChoiceMap is _build_choice_map.
+func mcpChoiceMap(model *mcpModel, expressions []string) mcpLabels {
+	result := mcpLabels{}
+	for _, expression := range expressions {
+		current := model
+		var target *mcpField
+		for _, part := range strings.Split(expression, "__") {
+			if mcpDateParts[part] {
+				break
+			}
+			field := current.getField(part)
+			if field == nil {
+				break
+			}
+			if field.Relation && field.relatedModel() != nil {
+				current = field.relatedModel()
+			} else {
+				target = field
+			}
+		}
+		if target == nil || (len(target.Choices) == 0 && !target.GroupedChoices) {
 			continue
 		}
-		if number, ok := item.Value.(json.Number); ok {
-			if value, err := strconv.ParseInt(string(number), 10, 64); err == nil {
-				if label, ok := field.Choices[value]; ok {
-					row[i].Value = label
-				}
-			}
-		}
-	}
-	return row
-}
-
-// ---------------------------------------------------------------------------
-// query_data
-// ---------------------------------------------------------------------------
-
-type reportColumn struct {
-	key   string
-	field *reportField
-}
-
-func (m *reportModel) planQuery(args *reportArgs, where string, params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
-	if joins, _ := params.Lookup("joins"); PythonTruthy(joins) {
-		return ReportPlan{}, ErrReportNotPorted
-	}
-	limit, offset, err := reportSlice(params, config.MaxResults)
-	if err != nil {
-		return ReportPlan{}, err
-	}
-	// Ordering (after the count) is validated before the fields.
-	var orders []string
-	orderValue, _ := params.Lookup("order_by")
-	if PythonTruthy(orderValue) {
-		items, err := pythonIter(orderValue)
-		if err != nil {
-			return ReportPlan{}, err
-		}
-		seen := map[string]bool{}
-		for _, item := range items {
-			text, ok := item.(string)
-			if !ok {
-				return ReportPlan{}, reportAttributeError(item)
-			}
-			clean := strings.TrimLeft(text, "-")
-			if !reportAllowed(strings.Split(clean, "__")[0]) {
-				continue
-			}
-			if text == "?" || clean == "" || len(text)-len(clean) > 1 || strings.Contains(clean, "__") {
-				return ReportPlan{}, ErrReportNotPorted
-			}
-			field, err := m.resolve(clean)
-			if err != nil {
-				return ReportPlan{}, err
-			}
-			if field.FK && clean == field.Name {
-				return ReportPlan{}, ErrReportNotPorted // relation ordering
-			}
-			if seen[field.Attname] {
-				return ReportPlan{}, ErrReportNotPorted
-			}
-			seen[field.Attname] = true
-			direction := " ASC"
-			if text != clean {
-				direction = " DESC"
-			}
-			orders = append(orders, quote(field.Attname)+" AS o"+strconv.Itoa(len(orders))+direction)
-		}
-	}
-	columns, labelled, err := m.queryColumns(params)
-	if err != nil {
-		return ReportPlan{}, err
-	}
-	// Output aliases keep the raw ordering columns distinct from their text
-	// renderings; the raw columns join the DISTINCT like Django's extra select.
-	selects := make([]string, 0, len(columns)+len(orders))
-	for i, column := range columns {
-		selects = append(selects, column.field.render(quote(column.field.Attname))+" AS t"+strconv.Itoa(i))
-	}
-	keys := make([]string, 0, len(orders))
-	for i, order := range orders {
-		parts := strings.Fields(order) // column AS alias direction
-		selects = append(selects, parts[0]+" AS o"+strconv.Itoa(i))
-		keys = append(keys, "o"+strconv.Itoa(i)+" "+parts[3])
-	}
-	hidden := len(orders)
-	query := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + m.Table + where
-	if len(orders) > 0 {
-		query += ` ORDER BY ` + strings.Join(keys, ", ")
-	}
-	query += ` LIMIT ` + strconv.FormatInt(limit, 10)
-	if offset > 0 {
-		query += ` OFFSET ` + strconv.FormatInt(offset, 10)
-	}
-	count := `SELECT COUNT(*)::text FROM ` + m.Table + where
-	return ReportPlan{Statements: []domain.ReportStatement{{SQL: count, Args: args.values, Text: 1},
-		{SQL: query, Args: args.values, Text: len(columns), Hidden: hidden}},
-		Render: func(results [][][]*string) (any, error) {
-			total, _ := strconv.ParseInt(*results[0][0][0], 10, 64)
-			data := []any{}
-			for _, record := range results[1] {
-				row := domain.RequestObject{}
-				for i, column := range columns {
-					value, err := column.field.value(record[i])
-					if err != nil {
-						return nil, err
-					}
-					row = append(row, domain.RequestField{Name: column.key, Value: value})
-				}
-				if labelled {
-					row = m.labels(row)
-				}
-				data = append(data, row)
-			}
-			return domain.RequestObject{{Name: "count", Value: json.Number(strconv.FormatInt(total, 10))},
-				{Name: "has_more", Value: offset+limit < total}, {Name: "data", Value: data}}, nil
-		}}, nil
-}
-
-// queryColumns is _validate_fields_for_model and the values() call; labelled
-// is false for values() without fields (no choice map).
-func (m *reportModel) queryColumns(params domain.RequestObject) ([]reportColumn, bool, error) {
-	value, _ := params.Lookup("fields")
-	var columns []reportColumn
-	if !PythonTruthy(value) {
-		for i := range m.Fields {
-			if !m.Fields[i].FK && reportAllowed(m.Fields[i].Name) {
-				columns = append(columns, reportColumn{m.Fields[i].Name, &m.Fields[i]})
-			}
-		}
-		return columns, true, nil
-	}
-	items, err := pythonIter(value)
-	if err != nil {
-		return nil, false, err
-	}
-	seen := map[string]bool{}
-	for _, item := range items {
-		text, ok := item.(string)
-		if !ok {
-			return nil, false, reportAttributeError(item)
-		}
-		root := strings.Split(text, "__")[0]
-		if !m.known(root) || !reportAllowed(root) {
-			continue
-		}
-		field, ok := m.field(text)
-		if !ok || seen[text] {
-			return nil, false, ErrReportNotPorted // traversals, reverse relations, duplicates
-		}
-		seen[text] = true
-		columns = append(columns, reportColumn{text, field})
-	}
-	if len(columns) == 0 {
-		// values() without fields: every concrete column by attname.
-		for i := range m.Fields {
-			columns = append(columns, reportColumn{m.Fields[i].Attname, &m.Fields[i]})
-		}
-		return columns, false, nil
-	}
-	return columns, true, nil
-}
-
-// reportSlice is effective_limit = min(limit or MAX, MAX) and qs[offset:offset+limit].
-func reportSlice(params domain.RequestObject, maximum int64) (int64, int64, error) {
-	integer := func(value any) (int64, error) {
-		switch v := value.(type) {
-		case json.Number:
-			if strings.ContainsAny(string(v), ".eE") {
-				return 0, ErrReportNotPorted
-			}
-			number, err := strconv.ParseInt(string(v), 10, 64)
-			if err != nil || number > 1<<40 || number < -(1<<40) {
-				return 0, ErrReportNotPorted
-			}
-			return number, nil
-		case bool:
-			return 0, ErrReportNotPorted
-		}
-		return 0, ErrReportFailed // TypeError in min() or +
-	}
-	limit := maximum
-	if value, _ := params.Lookup("limit"); PythonTruthy(value) {
-		number, err := integer(value)
-		if err != nil {
-			return 0, 0, err
-		}
-		if number < limit {
-			limit = number
-		}
-	}
-	var offset int64
-	if value, present := params.Lookup("offset"); present {
-		number, err := integer(value)
-		if err != nil {
-			return 0, 0, err
-		}
-		offset = number
-	}
-	if offset < 0 || offset+limit < 0 {
-		return 0, 0, ErrReportFailed // Negative indexing is not supported.
-	}
-	if limit < 0 {
-		return 0, 0, ErrReportNotPorted
-	}
-	return limit, offset, nil
-}
-
-// ---------------------------------------------------------------------------
-// get_field_values
-// ---------------------------------------------------------------------------
-
-func (m *reportModel) planFieldValues(args *reportArgs, where, name string, params domain.RequestObject) (ReportPlan, error) {
-	if strings.Contains(name, "__") || name == "pk" || m.reverse(name) {
-		return ReportPlan{}, ErrReportNotPorted
-	}
-	field, ok := m.field(name)
-	if !ok {
-		return ReportPlan{}, ErrReportFailed // FieldError
-	}
-	if (field.FK && name == field.Name) || field.Kind == reportJSON {
-		return ReportPlan{}, ErrReportNotPorted
-	}
-	limit := ""
-	value, present := params.Lookup("limit")
-	switch v := value.(type) {
-	case nil:
-		if !present {
-			limit = " LIMIT 100"
-		}
-	case json.Number:
-		if strings.ContainsAny(string(v), ".eE") {
-			return ReportPlan{}, ErrReportNotPorted
-		}
-		number, err := strconv.ParseInt(string(v), 10, 64)
-		if err != nil || number > 1<<40 {
-			return ReportPlan{}, ErrReportNotPorted
-		}
-		if number < 0 {
-			return ReportPlan{}, ErrReportFailed
-		}
-		limit = " LIMIT " + strconv.FormatInt(number, 10)
-	case bool:
-		return ReportPlan{}, ErrReportNotPorted
-	default:
-		return ReportPlan{}, ErrReportFailed
-	}
-	column := quote(field.Attname)
-	total := `SELECT COUNT(*)::text FROM (SELECT DISTINCT ` + column + ` FROM ` + m.Table + where + `) AS values_subquery`
-	values := `SELECT DISTINCT ` + field.render(column) + ` AS t0, ` + column + ` AS o0 FROM ` + m.Table + where + ` ORDER BY o0 ASC` + limit
-	return ReportPlan{Statements: []domain.ReportStatement{{SQL: total, Args: args.values, Text: 1},
-		{SQL: values, Args: args.values, Text: 1, Hidden: 1}},
-		Render: func(results [][][]*string) (any, error) {
-			items := []any{}
-			for _, record := range results[1] {
-				value, err := field.value(record[0])
-				if err != nil {
-					return nil, err
-				}
-				if number, ok := value.(json.Number); ok && field.Choices != nil {
-					if raw, err := strconv.ParseInt(string(number), 10, 64); err == nil {
-						if label, ok := field.Choices[raw]; ok {
-							value = label
-						}
-					}
-				}
-				items = append(items, value)
-			}
-			return domain.RequestObject{{Name: "values", Value: items}, {Name: "total_distinct", Value: json.Number(*results[0][0][0])}}, nil
-		}}, nil
-}
-
-// ---------------------------------------------------------------------------
-// aggregate_data
-// ---------------------------------------------------------------------------
-
-var reportForbiddenAlias = regexp.MustCompile("['`\"\\]\\[;\\s]|--|/\\*|\\*/")
-
-type reportAggregate struct {
-	alias, function string
-	field           *reportField // nil: COUNT(*)
-}
-
-func (m *reportModel) planAggregate(args *reportArgs, where string, params domain.RequestObject) (ReportPlan, error) {
-	value, _ := params.Lookup("aggregations")
-	if !PythonTruthy(value) {
-		return ReportPlan{Immediate: &ReportToolError{Message: "No aggregations specified"}}, nil
-	}
-	items, err := pythonIter(value)
-	if err != nil {
-		return ReportPlan{}, err
-	}
-	var aggregates []reportAggregate
-	for _, item := range items {
-		object, ok := item.(domain.RequestObject)
-		if !ok {
-			return ReportPlan{}, reportAttributeError(item)
-		}
-		object = PythonDict(object)
-		function, present := object.Lookup("function")
-		if !present {
-			function = ""
-		}
-		name, ok := function.(string)
-		if !ok {
-			return ReportPlan{}, reportAttributeError(function)
-		}
-		name = strings.ToLower(name)
-		fieldValue, present := object.Lookup("field")
-		if !present {
-			fieldValue = "*"
-		}
-		alias, present := object.Lookup("alias")
-		if !present {
-			if _, isText := fieldValue.(string); !isText {
-				if name == "count" || name == "sum" || name == "avg" || name == "min" || name == "max" {
-					return ReportPlan{}, reportAttributeError(fieldValue)
-				}
-				continue
-			}
-			alias = name + "_" + fieldValue.(string)
-		}
-		aliasText, ok := alias.(string)
-		if !ok {
-			return ReportPlan{}, reportAttributeError(alias)
-		}
-		aliasText = strings.ReplaceAll(strings.ReplaceAll(aliasText, ".", "_"), "-", "_")
-		if name != "count" && name != "sum" && name != "avg" && name != "min" && name != "max" {
-			continue
-		}
-		fieldText, ok := fieldValue.(string)
-		if !ok {
-			return ReportPlan{}, reportAttributeError(fieldValue)
-		}
-		aggregate := reportAggregate{alias: aliasText, function: name}
-		if fieldText == "*" && name == "count" {
-			// Count('*')
-		} else if !reportAllowed(strings.Split(fieldText, "__")[0]) {
-			continue
-		} else if strings.Contains(fieldText, "__") {
-			return ReportPlan{}, ErrReportNotPorted
+		if override, ok := mcpItalianChoices[current.Name+"."+target.Name]; ok {
+			result[expression] = override
+		} else if target.GroupedChoices {
+			result[expression] = nil // refused on use
 		} else {
-			field, err := m.resolve(fieldText)
+			result[expression] = target.Choices
+		}
+	}
+	return result
+}
+
+// mcpLabel is `raw in mapping` / mapping.get(raw) with Python equality.
+func mcpLabel(mapping []mcpChoice, raw any) (string, bool) {
+	for i := len(mapping) - 1; i >= 0; i-- {
+		if mcpChoiceEqual(mapping[i].Value, raw) {
+			return mapping[i].Label, true
+		}
+	}
+	return "", false
+}
+
+func mcpChoiceEqual(key, raw any) bool {
+	switch k := key.(type) {
+	case string:
+		text, ok := raw.(string)
+		return ok && text == k
+	case json.Number:
+		var number float64
+		switch r := raw.(type) {
+		case json.Number:
+			parsed, err := strconv.ParseFloat(string(r), 64)
 			if err != nil {
-				return ReportPlan{}, err
+				return false
 			}
-			aggregate.field = field
-		}
-		if reportForbiddenAlias.MatchString(aliasText) || strings.Contains(aliasText, "__") || m.known(aliasText) || aliasText == "pk" {
-			return ReportPlan{}, ErrReportNotPorted
-		}
-		replaced := false
-		for i := range aggregates {
-			if aggregates[i].alias == aliasText {
-				aggregates[i], replaced = aggregate, true
+			number = parsed
+		case bool:
+			if r {
+				number = 1
 			}
+		default:
+			return false
 		}
-		if !replaced {
-			aggregates = append(aggregates, aggregate)
-		}
+		keyNumber, err := strconv.ParseFloat(string(k), 64)
+		return err == nil && keyNumber == number
 	}
-	if len(aggregates) == 0 {
-		return ReportPlan{Immediate: &ReportToolError{Message: "No valid aggregations"}}, nil
-	}
-	expressions := make([]string, len(aggregates))
-	for i, aggregate := range aggregates {
-		expression, err := aggregate.sql()
-		if err != nil {
-			return ReportPlan{}, err
-		}
-		expressions[i] = expression
-	}
-	groupValue, _ := params.Lookup("group_by")
-	if !PythonTruthy(groupValue) {
-		query := `SELECT ` + strings.Join(expressions, ", ") + ` FROM ` + m.Table + where
-		return ReportPlan{Statements: []domain.ReportStatement{{SQL: query, Args: args.values, Text: len(expressions)}},
-			Render: func(results [][][]*string) (any, error) {
-				row := domain.RequestObject{}
-				for i, aggregate := range aggregates {
-					value, err := aggregate.value(results[0][0][i])
-					if err != nil {
-						return nil, err
-					}
-					row = append(row, domain.RequestField{Name: aggregate.alias, Value: value})
-				}
-				return row, nil
-			}}, nil
-	}
-	groupItems, err := pythonIter(groupValue)
-	if err != nil {
-		return ReportPlan{}, err
-	}
-	var groups []reportColumn
-	seen := map[string]bool{}
-	for _, item := range groupItems {
-		text, ok := item.(string)
-		if !ok {
-			return ReportPlan{}, reportAttributeError(item)
-		}
-		root := strings.Split(text, "__")[0]
-		if !reportAllowed(root) || !m.known(root) {
-			continue
-		}
-		field, ok := m.field(text)
-		if !ok || (field.FK && text == field.Name) || field.Kind == reportJSON || seen[text] {
-			return ReportPlan{}, ErrReportNotPorted // date parts, relations, duplicates
-		}
-		seen[text] = true
-		groups = append(groups, reportColumn{text, field})
-	}
-	if len(groups) == 0 {
-		return ReportPlan{Immediate: &ReportToolError{Message: "No valid group_by fields"}}, nil
-	}
-	// Aliased outputs: ORDER BY then names the input columns.
-	var selects, keys []string
-	for i, group := range groups {
-		selects = append(selects, group.field.render(quote(group.field.Attname))+" AS g"+strconv.Itoa(i))
-		keys = append(keys, quote(group.field.Attname))
-	}
-	for i, expression := range expressions {
-		selects = append(selects, expression+" AS a"+strconv.Itoa(i))
-	}
-	query := `SELECT ` + strings.Join(selects, ", ") + ` FROM ` + m.Table + where + ` GROUP BY ` + strings.Join(keys, ", ") +
-		` ORDER BY ` + strings.Join(keys, " ASC, ") + ` ASC`
-	return ReportPlan{Statements: []domain.ReportStatement{{SQL: query, Args: args.values, Text: len(selects)}},
-		Render: func(results [][][]*string) (any, error) {
-			data := []any{}
-			for _, record := range results[0] {
-				row := domain.RequestObject{}
-				for i, group := range groups {
-					value, err := group.field.value(record[i])
-					if err != nil {
-						return nil, err
-					}
-					row = append(row, domain.RequestField{Name: group.key, Value: value})
-				}
-				for i, aggregate := range aggregates {
-					value, err := aggregate.value(record[len(groups)+i])
-					if err != nil {
-						return nil, err
-					}
-					row = append(row, domain.RequestField{Name: aggregate.alias, Value: value})
-				}
-				data = append(data, m.labels(row))
-			}
-			return domain.RequestObject{{Name: "data", Value: data}, {Name: "count", Value: json.Number(strconv.Itoa(len(data)))}}, nil
-		}}, nil
+	return false
 }
 
-func (a reportAggregate) sql() (string, error) {
-	if a.field == nil {
-		return "COUNT(*)::text", nil
+// mcpApplyLabels is _apply_choice_labels on a serialized row.
+func mcpApplyLabels(row domain.RequestObject, labels mcpLabels) error {
+	for key, mapping := range labels {
+		for i := range row {
+			if row[i].Name != key {
+				continue
+			}
+			if mapping == nil {
+				return mcpNotPorted("grouped choices")
+			}
+			switch row[i].Value.(type) {
+			case domain.RequestObject, []any:
+				return mcpNotPorted("unhashable choice lookup")
+			}
+			if label, ok := mcpLabel(mapping, row[i].Value); ok {
+				row[i].Value = label
+			}
+		}
 	}
-	column := quote(a.field.Attname)
-	switch a.function {
-	case "count":
-		return "COUNT(" + column + ")::text", nil
-	case "min", "max":
-		return a.field.render(strings.ToUpper(a.function) + "(" + column + ")"), nil
-	}
-	// SUM/AVG of non-numeric columns fail in PostgreSQL, as in Django.
-	return strings.ToUpper(a.function) + "(" + column + ")::text", nil
-}
-
-// value renders an aggregate like Django's output field and _serialize_value.
-func (a reportAggregate) value(text *string) (any, error) {
-	if text == nil {
-		return nil, nil
-	}
-	switch {
-	case a.field == nil || a.function == "count":
-		return json.Number(*text), nil
-	case a.function == "avg":
-		return reportFloat(*text)
-	case a.function == "sum" && a.field.Kind == reportInt:
-		return json.Number(*text), nil
-	case a.function == "sum" && a.field.Kind == reportDecimal:
-		return reportFloat(*text)
-	case a.function == "min" || a.function == "max":
-		return a.field.value(text)
-	}
-	return nil, fmt.Errorf("%w: aggregate %s", ErrReportNotPorted, a.function)
+	return nil
 }

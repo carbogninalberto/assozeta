@@ -1,0 +1,2389 @@
+{
+ "matrix_version": 1,
+ "scope": "communications/send/email",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "own_configuration": "a1000000-0000-4000-8000-000000981001",
+ "smtp_password": "placeholder-smtp-secret",
+ "messages": {
+  "stored": {
+   "id": "a1000000-0000-4000-8000-000000982001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": "Comunicazione salvata",
+   "message": "Testo salvato\nseconda riga"
+  },
+  "stored_without_subject": {
+   "id": "a1000000-0000-4000-8000-000000982002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": null,
+   "message": "Senza oggetto"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000982003",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "subject": "Estera",
+   "message": "Altro"
+  }
+ },
+ "configurations": {
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000981002",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "email_smtp_host": null,
+   "email_smtp_port": 587,
+   "email_smtp_user": null,
+   "email_smtp_password": null,
+   "email_sender_name": null,
+   "email_encryption": "TLS",
+   "daily_email_limit": 1000,
+   "daily_email_balance": 4
+  }
+ },
+ "cases": [
+  {
+   "name": "communications-send-email-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/send/email'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-athlete-not-association",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "setup": null
+  },
+  {
+   "name": "communications-send-email-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Configuration Send Email",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "setup": null
+  },
+  {
+   "name": "communications-send-email-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "body": [
+    {
+     "email": "socio@example.test",
+     "subject": "Avviso",
+     "message": "Ciao a tutti"
+    }
+   ]
+  },
+  {
+   "name": "communications-send-email-string-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "body": "message_id"
+  },
+  {
+   "name": "communications-send-email-empty-object-email-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is required"
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {}
+  },
+  {
+   "name": "communications-send-email-empty-email-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is required"
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-missing-subject-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Subject is required"
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "message": "x"
+   }
+  },
+  {
+   "name": "communications-send-email-zero-subject-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Subject is required"
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": 0,
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-null-message-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Message is required"
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": null
+   }
+  },
+  {
+   "name": "communications-send-email-integer-email-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": 5,
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-list-email-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": [
+     "socio@example.test"
+    ],
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-invalid-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "non-una-email",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-trailing-comma-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test,",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-spaced-list-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test, altro@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-padded-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": " socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-boolean-subject",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "subject": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": true,
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-long-subject-blank-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "subject": [
+     "Ensure this field has no more than 100 characters."
+    ],
+    "message": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+    "message": "   "
+   }
+  },
+  {
+   "name": "communications-send-email-dict-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": {
+     "testo": 1
+    }
+   }
+  },
+  {
+   "name": "communications-send-email-null-character-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "Null characters are not allowed."
+    ]
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "a\u0000b"
+   }
+  },
+  {
+   "name": "communications-send-email-long-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "message": [
+     "Ensure this field has no more than 10000 characters."
+    ]
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+   }
+  },
+  {
+   "name": "communications-send-email-form-invalid-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "setup": null,
+   "raw_body": "email=x&subject=s&message=m",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "communications-send-email-message-id-malformed-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti",
+    "message_id": "non-un-uuid"
+   }
+  },
+  {
+   "name": "communications-send-email-message-id-float-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti",
+    "message_id": 1.5
+   }
+  },
+  {
+   "name": "communications-send-email-message-id-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "message not found."
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti",
+    "message_id": "a1000000-0000-4000-8000-000000720009"
+   }
+  },
+  {
+   "name": "communications-send-email-message-id-integer-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "message not found."
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti",
+    "message_id": 5
+   }
+  },
+  {
+   "name": "communications-send-email-message-id-foreign",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "message not found."
+   },
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti",
+    "message_id": "a1000000-0000-4000-8000-000000982003"
+   }
+  },
+  {
+   "name": "communications-send-email-message-id-form-immutable-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": null,
+   "raw_body": "email=socio%40example.test&message_id=a1000000-0000-4000-8000-000000982001",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "communications-send-email-message-id-stored-without-subject",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Subject is required"
+   ],
+   "effect": null,
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "message_id": "a1000000-0000-4000-8000-000000982002"
+   }
+  },
+  {
+   "name": "communications-send-email-no-configuration-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": null,
+    "balance_audit": null,
+    "celery": [],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": null
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-unconfigured-publishes",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Avviso"
+       ],
+       [
+        "message",
+        "Ciao a tutti"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-unconfigured-two-recipients",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "uno@example.test",
+     "due@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Avviso"
+       ],
+       [
+        "message",
+        "Ciao a tutti"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "uno@example.test",
+         "due@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    }
+   },
+   "body": {
+    "email": "uno@example.test,due@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-unconfigured-stored-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": null,
+    "stored": "stored",
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Comunicazione salvata"
+       ],
+       [
+        "message",
+        "Testo salvato\nseconda riga"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "message_id": "a1000000-0000-4000-8000-000000982001",
+    "subject": "ignorato"
+   }
+  },
+  {
+   "name": "communications-send-email-unconfigured-integer-subject-padded-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "5",
+     "Testo"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "5"
+       ],
+       [
+        "message",
+        "Testo"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": 5,
+    "message": "  Testo  "
+   }
+  },
+  {
+   "name": "communications-send-email-unconfigured-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Modulo",
+     "Dal modulo"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Modulo"
+       ],
+       [
+        "message",
+        "Dal modulo"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    }
+   },
+   "raw_body": "email=socio%40example.test&subject=Primo&subject=Modulo&message=Dal+modulo",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "communications-send-email-unconfigured-ip-literal-recipient",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@[127.0.0.1]"
+    ],
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Avviso"
+       ],
+       [
+        "message",
+        "Ciao a tutti"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@[127.0.0.1]"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    }
+   },
+   "body": {
+    "email": "socio@[127.0.0.1]",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-foreign-owner-own-scope",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701002",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": null,
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Avviso"
+       ],
+       [
+        "message",
+        "Ciao a tutti"
+       ],
+       [
+        "from_email",
+        "$from:foreign"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701002"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": null
+   },
+   "setup": null,
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-limit-reached",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Daily email limit reached",
+    "result": false
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 3,
+     "daily_email_balance": 3
+    },
+    "balance_audit": null,
+    "celery": [],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 3,
+     "daily_email_balance": 3
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-long-recipient-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [],
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    },
+    "balance_audit": null,
+    "celery": [],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": null,
+     "email_smtp_port": 587,
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 7
+    }
+   },
+   "body": {
+    "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.it",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-starttls-delivery",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:starttls",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 3
+    },
+    "balance_audit": [
+     "2",
+     "3"
+    ],
+    "celery": [],
+    "smtp": {
+     "server": "starttls",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "STARTTLS\r\n",
+       "<tls>",
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "<closed>"
+      ],
+      [
+       "ehlo <local>\r\n",
+       "STARTTLS\r\n",
+       "<tls>",
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "mail from:<mittente@example.test> size=<size>\r\n",
+       "rcpt to:<socio@example.test>\r\n",
+       "data\r\n",
+       "Content-Type: multipart/mixed; boundary=\"<boundary>\"\r\nMIME-Version: 1.0\r\nFrom: Associazione Prova <mittente@example.test>\r\nTo: socio@example.test\r\nSubject: Avviso\r\n\r\n--<boundary>\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: base64\r\n\r\nQ2lhbyBhIHR1dHRp\r\n\r\n--<boundary>--\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:starttls",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 2
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-ssl-delivery-two-recipients-unicode",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Novità per i soci",
+     "Gentili soci,\nla riunione è confermata.\nRiga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga"
+    ],
+    "stored": null,
+    "recipients": [
+     "uno@example.test",
+     "due@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:ssl",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": null,
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 1
+    },
+    "balance_audit": [
+     "0",
+     "1"
+    ],
+    "celery": [],
+    "smtp": {
+     "server": "ssl",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "<closed>"
+      ],
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "mail from:<mittente@example.test> size=<size>\r\n",
+       "rcpt to:<uno@example.test>\r\n",
+       "rcpt to:<due@example.test>\r\n",
+       "data\r\n",
+       "Content-Type: multipart/mixed; boundary=\"<boundary>\"\r\nMIME-Version: 1.0\r\nFrom: mittente@example.test\r\nTo: uno@example.test, due@example.test\r\nSubject: =?utf-8?q?Novit=C3=A0_per_i_soci?=\r\n\r\n--<boundary>\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: base64\r\n\r\nR2VudGlsaSBzb2NpLApsYSByaXVuaW9uZSDDqCBjb25mZXJtYXRhLgpSaWdhIGx1bmdhIFJpZ2Eg\r\nbHVuZ2EgUmlnYSBsdW5nYSBSaWdhIGx1bmdhIFJpZ2EgbHVuZ2EgUmlnYSBsdW5nYSBSaWdhIGx1\r\nbmdhIFJpZ2EgbHVuZ2EgUmlnYSBsdW5nYSBSaWdhIGx1bmdhIFJpZ2EgbHVuZ2EgUmlnYSBsdW5n\r\nYQ==\r\n\r\n--<boundary>--\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:ssl",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": null,
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    }
+   },
+   "body": {
+    "email": "uno@example.test,due@example.test",
+    "subject": "Novità per i soci",
+    "message": "Gentili soci,\nla riunione è confermata.\nRiga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga Riga lunga "
+   }
+  },
+  {
+   "name": "communications-send-email-plain-delivery-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 11
+    },
+    "balance_audit": [
+     "10",
+     "11"
+    ],
+    "celery": [],
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "<closed>"
+      ],
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "mail from:<mittente@example.test> size=<size>\r\n",
+       "rcpt to:<socio@example.test>\r\n",
+       "data\r\n",
+       "Content-Type: multipart/mixed; boundary=\"<boundary>\"\r\nMIME-Version: 1.0\r\nFrom: Associazione Prova <mittente@example.test>\r\nTo: socio@example.test\r\nSubject: Avviso\r\n\r\n--<boundary>\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: base64\r\n\r\nQ2lhbyBhIHR1dHRp\r\n\r\n--<boundary>--\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 10
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-plain-delivery-admin-impersonating",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "admin",
+    "session": "admin_owner",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": null,
+    "stored": "stored",
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 11
+    },
+    "balance_audit": [
+     "10",
+     "11"
+    ],
+    "celery": [],
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "<closed>"
+      ],
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "mail from:<mittente@example.test> size=<size>\r\n",
+       "rcpt to:<socio@example.test>\r\n",
+       "data\r\n",
+       "Content-Type: multipart/mixed; boundary=\"<boundary>\"\r\nMIME-Version: 1.0\r\nFrom: Associazione Prova <mittente@example.test>\r\nTo: socio@example.test\r\nSubject: Comunicazione salvata\r\n\r\n--<boundary>\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: base64\r\n\r\nVGVzdG8gc2FsdmF0bwpzZWNvbmRhIHJpZ2E=\r\n\r\n--<boundary>--\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 10
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti",
+    "message_id": "a1000000-0000-4000-8000-000000982001"
+   }
+  },
+  {
+   "name": "communications-send-email-plain-partially-refused",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test",
+     "rifiutato@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 11
+    },
+    "balance_audit": [
+     "10",
+     "11"
+    ],
+    "celery": [],
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "<closed>"
+      ],
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "mail from:<mittente@example.test> size=<size>\r\n",
+       "rcpt to:<socio@example.test>\r\n",
+       "rcpt to:<rifiutato@example.test>\r\n",
+       "data\r\n",
+       "Content-Type: multipart/mixed; boundary=\"<boundary>\"\r\nMIME-Version: 1.0\r\nFrom: Associazione Prova <mittente@example.test>\r\nTo: socio@example.test, rifiutato@example.test\r\nSubject: Avviso\r\n\r\n--<boundary>\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: base64\r\n\r\nQ2lhbyBhIHR1dHRp\r\n\r\n--<boundary>--\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 10
+    }
+   },
+   "body": {
+    "email": "socio@example.test,rifiutato@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-plain-all-refused-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "rifiutato@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 10
+    },
+    "balance_audit": null,
+    "celery": [],
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "<closed>"
+      ],
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci1zbXRwLXNlY3JldA==\r\n",
+       "mail from:<mittente@example.test> size=<size>\r\n",
+       "rcpt to:<rifiutato@example.test>\r\n",
+       "rset\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 10
+    }
+   },
+   "body": {
+    "email": "rifiutato@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-wrong-password-publishes",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:starttls",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-wrong",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Avviso"
+       ],
+       [
+        "message",
+        "Ciao a tutti"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": {
+     "server": "starttls",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "STARTTLS\r\n",
+       "<tls>",
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1pdHRlbnRlQGV4YW1wbGUudGVzdABwbGFjZWhvbGRlci13cm9uZw==\r\n",
+       "AUTH LOGIN bWl0dGVudGVAZXhhbXBsZS50ZXN0\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:starttls",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-wrong",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-server-without-auth-publishes",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:noauth",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Avviso"
+       ],
+       [
+        "message",
+        "Ciao a tutti"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": {
+     "server": "noauth",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:noauth",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-starttls-unsupported-publishes",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:noauth",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Avviso"
+       ],
+       [
+        "message",
+        "Ciao a tutti"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": {
+     "server": "noauth",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:noauth",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  },
+  {
+   "name": "communications-send-email-connection-refused-publishes",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/send/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ok",
+    "result": true
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "message": [
+     "Avviso",
+     "Ciao a tutti"
+    ],
+    "stored": null,
+    "recipients": [
+     "socio@example.test"
+    ],
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:closed",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "balance_audit": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "Avviso"
+       ],
+       [
+        "message",
+        "Ciao a tutti"
+       ],
+       [
+        "from_email",
+        "$from:own"
+       ],
+       [
+        "recipient_list",
+        [
+         "socio@example.test"
+        ]
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        null
+       ],
+       [
+        "skip_association_check",
+        true
+       ]
+      ]
+     }
+    ],
+    "smtp": null
+   },
+   "setup": {
+    "configuration": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:closed",
+     "email_smtp_user": "mittente@example.test",
+     "email_smtp_password": "placeholder-smtp-secret",
+     "email_sender_name": "Associazione Prova",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    }
+   },
+   "body": {
+    "email": "socio@example.test",
+    "subject": "Avviso",
+    "message": "Ciao a tutti"
+   }
+  }
+ ]
+}

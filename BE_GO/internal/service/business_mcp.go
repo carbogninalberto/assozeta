@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/big"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -26,6 +27,7 @@ type BusinessMCPStore interface {
 	// ActiveUserExists is User.objects.filter(user_id=id).exists() (not deleted).
 	ActiveUserExists(ctx context.Context, id string) (bool, error)
 	AssociationExists(ctx context.Context, id string) (bool, error)
+	BusinessMCPQueryStore
 }
 
 // BusinessMCPTools ports the plain tool functions of
@@ -47,6 +49,7 @@ func NewBusinessMCPTools(store BusinessMCPStore, association string, now func() 
 // tools; arguments are the parsed call arguments in their JSON order and
 // the returned value is the JSON result Django serialises.
 func (t *BusinessMCPTools) Execute(ctx context.Context, name string, arguments domain.RequestObject) (any, error) {
+	arguments = dto.PythonDict(arguments)
 	switch name {
 	case "sanitize_text":
 		return t.sanitize(arguments)
@@ -54,11 +57,64 @@ func (t *BusinessMCPTools) Execute(ctx context.Context, name string, arguments d
 		return t.listReports(ctx, arguments)
 	case "save_report":
 		return t.saveReport(ctx, arguments)
+	case "get_schema":
+		return t.schema(arguments)
+	case "query_data":
+		return t.query(ctx, name, mcpKwargs(arguments, mcpQueryArguments...))
+	case "count_data":
+		return t.query(ctx, name, mcpKwargs(arguments, "model_name", "filters", "exclude", "or_filters", "include_archived"))
+	case "get_field_values":
+		return t.query(ctx, name, mcpKwargs(arguments, "model_name", "field_name", "filters", "exclude", "or_filters", "limit",
+			"include_archived"))
+	case "aggregate_data":
+		return t.query(ctx, name, mcpKwargs(arguments, "model_name", "filters", "exclude", "or_filters", "aggregations", "group_by",
+			"include_archived"))
+	case "export_data":
+		return t.exportData(ctx, arguments)
+	case "export_multi_sheet":
+		return t.exportMultiSheet(ctx, arguments)
+	case "get_attendance_matrix":
+		return t.attendance(ctx, arguments)
 	}
 	return nil, ErrBusinessMCPNotPorted
 }
 
-func errorResult(message string) map[string]any { return map[string]any{"error": message} }
+// BusinessToolNames are the business tools in TOOL_DEFINITIONS order.
+var BusinessToolNames = []string{"get_schema", "query_data", "count_data", "get_field_values", "export_data", "aggregate_data",
+	"get_attendance_matrix", "export_multi_sheet", "sanitize_text", "save_report", "list_reports"}
+
+// businessRequired are the tool functions' required parameters (besides
+// sport_association_id): a call without one is a TypeError.
+var businessRequired = map[string][]string{"query_data": {"model_name"}, "count_data": {"model_name"},
+	"get_field_values": {"model_name", "field_name"}, "export_data": {"model_name"}, "aggregate_data": {"model_name"},
+	"export_multi_sheet": {"sheets"}, "sanitize_text": {"text"}, "save_report": {"name", "tool_name", "params"}}
+
+// BusinessBindingError is the TypeError Python raises binding a call's
+// arguments to the tool function (reported as {"error": str(e)}).
+func BusinessBindingError(name string, arguments domain.RequestObject) (string, bool) {
+	missing := []string{}
+	for _, parameter := range businessRequired[name] {
+		if _, present := arguments.Lookup(parameter); !present {
+			missing = append(missing, "'"+parameter+"'")
+		}
+	}
+	if len(missing) == 0 {
+		return "", false
+	}
+	text := missing[0]
+	switch len(missing) {
+	case 1:
+	case 2:
+		text = missing[0] + " and " + missing[1]
+	default:
+		text = strings.Join(missing[:len(missing)-1], ", ") + ", and " + missing[len(missing)-1]
+	}
+	noun := "argument"
+	if len(missing) > 1 {
+		noun = "arguments"
+	}
+	return "tool_" + name + "() missing " + strconv.Itoa(len(missing)) + " required positional " + noun + ": " + text, true
+}
 
 // unsafeFilename is _UNSAFE_FILENAME_RE.
 var unsafeFilename = regexp.MustCompile(`[<>:"/\\|?*\x00-\x1f]`)
@@ -107,7 +163,7 @@ func (t *BusinessMCPTools) sanitize(arguments domain.RequestObject) (any, error)
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"result": result}, nil
+	return mcpObj("result", result), nil
 }
 
 // mcpPythonFalsy is `not value` for JSON values.
@@ -175,14 +231,14 @@ func userUUID(value any) (id string, message string, err error) {
 func (t *BusinessMCPTools) listReports(ctx context.Context, arguments domain.RequestObject) (any, error) {
 	value, _ := arguments.Lookup("user_id")
 	if mcpPythonFalsy(value) {
-		return errorResult("user_id is required to list reports"), nil
+		return mcpErrorResult("user_id is required to list reports"), nil
 	}
 	user, message, err := userUUID(value)
 	if err != nil {
 		return nil, err
 	}
 	if message != "" {
-		return errorResult(message), nil
+		return mcpErrorResult(message), nil
 	}
 	rows, err := t.store.SavedReports(ctx, t.association, user)
 	if err != nil {
@@ -190,10 +246,10 @@ func (t *BusinessMCPTools) listReports(ctx context.Context, arguments domain.Req
 	}
 	reports := make([]any, 0, len(rows))
 	for _, row := range rows {
-		reports = append(reports, map[string]any{"saved_report_id": row.ID, "name": row.Name, "description": row.Description,
-			"tool_name": row.ToolName, "updated_at": dto.PythonIsoformat(row.UpdatedAt)})
+		reports = append(reports, mcpObj("saved_report_id", row.ID, "name", row.Name, "description", row.Description,
+			"tool_name", row.ToolName, "updated_at", dto.PythonIsoformat(row.UpdatedAt)))
 	}
-	return map[string]any{"reports": reports, "count": len(reports)}, nil
+	return mcpObj("reports", reports, "count", json.Number(strconv.Itoa(len(reports)))), nil
 }
 
 func (t *BusinessMCPTools) saveReport(ctx context.Context, arguments domain.RequestObject) (any, error) {
@@ -215,21 +271,21 @@ func (t *BusinessMCPTools) saveReport(ctx context.Context, arguments domain.Requ
 	}
 	value := lookup("user_id")
 	if mcpPythonFalsy(value) {
-		return errorResult("user_id is required to save a report"), nil
+		return mcpErrorResult("user_id is required to save a report"), nil
 	}
 	user, message, err := userUUID(value)
 	if err != nil {
 		return nil, err
 	}
 	if message != "" {
-		return errorResult(message), nil
+		return mcpErrorResult(message), nil
 	}
 	exists, err := t.store.ActiveUserExists(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return errorResult("User not found"), nil
+		return mcpErrorResult("User not found"), nil
 	}
 	// Column limits, NUL characters and a missing association are database
 	// errors whose driver text Django returns; they are not ported.
@@ -249,7 +305,7 @@ func (t *BusinessMCPTools) saveReport(ctx context.Context, arguments domain.Requ
 		At: t.now().UTC().Truncate(time.Microsecond)}); err != nil {
 		return nil, err
 	}
-	return map[string]any{"saved_report_id": id, "name": name, "message": `Report "` + name + `" salvato.`}, nil
+	return mcpObj("saved_report_id", id, "name", name, "message", `Report "`+name+`" salvato.`), nil
 }
 
 // jsonContainsNUL reports a NUL character in any string of a JSON value

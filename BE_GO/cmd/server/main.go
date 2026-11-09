@@ -237,6 +237,7 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	collaboratorListHandler := handler.NewCollaboratorListHandler(service.NewCollaboratorList(repository.NewCollaboratorList(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	collaboratorWritesHandler := handler.NewCollaboratorWritesHandler(service.NewCollaboratorUpdates(repository.NewCollaboratorUpdates(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	collaboratorDeleteHandler := handler.NewCollaboratorDeleteHandler(service.NewCollaboratorDeletes(repository.NewCollaboratorDeletes(db, time.Now)), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	impersonationHandler := handler.NewImpersonationManagementHandler(service.NewImpersonationManagement(accounts, repository.NewImpersonationManagement(db), sessions, time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext)
 	instanceService := service.NewInstanceBootstrap(repository.NewInstanceBootstrap(db), manualSource, service.InstanceBootstrapOptions{
 		Version: cfg.Version, AIEnabled: cfg.AIEnabled, StripeEnabled: cfg.StripeEnabled, StripePublicKey: cfg.StripePublicKey,
@@ -294,6 +295,7 @@ func run() (runErr error) {
 	// Caddy strips the external API prefix; register only upstream paths here.
 	e.Any("/collaborators/list", collaboratorListHandler.Read, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/collaborators/:uid/update", collaboratorWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/collaborators/:uid/delete", collaboratorDeleteHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/list", messageReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/:message_id/detail", messageReadsHandler.Detail, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/add", messageMutationsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -430,6 +432,7 @@ func run() (runErr error) {
 	subscriptionMedicalHandler := handler.NewSubscriptionMedicalHandler(service.NewSubscriptionMedical(repository.NewSubscriptionMedical(db), time.Now,
 		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/medical-appointments/list", subscriptionMedicalHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/import/upload", composeSubscriptionImportUpload(cfg, db, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Upload, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/medical-appointments/:medical_appointments_id/delete", subscriptionMedicalHandler.Delete,
 		middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/medical-certificate/edit", subscriptionMedicalHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -487,6 +490,12 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/list/export", miscExportsHandler.SubscriptionExport, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice/list/export", miscExportsHandler.InvoiceExport, middleware.DjangoSessionAudit(sessionAuthentication))
+	printingGenerateHandler := handler.NewPrintingGenerateHandler(service.NewPrintingGenerate(repository.NewPrintingGenerate(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/printing/generate", printingGenerateHandler.Generate, middleware.DjangoSessionAudit(sessionAuthentication))
+	exportAllDataHandler := handler.NewExportAllDataHandler(service.NewExportAllData(repository.NewExportAllData(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities)
+	e.Any("/export-all-data", exportAllDataHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionReadsHandler := handler.NewSubscriptionReadsHandler(service.NewSubscriptionReads(repository.NewSubscriptionReads(db),
 		repository.NewCourseSubscriptions(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/subscription/list", subscriptionReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -700,6 +709,8 @@ func run() (runErr error) {
 	invoiceSyncHandler := handler.NewInvoiceSyncPrintHandler(paymentStatesHandler,
 		service.NewInvoiceSyncUpdates(invoiceSyncStore, invoiceSyncPrinter, time.Now))
 	e.Any("/invoice/:uid/update", invoiceSyncHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	// medical-appointment-add: print_document_medical_appointment called directly after the save.
+	e.Any("/subscription/:uid/medical-appointments/add", handler.NewMedicalAppointmentAddHandler(service.NewMedicalAppointmentAdd(repository.NewMedicalAppointmentAdd(db), invoiceSyncPrinter, time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/list", invoicePartiesHandler.CustomerList, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/add", invoicePartiesHandler.CustomerAdd, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/:uid/update", invoicePartiesHandler.CustomerUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -727,6 +738,7 @@ func run() (runErr error) {
 	e.Any("/communications/settings/smtp/info", communicationSMTPHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/settings/smtp/update", communicationSMTPHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/settings/smtp/verify", communicationSMTPHandler.Verify, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/send/email", composeCommunicationSendEmail(cfg, db, tasks, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Send, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/list", staffBoardHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/add", staffBoardHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/staff-board/:staff_board_message_id/update", staffBoardHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -747,6 +759,12 @@ func run() (runErr error) {
 		e.Any(path, apiSchemaHandler.AppendSlash, middleware.DjangoSessionAudit(sessionAuthentication))
 	}
 	e.Any("/instance/logo.png", instanceLogoHandler.Read, middleware.DjangoSessionAudit(sessionAuthentication))
+	// chat/test/ (application.chat.views.chat_test): login_required page whose
+	// template does not exist; CommonMiddleware's APPEND_SLASH for /chat/test.
+	chatTestHandler := handler.NewChatTestHandler(middleware.SessionAuditContext)
+	e.Any("/chat/test/", chatTestHandler.Page, middleware.DjangoSessionAudit(sessionAuthentication),
+		middleware.DjangoCSRFRejecting(cfg.CSRFTrustedOrigins, chatTestHandler.RefuseCSRF))
+	e.Any("/chat/test", apiSchemaHandler.AppendSlash, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/access", instanceHandler.Access, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin", instanceAdminHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin/email", instanceAdminHandler.Email, middleware.DjangoSessionAudit(sessionAuthentication))

@@ -15,6 +15,14 @@ const csrfCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123
 // views. Apply explicitly to those routes; DRF's exempt views have their own
 // authentication contract. It does not issue session or CSRF cookies.
 func DjangoCSRF(trustedOrigins []string) echo.MiddlewareFunc {
+	return DjangoCSRFRejecting(trustedOrigins, func(c echo.Context) error {
+		return c.HTML(http.StatusForbidden, "<!DOCTYPE html><html><body><h1>Forbidden (403)</h1><p>CSRF verification failed. Request aborted.</p></body></html>")
+	})
+}
+
+// DjangoCSRFRejecting is DjangoCSRF with the caller's answer for a request
+// the middleware rejects.
+func DjangoCSRFRejecting(trustedOrigins []string, rejected echo.HandlerFunc) echo.MiddlewareFunc {
 	trusted := append([]string(nil), trustedOrigins...)
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -23,9 +31,7 @@ func DjangoCSRF(trustedOrigins []string) echo.MiddlewareFunc {
 			case "GET", "HEAD", "OPTIONS", "TRACE":
 				return next(c)
 			}
-			reject := func() error {
-				return c.HTML(http.StatusForbidden, "<!DOCTYPE html><html><body><h1>Forbidden (403)</h1><p>CSRF verification failed. Request aborted.</p></body></html>")
-			}
+			reject := func() error { return rejected(c) }
 			scheme := "http"
 			if request.TLS != nil || strings.TrimSpace(strings.Split(request.Header.Get("X-Forwarded-Proto"), ",")[0]) == "https" {
 				scheme = "https"
