@@ -74,9 +74,19 @@ def field_kind(field):
 
 
 def model_plan(service, item):
+    from instance.restore.execution import RecoveryExport
+    plan = model_plan_with(service, item, service.EXCLUDED_FIELDS)
+    # RecoveryExport (the data restore's safety snapshot) keeps every field except the User exclusions.
+    recovery = model_plan_with(service, item, RecoveryExport.EXCLUDED_FIELDS)
+    if recovery['fields'] != plan['fields']:
+        plan['recovery_fields'] = recovery['fields']
+    return plan
+
+
+def model_plan_with(service, item, exclusions):
     model = item[0]
     name = model.__name__
-    excluded = service.EXCLUDED_FIELDS.get(name, [])
+    excluded = exclusions.get(name, [])
     fields = []
     for field in model._meta.get_fields():
         if field.one_to_many or field.many_to_many:

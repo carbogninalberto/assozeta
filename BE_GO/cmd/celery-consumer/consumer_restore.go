@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log/slog"
 	"os"
 	"time"
 
@@ -69,6 +70,16 @@ func consumerRestoreRegister(tasks map[string]celeryworker.Task, cfg config.Conf
 		return err
 	}
 	tasks[service.ConsumerImportAssociationTask] = imports.Task()
+	limits := cfg.DataRestoreArchiveLimits
+	restore, err := service.NewConsumerRestoreInstance(db, repository.NewRestoreFileLock(cfg.RestoreLockPath), export, imports, cache,
+		channels.NewLayer(broker, nil, nil, nil), consumerImportObjects{consumerRestoreObjects{consumerPrintStorage(cfg)}},
+		cfg.DataRestoreRecoveryBackups, service.ConsumerRestoreSettings{TempDir: os.TempDir(), Version: cfg.Version,
+			Limits: service.RestoreLimits{Expanded: limits.Expanded, JSON: limits.JSON, File: limits.File}}, time.Now, uuid.NewString,
+		slog.Default())
+	if err != nil {
+		return err
+	}
+	tasks[service.ConsumerRestoreInstanceTask] = restore.Task()
 	return nil
 }
 

@@ -204,3 +204,8 @@ func pythonLongBytes(n *big.Int) []byte {
 	}
 	return out
 }
+
+// Clear is cache.clear(): django-redis flushes the cache database.
+func (c *ConsumerRestoreCache) Clear(ctx context.Context) error {
+	return c.client.FlushDB(ctx).Err()
+}

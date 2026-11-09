@@ -71,6 +71,10 @@ func (e *Exception) Encode() (string, error) {
 type Retry struct {
 	Exc       *Exception
 	Countdown int64
+	// Maintenance is task_base.defer_for_maintenance: the same command is
+	// republished with its retries unchanged (retried until the broker
+	// accepts it), outside the task's max_retries.
+	Maintenance bool
 }
 
 func (r *Retry) Error() string { return "celery task retry: " + r.Exc.Error() }
@@ -484,6 +488,10 @@ func (w *Worker) perform(ctx, taskCtx context.Context, request *Request, task Ta
 	switch {
 	case err == nil:
 		w.store(ctx, m.ID, "SUCCESS", value, request.children)
+	case errors.As(err, &retry) && retry.Maintenance:
+		w.republish(ctx, request, m.Retries, retry.Countdown, true)
+		request.AddChild(m.ID)
+		w.store(ctx, m.ID, "RETRY", retry.Exc, request.children)
 	case errors.As(err, &retry):
 		if task.MaxRetries >= 0 && m.Retries+1 > task.MaxRetries {
 			w.store(ctx, m.ID, "FAILURE", retry.Exc, request.children)
