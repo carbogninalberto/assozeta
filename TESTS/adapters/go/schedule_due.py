@@ -1,4 +1,4 @@
-"""Differential proof for the inert persisted daily-reset timing subset.
+"""Differential proof for the inert persisted periodic timing subset.
 
 Runs the real private Django scheduler oracle, validates its portable report,
 then executes the Go evaluator against both authored and observed outcomes.
@@ -53,7 +53,7 @@ def main():
         'go_runtime': subprocess.check_output(['go', 'version'], cwd=ROOT / 'BE_GO', text=True).strip(),
         'django_runtime': oracle['runtime'],
         'sha256': {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest() for path in sources},
-        'scope': 'Pure persisted daily-reset timing only; no production scheduling, enqueue, ownership or handoff proof',
+        'scope': 'Pure persisted timing for the registered periodic task subset only; no production scheduling, enqueue, ownership or handoff proof',
     }
     result_path.write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report))

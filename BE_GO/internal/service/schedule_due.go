@@ -83,7 +83,7 @@ func EvaluateScheduleDue(row domain.PeriodicSchedule, now time.Time) (domain.Sch
 
 func validatePeriodicDefinition(row domain.PeriodicSchedule) (time.Duration, int, int, error) {
 	unsupported := func() (time.Duration, int, int, error) { return 0, 0, 0, domain.ErrScheduleUnsupported }
-	if row.Task != domain.JobResetDailyEmailBalance || row.HasSolar || row.HasClocked || row.OneOff || row.ExpiresAt != nil || row.ExpireSeconds != nil ||
+	if _, supported := domain.PeriodicJobKind(row.Task); !supported || row.HasSolar || row.HasClocked || row.OneOff || row.ExpiresAt != nil || row.ExpireSeconds != nil ||
 		row.Priority != nil || row.Queue != "" || row.Exchange != "" || row.RoutingKey != "" ||
 		!emptyScheduleJSON(row.Args, true) || !emptyScheduleJSON(row.Kwargs, false) || !emptyScheduleJSON(row.Headers, false) ||
 		(row.Interval == nil) == (row.Cron == nil) {
@@ -98,6 +98,11 @@ func validatePeriodicDefinition(row domain.PeriodicSchedule) (time.Duration, int
 	cron := row.Cron
 	if cron.Timezone != "UTC" || cron.DayOfWeek != "*" || cron.DayOfMonth != "*" || cron.MonthOfYear != "*" {
 		return unsupported()
+	}
+	// crontab(minute='*') with every other field '*' runs each minute. Mixed
+	// wildcard/scalar hour and minute forms remain outside the subset.
+	if cron.Hour == "*" && cron.Minute == "*" {
+		return 0, anyCronValue, anyCronValue, nil
 	}
 	hour, hourOK := scalarCronField(cron.Hour, 23)
 	minute, minuteOK := scalarCronField(cron.Minute, 59)
@@ -134,17 +139,41 @@ func scalarCronField(raw string, maximum int) (int, bool) {
 	return value, err == nil && value <= maximum
 }
 
+// anyCronValue marks a '*' hour or minute field.
+const anyCronValue = -1
+
+// nextDailySlot mirrors Celery crontab.remaining_delta for wildcard day,
+// weekday and month fields with a scalar or '*' hour and minute.
 func nextDailySlot(after, now time.Time, hour, minute int) time.Time {
 	after, now = after.UTC(), now.UTC()
-	next := time.Date(after.Year(), after.Month(), after.Day(), hour, minute, 0, 0, time.UTC)
+	firstMinute, lastMinute := minute, minute
+	if minute == anyCronValue {
+		firstMinute, lastMinute = 0, 59
+	}
+	firstHour, lastHour := hour, hour
+	if hour == anyCronValue {
+		firstHour, lastHour = 0, 23
+	}
+	day := time.Date(after.Year(), after.Month(), after.Day(), 0, 0, 0, 0, time.UTC)
 	// Match Celery remaining_delta: selecting a later minute in the same
 	// hour requires the cursor date to equal now's date. A cursor on another
-	// date advances a day even when its minute precedes the configured minute.
+	// date advances an hour or a day even when its minute precedes the last one.
 	sameDate := after.Year() == now.Year() && after.YearDay() == now.YearDay()
-	if after.Hour() < hour || (sameDate && after.Hour() == hour && after.Minute() < minute) {
-		return next
+	if sameDate && (hour == anyCronValue || after.Hour() == hour) && after.Minute() < lastMinute {
+		next := firstMinute
+		if minute == anyCronValue {
+			next = after.Minute() + 1
+		}
+		return day.Add(time.Duration(after.Hour())*time.Hour + time.Duration(next)*time.Minute)
 	}
-	return next.AddDate(0, 0, 1)
+	if after.Hour() < lastHour {
+		next := firstHour
+		if hour == anyCronValue {
+			next = after.Hour() + 1
+		}
+		return day.Add(time.Duration(next)*time.Hour + time.Duration(firstMinute)*time.Minute)
+	}
+	return day.AddDate(0, 0, 1).Add(time.Duration(firstHour)*time.Hour + time.Duration(firstMinute)*time.Minute)
 }
 
 func validScheduleTime(value time.Time) bool {

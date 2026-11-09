@@ -41,7 +41,8 @@ type OccurrenceStore interface {
 }
 
 // Publication policy and due evaluation belong to the service. The repository
-// never accepts arbitrary jobs/arguments: Publish records only daily reset v1.
+// never accepts arbitrary jobs/arguments: Publish records only the version 1
+// instance-wide job that domain.PeriodicJobKind maps from the source task.
 // A receipt is durable only after Commit succeeds; every other outcome rolls back.
 type OccurrenceTransaction interface {
 	Snapshot() OccurrenceSnapshot

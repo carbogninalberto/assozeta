@@ -229,6 +229,37 @@ func TestPeriodicOccurrencesPostgres(t *testing.T) {
 		exec(`UPDATE django_celery_beat_periodictask SET interval_id=NULL WHERE id=$1`, sourceID)
 		publish()
 	})
+	t.Run("each registered periodic task publishes its own version one intent", func(t *testing.T) {
+		var everyMinute int64
+		if e := db.GetContext(ctx, &everyMinute, `INSERT INTO django_celery_beat_crontabschedule(minute,hour,day_of_week,day_of_month,month_of_year,timezone) VALUES('*','*','*','*','*','UTC') RETURNING id`); e != nil {
+			t.Fatal(e)
+		}
+		for _, task := range []string{domain.JobUpdateAssociateAge, domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs} {
+			seed()
+			exec(`UPDATE django_celery_beat_periodictask SET task=$2,interval_id=NULL,crontab_id=$3 WHERE id=$1`, sourceID, task, everyMinute)
+			result := publish()
+			job, e := repository.NewJobs(db).Get(ctx, uuid.Nil, result.Receipt.JobID)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if job.Kind != task || job.Version != 1 || job.AssociationID != uuid.Nil || string(job.Payload) != "{}" || job.MaxAttempts != 3 || job.State != "pending" ||
+				job.Key != "periodic:"+strconv.FormatInt(sourceID, 10)+":1" {
+				t.Fatal("incorrect durable intent", task, job)
+			}
+			if second, e := publisher.PublishNext(ctx, sourceID); e != nil || second.Published || second.NextCheckAfter <= 0 || second.NextCheckAfter > time.Minute {
+				t.Fatal("every-minute source published twice in one slot", task, e, second)
+			}
+		}
+		for _, task := range []string{"auto_archive_subscription", "clear_deleted_subscription", "renew_memberships_payments", "association_quote_assign", "cleanup_old_exports"} {
+			seed()
+			exec(`UPDATE django_celery_beat_periodictask SET task=$2 WHERE id=$1`, sourceID, task)
+			before := sourceState()
+			if result, e := publisher.PublishNext(ctx, sourceID); result.Published || !errors.Is(e, domain.ErrScheduleUnsupported) {
+				t.Fatal("unregistered task published", task, e)
+			}
+			unchanged(before)
+		}
+	})
 	t.Run("source editor and uncommitted delete produce contention without partial writes", func(t *testing.T) {
 		for _, statement := range []string{`UPDATE django_celery_beat_periodictask SET enabled=false WHERE id=$1`, `DELETE FROM django_celery_beat_periodictask WHERE id=$1`} {
 			seed()

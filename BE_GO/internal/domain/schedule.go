@@ -15,9 +15,9 @@ var (
 // schedule work. A future repository must read it under its ownership/source
 // locks. No static app schedule is seeded or inferred by this type.
 //
-// The first evaluator supports only the instance daily email reset, seconds
-// intervals or scalar UTC daily cron, empty arguments/headers and default
-// transport. Explicit unsupported options remain represented so callers cannot
+// The evaluator supports only the persisted task names in PeriodicJobKind,
+// seconds intervals, scalar UTC daily cron or the all-wildcard every-minute
+// UTC cron, empty arguments/headers and default transport. Explicit unsupported options remain represented so callers cannot
 // accidentally discard them while mapping a Django row.
 type PeriodicSchedule struct {
 	Task          string
@@ -64,4 +64,20 @@ type PeriodicCron struct {
 type ScheduleDue struct {
 	Due            bool
 	NextCheckAfter time.Duration
+}
+
+// periodicJobKinds maps each supported persisted Beat task name to the
+// instance-wide version 1 Go job it publishes. Every listed kind is registered
+// by the native worker; no other Beat task name is published.
+var periodicJobKinds = map[string]string{
+	JobResetDailyEmailBalance:         JobResetDailyEmailBalance,
+	JobUpdateAssociateAge:             JobUpdateAssociateAge,
+	JobClearExpiredSubscriptionTokens: JobClearExpiredSubscriptionTokens,
+	JobDeleteOldAuditLogs:             JobDeleteOldAuditLogs,
+}
+
+// PeriodicJobKind returns the Go job kind for an exact persisted task name.
+func PeriodicJobKind(task string) (string, bool) {
+	kind, ok := periodicJobKinds[task]
+	return kind, ok
 }

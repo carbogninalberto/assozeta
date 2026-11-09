@@ -25,6 +25,7 @@ EXPECTED = {
     'concurrent publishers commit one occurrence',
     'unsupported options are retained and never published',
     'UTC daily definition is mapped from the locked actual Django table',
+    'each registered periodic task publishes its own version one intent',
     'source editor and uncommitted delete produce contention without partial writes',
     'definition-first editor can acquire parent after publisher backs off',
     'publication retains owner source and definition locks through transaction outcome',
