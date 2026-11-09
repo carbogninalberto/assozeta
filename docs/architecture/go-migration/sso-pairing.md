@@ -105,9 +105,9 @@ SimpleJWT and `build_login_response`, the DRF throttle entry, and the complete m
 `last_login` may change, exactly as authored).
 
 - RED (`native-r1`): Django 172/172; Go 404 on the first case.
-- GREEN (`versioned-r2`, after the task changes; `versioned-r1` before them): 172/172 on native Django, native Go, Caddy
+- GREEN (`versioned-r3`, after merging codex/go-backend-parity; earlier `versioned-r1`, `versioned-r2`): 172/172 on native Django, native Go, Caddy
   `/api/v1` and `/api/v2`.
-- Mutation (`mutation-r2`; also `mutation-r1`): dropping the expiry condition of the commit's challenge lookup fails Go on
+- Mutation (`mutation-r3`; also `mutation-r1`, `mutation-r2`): dropping the expiry condition of the commit's challenge lookup fails Go on
   `sso-pairing-commit-expired-challenge` (200 instead of 409).
 - `go test ./internal/service -run TestBakney` (Django goldens for the protocol functions, Fernet both ways, signatures,
   cookies) and `go test ./internal/repository -run TestPicklePythonFloats` (CPython pickle bytes).
@@ -140,6 +140,6 @@ verified sync; 401 disconnect; no pending pairing; pending answer for another ge
 actual Django task with authored path assertions; the Go job must leave the identical complete managed-model state
 (run timestamps normalized) and send byte-identical requests with the same headers. Seven groups: default Django owner,
 the four seeds, invalid version/payload/tenant, replay. RED (`red-r1`): without the registration the job stays pending.
-GREEN (`green-r2`) 7/7. Mutation (`mutation-r1`): the five-minute nonce grace removed makes the main seed differ.
+GREEN (`green-r3`, after the merge) 7/7. Mutation (`mutation-r1`): the five-minute nonce grace removed makes the main seed differ.
 Re-run green after the shared scheduler/worker changes: `schedule_due.py` (46 differential cases now also run for this
 task), `occurrence.py` (publishes its version 1 intent), `worker_process.py`, `auto_mark_worker_process.py`.
