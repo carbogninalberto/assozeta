@@ -407,6 +407,12 @@ func run() (runErr error) {
 	e.Any("/course/:uid/delete", courseWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/:uid/overview/:uid_subscription/update", courseWritesHandler.OverviewUpdate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/:uid/overview/:uid_subscription/delete", courseWritesHandler.OverviewDelete, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseEnrolmentHandler := handler.NewCourseEnrolmentHandler(service.NewCourseEnrolment(repository.NewCourseEnrolment(db), time.Now, uuid.NewString),
+		service.NewCourseSubscriptions(repository.NewCourseSubscriptions(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities,
+		middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/course-subscriptions/add", courseEnrolmentHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/:uid/overview/:uid_subscription/add", courseEnrolmentHandler.OverviewAdd, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course-installment/:uid/make-payment", courseEnrolmentHandler.MakePayment, middleware.DjangoSessionAudit(sessionAuthentication))
 	modulesReadsHandler := handler.NewModulesReadsHandler(service.NewModulesReads(repository.NewModulesReads(db),
 		service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities)
