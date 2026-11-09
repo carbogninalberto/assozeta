@@ -476,6 +476,12 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/list/export", miscExportsHandler.SubscriptionExport, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice/list/export", miscExportsHandler.InvoiceExport, middleware.DjangoSessionAudit(sessionAuthentication))
+	printingGenerateHandler := handler.NewPrintingGenerateHandler(service.NewPrintingGenerate(repository.NewPrintingGenerate(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/printing/generate", printingGenerateHandler.Generate, middleware.DjangoSessionAudit(sessionAuthentication))
+	exportAllDataHandler := handler.NewExportAllDataHandler(service.NewExportAllData(repository.NewExportAllData(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities)
+	e.Any("/export-all-data", exportAllDataHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionReadsHandler := handler.NewSubscriptionReadsHandler(service.NewSubscriptionReads(repository.NewSubscriptionReads(db),
 		repository.NewCourseSubscriptions(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	e.Any("/subscription/list", subscriptionReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))

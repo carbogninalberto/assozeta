@@ -21,7 +21,9 @@ library, as ``{'$xlsx': spec}``:
   ``to_excel(writer, sheet_name=sheet, index=index)`` through xlsxwriter and
   ``set_column(i, i, widths[i])``;
 - ``{'engine': 'openpyxl_rows', 'sheets': [[title, [[str, ...], ...]], ...]}``:
-  openpyxl.Workbook() without its default sheet and the rows appended.
+  openpyxl.Workbook() without its default sheet and the rows appended;
+  ``'stream': True`` saves it to a write-only stream (wb.save(HttpResponse)),
+  where zipfile writes each entry with a data descriptor (flag 0x08).
 
 Values are JSON strings and nulls, or ``{'int': text}``, ``{'float': repr}``,
 ``{'decimal': text}``, ``{'bool': b}``, ``{'list': [...]}``, ``{'dict': [[k, v], ...]}``.
@@ -88,7 +90,24 @@ def _xlsxwriter(sheet, columns, rows, index, widths):
     return out.getvalue()
 
 
-def _openpyxl_rows(sheets):
+class _Unseekable:
+    """A write-only stream like Django's HttpResponse: zipfile writes data descriptors (flag 0x08)."""
+
+    def __init__(self):
+        self.parts = []
+
+    def write(self, data):
+        self.parts.append(bytes(data))
+        return len(data)
+
+    def flush(self):
+        pass
+
+    def getvalue(self):
+        return b''.join(self.parts)
+
+
+def _openpyxl_rows(sheets, stream=False):
     import openpyxl
     book = openpyxl.Workbook()
     book.remove(book.active)
@@ -96,7 +115,7 @@ def _openpyxl_rows(sheets):
         sheet = book.create_sheet(title=title)
         for row in rows:
             sheet.append(row)
-    out = io.BytesIO()
+    out = _Unseekable() if stream else io.BytesIO()
     book.save(out)
     return out.getvalue()
 
@@ -109,7 +128,7 @@ def build(spec):
     if engine == 'xlsxwriter':
         return _xlsxwriter(spec['sheet'], spec['columns'], spec['rows'], spec['index'], spec['widths'])
     if engine == 'openpyxl_rows':
-        return _openpyxl_rows(spec['sheets'])
+        return _openpyxl_rows(spec['sheets'], spec.get('stream', False))
     raise ValueError(engine)
 
 
