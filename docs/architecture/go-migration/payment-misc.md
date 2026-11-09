@@ -80,8 +80,7 @@ their invoice is rendered whatever `generate_invoice` says.
 
 ## Routes left out of this family
 
-- `payment/<uid>/request`: its only success path renders the pending-payment e-mail synchronously (`render_to_string`, instance
-  branding) and queues it (`send_mail_async`); the rendering is not reproduced in Go (see [celery-routes-a](celery-routes-a.md)).
+- `payment/<uid>/request`: ported with its rendered e-mail in [email-render-routes](email-render-routes.md).
 - `payment/<uid>/generate-invoice`: the `print_document_invoice.apply_async` dispatch is portable, but the generation path needs invoice
   numbering, `generate_invoice_description` and the Invoice create, not yet in Go (see [celery-routes-a](celery-routes-a.md)).
 - `payment/list/export`: has a non-PDF success path (CSV/XLSX base64 export with petty-cash balances); not ported in

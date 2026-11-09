@@ -71,10 +71,8 @@ Inputs of `subscription/<uid>/update` refused with the 500 page before any write
 
 Routes reviewed for this family and not ported:
 
-- `collaborators/add`, `payment/<uid>/request` and `invoice/<uid>/send`: the Celery dispatch (`send_mail_async.apply_async(kwargs=...)`)
-  is plain, but its `message`/`html_message` argument is the HTML Django renders synchronously in the request with `render_to_string`
-  (`email/_base.html` with the `instance_email_brand` tag: instance configuration colours and logo, Django's localized number rendering of
-  the amounts). The Go server has no Django template renderer; every success path needs it.
+- `collaborators/add`, `payment/<uid>/request` and `invoice/<uid>/send`: their `send_mail_async` message is HTML rendered in the request
+  with `render_to_string`; ported later with a Go renderer in [email-render-routes](email-render-routes.md).
 - `subscription/<uid>/medical-appointments/add`: calls `print_document_medical_appointment(...)` directly (not `.delay`), so the PDF is
   rendered synchronously on every success path.
 - `payment/<uid>/generate-invoice`: portable as a dispatch (`print_document_invoice.apply_async(args=[str(id), authorization])`, after the

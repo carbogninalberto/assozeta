@@ -73,9 +73,8 @@ entry lists only the changed fields and indexes directly to the payment's associ
 ## Not ported
 
 - `invoice/<uid>/update` is not in the family: every successful update runs `print_document_invoice.apply(...)`
-  (synchronous PDF rendering). `invoice/<uid>/send` renders the receipt e-mail
-  synchronously (`render_to_string`, instance branding) before queuing `send_mail_async`, which Go does not reproduce (see
-  [celery-routes-a](celery-routes-a.md)); `invoice/list/export` (file export) is out of scope.
+  (synchronous PDF rendering). `invoice/<uid>/send` is ported with its rendered
+  receipt e-mail in [email-render-routes](email-render-routes.md); `invoice/list/export` (file export) is out of scope.
 - `invoice-customers/add` stays with invoice-parties (its validation is ported there; a valid add generates the XML and the
   PDF).
 - invoice/list refuses (500) a page with an invoice without a PDF (Django dispatches `print_document_invoice.delay`), random

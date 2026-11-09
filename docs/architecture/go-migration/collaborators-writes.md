@@ -2,7 +2,7 @@
 
 `PATCH collaborators/<uid>/update` (`collaborators_update` in `BE/application/views/collaborator_views.py`) is implemented in Go
 (`BE_GO/internal/{domain,dto,repository,service,handler}/collaborators_writes.go`). Registry `other.users.collaborators.update`.
-Django remains the execution owner. `collaborators/add` and `collaborators/<uid>/delete` are not ported (see below).
+Django remains the execution owner. `collaborators/add` is ported in [email-render-routes](email-render-routes.md); `collaborators/<uid>/delete` is not ported (see below).
 
 ## Behaviour
 
@@ -33,10 +33,6 @@ Django remains the execution owner. `collaborators/add` and `collaborators/<uid>
 
 ## Not ported
 
-- `collaborators/add` (not routed in Go): every success path creates the invitation and dispatches the invitation e-mail
-  through the `send_mail_async` Celery task. The dispatch itself is a plain `apply_async(kwargs=...)`, but its `message` is
-  rendered synchronously with `render_to_string` (`email/_base.html`, instance branding), which Go does not reproduce (reviewed in
-  [celery-routes-a](celery-routes-a.md)).
 - `collaborators/<uid>/delete` stays `needs_review` and is not routed: deleting a connected user reaches the User cascade
   graph (89 potential model types per [collaborator-delete.md](collaborator-delete.md)), the accepted-invitation email link
   and the owner-first row-lock protocol, none of which this family's fixture covers.
