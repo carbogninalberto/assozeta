@@ -21,6 +21,9 @@
     $: if (!changed) adopt(schedule, retention);
     $: changed = JSON.stringify(draft) !== baseline;
     $: last = schedule.last_run;
+    // Times are the server's: say so only when the browser is elsewhere.
+    $: browserZone = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return ''; } })();
+    $: zoneHint = schedule.timezone && browserZone && schedule.timezone !== browserZone ? ` (${schedule.timezone})` : '';
 
     function adopt(value, keep) {
         const next = pick(value, keep?.automatic);
@@ -73,7 +76,7 @@
                     </select>
                 </div>
             {/if}
-            <label class="si-field">Ora<input class="form-control" type="time" bind:value={draft.time} required disabled={!draft.enabled} /></label>
+            <label class="si-field">Ora{zoneHint}<input class="form-control" type="time" bind:value={draft.time} required disabled={!draft.enabled} /></label>
             <label class="si-field">Da conservare<input class="form-control" type="number" min="1" max="30" step="1" bind:value={draft.keep} required aria-describedby="backup-keep-help" /></label>
         </div>
         <p id="backup-keep-help" class="si-hint mt-2 mb-0">Numero di backup automatici da tenere. Se lo spazio non basta, i più vecchi vengono eliminati prima del nuovo.</p>
