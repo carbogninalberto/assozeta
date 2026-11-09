@@ -85,6 +85,7 @@ PARTIAL = 'email/account/email_user_partial_registration.html'
 EXPIRING = 'email/account/email_subscription_medical_certificate_expiring.html'
 EXPIRED = 'email/account/email_subscription_medical_certificate_expired.html'
 REMINDER = 'email/reminders/event.html'
+WELCOME_PASSWORD = 'email/account/email_welcome_password_message.html'
 WHITELABEL_SETTINGS = obj(WHITELABEL_NAME=s('Bakney Sport'), IS_WHITELABEL={'t': 'bool', 'v': False})
 
 
@@ -103,6 +104,12 @@ def reminder(title, text, description, association):
     # send_reminders
     return {'event_title': title, 'event_reminder_text': text, 'event_description': description,
             'association_name': association, 'application_name': s('Bakney Sport')}
+
+
+def welcome_password(first, last, username, email, password, denomination, host=APP):
+    # AuthUtils.send_password_welcome_email (the association is read by attribute)
+    return {'first_name': first, 'last_name': last, 'username': s(username), 'email': email, 'password': s(password),
+            'sport_association': obj(denomination=denomination), 'app_host': s(host), 'settings': WHITELABEL_SETTINGS}
 
 
 CASES = [
@@ -142,6 +149,12 @@ CASES = [
     ('reminder', REMINDER, reminder(s('Allenamento'), s('1 ora'), s('Porta le scarpe'), s('ASD Esempio')), 'it', 'cloud'),
     ('reminder-escaped', REMINDER, reminder(s('"Gara" & <festa>'), NONE, s('Nessun dettaglio.'), s("L'Aquila")), 'it', 'self-logo'),
     ('reminder-none', REMINDER, reminder(s('x'), s(''), s('a\nb'), NONE), 'it', 'none'),
+    ('welcome-password', WELCOME_PASSWORD, welcome_password(s('Gianni'), s('Genitore'), 'GIAGENAB12CD34', s('gianni@example.test'),
+                                                            'aB3dE5gH', s('ASD Esempio')), 'it', 'cloud'),
+    ('welcome-password-escaped', WELCOME_PASSWORD, welcome_password(s("D'Amico"), s('<b>&</b>'), 'D\'AMIC0000000', s(''), 'Zz9Yy8Xx',
+                                                                    s('Società "Uno"'), host='http://h/x?a=1&b=2'), 'en', 'self-logo'),
+    ('welcome-password-none', WELCOME_PASSWORD, welcome_password(s('Nora'), NONE, 'NORNUOQWERTY12', s('n@example.test'), '00000000',
+                                                                 NONE), 'it', 'none'),
 ]
 
 

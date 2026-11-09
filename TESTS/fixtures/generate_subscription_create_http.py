@@ -397,6 +397,19 @@ add('without-tax-code-blank-type-role', 'owner', 200, SUCCESS(25.0), body=reques
                    membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
                                'price': None}))
 
+# A None medical_certificate fails in the elif, after the associate serializer: its errors come first.
+add('medical-certificate-none-after-associate-errors', 'owner', 400, {'sex': ['"X" is not a valid choice.']},
+    body=request(person('Rita', 'Medica', 'MDCRTI90C41H501K', sex='X'), medical_certificate=None))
+
+# AssociateSerializer.create with an associate_id no row has: the associate is created with that key.
+keyed = {**person('Zeno', 'Chiave', 'CHVZNE85A01H501P', born='01/01/1985'), 'associate_id': next(ids)}
+add('associate-id-created', 'owner', 200, SUCCESS(25.0), body=request(keyed),
+    effect=success('owner', 'Zeno Chiave', associate=created_associate({k: v for k, v in keyed.items() if k != 'associate_id'}),
+                   payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': None}))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',

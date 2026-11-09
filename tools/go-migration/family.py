@@ -51,6 +51,28 @@ def route_path(entry):
     return entry.get('declaration', {}).get('path', '')
 
 
+def mount_prefix(ledger, file):
+    """The URL prefix under which a urls module is included (mount entries, nested; '' for the root URLconf)."""
+    module = file.removeprefix('BE/').removesuffix('.py').replace('/', '.')
+    for entry in ledger['entries']:
+        target = entry.get('declaration', {}).get('target', '')
+        if entry['kind'] == 'mount' and target in (f"include('{module}')", f'include("{module}")'):
+            return mount_prefix(ledger, entry['django']['file']) + route_path(entry)
+    return ''
+
+
+def external_paths(ledger, entry):
+    """Public paths of a route: Caddy's /api/v1, /api/v2 and /api aliases, plus the bare path for mounts the
+    shipped Caddyfile serves at the root (for example bakney/v1/)."""
+    prefix = mount_prefix(ledger, entry['django']['file'])
+    external = prefix + re.sub(r'<(?:\w+:)?(\w+)>', r'<\1>', route_path(entry))
+    paths = [f'/api/v1/{external}', f'/api/v2/{external}', f'/api/{external}']
+    caddy = (ROOT / 'selfhost/caddy/Caddyfile').read_text()
+    if prefix and re.search(r'^\s*handle /' + re.escape(prefix) + r'\*\s*\{', caddy, re.M):
+        paths.insert(0, '/' + external)
+    return paths
+
+
 # ---------------------------------------------------------------------------
 # status / inspect
 # ---------------------------------------------------------------------------
@@ -408,15 +430,19 @@ def record(args):
     if non_route:
         credit_non_route(ledger, family, non_route, green, count, tests, evidence)
     for entry in ledger['entries']:
-        path = route_path(entry)
-        if entry['kind'] != 'route' or path not in routes:
+        if entry['kind'] != 'route':
             continue
-        contract = routes.pop(path)
-        external = re.sub(r'<(?:\w+:)?(\w+)>', r'<\1>', path)
+        path = route_path(entry)
+        full = mount_prefix(ledger, entry['django']['file']) + path
+        # A spec names a route by its declaration path or by its full mounted path.
+        key = path if path in routes else full if full in routes else None
+        if key is None:
+            continue
+        contract = routes.pop(key)
         entry.update(status='implementing', go=spec['go'], tests=tests, evidence=evidence, dependencies=spec['dependencies'],
                      notes=['Implementing: ' + spec['notes']])
         entry['contract'] = {'methods': contract['methods'],
-                             'external_paths': [f'/api/v1/{external}', f'/api/v2/{external}', f'/api/{external}'],
+                             'external_paths': external_paths(ledger, entry),
                              'request': contract['request'], 'response': contract['response'], 'errors': contract['errors'],
                              'authentication': contract.get('authentication', 'DRF IsAuthenticated (JWT/session).'),
                              'permissions': contract['permissions'], 'resource_scope': contract['resource_scope'],

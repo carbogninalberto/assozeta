@@ -17,8 +17,9 @@ type SubscriptionEditService interface {
 }
 
 // SubscriptionWritesHandler serves subscription/<uid>/edit (@api_view(['POST'])).
-// subscription/add is SubscriptionCreateHandler; subscription/renew and
-// subscription/<uid>/transfer are not routed (subscription-create.md).
+// subscription/add is SubscriptionCreateHandler, subscription/renew is
+// SubscriptionRenewHandler; subscription/<uid>/transfer is not routed
+// (subscription-create.md, subscription-renew.md).
 type SubscriptionWritesHandler struct {
 	edits      SubscriptionEditService
 	actors     *service.ActorAuthentication

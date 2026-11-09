@@ -108,6 +108,7 @@ type SubscriptionCreateAudit struct {
 
 type SubscriptionCreateTransaction interface {
 	SubscriptionEditTransaction
+	SubscriptionRenewAssociateStore
 	// Settings is user.sport_association (exactly one live association, else
 	// nil) with its owner's settings, the association row locked.
 	Settings(ctx context.Context, user string) (*SubscriptionCreateSettings, int, error)
