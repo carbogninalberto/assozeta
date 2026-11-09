@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/channels"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
 	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -682,6 +683,14 @@ func run() (runErr error) {
 	if err != nil {
 		return err
 	}
+	// subscription/add: Channels group messages are written for Django sockets
+	// and mirrored for Go sockets (internal/channels), on Redis database 0.
+	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
+		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
+	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks,
+		subscriptionNotifier, time.Now, nil), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
+		paymentCategoryOperations)
+	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	realtimeHub := service.NewRealtimeHub()
 	pubsubOptions := storeOptions
 	pubsubOptions.ReadTimeout = -1

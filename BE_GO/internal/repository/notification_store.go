@@ -410,3 +410,8 @@ func encodePickledNames(names []*string) ([]byte, bool) {
 	}
 	return append(encoded, body.Bytes()...), true
 }
+
+// ResetNotifications is validate_broadcast's r.set(broadcast, json.dumps({"messages": ""})).
+func (s *NotificationStore) ResetNotifications(ctx context.Context, broadcast string) error {
+	return s.store.Set(ctx, broadcast, dto.PythonJSONDumps(domain.RequestObject{{Name: "messages", Value: ""}}), 0).Err()
+}
