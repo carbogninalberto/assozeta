@@ -30,20 +30,7 @@ func MedicalS3Key(created time.Time, id uuid.UUID, filename, location string) (s
 		strings.HasPrefix(filename, "/") || strings.HasPrefix(location, "/") {
 		return "", ErrMedicalKey
 	}
-	// datetime.timestamp() divides the integer timedelta microseconds by 1e6.
-	// Converting that integer to float before division can round twice and change
-	// the last key digit for old/future records. Round the exact rational once.
-	micros := created.Unix()*1_000_000 + int64(created.Nanosecond()/1000)
-	seconds, _ := new(big.Rat).SetFrac64(micros, 1_000_000).Float64()
-	var timestamp string
-	if absolute := math.Abs(seconds); absolute != 0 && absolute < 1e-4 {
-		timestamp = strconv.FormatFloat(seconds, 'e', -1, 64)
-	} else {
-		timestamp = strconv.FormatFloat(seconds, 'f', -1, 64)
-		if !strings.Contains(timestamp, ".") {
-			timestamp += ".0"
-		}
-	}
+	timestamp := pythonTimestamp(created)
 	directory := timestamp + "/" + id.String() + "/"
 	// clean_name normalizes POSIX components before replacing backslashes; the
 	// subsequent safe_join normalizes again. Preserve meaningful trailing slashes.
@@ -69,4 +56,24 @@ func MedicalS3Key(created time.Time, id uuid.UUID, filename, location string) (s
 		return "", ErrMedicalKey
 	}
 	return strings.TrimLeft(key, "/"), nil
+}
+
+// pythonTimestamp is str(created.timestamp()) for an aware UTC datetime with
+// microsecond precision (callers validate the range first).
+func pythonTimestamp(created time.Time) string {
+	// datetime.timestamp() divides the integer timedelta microseconds by 1e6.
+	// Converting that integer to float before division can round twice and change
+	// the last key digit for old/future records. Round the exact rational once.
+	micros := created.Unix()*1_000_000 + int64(created.Nanosecond()/1000)
+	seconds, _ := new(big.Rat).SetFrac64(micros, 1_000_000).Float64()
+	var timestamp string
+	if absolute := math.Abs(seconds); absolute != 0 && absolute < 1e-4 {
+		timestamp = strconv.FormatFloat(seconds, 'e', -1, 64)
+	} else {
+		timestamp = strconv.FormatFloat(seconds, 'f', -1, 64)
+		if !strings.Contains(timestamp, ".") {
+			timestamp += ".0"
+		}
+	}
+	return timestamp
 }
