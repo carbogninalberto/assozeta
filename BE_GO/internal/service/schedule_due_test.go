@@ -37,7 +37,7 @@ var scheduleSubset = []string{
 var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateAssociateAge,
 	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest,
 	domain.JobAutoMarkAttendance, domain.JobSendUserPartialRegistrationEmail, domain.JobSendExpiringCertificateEmail,
-	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings,
+	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings, domain.JobCleanupOldExports,
 	domain.JobChangeTypeOfStripePayments, domain.JobGenerateCouponIfNotExists, domain.JobRenewMembershipsPayments}
 
 type dueFixtureInput struct {
@@ -179,7 +179,6 @@ func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
 		"deleted subscription task": func(s *domain.PeriodicSchedule) { s.Task = "clear_deleted_subscription" },
 		"workflow cron task":        func(s *domain.PeriodicSchedule) { s.Task = "check_workflows_trigger_cron" },
 		"quote task":                func(s *domain.PeriodicSchedule) { s.Task = "association_quote_assign" },
-		"export cleanup task":       func(s *domain.PeriodicSchedule) { s.Task = "cleanup_old_exports" },
 		"orphan medical task":       func(s *domain.PeriodicSchedule) { s.Task = "auto_delete_orphan_medical_certificate" },
 		"updated certificate task":  func(s *domain.PeriodicSchedule) { s.Task = "send_updated_certificate_email" },
 		"unregistered alias":        func(s *domain.PeriodicSchedule) { s.Task = "application.tasks.reset_communication_daily_email_balance" },

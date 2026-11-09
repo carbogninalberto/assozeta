@@ -263,6 +263,10 @@ func run() (runErr error) {
 
 	// document/<kind>/<uid> PDF routes: the Puppeteer FastRender service (PUPPETEER_HOST/PORT) prints
 	// CURRENT_HOST_PUPPETEER/<view>; DOCUMENT_BYPASS_TOKEN is HasBypassAuthorizationHeader's token.
+	// document/<kind>/<uid>/view/ HTML views (the pages the renderer prints) and the subscription preview.
+	documentViewsHandler := handler.NewDocumentViewsHandler(service.NewDocumentViews(repository.NewDocumentViews(db),
+		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")),
+		os.Getenv("DOCUMENT_BYPASS_TOKEN"), time.Now), service.NewActorAuthentication(accounts, tokens), identities)
 	documentRenderHandler := handler.NewDocumentRenderHandler(service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
 		documentRenderSettings(cfg), time.Now, uuid.NewString),
@@ -658,6 +662,11 @@ func run() (runErr error) {
 	e.Any("/document/compensation/:uid", documentRenderHandler.Compensation, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/template/:uid", documentRenderHandler.Template, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/medical-appointment/:uid", documentRenderHandler.MedicalAppointment, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/subscription/preview/", documentViewsHandler.Preview, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/subscription/:uid/view/", documentViewsHandler.Subscription, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/compensation/:uid/view/", documentViewsHandler.Compensation, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/template/:uid/view/", documentViewsHandler.Template, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/document/medical-appointment/:uid/view/", documentViewsHandler.MedicalAppointment, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/retrieve/:uid", docmanagerReadsHandler.Retrieve, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/document/:uid/delete", docmanagerReadsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/delete", foldersHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -784,10 +793,24 @@ func run() (runErr error) {
 	// and mirrored for Go sockets (internal/channels), on Redis database 0.
 	subscriptionNotifier := service.NewSubscriptionNotifier(repository.NewSubscriptionNotifications(db), notificationStore,
 		channels.NewLayer(notificationRedis, nil, nil, nil), time.Now)
-	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks,
-		subscriptionNotifier, time.Now, nil), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext,
-		paymentCategoryOperations)
+	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil)
+	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(subscriptionCreates, service.NewActorAuthentication(accounts, tokens),
+		identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	// subscription/renew and associates-draft approve run create_subscription (subscription-renew.md).
+	subscriptionRenewHandler := handler.NewSubscriptionRenewHandler(
+		service.NewSubscriptionRenewals(repository.NewSubscriptionRenewals(db), subscriptionCreates),
+		service.NewSubscriptionDraftApprovals(repository.NewSubscriptionDraftApprovals(db), subscriptionCreates),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/renew", subscriptionRenewHandler.Renew, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/subscription/associates-draft/list/approve", subscriptionRenewHandler.Approve, middleware.DjangoSessionAudit(sessionAuthentication))
+	// subscription/<uid>/transfer: the recipient's notification through the same notifier.
+	subscriptionTransferHandler := handler.NewSubscriptionTransferHandler(service.NewSubscriptionTransfers(repository.NewSubscriptionTransfers(db),
+		subscriptionNotifier, tasks, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
+		service.OAuthAccountSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,
+			IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug}, time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/subscription/:uid/transfer", subscriptionTransferHandler.Transfer, middleware.DjangoSessionAudit(sessionAuthentication))
 	realtimeHub := service.NewRealtimeHub()
 	pubsubOptions := storeOptions
 	pubsubOptions.ReadTimeout = -1

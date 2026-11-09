@@ -3844,6 +3844,227 @@
     }
    },
    "setup": null
+  },
+  {
+   "name": "subscription-create-medical-certificate-none-after-associate-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sex": [
+     "\"X\" is not a valid choice."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Medica",
+     "tax_code": "MDCRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "X"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": null
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-associate-id-created",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Zeno",
+      "last_name": "Chiave",
+      "tax_code": "CHVZNE85A01H501P",
+      "born_date": "1985-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "512"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "512"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Zeno Chiave.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Zeno",
+     "last_name": "Chiave",
+     "tax_code": "CHVZNE85A01H501P",
+     "born_date": "01/01/1985",
+     "sex": "M",
+     "associate_id": "a1000000-0000-4000-8000-000000930014"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
   }
  ]
 }

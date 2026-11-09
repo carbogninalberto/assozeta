@@ -1,0 +1,96 @@
+# Document views — the HTML pages the renderer prints, rendered in Go byte for byte
+
+`document/{subscription,compensation,template,medical-appointment}/<uid>/view/` and `document/subscription/preview/`
+(`BE/docmanager/views/printing_views.py`) are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/document_views.go`)
+on top of two new packages. Django remains the execution owner. `document/invoice/<uid>/view/` and `document/einvoice/<uid>/view/`
+are not in this family (see the end).
+
+## Shared pieces
+
+- `BE_GO/internal/djtemplate` renders the embedded copies of `BE/templates/document/**` the way Django 5.2's `render()` does. It covers
+  the language subset these templates use: `{% load format %}`, `{% if/elif/else %}` with Django's smartif operators and Python
+  comparison semantics (an operator that raises is False), `{% for a[, b] in seq %}`, `{# #}`, variable lookups (dict key, then
+  attribute, then index; callables are called; a failed lookup is `''` in `{{ }}` and `None` in `{% if %}`), autoescaping, and the
+  filters `safe`, `default`, `upper`, `lower`, `date` (d, m, Y, l, F with Italian and English names), `yesno`, `linebreaksbr`, `add`,
+  `length`, `floatformat`, plus the application's `format`. Anything else (other tags, filters, format letters, lookups that reach a
+  Python method, `str()` of containers, `upper()` of the few runes whose Python full case mapping Go does not have) is refused with
+  `ErrUnsupported`. Model instances are closed `Object`s: reading an attribute the port did not declare is refused. Attributes Django
+  lacks (`health_insurance_card`, `tutor`) are declared `Missing`.
+- `BE_GO/internal/mentions` is `filter_mentions`: BeautifulSoup 4.13 with `html.parser` on Python 3.13, the mention spans replaced by
+  their context values, the legacy `@alias` words in the text nodes, and `str(soup)`. The parse covers well-formed markup only:
+  lowercased tags and attributes, void elements, a missing end tag at the end, quoted or bare attributes, and the `&amp; &lt; &gt;
+  &quot; &apos; &nbsp;` and numeric references (C1 and other windows-1252 code points excluded). The output follows bs4: attributes
+  sorted by name, whitespace-split multi-valued attributes, quote choice, whitespace-only text runs collapsed to `\n` or ` `, void
+  elements as `<br/>`. Comments, declarations, processing instructions, raw-text and whitespace-preserving elements, mismatched end
+  tags, unknown references, a `<br/>` after a `<br>` (bs4's already-closed bookkeeping) and runes that Python's case-insensitive alias
+  match folds to ASCII are refused.
+- `emailrender/shared.go` exports the existing number formatting (`floatformat`, `localize`) for `djtemplate`.
+- `pdfrender.Client.RenderWithoutHeaders` is `Puppeteer.pdf_from_url(url, headers={})`: the same request with `"headers": {}`.
+
+Golden tests: `TESTS/adapters/go/document_template_golden.py` renders all eight document templates for 320 seeded contexts with
+`render_to_string` (both languages; 6 raise in Django and must fail in Go) and runs `filter_mentions` on 492 inputs; the Go tests
+(`go test ./internal/djtemplate ./internal/mentions`) require identical bytes (`testdata/*.json`) and check the refusals.
+
+## Views
+
+- **subscription/view** (`IsAuthenticated`): the scoped, group-aware subscription (`Subscription.objects`, no soft-delete filter);
+  `payment_data` is its payment's `meta` when truthy (the payment read like the FK does: deleted rows included). Each item of the
+  association's `additional_sections` gets `show_to` (1 members, 2 both, 3 athletes; an existing key is replaced in place); a value
+  that is not a list of dicts is the 500 page. `show_regulation_to`/`show_demand_to` from the flags; header and footer through
+  `filter_mentions` with `sport_association`, `subscription` and `other.today` (`datetime.now()` in UTC). The template is
+  `subscription_classic.html` when configured, otherwise `subscription.html`. Rendered in the request language.
+- **subscription/preview** (AllowAny): `?print` (any value) posts `'<request.path>?sport_association_id=<value or None>'` to the renderer
+  with no headers and answers `{"file": base64(pdf)}` or `500 {"error": "PDF not rendered"}` (any renderer failure). Otherwise the
+  live, scoped association named by the last `?sport_association_id` and a placeholder subscription (`is_preview`, show lists
+  `[1, 2, 3]`, the association's `additional_fields`); no parameter, a value the UUID field rejects or a missing row is the 500 page; an
+  association whose user is an athlete is `403 "User is not a sport association"`.
+- **compensation/view** (`IsAuthenticated`): the scoped, live, group-aware payment; `from_date`/`to_date` are the minimum and maximum of
+  its hours' dates (`hourly`) and the first two `' al '` parts of the others' periods (`strptime('%d/%m/%Y')`; a bad or missing period is
+  the 500 page). Italian is activated (`Content-Language: it`, `floatformat` with a comma, Italian day and month names).
+- **template/view** (`IsAuthenticated | HasBypassAuthorizationHeader`): the module template by pk. `?subscription_id` (last
+  value): the scoped subscription, its courses list, then `associate` and `main_tutor`; each step that raises stops the rest silently
+  (a course without a title leaves the list `[]`, which a mention prints as `[]`; a subscription without an associate leaves
+  `associate` as None). Header/footer (the association's, or the custom ones) only when enabled, through `filter_mentions` with
+  `sport_association` and `other.{today, courses_list}`; the body with the full context.
+- **medical-appointment/view** (AllowAny): `is_valid_uuid` (`400 ["<ValueError text>"]`), the appointment by pk (missing: 500), `303
+  {"error": ...}` for regions other than `agonistica`/`non-agonistica`, then the region's template in Italian.
+- Every view: identity resolution first (admin without a session, collaborator registry denials, the athlete-view list and the scoped
+  reference checks on the path `uid` and query parameters), then the view's permission, then method dispatch (`Allow: GET, OPTIONS`);
+  unhandled exceptions are the stable 500 page; the HTML is `text/html; charset=utf-8`.
+
+Mentions resolve these keys (the editor's list): `sport_association.{denomination, tax_code, iban, website, abbreviated, vat_number,
+whatsapp, address, address_city, address_cap, logo, user.email, federation, sport, enroll_number}`,
+`associate.*`/`main_tutor.*` (the editor's associate fields and `sex`), and `other.<key>`. A key for an object the view does not pass
+is `''`, as in Django.
+
+## Not ported (refused with the 500 page; the views write nothing)
+
+- `get_main_tutor()` for an associate whose tutor relations have no primary one: Django promotes and saves the first relation (a write
+  with an audit entry) while rendering.
+- `get_signature_base64()` (a subscription with a signature): it reads private storage or fetches the legacy URL.
+- Mention keys outside the list above (and every `subscription.*` key), and markup outside the `filter_mentions` subset.
+- Template inputs outside `djtemplate`'s subset (for example `format` of a non-number raises in Django as well), non-ASCII
+  compensation periods, an association whose user is a collaborator (preview).
+- `HEAD` and the slash-less paths (Django's `APPEND_SLASH` redirect) are not served by these Go routes.
+- The course list keeps Django's query without `ORDER BY`; several course subscriptions follow the database's order on both sides.
+
+## Routes not in this family
+
+- `document/invoice/<uid>/view/` needs the invoice context the view builds (`generate_invoice_description`, `get_subscription`,
+  `get_course_carnet_name`, the meta payment categories, plan names, tutor selection). `djtemplate` already renders `invoice.html` and
+  `invoice_classic.html` byte for byte (golden tests); the view logic is a follow-up family.
+- `document/einvoice/<uid>/view/` returns `generate_invoice_html`, built from the a38 FatturaPA model, including its validation
+  (which decides between the page and a 500) and VAT summary rounding. Not attempted here.
+
+## Evidence (TDD)
+
+`TESTS/fixtures/document_views_http.json` (generator alongside) authors 114 cases. HTML expectations are authored template contexts
+(header, footer and body `filter_mentions` output written out by hand) that the contract renders with Django's own template engine.
+The preview's renderer requests go to the document-render stub and are checked byte for byte. Every case must leave the complete model
+state unchanged.
+
+- RED (`native-r4`): Django 114/114; Go fails on the first case (routes unregistered).
+- GREEN (`versioned-r1`): 114/114 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`mutation-r1`): dropping the payment soft-delete filter of the compensation lookup fails Go on
+  `document-views-compensation-deleted` (200 instead of the 500 page).
+- Families re-run for shared code: `document-render` (pdfrender), `email-render-routes` (emailrender).

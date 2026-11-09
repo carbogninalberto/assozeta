@@ -3,8 +3,9 @@
 `POST subscription/add` (`subscription_add` and `create_subscription`, `BE/application/views/subscriptions_views.py` and
 `BE/application/utils/subscriptions_utils.py`) is implemented in Go for authenticated owners and collaborators
 (`BE_GO/internal/{domain,dto,repository,service,handler}/subscription_create.go`, `service/subscription_notifier.go`). Registry
-`association.members.create`. Django remains the execution owner. `subscription/renew`, `subscription/associates-draft/list/approve`,
-`subscription/<uid>/transfer`, `subscription/sign` and `subscription/import/upload` are not ported (see below).
+`association.members.create`. Django remains the execution owner. `subscription/renew` and `subscription/associates-draft/list/approve`
+share this code ([subscription-renew](subscription-renew.md)); `subscription/<uid>/transfer`, `subscription/sign` and
+`subscription/import/upload` are not ported (see below).
 
 ## Behaviour
 
@@ -20,7 +21,8 @@
   2. with a tutor dict: address city/cap copied between associate and tutor (to the tutor only under 18), a blank tutor cap becomes
      None, e-mails cleaned (`strip`, spaces removed, `..` -> `.`; an address `check_email` rejects is dropped; a non-string is a
      500), `sex` upper-cased on both (a missing key or non-string: 500);
-  3. `medical_certificate['medical_id']` is read (a non-dict value: 500; `null` reaches the `elif`'s `.keys()`: 500);
+  3. `medical_certificate['medical_id']` is read (a non-dict value: 500; `null` reaches the `elif`'s `.keys()` after the serializers
+     of step 7: 500, or their 400 first);
   4. `user.sport_association`: an athlete is DRF's 403 `User is not a sport association`; an owner without exactly one live
      association a 500;
   5. the season of now from the owner's settings, the association row locked, then `subscription_exists` on the raw first name,
@@ -89,22 +91,22 @@ Refused with the 500 page before anything is committed:
 - `preregistration: true` (next-season and renewal registrations);
 - `new_user_account.new_member` true (the account creation and its welcome e-mail);
 - `there_is_signature` with data (the `Signature` row and the storage upload);
-- a `medical_certificate` with `certificate_expring_date` (the expiration update, or the placeholder certificate image);
+- a `medical_certificate` with a non-None `certificate_expring_date` (the expiration update, or the placeholder certificate image; a
+  None date raises inside their `try` blocks and changes nothing, which is ported);
 - a truthy `custom_data.type_of_associate` (its JSON `icontains` filter);
-- an `associate_id` in the associate data (update-or-create by id), a born date that is not a string or not in the ported dateutil
+- an unknown non-canonical `associate_id` spelling or one whose save would hit the unique tax-code index (the `associate_id` branch
+  itself is ported, see [subscription-renew](subscription-renew.md)), a born date that is not a string or not in the ported dateutil
   formats, non-ASCII sex, born date or tax code, several tax-code matches with the same latest creation date, a tutor without
   `born_date`, an associate that already has tutors when a tutor is added, a tutor that matches the associate itself;
 - plan fees whose `float()` text is not a plain decimal, float plan ids, a non-string membership plan name used as membership type,
   amounts whose third decimal is not zero, two reusable payments with the same newest creation date.
 
-Routes (not routed in Go): `subscription/renew` (the update-by-id associate path, payment clean-up, tags and course enrolment, and
-`str(e)` 400 bodies), `subscription/associates-draft/list/approve` (per-draft `create_subscription` with swallowed exceptions and
-status rows), `subscription/<uid>/transfer`, `subscription/sign` (signature upload) and `subscription/import/upload` (spreadsheet
+Routes (not routed in Go): `subscription/<uid>/transfer`, `subscription/sign` (signature upload) and `subscription/import/upload` (spreadsheet
 parsing). The workers' tasks (`print_document_subscription`, `check_workflows_trigger`) stay in Django.
 
 ## Evidence
 
-`TESTS/fixtures/subscription_create_http.json` (38 cases, `TESTS/fixtures/generate_subscription_create_http.py`), contract
+`TESTS/fixtures/subscription_create_http.json` (40 cases, `TESTS/fixtures/generate_subscription_create_http.py`), contract
 `TESTS/contracts/test_subscription_create_http.py`, adapter `TESTS/adapters/django/subscription_create_http.py`. Every case checks the
 complete model state (new rows against the model's defaults plus authored columns), the auditlog entries and index rows in order, the
 Celery messages on the broker, the Redis notification list bytes, the `user_broadcasts` cache, the `notification_push` message a
@@ -116,3 +118,5 @@ it unchanged.
 - Mutation (`mutation-r1`): starting a `membership_duration=3` membership at the season start instead of the creation day fails
   `subscription-create-zero-fee-no-payment` (CAUGHT).
 - `websockets` (75/75, `rerun-subscription-create-r1`) stays green after the notification store change.
+- The subscription-renew family added two cases (40 in all: an `associate_id` creating the associate with that key, a None
+  certificate after the associate serializer's errors) and re-ran this family green (`rerun-renew-r1`).

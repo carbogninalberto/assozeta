@@ -164,10 +164,11 @@ Receipts are under ignored `quality-reports/go-migration/tasks-db-d/`,
   e-mail run); invalid version, payload and tenant for the three kinds.
   RED (`red-r1`): without the registrations the first native job stays pending
   (`Timed out: change: registered worker durable outcome`) after the Django
-  oracles and the default-owner group pass. GREEN (`green-r1`): 12/12.
+  oracles and the default-owner group pass. GREEN (`green-r1`): 12/12, and again
+  12/12 (`green-r2`) after merging the export cleanup slice.
 - **Timing** (`TESTS/adapters/go/schedule_due.py`): 74 actual Celery 5.6.2 /
   Beat 2.8.1 oracle cases (three new `00:10` cases); the Go differential runs
-  49 supported cases for each of fourteen tasks; 57 rejection cases, now naming
+  49 supported cases for each of fifteen tasks (with `cleanup_old_exports` after the merge); 56 rejection cases, now naming
   `mark_as_paid_payments_checking_stripe` and `check_workflows_trigger_cron`.
   RED (`schedule-red-r1`): adding the three tasks to the differential fails
   before the mapping.
@@ -182,7 +183,8 @@ Receipts are under ignored `quality-reports/go-migration/tasks-db-d/`,
 - **Mutation** (`mutation-r1`, caught): renewal month arithmetic without the
   day clamp (31 January + 1 month becomes 3 March) makes the Go renewal state
   differ from Django on the main seed.
-- Re-run green after the shared changes: `occurrence.py`, `worker_process.py`,
+- Re-run green after the shared changes (and again after the merge, with
+  `export_cleanup_worker_process.py`): `occurrence.py`, `worker_process.py`,
   `schedule_page.py`, `scheduler_process.py`, `email_tasks_worker_process.py`,
   HTTP family `stripe-routes` (87/87, shared `stripeapi` and `StripeRoutes`);
   `go vet ./...`, `go test -race` for service, stripeapi and celery.

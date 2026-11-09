@@ -81,6 +81,7 @@ var periodicJobKinds = map[string]string{
 	JobSendExpiredCertificateEmail:      JobSendExpiredCertificateEmail,
 	JobSendReminders:                    JobSendReminders,
 	JobMaintainBakneyPairings:           JobMaintainBakneyPairings,
+	JobCleanupOldExports:                JobCleanupOldExports,
 	JobChangeTypeOfStripePayments:       JobChangeTypeOfStripePayments,
 	JobGenerateCouponIfNotExists:        JobGenerateCouponIfNotExists,
 	JobRenewMembershipsPayments:         JobRenewMembershipsPayments,
