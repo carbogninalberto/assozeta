@@ -531,10 +531,10 @@
             "-m",
             "TESTS.adapters.django.message_mutations_acceptance",
             "--output",
-            "{out}/message-mutations",
+            "{out}/message-mutations-acceptance",
             "--versioned"
           ],
-          "receipt": "{out}/message-mutations/results.json",
+          "receipt": "{out}/message-mutations-acceptance/results.json",
           "check": "json-success"
         }
       ],

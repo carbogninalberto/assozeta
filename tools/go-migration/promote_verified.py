@@ -253,9 +253,12 @@ def impacted_keys(changed, entries, entry_keys, component_commands):
 
 
 def check_revisions(heads, patch, root, entries, entry_keys, component_commands):
-    """Return {head: rerun keys} for heads older than the tree, refusing any change no record covers."""
+    """Return {head: rerun keys} for heads older than the tree, refusing any change no record covers.
+
+    heads maps each revision to the result keys recorded at it; only those keys must be covered.
+    """
     stale = {}
-    for head in heads:
+    for head, recorded in heads.items():
         changed = changed_product_files(root, head)
         if not changed:
             continue
@@ -266,7 +269,7 @@ def check_revisions(heads, patch, root, entries, entry_keys, component_commands)
             raise PromotionError(f'revision record {head[:12]} -> {record["to"][:12]} does not match the tree')
         between = subprocess.run(['git', 'diff', '--name-only', head, record['to'], '--'], cwd=root,
                                  capture_output=True, text=True, check=True).stdout.split()
-        floor = impacted_keys(set(between) - NON_PRODUCT, entries, entry_keys, component_commands)
+        floor = impacted_keys(set(between) - NON_PRODUCT, entries, entry_keys, component_commands) & set(recorded)
         rerun = set(record.get('rerun_keys') or [])
         missing = sorted(floor - rerun)
         if missing:
@@ -295,7 +298,10 @@ def promote(document, patch, sweeps, components, root=ROOT):
     if not results:
         raise PromotionError('no results to promote from')
     entry_keys = lambda entry: result_keys(entry, root) + component_entries.get(entry['id'], [])
-    stale = check_revisions(set(heads.values()), patch, root, entries, entry_keys, component_commands)
+    recorded = collections.defaultdict(set)
+    for key, head in heads.items():
+        recorded[head].add(key)
+    stale = check_revisions(recorded, patch, root, entries, entry_keys, component_commands)
     for key, head in heads.items():
         if key in stale.get(head, ()):
             results[key] = f'{key} recorded at {head[:12]} needs a re-run after the reviewed revision change'
