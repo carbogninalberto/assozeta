@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 16 ported below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -42,8 +42,11 @@ Cross-cutting facts used for the classes:
 | instance-setup | `POST instance/configure` | `type: import` with a finished task | fixture `instance_setup_http.json` 99 cases; RED Django 99/99, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (`association_id` key ignored) CAUGHT |
 | data-restore | `POST instance/admin/data-restore` | every upload | fixture `data_restore_http.json` 150 cases; RED Django 150/150, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (summary record count) CAUGHT |
 | instance-updates | `GET/POST admin/updates`, `POST admin/restarts` | production mode | fixture `instance_updates_http.json` 40 cases; RED Django 40/40, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (version check) CAUGHT |
+| course-enrolment | `POST course-subscriptions/add`, overview add, installment make-payment | association-scoped impersonation session | fixture `course_enrolment_http.json` 102 cases; RED Django 102/102, Go 500 (`v2c-red2`); GREEN 4 transports 102/102 (`v2c-green`); mutation (cents rounded half down) CAUGHT |
+| course-enrolment | quote payments (add, overview add) | quote amount not `\d{1,7}([.,]\d{1,2})?` (`1.000`, ` 50 `, `2,675`, ...) | same run |
+| course-writes | course add/update/delete, overview update/delete | association-scoped impersonation session | fixture `course_writes_http.json` 119 cases; RED Django 119/119, Go 500 (`v2c-red`); GREEN 4 transports 119/119 (`v2c-green`); mutation (session filter inverted) CAUGHT |
 
-Details in `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
+Details in `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
 ## Remaining A items, per family
 
@@ -98,9 +101,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
 | PATCH course-subscriptions/<pk>/update | body has `events` (always) | `AddEditCourseSubscriptionModal.svelte:61-67` | `service/course_subscription_update.go:408-411` | medium-expensive (cheap partial: unchanged events) |
 | GET course-subscriptions/list | membership payment with an invoice | `membership-list.svelte:385` | `service/course_subscriptions.go:114-116` | medium |
-| course enrolment routes | any impersonation session | `AddEditCourseSubscriptionModal.svelte:80-92`, `Members/detail/sections/Courses.svelte:366` | `service/course_enrolment.go:64` | medium |
-| course enrolment | free-text quote amount outside `\d{1,7}([.,]\d{1,2})?` | `course/add/sections/partials/multiple-quotes.svelte:44-53` | `service/course_enrolment.go:132` | cheap |
-| course add/update/delete, overview update/delete | any impersonation session | `course/add/AddCourse.svelte:67`, `OverviewCourse.svelte:304` | `service/course_writes.go:55` | medium |
 | POST course/list | print pdf/excel | `course/CourseList.svelte:806-812` | `handler/course_list.go:69` | expensive |
 | course/locations add/update | with `documents_data` | `course/modals/AddModal.svelte:30-50` | `service/course_location_writes.go:111,120` | medium-expensive |
 | GET calendar/events?get_lesson=true | event matches an attendance day | `routes/calendar/Calendar.svelte:539` | `service/course_calendar.go:1618` | medium (the todaylessons port reuses the same helper) |
@@ -316,10 +316,10 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### course-enrolment.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course-subscriptions/add, course/<uid>/overview/<sub>/add, course-installment/<uid>/make-payment | request under an impersonation session (`ImpersonationAssociationID` set) | service/course_enrolment.go:64 (`ErrCourseEnrolmentNotPorted`) | A | UI sends `X-Impersonation-Id` on every call during impersonation (`src/utils/ApiMiddleware.js:133`), available to superusers / `can_impersonate` users (`src/utils/impersonation.js:23-25`, `components/ImpersonationPanel.svelte`). Enrolling from `overview/modals/AddEditCourseSubscriptionModal.svelte:80-92` while impersonating is refused. |
+| POST course-subscriptions/add, course/<uid>/overview/<sub>/add, course-installment/<uid>/make-payment | request under an impersonation session (`ImpersonationAssociationID` set) | service/course_enrolment.go:64 (`ErrCourseEnrolmentNotPorted`) | ported | Ported (`course-enrolment.md`, `v2c-green`). |
 | same three routes | non-canonical `X-Group-Id` spelling | service/course_enrolment.go:85 | B | UI sends the stored canonical id (`ApiMiddleware.js:141`). Cost: cheap. |
 | POST course-subscriptions/add | form body | service/course_enrolment.go:640,736 | B | UI sends a JSON list. Cost: medium. |
-| POST course-subscriptions/add, overview add | stored quote `amount` not `^\d{1,7}([.,]\d{1,2})?$` (e.g. `1.000`, `50 `, `50.000`) | service/course_enrolment.go:132 | A | Quote amounts are free text (`association/course/add/sections/partials/multiple-quotes.svelte:44-53` via `components/formBuilder/preview-blocks/currency-input.svelte:48-60`, `type="text"`, no mask) and saved unvalidated (`views/course_views.py:216-217`). Enrolling with such a quote reaches the check. Medium confidence on how often users type separators. |
+| POST course-subscriptions/add, overview add | stored quote `amount` not `^\d{1,7}([.,]\d{1,2})?$` (e.g. `1.000`, `50 `, `50.000`) | service/course_enrolment.go:132 | ported | Ported: `float()` grammar, prec-9 decimal, numeric(9,2) rounding (`course-enrolment.md`, `v2c-green`). |
 | same | non-object `payment_category`, non-string category `value`, overview selection without string `value`, stored non-string `quote_id` | service/course_enrolment.go:538,543; service/course_enrolment_overview.go:31,36,57,151,259 | B | UI stores `{label, value}` objects and `crypto.randomUUID()` quote ids (`multiple-quotes.svelte:20`); selections come from SmartSelect (`search/modals/AddToCourse.svelte:167-176`). Cost: cheap. |
 | POST course/<uid>/overview/<sub>/add | non-object or form body | service/course_enrolment_overview.go:82 | B | UI sends JSON objects (`Members/detail/sections/Courses.svelte:366-375`, `search/modals/AddToCourse.svelte:68-78`). |
 | POST course/<uid>/overview/<sub>/add | athlete on a membership course (prefill) | service/course_enrolment_overview.go:137 | B | Overview add is only called from association pages. Cost: medium. |
@@ -334,7 +334,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### course-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/add, PATCH course/<uid>/update, POST course/<uid>/delete, overview update/delete | impersonation session (`ImpersonationAssociationID` set) | service/course_writes.go:55 (`ErrCourseWritesNotPorted`) | A | Same mechanism as course-enrolment: `ApiMiddleware.js:133`; course add `association/course/add/AddCourse.svelte:67`, update `overview/OverviewCourse.svelte:304`. |
+| POST course/add, PATCH course/<uid>/update, POST course/<uid>/delete, overview update/delete | impersonation session (`ImpersonationAssociationID` set) | service/course_writes.go:55 (`ErrCourseWritesNotPorted`) | ported | Ported (`course-writes.md`, `v2c-green`). |
 | course/add, overview update | non-canonical `X-Group-Id` | service/course_writes.go:82; service/course_writes_overview.go:216 | B | UI sends canonical ids. Cost: cheap. |
 | PATCH course/<uid>/update | `fee`/`one_fee` not plain decimals (7.2) | service/course_writes.go:303,313 | B | UI sends `fee.replace(',', '.')` from a text input (`OverviewCourse.svelte:309-310`); only malformed typing (`1.000,50`) reaches it, where Django's own decimal handling also fails. Cost: cheap. |
 | PATCH course/<uid>/update | odd booleans, out-of-range/non-int billing integers, non-ISO dates | service/course_writes.go:341,352,360,374,378 | B | UI sends JS booleans, numbers and stored ISO dates (`OverviewCourse.svelte:314-320`). Cost: cheap. |
