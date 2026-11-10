@@ -290,9 +290,10 @@ func run() (runErr error) {
 	// document/invoice/<uid>/view/ and document/einvoice/<uid>/view/ (the FatturaPA page of internal/fatturapa).
 	invoiceViewsHandler := handler.NewInvoiceViewsHandler(service.NewInvoiceViews(repository.NewInvoiceViews(db), documentViews),
 		service.NewActorAuthentication(accounts, tokens), identities)
-	documentRenderHandler := handler.NewDocumentRenderHandler(service.NewDocumentRender(repository.NewDocumentRender(db),
+	documentRenders := service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
-		documentRenderSettings(cfg), time.Now, uuid.NewString),
+		documentRenderSettings(cfg), time.Now, uuid.NewString)
+	documentRenderHandler := handler.NewDocumentRenderHandler(documentRenders,
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 
 	apiSchemaHandler := handler.NewAPISchemaHandler(service.NewActorAuthentication(accounts, tokens), identities, cfg.CSRFCookieSecure)
@@ -511,8 +512,13 @@ func run() (runErr error) {
 	}
 	paymentReadsHandler := handler.NewPaymentReadsHandler(service.NewPaymentReads(repository.NewPaymentReads(db), time.Now,
 		cfg.StripePublicKey != "" && cfg.StripeSecretConfigured).WithCompensationPrint(paymentInvoicePrinter).
-		WithStripeFees(service.NewPaymentStatsStripe(stripeRoutes, paymentStatsStripeCache)),
-		service.NewActorAuthentication(accounts, tokens), identities)
+		WithStripeFees(service.NewPaymentStatsStripe(stripeRoutes, paymentStatsStripeCache)).
+		// The athlete list: its own querysets, the online payment flags and document_invoice in-process.
+		WithAthleteList(repository.NewPaymentReadsAthlete(db),
+			service.NewStripeAvailability(repository.NewSocialConfiguration(db), service.StripeEnvironment{PublicKey: cfg.StripePublicKey != "", Secret: cfg.StripeSecretConfigured, Webhook: cfg.StripeEnabled}, cfg.SessionSecret),
+			documentRenders),
+		service.NewActorAuthentication(accounts, tokens), identities).
+		WithAthleteReceipts(middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/payment/list", paymentReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/stats", paymentReadsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/payments", paymentReadsHandler.SubscriptionPayments, middleware.DjangoSessionAudit(sessionAuthentication))
