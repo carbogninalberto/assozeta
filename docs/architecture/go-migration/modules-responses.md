@@ -27,11 +27,14 @@ and `GET modules/<module_id>/export` (`modules_response_export`) are implemented
 
 ## Routes
 
-- **info:** `Module.objects.filter(custom_link=...).first()` by link, exact match (404 `module not found`). When
+- **info:** `Module.objects.filter(custom_link=...).first()` by link, exact match (404 `module not found`). A module whose
+  association is marked deleted answers the same 404, before the response id is read. When
   `query_params` has `response_id` (last value), `is_valid_uuid` (400, also for an empty value) and the response resolved by id
-  (`ModuleResponseSerializer`; for no row the serializer's initial values: `approved` False, `attachments` [], the rest None). Then
-  `Module.enabled` on today's UTC date (404 `module not active`). `200 {'data': ModulesSerializer(module), 'response_data': ...}` with the
-  nested association profile (None for a module without association). `request.user` is not read.
+  (`PublicModuleResponseSerializer`: `attachments_docs` with `document_id` and `filename`; `None` for no row). Then
+  `Module.enabled` on today's UTC date (404 `module not active`). `200 {'data': PublicModuleSerializer(module), 'response_data': ...}`:
+  the public module page returns the fields the form needs (`module_id`, `title`, `response_message`, `allow_attachments`,
+  `only_users`, `elements`, `sport_association.denomination`; `sport_association` is None for a module without association).
+  `request.user` is not read.
 - **response/add:** the module by id (404 `module not found`), `enabled` (404 `module not enabled`), the approved count against a
   truthy `max_responses` unless `queue_mode` (404 `max responses reached`), `only_users` for anonymous requests (404 `only users`);
   `payment_required` creates nothing. The progressive number is `-progressive_response_number` first (PostgreSQL sorts NULL first,
@@ -114,3 +117,10 @@ and the latter with a `response_id`. RED `v2resta-red-r2`: Django 148/148, Go 50
 `b64953a5`): 148/148 on the four transports. Mutation `v2resta-mutation-r2` (the by-id reader given the owner reader's row condition)
 fails `modules-responses-info-inactive-association` (CAUGHT). modules-reads 81/81 re-run (`v2resta-rerun-r2`, shared
 profile service).
+
+v2-rest-b: the public module page returns the fields the form needs (`UI/src/routes/forms/PublicModule.svelte` reads the seven
+module fields above and `response_data.attachments_docs`), and a module of an association marked deleted answers
+`module not found`. Django first: `application.tests.test_modules_views.ModulesCustomLinkInfoPublicFieldsTests` (4 of 5 failing
+before the view change, 56/56 after). Go: `ModulesResponses.Info` with the repository's `PublicAssociation` and
+`ResponseAttachments`. 149 cases; GREEN `v2restb-green-r2` on the four transports; mutation `v2restb-mutation-r2` (the deleted
+check dropped) fails `modules-responses-info-deleted-association` (CAUGHT); modules-reads 81/81 re-run (`v2restb-rerun-r1`).

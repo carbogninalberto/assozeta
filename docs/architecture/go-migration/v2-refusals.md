@@ -842,7 +842,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST add-attachment / response/add | form or multipart body | `service/modules_responses.go:213,370` | B | The UI sends JSON (`PublicModule.svelte:47-50,67-73`). |
 | POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go:466` | B | The UI sends strings. |
 | DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go:392,416` | B | The UI sends the string id (`PublicModule.svelte:84-92`). Attachment documents are created per response, so another reference would be legacy or imported data. legacy: low. Cost: medium (collector). |
-| GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`ReadAssociation`) | ported (v2-rest-a) | Deleted or disabled associations only. legacy: yes. Cost: cheap. |
+| GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`Info`) | ported (v2-rest-a, v2-rest-b) | Not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` in Django and Go (v2-rest-b). |
 | GET modules/<id>/export | list/dict labels, ints beyond int64, xlsxwriter-refused text, non-dict `props` | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
 
 ### modules-writes.md

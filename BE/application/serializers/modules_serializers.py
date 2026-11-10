@@ -60,6 +60,39 @@ class ModuleResponseSerializer(serializers.ModelSerializer):
 
 
 
+class PublicModuleSerializer(serializers.ModelSerializer):
+    """The public module page: the fields the form needs."""
+
+    sport_association = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_sport_association(obj):
+        association = obj.sport_association
+        if association is None:
+            return None
+        return {'denomination': association.denomination}
+
+    class Meta:
+        model = Module
+        fields = ['module_id', 'title', 'response_message', 'allow_attachments', 'only_users', 'elements',
+                  'sport_association']
+
+
+class PublicModuleResponseSerializer(serializers.ModelSerializer):
+    """The public module page: the attachment list of a response."""
+
+    attachments_docs = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ModuleResponses
+        fields = ['attachments_docs']
+
+    @staticmethod
+    def get_attachments_docs(obj):
+        return [{'document_id': document.document_id, 'filename': document.filename}
+                for document in obj.attachments.all()]
+
+
 class ModulesSerializerWithResponses(serializers.ModelSerializer):
 
     enabled = serializers.SerializerMethodField()

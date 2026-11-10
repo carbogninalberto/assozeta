@@ -45,3 +45,10 @@ type ModuleResponseRow struct {
 	Attachments       string    `db:"attachments"`
 	AttachmentsDocs   string    `db:"attachments_docs"`
 }
+
+// ModulePublicAssociation is what the public module page reads of
+// module.sport_association.
+type ModulePublicAssociation struct {
+	Denomination *string `db:"denomination"`
+	Deleted      bool    `db:"deleted"`
+}
