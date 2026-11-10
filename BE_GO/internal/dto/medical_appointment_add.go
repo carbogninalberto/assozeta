@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrMedicalAppointmentAddNotPorted refuses request keys whose DRF fields are
 // not ported: a non-null document (PrimaryKeyRelatedField with the tenant
 // scope check) and medical_appointments_id (UUIDField with UniqueValidator).
-var ErrMedicalAppointmentAddNotPorted = errors.New("medical appointment field not ported")
+var ErrMedicalAppointmentAddNotPorted = refusal.New("medical appointment field not ported")
 
 // MedicalAppointmentAddInput is MedicalAppointmentsSerializer's validated
 // data; a nil pointer field was not sent (the model default applies) unless

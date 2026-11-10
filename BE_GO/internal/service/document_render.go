@@ -16,6 +16,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
 )
@@ -39,7 +40,7 @@ var (
 	// ErrDocumentRenderServer is an exception the view does not catch (the 500 page).
 	ErrDocumentRenderServer = errors.New("document render: unhandled exception")
 	// ErrDocumentRenderNotPorted refuses an input before any write (the 500 page).
-	ErrDocumentRenderNotPorted = errors.New("document render: input not ported")
+	ErrDocumentRenderNotPorted = refusal.New("document render: input not ported")
 	// ErrDocumentRenderUnauthenticated is DRF's NotAuthenticated (401).
 	ErrDocumentRenderUnauthenticated = errors.New("document render: not authenticated")
 )

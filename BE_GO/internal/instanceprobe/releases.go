@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // release_catalog constants.
@@ -105,7 +107,7 @@ func (e *ReleaseError) Error() string { return e.Message }
 // ErrReleaseNotPorted is a feed Django would answer with a server error
 // (an exception the view does not catch) or values this port does not
 // carry (non-integer ids, non-string names/dates/notes, lone surrogates).
-var ErrReleaseNotPorted = errors.New("instanceprobe: release feed not ported")
+var ErrReleaseNotPorted = refusal.New("instanceprobe: release feed not ported")
 
 // quoteTag is urllib.parse.quote(tag, safe="") for a stable tag (only
 // letters, digits and dots, which quote keeps).

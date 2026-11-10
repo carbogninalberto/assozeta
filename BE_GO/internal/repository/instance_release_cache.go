@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/instanceprobe"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -24,7 +25,7 @@ const (
 // ErrReleaseCacheShape is a cached catalog value this port does not read:
 // anything but a list of normalize_release dicts (Django would render or
 // fail on it).
-var ErrReleaseCacheShape = errors.New("cached release catalog not ported")
+var ErrReleaseCacheShape = refusal.New("cached release catalog not ported")
 
 // ReleaseCache reads and writes the catalog in Django's cache (Redis DB 1).
 type ReleaseCache struct{ client *redis.Client }

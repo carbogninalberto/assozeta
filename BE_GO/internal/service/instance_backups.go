@@ -19,6 +19,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/updaterrunner"
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
@@ -26,7 +27,7 @@ import (
 
 // ErrInstanceBackupsNotPorted marks inputs whose Django handling Go does not
 // carry; the handler answers them with the server error page before any write.
-var ErrInstanceBackupsNotPorted = errors.New("instance backups request not ported")
+var ErrInstanceBackupsNotPorted = refusal.New("instance backups request not ported")
 
 // errInstanceBackupsUnhandled is an exception Django lets escape (a 500).
 var errInstanceBackupsUnhandled = errors.New("instance backups unhandled exception")

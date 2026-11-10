@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -29,7 +30,7 @@ func NewAgentCache(client *redis.Client) (*AgentCache, error) {
 }
 
 // ErrAgentCacheShape is a stored value outside the ported subset.
-var ErrAgentCacheShape = errors.New("agent cache value not ported")
+var ErrAgentCacheShape = refusal.New("agent cache value not ported")
 
 // django-redis' _incr script: INCRBY only when the key exists.
 var agentIncr = redis.NewScript(`

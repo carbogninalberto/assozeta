@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrInvalid is input read_excel raises on: not a ZIP archive, or an archive
@@ -21,7 +23,7 @@ import (
 var ErrInvalid = errors.New("pandasxlsx: not a workbook")
 
 // ErrUnsupported marks a workbook outside the modelled subset.
-var ErrUnsupported = errors.New("pandasxlsx: workbook outside the supported subset")
+var ErrUnsupported = refusal.New("pandasxlsx: workbook outside the supported subset")
 
 // Kind is the Python type of a value iterrows() yields.
 type Kind int

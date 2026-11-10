@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // DataRestoreReceipt is one instance_datarestore row (instance.models.DataRestore).
@@ -44,7 +46,7 @@ type DataRestoreInstance struct {
 // carry (archive validation of an upload, cached progress values outside the
 // decoded subset, request bodies outside JSON/multipart); they are refused
 // with the server error page before any write.
-var ErrDataRestoreNotPorted = errors.New("data restore path not ported")
+var ErrDataRestoreNotPorted = refusal.New("data restore path not ported")
 
 // ErrDataRestoreNotFound is get_object_or_404's Http404 for DataRestore.
 var ErrDataRestoreNotFound = errors.New("No DataRestore matches the given query.")

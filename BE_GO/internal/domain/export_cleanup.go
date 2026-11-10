@@ -3,10 +3,11 @@ package domain
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // JobCleanupOldExports is the Celery name of cleanup_old_exports_task
@@ -16,7 +17,7 @@ const JobCleanupOldExports = "cleanup_old_exports"
 // ErrExportCleanupUnsupported refuses a run before any effect: an export
 // document in scope is referenced by a row Django's collector would cascade
 // to (other than its one archive row), which Go does not reproduce.
-var ErrExportCleanupUnsupported = errors.New("export cleanup needs a document cascade Go does not reproduce")
+var ErrExportCleanupUnsupported = refusal.New("export cleanup needs a document cascade Go does not reproduce")
 
 // ExportArchive is one SportAssociationDocumentsArchive row whose document
 // filename starts with "export_", with the document fields the task reads.

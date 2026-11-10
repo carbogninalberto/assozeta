@@ -16,6 +16,8 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 )
 
 const (
@@ -131,6 +133,9 @@ func do(ctx context.Context, directory, method, path string, headers map[string]
 			return nil, unreachable() // http.client: invalid header value (ValueError)
 		}
 		request.Header.Set(name, value)
+	}
+	if method != http.MethodGet && method != http.MethodHead {
+		handoff.MarkEffect(ctx, "updater request")
 	}
 	if err := request.Write(timed); err != nil {
 		_ = conn.Close()

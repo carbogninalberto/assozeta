@@ -2,13 +2,14 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrInstructorWritesNotPorted refuses, before any write, input whose Django
 // outcome Go does not reproduce.
-var ErrInstructorWritesNotPorted = errors.New("instructor writes input not ported")
+var ErrInstructorWritesNotPorted = refusal.New("instructor writes input not ported")
 
 // InstructorRecord is one application_instructor row; dates are ISO
 // 'YYYY-MM-DD', decimals their stored text.

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -12,7 +14,7 @@ var (
 	// ErrPaymentWritesNotPorted refuses, before any write, an input whose
 	// Django behaviour is not ported (invoice creation, PDF tasks, document
 	// storage, nested user writes, primary key changes, form bodies).
-	ErrPaymentWritesNotPorted = errors.New("payment writes behaviour not ported")
+	ErrPaymentWritesNotPorted = refusal.New("payment writes behaviour not ported")
 	// ErrPaymentWritesAthlete is the views' Response(status=403) for athletes.
 	ErrPaymentWritesAthlete = errors.New("payment writes athlete")
 	// ErrPaymentWritesForeignReference is the tenant-scope PermissionDenied

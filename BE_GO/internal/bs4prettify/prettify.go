@@ -14,14 +14,15 @@
 package bs4prettify
 
 import (
-	"errors"
 	"sort"
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-var ErrUnsupported = errors.New("markup outside the proven prettify subset")
+var ErrUnsupported = refusal.New("markup outside the proven prettify subset")
 
 // voidTags is HTMLTreeBuilder.empty_element_tags.
 var voidTags = set("area base basefont bgsound br col command embed frame hr image img input isindex keygen link menuitem meta nextid param source spacer track wbr")

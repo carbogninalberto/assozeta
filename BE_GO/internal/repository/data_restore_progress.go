@@ -8,6 +8,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -25,7 +26,7 @@ func NewDataRestoreProgress(client *redis.Client) (*DataRestoreProgress, error) 
 
 // ErrDataRestoreProgressShape is a stored value outside the decoded subset:
 // Django would unpickle it (or fail and answer None); Go refuses the request.
-var ErrDataRestoreProgressShape = errors.New("cached data restore progress not ported")
+var ErrDataRestoreProgressShape = refusal.New("cached data restore progress not ported")
 
 // DataRestoreProgressValue is cache.get(progress_key(id)) decoded: nil for a
 // miss or a cache error (progress.snapshot catches every exception), an int64

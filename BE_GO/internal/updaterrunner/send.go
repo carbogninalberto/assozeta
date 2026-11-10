@@ -12,6 +12,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 )
 
 // ErrUploadAborted is upload_stream.UploadAborted: the request body ended
@@ -47,6 +49,7 @@ func dial(ctx context.Context, directory string, timeout time.Duration) (timedCo
 	if err != nil {
 		return timedConn{}, unreachable()
 	}
+	handoff.MarkEffect(ctx, "updater request")
 	return timedConn{Conn: conn, timeout: timeout}, nil
 }
 

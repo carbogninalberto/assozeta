@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -12,7 +14,7 @@ var (
 	// ErrPaymentMiscNotPorted refuses, before any write, an input whose Django
 	// behaviour is not ported (e-mails, signature storage with its PDF, plan
 	// values outside the ported Python conversions).
-	ErrPaymentMiscNotPorted = errors.New("payment misc behaviour not ported")
+	ErrPaymentMiscNotPorted = refusal.New("payment misc behaviour not ported")
 	// ErrPaymentMiscBadRequest is payment_sign's 400 {'msg': 'validation errors.'}.
 	ErrPaymentMiscBadRequest = errors.New("validation errors.")
 )

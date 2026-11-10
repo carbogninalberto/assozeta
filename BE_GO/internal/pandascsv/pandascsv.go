@@ -13,6 +13,8 @@ import (
 	"slices"
 	"strconv"
 	"unicode/utf8"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrEmpty is pandas' EmptyDataError ('No columns to parse from file').
@@ -26,7 +28,7 @@ var ErrParser = errors.New("pandas: error tokenizing data")
 // (pandas raises UnicodeDecodeError), NUL bytes and a carriage return not
 // followed by a line feed (after one, the tokenizer drops a following
 // delimiter and its blank-line backtrack runs back to the previous '\n').
-var ErrUnsupported = errors.New("pandascsv: input outside the supported subset")
+var ErrUnsupported = refusal.New("pandascsv: input outside the supported subset")
 
 const (
 	startRecord = iota

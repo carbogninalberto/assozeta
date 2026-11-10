@@ -10,6 +10,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 	"github.com/google/uuid"
 )
@@ -24,7 +25,7 @@ var (
 	// pandascsv's subset, columns whose str.lower() differs from Go's, the
 	// import of a stored CSV document, import values outside the ported
 	// dateutil and codicefiscale subsets and a file given as document_id.
-	ErrSubscriptionImportNotPorted = errors.New("subscription import path not ported")
+	ErrSubscriptionImportNotPorted = refusal.New("subscription import path not ported")
 )
 
 // subscriptionImportKeys is SubscriptionMaps.MAP's key order.

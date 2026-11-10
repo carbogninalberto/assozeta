@@ -29,6 +29,8 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // The v1 wire contract of BE/instance/sso/protocol.py.
@@ -56,7 +58,7 @@ func ssoError(code string, status int) error { return &BakneySSOError{Code: code
 // ErrBakneySSOUnsupported marks inputs whose Python behaviour is not ported
 // (non-ASCII hosts needing IDNA, secrets that are not base64); the request is
 // answered with the server error page before any write.
-var ErrBakneySSOUnsupported = errors.New("bakney sso input not ported")
+var ErrBakneySSOUnsupported = refusal.New("bakney sso input not ported")
 
 var (
 	bakneyOpaque   = regexp.MustCompile(`^[A-Za-z0-9_-]{32,128}$`)
@@ -432,6 +434,7 @@ func (c *BakneyAuthorityClient) CloseIdleConnections() { c.client.CloseIdleConne
 // post sends one JSON request and returns the decoded protocol object.
 func (c *BakneyAuthorityClient) post(ctx context.Context, url string, body []byte) (domain.RequestObject, error) {
 	unavailable := ssoError("bakney_unavailable", 503)
+	handoff.MarkEffect(ctx, "authority request")
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, unavailable

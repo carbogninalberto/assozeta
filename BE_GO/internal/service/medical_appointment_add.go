@@ -10,6 +10,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
 	"github.com/google/uuid"
 )
 
@@ -45,6 +46,7 @@ func (p *InvoiceSyncPrint) MedicalAppointment(ctx context.Context, id string, au
 	if authorization != nil {
 		request.Header["Authorization"] = []string{*authorization}
 	}
+	handoff.MarkEffect(ctx, "print request")
 	response, err := p.client.Do(request)
 	if err != nil {
 		return nil

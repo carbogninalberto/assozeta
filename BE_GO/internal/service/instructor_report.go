@@ -13,6 +13,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 	"github.com/google/uuid"
 )
@@ -32,7 +33,7 @@ func NewInstructorReport(store domain.InstructorReportStore, now func() time.Tim
 var ErrInstructorReportServer = errors.New("instructor report unhandled error")
 
 // ErrInstructorReportNotPorted refuses input whose Django result is not reproduced (the 500 page).
-var ErrInstructorReportNotPorted = errors.New("instructor report input not ported")
+var ErrInstructorReportNotPorted = refusal.New("instructor report input not ported")
 
 // InstructorReportMissingDates is the view's 400 {'msg': 'Entrambe le date sono richieste.'}.
 var InstructorReportMissingDates = errors.New("Entrambe le date sono richieste.")

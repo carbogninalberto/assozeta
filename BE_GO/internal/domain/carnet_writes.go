@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type CarnetDeleteStore interface {
@@ -55,7 +57,7 @@ type CarnetUpdateStore interface {
 
 // ErrPaymentCascadeUnsupported refuses a payment delete whose pre_delete
 // signal would also delete course installments (not ported).
-var ErrPaymentCascadeUnsupported = errors.New("payment delete cascade unsupported")
+var ErrPaymentCascadeUnsupported = refusal.New("payment delete cascade unsupported")
 
 type CarnetHoldingPayment struct {
 	PaymentID *string `db:"payment_id"`

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // The MCP tool functions of application/mcp_server (QueryBuilder in
@@ -24,7 +25,7 @@ var (
 	// ErrReportFailed is an exception inside the tool: the view's JSON 500.
 	ErrReportFailed = errors.New("report tool raised")
 	// ErrReportNotPorted marks inputs whose Django behaviour is not ported.
-	ErrReportNotPorted = errors.New("report tool input not ported")
+	ErrReportNotPorted = refusal.New("report tool input not ported")
 )
 
 // ReportToolError is a tool result carrying 'error' (the view's 400).

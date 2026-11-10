@@ -8,6 +8,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type SupplierDeletes struct {
@@ -143,7 +144,7 @@ func NewSupplierWrites(store domain.SupplierWriteStore, now func() time.Time, id
 
 // ErrSupplierPrimaryKeyChange refuses an update naming a new supplier_id:
 // Model.save() would insert a copy under the new key (not ported).
-var ErrSupplierPrimaryKeyChange = errors.New("supplier primary key change is not ported")
+var ErrSupplierPrimaryKeyChange = refusal.New("supplier primary key change is not ported")
 
 func supplierTextFields(row *domain.Supplier) map[string]**string {
 	return map[string]**string{"address": &row.Address, "tax_code": &row.TaxCode, "vat_number": &row.VATNumber, "type": &row.Type,

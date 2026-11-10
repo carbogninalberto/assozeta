@@ -7,6 +7,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 	ErrSupplierForbidden = errors.New("supplier access forbidden")
 	// ErrSupplierOrdering is the FieldError 500 for an ordering Django cannot
 	// resolve; relation paths are not ported and fail the same way.
-	ErrSupplierOrdering = errors.New("supplier ordering unsupported")
+	ErrSupplierOrdering = refusal.New("supplier ordering unsupported")
 )
 
 // supplierOrderColumns maps the model's field names (and attnames) to columns.

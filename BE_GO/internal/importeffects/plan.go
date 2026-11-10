@@ -23,6 +23,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 //go:embed plan.json
@@ -30,7 +32,7 @@ var planJSON []byte
 
 // ErrUnsupported marks a value or path outside the reproduced subset; callers
 // hand the work to Django (rolling back whatever they wrote).
-var ErrUnsupported = errors.New("importeffects: outside the reproduced subset")
+var ErrUnsupported = refusal.New("importeffects: outside the reproduced subset")
 
 func unsupported(format string, args ...any) error {
 	return fmt.Errorf("%w: "+format, append([]any{ErrUnsupported}, args...)...)

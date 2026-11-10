@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
 	// ErrInvoiceCoreServer is an exception Django raises inside the view (a 500).
 	ErrInvoiceCoreServer = errors.New("invoice core server error")
 	// ErrInvoiceCoreNotPorted refuses a path Go does not implement (a 500 before any write).
-	ErrInvoiceCoreNotPorted = errors.New("invoice core path not ported")
+	ErrInvoiceCoreNotPorted = refusal.New("invoice core path not ported")
 	// ErrInvoiceCoreMissing is invoice_list's 404 {'error': 'Invoice not found'}.
 	ErrInvoiceCoreMissing = errors.New("Invoice not found")
 )

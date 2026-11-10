@@ -11,6 +11,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ProfileMisc implements profile_associates_course,
@@ -31,7 +32,7 @@ var ErrProfileMiscServer = errors.New("profile misc server error")
 // ErrOnboardingNotPorted refuses, before any committed write, inputs whose
 // Django behaviour depends on database errors or model paths this port does
 // not reproduce (see profile-misc.md).
-var ErrOnboardingNotPorted = errors.New("onboarding update input not ported")
+var ErrOnboardingNotPorted = refusal.New("onboarding update input not ported")
 
 // OnboardingServerError is the view's `except Exception`: 500 {'error': str(e)}.
 type OnboardingServerError struct{ Message string }

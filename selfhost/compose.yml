@@ -193,6 +193,9 @@ services:
       MANUAL_INDEX_PATH: /app/manuale/index.json
       GO_LOGO_SPOOL_DIR: /var/cache/assozeta-logo
       GO_MESSAGE_LIST_SPOOL_DIR: /var/cache/assozeta-message-list
+      # Requests the Go API does not serve yet are replayed to the Django API
+      # (OPERATIONS.md, "Use the Go API"). An empty value answers them with 500.
+      DJANGO_HANDOFF_URL: ${DJANGO_HANDOFF_URL-http://api:8000}
     user: "10001:10001"
     read_only: true
     tmpfs:

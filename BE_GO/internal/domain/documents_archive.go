@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ArchivedDocument is one SportAssociationDocumentsArchive row with its Document.
@@ -60,4 +62,4 @@ type ArchiveWriteTransaction interface {
 
 // ErrDocumentCascadeUnsupported marks a Document delete Django's collector
 // would cascade to other rows; Go refuses it instead of approximating.
-var ErrDocumentCascadeUnsupported = errors.New("document delete would cascade to other rows")
+var ErrDocumentCascadeUnsupported = refusal.New("document delete would cascade to other rows")

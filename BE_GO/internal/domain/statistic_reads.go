@@ -2,14 +2,15 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrStatisticNotPorted refuses statistic/dashboard widgets the Go port does
 // not implement (todaylessons, expiredPayments) and inputs it does not
 // characterize; the handler answers with the stable 500 page before any work.
-var ErrStatisticNotPorted = errors.New("statistic input is not ported")
+var ErrStatisticNotPorted = refusal.New("statistic input is not ported")
 
 // StatisticScope is the request's association, X-Group-Id (nil when absent or
 // not a UUID) and, during association-scoped impersonation, that association.

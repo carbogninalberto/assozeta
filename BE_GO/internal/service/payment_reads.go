@@ -11,6 +11,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // PaymentReads ports payment_list, payment_stats and subscription_payments.
@@ -179,7 +180,7 @@ var paymentReadsRelations = map[string]bool{"payment_category": true, "invoice":
 
 // errPaymentReadsLazyOrder marks an ordering Django resolves when compiling
 // the rows (after the count and the page checks); Go refuses it there.
-var errPaymentReadsLazyOrder = errors.New("payment ordering not ported")
+var errPaymentReadsLazyOrder = refusal.New("payment ordering not ported")
 
 // paymentReadsOrder is order_by(f"{'-' if desc else ”}{field}"): '?' is
 // random; one leading '-' is stripped, then the name must resolve (FieldError,

@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
 	// ErrDocumentWritesNotPorted refuses, before any write, what the Go port
 	// does not reproduce (see docs/architecture/go-migration/documents-writes.md).
-	ErrDocumentWritesNotPorted = errors.New("document upload behaviour not ported")
+	ErrDocumentWritesNotPorted = refusal.New("document upload behaviour not ported")
 	// ErrDocumentWritesFailed is an exception the views do not handle (the 500 page).
 	ErrDocumentWritesFailed = errors.New("document upload request failed")
 )

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
@@ -39,7 +40,7 @@ const (
 )
 
 // ErrInstanceBackupsCacheShape is a cached value outside the decoded subset.
-var ErrInstanceBackupsCacheShape = errors.New("cached backup value not ported")
+var ErrInstanceBackupsCacheShape = refusal.New("cached backup value not ported")
 
 // DatabaseBytes is SELECT pg_database_size(current_database()).
 func (r *InstanceBackups) DatabaseBytes(ctx context.Context) (int64, error) {

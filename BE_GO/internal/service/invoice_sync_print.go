@@ -13,12 +13,14 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/fatturapa"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrInvoiceSyncPrintDeferred is CoordinatedTask's maintenance deferral of an
 // eager task (operation lock busy or unavailable, or a pending restore):
 // Django re-applies the task synchronously; not ported (the 500 page).
-var ErrInvoiceSyncPrintDeferred = errors.New("print task deferred for maintenance")
+var ErrInvoiceSyncPrintDeferred = refusal.New("print task deferred for maintenance")
 
 // invoiceSyncUserAgent and the other headers are requests' defaults
 // (requests 2.34.2, urllib3 without brotli/zstd: 'gzip, deflate').
@@ -75,6 +77,7 @@ func (p *InvoiceSyncPrint) apply(ctx context.Context, path string, authorization
 	if authorization != nil {
 		request.Header["Authorization"] = []string{*authorization}
 	}
+	handoff.MarkEffect(ctx, "print request")
 	response, err := p.client.Do(request)
 	if err != nil {
 		return nil

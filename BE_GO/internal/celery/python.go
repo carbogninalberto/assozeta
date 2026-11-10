@@ -2,7 +2,6 @@ package celery
 
 import (
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -11,6 +10,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // Dict is a Python dict with string keys, in insertion order.
@@ -27,7 +28,7 @@ type tuple []any
 
 // ErrUnsupportedValue is a task argument the producer cannot serialize the
 // way kombu's JSON serializer and Celery's saferepr would.
-var ErrUnsupportedValue = errors.New("celery: unsupported task argument")
+var ErrUnsupportedValue = refusal.New("celery: unsupported task argument")
 
 // Supported argument values: nil (None), bool, int, int64, string (valid
 // UTF-8), uuid.UUID, []any (list) and Dict. Floats, Decimals, dates and

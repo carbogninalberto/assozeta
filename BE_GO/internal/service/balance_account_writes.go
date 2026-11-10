@@ -8,6 +8,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type BalanceAccountWrites struct {
@@ -26,7 +27,7 @@ var ErrBalanceAccountMissing = errors.New("custom account does not exist")
 
 // ErrBalanceAccountPrimaryKeyChange refuses a new custom_account_id on update:
 // Model.save() would insert a copy under the new key (not ported).
-var ErrBalanceAccountPrimaryKeyChange = errors.New("custom account primary key change is not ported")
+var ErrBalanceAccountPrimaryKeyChange = refusal.New("custom account primary key change is not ported")
 
 // BalanceAccountValidationError is DRF's 400 field map.
 type BalanceAccountValidationError struct{ Fields map[string]any }

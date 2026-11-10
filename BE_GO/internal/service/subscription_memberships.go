@@ -8,6 +8,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type SubscriptionMemberships struct {
@@ -46,11 +47,11 @@ var (
 	// ErrSubscriptionMembershipUploadUnsupported refuses documents_data that
 	// would reach Document creation and the storage upload (not ported)
 	// before any write.
-	ErrSubscriptionMembershipUploadUnsupported = errors.New("subscription membership document upload is not ported")
+	ErrSubscriptionMembershipUploadUnsupported = refusal.New("subscription membership document upload is not ported")
 	// ErrSubscriptionMembershipPrimaryKeyChange refuses a new
 	// subscription_membership_id on update: Model.save() would insert a copy
 	// under the new key (not ported).
-	ErrSubscriptionMembershipPrimaryKeyChange = errors.New("subscription membership primary key change is not ported")
+	ErrSubscriptionMembershipPrimaryKeyChange = refusal.New("subscription membership primary key change is not ported")
 )
 
 // SubscriptionMembershipValidationError is DRF's 400 field map.
