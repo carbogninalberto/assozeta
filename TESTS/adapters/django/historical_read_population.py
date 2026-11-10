@@ -1077,6 +1077,7 @@ def _configuration_expected(contract, defaults, fields):
         'diagnostic_results': {},
         'integration_settings': {},
         'display_settings': deepcopy(defaults),
+        'ui_api_version': 'v1',
         'is_reseller': False,
         'self_hosted': True,
         'support_multiple_associations': False,

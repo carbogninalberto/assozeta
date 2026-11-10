@@ -12,7 +12,7 @@ import {spawn, spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {chromium, expect} from '@playwright/test';
 import {observeInitialPairing} from './sso-initial-diagnostics.mjs';
-import {openSSOFixture} from './sso-fixture-navigation.mjs';
+import {openSSOFixture,readHostNetwork,waitForStableHostNetwork} from './sso-fixture-navigation.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const origin = 'https://club.assozeta.test', authority = 'https://login.bakney.test';
 const callback = origin + '/bakney/v1/callback', protocol = 'bakney-pairing-v1';
@@ -230,6 +230,7 @@ try {
         }
         checks.push('Real Bakney password authentication and required TOTP before handoff');
     }
+    await waitForStableHostNetwork(()=>readHostNetwork(spawnSync));
     browser=await chromium.launch({headless:true,args:['--no-proxy-server','--host-resolver-rules=MAP *.test 127.0.0.1']});
     const context=await browser.newContext({ignoreHTTPSErrors:true,viewport:{width:1360,height:1000},permissions:['clipboard-read','clipboard-write']});
     const admin=await context.newPage();
