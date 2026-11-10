@@ -249,6 +249,16 @@ func (s *SubscriptionSigns) Sign(ctx context.Context, identity domain.ResolvedId
 			}
 			save.Key, save.URL, newKey = &name, public, &name
 		}
+		// save(update_fields=[...]) runs Subscription.save(): its season range raises after the upload,
+		// the object is deleted and the block rolls back.
+		season, err := tx.SaveSeason(ctx, locked.ID)
+		if err == nil {
+			err = modelHooksSubscriptionSave(ctx, season)
+		}
+		if err != nil {
+			s.cleanup(ctx, newKey)
+			return err
+		}
 		if err := tx.Save(ctx, *locked, save); err != nil {
 			s.cleanup(ctx, newKey)
 			return err

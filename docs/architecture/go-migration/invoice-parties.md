@@ -102,8 +102,11 @@ ISO datetimes, ChoiceFields, `PrimaryKeyRelatedField` with `''` as None).
   and writes), a non-null `payment_id`, and a new `invoice_supplier_id` on
   update (`save()` would insert a copy).
 - Supplier-update payment saves for a payment the live, group-aware manager
-  cannot load (auditlog would diff against None) or whose description is
-  None or "quota corso" (`Payment.save()` derives a description).
+  cannot load (auditlog would diff against None), or whose `Payment.save()`
+  description needs a course's reverse lookups (subject 2, NULL), the default
+  category's name (subject 0, NULL, no category) or raises (account transfer).
+  A NULL description of other subjects and the "quota corso" meta override are
+  derived and written (see [model-hooks](model-hooks.md)).
 - Rendering a supplier invoice whose payment links an associate, instructor
   or invoice, or has a subscription/course subject.
 - Ordering by a relation path (`supplier__name`) or `?`.
@@ -122,3 +125,8 @@ before the Go routes existed. GREEN (`green-r1`): native Django, native Go,
 Caddy `/api/v1` and `/api/v2` pass 136/136 with exact effects. Mutation
 (`mutation-r1`): dropping the supplier lookup's soft-delete filter fails the
 deleted-supplier case.
+
+Model hooks ([model-hooks](model-hooks.md)): `supplier-update-payment-description-derived` (subject 1, NULL ->
+`Iscrizione`) and `supplier-update-payment-quota-meta-description` (`QUOTA corso` -> the meta description), in the foreign
+association (its owner updates them, so the own lists stay as authored). Native 138/138; mutation (`model-hooks-mutation`:
+the description hook skipped) fails Go on the first (audit fields; CAUGHT).

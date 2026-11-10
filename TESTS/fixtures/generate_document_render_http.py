@@ -56,6 +56,8 @@ UNKNOWN = uid(999)
 ASSOCIATIONS = {
     'latin': {'user': uid(1), 'association': uid(2), 'denomination': 'Società Sportiva Ècole'},
     'wide': {'user': uid(3), 'association': uid(4), 'denomination': 'Club – Roma'},
+    # Owner season settings that make Subscription.save() raise (31 April is not a date).
+    'season': {'user': uid(5), 'association': uid(6), 'denomination': 'Render stagione', 'start_day': 31, 'start_month': 4},
 }
 ASSOCIATION_IDS = {'own': OWN, 'foreign': FOREIGN, **{k: v['association'] for k, v in ASSOCIATIONS.items()}}
 DENOMINATIONS = {'own': 'Message reads own', 'foreign': 'Message reads foreign',
@@ -92,6 +94,7 @@ SUBSCRIPTIONS = {
     'greek': {'id': uid(37), 'association': 'wide', 'associate': 'greek', 'user': 'owner', 'group': None, 'document': None},
     'odd': {'id': uid(38), 'association': 'own', 'associate': 'odd', 'user': 'owner', 'group': None, 'document': None},
     'foreign': {'id': uid(39), 'association': 'foreign', 'associate': 'mario', 'user': 'foreign_owner', 'group': None, 'document': None},
+    'season': {'id': uid(29), 'association': 'season', 'associate': 'mario', 'user': 'owner', 'group': None, 'document': None},
 }
 
 # Invoices and their payments (label shared). payment None: the invoice has no payment.
@@ -275,6 +278,11 @@ add('subscription-uppercase-uid', 'owner', f"/document/subscription/{S('plain').
     renders=[render('subscription', S('plain').upper())],
     effect=effect(subscription_name('plain'), actor='owner', links=[('subscription', 'plain')]),
     disposition='inline; filename=' + subscription_name('plain'))
+# save(update_fields=['document_pdf']) runs Subscription.save(): the season range raises after the render, so the
+# Document and its storage task stay, the row is not linked and the view answers 500 {'exception': str(e)}.
+add('subscription-invalid-season-settings', 'owner', f"/document/subscription/{S('season')}", 500,
+    exception('Invalid date combination: day is out of range for month'), renders=[render('subscription', S('season'))],
+    effect=effect(subscription_name('season'), actor='owner'))
 add('subscription-unknown', 'owner', f'/document/subscription/{UNKNOWN}', 500, exception('Subscription matching query does not exist.'))
 add('subscription-invalid-uuid', 'owner', '/document/subscription/not-a-uuid', 500, invalid_uuid('not-a-uuid'))
 add('subscription-invalid-uuid-quote', 'owner', "/document/subscription/it's", 500,

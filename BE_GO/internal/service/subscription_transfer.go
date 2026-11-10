@@ -352,6 +352,15 @@ func (s *SubscriptionTransfers) Transfer(ctx context.Context, identity domain.Re
 	if err = s.store.CreateTransfer(ctx, transfer, audit); err != nil {
 		return nil, err
 	}
+	// subscription.save() computes the season range first: settings that name no date raise here, after the
+	// notification and the transfer were written (the view is not atomic).
+	season, err := s.store.SubscriptionSaveSeason(ctx, row.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err = modelHooksSubscriptionSave(ctx, season); err != nil {
+		return nil, err
+	}
 	if err = s.store.SaveSubscriptionUser(ctx, *row, recipient, audit, s.clock()); err != nil {
 		return nil, err
 	}

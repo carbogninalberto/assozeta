@@ -61,6 +61,8 @@ type SubscriptionTransferStore interface {
 	CreateUser(ctx context.Context, user OAuthNewUser, audit LoginAuditContext) error
 	CreateTransfer(ctx context.Context, transfer SubscriptionTransferCreated, audit LoginAuditContext) error
 	SaveSubscriptionUser(ctx context.Context, row SubscriptionTransferRow, user string, audit LoginAuditContext, at time.Time) error
+	// SubscriptionSaveSeason reads what Subscription.save() computes before it writes.
+	SubscriptionSaveSeason(ctx context.Context, subscription string) (SubscriptionSaveSeason, error)
 	SaveAssociateUser(ctx context.Context, person SubscriptionTransferPerson, user string, audit LoginAuditContext, at time.Time) error
 	AcceptTransfer(ctx context.Context, transfer SubscriptionTransferCreated, at time.Time, audit LoginAuditContext) error
 }

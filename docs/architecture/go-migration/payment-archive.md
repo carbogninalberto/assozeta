@@ -44,3 +44,8 @@ record `association_id: null`. RED: Django 27/27 and Go 404 before any Go code.
 GREEN: native Django, native Go, Caddy `/api/v1` and `/api/v2` pass 27/27 with
 exact payment, audit and index effects; skipping the `quota corso` override
 fails its case.
+
+Model hooks ([model-hooks](model-hooks.md)): `course-subscription-title-name` (a course payment with a NULL
+description linked to a CourseSubscription: the course title) and `course-installment-meta-name` (linked to an installment:
+the payment's meta description) complete the `get_course_carnet_name` relations next to the carnet cases. Native 29/29 (no Go
+change: `PaymentLinkedName` already covered them).

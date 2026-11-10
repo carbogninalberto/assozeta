@@ -348,6 +348,10 @@ func (r *DocumentRender) CreateSubscriptionFile(ctx context.Context, id string, 
 
 // Link saves the row's document foreign key: auditlog's update entry (only
 // the changed field) then the write.
+func (r *DocumentRender) SubscriptionSaveSeason(ctx context.Context, subscription string) (domain.SubscriptionSaveSeason, error) {
+	return modelHooksSubscriptionSeason(ctx, r.db, subscription)
+}
+
 func (r *DocumentRender) Link(ctx context.Context, link domain.RenderLink, document string, audit domain.LoginAuditContext, at time.Time) error {
 	return r.write(ctx, func(tx *sqlx.Tx) error {
 		old := "None"

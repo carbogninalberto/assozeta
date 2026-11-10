@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"math"
 	"strconv"
 	"strings"
@@ -637,16 +638,19 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 	if object, ok := request.Body.(domain.RequestObject); ok {
 		paid, paidPresent = object.Lookup("paid")
 	}
+	description := (*string)(nil)
 	if updated.PaymentID != nil && paidPresent {
 		var visible bool
 		if payment, visible, err = s.store.Payment(ctx, *updated.PaymentID, group); err != nil {
 			return err
 		}
 		_, upload := paid.(domain.RequestUpload)
-		// Payment.save() derives a description for None or "quota corso", and
 		// auditlog diffs against None for a payment the manager cannot load.
-		if payment == nil || !visible || upload || payment.Description == nil || strings.ToLower(*payment.Description) == "quota corso" {
+		if payment == nil || !visible || upload {
 			return domain.ErrInvoicePartyNotPorted
+		}
+		if description, err = invoicePartySaveDescription(ctx, *payment); err != nil {
+			return err
 		}
 	}
 	at := s.now().UTC().Truncate(time.Microsecond)
@@ -683,6 +687,9 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 			paymentChanges["payment_category"] = [2]string{"None", *category}
 		}
 	}
+	if !samePointer(payment.Description, description) {
+		paymentChanges["description"] = [2]string{pythonOptional(payment.Description), pythonOptional(description)}
+	}
 	entry := domain.InvoicePartyAudit{Model: "payment", Key: payment.ID, Action: 1, Changes: paymentChanges}
 	if payment.AssociationID != nil {
 		entry.AssociationID, entry.ResolutionPath = payment.AssociationID, &direct
@@ -701,5 +708,32 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 	if !ok || converted == nil {
 		return domain.ErrInvoicePartyServer
 	}
-	return s.store.UpdatePaymentPaid(ctx, payment.ID, *converted, at, category)
+	return s.store.UpdatePaymentPaid(ctx, payment.ID, *converted, at, category, description)
+}
+
+// invoicePartySaveDescription is Payment.save()'s description hook for the linked
+// payment, decided before any write. A NULL course description (its reverse
+// relation lookups), a NULL description that needs the default category's name
+// and a calculation that raises are not ported.
+func invoicePartySaveDescription(ctx context.Context, payment domain.InvoicePartyPayment) (*string, error) {
+	if payment.Description != nil && strings.ToLower(*payment.Description) != "quota corso" {
+		return payment.Description, nil
+	}
+	if payment.Description == nil && (payment.Subject == 2 || payment.Subject == 0 && payment.CategoryID == nil) {
+		return nil, domain.ErrInvoicePartyNotPorted
+	}
+	meta, err := paymentJSON(payment.Meta)
+	if err != nil {
+		return nil, domain.ErrInvoicePartyNotPorted
+	}
+	course, err := paymentJSON(payment.Course)
+	if err != nil {
+		return nil, domain.ErrInvoicePartyNotPorted
+	}
+	description, err := ResolvePaymentDescription(ctx, domain.PaymentDescriptionInput{Subject: payment.Subject, Description: payment.Description,
+		CategoryName: payment.CategoryName, Meta: meta, Course: course})
+	if errors.Is(err, domain.ErrPaymentDescription) {
+		return nil, domain.ErrInvoicePartyNotPorted
+	}
+	return description, err
 }

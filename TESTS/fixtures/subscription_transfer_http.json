@@ -37,7 +37,8 @@
   "workflow": "a1000000-0000-4000-8000-000000720008",
   "missing": "a1000000-0000-4000-8000-000000720009",
   "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
-  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011",
+  "season_owner": "a1000000-0000-4000-8000-000000997024"
  },
  "associates": {
   "adult": {
@@ -100,6 +101,13 @@
    "first": "Nora",
    "last": "Nuova",
    "user": null
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000997026",
+   "first": "Sara",
+   "last": "Stagione",
+   "user": "season_owner",
+   "association": "a1000000-0000-4000-8000-000000997025"
   }
  },
  "relations": {
@@ -160,6 +168,12 @@
    "id": "a1000000-0000-4000-8000-000000997019",
    "associate": "bare",
    "user": "owner"
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000997027",
+   "associate": "season",
+   "user": "season_owner",
+   "association": "a1000000-0000-4000-8000-000000997025"
   }
  },
  "transfers": {
@@ -193,6 +207,13 @@
   }
  },
  "denomination": "Message reads own",
+ "season": {
+  "owner": "a1000000-0000-4000-8000-000000997024",
+  "association": "a1000000-0000-4000-8000-000000997025",
+  "start_day": 31,
+  "start_month": 4,
+  "denomination": "Subscription transfer season"
+ },
  "unknown": "a1000000-0000-4000-8000-000000997999",
  "cases": [
   {
@@ -1253,6 +1274,48 @@
    },
    "body": {
     "email": "creato@example.test"
+   }
+  },
+  {
+   "name": "subscription-transfer-invalid-season-settings-after-transfer-server-error",
+   "actor": "season_owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997027/transfer",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "season",
+     "recipient": "athlete",
+     "requester": "season_owner",
+     "status": 1
+    },
+    "associates": [],
+    "relation": null,
+    "new_user": null,
+    "welcome": false,
+    "audit": [
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000997025",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "athlete",
+     "association": "a1000000-0000-4000-8000-000000997025",
+     "msg": "l'associazione Subscription transfer season ha trasferito l'iscrizione Sara Stagione al tuo account"
+    }
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
    }
   },
   {

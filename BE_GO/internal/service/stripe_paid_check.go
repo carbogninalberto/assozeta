@@ -43,7 +43,8 @@ var errStripePaidCheckException = errors.New("stripe paid check: python exceptio
 // exception inside the paid flow.
 func stripePaidCheckPython(err error) bool {
 	for _, target := range []error{domain.ErrStripeServer, domain.ErrPaymentStateServer, domain.ErrInvoiceCoreServer, domain.ErrInvoicePartyServer,
-		domain.ErrInvoicePartyMissing, domain.ErrPaymentDescription, domain.ErrPaymentSaveScope, errStripePaidCheckException} {
+		domain.ErrInvoicePartyMissing, domain.ErrPaymentDescription, domain.ErrPaymentSaveScope, ErrPaymentSaveFailed,
+		errStripePaidCheckException} {
 		if errors.Is(err, target) {
 			return true
 		}

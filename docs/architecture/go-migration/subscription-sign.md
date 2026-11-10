@@ -70,3 +70,9 @@ Celery messages (`check_workflows_trigger`, `print_document_subscription` with t
 - Shared code: `documentobjects.S3.PutACL` is new (`Delete` comes from the export cleanup port); `documents-writes` (119/119,
   `rerun-subscription-sign-r1`) re-ran green.
 - Credits `subscription_signed_callback` (signal): its Celery message is compared with Django's on every success case.
+
+Model hooks ([model-hooks](model-hooks.md)): `subscription-sign-invalid-season-settings-server-error` signs a dated row
+of a seeded association whose owner's season start is 31 April. `save(update_fields=[...])` still runs
+`Subscription.save()`: the season range raises after the upload, the object is deleted, nothing is written, 500. Go reads
+the same settings before its write (`modelHooksSubscriptionSave`). Native 47/47; mutation (`model-hooks-mutation`: the
+season check returns nil) fails Go with 200 (CAUGHT).

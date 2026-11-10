@@ -44,6 +44,10 @@
   "id": "a1000000-0000-4000-8000-000000940016",
   "title": "Carnet dieci"
  },
+ "course": {
+  "id": "a1000000-0000-4000-8000-000000940017",
+  "title": "Corso nuoto"
+ },
  "payments": {
   "open": {
    "id": "a1000000-0000-4000-8000-000000940002",
@@ -232,6 +236,38 @@
    "meta": null,
    "course": null,
    "carnet": null
+  },
+  "course_subscription_title": {
+   "id": "a1000000-0000-4000-8000-000000940018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 2,
+   "description": null,
+   "meta": null,
+   "course": null,
+   "carnet": null,
+   "link": "subscription",
+   "link_id": "a1000000-0000-4000-8000-000000940019"
+  },
+  "course_installment_meta": {
+   "id": "a1000000-0000-4000-8000-000000940020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "category": true,
+   "deleted": false,
+   "group": null,
+   "subject": 2,
+   "description": null,
+   "meta": {
+    "description": "Rata dal meta"
+   },
+   "course": null,
+   "carnet": null,
+   "link": "installment",
+   "link_id": "a1000000-0000-4000-8000-000000940021"
   }
  },
  "cases": [
@@ -567,6 +603,60 @@
      "description": [
       "QUOTA corso",
       "Rata uno"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-course-subscription-title-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940018/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "course_subscription_title",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "description": [
+      "None",
+      "Corso nuoto"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   }
+  },
+  {
+   "name": "payment-archive-course-installment-meta-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000940020/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Payment archived."
+   },
+   "effect": {
+    "payment": "course_installment_meta",
+    "archived": true,
+    "changes": {
+     "archived": [
+      "False",
+      "True"
+     ],
+     "description": [
+      "None",
+      "Rata dal meta"
      ]
     },
     "actor": "owner",

@@ -106,7 +106,15 @@ PAYMENTS = {'a': payment(OWN, 'uno'),
             'b': payment(OWN, 'beta', amount='75.00', paid=True, payment_date='2026-10-10T12:30:00.250000Z', description='Fattura fornitore B',
                          custom_accounts=ACCOUNTS['cash']['custom_account_id'], meta=None, notes='saldo'),
             'abroad': payment(FOREIGN, 'abroad', custom_accounts=ACCOUNTS['abroad']['custom_account_id'],
-                              payment_category=CATEGORIES['abroad']['payment_category_id'], user=None)}
+                              payment_category=CATEGORIES['abroad']['payment_category_id'], user=None),
+            # Payment.save() branches on the linked payment: a NULL description is derived from the subject,
+            # and 'quota corso' takes meta['description']. In the foreign association (its owner updates them),
+            # so the own association's lists stay as authored.
+            'd': payment(FOREIGN, 'abroad', subject=1, description=None, amount='30.00', user=None,
+                         custom_accounts=ACCOUNTS['abroad']['custom_account_id'], payment_category=CATEGORIES['abroad']['payment_category_id']),
+            'e': payment(FOREIGN, 'abroad', subject=2, description='QUOTA corso', amount='45.00', meta={'description': 'Saldo corso estivo'},
+                         user=None, custom_accounts=ACCOUNTS['abroad']['custom_account_id'],
+                         payment_category=CATEGORIES['abroad']['payment_category_id'])}
 ATTACHMENTS = [('a', 'attachment')]
 
 
@@ -126,6 +134,8 @@ SUPPLIER_INVOICES = {
                           notes='finanza'),
     'c': supplier_invoice(OWN, 'FC-003 è', amount='1.50', expire_date=None),
     'abroad': supplier_invoice(FOREIGN, 'FX-900', payment=PAYMENTS['abroad']['payment_id'], supplier=SUPPLIERS['abroad']['supplier_id']),
+    'd': supplier_invoice(FOREIGN, 'FD-004', amount='30.00', payment=PAYMENTS['d']['payment_id'], supplier=SUPPLIERS['abroad']['supplier_id']),
+    'e': supplier_invoice(FOREIGN, 'FE-005', amount='45.00', payment=PAYMENTS['e']['payment_id'], supplier=SUPPLIERS['abroad']['supplier_id']),
 }
 
 TEXT = ['assignor_vat_number', 'assignor_tax_code', 'assignor_denomination', 'assignor_address', 'assignor_postal_code',
@@ -565,7 +575,7 @@ add('supplier-update-unknown-document', 'owner', 'PATCH', SU('a'), 400, {'docume
 
 
 def supplier_update(name, actor, label, status, response, body=None, *, invoice=None, payment=None, now=False, saved=True,
-                    payment_saved=True, **extra):
+                    payment_saved=True, payment_derived=None, association=OWN, **extra):
     row = SUPPLIER_INVOICES[label]
     key = row['invoice_supplier_id']
     audits, rows = [], {}
@@ -573,7 +583,7 @@ def supplier_update(name, actor, label, status, response, body=None, *, invoice=
     if not saved:
         raise ValueError('use supplier_update_audit_only')
     if pairs:
-        audits.append(audit('invoicesuppliers', key, 1, pairs))
+        audits.append(audit('invoicesuppliers', key, 1, pairs, association=association))
     rows['invoicesuppliers'] = {key: {f: SUPPLIER_INVOICES[label][f] for f in INVOICE_FIELDS}}
     if payment is not None:
         pay = next(k for k, v in PAYMENTS.items() if v['payment_id'] == row['payment'])
@@ -584,9 +594,12 @@ def supplier_update(name, actor, label, status, response, body=None, *, invoice=
             pay_pairs['paid'] = [audit_str('paid', old['paid']), payment['paid_str']]
         previous = old['payment_date']
         pay_pairs['payment_date'] = ['$before' if previous == '$now' else audit_str('payment_date', previous), '$now']
-        audits.append(audit('payment', pkey, 1, pay_pairs))
+        # Fields Payment.save() derives (description), as [old, new] stored values.
+        for field, value in (payment_derived or {}).items():
+            pay_pairs[field] = [audit_str(field, old[field]), audit_str(field, value)]
+        audits.append(audit('payment', pkey, 1, pay_pairs, association=association))
         if payment_saved:
-            PAYMENTS[pay].update(paid=payment['paid'], payment_date='$now')
+            PAYMENTS[pay].update(paid=payment['paid'], payment_date='$now', **(payment_derived or {}))
         rows['payment'] = {pkey: {f: PAYMENTS[pay][f] for f in PAYMENT_FIELDS}}
     add(name, actor, 'PATCH', SU(label), status, response, body=body, effect=effect(actor, rows=rows, audits=audits), **extra)
 
@@ -606,6 +619,12 @@ supplier_update('supplier-update-rejected-payment-paid-server-error', 'owner', '
                 invoice={'paid': False}, payment={'paid': True, 'paid_str': 'no'}, payment_saved=False)
 supplier_update('supplier-update-unlink-payment', 'owner', 'b', 200, UPDATED, {'payment': None, 'payment_id': None},
                 invoice={'payment': None})
+supplier_update('supplier-update-payment-description-derived', 'foreign_owner', 'd', 200, UPDATED, {'paid': True},
+                invoice={'paid': True}, payment={'paid': True, 'paid_str': 'True'}, payment_derived={'description': 'Iscrizione'},
+                association=FOREIGN)
+supplier_update('supplier-update-payment-quota-meta-description', 'foreign_owner', 'e', 200, UPDATED, {'paid': True},
+                invoice={'paid': True}, payment={'paid': True, 'paid_str': 'True'},
+                payment_derived={'description': 'Saldo corso estivo'}, association=FOREIGN)
 supplier_update('supplier-update-form', 'owner', 'c', 200, UPDATED, None, invoice={'invoice_identifier': 'Modulo', 'paid': True},
                 raw_body='invoice_identifier=Modulo&paid=on', content_type=FORM)
 # notes has no serializer max_length: the pre_save entry is written, then the
