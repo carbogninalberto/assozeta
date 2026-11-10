@@ -1,7 +1,8 @@
 # Subscription create (subscription/add) — implementing with HTTP parity
 
 `POST subscription/add` (`subscription_add` and `create_subscription`, `BE/application/views/subscriptions_views.py` and
-`BE/application/utils/subscriptions_utils.py`) is implemented in Go for authenticated owners and collaborators
+`BE/application/utils/subscriptions_utils.py`) is implemented in Go for authenticated owners and collaborators, the public
+form (anonymous), a logged-in athlete naming an association and next-season preregistrations
 (`BE_GO/internal/{domain,dto,repository,service,handler}/subscription_create.go`, `service/subscription_notifier.go`). Registry
 `association.members.create`. Django remains the execution owner. `subscription/renew` and `subscription/associates-draft/list/approve`
 share this code ([subscription-renew](subscription-renew.md)); `subscription/<uid>/transfer`, `subscription/sign` and
@@ -130,16 +131,44 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   `email_welcome_password_message.html` with the password), `new_subscription`, `print_document_subscription`, the notification and,
   for an athlete user, `send_email_template` to the owner (`email_new_subscription.html`, `Ricordati di approvare l'iscrizione`).
 
+## The public forms and preregistration
+
+- Anonymous (`Subscribe.svelte`): `_prepare_subscription_request` sets `request.user` to `User.objects.get(username=
+  data['sport_association'])` (a live user; without the key the view reads `AnonymousUser.role`, an unknown name raises: 500 in
+  both cases, as is a body that is not an object). With an association account the request then follows the owner's flow: the
+  association's settings, fees and numbering, the owner as user of the associate, payment and subscription (or the new member
+  account when `new_member` is set, with its welcome e-mail), the notification to that user. The audit entries have no actor;
+  entries indexed through the actor's association (the new user, the signature, its broadcast rows) have no index row.
+  `print_document_subscription` is queued with `None` as the authorization. `?m=only_associate` resolves the association and
+  the associate (unknown: 500) and answers DRF's 403 `User not allowed.`: the quick re-subscription is for the owner's session.
+- A username that names an account other than an association makes it an athlete request (below): its own association lookup
+  fails (500).
+- A logged-in athlete with `sport_association` (`is_athlete_request`): the association of that username
+  (`User.objects.get`, then `SportAssociation.objects.get(user=...)`: 500 when either is missing). The season of the duplicate
+  check starts on the association's day and ends by the athlete's own custom end; the athlete owns the associate (create entry,
+  then the user update), the tutor, the signature, the payment and the subscription; `current_date_from/to` (membership dates and
+  default type) follow the athlete's season settings; the athlete gets the notification and the owner the
+  `email_new_subscription.html` e-mail after it. Without the key an athlete is still 403 `User is not a sport association`.
+- `preregistration: true` (exactly `True`) without a `subscription_id`: both seasons (the duplicate check's and the user's) are
+  those after the current one (`date_to + 1 day`); the subscription is created with `creation_date` the first instant of that
+  season and `start_date`/`end_date` the user's next season, so `Subscription.objects.create` checks duplicates on those dates
+  (a second preregistration of the same person is the 409) and the create entry renders the assigned datetimes
+  (`['None', '2027-01-01 00:00:00+00:00']`); the membership's dates and default type (`Tesseramento <from>/<to>`) are the next
+  season's; the payment keeps today's date.
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- anonymous requests (Django attributes them to the association named in `sport_association`), athlete requests with a
-  `sport_association` key, form bodies, a non-empty `X-Group-Id` (the managers' group filter
-  and stored group);
-- the family wizard (`is_family_wizard: true`); in the quick subscription an impersonation session with an association scope, an
+- form bodies, a non-empty `X-Group-Id` (the managers' group filter and stored group); an athlete request from an account that
+  is neither an athlete nor an association; the quick mode from an athlete session naming an association and an associate; a
+  `sport_association` that is a list or an object;
+- the family wizard (`is_family_wizard: true`: one `Family`, every valid entry of `multiple_entry_form_data` through
+  `create_subscription`, the payments rendered with `PaymentSerializer`); in the quick subscription an impersonation session with an association scope, an
   owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
   certificate choice that depends on the unordered subscriptions;
-- `preregistration: true` (next-season and renewal registrations);
+- `preregistration: true` with a `subscription_id` (the preregistration that renews a subscription:
+  `fill_data_preregisration` re-reads the associate, tutor, certificate and membership from it); preregistration in renewals and
+  draft approvals;
 - new member info with a `username` (create_user's TypeError, 500), a `role` other than athlete, a non-string e-mail, a numeric
   `new_member` flag; a signature upload whose generated key already exists;
 - a `medical_certificate` without `medical_id` whose `certificate_expring_date` parses to a date other than today (the placeholder
@@ -197,3 +226,14 @@ Own records only (64 cases).
   `subscription-create-quick-associate-of-another-association` (CAUGHT).
 - `subscription-renew` (only the association's own tags are set): GREEN `secsub-versioned-r1` 62/62 on four transports; mutation
   `secsub-mutation-r1` (tags set by id alone) fails `subscription-renew-renew-basic` (CAUGHT).
+
+v2-public-forms: the anonymous form, the athlete form and preregistration (84 cases).
+
+- RED (`v2forms-red-r2`, the Go code of the previous commit): Django 84/84; Go 500 on
+  `subscription-create-anonymous-missing-signature`.
+- GREEN (`v2forms-versioned-r1`, after merging `codex/go-backend-parity`): 84/84 on native Django, native Go, Caddy `/api/v1`
+  and `/api/v2`.
+- Mutation (`v2forms-mutation-r1`): a preregistration created with today's date instead of the next season's first day fails
+  `subscription-create-preregistration` (CAUGHT).
+- Re-run green (`v2forms-rerun-r1`): `subscription-renew`, `subscription-memberships`, `subscription-sign`,
+  `subscription-approve`.

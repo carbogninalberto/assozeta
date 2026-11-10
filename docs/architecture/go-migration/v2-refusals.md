@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create and 5 in v2-misc (one v2-misc row duplicated a v2-documents port), below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms and 5 in v2-misc (one v2-misc row duplicated a v2-documents port), below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -78,6 +78,16 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-memberships | `POST subscription/memberships/add`, `PATCH …/<pk>/update` | `documents_data` uploads (v2-sub-create) | 88 cases; RED `v2create-red-r2` Django 88/88, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (document link skipped) CAUGHT |
 | subscription-renew | `POST subscription/renew` | athlete session (v2-sub-create) | 62 cases; RED `v2create-red-r2` Django 62/62, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (athlete kept as request.user) CAUGHT |
 | subscription-transfer | `POST subscription/<uid>/transfer` (e-mail branch) | tutor/associate names starting with non-ASCII letters; non-ASCII e-mail domain | 31 cases; RED `v2sub-red-r1` Django 31/31, Go 500; GREEN `v2sub-versioned-r1` 4 transports 31/31; mutation `v2sub-mutation-r1` (no NFKC) CAUGHT |
+
+### Ported in the v2-public-forms change
+
+Receipts are `quality-reports/go-migration/subscription-create-http-v2forms-*`; details in `subscription-create.md`.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| subscription-create | `POST subscription/add` | the anonymous form (`sport_association` names the association; new member account included) | 84 cases; RED `v2forms-red-r2` Django 84/84, Go 500; GREEN `v2forms-versioned-r1` 4 transports; mutation `v2forms-mutation-r1` (preregistration created today) CAUGHT; subscription-renew, subscription-memberships, subscription-sign and subscription-approve re-run (`v2forms-rerun-r1`) |
+| subscription-create | `POST subscription/add` | a logged-in athlete with `sport_association` | same run |
+| subscription-create | `POST subscription/add` | `preregistration: true` without a subscription to renew | same run |
 
 ### Ported in the v2-payments-2 change
 
@@ -148,7 +158,7 @@ Notes for the remaining payment items:
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
 | POST subscription/add | owner wizard: a typed certificate date without an upload (placeholder PNG drawn with PIL: image rendering, refused by the porting rules) | `routes/association/Members/add/AddMember.svelte:104-139` | `service/subscription_create.go` (`subscriptionCreateRefuse`) | expensive (image) |
-| POST subscription/add | public forms: anonymous, `sport_association`, preregistration, family wizard | `Subscribe.svelte:124,147,167`, `SubscribeMultiple.svelte:183`, `SubscribeFamily.svelte:136-181` | `service/subscription_create.go:91,102,132,141` | expensive |
+| POST subscription/add | family wizard (`is_family_wizard`, one request with `multiple_entry_form_data`; the response renders `PaymentSerializer` for every payment); a preregistration that renews a subscription (`subscription_id`) | `SubscribeFamily.svelte:136-181`, `Subscribe.svelte:136` (`subscription_id`) | `service/subscription_create.go` (`Add`, `createSubscription`) | expensive |
 | POST subscription/import/upload | final mapping step (every import) | `routes/association/Members/import/ImportMembers.svelte:46-52` | `service/subscription_import_upload.go:200` | expensive |
 | POST subscription/import/upload | Excel file | `import/sections/Section1.svelte:33-37` | `service/subscription_import_upload.go:210` | expensive |
 
