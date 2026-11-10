@@ -136,6 +136,10 @@ type DocumentViewStore interface {
 	Associate(ctx context.Context, id string) (*ViewAssociate, error)
 	// MainTutor is Associate.get_main_tutor(): nil, the tutor, or ErrViewTutorWrite.
 	MainTutor(ctx context.Context, associate string) (*ViewAssociate, error)
+	// PromoteMainTutor is get_main_tutor() without a primary relation: the
+	// associate's first relation is saved with is_primary=True (one auditlog
+	// update entry) and its tutor returned; nil without relations.
+	PromoteMainTutor(ctx context.Context, associate string, promotion ViewTutorPromotion) (*ViewAssociate, error)
 	Subscription(ctx context.Context, id string, scope RenderScope) (*ViewSubscription, error)
 	// CoursesList is Subscription.get_courses_list().
 	CoursesList(ctx context.Context, subscription string) (string, error)
@@ -145,4 +149,11 @@ type DocumentViewStore interface {
 	Hours(ctx context.Context, payment string) ([]ViewHours, error)
 	Template(ctx context.Context, id string) (*ViewTemplate, error)
 	Appointment(ctx context.Context, id string) (*ViewAppointment, error)
+}
+
+// ViewTutorPromotion is the audit context of get_main_tutor's saved relation.
+type ViewTutorPromotion struct {
+	Context LoginAuditContext
+	ActorID string
+	At      time.Time
 }

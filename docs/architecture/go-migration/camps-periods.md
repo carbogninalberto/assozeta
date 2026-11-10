@@ -58,12 +58,19 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/camps
 
 ## Not ported (refused with a 500 before any write)
 
-- A changed primary key on update that passes validation (Model.save() would insert a copy).
 - HTML form input carrying the many-to-many services key (QueryDict.getlist) or file parts.
 - Payment walks whose outcome this port does not reproduce: a soft-deleted payment or one outside the request's
   `X-Group-Id` that has no association (the index row is not characterized), a failure with more than one subscription period in the walk
   (Django's order is the database's), `Payment.save()` description failures, and amounts or notes PostgreSQL would
   reject (numeric overflow, the non-negative amount constraint, notes over 5120 characters).
+
+## Update under a new key
+
+A body naming a `camps_and_retreats_period_id` (or `..._service_id`) that no row has passes validation and `Model.save()` inserts a copy with
+the validated values; the row the path names stays. auditlog finds no row under the new key, so it logs the whole copy as an update
+(indexed through the actor's own association, if any), then the create (indexed through the camp). The many-to-many services of a period
+attach to the copy; the service walk reads the copy's key, so no meta entry names it and only the notes and amounts of the unpaid
+payments are recomputed. A key another row has is the validation error `unique`; the path's own key is a plain update.
 
 ## Evidence
 

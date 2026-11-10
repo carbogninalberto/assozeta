@@ -32,13 +32,6 @@ var subscriptionImportMandatory = []string{"first_name", "last_name", "sex", "ta
 // ('$' also matches before a final line feed).
 var subscriptionImportTaxCode = regexp.MustCompile(`^[a-zA-Z]{6}[0-9]{2}[abcdehlmprstABCDEHLMPRST][0-9]{2}[a-zA-Z][0-9]{3}[a-zA-Z]\n?$`)
 
-var subscriptionImportSpacedMoment = regexp.MustCompile(`^([0-9]{4}-[0-9]{2}-[0-9]{2}) ([0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,6})?)$`)
-
-// subscriptionImportDateWords are the first letters of dateutil's month and
-// weekday names: text with none of them and no digit is not a date.
-var subscriptionImportDateWords = []string{"jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "mon", "tue",
-	"wed", "thu", "fri", "sat", "sun"}
-
 // subscriptionImportMoment is a date cell: a Timestamp or a datetime, with
 // its str().
 type subscriptionImportMoment struct {
@@ -67,62 +60,20 @@ func subscriptionImportTextColumns(mapping any) map[string]bool {
 	return columns
 }
 
-var subscriptionImportSlashes = regexp.MustCompile(`^([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})$`)
-
-// subscriptionImportDayFirst is dateutil.parser.parse(text, dayfirst=True)
-// for A/B/YYYY: A is the day unless B is no month while A is one.
-func subscriptionImportDayFirst(match []string) (time.Time, dto.DateutilResult) {
-	first, _ := strconv.Atoi(match[1])
-	second, _ := strconv.Atoi(match[2])
-	year, _ := strconv.Atoi(match[3])
-	day, month := first, second
-	if first <= 12 && second > 12 {
-		month, day = first, second
-	}
-	if year < 1000 {
-		return time.Time{}, dto.DateutilUnsupported
-	}
-	date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-	if month < 1 || month > 12 || date.Day() != day || int(date.Month()) != month {
-		return time.Time{}, dto.DateutilFailed
-	}
-	return date, dto.DateutilParsed
-}
-
-// subscriptionImportDate is import_date(text): dateutil.parser.parse with the
-// day first unless the text starts with the year, on the ported forms
-// (dto.DateutilDate's year-first ones, 'YYYY-MM-DD HH:MM:SS[.ffffff]' as
-// str() of a datetime, and A/B/YYYY). parsed is false where parse raises;
-// other text is refused.
-func subscriptionImportDate(text string) (date time.Time, parsed bool, err error) {
-	candidate := text
-	if match := subscriptionImportSpacedMoment.FindStringSubmatch(text); match != nil {
-		candidate = match[1] + "T" + match[2]
-	}
-	var result dto.DateutilResult
-	if match := subscriptionImportSlashes.FindStringSubmatch(candidate); match != nil {
-		date, result = subscriptionImportDayFirst(match)
-	} else {
-		date, result = dto.DateutilDate(candidate)
-	}
+// subscriptionImportDate is import_date(text) for a value that is no date
+// cell: dateutil.parser.parse(text, dayfirst=...) with the day first unless
+// the text starts with the year (dto.PersonDateText), at now. parsed is false
+// where parse raises (import_date answers None); a year before 1000 and the
+// texts internal/pydateutil refuses are not ported.
+func subscriptionImportDate(text string, now time.Time) (date time.Time, parsed bool, err error) {
+	date, result, _ := dto.PersonDateText(text, now)
 	switch result {
 	case dto.DateutilParsed:
 		return date, true, nil
 	case dto.DateutilFailed:
 		return time.Time{}, false, nil
 	}
-	lowered := strings.ToLower(text)
-	for _, r := range text {
-		if unicode.IsDigit(r) || unicode.IsNumber(r) {
-			return time.Time{}, false, ErrSubscriptionImportNotPorted
-		}
-	}
-	for _, word := range subscriptionImportDateWords {
-		if strings.Contains(lowered, word) {
-			return time.Time{}, false, ErrSubscriptionImportNotPorted
-		}
-	}
-	return time.Time{}, false, nil
+	return time.Time{}, false, ErrSubscriptionImportNotPorted
 }
 
 // subscriptionImportUnstorable is a value json.dumps does not encode (a
@@ -214,13 +165,10 @@ func subscriptionImportTruthy(value any) (truthy bool, text string, err error) {
 	case subscriptionImportMoment:
 		return true, typed.text, nil
 	case json.Number:
-		if typed == "0" {
-			return false, "", nil
-		}
+		// str(int): the digits.
+		return typed != "0", string(typed), nil
 	case float64:
-		if typed == 0 {
-			return false, "", nil
-		}
+		return typed != 0, dto.PythonFloatText(typed), nil
 	}
 	return true, "", ErrSubscriptionImportNotPorted
 }
@@ -301,7 +249,7 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(names []string, rows [
 					return effects, err
 				}
 				if truthy {
-					date, parsed, err := subscriptionImportDate(text)
+					date, parsed, err := subscriptionImportDate(text, s.uploads.now())
 					if err != nil {
 						return effects, err
 					}
@@ -321,7 +269,7 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(names []string, rows [
 				}
 				if truthy {
 					certificate := domain.SubscriptionImportCertificate{ID: s.uploads.ids()}
-					date, parsed, err := subscriptionImportDate(text)
+					date, parsed, err := subscriptionImportDate(text, s.uploads.now())
 					if err != nil {
 						return effects, err
 					}

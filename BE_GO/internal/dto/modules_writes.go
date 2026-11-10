@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"reflect"
 	"strings"
 	"time"
 
@@ -47,6 +48,20 @@ const (
 	// validation of the nested fields is not ported.
 	ModuleNestedFields
 )
+
+// moduleNestedFieldNames are the keys SportAssociationSerializer renders (its
+// fields, the read-only ones included).
+var moduleNestedFieldNames = func() map[string]bool {
+	names := map[string]bool{}
+	profile := reflect.TypeOf(AssociationProfile{})
+	for index := 0; index < profile.NumField(); index++ {
+		name, _, _ := strings.Cut(profile.Field(index).Tag.Get("json"), ",")
+		if name != "" && name != "-" {
+			names[name] = true
+		}
+	}
+	return names
+}()
 
 // ModuleWrite is the validated data of the present fields.
 type ModuleWrite struct {
@@ -106,9 +121,13 @@ func ParseModuleWrite(body any, form, nested bool) (ModuleWrite, ModuleWriteErro
 			case nil:
 				errors["sport_association"] = []string{PaymentCategoryValidationNull}
 			case domain.RequestObject:
+				// Keys the nested serializer has no field for are dropped: the
+				// validated value is the empty dict.
 				write.Nested = ModuleNestedEmpty
-				if len(v) > 0 {
-					write.Nested = ModuleNestedFields
+				for _, field := range v {
+					if moduleNestedFieldNames[field.Name] {
+						write.Nested = ModuleNestedFields
+					}
 				}
 			default:
 				errors["sport_association"] = []string{ModuleNestedDictionary + pythonTypeName(value)}

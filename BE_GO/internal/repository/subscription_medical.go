@@ -279,6 +279,54 @@ func (t *subscriptionMedicalTransaction) SetSubscriptionMedical(ctx context.Cont
 		ResolutionPath: &path, At: at})
 }
 
+func (t *subscriptionMedicalTransaction) SubscriptionMemberNames(ctx context.Context, subscription string) (first, last *string, found bool,
+	err error) {
+	var row struct {
+		First *string `db:"first"`
+		Last  *string `db:"last"`
+	}
+	err = t.tx.GetContext(ctx, &row, `SELECT a.first_name AS first, a.last_name AS last FROM application_subscription s
+ JOIN application_associate a ON a.associate_id=s.associate_id WHERE s.subscription_id=$1`, subscription)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil, false, nil
+	}
+	return row.First, row.Last, err == nil, err
+}
+
+func (t *subscriptionMedicalTransaction) CreatePlaceholderDocument(ctx context.Context, document domain.NewDocument, actorAssociation *string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	return insertPlaceholderDocument(ctx, t.tx, document, actorAssociation, audit, at)
+}
+
+func (t *subscriptionMedicalTransaction) AttachNewCertificate(ctx context.Context, subscription domain.MedicalSubscription, certificate string,
+	dates domain.SubscriptionDates, audit domain.LoginAuditContext, at time.Time) error {
+	changes := map[string][2]string{"medical": {"None", certificate}}
+	if before, after := calendarText(subscription.Target.Dates.Start), calendarText(dates.Start); before != after {
+		changes["start_date"] = [2]string{before, after}
+	}
+	if before, after := calendarText(subscription.Target.Dates.End), calendarText(dates.End); before != after {
+		changes["end_date"] = [2]string{before, after}
+	}
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_subscription SET medical_id=$2::uuid, start_date=$3::date, end_date=$4::date
+ WHERE subscription_id=$1`, subscription.ID, certificate, calendarValue(dates.Start), calendarValue(dates.End)); err != nil {
+		return err
+	}
+	path := "direct"
+	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "subscription", Key: subscription.ID,
+		Representation: "Subscription object (" + subscription.ID + ")", Action: 1, Changes: changes, Context: audit,
+		AssociationID: &subscription.Association, ResolutionPath: &path, At: at})
+}
+
+func (t *subscriptionMedicalTransaction) SavePlaceholderCertificate(ctx context.Context, certificate, document, expiration string,
+	actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_medicalcertificate SET document_id=$2::uuid, expiration_date=$3::date
+ WHERE medical_id=$1`, certificate, document, expiration); err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, medicalCertificateAudit(certificate, 1, map[string][2]string{"document": {"None", document},
+		"expiration_date": {"None", expiration + " 00:00:00+00:00"}}, actorAssociation, audit, at))
+}
+
 func (t *subscriptionMedicalTransaction) DetachSubscription(ctx context.Context, subscription domain.MedicalSubscription, dates domain.SubscriptionDates,
 	audit domain.LoginAuditContext, at time.Time) error {
 	changes := map[string][2]string{}

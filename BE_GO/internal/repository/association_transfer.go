@@ -77,7 +77,7 @@ func (r *AssociationTransfer) PrimaryOwner(ctx context.Context) (bool, *string, 
 
 func (r *AssociationTransfer) TaskResult(ctx context.Context, task string) (*domain.AssociationTaskResult, error) {
 	var row domain.AssociationTaskResult
-	err := r.db.GetContext(ctx, &row, `SELECT status, result, meta, content_encoding FROM django_celery_results_taskresult WHERE task_id=$1`, task)
+	err := r.db.GetContext(ctx, &row, `SELECT status, result, meta, content_encoding, task_name FROM django_celery_results_taskresult WHERE task_id=$1`, task)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

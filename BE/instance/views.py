@@ -374,6 +374,9 @@ class InstanceLogoUploadView(APIView):
             )
 
 
+LOGO_CONTENT_POLICY = "sandbox; default-src 'none'; style-src 'unsafe-inline'"
+
+
 class InstanceLogoServeView(APIView):
     """
     GET /instance/logo.png (or .jpg, .svg, .webp)
@@ -400,6 +403,10 @@ class InstanceLogoServeView(APIView):
                         content_type=content_types.get(ext, 'image/png')
                     )
                     response['Cache-Control'] = 'no-cache'
+                    # Logos are meant for <img>, CSS and the manifest: every
+                    # logo response carries a restrictive content policy.
+                    response['Content-Security-Policy'] = LOGO_CONTENT_POLICY
+                    response['X-Content-Type-Options'] = 'nosniff'
                     return response
                 except Exception:
                     pass

@@ -67,11 +67,12 @@ LABELS = {
     'user_broadcast': 'notifications.UserNotificationsBroadcast', 'signature': 'application.Signature',
 }
 USER = 'application.User'
-MANAGED = (*LABELS.values(), USER, harness.AUDIT, harness.INDEX)
+DOCUMENT = 'docmanager.Document'
+MANAGED = (*LABELS.values(), USER, DOCUMENT, harness.AUDIT, harness.INDEX)
 KEYS = {'application.Associate': 'associate_id', 'application.AssociateTutorRelation': 'id', 'application.Payment': 'payment_id',
         'application.Subscription': 'subscription_id', 'application.SubscriptionMembership': 'subscription_membership_id',
         'application.MedicalCertificate': 'medical_id', 'notifications.NotificationsBroadcast': 'broadcast_id',
-        'notifications.UserNotificationsBroadcast': 'user_broadcast_id', 'application.Signature': 'signature_id', 'application.User': 'user_id'}
+        'notifications.UserNotificationsBroadcast': 'user_broadcast_id', 'application.Signature': 'signature_id', 'application.User': 'user_id', 'docmanager.Document': 'document_id'}
 STATE = {}
 
 
@@ -81,7 +82,8 @@ def models():
     from application.models.user_models import AssociateTutorRelation
     from notifications.models import NotificationsBroadcast, UserNotificationsBroadcast
     from application.models.subscriptions_models import Signature
-    return {'application.Signature': Signature,'application.Associate': Associate, 'application.AssociateTutorRelation': AssociateTutorRelation,
+    from docmanager.models import Document
+    return {DOCUMENT: Document, 'application.Signature': Signature,'application.Associate': Associate, 'application.AssociateTutorRelation': AssociateTutorRelation,
             'application.Payment': Payment, 'application.Subscription': Subscription,
             'application.SubscriptionMembership': SubscriptionMembership, 'application.MedicalCertificate': MedicalCertificate,
             'notifications.NotificationsBroadcast': NotificationsBroadcast,
@@ -107,7 +109,11 @@ def service_context(report, log):
                     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}}
         STORAGE.update(client=client)
         saved = os.environ.get('GO_FIXTURE_ENVIRONMENT')
-        environment = {**json.loads(saved or '{}'), 'AWS_S3_USE_OBJECT_ACL': 'False', 'AWS_S3_PUBLIC_BASE_URL': PUBLIC_BASE}
+        # The zlib this interpreter's Pillow compresses PNGs with (the placeholder certificate image).
+        from PIL import features
+        zlib = 'zlib-ng' if (features.version('zlib') or '').endswith('zlib-ng') else 'zlib'
+        environment = {**json.loads(saved or '{}'), 'AWS_S3_USE_OBJECT_ACL': 'False', 'AWS_S3_PUBLIC_BASE_URL': PUBLIC_BASE,
+                       'PIL_PLACEHOLDER_ZLIB': zlib}
         os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps(environment)
         try:
             with override_settings(CHANNEL_LAYERS=layers, STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
@@ -284,7 +290,7 @@ def family_model():
 
 # Tutor relations (integer keys) go with their associates.
 _identity_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows, purge=tuple(
-    (lambda label=label: models()[label]) for label in LABELS.values() if label != LABELS['relation']) + (user_model, family_model)))
+    (lambda label=label: models()[label]) for label in LABELS.values() if label != LABELS['relation']) + (user_model, family_model, lambda: models()[DOCUMENT])))
 
 
 
@@ -504,7 +510,7 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
     for identifier, row in certificates_old.items():
         updates = medical.get('columns', {}) if medical and STATE['source']['certificates'][medical['label']]['id'] == identifier else {}
         contract.require(certificates[identifier] == {**row, **resolve(updates, binding)}, 'state.certificate')
-    contract.require(not new[LABELS['medical']], 'state.certificate-created')
+    check_placeholder(effect, before, after, new[LABELS['medical']], expect_new, owner, since, until, binding)
     # Payment.
     payment = effect.get('payment')
     payments_old, payments = rows(before, LABELS['payment']), rows(after, LABELS['payment'])
@@ -607,6 +613,47 @@ def check_signature(effect, before, after, ids, binding):
         binding['$signature'] = row['signature_id']
 
 
+def placeholder_png(text):
+    """image.save(BytesIO(), format='PNG') of generate_image_with_text(text), as the view stores it."""
+    from io import BytesIO
+    from application.utils.api_utils import generate_image_with_text
+    buffer = BytesIO()
+    generate_image_with_text(text).save(buffer, format='PNG')
+    return buffer.getvalue()
+
+
+def check_placeholder(effect, before, after, certificates, expect_new, owner, since, until, binding):
+    """The placeholder certificate of a typed date: one Document, its stored PNG and one MedicalCertificate; else none."""
+    old, current = rows(before, DOCUMENT), rows(after, DOCUMENT)
+    contract.require(all(current.get(k) == v for k, v in old.items()), 'state.document-changed')
+    documents = [v for k, v in current.items() if k not in old]
+    spec = effect.get('placeholder')
+    if not spec:
+        contract.require(not documents and not certificates, 'state.certificate-created')
+        return
+    contract.require(len(documents) == 1 and len(certificates) == 1, f'state.placeholder-count:{len(documents)}:{len(certificates)}')
+    document = documents[0]
+    contract.require(uuid4_text(document['document_id']) and uuid4_text(document['token']) and document['token'] != document['document_id']
+                     and in_window(document['creation_date'], since, until), 'state.placeholder-document-identity')
+    contract.require(document == {'document_id': document['document_id'], 'token': document['token'],
+                                  'creation_date': document['creation_date'], 'filepath': None, 'filename': spec['filename'],
+                                  'file_size_bytes': None}, 'state.placeholder-document' + json.dumps(document, default=str))
+    binding['$placeholder_document'] = document['document_id']
+    binding['$placeholder_medical'] = certificates[0]['medical_id']
+    expect_new(LABELS['medical'], {'expiration_date': spec['expiration'], 'user_id': owner, 'document_id': document['document_id']},
+               certificates[0])
+    from docmanager.models import Document
+    created = Document._base_manager.get(pk=document['document_id']).creation_date
+    key = f"{LOCATION}/{created.timestamp()}/{document['document_id']}/{spec['filename']}"
+    added = listing() - set(STATE['objects'])
+    contract.require(key in added, 'storage.placeholder-key' + json.dumps(sorted(added)))
+    stored = STORAGE['client'].get_object(Bucket=BUCKET, Key=key)
+    body = stored['Body'].read()
+    contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == placeholder_png(spec['text']), f'storage.placeholder-bytes:{len(body)}')
+    contract.require(stored['ContentType'] == 'image/png' and stored.get('ContentEncoding') is None, 'storage.placeholder-metadata')
+    STATE['objects'] = set(STATE['objects']) | {key}
+
+
 def check_storage(effect, subscription, since, until, binding):
     """The bucket: the case's upload at <AWS_LOCATION>/subscriptions/<id>/signature_<repr(timestamp)>.png, nothing else."""
     import base64
@@ -649,7 +696,7 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
                'subscriptionmembership': 'application.SubscriptionMembership', 'medicalcertificate': 'application.MedicalCertificate',
                'notificationsbroadcast': 'notifications.NotificationsBroadcast',
                'usernotificationsbroadcast': 'notifications.UserNotificationsBroadcast', 'signature': 'application.Signature',
-               'user': USER}
+               'user': USER, 'document': DOCUMENT}
     for position, (event, spec) in enumerate(zip(added, authored)):
         where = f':{position}:{spec["model"]}'
         app = spec.get('app', 'application')

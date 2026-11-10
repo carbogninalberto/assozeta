@@ -205,7 +205,7 @@ func (s *CalendarExport) writeEvent(out *strings.Builder, raw any) error {
 			}
 		}
 	}
-	lines := []string{"BEGIN:VEVENT", "SUMMARY:" + calendarExportEscape(summary), "DTSTART:" + start.render(), "DTEND:" + end.render(),
+	lines := []string{"BEGIN:VEVENT", "SUMMARY:" + calendarExportEscape(summary), "DTSTART" + start.render(), "DTEND" + end.render(),
 		"DTSTAMP:" + stamp.Format("20060102T150405") + "Z", "UID:" + calendarExportEscape(uid)}
 	if description != nil {
 		lines = append(lines, "DESCRIPTION:"+calendarExportEscape(*description))
@@ -238,8 +238,8 @@ func calendarExportContains(value any, name string) (bool, error) {
 }
 
 // calendarExportText is str() of a JSON scalar as icalendar's vText receives
-// it. Floats (Python repr), lists (one property per item) and dicts (repr)
-// are refused.
+// it (a float as Python's repr). Lists (one property per item) and dicts
+// (repr) are refused.
 func calendarExportText(value any) (string, error) {
 	switch v := value.(type) {
 	case nil:
@@ -254,7 +254,7 @@ func calendarExportText(value any) (string, error) {
 	case json.Number:
 		text := string(v)
 		if strings.ContainsAny(text, ".eE") {
-			return "", domain.ErrMiscRoutesNotPorted
+			return dto.PythonStr(v), nil
 		}
 		return text, nil
 	}
@@ -289,16 +289,89 @@ func calendarExportFold(line string) string {
 }
 
 type calendarExportMoment struct {
-	at  time.Time // wall clock
-	utc bool
+	at   time.Time // wall clock
+	utc  bool
+	zone string // TZID of a fixed offset other than zero
 }
 
+// render is the property's parameters and value: ":<local time>" with a Z for
+// UTC, or ";TZID=<name>:<local time>" (the name quoted when it holds a colon).
 func (m calendarExportMoment) render() string {
 	text := fmt.Sprintf("%04d%02d%02dT%02d%02d%02d", m.at.Year(), int(m.at.Month()), m.at.Day(), m.at.Hour(), m.at.Minute(), m.at.Second())
 	if m.utc {
-		text += "Z"
+		return ":" + text + "Z"
 	}
-	return text
+	if m.zone != "" {
+		name := m.zone
+		if strings.ContainsAny(name, ",;: ’'") {
+			name = `"` + name + `"`
+		}
+		return ";TZID=" + name + ":" + text
+	}
+	return ":" + text
+}
+
+// calendarExportOffset reads a UTC offset written ±HH, ±HHMM or ±HH:MM.
+// ok=false for another form (seconds, minutes past 59).
+func calendarExportOffset(zone string) (minutes int, ok bool) {
+	if len(zone) < 3 || (zone[0] != '+' && zone[0] != '-') {
+		return 0, false
+	}
+	digits := zone[1:]
+	if len(digits) == 5 && digits[2] == ':' {
+		digits = digits[:2] + digits[3:]
+	}
+	if len(digits) != 2 && len(digits) != 4 {
+		return 0, false
+	}
+	hours, valid := calendarExportDigits(digits[:2])
+	if !valid {
+		return 0, false
+	}
+	if len(digits) == 4 {
+		if minutes, valid = calendarExportDigits(digits[2:]); !valid || minutes > 59 {
+			return 0, false
+		}
+	}
+	minutes += hours * 60
+	if zone[0] == '-' {
+		minutes = -minutes
+	}
+	return minutes, true
+}
+
+// calendarExportZoned names the timezone of a parsed offset. named is the
+// timezone's own name (datetime.timezone: "UTC+05:45"), used when icalendar's
+// table lacks the offset; without it such an offset is refused. An offset of
+// 24 hours or more is no timezone (ValueError).
+func calendarExportZoned(moment *calendarExportMoment, minutes int, named bool) (*calendarExportMoment, error) {
+	if moment == nil {
+		return nil, nil
+	}
+	if minutes == 0 {
+		moment.utc = true
+		return moment, nil
+	}
+	size := minutes
+	if size < 0 {
+		size = -size
+	}
+	if size >= 24*60 {
+		return nil, domain.ErrMiscRoutesServer
+	}
+	if zone, known := calendarExportZones[minutes]; known {
+		moment.zone = zone
+		return moment, nil
+	}
+	if !named {
+		return nil, domain.ErrMiscRoutesNotPorted
+	}
+	sign := "+"
+	if minutes < 0 {
+		sign = "-"
+	}
+	moment.zone = fmt.Sprintf("UTC%s%02d:%02d", sign, size/60, size%60)
+	return moment, nil
 }
 
 // calendarExportParse is django.utils.dateparse.parse_datetime for the forms
@@ -390,15 +463,22 @@ func calendarExportISO(text string) (*calendarExportMoment, bool, error) {
 		return nil, false, domain.ErrMiscRoutesNotPorted
 	}
 	clock := rest[1:]
-	utc := false
+	utc, offset := false, 0
 	if index := strings.IndexAny(clock, "+-Z"); index >= 0 {
 		zone := clock[index:]
 		clock = clock[:index]
-		switch zone {
-		case "Z", "+00:00", "-00:00", "+0000", "-0000", "+00", "-00":
+		if zone == "Z" {
 			utc = true
-		default:
-			return nil, false, domain.ErrMiscRoutesNotPorted
+		} else {
+			minutes, known := calendarExportOffset(zone)
+			if !known {
+				return nil, false, domain.ErrMiscRoutesNotPorted
+			}
+			if minutes <= -24*60 || minutes >= 24*60 {
+				// fromisoformat's ValueError; the regex raises on the same offset or answers None.
+				return nil, false, domain.ErrMiscRoutesServer
+			}
+			utc, offset = minutes == 0, minutes
 		}
 	}
 	hour, minute, second, micro, ok := calendarExportClock(clock)
@@ -415,6 +495,11 @@ func calendarExportISO(text string) (*calendarExportMoment, bool, error) {
 	if err != nil {
 		// fromisoformat's ValueError; the regex would raise on the same values.
 		return nil, false, err
+	}
+	if offset != 0 {
+		if moment, err = calendarExportZoned(moment, offset, true); err != nil {
+			return nil, false, err
+		}
 	}
 	return moment, true, nil
 }
@@ -482,7 +567,7 @@ func calendarExportRegex(text string) (*calendarExportMoment, error) {
 	if match[7] != "" {
 		micro, _ = strconv.Atoi(match[7] + strings.Repeat("0", 6-len(match[7])))
 	}
-	utc := false
+	utc, offset := false, 0
 	switch zone := match[8]; {
 	case zone == "":
 	case zone == "Z":
@@ -490,7 +575,22 @@ func calendarExportRegex(text string) (*calendarExportMoment, error) {
 	case strings.Trim(zone[1:], "0:") == "":
 		utc = true
 	default:
-		return nil, domain.ErrMiscRoutesNotPorted
+		// get_fixed_timezone: minutes past 59 add up (the regex takes any two digits).
+		digits := strings.ReplaceAll(zone[1:], ":", "")
+		offset, _ = strconv.Atoi(digits[:2])
+		offset *= 60
+		if len(digits) == 4 {
+			minutes, _ := strconv.Atoi(digits[2:])
+			offset += minutes
+		}
+		if zone[0] == '-' {
+			offset = -offset
+		}
 	}
-	return calendarExportBuild(number(1), number(2), number(3), number(4), number(5), second, micro, utc)
+	moment, err := calendarExportBuild(number(1), number(2), number(3), number(4), number(5), second, micro, utc)
+	if err != nil || offset == 0 {
+		return moment, err
+	}
+	// The timezone is named "+HHMM" here; only the offsets of icalendar's table are ported.
+	return calendarExportZoned(moment, offset, false)
 }

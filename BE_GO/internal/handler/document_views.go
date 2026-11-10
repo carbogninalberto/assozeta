@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -15,6 +18,8 @@ type DocumentViewsHandler struct {
 	views      *service.DocumentViews
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
+	audit      LoginAuditReader
+	operations *paymentcategorylifecycle.Lifecycle
 }
 
 func NewDocumentViewsHandler(views *service.DocumentViews, actors *service.ActorAuthentication,
@@ -28,6 +33,45 @@ const (
 	viewOrBypass             // IsAuthenticated | HasBypassAuthorizationHeader
 	viewAllowAny             // the AllowAny default (no view of this family)
 )
+
+// WithTutorPromotion lets the views save get_main_tutor's promoted relation:
+// the request's audit context and the write admission.
+func (h *DocumentViewsHandler) WithTutorPromotion(audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *DocumentViewsHandler {
+	h.audit, h.operations = audit, operations
+	return h
+}
+
+// documentViewPromotion admits the promotion when a view first needs it; the
+// returned function releases the tracked operation after the response.
+func documentViewPromotion(c echo.Context, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) (*service.DocumentViewPromotion, func()) {
+	if audit == nil || operations == nil {
+		return nil, func() {}
+	}
+	request := c.Request()
+	var tracked *paymentcategorylifecycle.Operation
+	var admitted context.Context
+	var auditContext domain.LoginAuditContext
+	promotion := &service.DocumentViewPromotion{Admit: func() (context.Context, domain.LoginAuditContext, error) {
+		if admitted != nil {
+			return admitted, auditContext, nil
+		}
+		operation, err := operations.Track(request.Context())
+		if err != nil {
+			return nil, auditContext, err
+		}
+		tracked = operation
+		if auditContext, err = audit(request); err != nil {
+			return nil, auditContext, err
+		}
+		admitted, err = tracked.Admit()
+		return admitted, auditContext, err
+	}}
+	return promotion, func() {
+		if tracked != nil {
+			tracked.Release()
+		}
+	}
+}
 
 func (h *DocumentViewsHandler) Subscription(c echo.Context) error {
 	return h.serve(c, service.ViewSubscription, "document_subscription_view", "Document Subscription View", viewAuthenticated)
@@ -74,13 +118,19 @@ func (h *DocumentViewsHandler) serve(c echo.Context, view, operation, name strin
 	default:
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	promotion, release := documentViewPromotion(c, h.audit, h.operations)
+	defer release()
 	reply, err := h.views.Render(request.Context(), *identity, service.DocumentViewRequest{
 		View: view, UID: c.Param("uid"), Path: request.URL.Path, Query: parseReferenceForm(request.URL.RawQuery),
 		Group: request.Header.Get("X-Group-Id"), Language: restLanguage(request), Authorization: requestAuthorization(request),
+		Promotion: promotion,
 	})
 	if err != nil {
 		if errors.Is(err, service.ErrDocumentViewNotPorted) {
 			c.Logger().Warn(err.Error())
+		}
+		if errors.Is(err, paymentcategorylifecycle.ErrAdmissionStopped) {
+			return paymentCategoryError(c, err)
 		}
 		return messageReadsError(c, err)
 	}

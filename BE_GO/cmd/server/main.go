@@ -303,10 +303,11 @@ func run() (runErr error) {
 	documentViews := service.NewDocumentViews(repository.NewDocumentViews(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")),
 		os.Getenv("DOCUMENT_BYPASS_TOKEN"), time.Now)
-	documentViewsHandler := handler.NewDocumentViewsHandler(documentViews, service.NewActorAuthentication(accounts, tokens), identities)
+	documentViewsHandler := handler.NewDocumentViewsHandler(documentViews, service.NewActorAuthentication(accounts, tokens), identities).
+		WithTutorPromotion(middleware.SessionAuditContext, paymentCategoryOperations)
 	// document/invoice/<uid>/view/ and document/einvoice/<uid>/view/ (the FatturaPA page of internal/fatturapa).
 	invoiceViewsHandler := handler.NewInvoiceViewsHandler(service.NewInvoiceViews(repository.NewInvoiceViews(db), documentViews),
-		service.NewActorAuthentication(accounts, tokens), identities)
+		service.NewActorAuthentication(accounts, tokens), identities).WithTutorPromotion(middleware.SessionAuditContext, paymentCategoryOperations)
 	documentRenders := service.NewDocumentRender(repository.NewDocumentRender(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")), tasks,
 		documentRenderSettings(cfg), time.Now, uuid.NewString)
@@ -478,7 +479,7 @@ func run() (runErr error) {
 	e.Any("/subscription/associates-draft/:uid/edit", associateDraftsHandler.Edit, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/associates-draft/:uid/delete", associateDraftsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionMedicalHandler := handler.NewSubscriptionMedicalHandler(service.NewSubscriptionMedical(repository.NewSubscriptionMedical(db), time.Now,
-		uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		uuid.NewString).WithPlaceholders(composeSubscriptionPlaceholders(cfg, db)), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/medical-appointments/list", subscriptionMedicalHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/import/upload", composeSubscriptionImportUpload(cfg, db, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations).Upload, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/:uid/medical-appointments/:medical_appointments_id/delete", subscriptionMedicalHandler.Delete,
@@ -955,6 +956,7 @@ func run() (runErr error) {
 	stripeRoutes.WithPaidFlow(paymentPaidFlows, subscriptionNotifier, tasks, os.Getenv("DOCUMENT_BYPASS_TOKEN"))
 	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil).
 		WithSignatures(composeSubscriptionSignatureUploads(cfg, db, tasks)).
+		WithPlaceholders(composeSubscriptionPlaceholders(cfg, db)).
 		WithAccounts(service.SubscriptionCreateAccounts{Passwords: passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
 			Settings: service.OAuthAccountSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
 				DefaultFromEmail: cfg.DefaultFromEmail, IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug},

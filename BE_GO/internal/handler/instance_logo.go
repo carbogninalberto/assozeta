@@ -15,6 +15,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const instanceLogoContentPolicy = "sandbox; default-src 'none'; style-src 'unsafe-inline'"
+
 type InstanceLogoReader interface {
 	Read(context.Context) (*domain.InstanceLogo, error)
 }
@@ -81,6 +83,9 @@ func (h *InstanceLogoHandler) Read(c echo.Context) error {
 	header.Set("Content-Type", value.ContentType)
 	header.Set("Content-Disposition", `inline; filename="`+value.Filename+`"`)
 	header.Set("Cache-Control", "no-cache")
+	// Logo responses carry a restrictive content policy.
+	header.Set("Content-Security-Policy", instanceLogoContentPolicy)
+	header.Set("X-Content-Type-Options", "nosniff")
 	header.Add("Vary", "Accept-Encoding")
 	compressed := manualAcceptsGzip.MatchString(strings.Join(r.Header.Values("Accept-Encoding"), ","))
 	if !compressed {

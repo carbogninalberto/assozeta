@@ -39,9 +39,13 @@
 ## Not ported
 
 - `subscription/associates-draft/list/approve`. Its main path calls `create_subscription` for every valid draft, and that call creates users, associates, subscriptions, payments and documents and sends emails. The route stays on Django.
-- In edit, `dateutil.parser.parse` is ported for `YYYY-MM-DD`, `YYYY-MM-DDTHH:MM:SS[.ffffff][Z|±HH:MM]` and `A/B/YYYY` (day A of month B; month A when B exceeds 12; Go: `dto.PersonDate`), plus the failures listed above. Any other string, and years before 1000, are refused with a 500 before any write, for the associate's and the tutor's date alike.
+- In edit, `person_date` is the whole dateutil parser (`internal/pydateutil` with `dayfirst`, through `dto.PersonDate`): dashes, dots, month names, times, a year alone (the rest from today's date, UTC). Years before 1000 and texts over 64 KiB are refused with a 500 before any write, for the associate's and the tutor's date alike.
 
 ## Evidence
+
+- v2subs3 (141 cases; every dateutil form): RED: documented refusal (v2-refusals.md, "date format outside the subset").
+  GREEN (`v2subs3-versioned-r1`, after merging the base): 141/141 on native Django, native Go, Caddy `/api/v1` and
+  `/api/v2`. Mutation (`v2subs3-mutation-r1`): reading every text month first fails Go on a day-first case (CAUGHT).
 
 - v2subs (132 cases; day-first dates): the edit's age check read `A/B/YYYY` month first; Django now reads the day first
   (`BE/application/tests/test_person_date.py`). Four cases use birth dates computed on the day of the run
