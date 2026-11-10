@@ -17970,7 +17970,7 @@
         "target": "oauth2_delete_account",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/oauth_accounts.go",
         "BE_GO/internal/dto/oauth_signup.go",
@@ -17984,8 +17984,12 @@
         "BE_GO/internal/service/login_response.go",
         "BE_GO/pkg/jwt/jwt.go",
         "BE_GO/pkg/crypto/password.go",
-        "BE_GO/internal/service/social_configuration.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/social_login.go",
+        "BE_GO/internal/service/social_providers.go",
+        "BE_GO/internal/service/second_factor.go",
+        "BE_GO/internal/repository/accounts.go",
+        "BE_GO/cmd/server/login.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -18012,7 +18016,12 @@
         "BE/core/celery.py",
         "BE/core/settings.py",
         "BE/core/middleware.py",
-        "BE/instance/restore/task_base.py"
+        "BE/instance/restore/task_base.py",
+        "BE_GO/pkg/social/google.go",
+        "BE_GO/pkg/social/apple.go",
+        "BE_GO/pkg/social/transport.go",
+        "BE_GO/internal/service/social_configuration.go",
+        "TESTS/adapters/django/login_provider_proxy.py"
       ],
       "contract": {
         "methods": [
@@ -18041,21 +18050,28 @@
         "TESTS/adapters/django/oauth_accounts_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/oauth2-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run oauth-accounts --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/oauth-accounts-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7fa98b6f307ec182cf930da426d3bab2fcf06dc02dbae4bc448749fc71e3b509",
-          "scope": "HTTP family oauth-accounts: 109/109 cases on native Django and native Go, 109/109 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-red-r2/results.json",
+          "receipt_sha256": "9e18b0517d9642a04c6f20a1cf6283842e501257bfa07abc43539ce6ff7866af"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and provider requests.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "e58c53680eaa5fff4af8f93cc7bf29ef530348d2bfea80e1fc8aa3fa7aa6a8a1"
+        },
+        {
+          "revision": "committing change with SocialIdentity.VerifiedEmail accepting any email_verified value",
+          "result": "Mutation control: fails Go on oauth-accounts-signup-social-google-unverified (response.status 200) — CAUGHT; a second control (secoauth-mutation-role-r1), writing the role while reading an existing account's second factor, fails Go on oauth-accounts-signup-social-google-existing-owner (state.no-effect) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-mutation-verified-r1/results.json",
+          "receipt_sha256": "a4c288fb53b86fc8a6620acc758f2e25fc24a29cd540230b30fbb47de551dfc8"
         }
       ],
       "notes": [
-        "Implementing: signup (non-social path), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Refused before any write (500): the social path when a Google/Apple client id is configured (token verification calls the provider), non-ASCII signup e-mails and usernames, reset passwords with NUL or lone surrogates. HTTP cases run in English.",
-        "Implementing evidence: docs/architecture/go-migration/oauth2-accounts.md",
-        "Implementing evidence: RED: Django 109/109; Go 404 on the first case. (quality-reports/go-migration/oauth-accounts-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 109/109 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, index, Redis DB 2 and Celery effects. (quality-reports/go-migration/oauth-accounts-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on oauth-accounts-reset-shared-email (reset.tokens: a token is issued for the deleted account) — CAUGHT. (quality-reports/go-migration/oauth-accounts-http-mutation-r1/results.json)"
+        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English."
       ]
     },
     {
@@ -18554,7 +18570,7 @@
         "target": "partial_signup",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/oauth_accounts.go",
         "BE_GO/internal/dto/oauth_signup.go",
@@ -18568,8 +18584,12 @@
         "BE_GO/internal/service/login_response.go",
         "BE_GO/pkg/jwt/jwt.go",
         "BE_GO/pkg/crypto/password.go",
-        "BE_GO/internal/service/social_configuration.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/social_login.go",
+        "BE_GO/internal/service/social_providers.go",
+        "BE_GO/internal/service/second_factor.go",
+        "BE_GO/internal/repository/accounts.go",
+        "BE_GO/cmd/server/login.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -18596,7 +18616,12 @@
         "BE/core/celery.py",
         "BE/core/settings.py",
         "BE/core/middleware.py",
-        "BE/instance/restore/task_base.py"
+        "BE/instance/restore/task_base.py",
+        "BE_GO/pkg/social/google.go",
+        "BE_GO/pkg/social/apple.go",
+        "BE_GO/pkg/social/transport.go",
+        "BE_GO/internal/service/social_configuration.go",
+        "TESTS/adapters/django/login_provider_proxy.py"
       ],
       "contract": {
         "methods": [
@@ -18625,21 +18650,28 @@
         "TESTS/adapters/django/oauth_accounts_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/oauth2-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run oauth-accounts --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/oauth-accounts-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7fa98b6f307ec182cf930da426d3bab2fcf06dc02dbae4bc448749fc71e3b509",
-          "scope": "HTTP family oauth-accounts: 109/109 cases on native Django and native Go, 109/109 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-red-r2/results.json",
+          "receipt_sha256": "9e18b0517d9642a04c6f20a1cf6283842e501257bfa07abc43539ce6ff7866af"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and provider requests.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "e58c53680eaa5fff4af8f93cc7bf29ef530348d2bfea80e1fc8aa3fa7aa6a8a1"
+        },
+        {
+          "revision": "committing change with SocialIdentity.VerifiedEmail accepting any email_verified value",
+          "result": "Mutation control: fails Go on oauth-accounts-signup-social-google-unverified (response.status 200) — CAUGHT; a second control (secoauth-mutation-role-r1), writing the role while reading an existing account's second factor, fails Go on oauth-accounts-signup-social-google-existing-owner (state.no-effect) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-mutation-verified-r1/results.json",
+          "receipt_sha256": "a4c288fb53b86fc8a6620acc758f2e25fc24a29cd540230b30fbb47de551dfc8"
         }
       ],
       "notes": [
-        "Implementing: signup (non-social path), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Refused before any write (500): the social path when a Google/Apple client id is configured (token verification calls the provider), non-ASCII signup e-mails and usernames, reset passwords with NUL or lone surrogates. HTTP cases run in English.",
-        "Implementing evidence: docs/architecture/go-migration/oauth2-accounts.md",
-        "Implementing evidence: RED: Django 109/109; Go 404 on the first case. (quality-reports/go-migration/oauth-accounts-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 109/109 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, index, Redis DB 2 and Celery effects. (quality-reports/go-migration/oauth-accounts-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on oauth-accounts-reset-shared-email (reset.tokens: a token is issued for the deleted account) — CAUGHT. (quality-reports/go-migration/oauth-accounts-http-mutation-r1/results.json)"
+        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English."
       ]
     },
     {
@@ -18805,7 +18837,7 @@
         "target": "oauth2_reset_password",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/oauth_accounts.go",
         "BE_GO/internal/dto/oauth_signup.go",
@@ -18819,8 +18851,12 @@
         "BE_GO/internal/service/login_response.go",
         "BE_GO/pkg/jwt/jwt.go",
         "BE_GO/pkg/crypto/password.go",
-        "BE_GO/internal/service/social_configuration.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/social_login.go",
+        "BE_GO/internal/service/social_providers.go",
+        "BE_GO/internal/service/second_factor.go",
+        "BE_GO/internal/repository/accounts.go",
+        "BE_GO/cmd/server/login.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -18847,7 +18883,12 @@
         "BE/core/celery.py",
         "BE/core/settings.py",
         "BE/core/middleware.py",
-        "BE/instance/restore/task_base.py"
+        "BE/instance/restore/task_base.py",
+        "BE_GO/pkg/social/google.go",
+        "BE_GO/pkg/social/apple.go",
+        "BE_GO/pkg/social/transport.go",
+        "BE_GO/internal/service/social_configuration.go",
+        "TESTS/adapters/django/login_provider_proxy.py"
       ],
       "contract": {
         "methods": [
@@ -18876,21 +18917,28 @@
         "TESTS/adapters/django/oauth_accounts_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/oauth2-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run oauth-accounts --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/oauth-accounts-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7fa98b6f307ec182cf930da426d3bab2fcf06dc02dbae4bc448749fc71e3b509",
-          "scope": "HTTP family oauth-accounts: 109/109 cases on native Django and native Go, 109/109 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-red-r2/results.json",
+          "receipt_sha256": "9e18b0517d9642a04c6f20a1cf6283842e501257bfa07abc43539ce6ff7866af"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and provider requests.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "e58c53680eaa5fff4af8f93cc7bf29ef530348d2bfea80e1fc8aa3fa7aa6a8a1"
+        },
+        {
+          "revision": "committing change with SocialIdentity.VerifiedEmail accepting any email_verified value",
+          "result": "Mutation control: fails Go on oauth-accounts-signup-social-google-unverified (response.status 200) — CAUGHT; a second control (secoauth-mutation-role-r1), writing the role while reading an existing account's second factor, fails Go on oauth-accounts-signup-social-google-existing-owner (state.no-effect) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-mutation-verified-r1/results.json",
+          "receipt_sha256": "a4c288fb53b86fc8a6620acc758f2e25fc24a29cd540230b30fbb47de551dfc8"
         }
       ],
       "notes": [
-        "Implementing: signup (non-social path), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Refused before any write (500): the social path when a Google/Apple client id is configured (token verification calls the provider), non-ASCII signup e-mails and usernames, reset passwords with NUL or lone surrogates. HTTP cases run in English.",
-        "Implementing evidence: docs/architecture/go-migration/oauth2-accounts.md",
-        "Implementing evidence: RED: Django 109/109; Go 404 on the first case. (quality-reports/go-migration/oauth-accounts-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 109/109 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, index, Redis DB 2 and Celery effects. (quality-reports/go-migration/oauth-accounts-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on oauth-accounts-reset-shared-email (reset.tokens: a token is issued for the deleted account) — CAUGHT. (quality-reports/go-migration/oauth-accounts-http-mutation-r1/results.json)"
+        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English."
       ]
     },
     {
@@ -18908,7 +18956,7 @@
         "target": "oauth2_signup",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/oauth_accounts.go",
         "BE_GO/internal/dto/oauth_signup.go",
@@ -18922,8 +18970,12 @@
         "BE_GO/internal/service/login_response.go",
         "BE_GO/pkg/jwt/jwt.go",
         "BE_GO/pkg/crypto/password.go",
-        "BE_GO/internal/service/social_configuration.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/service/social_login.go",
+        "BE_GO/internal/service/social_providers.go",
+        "BE_GO/internal/service/second_factor.go",
+        "BE_GO/internal/repository/accounts.go",
+        "BE_GO/cmd/server/login.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -18950,7 +19002,12 @@
         "BE/core/celery.py",
         "BE/core/settings.py",
         "BE/core/middleware.py",
-        "BE/instance/restore/task_base.py"
+        "BE/instance/restore/task_base.py",
+        "BE_GO/pkg/social/google.go",
+        "BE_GO/pkg/social/apple.go",
+        "BE_GO/pkg/social/transport.go",
+        "BE_GO/internal/service/social_configuration.go",
+        "TESTS/adapters/django/login_provider_proxy.py"
       ],
       "contract": {
         "methods": [
@@ -18962,13 +19019,13 @@
           "/api/v2/oauth2/signup",
           "/api/oauth2/signup"
         ],
-        "request": "JSON body: sport_association (bool, required, false), email (string), first_name, last_name, phone, username, password (UserSerializerSignup), optional collaboratorToken, subscription_transfer + subscription_transfer_token; token + username + backend selects the social path. Form bodies fail the bool check.",
-        "response": "200 login response: access_token, refresh_token, expires_in, token_type, role, user_data (UserAuthSerializer and, for collaborators, the association re-serialized with empty_sections and requires_welcome false), requires_welcome/tables_settings as build_login_response.",
-        "errors": "400 JSON parse error; 400 sport_association required / Must be a boolean; 403 sport_association true; 400 {'msg': 'You are nasty ...'} for disposable e-mails; 400 Unsupported backend; 401 {'error': 'Invalid social token'} without a configured provider (no Bearer challenge); 400 {'msg': 'Invalid request.', 'details': serializer errors}; 400 Collaboration invite not found / expired; 405; 500 for non-dict bodies, missing or non-string e-mails, e-mails without '@', a 'skrank.com' second part, invalid transfer tokens, a null invite expiry, missing first/last name, username unique violations after upper-casing, subscription_transfer true, an invite owner without a live association; 500 (not ported) for a configured social provider and non-ASCII e-mails/usernames.",
+        "request": "JSON body: sport_association (bool, required, false), email (string), first_name, last_name, phone, username, password (UserSerializerSignup), optional collaboratorToken, subscription_transfer + subscription_transfer_token; token + username + backend selects the social path (a Google or Apple token; optional otp for an existing account with a second factor). Form bodies fail the bool check.",
+        "response": "200 login response: access_token, refresh_token, expires_in, token_type, role, user_data (UserAuthSerializer and, for collaborators, the association re-serialized with empty_sections and requires_welcome false), requires_welcome/tables_settings as build_login_response. The social path answers the same body for the new account, or for the existing account with the identity's verified e-mail.",
+        "errors": "400 JSON parse error; 400 sport_association required / Must be a boolean; 403 sport_association true; 400 {'msg': 'You are nasty ...'} for disposable e-mails; 400 Unsupported backend; 401 {'error': 'Invalid social token'} (no Bearer challenge) without a configured provider, for a token the provider rejects and for an identity without a verified e-mail; social path with an existing account: 401 {'error': 'invalid credentials'} for an inactive or shared e-mail account, 401 {'msg': 'OTP code required.'} / {'msg': 'OTP code not valid.'}, 500 for an otp without a length; social path, new account: 500 for a username that is not a string or is empty; 400 {'msg': 'Invalid request.', 'details': serializer errors}; 400 Collaboration invite not found / expired; 405; 500 for non-dict bodies, missing or non-string e-mails, e-mails without '@', a 'skrank.com' second part, invalid transfer tokens, a null invite expiry, missing first/last name, username unique violations after upper-casing, subscription_transfer true, an invite owner without a live association; 500 (not ported) for non-ASCII e-mails/usernames and, on the social path, names that are not strings.",
         "authentication": "AllowAny: a supplied Bearer token still authenticates (invalid tokens 401) and becomes the audit actor; EXCLUDED_ENDPOINTS and the oauth2/ prefix: restricted collaborators and administrators without a session pass; impersonation sessions with an association boundary go through enforce_scoped_request (athlete targets 403).",
         "permissions": "AllowAny (identity resolution only).",
-        "resource_scope": "UserPartial by e-mail (iexact, first by key); CollaborationInvites by token (first by key, null token matches null); username uniqueness over all users.",
-        "side_effects": "Deletes the matching UserPartial and the invite (delete entries), creates the User (create entry, index through the actor's association), may create the association's default card configuration (build_login_response), publishes send_mail_async (welcome).",
+        "resource_scope": "UserPartial by e-mail (iexact, first by key); CollaborationInvites by token (first by key, null token matches null); username uniqueness over all users. Social path: live users by the identity's e-mail (iexact, by user_id).",
+        "side_effects": "Deletes the matching UserPartial and the invite (delete entries), creates the User (create entry, index through the actor's association), may create the association's default card configuration (build_login_response), publishes send_mail_async (welcome). Social path: calls the provider (Google certificates, token info, user info; Apple keys); an existing account is signed in with no write and no e-mail; a new account has no usable password, its invite is deleted before it and the UserPartial of the body's e-mail after it.",
         "transaction": "Not atomic: each delete/create commits with its audit entry; failures after a write keep it; the e-mail is published after the commits.",
         "execution_owner": "django"
       },
@@ -18979,21 +19036,28 @@
         "TESTS/adapters/django/oauth_accounts_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/oauth2-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run oauth-accounts --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/oauth-accounts-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "7fa98b6f307ec182cf930da426d3bab2fcf06dc02dbae4bc448749fc71e3b509",
-          "scope": "HTTP family oauth-accounts: 109/109 cases on native Django and native Go, 109/109 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 159/159; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-red-r2/results.json",
+          "receipt_sha256": "9e18b0517d9642a04c6f20a1cf6283842e501257bfa07abc43539ce6ff7866af"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and provider requests.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "e58c53680eaa5fff4af8f93cc7bf29ef530348d2bfea80e1fc8aa3fa7aa6a8a1"
+        },
+        {
+          "revision": "committing change with SocialIdentity.VerifiedEmail accepting any email_verified value",
+          "result": "Mutation control: fails Go on oauth-accounts-signup-social-google-unverified (response.status 200) — CAUGHT; a second control (secoauth-mutation-role-r1), writing the role while reading an existing account's second factor, fails Go on oauth-accounts-signup-social-google-existing-owner (state.no-effect) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-mutation-verified-r1/results.json",
+          "receipt_sha256": "a4c288fb53b86fc8a6620acc758f2e25fc24a29cd540230b30fbb47de551dfc8"
         }
       ],
       "notes": [
-        "Implementing: signup (non-social path), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Refused before any write (500): the social path when a Google/Apple client id is configured (token verification calls the provider), non-ASCII signup e-mails and usernames, reset passwords with NUL or lone surrogates. HTTP cases run in English.",
-        "Implementing evidence: docs/architecture/go-migration/oauth2-accounts.md",
-        "Implementing evidence: RED: Django 109/109; Go 404 on the first case. (quality-reports/go-migration/oauth-accounts-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 109/109 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit, index, Redis DB 2 and Celery effects. (quality-reports/go-migration/oauth-accounts-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on oauth-accounts-reset-shared-email (reset.tokens: a token is issued for the deleted account) — CAUGHT. (quality-reports/go-migration/oauth-accounts-http-mutation-r1/results.json)"
+        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English."
       ]
     },
     {
@@ -21178,7 +21242,10 @@
         "personas-reads",
         "BE_GO/internal/dto/python_base64.go",
         "BE_GO/pkg/storage/documentobjects/acl.go",
-        "BE_GO/pkg/storage/documentkey/stored.go"
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/internal/config/storage.go",
+        "BE/application/serializers/personas_serializers.py",
+        "BE/core/settings.py"
       ],
       "contract": {
         "methods": [
@@ -21212,25 +21279,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 188/188; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
-          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+          "result": "RED: Django 194/194; Go 201 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
+          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
         },
         {
-          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
-          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
-          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
+          "revision": "committing change with update's picture folder read from the body's associate_id",
+          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
+          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
         }
       ],
       "notes": [
-        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21271,7 +21338,10 @@
         "personas-reads",
         "BE_GO/internal/dto/python_base64.go",
         "BE_GO/pkg/storage/documentobjects/acl.go",
-        "BE_GO/pkg/storage/documentkey/stored.go"
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/internal/config/storage.go",
+        "BE/application/serializers/personas_serializers.py",
+        "BE/core/settings.py"
       ],
       "contract": {
         "methods": [
@@ -21303,25 +21373,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 188/188; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
-          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+          "result": "RED: Django 194/194; Go 201 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
+          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
         },
         {
-          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
-          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
-          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
+          "revision": "committing change with update's picture folder read from the body's associate_id",
+          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
+          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
         }
       ],
       "notes": [
-        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21437,7 +21507,10 @@
         "personas-reads",
         "BE_GO/internal/dto/python_base64.go",
         "BE_GO/pkg/storage/documentobjects/acl.go",
-        "BE_GO/pkg/storage/documentkey/stored.go"
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/internal/config/storage.go",
+        "BE/application/serializers/personas_serializers.py",
+        "BE/core/settings.py"
       ],
       "contract": {
         "methods": [
@@ -21470,25 +21543,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 188/188; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
-          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+          "result": "RED: Django 194/194; Go 201 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
+          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
         },
         {
-          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
-          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
-          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
+          "revision": "committing change with update's picture folder read from the body's associate_id",
+          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
+          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
         }
       ],
       "notes": [
-        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21529,7 +21602,10 @@
         "personas-reads",
         "BE_GO/internal/dto/python_base64.go",
         "BE_GO/pkg/storage/documentobjects/acl.go",
-        "BE_GO/pkg/storage/documentkey/stored.go"
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/internal/config/storage.go",
+        "BE/application/serializers/personas_serializers.py",
+        "BE/core/settings.py"
       ],
       "contract": {
         "methods": [
@@ -21548,7 +21624,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.personas.update.",
         "resource_scope": "get_queryset: the association's live, group-aware associates with the query filters.",
-        "side_effects": "Uploads a base64 picture_path to the default storage (HeadObject, PutObject image/jpeg, PutObjectAcl public-read) before the field validation and stores its CDN URL; saves every field of the associate (update entry with the changed fields), creates or partially updates tutors, creates/updates/deletes tutor relations (a missing tutors_data deletes them all), promotes the first relation without a primary; auditlog entries with AuditLogIndex rows.",
+        "side_effects": "Decodes a base64 picture_path before the field validation; once the fields are valid, saves it in the default storage as associates/<associate id>/picture_<timestamp>.jpg (HeadObject, PutObject image/jpeg, PutObjectAcl public-read when AWS_S3_USE_OBJECT_ACL is on) and stores its URL under AWS_S3_PUBLIC_BASE_URL, the storage custom domain or <endpoint>/<bucket>; a request with invalid fields sends no storage request; saves every field of the associate (update entry with the changed fields), creates or partially updates tutors, creates/updates/deletes tutor relations (a missing tutors_data deletes them all), promotes the first relation without a primary; auditlog entries with AuditLogIndex rows.",
         "transaction": "Django is not atomic; Go commits saved writes before answering a later exception.",
         "execution_owner": "django"
       },
@@ -21562,25 +21638,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 188/188; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
-          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+          "result": "RED: Django 194/194; Go 201 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
+          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
         },
         {
-          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
-          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
-          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
+          "revision": "committing change with update's picture folder read from the body's associate_id",
+          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
+          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
         }
       ],
       "notes": [
-        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21621,7 +21697,10 @@
         "personas-reads",
         "BE_GO/internal/dto/python_base64.go",
         "BE_GO/pkg/storage/documentobjects/acl.go",
-        "BE_GO/pkg/storage/documentkey/stored.go"
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/internal/config/storage.go",
+        "BE/application/serializers/personas_serializers.py",
+        "BE/core/settings.py"
       ],
       "contract": {
         "methods": [
@@ -21634,13 +21713,13 @@
           "/api/v2/personas/add",
           "/api/personas/add"
         ],
-        "request": "JSON object body: AssociateSerializer fields (born_date DD/MM/YYYY, user/sport_association/group/family primary keys; picture_path as a URL or a base64 data URL to upload, the body's associate_id naming its folder) and optional tutors_data list of {tutor: BasicAssociateSerializer fields, is_primary}; X-Group-Id optional.",
+        "request": "JSON object body: AssociateSerializer fields (born_date DD/MM/YYYY, user/sport_association/group/family primary keys; picture_path as a URL or a base64 data URL to upload; associate_id is read-only and not used) and optional tutors_data list of {tutor: BasicAssociateSerializer fields, is_primary}; X-Group-Id optional.",
         "response": "201 AssociateSerializer of the created associate; OPTIONS with actions.POST metadata.",
         "errors": "400 JSON parse error (after the association check); 400 serializer.errors (also a tutor's errors after the associate was saved); 400 {'picture_path': 'Error processing image: ...'} for an undecodable picture or a refused object ACL; 403 User is not a sport association; 403 generic tenant_scope denial; 500 page for form or non-dict bodies, a duplicate live tax code, malformed tutors_data after the save, a second primary relation; DELETE: 500 (no pk), athletes 403.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.personas.create.",
         "resource_scope": "request.user.sport_association; related fields through tenant_scope; existing tutors by id through Associate.objects (live, group-aware).",
-        "side_effects": "Uploads a base64 picture_path to the default storage (HeadObject, PutObject image/jpeg, PutObjectAcl public-read) before the field validation and stores its CDN URL; creates the Associate (user=request.user, the association, raw X-Group-Id), creates or partially updates tutors, creates/updates/deletes tutor relations, promotes the first relation without a primary; auditlog entries with AuditLogIndex rows.",
+        "side_effects": "Decodes a base64 picture_path before the field validation; once the fields are valid, saves it in the default storage as associates/<associate id>/picture_<timestamp>.jpg (HeadObject, PutObject image/jpeg, PutObjectAcl public-read when AWS_S3_USE_OBJECT_ACL is on) and stores its URL under AWS_S3_PUBLIC_BASE_URL, the storage custom domain or <endpoint>/<bucket>; a request with invalid fields sends no storage request; creates the Associate (user=request.user, the association, raw X-Group-Id), creates or partially updates tutors, creates/updates/deletes tutor relations, promotes the first relation without a primary; auditlog entries with AuditLogIndex rows.",
         "transaction": "Django is not atomic (writes before a later exception stay); Go runs one transaction and commits saved writes before answering a later exception.",
         "execution_owner": "django"
       },
@@ -21654,25 +21733,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 188/188; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
-          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+          "result": "RED: Django 194/194; Go 201 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
+          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
         },
         {
-          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
-          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
-          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
+          "revision": "committing change with update's picture folder read from the body's associate_id",
+          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
+          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
         }
       ],
       "notes": [
-        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
@@ -21938,7 +22017,10 @@
         "personas-reads",
         "BE_GO/internal/dto/python_base64.go",
         "BE_GO/pkg/storage/documentobjects/acl.go",
-        "BE_GO/pkg/storage/documentkey/stored.go"
+        "BE_GO/pkg/storage/documentkey/stored.go",
+        "BE_GO/internal/config/storage.go",
+        "BE/application/serializers/personas_serializers.py",
+        "BE/core/settings.py"
       ],
       "contract": {
         "methods": [
@@ -21970,25 +22052,25 @@
         "docs/architecture/go-migration/personas-writes.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 188/188; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-red-r4/results.json",
-          "receipt_sha256": "501245ac2a777bf37905214dd0cb16f6de71f7954cbf111fc3faba74a7bd7e0d"
+          "result": "RED: Django 194/194; Go 201 on the first case.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-red-r3/results.json",
+          "receipt_sha256": "26f3c96cce5b2be6f052d1f34028866d217000a47357c25dd43f2373bf4a1b90"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 188/188 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact associate, tutor relation, audit, index and storage effects.",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-final-r1/results.json",
-          "receipt_sha256": "22d687222bab569ddfc0a89e0ea5060cd5b343923f5bc02d573a948ffbabc629"
+          "result": "GREEN: 194/194 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact row, audit and storage effects.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-versioned-r1/results.json",
+          "receipt_sha256": "5fd4739483f9a9b50f3a0d1d4a15a71de0f72d4aac3e065217021dbf7a2c2ff2"
         },
         {
-          "revision": "sending the object ACL request for the stored name without AWS_LOCATION",
-          "result": "Mutation control: fails Go on personas-writes-add-picture (storage.requests).",
-          "artifact": "quality-reports/go-migration/personas-writes-http-v2misc3-mutation-r3/results.json",
-          "receipt_sha256": "12bb91f148a547100e82f13f7c84f3434edca0241b70338aed8760697b1edd22"
+          "revision": "committing change with update's picture folder read from the body's associate_id",
+          "result": "Mutation control: fails Go on personas-writes-update-picture-full-collaborator (response.picture-url) — CAUGHT.",
+          "artifact": "quality-reports/go-migration/personas-writes-http-secoauth-mutation-r1/results.json",
+          "receipt_sha256": "e852083b0dfd76278a010da583d5f98c48c4eb39b685d68df4745a1509f6da84"
         }
       ],
       "notes": [
-        "Implementing: Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2 (v2-misc-3): the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma, default storage save as associates/<body associate_id>/picture_<timestamp>.jpg before the field validation, put_object_acl public-read, the CDN URL stored; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: uploads with a body associate_id outside [A-Za-z0-9_-]{1,64}, a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
+        "Implementing: AssociateViewSet add, update, delete, recover, bulk_delete (plus the class delete() on update, recover and info) and AssociateSubscriptionViewSet list. API v2: the picture_path upload of add and update is ported (base64.b64decode of the text after the first comma before the field validation; once the fields are valid, default storage save as associates/<associate id>/picture_<timestamp>.jpg, put_object_acl public-read when AWS_S3_USE_OBJECT_ACL is on, and the URL under the storage's public base URL or its endpoint and bucket; decode failures and a refused ACL answer the serializer's 400). Refused with a 500 before any write: a picture_path list or object reaching the upload branch, an existing object under the new key, storage failures other than a 403/404 answer to the ACL request, uploads on the router's stock create, non-boolean is_primary, numeric or boolean tutor ids, born_date texts with non-ASCII digits, a non-canonical or unknown X-Group-Id when an associate may be created, and the soft delete of DELETE on personas-subscriptions/<pk>/list once found. Requests are not atomic in Django; Go commits the writes saved before a later exception, then answers it."
       ]
     },
     {
