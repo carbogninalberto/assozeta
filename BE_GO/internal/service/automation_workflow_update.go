@@ -3,8 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
@@ -44,7 +42,6 @@ type automationWorkflowTriggerOutcome int
 const (
 	automationWorkflowTriggerNone automationWorkflowTriggerOutcome = iota
 	automationWorkflowTriggerError
-	automationWorkflowTriggerNotPorted
 	// automationWorkflowTriggerSchedule is a future cron time: trigger() sends
 	// check_workflows_trigger_cron with the countdown to it.
 	automationWorkflowTriggerSchedule
@@ -73,16 +70,12 @@ func automationWorkflowRomeLocalize(year, month, day, hour, minute, second, nano
 	return standard
 }
 
-var (
-	automationWorkflowCronTime = regexp.MustCompile(`^([0-9]{4})-([0-9]{2})-([0-9]{2})(?:[T ]([0-9]{2}):([0-9]{2})(?::([0-9]{2})(?:\.([0-9]{1,6}))?)?(Z|[+-][0-9]{2}:[0-9]{2})?)?$`)
-	automationWorkflowYear     = regexp.MustCompile(`^[0-9]{4}`)
-)
-
 // automationWorkflowEnablePlan follows the view when a save turns a workflow
 // on: whether the try block resets a cron trigger's 'triggered' flag (a second
 // save), and what trigger() then does with the tree. trigger() errors are a
-// 500 after the saves; a future cron time is scheduled (at is the localized
-// time); a time text not classified here is not ported.
+// 500 after the saves (a time datetime.fromisoformat() or pytz's localize()
+// raise on included); a future cron time is scheduled (at is the localized
+// time).
 func automationWorkflowEnablePlan(tree any, now time.Time, rome *time.Location) (reset bool, outcome automationWorkflowTriggerOutcome, at time.Time) {
 	nodes, isList := tree.([]any)
 	if !isList || len(nodes) == 0 {
@@ -117,33 +110,19 @@ func automationWorkflowEnablePlan(tree any, now time.Time, rome *time.Location) 
 	}
 	raw, found := object.Lookup("time")
 	text, isString := raw.(string)
-	if !found || !isString || !automationWorkflowYear.MatchString(text) {
+	if !found || !isString {
 		return reset, automationWorkflowTriggerError, at
 	}
-	match := automationWorkflowCronTime.FindStringSubmatch(text)
-	if match == nil {
-		return reset, automationWorkflowTriggerNotPorted, at
-	}
-	number := func(index int) int {
-		parsed, _ := strconv.Atoi(match[index])
-		return parsed
-	}
-	year, month, day := number(1), number(2), number(3)
-	hour, minute, second := number(4), number(5), number(6)
-	if month < 1 || month > 12 || day < 1 || day > time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day() ||
-		year < 1 || hour > 23 || minute > 59 || second > 59 {
+	parsed, valid := automationWorkflowFromISO(text)
+	if !valid {
 		return reset, automationWorkflowTriggerError, at
 	}
-	if match[8] != "" {
-		// pytz localize() rejects an aware datetime.
+	if parsed.year == 1 && parsed.month == 1 && parsed.day == 1 || parsed.year == 9999 && parsed.month == 12 && parsed.day == 31 {
+		// localize() looks one day back and one day ahead: OverflowError.
 		return reset, automationWorkflowTriggerError, at
 	}
-	nanosecond := 0
-	if fraction := match[7]; fraction != "" {
-		nanosecond, _ = strconv.Atoi((fraction + "000000")[:6])
-		nanosecond *= 1000
-	}
-	at = automationWorkflowRomeLocalize(year, month, day, hour, minute, second, nanosecond, rome)
+	at = automationWorkflowRomeLocalize(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.minute, parsed.second,
+		parsed.microsecond*1000, rome)
 	// time_secs < 0: "Time is in the past", nothing scheduled.
 	if at.Before(now) {
 		return reset, automationWorkflowTriggerNone, at
@@ -178,6 +157,7 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	if err != nil {
 		return err
 	}
+	copyID := ""
 	if patch.Association != nil {
 		exists, err := tx.AssociationExists(ctx, *patch.Association)
 		if err != nil {
@@ -196,9 +176,10 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 		}
 		if exists {
 			invalid = true
-		} else if !invalid {
-			// save() with a new key inserts a copy: not ported.
-			return domain.ErrAutomationWorkflowUpdateNotPorted
+		} else {
+			// save() under a key no row has inserts a copy of the workflow with
+			// the validated values; the row the request names stays as it was.
+			copyID = *patch.ID
 		}
 	}
 	if invalid {
@@ -231,12 +212,34 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 		if outcome == automationWorkflowTriggerSchedule && s.tasks == nil {
 			return domain.ErrAutomationWorkflowUpdateNotPorted
 		}
-		if outcome == automationWorkflowTriggerNotPorted {
-			return domain.ErrAutomationWorkflowUpdateNotPorted
-		}
 	}
 	save := func(before map[string]string) error {
 		at := s.now().UTC().Truncate(time.Microsecond)
+		if copyID != "" {
+			// auditlog's pre_save finds no row under the new key and logs the
+			// whole instance as an update (indexed from its changes); the insert
+			// sets both timestamps and post_save logs the create.
+			row.ID, row.Tree = copyID, json.RawMessage(dto.PythonJSONDumps(tree))
+			copyID = ""
+			auditContext := paymentCategoryAuditContext(identity, audit)
+			changes, err := automationWorkflowChanges(row, 0)
+			if err != nil {
+				return err
+			}
+			if err = tx.AppendAutomationWorkflowAudit(ctx, domain.AutomationWorkflowAudit{ID: row.ID, AssociationID: association, Action: 1,
+				Changes: changes, Context: auditContext, At: at, Path: "changes_json.sport_association"}); err != nil {
+				return err
+			}
+			row.CreatedAt, row.UpdatedAt = &at, &at
+			if err = tx.InsertAutomationWorkflow(ctx, row); err != nil {
+				return err
+			}
+			if changes, err = automationWorkflowChanges(row, 0); err != nil {
+				return err
+			}
+			return tx.AppendAutomationWorkflowAudit(ctx, domain.AutomationWorkflowAudit{ID: row.ID, AssociationID: association, Action: 0,
+				Changes: changes, Context: auditContext, At: at})
+		}
 		row.Tree, row.UpdatedAt = json.RawMessage(dto.PythonJSONDumps(tree)), &at
 		if err := tx.UpdateAutomationWorkflow(ctx, row); err != nil {
 			return err
@@ -274,7 +277,7 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 		if !scheduleAt.After(now) {
 			return nil
 		}
-		eta := now.UTC().Add(scheduleAt.Sub(now)).Truncate(time.Microsecond)
+		eta := automationWorkflowETA(now, scheduleAt)
 		id, err := uuid.Parse(row.ID)
 		if err != nil {
 			return err

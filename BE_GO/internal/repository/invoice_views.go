@@ -34,17 +34,18 @@ func invoiceViewsFirst(err error) error {
 func (r *InvoiceViews) Invoice(ctx context.Context, id string, scope domain.RenderScope) (*domain.InvoiceViewInvoice, error) {
 	prefix, filter := renderScopeQuery(scope, "i", ` AND i.invoice_id IN (SELECT invoice_id FROM visible_payments WHERE invoice_id IS NOT NULL)`)
 	var row struct {
-		ID            string  `db:"id"`
-		Association   string  `db:"association"`
-		ActivityFee   string  `db:"activity_fee"`
-		MembershipFee string  `db:"membership_fee"`
-		Description   *string `db:"description"`
-		Number        *int64  `db:"number"`
-		Cancelled     bool    `db:"cancelled"`
-		SelectedTutor *string `db:"selected_tutor"`
+		ID            string    `db:"id"`
+		Association   string    `db:"association"`
+		ActivityFee   string    `db:"activity_fee"`
+		MembershipFee string    `db:"membership_fee"`
+		Description   *string   `db:"description"`
+		Number        *int64    `db:"number"`
+		Cancelled     bool      `db:"cancelled"`
+		SelectedTutor *string   `db:"selected_tutor"`
+		CreationDate  time.Time `db:"creation_date"`
 	}
 	err := r.db.GetContext(ctx, &row, prefix+`
- SELECT i.invoice_id::text AS id, i.sport_association_id::text AS association, i.activity_fee::text AS activity_fee,
+ SELECT i.creation_date, i.invoice_id::text AS id, i.sport_association_id::text AS association, i.activity_fee::text AS activity_fee,
  i.membership_fee::text AS membership_fee, i.description, i.number, i.cancelled, i.selected_tutor_id::text AS selected_tutor
  FROM application_invoice i WHERE i.invoice_id=$4::uuid AND NOT i.deleted`+filter, renderScopeArgs(scope, id)...)
 	if err != nil {
@@ -52,7 +53,7 @@ func (r *InvoiceViews) Invoice(ctx context.Context, id string, scope domain.Rend
 	}
 	return &domain.InvoiceViewInvoice{ID: row.ID, Association: row.Association, ActivityFee: row.ActivityFee,
 		MembershipFee: row.MembershipFee, Description: row.Description, Number: row.Number, Cancelled: row.Cancelled,
-		SelectedTutor: row.SelectedTutor}, nil
+		SelectedTutor: row.SelectedTutor, CreationDate: row.CreationDate}, nil
 }
 
 func (r *InvoiceViews) Payments(ctx context.Context, invoice string, scope domain.RenderScope) ([]domain.InvoiceViewPayment, error) {

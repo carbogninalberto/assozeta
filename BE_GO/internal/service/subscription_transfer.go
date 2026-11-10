@@ -183,52 +183,6 @@ func transferNames(associate domain.SubscriptionTransferPerson, tutor *domain.Su
 	return associate.FirstName, associate.LastName
 }
 
-// refused decides, read-only and before the view's first write, whether the
-// request reaches a save the port does not reproduce.
-func (s *SubscriptionTransfers) refused(ctx context.Context, identity domain.ResolvedIdentity, row domain.SubscriptionTransferRow,
-	request SubscriptionTransferRequest, at time.Time) (bool, error) {
-	pending, err := s.store.Pending(ctx, row.ID, &at)
-	if err != nil || pending || request.BodyError != nil {
-		return false, err
-	}
-	object, ok := request.Body.(domain.RequestObject)
-	if !ok {
-		return false, nil
-	}
-	if value, _ := object.Lookup("recipient"); value != nil {
-		if text, isText := value.(string); isText && text == identity.ScopeUser.ID {
-			return false, nil
-		}
-		id, valid := transferRecipientID(value)
-		if !valid {
-			return false, nil
-		}
-		found, err := s.store.Recipient(ctx, id, identity.ScopeUser.ID)
-		if err != nil || found == nil {
-			return false, err
-		}
-		// Subscription.save() fills empty dates from the owner's settings.
-		return !row.DatesSet, nil
-	}
-	email, _ := object.Lookup("email")
-	if email == nil || row.AssociateID == nil {
-		return false, nil
-	}
-	associate, err := s.store.Associate(ctx, *row.AssociateID)
-	if err != nil || associate == nil {
-		return false, err
-	}
-	tutor, err := s.store.MainTutor(ctx, associate.ID)
-	if err != nil {
-		return false, err
-	}
-	first, last := transferNames(*associate, tutor)
-	if first == nil || last == nil {
-		return false, nil
-	}
-	return !row.DatesSet && identity.ScopeUser.Role != domain.RoleAthlete, nil
-}
-
 // Transfer follows subscription_transfer.
 func (s *SubscriptionTransfers) Transfer(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionTransferRequest) (
 	*SubscriptionTransferResult, error) {
@@ -248,11 +202,6 @@ func (s *SubscriptionTransfers) Transfer(ctx context.Context, identity domain.Re
 		return nil, ErrSubscriptionTransferNotOwner
 	}
 	now := s.clock()
-	if refuse, err := s.refused(ctx, identity, *row, request, now); err != nil {
-		return nil, err
-	} else if refuse {
-		return nil, ErrSubscriptionTransferNotPorted
-	}
 	if err = s.store.ExpireTransfers(ctx, now); err != nil {
 		return nil, err
 	}
@@ -354,7 +303,22 @@ func (s *SubscriptionTransfers) Transfer(ctx context.Context, identity domain.Re
 	if err = modelHooksSubscriptionSave(ctx, season); err != nil {
 		return nil, err
 	}
-	if err = s.store.SaveSubscriptionUser(ctx, *row, recipient, audit, s.clock()); err != nil {
+	// Subscription.save() fills empty dates from the owner's settings.
+	var filled *domain.SubscriptionTransferDates
+	if !row.DatesSet {
+		stored, err := s.store.SubscriptionDateState(ctx, row.ID)
+		if err != nil {
+			return nil, err
+		}
+		dates, err := ResolveSubscriptionDates(ctx, season.Created, domain.SubscriptionDateRule{Duration: stored.Duration, Season: season.Rule},
+			domain.SubscriptionDates{Start: lifecycleDate(stored.Start), End: lifecycleDate(stored.End)})
+		if err != nil {
+			return nil, err
+		}
+		filled = &domain.SubscriptionTransferDates{OldStart: lifecycleDateText(lifecycleDate(stored.Start)), OldEnd: lifecycleDateText(lifecycleDate(stored.End)),
+			Start: lifecycleDateText(dates.Start), End: lifecycleDateText(dates.End)}
+	}
+	if err = s.store.SaveSubscriptionUser(ctx, *row, recipient, filled, audit, s.clock()); err != nil {
 		return nil, err
 	}
 	if err = s.store.SaveAssociateUser(ctx, *associate, recipient, audit, s.clock()); err != nil {

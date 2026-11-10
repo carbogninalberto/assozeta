@@ -4610,6 +4610,45 @@
    }
   },
   {
+   "name": "invoice-parties-customer-update-paid-as-file-audited-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-customers/a1000000-0000-4000-8000-000000846131/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "customerinvoice": {
+      "a1000000-0000-4000-8000-000000846131": {
+       "paid": true,
+       "transmitted": true
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "customerinvoice",
+      "key": "a1000000-0000-4000-8000-000000846131",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "stato.txt"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"paid\"; filename=\"stato.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
    "name": "invoice-parties-customer-update-list-with-key-server-error",
    "actor": "owner",
    "method": "PATCH",

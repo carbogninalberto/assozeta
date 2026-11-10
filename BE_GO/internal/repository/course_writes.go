@@ -76,6 +76,16 @@ func (t *courseWritesTransaction) GroupExists(ctx context.Context, id string) (b
 	return exists, err
 }
 
+// InstallmentIDTaken is the UniqueValidator lookup of an event's
+// course_subscription_installment_id: the default manager's (live rows of
+// the request's group) filter(pk=id).exists().
+func (t *courseWritesTransaction) InstallmentIDTaken(ctx context.Context, id string, group *string) (bool, error) {
+	var exists bool
+	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_coursesubscriptioninstallment
+ WHERE course_subscription_installment_id=$1::uuid AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid))`, id, group)
+	return exists, err
+}
+
 func (t *courseWritesTransaction) snapshots(ctx context.Context, table, key string, ids []string) ([]*courseSubscriptionSnapshot, error) {
 	result := make([]*courseSubscriptionSnapshot, 0, len(ids))
 	for _, id := range ids {

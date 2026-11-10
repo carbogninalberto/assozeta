@@ -870,19 +870,26 @@ func (s *DocumentRender) medicalJob(ctx context.Context, identity domain.Resolve
 		job.failed = renderException(500, "'NoneType' object has no attribute 'main_tutor'")
 		return job, nil, nil
 	}
+	if _, signed := medicalFormValues(form, nil)[medicalform.SignatureKey]; signed {
+		// fill_pdf_fields draws the stored signature (and stamp) on the first page with PyMuPDF: image processing, not ported.
+		return nil, nil, ErrDocumentRenderNotPorted
+	}
 	tutor, err := s.store.AppointmentFormTutor(ctx, *form.Associate)
 	if errors.Is(err, domain.ErrViewTutorWrite) {
-		// get_main_tutor() would promote a tutor relation (a write).
-		return nil, nil, ErrDocumentRenderNotPorted
+		// get_main_tutor() promotes the first tutor relation while the view maps the form's fields, after
+		// the Document exists.
+		associate := *form.Associate
+		job.created = func(ctx context.Context, _ domain.NewRenderDocument, audit domain.LoginAuditContext) error {
+			tutor, err = s.store.PromoteAppointmentFormTutor(ctx, associate, audit, s.now())
+			return err
+		}
+		job.fill = func() []byte { return medicalform.FillBiella(medicalFormValues(form, tutor)) }
+		return job, nil, nil
 	}
 	if err != nil {
 		return nil, nil, err
 	}
 	values := medicalFormValues(form, tutor)
-	if _, signed := values[medicalform.SignatureKey]; signed {
-		// fill_pdf_fields draws the stored signature (and stamp) on the first page with PyMuPDF: image processing, not ported.
-		return nil, nil, ErrDocumentRenderNotPorted
-	}
 	job.fill = func() []byte { return medicalform.FillBiella(values) }
 	return job, nil, nil
 }

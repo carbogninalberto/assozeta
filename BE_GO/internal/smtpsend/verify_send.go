@@ -62,6 +62,12 @@ var unknownHostText = map[string]string{
 // plainHostName reports a host the 'idna' codec passes through unchanged:
 // ASCII, no empty label, every label under 64 bytes.
 func plainHostName(host string) bool {
+	return PlainHostName(host)
+}
+
+// PlainHostName reports a host text the 'idna' codec passes through
+// unchanged (see plainHostName).
+func PlainHostName(host string) bool {
 	if host == "" || len(host) > 253 {
 		return false
 	}
@@ -96,7 +102,7 @@ func pythonMessage(err error, goos string) (string, bool) {
 		case smtp.Kind == "SMTPRecipientsRefused":
 			parts := make([]string, 0, len(smtp.Refused))
 			for _, refusal := range smtp.Refused {
-				address, ok := pythonStrRepr(refusal.Address)
+				address, ok := PyStrRepr(refusal.Address)
 				if !ok {
 					return "", false
 				}
@@ -104,7 +110,7 @@ func pythonMessage(err error, goos string) (string, bool) {
 			}
 			return "{" + strings.Join(parts, ", ") + "}", true
 		case smtp.Kind == "SMTPSenderRefused":
-			sender, ok := pythonStrRepr(smtp.Sender)
+			sender, ok := PyStrRepr(smtp.Sender)
 			if !ok {
 				return "", false
 			}

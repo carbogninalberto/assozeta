@@ -303,4 +303,37 @@ def assert_effect(case, before, after, source, context):
                              and index['resolution_path'] == entry['index'][1], 'index.fields' + where)
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)
+_run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)
+_assert_case = contract.assert_case
+
+
+def _owner_settings(ids, values):
+    from auditlog.context import disable_auditlog
+    from application.models import User
+    with disable_auditlog():
+        User._base_manager.filter(pk=ids['owner']).update(**values)
+
+
+def run_workload(label, backend, base_url, fixture, apps, raw, observer):
+    """run_workload_for; a case's `setup` owner settings hold only while its request runs (the state snapshots
+    before and after see the fixture's settings)."""
+    from application.models import User
+    ids = contract.load_source()['ids']
+
+    def assert_case(case, base_url, **options):
+        setup = (case.get('setup') or {}).get('owner')
+        if not setup:
+            return _assert_case(case, base_url, **options)
+        saved = User._base_manager.filter(pk=ids['owner']).values(*setup).get()
+        contract.require(saved != setup, 'fixture.setup-changes-settings')
+        _owner_settings(ids, setup)
+        try:
+            return _assert_case(case, base_url, **options)
+        finally:
+            _owner_settings(ids, saved)
+
+    contract.assert_case = assert_case
+    try:
+        return _run_workload(label, backend, base_url, fixture, apps, raw, observer)
+    finally:
+        contract.assert_case = _assert_case

@@ -84,15 +84,21 @@ table's physical order, which is the order Django iterates them; collector sets 
 - Delete of a signed subscription: after the commit, `delete_signature_key_if_unreferenced` deletes the storage object when no row
   (base manager) keeps the key; failures change nothing else.
 
+## Stored data that follows Django step by step
+
+Django is not atomic: work saved before a failure stays, and the Go port commits it before answering 500.
+
+- Archive: a payment without an association takes its default category from the global ones and its audit entry has no
+  association; a `Payment.save()` that raises (account transfers without a description) keeps the saves made before it; one
+  payment on two course subscription links is archived once and the second access answers the 500 page; a subscription whose
+  dates stay empty after the save defaults skips the date-range payment lookup (a NULL bound matches no rows).
+- Delete: an unpaid payment reached twice is `Payment.DoesNotExist` on the second access (500 page, earlier deletes kept); a
+  subscription whose dates stay empty is the `ValueError` of a date lookup with None (500 page, work done so far kept).
+
 ## Not ported (refused with a 500 before any write)
 
-- Archive: an unpaid payment hidden by `X-Group-Id` (the UI never sends it); a payment without an association; a `Payment.save()` that
-  raises (account transfers without a description); a subscription whose dates stay empty after the save defaults. When one of these
-  comes after an invoiced payment in Django's order, Go refuses the whole request where Django would first delete that invoice.
-- Delete: an unpaid payment reached twice (the second access fails in Django after earlier deletes); a subscription whose dates stay
-  empty.
-- Django is not atomic: work saved before a failure stays. The Go port commits everything or nothing, except the archive's invoice
-  ValueError above.
+- Archive and delete: a related unpaid payment that cannot be read, an unpaid payment hidden by `X-Group-Id` (the UI never sends it)
+  and a deleted payment without an association.
 
 ## Evidence
 

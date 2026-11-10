@@ -196,21 +196,31 @@ func (r *SubscriptionTransfers) SubscriptionSaveSeason(ctx context.Context, subs
 // SaveSubscriptionUser is subscription.user = recipient; subscription.save()
 // (the dates are set: Subscription.save() changes nothing else).
 func (r *SubscriptionTransfers) SaveSubscriptionUser(ctx context.Context, row domain.SubscriptionTransferRow, user string,
-	audit domain.LoginAuditContext, at time.Time) error {
+	dates *domain.SubscriptionTransferDates, audit domain.LoginAuditContext, at time.Time) error {
 	return r.saveUser(ctx, "application_subscription", "subscription_id", "subscription", "Subscription", row.ID, row.AssociationID, user,
-		audit, at)
+		dates, audit, at)
+}
+
+func (r *SubscriptionTransfers) SubscriptionDateState(ctx context.Context, subscription string) (domain.SubscriptionTransferDateState, error) {
+	var row domain.SubscriptionTransferDateState
+	err := r.db.GetContext(ctx, &row, `SELECT s.start_date, s.end_date, u.subscription_duration
+ FROM application_subscription s
+ JOIN application_sportassociation a ON a.sport_association_id=s.sport_association_id
+ JOIN bakney_user u ON u.user_id=a.user_id
+ WHERE s.subscription_id=$1::uuid`, subscription)
+	return row, err
 }
 
 // SaveAssociateUser is associate.user = recipient; associate.save().
 func (r *SubscriptionTransfers) SaveAssociateUser(ctx context.Context, person domain.SubscriptionTransferPerson, user string,
 	audit domain.LoginAuditContext, at time.Time) error {
-	return r.saveUser(ctx, "application_associate", "associate_id", "associate", "Associate", person.ID, person.AssociationID, user, audit, at)
+	return r.saveUser(ctx, "application_associate", "associate_id", "associate", "Associate", person.ID, person.AssociationID, user, nil, audit, at)
 }
 
 // saveUser writes user_id and auditlog's update entry when the stored value
 // changes, indexed directly to the row's association.
 func (r *SubscriptionTransfers) saveUser(ctx context.Context, table, key, model, name, id, association, user string,
-	audit domain.LoginAuditContext, at time.Time) error {
+	dates *domain.SubscriptionTransferDates, audit domain.LoginAuditContext, at time.Time) error {
 	tx, err := r.begin(ctx)
 	if err != nil {
 		return err
@@ -223,15 +233,36 @@ func (r *SubscriptionTransfers) saveUser(ctx context.Context, table, key, model,
 	if _, err = tx.tx.ExecContext(ctx, `UPDATE `+table+` SET user_id=$2 WHERE `+key+`=$1`, id, user); err != nil {
 		return err
 	}
+	changes := map[string][2]string{}
 	if old == nil || *old != user {
 		previous := "None"
 		if old != nil {
 			previous = *old
 		}
+		changes["user"] = [2]string{previous, user}
+	}
+	if dates != nil {
+		if _, err = tx.tx.ExecContext(ctx, `UPDATE `+table+` SET start_date=$2::date, end_date=$3::date WHERE `+key+`=$1`, id, dates.Start,
+			dates.End); err != nil {
+			return err
+		}
+		text := func(value *string) string {
+			if value == nil {
+				return "None"
+			}
+			return *value
+		}
+		if text(dates.OldStart) != text(dates.Start) {
+			changes["start_date"] = [2]string{text(dates.OldStart), text(dates.Start)}
+		}
+		if text(dates.OldEnd) != text(dates.End) {
+			changes["end_date"] = [2]string{text(dates.OldEnd), text(dates.End)}
+		}
+	}
+	if len(changes) > 0 {
 		path := "direct"
 		if err = appendModelAudit(ctx, tx.tx, modelAuditEntry{Model: model, Key: id, Representation: name + " object (" + id + ")", Action: 1,
-			Changes: map[string][2]string{"user": {previous, user}}, Context: audit, AssociationID: &association, ResolutionPath: &path,
-			At: at}); err != nil {
+			Changes: changes, Context: audit, AssociationID: &association, ResolutionPath: &path, At: at}); err != nil {
 			return err
 		}
 	}

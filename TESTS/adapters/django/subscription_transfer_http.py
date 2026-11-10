@@ -124,8 +124,9 @@ def seed_rows(source, created):
     for row in source['subscriptions'].values():
         insert(Subscription, Subscription(
             subscription_id=row['id'], sport_association_id=row.get('association', ids['own_association']), user_id=ids[row['user']],
-            associate_id=source['associates'][row['associate']]['id'], start_date=date(year, 1, 1), end_date=date(year, 12, 31),
-            subscription_number='1', status_flag=4))
+            associate_id=source['associates'][row['associate']]['id'], start_date=None if row.get('undated') else date(year, 1, 1),
+            end_date=None if row.get('undated') else date(year, 12, 31), subscription_number='1', status_flag=4,
+            **({'creation_date': moment(row['created'])} if row.get('created') else {})))
     for row in source['transfers'].values():
         insert(SubscriptionTransfer, SubscriptionTransfer(
             subscription_transfer_id=row['id'], subscription_id=source['subscriptions'][row['subscription']]['id'],
@@ -390,6 +391,8 @@ def check_rows(effect, before, after, binding):
         changed_ids = {source[spec_key][name]['id'] for name in changed}
         for key, row in old.items():
             expected = {**row, 'user_id': recipient} if key in changed_ids else row
+            if key in changed_ids and label == 'subscription':
+                expected = {**expected, **(effect.get('dates') or {})}
             contract.require(current[key] == expected, f'state.{label}-changed:{key}')
     old, current = rows(before, LABELS['relation']), rows(after, LABELS['relation'])
     contract.require(set(old) == set(current), 'state.relation-count')

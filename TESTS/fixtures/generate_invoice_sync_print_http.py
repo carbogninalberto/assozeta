@@ -235,7 +235,7 @@ def naive(text):
 
 
 def updated(label, body, *, actor='owner', payment=None, payment_changes=None, description=None, failure=None, tutor='absent',
-            headers=None, prints=None, restore=None, name=None, raw_body=None):
+            headers=None, prints=None, restore=None, name=None, raw_body=None, content_type=None, parsed=None):
     """One invoice/<uid>/update reaching the invoice: mutates the state and adds the case.
 
     payment: the label of the payment the view saves; payment_changes: its audited
@@ -263,11 +263,11 @@ def updated(label, body, *, actor='owner', payment=None, payment_changes=None, d
         values.update(changed)
         payments[payment] = changed
     if failure == 'payment':
-        add(name, actor, UPDATE(label), 500, SERVER, body=body, raw_body=raw_body, content_type=FORM if raw_body else None, headers=headers,
+        add(name, actor, UPDATE(label), 500, SERVER, body=body, raw_body=raw_body, content_type=content_type or (FORM if raw_body else None), headers=headers,
             effect={**nothing(actor), 'payments': payments, 'audit': audit}, restore=restore)
         return
-    number = body_number(body, raw_body)
-    new = {'number': number, 'cancelled': body_cancelled(body, raw_body)}
+    number, cancelled = parsed or (body_number(body, raw_body), body_cancelled(body, raw_body))
+    new = {'number': number, 'cancelled': cancelled}
     if tutor != 'kept':
         new['tutor'] = None if tutor == 'absent' else tutor
     if description is not None:
@@ -286,14 +286,14 @@ def updated(label, body, *, actor='owner', payment=None, payment_changes=None, d
     if changes:
         audit.append({'model': 'invoice', 'key': inv['id'], 'action': 1, 'changes': changes, 'index': [inv['association'], DIRECT]})
     if failure == 'invoice':
-        add(name, actor, UPDATE(label), 500, SERVER, body=body, raw_body=raw_body, content_type=FORM if raw_body else None, headers=headers,
+        add(name, actor, UPDATE(label), 500, SERVER, body=body, raw_body=raw_body, content_type=content_type or (FORM if raw_body else None), headers=headers,
             effect={**nothing(actor), 'payments': payments, 'audit': audit}, restore=restore)
         return
     inv.update(new)
     invoices[label] = {'number': inv['number'], 'cancelled': inv['cancelled'], 'description': inv['description'],
                        'selected_tutor_id': A(inv['tutor']) if inv['tutor'] else None}
     add(name, actor, UPDATE(label), 200, {'message': 'Invoice updated', 'invoice': invoice_item(label)}, body=body, raw_body=raw_body,
-        content_type=FORM if raw_body else None, headers=headers,
+        content_type=content_type or (FORM if raw_body else None), headers=headers,
         effect={**nothing(actor), 'invoices': invoices, 'payments': payments, 'audit': audit},
         prints=[print_invoice(label)] if prints is None else prints, restore=restore)
 
@@ -308,6 +308,16 @@ def body_cancelled(body, raw_body):
     if raw_body is not None:
         return bool(dict(item.split('=', 1) for item in raw_body.split('&')).get('cancelled', False))
     return bool(body.get('cancelled', False))
+
+
+def multipart(*parts, boundary='invoicesyncboundary'):
+    """parts: (name, filename or None, content type or None, text) as a multipart/form-data body."""
+    chunks = []
+    for name, filename, content_type, text in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename is not None else '')
+        chunks.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n'
+                      + (f'Content-Type: {content_type}\r\n' if content_type else '') + f'\r\n{text}\r\n')
+    return ''.join(chunks) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
 
 
 # --- invoice/<uid>/update: guards -----------------------------------------------------------
@@ -374,6 +384,17 @@ updated('i_other', {'number': 21, 'cancelled': 'false', 'selected_tutor': A('ann
         name='update-other-subject-payment-date')
 updated('i_other', {'number': 21, 'payment_date': '2026-05-06', 'selected_tutor': A('anna')}, tutor='anna', payment='p_other',
         description=other(CATEGORY['name']), name='update-other-unchanged-payment-not-audited')
+# Files in the body: a file is truthy and not a number, a date or a uuid; the payment date that is a file is ignored.
+FILE = ('attachment', 'a.txt', 'text/plain', 'x')
+mp, ct = multipart(('number', None, None, '22'), ('cancelled', 'c.txt', 'text/plain', 'x'))
+updated('i_plain', None, raw_body=mp, content_type=ct, parsed=(22, True), name='update-plain-cancelled-as-file-is-truthy')
+mp, ct = multipart(('number', 'n.txt', 'text/plain', '23'))
+add('update-number-as-file-server-error', 'owner', UPDATE('i_plain'), 500, SERVER, raw_body=mp, content_type=ct, effect=nothing())
+mp, ct = multipart(('number', None, None, '24'), ('selected_tutor', 't.txt', 'text/plain', A('anna')))
+add('update-tutor-as-file-server-error', 'owner', UPDATE('i_plain'), 500, SERVER, raw_body=mp, content_type=ct, effect=nothing())
+mp, ct = multipart(('number', None, None, '25'), ('selected_tutor', None, None, A('anna')), ('payment_date', 'd.txt', 'text/plain', '2026-09-09'))
+updated('i_other', None, raw_body=mp, content_type=ct, parsed=(25, False), tutor='anna', payment='p_other', description=other(CATEGORY['name']),
+        name='update-other-payment-date-as-file-ignored')
 SUB_NAME = '25/26 (Quota <A>)  e tesseramento, 2026 (FIDAL) '
 updated('i_sub', {'number': 31, 'payment_date': 'not-a-date'}, payment='p_sub', description=subscribed(SUB_NAME, full_name('anna')),
         name='update-subscription-subject-invalid-date-ignored')

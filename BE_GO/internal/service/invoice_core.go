@@ -152,7 +152,8 @@ func (s *InvoiceCore) List(ctx context.Context, request InvoiceCoreRequest) (any
 				// The DecimalField lookup raises ValidationError, which the view's except does not catch.
 				return nil, domain.ErrInvoiceCoreServer
 			case math.IsInf(value, 0):
-				return nil, domain.ErrInvoiceCoreNotPorted
+				// The fee lookup cannot adapt an infinite decimal when the SQL is compiled.
+				return nil, domain.ErrInvoiceCoreServer
 			}
 			exact := dto.DecimalFromFloat9(value)
 			filter.AmountText, filter.AmountExact = &raw, &exact

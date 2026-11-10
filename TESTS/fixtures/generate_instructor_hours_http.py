@@ -42,7 +42,7 @@ ids = iter(f'a1000000-0000-4000-8000-{966001 + n:012d}' for n in range(200))
 SERVER = '<stable-server-error-page>'
 
 DOCUMENTS = {label: {'id': next(ids), 'token': next(ids), 'filename': f'{label}.pdf', 'created': '2026-09-01T08:00:00Z'}
-             for label in ('doc_synced', 'doc_detailed', 'doc_orphan', 'doc_removable', 'doc_free')}
+             for label in ('doc_synced', 'doc_detailed', 'doc_orphan', 'doc_removable', 'doc_free', 'doc_twin')}
 
 
 def payment(association, amount, *, paid=True, date=None, deleted=False, group=None):
@@ -79,6 +79,12 @@ HOURS = {
     'copyable': hour('draft', '2026-09-12', '1.50', '18.00', '2026-09-12T18:00:00Z', notes='copia', courses={'k': [1, 'è']}),
     'abroad_row': hour('abroad', '2026-09-15', '4.00', '40.00', '2026-09-15T18:00:00Z'),
 }
+# Two hours kept their document after their payment was detached: the list deletes it for the first and then fails to load it
+# for the second.
+HOURS.update({
+    'twin_a': hour('abroad', '2026-09-16', '1.00', '1.00', '2026-09-16T18:00:00Z', notes='comune', document='doc_twin'),
+    'twin_b': hour('abroad', '2026-09-17', '1.00', '1.00', '2026-09-17T18:00:00Z', notes='comune', document='doc_twin'),
+})
 # Compensations without their document yet: the list prints them (print_document_compensation.apply).
 PAYMENTS.update({'comp_paid': payment(OWN, '15.00'), 'comp_unpaid': payment(OWN, '8.00', paid=False)})
 HOURS.update({
@@ -237,7 +243,10 @@ add('list-range-without-separator-server-error', 'owner', LIST(query=query(**{RA
 add('list-range-two-separators-server-error', 'owner', LIST(query=query(**{RANGE: 'a al b al c'})), 500, SERVER)
 add('list-athlete-empty', 'athlete', LIST(), 200, page([]))
 add('list-foreign-instructor-empty', 'owner', LIST('abroad'), 200, page([]))
-add('list-foreign-owner', 'foreign_owner', LIST('abroad'), 200, page([serialized('abroad_row')]))
+add('list-foreign-owner', 'foreign_owner', LIST('abroad', query(**{SEARCH: '40.00'})), 200, page([serialized('abroad_row')]))
+add('list-rows-sharing-a-document-server-error', 'foreign_owner', LIST('abroad', query(**{SEARCH: 'comune'})), 500, SERVER,
+    effect=hours_effect('foreign_owner', rows={'twin_a': {'document_id': None}, 'twin_b': {'document_id': None}},
+                        documents={'doc_twin': None}, audit=[deleted_document('doc_twin')]))
 # Each row with a payment and no document prints it after its own paid sync; the response keeps the in-memory document (None).
 DRAFT = ['print_paid', 'print_unpaid', 'copyable', 'movable', 'draft_row']
 add('list-owner-prints-compensations', 'owner', LIST('draft'), 200,

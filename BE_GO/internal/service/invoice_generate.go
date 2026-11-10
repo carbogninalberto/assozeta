@@ -31,7 +31,7 @@ type InvoiceGenerations struct {
 }
 
 func NewInvoiceGenerations(store domain.InvoiceGenerateStore, publisher celery.Publisher, now func() time.Time) *InvoiceGenerations {
-	return &InvoiceGenerations{store: store, publisher: publisher, now: now, newID: uuid.NewString}
+	return &InvoiceGenerations{anyMetaName: true, store: store, publisher: publisher, now: now, newID: uuid.NewString}
 }
 
 // InvoiceGenerateRequest carries the request values besides the body.
@@ -136,21 +136,15 @@ func (s *InvoiceGenerations) Generate(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	fees, err := invoiceFees(row.Subject, payment)
+	fees, err := invoiceFeesAny(row.Subject, payment)
 	if err != nil {
 		return nil, err
 	}
-	// Invoice.objects.create stores the raw X-Group-Id (rendered as sent).
-	var invoiceGroup *string
-	if request.GroupHeader != "" {
-		parsed, err := uuid.Parse(request.GroupHeader)
-		if err != nil {
-			return nil, domain.ErrPaymentStateServer
-		}
-		if parsed.String() != request.GroupHeader {
-			return nil, domain.ErrPaymentStateNotPorted
-		}
-		invoiceGroup = &request.GroupHeader
+	// Invoice.objects.create is given the raw X-Group-Id: the column stores its uuid, the instance keeps the text as sent
+	// (auditlog and the response write it).
+	invoiceGroup, sentGroup, err := paymentPaidFlowSentGroup(request.GroupHeader)
+	if err != nil {
+		return nil, err
 	}
 	owner, err := tx.InvoiceGenerateOwner(ctx, identity.ScopeUser.ID)
 	if err != nil {
@@ -169,8 +163,11 @@ func (s *InvoiceGenerations) Generate(ctx context.Context, identity domain.Resol
 	create := domain.InvoiceGenerateCreate{ID: s.newID(), Association: association, CreationDate: at, MembershipFee: fees.membership.stored,
 		ActivityFee: fees.activity.stored, MetaPaymentCategories: payment.MetaPaymentCategories, Description: &description, Number: number,
 		Group: invoiceGroup}
-	if err = tx.CreateInvoice(ctx, create, map[string]string{"membership_fee": fees.membership.memory, "activity_fee": fees.activity.memory},
-		audit, at); err != nil {
+	memory := map[string]string{"membership_fee": fees.membership.memory, "activity_fee": fees.activity.memory}
+	if sentGroup != nil {
+		memory["group"] = *sentGroup
+	}
+	if err = tx.CreateInvoice(ctx, create, memory, audit, at); err != nil {
 		return nil, err
 	}
 	if owner.PaymentDateEqual {
@@ -183,9 +180,13 @@ func (s *InvoiceGenerations) Generate(ctx context.Context, identity domain.Resol
 			changes["creation_date"] = [2]string{before, after}
 		}
 		for field, fee := range map[string]invoiceFee{"membership_fee": fees.membership, "activity_fee": fees.activity} {
-			if fee.rendered != fee.memory {
-				changes[field] = [2]string{fee.rendered, fee.memory}
+			if fee.column != fee.memory {
+				changes[field] = [2]string{fee.column, fee.memory}
 			}
+		}
+		if sentGroup != nil && *sentGroup != *invoiceGroup {
+			// The re-save compares the stored uuid with the text the instance still holds.
+			changes["group"] = [2]string{*invoiceGroup, *sentGroup}
 		}
 		if err = tx.SetInvoiceCreationDate(ctx, create.ID, association, *payment.PaymentDate, changes, audit, at); err != nil {
 			return nil, err
@@ -220,6 +221,9 @@ func (s *InvoiceGenerations) Generate(ctx context.Context, identity domain.Resol
 	}
 	if invoice, ok := item["invoice"].(map[string]any); ok {
 		invoice["membership_fee"], invoice["activity_fee"] = fees.membership.rendered, fees.activity.rendered
+		if sentGroup != nil {
+			invoice["group"] = *sentGroup
+		}
 	}
 	if err = tx.Commit(); err != nil {
 		return nil, err

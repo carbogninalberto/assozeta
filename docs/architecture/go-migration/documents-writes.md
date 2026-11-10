@@ -145,6 +145,16 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   (`uuid.UUID(int=True)` is `00000000-0000-0000-0000-000000000001`): the update inserts a row under that key, as with
   any new primary key.
 
+## Files as text and the season error (v2-rest-docs)
+
+- upload-document with a file part as `filename`: the Document is created with the part's file name (`str()` of the upload), then
+  the path join fails (500, the Document kept). With a file part as `document` the name is read and `b64decode` fails the same
+  way. Cases `upload-document-as-file-keeps-document` and `upload-filename-as-file-keeps-document`.
+- Medical upload when `Subscription.save()` raises for the owner's season (a start day the month never has): the certificate and
+  its Document are kept and the answer is the 500 JSON `{error: 'Invalid date combination: day is out of range for month'}`.
+  Case `medical-season-error-keeps-certificate` (the owner's start day and month are seeded). 150 cases; receipt
+  `documents-writes-http-sweep-restdocs-2` (GitHub run 42908069516): 4 transports. Mutation (the message changed) CAUGHT.
+
 ## Not ported (refused with the 500 page before any write unless noted)
 
 - A None filename in `documents/add`: the database error text carries the new row's id and timestamp. A None
@@ -152,12 +162,11 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
 - `documents/add` items reached after an unmodelled item are never run. The request is refused when the loop would
   reach such an item.
 - Multipart bodies with `Content-Transfer-Encoding`, filenames with invalid UTF-8, RFC 2231 names in other charsets, and bodies over 250 MiB.
-- Uploaded files as values of fields the views read as text (upload-document's `document`/`filename`, the archive
-  update fields).
+- Uploaded files as values of the archive update fields (upload-document's `document` and `filename` are ported, see below).
 - After the Document exists (the earlier writes are kept, and Go answers the 500 page):
   - a storage key that already exists, where `get_available_name` would pick a random alternative;
-  - storage provider failures, which Django answers with botocore's text in `documents/add` and in the medical upload;
-  - a `Subscription.save()` season error in the medical upload.
+  - storage provider failures, which Django answers with botocore's text in `documents/add` and in the medical upload (an
+    infrastructure failure the fixtures cannot provoke on a private MinIO without breaking it for the other cases).
 - Image compression, thumbnails and PDF rendering: none of these views run them.
 
 ## Evidence (TDD)

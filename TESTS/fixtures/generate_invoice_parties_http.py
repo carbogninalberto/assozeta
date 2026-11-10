@@ -483,6 +483,21 @@ add('customer-update-invalid-boolean-audited-server-error', 'owner', 'PATCH', CU
 add('customer-update-null-paid-audited-server-error', 'owner', 'PATCH', CU('one'), 500, SERVER, body={'transmitted': None},
     effect=effect('owner', rows={'customerinvoice': {key_one: {'paid': True, 'transmitted': True}}},
                   audits=[audit('customerinvoice', key_one, 1, {'transmitted': ['True', 'None']})]))
+def multipart(*parts, boundary='invoicepartiesboundary'):
+    """parts: (name, filename or None, content type or None, text) as a multipart/form-data body."""
+    chunks = []
+    for name, filename, content_type, text in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename is not None else '')
+        chunks.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n'
+                      + (f'Content-Type: {content_type}\r\n' if content_type else '') + f'\r\n{text}\r\n')
+    return ''.join(chunks) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
+
+
+# A file in the body is str() of its name in the entry, and not a boolean for the column.
+mp, ct = multipart(('paid', 'stato.txt', 'text/plain', 'x'))
+add('customer-update-paid-as-file-audited-server-error', 'owner', 'PATCH', CU('one'), 500, SERVER, raw_body=mp, content_type=ct,
+    effect=effect('owner', rows={'customerinvoice': {key_one: {'paid': True, 'transmitted': True}}},
+                  audits=[audit('customerinvoice', key_one, 1, {'paid': ['True', 'stato.txt']})]))
 add('customer-update-list-with-key-server-error', 'owner', 'PATCH', CU('one'), 500, SERVER, body=['paid'])
 customer_update('customer-update-list-without-key', 'owner', 'one', 200, UPDATED, ['transmit', 1])
 customer_update('customer-update-string-without-key', 'owner', 'one', 200, UPDATED, 'transmit')

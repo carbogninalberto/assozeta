@@ -153,7 +153,8 @@ func (s *CourseLocationWrites) courseLocationDocuments(write dto.CourseLocationW
 		if !ok || !dto.AssociateDraftStorable(filename) || utf8.RuneCountInString(filename) > 255 {
 			return nil, nil, ErrCourseLocationUploadUnsupported
 		}
-		if _, err = documentkey.UploadName(s.now(), uuid.New(), filename); err != nil {
+		// The stored name uses the document's creation time, which has microsecond precision.
+		if _, err = documentkey.UploadName(s.uploads.at(), uuid.New(), filename); err != nil {
 			return nil, nil, ErrCourseLocationUploadUnsupported
 		}
 		uploads = append(uploads, courseLocationUpload{filename: filename, content: content})

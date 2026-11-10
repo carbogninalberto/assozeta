@@ -49,7 +49,7 @@
    "logo": "data:image/png;base64,QUJD",
    "document_header": "<p class=\"intestazione\">Spett.le <span class=\"mention\" data-type=\"mention\" key=\"sport_association.denomination\">@x</span> per <span class=\"mention\" data-type=\"mention\" key=\"associate.first_name\">@x</span> (tutore <span class=\"mention\" data-type=\"mention\" key=\"main_tutor.last_name\">@x</span>) - @dataodierna</p>",
    "invoice_footer": "<p>Corsi: <span class=\"mention\" data-type=\"mention\" key=\"other.courses_list\">@x</span></p>",
-   "extra_text_invoices": "<p>Nota per <span class=\"mention\" data-type=\"mention\" key=\"main_tutor.first_name\">@x</span> &amp; soci</p>",
+   "extra_text_invoices": "<p>Nota per <span class=\"mention\" data-type=\"mention\" key=\"main_tutor.first_name\">@x</span> &amp; soci, n. <span class=\"mention\" data-type=\"mention\" key=\"invoice.number\">@x</span> del <span class=\"mention\" data-type=\"mention\" key=\"invoice.creation_date\">@x</span>: <span class=\"mention\" data-type=\"mention\" key=\"invoice.activity_fee\">@x</span>+<span class=\"mention\" data-type=\"mention\" key=\"invoice.membership_fee\">@x</span>=<span class=\"mention\" data-type=\"mention\" key=\"invoice.total_amount\">@x</span> (@importototale)<span class=\"mention\" data-type=\"mention\" key=\"invoice.protocollo\">@x</span><span class=\"mention\" data-type=\"mention\" key=\"payment.causale_vecchia\">@x</span><span class=\"mention\" data-type=\"mention\" key=\"associate.tessera.numero\">@x</span></p>",
    "invoice_template": null,
    "subscription_fee_plans": [
     {
@@ -2134,7 +2134,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -2367,7 +2367,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -2603,7 +2603,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -2838,7 +2838,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -3071,7 +3071,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -3304,7 +3304,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -3539,7 +3539,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -3772,7 +3772,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n.  del 2026-01-02 03:04:05.678901+00:00: 0.00+0.00=0.00 (0.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -3971,7 +3971,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 1234.56+0.01=1234.57 (1234.57)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -4181,7 +4181,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 1234.56+0.01=1234.57 (1234.57)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -4493,7 +4493,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 1234.56+0.01=1234.57 (1234.57)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -4705,7 +4705,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per Paolo &amp; soci</p>"
+      "v": "<p>Nota per Paolo &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 12.00+3.50=15.50 (15.50)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -5140,7 +5140,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per Paolo &amp; soci</p>"
+      "v": "<p>Nota per Paolo &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 30.00+20.00=50.00 (50.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -5632,7 +5632,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 25.00+0.00=25.00 (25.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -5963,7 +5963,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -6382,7 +6382,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -6725,7 +6725,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 0 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -8435,7 +8435,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -8638,7 +8638,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",
@@ -8841,7 +8841,7 @@
      },
      "extra_text_invoices": {
       "t": "str",
-      "v": "<p>Nota per  &amp; soci</p>"
+      "v": "<p>Nota per  &amp; soci, n. 7 del 2026-01-02 03:04:05.678901+00:00: 10.00+0.00=10.00 (10.00)</p>"
      },
      "total_amount": {
       "t": "decimal",

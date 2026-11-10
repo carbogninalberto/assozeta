@@ -236,6 +236,11 @@ func (t *subscriptionLifecycleTransaction) AppendHiddenPaymentUpdate(ctx context
 		"changes_json.sport_association", audit))
 }
 
+func (t *subscriptionLifecycleTransaction) AppendUnownedPaymentUpdate(ctx context.Context, payment string, changes map[string][2]string,
+	audit domain.CourseSubscriptionAudit) error {
+	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("payment", "Payment", payment, "", 1, changes, nil, "", audit))
+}
+
 // DeleteSubscription is subscription.delete(): Django's Collector from the
 // subscription (collaborator_delete_graph.json) with every cascade it
 // reaches (course subscriptions and installments with their pre_delete

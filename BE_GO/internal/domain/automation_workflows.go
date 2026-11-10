@@ -42,6 +42,9 @@ type AutomationWorkflowAudit struct {
 	Changes           map[string][2]string
 	Context           LoginAuditContext
 	At                time.Time
+	// Path overrides the index resolution path (default: direct, or the
+	// changes JSON for a delete).
+	Path string
 }
 
 type AutomationWorkflowStore interface {

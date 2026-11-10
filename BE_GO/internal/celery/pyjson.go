@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"strconv"
 	"strings"
 	"unicode/utf16"
@@ -26,11 +27,27 @@ func appendNumber(b []byte, n Number) ([]byte, error) {
 	if !strings.ContainsAny(text, ".eE") {
 		return append(b, text...), nil
 	}
-	value, err := strconv.ParseFloat(text, 64)
+	value, err := jsonNumberFloat(n)
 	if err != nil {
-		return nil, fmt.Errorf("%w: number %q", ErrUnsupportedValue, text)
+		return nil, err
+	}
+	switch {
+	case math.IsInf(value, 1):
+		return append(b, "Infinity"...), nil
+	case math.IsInf(value, -1):
+		return append(b, "-Infinity"...), nil
 	}
 	return append(b, pythonFloat(value)...), nil
+}
+
+// numberFloat is the float json.loads reads from a number written with a
+// fraction or an exponent (an overflowing one is an infinity).
+func jsonNumberFloat(n Number) (float64, error) {
+	value, err := strconv.ParseFloat(string(n), 64)
+	if err != nil && !(errors.Is(err, strconv.ErrRange) && math.IsInf(value, 0)) {
+		return 0, fmt.Errorf("%w: number %q", ErrUnsupportedValue, string(n))
+	}
+	return value, nil
 }
 
 // DecodeJSON is json.loads with insertion-ordered objects (Dict), Number

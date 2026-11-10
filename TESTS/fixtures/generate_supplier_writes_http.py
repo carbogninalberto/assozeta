@@ -128,6 +128,14 @@ add('update-own-id-kept', 'owner', update('beta'), 200, existing('beta', address
     body={'supplier_id': SUPPLIERS['beta']['id'], 'city': 'Lecce'},
     effect=changed('owner', 'beta', {'city': [SUPPLIERS['beta']['city'] if SUPPLIERS['beta']['city'] is not None else 'None', 'Lecce']}))
 
+# The same copy with the association cleared in the body: the copy has none, and its two audit entries are indexed
+# through the actor's own association (an owner) or not at all (a collaborator).
+for actor, copy_id in (('owner', 'a1000000-0000-4000-8000-00000064a902'), ('full_collaborator', 'a1000000-0000-4000-8000-00000064a903')):
+    add(f'update-new-id-clears-association-{actor}', actor, update('beta'), 200,
+        dict(existing('beta', supplier_id=copy_id, address=None, note='Nuova', city='Lecce'), sport_association=None), method='PATCH',
+        body={'supplier_id': copy_id, 'sport_association': None},
+        effect={'kind': 'copy', 'actor': actor, 'supplier': 'beta', 'id': copy_id, 'cleared': True})
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'},
                               'scope': 'Supplier add and update authored sequence with audit effects', 'cases': cases},

@@ -137,6 +137,12 @@
    "token": "a1000000-0000-4000-8000-000000593026",
    "filename": "cert_copy.pdf",
    "created": "2026-02-01T08:00:00Z"
+  },
+  "nd2": {
+   "id": "a1000000-0000-4000-8000-000000593098",
+   "token": "a1000000-0000-4000-8000-000000593099",
+   "filename": "nd2.pdf",
+   "created": "2026-02-01T08:00:00Z"
   }
  },
  "certificates": {
@@ -639,6 +645,18 @@
    "end": "2026-12-31",
    "created": "2026-02-01T09:00:00Z",
    "associate": "dario"
+  },
+  "nodoc": {
+   "id": "a1000000-0000-4000-8000-000000593097",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "deleted": false,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z",
+   "associate": null
   }
  },
  "appointments": {
@@ -781,6 +799,42 @@
    "meta": null,
    "address": null,
    "created": "2026-03-01T08:00:00Z"
+  },
+  "nd1": {
+   "id": "a1000000-0000-4000-8000-000000593100",
+   "subscription": "nodoc",
+   "region": "agonistica",
+   "document": null,
+   "date": "2026-06-02",
+   "notes": "Senza documento",
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "nd2": {
+   "id": "a1000000-0000-4000-8000-000000593101",
+   "subscription": "nodoc",
+   "region": "non-agonistica",
+   "document": "nd2",
+   "date": "2026-06-01",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
+  },
+  "nd3": {
+   "id": "a1000000-0000-4000-8000-000000593102",
+   "subscription": "nodoc",
+   "region": "agonistica-toscana",
+   "document": null,
+   "date": "2026-05-30",
+   "notes": null,
+   "sport": null,
+   "meta": null,
+   "address": null,
+   "created": "2026-03-01T08:00:00Z"
   }
  },
  "drafts": {
@@ -892,6 +946,124 @@
   }
  },
  "cases": [
+  {
+   "name": "subscription-medical-list-prints-appointments-without-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593097/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593100",
+      "document_token": null,
+      "appointment_region": "Visita Agonistica",
+      "region": "agonistica",
+      "date": "2026-06-02",
+      "notes": "Senza documento",
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593097",
+      "document": null
+     },
+     "1": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593101",
+      "document_token": "a1000000-0000-4000-8000-000000593099",
+      "appointment_region": "Visita Non Agonistica",
+      "region": "non-agonistica",
+      "date": "2026-06-01",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593097",
+      "document": "a1000000-0000-4000-8000-000000593098"
+     },
+     "2": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593102",
+      "document_token": null,
+      "appointment_region": "Visita Agonistica Toscana",
+      "region": "agonistica-toscana",
+      "date": "2026-05-30",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593097",
+      "document": null
+     }
+    }
+   },
+   "effect": null,
+   "prints": [
+    "/document/medical-appointment/a1000000-0000-4000-8000-000000593100",
+    "/document/medical-appointment/a1000000-0000-4000-8000-000000593102"
+   ]
+  },
+  {
+   "name": "subscription-medical-list-prints-again-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000593097/medical-appointments/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593100",
+      "document_token": null,
+      "appointment_region": "Visita Agonistica",
+      "region": "agonistica",
+      "date": "2026-06-02",
+      "notes": "Senza documento",
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593097",
+      "document": null
+     },
+     "1": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593101",
+      "document_token": "a1000000-0000-4000-8000-000000593099",
+      "appointment_region": "Visita Non Agonistica",
+      "region": "non-agonistica",
+      "date": "2026-06-01",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593097",
+      "document": "a1000000-0000-4000-8000-000000593098"
+     },
+     "2": {
+      "medical_appointments_id": "a1000000-0000-4000-8000-000000593102",
+      "document_token": null,
+      "appointment_region": "Visita Agonistica Toscana",
+      "region": "agonistica-toscana",
+      "date": "2026-05-30",
+      "notes": null,
+      "sport": null,
+      "meta": null,
+      "address": null,
+      "creation_date": "2026-03-01T08:00:00Z",
+      "subscription": "a1000000-0000-4000-8000-000000593097",
+      "document": null
+     }
+    }
+   },
+   "effect": null,
+   "prints": [
+    "/document/medical-appointment/a1000000-0000-4000-8000-000000593100",
+    "/document/medical-appointment/a1000000-0000-4000-8000-000000593102"
+   ]
+  },
   {
    "name": "subscription-medical-list-owner",
    "actor": "owner",

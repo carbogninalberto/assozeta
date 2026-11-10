@@ -130,6 +130,14 @@ PAYMENTS = {
     'p_noparty': {'id': next(ids), **row(subject=2, amount='3.00', description='Varie', user_id=None)},
     'p_old': {'id': next(ids), **row(amount='8.00', creation_date=LAST_YEAR)},
     'p_group': {'id': next(ids), **row(amount='9.00', group_id=GROUP_ID)},
+    # Rare inputs: another spelling of the group header, fees that round on a tie, meta names that are not text.
+    'p_group_spelling': {'id': next(ids), **row(amount='9.00', group_id=GROUP_ID)},
+    'p_tie': {'id': next(ids), **row(subject=1, amount='10.00', meta_payment_categories=[{'amount': '0.125'}], description='Iscrizione')},
+    'p_name_float': {'id': next(ids), **row(subject=1, amount='26.00', meta={'subscription_data': {'name': 1.5}}, description='Iscrizione')},
+    'p_name_list': {'id': next(ids), **row(subject=1, amount='27.00', description='Iscrizione',
+                                           meta={'subscription_data': {'name': ['Agonisti', {'anno': None, 'ok': True}, 2]}})},
+    'p_name_dict': {'id': next(ids), **row(subject=1, amount='28.00', description='Iscrizione',
+                                           meta={'subscription_data': {'name': {'it': "l'anno \"2026\""}}})},
     'p_collab': {'id': next(ids), **row(amount='11.00')},
     'p_admin': {'id': next(ids), **row(amount='13.00', associate_id=ASSOCIATES['bruno']['id'])},
     'p_form': {'id': next(ids), **row(amount='14.00')},
@@ -144,6 +152,8 @@ PAYMENTS = {
     'f_dated': {'id': next(ids), **row(amount='15.00', payment_date='2026-03-01T10:00:00Z', sport_association_id=FLAG['association'],
                                        user_id=FLAG['id'], payment_category_id=None)},
     'f_undated': {'id': next(ids), **row(amount='15.00', sport_association_id=FLAG['association'], user_id=FLAG['id'], payment_category_id=None)},
+    'f_tie': {'id': next(ids), **row(subject=1, amount='10.00', payment_date='2026-03-02T10:00:00Z', sport_association_id=FLAG['association'],
+                                     user_id=FLAG['id'], payment_category_id=None, meta_payment_categories=[{'amount': '0.125'}])},
 }
 
 
@@ -313,8 +323,14 @@ def drf(value):
     return str(Decimal(repr(float(value))).quantize(Decimal('0.01'), rounding=ROUND_HALF_EVEN))
 
 
+def column(value):
+    """A float fee as the numeric(9, 2) column keeps it: nine significant digits, then rounded half away from zero."""
+    from decimal import Context, Decimal, ROUND_HALF_UP
+    return str(Context(prec=9).create_decimal_from_float(float(value)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+
+
 def fees(values):
-    """The view's in-memory fees: (membership, activity) as (str(), stored text)."""
+    """The view's in-memory fees: (membership, activity) as (str(), response text, column text)."""
     amount = values['amount']
     if values['subject'] == 1:
         activity = 0.0
@@ -322,15 +338,17 @@ def fees(values):
             if item['amount']:
                 activity = activity + float(str(item['amount']))
         membership = float(amount) - activity if float(amount) > 0 else None
-        return ((pyfloat(membership), drf(membership)) if membership is not None else (amount, amount)), (pyfloat(activity), drf(activity))
-    return ('0.0', '0.00'), (amount, amount)
+        return (((pyfloat(membership), drf(membership), column(membership)) if membership is not None else (amount, amount, amount)),
+                (pyfloat(activity), drf(activity), column(activity)))
+    return ('0.0', '0.00', '0.00'), (amount, amount, amount)
 
 
 # The flag association's first invoice by -number has a NULL number (NULLs sort first): max(0, 10) + 1.
 NUMBERS = {'own': 7, 'own_old': 20, 'own_group': 7, 'flag': 10}
 
 
-def generated(label, sub_label, description, *, actor='owner', number_key='own', group=None, association=OWN, flag=False, msg=None):
+def generated(label, sub_label, description, *, actor='owner', number_key='own', group=None, association=OWN, flag=False, msg=None,
+              group_sent=None):
     """Mutates STATE and returns (response, effect) of a successful generation."""
     values = STATE[label]
     sub = SUBSCRIPTIONS[sub_label]
@@ -342,27 +360,31 @@ def generated(label, sub_label, description, *, actor='owner', number_key='own',
             NUMBERS['own_group'] = number
     else:
         NUMBERS[number_key] = number
-    (membership_audit, membership), (activity_audit, activity) = fees(values)
+    (membership_audit, membership, membership_column), (activity_audit, activity, activity_column) = fees(values)
+    group_memory = group_sent or group
     created = values['payment_date'] if flag else '$now'
     invoice = {'invoice_id': '$invoice', 'document_token': None, 'creation_date': created, 'membership_fee': membership,
                'activity_fee': activity, 'meta_payment_categories': values['meta_payment_categories'], 'description': description,
                'number': number, 'archived': False, 'cancelled': False, 'meta': None, 'imported_from_associami': False, 'deleted': False,
-               'document_pdf': None, 'sport_association': association, 'selected_tutor': None, 'group': group, 'attached_documents': []}
+               'document_pdf': None, 'sport_association': association, 'selected_tutor': None, 'group': group_memory, 'attached_documents': []}
     create = {'invoice_id': ['None', '$invoice'], 'document_pdf': ['None', 'None'], 'sport_association': ['None', association],
               'creation_date': ['None', '$now'], 'membership_fee': ['None', membership_audit], 'activity_fee': ['None', activity_audit],
               'meta_payment_categories': ['None', json_text(values['meta_payment_categories'])], 'description': ['None', description],
               'number': ['None', str(number)], 'archived': ['None', 'False'], 'cancelled': ['None', 'False'], 'selected_tutor': ['None', 'None'],
-              'meta': ['None', 'null'], 'imported_from_associami': ['None', 'False'], 'group': ['None', group or 'None'],
+              'meta': ['None', 'null'], 'imported_from_associami': ['None', 'False'], 'group': ['None', group_memory or 'None'],
               'deleted': ['None', 'False']}
     audit = [{'model': 'invoice', 'key': '$invoice', 'action': 0, 'changes': create, 'index': [association, DIRECT]}]
-    stored = {'membership_fee': membership, 'activity_fee': activity, 'number': number, 'description': description, 'group_id': group,
+    stored = {'membership_fee': membership_column, 'activity_fee': activity_column, 'number': number, 'description': description, 'group_id': group,
               'creation_date': created, 'sport_association_id': association, 'meta_payment_categories': values['meta_payment_categories']}
     if flag:
         update = {'creation_date': ['$now', values['payment_date'].replace('T', ' ').replace('Z', '')]}
-        if membership != membership_audit:
-            update['membership_fee'] = [membership, membership_audit]
-        if activity != activity_audit:
-            update['activity_fee'] = [activity, activity_audit]
+        if membership_column != membership_audit:
+            update['membership_fee'] = [membership_column, membership_audit]
+        if activity_column != activity_audit:
+            update['activity_fee'] = [activity_column, activity_audit]
+        if group and group_memory != group:
+            # The re-save compares the stored uuid with the text the instance still holds.
+            update['group'] = [group, group_memory]
         audit.append({'model': 'invoice', 'key': '$invoice', 'action': 1, 'changes': update, 'index': [association, DIRECT]})
     changes = {'paid': ['False', 'True']}
     if values['associate_id'] != sub['associate']:
@@ -483,6 +505,20 @@ response, effect = generated('p_old', 'sub_bruno', other(CATEGORY['name']), numb
 add('payment-before-balance-year', 'owner', GENERATE('p_old'), 200, response, body={'subscription_id': SUB('sub_bruno')}, effect=effect)
 response, effect = generated('p_group', 'sub_carla', other(CATEGORY['name']), number_key='own_group', group=GROUP_ID)
 add('group-numbering', 'owner', GENERATE('p_group'), 200, response, body={'subscription_id': SUB('sub_carla')}, headers=GROUP, effect=effect)
+# The header is read as a uuid in any spelling the uuid module accepts; the new invoice renders it as sent.
+response, effect = generated('p_group_spelling', 'sub_carla', other(CATEGORY['name']), number_key='own_group', group=GROUP_ID,
+                             group_sent=GROUP_ID.upper())
+add('group-header-upper-case', 'owner', GENERATE('p_group_spelling'), 200, response, body={'subscription_id': SUB('sub_carla')},
+    headers={'X-Group-Id': GROUP_ID.upper()}, effect=effect)
+# 9.875 and 0.125 are exact floats: the column rounds them away from zero, the response to the even cent.
+response, effect = generated('p_tie', 'sub_bruno', subscribed('', full_name('bruno')))
+assert (column(9.875), column(0.125), drf(0.125)) == ('9.88', '0.13', '0.12')
+add('subscription-subject-fee-tie', 'owner', GENERATE('p_tie'), 200, response, body={'subscription_id': SUB('sub_bruno')}, effect=effect)
+# meta.subscription_data.name is formatted with str(): floats, lists and dicts as Python writes them.
+for key, label, text in (('p_name_float', 'float', '(1.5) '), ('p_name_list', 'list', "(['Agonisti', {'ok': True, 'anno': None}, 2]) "),
+                         ('p_name_dict', 'dict', '''({'it': 'l\\'anno "2026"'}) ''')):
+    response, effect = generated(key, 'sub_bruno', subscribed(text, full_name('bruno')))
+    add(f'meta-name-{label}', 'owner', GENERATE(key), 200, response, body={'subscription_id': SUB('sub_bruno')}, effect=effect)
 response, effect = generated('p_collab', 'sub_anna', other(CATEGORY['name']), actor='full_collaborator')
 add('full-collaborator', 'full_collaborator', GENERATE('p_collab'), 200, response, body={'subscription_id': SUB('sub_anna')}, effect=effect)
 response, effect = generated('p_admin', 'sub_bruno', other(CATEGORY['name']), actor='admin')
@@ -497,6 +533,14 @@ response, effect = generated('f_dated', 'sub_flavia', other_flag('Quota'), actor
                              association=FLAG['association'], flag=True)
 add('flag-payment-date-invoice-date', 'flag_owner', GENERATE('f_dated'), 200, response, body={'subscription_id': SUB('sub_flavia')},
     effect=effect)
+
+# The second save of an invoice dated by its payment compares the stored (column) fees with the float fees: the tie differs from both.
+NUMBERS['flag'] = 10  # the NULL number sorts first: every flag invoice is numbered 11
+response, effect = generated('f_tie', 'sub_flavia',
+                             f"Ricevuta di pagamento per l'iscrizione di <b>{escape(full_name('flavia'))}</b> all'associazione "
+                             f"<b>{escape(FLAG['denomination'])}</b>.", actor='flag_owner', number_key='flag', association=FLAG['association'],
+                             flag=True)
+add('flag-payment-date-fee-tie', 'flag_owner', GENERATE('f_tie'), 200, response, body={'subscription_id': SUB('sub_flavia')}, effect=effect)
 
 # --- approve with a truthy generate_invoice ---------------------------------------------
 
@@ -517,6 +561,12 @@ add('approve-receipt-null', 'owner', APPROVE('p_invoiced'), 200, APPROVED('p_inv
     body={'generate_invoice': True, 'send_receipt_email': None}, effect=dispatch('p_invoiced', None))
 add('approve-form-body', 'full_collaborator', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'),
     raw_body='generate_invoice=0&send_receipt_email=yes', content_type=FORM, effect=dispatch('p_invoiced', 'yes', 'full_collaborator'))
+# send_receipt_email reaches the task as sent: floats, integers of any size, lists and objects included.
+for receipt_name, receipt_value in (('float', 1.5), ('float-exponent', 1e+22), ('float-small', 0.00001), ('float-negative-zero', -0.0),
+                                    ('large-integer', 123456789012345678901234567890), ('list', ['s\u00ec', 2, [None, True, 0.5]]),
+                                    ('object', {'b': 1, 'a': {'c': [1.25, 'x'], 'd': None}}), ('empty-list', [])):
+    add(f'approve-receipt-{receipt_name}', 'owner', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'),
+        body={'send_receipt_email': receipt_value}, effect=dispatch('p_invoiced', receipt_value))
 add('approve-admin-impersonating-owner', 'admin', APPROVE('p_invoiced'), 200, APPROVED('p_invoiced'), body={'send_receipt_email': False},
     headers=ADMIN_OWNER, effect=dispatch('p_invoiced', False, 'admin'))
 

@@ -20,6 +20,7 @@ type SubscriptionMedical struct {
 	now          func() time.Time
 	ids          func() string
 	placeholders *SubscriptionPlaceholders
+	printer      MedicalAppointmentPrinter
 }
 
 func NewSubscriptionMedical(store domain.SubscriptionMedicalStore, now func() time.Time, ids func() string) *SubscriptionMedical {
@@ -30,6 +31,13 @@ func NewSubscriptionMedical(store domain.SubscriptionMedicalStore, now func() ti
 // creates for a subscription without one.
 func (s *SubscriptionMedical) WithPlaceholders(placeholders *SubscriptionPlaceholders) *SubscriptionMedical {
 	s.placeholders = placeholders
+	return s
+}
+
+// WithAppointmentPrinter sets the synchronous print the list runs for an
+// appointment without a document.
+func (s *SubscriptionMedical) WithAppointmentPrinter(printer MedicalAppointmentPrinter) *SubscriptionMedical {
+	s.printer = printer
 	return s
 }
 
@@ -87,7 +95,8 @@ func (s *SubscriptionMedical) owner(ctx context.Context, identity domain.Resolve
 }
 
 // List follows subscription_medical_appointments_list.
-func (s *SubscriptionMedical) List(ctx context.Context, identity domain.ResolvedIdentity, raw, group string) (domain.RequestObject, error) {
+func (s *SubscriptionMedical) List(ctx context.Context, identity domain.ResolvedIdentity, raw, group string, authorization *string) (
+	domain.RequestObject, error) {
 	id, err := s.ParseUUID(raw)
 	if err != nil {
 		return nil, err
@@ -108,10 +117,23 @@ func (s *SubscriptionMedical) List(ctx context.Context, identity domain.Resolved
 	if err != nil {
 		return nil, err
 	}
+	for _, row := range rows {
+		if row.Document == nil && s.printer == nil {
+			return nil, ErrSubscriptionMedicalNotPorted
+		}
+	}
+	// The rows are read: the prints below run outside the read transaction.
+	if err = tx.Rollback(); err != nil {
+		return nil, err
+	}
 	data := domain.RequestObject{}
 	for index, row := range rows {
 		if row.Document == nil {
-			return nil, ErrSubscriptionMedicalNotPorted
+			// print_document_medical_appointment(id, authorization) called directly; the
+			// instance read before it is serialized (no document).
+			if err = s.printer.MedicalAppointment(ctx, row.ID, authorization); err != nil {
+				return nil, err
+			}
 		}
 		region, known := medicalAppointmentRegions[row.Region]
 		if !known {
@@ -128,7 +150,7 @@ func (s *SubscriptionMedical) List(ctx context.Context, identity domain.Resolved
 			{Name: "appointment_region", Value: region}, {Name: "region", Value: row.Region}, {Name: "date", Value: optionalValue(row.Date)},
 			{Name: "notes", Value: optionalValue(row.Notes)}, {Name: "sport", Value: optionalValue(row.Sport)}, {Name: "meta", Value: meta},
 			{Name: "address", Value: optionalValue(row.Address)}, {Name: "creation_date", Value: dto.DRFUTCDateTime(row.Created)},
-			{Name: "subscription", Value: row.Subscription}, {Name: "document", Value: *row.Document}}})
+			{Name: "subscription", Value: row.Subscription}, {Name: "document", Value: optionalValue(row.Document)}}})
 	}
 	return domain.RequestObject{{Name: "data", Value: data}}, nil
 }

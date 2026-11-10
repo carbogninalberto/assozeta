@@ -85,8 +85,11 @@ rendering the page; a broker failure is the 500 page, as in Django.
 - `invoice-customers/add` stays with invoice-parties (its validation is ported there; a valid add generates the XML and the
   PDF).
 - invoice/list refuses (500) random
-  ordering and orderings through relations (resolved by Django when compiling the rows), infinite float search terms and
-  smart-search terms outside the Latin script personas-reads supports.
+  ordering and orderings through relations (resolved by Django when compiling the rows) and smart-search terms outside the
+  Latin script personas-reads supports (the database's case folding of other scripts is not reproduced).
+- An infinite float search term (`inf`, `-Infinity`) is the 500 page, as `nan` is: the fee lookup cannot adapt an infinite decimal
+  when the SQL is compiled (cases `list-search-infinite-server-error`, `list-search-negative-infinity-server-error`; 108 cases, receipt
+  `invoice-core-http-sweep-restdocs-2`, GitHub run 42908069516, 4 transports; mutation (infinity read as an amount) CAUGHT).
 - Bulk bodies with file parts (multipart uploads).
 
 Not authored: tutor relations in `available_tutors`, instructor payments, payments with a matching subscription or a course

@@ -112,11 +112,21 @@ def alpha_footer(courses='', cancelled=False):
     return text + '<br/><br/><b>RICEVUTA ANNULLATA (non è più valida)</b>' if cancelled else text
 
 
-ALPHA_EXTRA = f'<p>Nota per {M("main_tutor.first_name")} &amp; soci</p>'
+# The invoice's own fields (also through the legacy alias) and keys of earlier versions, which read as the empty text.
+ALPHA_EXTRA = (f'<p>Nota per {M("main_tutor.first_name")} &amp; soci, n. {M("invoice.number")} del {M("invoice.creation_date")}: '
+               f'{M("invoice.activity_fee")}+{M("invoice.membership_fee")}={M("invoice.total_amount")} (@importototale)'
+               f'{M("invoice.protocollo")}{M("payment.causale_vecchia")}{M("associate.tessera.numero")}</p>')
 
 
 def alpha_extra(tutor_first=''):
-    return f'<p>Nota per {tutor_first} &amp; soci</p>'
+    return f'<p>Nota per {tutor_first} &amp; soci, $invoice</p>'
+
+
+def invoice_mentions(inv):
+    from decimal import Decimal
+    total = Decimal(inv['activity']) + Decimal(inv['membership'])
+    number = '' if inv['number'] is None else inv['number']
+    return (f"n. {number} del 2026-01-02 03:04:05.678901+00:00: {inv['activity']}+{inv['membership']}={total} ({total})")
 
 
 ASSOCIATIONS = {
@@ -340,6 +350,8 @@ def invoice_html(key, *, description, category_name=None, associate=None, tutor=
                  stamp_free=False, sub_type=None, sub_period='', membership_period='', plans=('-', '-', False, False), custom=None,
                  override=False, header='', footer='', extra=None, template='invoice.html', language='en', uid_value=None):
     inv = INVOICES[key]
+    if isinstance(extra, str):
+        extra = extra.replace('$invoice', invoice_mentions(inv))
     pay = next(p for p in PAYMENTS if p['invoice'] == key and not p['deleted'])
     a = ASSOCIATIONS[inv['association']]
     supplier = SUPPLIERS[pay['supplier']] if pay['supplier'] else None

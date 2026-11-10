@@ -250,18 +250,23 @@ def assert_effect(case, before, after, source, context):
                           and index['resolution_path'] == 'actor.sport_association'), 'index.document')
 
 
-_base_context = harness.fixture_context_for(contract, seed_rows, purge=(membership_model, document_model))
+def fixture_context_for(family_contract):
+    """The seeded fixture for a contract; the workload's uploads go with it."""
+    base = harness.fixture_context_for(family_contract, seed_rows, purge=(membership_model, document_model))
+
+    @contextmanager
+    def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
+        try:
+            with base(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
+                yield fixture
+        finally:
+            for item in listing() - {SENTINEL[0]}:
+                STORAGE['client'].delete_object(Bucket=BUCKET, Key=item)
+
+    return fixture_context
 
 
-@contextmanager
-def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
-    """The workload's uploads go with it."""
-    try:
-        with _base_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
-            yield fixture
-    finally:
-        for item in listing() - {SENTINEL[0]}:
-            STORAGE['client'].delete_object(Bucket=BUCKET, Key=item)
+fixture_context = fixture_context_for(contract)
 
 
 def prepared(source):

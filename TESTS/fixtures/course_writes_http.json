@@ -634,12 +634,25 @@
     {
      "id": 1,
      "amount": "20.00",
-     "payment_date": "10/01/2099"
+     "payment_date": "1٠/01/٢٠٩٩",
+     "course_subscription_installment_id": "c0000000-0000-4000-8000-000000999999"
     },
     {
      "id": 2,
      "amount": "10.00",
      "payment_date": "2099-02-10"
+    },
+    {
+     "id": 3,
+     "amount": "5.00",
+     "payment_date": "10/03/2099",
+     "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000094"
+    },
+    {
+     "id": 4,
+     "amount": "5.00",
+     "payment_date": "10/04/2099",
+     "course_subscription_installment_id": null
     }
    ],
    "one_fee_payment": true,
@@ -3496,6 +3509,57 @@
    }
   },
   {
+   "name": "course-writes-update-event-installment-id-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000013/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_subscription_installment_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "events": [
+     {
+      "id": 0,
+      "amount": "1",
+      "payment_date": "01/01/2099",
+      "course_subscription_installment_id": "abc"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-writes-update-event-installment-id-taken",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/c0000000-0000-4000-8000-000000000013/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_subscription_installment_id": [
+     "course subscription installment with this course subscription installment id already exists."
+    ],
+    "payment_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "events": [
+     {
+      "id": 0,
+      "amount": "1",
+      "payment_date": "١٠/01/2099",
+      "course_subscription_installment_id": "C0000000-0000-4000-8000-000000000094"
+     }
+    ]
+   }
+  },
+  {
    "name": "course-writes-update-event-not-object",
    "actor": "owner",
    "method": "PATCH",
@@ -5685,6 +5749,121 @@
    }
   },
   {
+   "name": "course-writes-overview-update-body-list-with-key-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "multi_payments"
+   ]
+  },
+  {
+   "name": "course-writes-overview-update-body-text-with-key-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": "the one_fee_payment flag"
+  },
+  {
+   "name": "course-writes-overview-update-body-number-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": 5
+  },
+  {
+   "name": "course-writes-overview-update-body-list-without-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "course subscription update."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "body": [
+    "all",
+    7
+   ]
+  },
+  {
+   "name": "course-writes-overview-update-body-text-without-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "course subscription update."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "created": {},
+    "links": {},
+    "audit": []
+   },
+   "body": "multi"
+  },
+  {
+   "name": "course-writes-overview-delete-body-list-with-key-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "installments"
+   ]
+  },
+  {
+   "name": "course-writes-overview-delete-body-text-with-key-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": "installments"
+  },
+  {
+   "name": "course-writes-overview-delete-body-boolean-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course/c0000000-0000-4000-8000-000000000029/overview/c0000000-0000-4000-8000-000000000005/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": true
+  },
+  {
    "name": "course-writes-add-anonymous",
    "actor": "anonymous",
    "method": "POST",
@@ -6152,6 +6331,306 @@
        "id": 0,
        "amount": "5",
        "payment_date": "2099-01-10"
+      },
+      {
+       "id": 1,
+       "amount": "5",
+       "payment_date": "10/01/2099"
+      }
+     ]
+    },
+    "subscriptions": []
+   }
+  },
+  {
+   "name": "course-writes-add-event-installment-id-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_subscription_installment_id": [
+     "This field may not be null."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_course": {
+     "title": "Base",
+     "description": "Note",
+     "fee": "10",
+     "multi_payments_split": true,
+     "events": [
+      {
+       "id": 0,
+       "amount": "5",
+       "payment_date": "10/01/2099",
+       "course_subscription_installment_id": null
+      },
+      {
+       "id": 1,
+       "amount": "4",
+       "payment_date": "10/01/2099"
+      }
+     ]
+    },
+    "subscriptions": []
+   }
+  },
+  {
+   "name": "course-writes-add-event-installment-id-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_subscription_installment_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_course": {
+     "title": "Base",
+     "description": "Note",
+     "fee": "10",
+     "multi_payments_split": true,
+     "events": [
+      {
+       "id": 0,
+       "amount": "5",
+       "payment_date": "10/01/2099",
+       "course_subscription_installment_id": 1.5
+      },
+      {
+       "id": 1,
+       "amount": "4",
+       "payment_date": "10/01/2099"
+      }
+     ]
+    },
+    "subscriptions": []
+   }
+  },
+  {
+   "name": "course-writes-add-event-installment-id-taken",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_subscription_installment_id": [
+     "course subscription installment with this course subscription installment id already exists."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_course": {
+     "title": "Base",
+     "description": "Note",
+     "fee": "10",
+     "multi_payments_split": true,
+     "events": [
+      {
+       "id": 0,
+       "amount": "5",
+       "payment_date": "10/01/2099",
+       "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000094"
+      },
+      {
+       "id": 1,
+       "amount": "4",
+       "payment_date": "10/01/2099"
+      }
+     ]
+    },
+    "subscriptions": []
+   }
+  },
+  {
+   "name": "course-writes-add-event-installment-id-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg:": "not valid course information.",
+    "details": {
+     "events": [
+      "The sum of the events amount must be equal to the course fee."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "new_course": {
+     "title": "Base",
+     "description": "Note",
+     "fee": "10",
+     "multi_payments_split": true,
+     "events": [
+      {
+       "id": 0,
+       "amount": "5",
+       "payment_date": "10/01/2099",
+       "course_subscription_installment_id": "c0000000-0000-4000-8000-000000999999"
+      },
+      {
+       "id": 1,
+       "amount": "4",
+       "payment_date": "10/01/2099"
+      }
+     ]
+    },
+    "subscriptions": []
+   }
+  },
+  {
+   "name": "course-writes-add-event-installment-id-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg:": "not valid course information.",
+    "details": {
+     "events": [
+      "The sum of the events amount must be equal to the course fee."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "new_course": {
+     "title": "Base",
+     "description": "Note",
+     "fee": "10",
+     "multi_payments_split": true,
+     "events": [
+      {
+       "id": 0,
+       "amount": "5",
+       "payment_date": "10/01/2099",
+       "course_subscription_installment_id": 7
+      },
+      {
+       "id": 1,
+       "amount": "4",
+       "payment_date": "10/01/2099"
+      }
+     ]
+    },
+    "subscriptions": []
+   }
+  },
+  {
+   "name": "course-writes-add-event-installment-id-other-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 400,
+   "response": {
+    "msg:": "not valid course information.",
+    "details": {
+     "events": [
+      "The sum of the events amount must be equal to the course fee."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "new_course": {
+     "title": "Base",
+     "description": "Note",
+     "fee": "10",
+     "multi_payments_split": true,
+     "events": [
+      {
+       "id": 0,
+       "amount": "5",
+       "payment_date": "10/01/2099",
+       "course_subscription_installment_id": "c0000000-0000-4000-8000-000000000094"
+      },
+      {
+       "id": 1,
+       "amount": "4",
+       "payment_date": "10/01/2099"
+      }
+     ]
+    },
+    "subscriptions": []
+   }
+  },
+  {
+   "name": "course-writes-add-event-date-other-digits",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg:": "not valid course information.",
+    "details": {
+     "events": [
+      "The sum of the events amount must be equal to the course fee."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "new_course": {
+     "title": "Base",
+     "description": "Note",
+     "fee": "10",
+     "multi_payments_split": true,
+     "events": [
+      {
+       "id": 0,
+       "amount": "5",
+       "payment_date": "2٩/01/٢٠٩٩"
+      },
+      {
+       "id": 1,
+       "amount": "4",
+       "payment_date": "10/01/2099"
+      }
+     ]
+    },
+    "subscriptions": []
+   }
+  },
+  {
+   "name": "course-writes-add-event-month-other-digits-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_course": {
+     "title": "Base",
+     "description": "Note",
+     "fee": "10",
+     "multi_payments_split": true,
+     "events": [
+      {
+       "id": 0,
+       "amount": "5",
+       "payment_date": "10/٠١/2099"
       },
       {
        "id": 1,

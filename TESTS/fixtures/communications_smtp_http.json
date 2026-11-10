@@ -2005,6 +2005,882 @@
    }
   },
   {
+   "name": "communications-smtp-verify-port-in-host",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1:{port:plain}",
+     "email_smtp_port": null,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1:{port:plain}",
+    "email_smtp_port": null,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-port-in-host-wide-digits",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1: +{wideport:plain}　",
+     "email_smtp_port": 0,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1: +{wideport:plain}　",
+    "email_smtp_port": 0,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-port-in-host-ssl",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1:{port:ssl}",
+     "email_smtp_port": 0,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "SSL",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "ssl",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1:{port:ssl}",
+    "email_smtp_port": 0,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "SSL",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-port-in-host-starttls",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1:{port:starttls}",
+     "email_smtp_port": null,
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "TLS",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "starttls",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "STARTTLS\r\n",
+       "<tls>",
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1:{port:starttls}",
+    "email_smtp_port": null,
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "TLS",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-missing-password",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "(535, b'denied')"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": null,
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QATm9uZQ==\r\n",
+       "AUTH LOGIN bWFpbGVyQGV4YW1wbGUudGVzdA==\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": null,
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-missing-user",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": null,
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AE5vbmUAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<None> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": null,
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-missing-user-and-password",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "(535, b'denied')"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": null,
+     "email_smtp_password": null,
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AE5vbmUATm9uZQ==\r\n",
+       "AUTH LOGIN\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": null,
+    "email_smtp_password": null,
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-cram-md5",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:cram",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "cram",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH CRAM-MD5\r\n",
+       "bWFpbGVyQGV4YW1wbGUudGVzdCA0Mjc0ZWQ2NWFlYTI4NzQ1ODBhYmZiYTM3YzA3MjNjOA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:cram",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-cram-md5-missing-user",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:cram",
+     "email_smtp_user": null,
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "cram",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH CRAM-MD5\r\n",
+       "Tm9uZSA0Mjc0ZWQ2NWFlYTI4NzQ1ODBhYmZiYTM3YzA3MjNjOA==\r\n",
+       "mail from:<None> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:cram",
+    "email_smtp_user": null,
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-cram-md5-missing-password",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "'NoneType' object has no attribute 'encode'"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:cram",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": null,
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "cram",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH CRAM-MD5\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:cram",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": null,
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-cram-md5-accented-password",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "'ascii' codec can't encode characters in position 4-5: ordinal not in range(128)"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:cram",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "segrèòto",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "cram",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH CRAM-MD5\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:cram",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "segrèòto",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-login-challenges",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:challenge",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "challenge",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH LOGIN bWFpbGVyQGV4YW1wbGUudGVzdA==\r\n",
+       "cGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:challenge",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-login-missing-user",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "'NoneType' object has no attribute 'encode'"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:challenge",
+     "email_smtp_user": null,
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "challenge",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH LOGIN\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:challenge",
+    "email_smtp_user": null,
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-login-missing-password",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "'NoneType' object has no attribute 'encode'"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:challenge",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": null,
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "challenge",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH LOGIN bWFpbGVyQGV4YW1wbGUudGVzdA==\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:challenge",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": null,
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-login-accented-user",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "'ascii' codec can't encode character '\\xe0' in position 4: ordinal not in range(128)"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:challenge",
+     "email_smtp_user": "città@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": null,
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "challenge",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:challenge",
+    "email_smtp_user": "città@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": null
+   }
+  },
+  {
+   "name": "communications-smtp-verify-sender-name-with-comma",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "Sport, Club",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<Sport, Club <mailer@example.test>> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": "Sport, Club"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-sender-name-with-comment",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": true,
+    "msg": "Ok"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "Segreteria (A.S.D.) \"2024\": soci",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rcpt to:<$owner>\r\n",
+       "data\r\n",
+       "Subject: Email di test da Assozeta, SMTP configurato correttamente.\n\nSe hai ricevuto questa email, significa che hai configurato il server SMTP correttamente.\r\n.\r\n",
+       "quit\r\n",
+       "<quit>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": "Segreteria (A.S.D.) \"2024\": soci"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-sender-name-with-address",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "'ascii' codec can't encode character '\\xe0' in position 15: ordinal not in range(128)"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:plain",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "Città <info@example.test>",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "plain",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:plain",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": "Città <info@example.test>"
+   }
+  },
+  {
+   "name": "communications-smtp-verify-sender-refused-quoted-name",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/settings/smtp/verify",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "verified": false,
+    "msg": "(550, b'sender refused', 'L\\'Aquila \"Sport\" 🏐 <mailer@example.test>')"
+   },
+   "effect": {
+    "kind": "verify",
+    "row": {
+     "email_smtp_host": "127.0.0.1",
+     "email_smtp_port": "$port:nomail",
+     "email_smtp_user": "mailer@example.test",
+     "email_smtp_password": "placeholder-smtp",
+     "email_sender_name": "L'Aquila \"Sport\" 🏐",
+     "email_encryption": "NONE",
+     "daily_email_limit": 1000,
+     "daily_email_balance": 0
+    },
+    "smtp": {
+     "server": "nomail",
+     "connections": [
+      [
+       "ehlo <local>\r\n",
+       "AUTH PLAIN AG1haWxlckBleGFtcGxlLnRlc3QAcGxhY2Vob2xkZXItc210cA==\r\n",
+       "mail from:<mailer@example.test> size=158\r\n",
+       "rset\r\n",
+       "<closed>"
+      ]
+     ]
+    }
+   },
+   "setup": {
+    "email_smtp_host": "127.0.0.1",
+    "email_smtp_port": "$port:nomail",
+    "email_smtp_user": "mailer@example.test",
+    "email_smtp_password": "placeholder-smtp",
+    "email_encryption": "NONE",
+    "email_sender_name": "L'Aquila \"Sport\" 🏐"
+   }
+  },
+  {
    "name": "communications-smtp-verify-unknown-host",
    "actor": "owner",
    "method": "GET",
@@ -2022,7 +2898,7 @@
      "email_smtp_port": 587,
      "email_smtp_user": "mailer@example.test",
      "email_smtp_password": "placeholder-smtp",
-     "email_sender_name": "A.S.D. Sport & Co",
+     "email_sender_name": "L'Aquila \"Sport\" 🏐",
      "email_encryption": "TLS",
      "daily_email_limit": 1000,
      "daily_email_balance": 0
@@ -2058,7 +2934,7 @@
      "email_smtp_port": 465,
      "email_smtp_user": "mailer@example.test",
      "email_smtp_password": "placeholder-smtp",
-     "email_sender_name": "A.S.D. Sport & Co",
+     "email_sender_name": "L'Aquila \"Sport\" 🏐",
      "email_encryption": "SSL",
      "daily_email_limit": 1000,
      "daily_email_balance": 0
@@ -2091,7 +2967,7 @@
      "email_smtp_port": 25,
      "email_smtp_user": "mailer@example.test",
      "email_smtp_password": "placeholder-smtp",
-     "email_sender_name": "A.S.D. Sport & Co",
+     "email_sender_name": "L'Aquila \"Sport\" 🏐",
      "email_encryption": "NONE",
      "daily_email_limit": 1000,
      "daily_email_balance": 0

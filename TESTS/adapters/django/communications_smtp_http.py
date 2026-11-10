@@ -47,7 +47,7 @@ COLUMNS = ('email_smtp_host', 'email_smtp_port', 'email_smtp_user', 'email_smtp_
            'daily_email_limit', 'daily_email_balance')
 # str(socket.gaierror) for EAI_NONAME: the C library's code and gai_strerror text.
 UNRESOLVED = {'darwin': '[Errno 8] nodename nor servname provided, or not known', 'linux': '[Errno -2] Name or service not known'}
-MODES = ('starttls', 'ssl', 'plain', 'noauth', 'norcpt', 'nomail', 'silent')
+MODES = ('starttls', 'ssl', 'plain', 'noauth', 'norcpt', 'nomail', 'silent', 'cram', 'challenge')
 
 
 @contextmanager
@@ -74,11 +74,21 @@ def service_context(report, log):
         STUB.clear()
 
 
+WIDE_DIGITS = str.maketrans('0123456789', '０１２３４５６７８９')
+
+
 def resolve_row(row):
+    """$port:<server> as the port column; in the host, {port:<server>} and {wideport:<server>} (the same number in
+    full-width digits) name a server's port."""
+    row = dict(row)
     port = row.get('email_smtp_port')
     if isinstance(port, str) and port.startswith('$port:'):
-        return {**row, 'email_smtp_port': STUB['ports'][port[6:]]}
-    return dict(row)
+        row['email_smtp_port'] = STUB['ports'][port[6:]]
+    host = row.get('email_smtp_host')
+    if isinstance(host, str):
+        host = re.sub(r'\{port:(\w+)\}', lambda m: str(STUB['ports'][m[1]]), host)
+        row['email_smtp_host'] = re.sub(r'\{wideport:(\w+)\}', lambda m: str(STUB['ports'][m[1]]).translate(WIDE_DIGITS), host)
+    return row
 
 
 def owner_email(source):

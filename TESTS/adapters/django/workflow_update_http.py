@@ -62,6 +62,8 @@ def assert_effect(case, before, after, source, context):
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
     ids = source['ids']
+    if 'copy' in effect:
+        return assert_copy(case, before, after, source, context)
     old, new = keyed(before[WORKFLOW], 'automation_workflow_id'), keyed(after[WORKFLOW], 'automation_workflow_id')
     key = source['workflows'][effect['label']]['id']
     contract.require(set(old) == set(new) and all(new[k] == old[k] for k in old if k != key), 'state.others')
@@ -92,6 +94,40 @@ def assert_effect(case, before, after, source, context):
         index = indexes.get(str(event['id']))
         contract.require(index is not None and index['sport_association_id'] == ids['own_association']
                          and index['resolution_path'] == 'direct', 'index.fields')
+
+
+def assert_copy(case, before, after, source, context):
+    """save() under a new key: the named row is untouched, a copy appears, and the audit holds an update then a create."""
+    effect = case['effect']
+    copy_spec, ids = effect['copy'], source['ids']
+    old, new = keyed(before[WORKFLOW], 'automation_workflow_id'), keyed(after[WORKFLOW], 'automation_workflow_id')
+    key = copy_spec['id']
+    contract.require(set(new) - set(old) == {key} and all(new[k] == old[k] for k in old), 'state.copy-only')
+    row, named = new[key], old[source['workflows'][effect['label']]['id']]
+    for column, value in copy_spec['row'].items():
+        contract.require(row[column] == value, 'state.copy-' + column)
+    contract.require(row['sport_association_id'] == named['sport_association_id'] and recent(audit_time(row['created_at']))
+                     and recent(audit_time(row['updated_at'])), 'state.copy-timestamps')
+    added, indexes = harness.audit_delta(contract, before, after)
+    contract.require(len(added) == 2 and len(indexes) == 2, 'audit.count')
+    types = [ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'communications' and ct['model'] == 'automationworkflow']
+    users = keyed(before['application.User'], 'user_id')
+    actor = ids[effect['actor']]
+    previous = named  # the update entry holds the loaded row's timestamps
+    expected = (
+        (1, 'changes_json.sport_association', {**copy_spec['update'], 'created_at': ['None', audit_time(previous['created_at'])],
+                                               'updated_at': ['None', audit_time(previous['updated_at'])]}),
+        (0, 'direct', {**copy_spec['create'], 'created_at': ['None', audit_time(row['created_at'])],
+                       'updated_at': ['None', audit_time(row['updated_at'])]}))
+    for event, (action, path, changes) in zip(sorted(added, key=lambda event: event['id']), expected):
+        contract.require(len(types) == 1 and event['content_type_id'] == types[0] and event['action'] == action and event['object_pk'] == key
+                         and event['object_repr'] == f'AutomationWorkflow object ({key})', 'audit.identity')
+        contract.require(event['changes'] == changes, 'audit.changes')
+        contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
+        contract.require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
+        index = indexes.get(str(event['id']))
+        contract.require(index is not None and index['sport_association_id'] == ids['own_association']
+                         and index['resolution_path'] == path, 'index.fields')
 
 
 fixture_context = harness.with_celery_broker(harness.fixture_context_for(contract, seed_rows))

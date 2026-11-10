@@ -258,9 +258,6 @@ func (s *InvoiceParties) CustomerUpdate(ctx context.Context, request InvoicePart
 	case domain.RequestObject:
 		for _, name := range []string{"paid", "transmitted"} {
 			if value, present := body.Lookup(name); present {
-				if _, upload := value.(domain.RequestUpload); upload {
-					return domain.ErrInvoicePartyNotPorted
-				}
 				values[name] = value
 			}
 		}

@@ -97,8 +97,8 @@ their invoice is rendered whatever `generate_invoice` says.
   rolled back.
 - Approve of unpaid income payments with a party is now ported by payment-state's paid flow
   ([payment-state](payment-state.md)). A paid invoiced payment with a truthy `generate_invoice` is now ported (the
-  `print_document_invoice` dispatch, see [invoice-generate](invoice-generate.md)); a `send_receipt_email` other than
-  None, a bool, a string or an int64 is refused.
+  `print_document_invoice` dispatch, see [invoice-generate](invoice-generate.md)); every JSON value of
+  `send_receipt_email` is passed on (rest-b1); only an uploaded file is refused.
 - Plan values outside the ported conversions: `int()` beyond int64, fees that are not a JSON number or a plain decimal
   string (or exceed numeric(9, 2)), previous plan / plan id values that are not strings or numbers. The plan editor
   writes strings and numbers, so these need hand-edited plan JSON; each type has its own lookup and insert failure in

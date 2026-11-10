@@ -88,6 +88,42 @@
    "association": "a1000000-0000-4000-8000-000000701001",
    "first": "Elena",
    "last": "Fixture"
+  },
+  "nora": {
+   "id": "a1000000-0000-4000-8000-000000610121",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Nora",
+   "last": "Fixture"
+  },
+  "ugo": {
+   "id": "a1000000-0000-4000-8000-000000610122",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Ugo",
+   "last": "Fixture"
+  },
+  "rita": {
+   "id": "a1000000-0000-4000-8000-000000610123",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Rita",
+   "last": "Fixture"
+  },
+  "dino": {
+   "id": "a1000000-0000-4000-8000-000000610124",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Dino",
+   "last": "Fixture"
+  },
+  "lea": {
+   "id": "a1000000-0000-4000-8000-000000610125",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Lea",
+   "last": "Fixture"
+  },
+  "tito": {
+   "id": "a1000000-0000-4000-8000-000000610126",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Tito",
+   "last": "Fixture"
   }
  },
  "courses": {
@@ -519,6 +555,134 @@
    "acceptance": "2026-01-15",
    "start": "2026-01-01",
    "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": null,
+   "tags": [],
+   "signature_key": null
+  },
+  "a_nodate": {
+   "id": "a1000000-0000-4000-8000-000000610127",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "nora",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": null,
+   "end": null,
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": null,
+   "tags": [],
+   "signature_key": null
+  },
+  "d_nodate": {
+   "id": "a1000000-0000-4000-8000-000000610131",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "ugo",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": null,
+   "end": null,
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": "dnd_sp",
+   "tags": [],
+   "signature_key": null
+  },
+  "a_orphan": {
+   "id": "a1000000-0000-4000-8000-000000610133",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "rita",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": "orph",
+   "tags": [],
+   "signature_key": null
+  },
+  "a_badsave": {
+   "id": "a1000000-0000-4000-8000-000000610136",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "dino",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": "bad_sp",
+   "tags": [],
+   "signature_key": null
+  },
+  "a_badrange": {
+   "id": "a1000000-0000-4000-8000-000000610141",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "lea",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2021-01-01",
+   "end": "2021-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": null,
+   "tags": [],
+   "signature_key": null
+  },
+  "d_shared": {
+   "id": "a1000000-0000-4000-8000-000000610143",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "tito",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2019-01-01",
+   "end": "2019-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": null,
+   "tags": [],
+   "signature_key": null
+  },
+  "d_shared_sub": {
+   "id": "a1000000-0000-4000-8000-000000610147",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "tito",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2018-01-01",
+   "end": "2018-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": "shs_p",
+   "tags": [],
+   "signature_key": null
+  },
+  "d_shared_inst": {
+   "id": "a1000000-0000-4000-8000-000000610150",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "tito",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2017-01-01",
+   "end": "2017-12-31",
    "created": "2026-01-10T09:00:00Z",
    "group": null,
    "archived": false,
@@ -1038,6 +1202,186 @@
    "created": "2026-04-01T10:00:00Z",
    "description": "Quota fixture",
    "invoice": "inv_dci"
+  },
+  "and_p": {
+   "id": "a1000000-0000-4000-8000-000000610128",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": "nora",
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "dnd_sp": {
+   "id": "a1000000-0000-4000-8000-000000610129",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 1,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "dnd_r": {
+   "id": "a1000000-0000-4000-8000-000000610130",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": "ugo",
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "orph": {
+   "id": "a1000000-0000-4000-8000-000000610132",
+   "association": null,
+   "subject": 1,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "bad_cp": {
+   "id": "a1000000-0000-4000-8000-000000610134",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "bad_sp": {
+   "id": "a1000000-0000-4000-8000-000000610135",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 3,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": null,
+   "invoice": null
+  },
+  "rng_ok": {
+   "id": "a1000000-0000-4000-8000-000000610138",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": "lea",
+   "group": null,
+   "category": true,
+   "created": "2021-03-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "rng_bad": {
+   "id": "a1000000-0000-4000-8000-000000610139",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 3,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": "lea",
+   "group": null,
+   "category": true,
+   "created": "2021-03-02T10:00:00Z",
+   "description": null,
+   "invoice": null
+  },
+  "rng_after": {
+   "id": "a1000000-0000-4000-8000-000000610140",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": "lea",
+   "group": null,
+   "category": true,
+   "created": "2021-03-03T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "sh_p": {
+   "id": "a1000000-0000-4000-8000-000000610142",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "shs_p": {
+   "id": "a1000000-0000-4000-8000-000000610146",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "shi_p": {
+   "id": "a1000000-0000-4000-8000-000000610149",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
   }
  },
  "course_subscriptions": {
@@ -1317,6 +1661,111 @@
    "membership_fee": "0.00",
    "auto_renewal": false,
    "deleted": false
+  },
+  "bad_cs": {
+   "id": "a1000000-0000-4000-8000-000000610137",
+   "course": "yoga",
+   "subscription": "a_badsave",
+   "paid": false,
+   "created": "2026-02-01T08:00:00Z",
+   "payment": "bad_cp",
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false
+  },
+  "sh1": {
+   "id": "a1000000-0000-4000-8000-000000610144",
+   "course": "yoga",
+   "subscription": "d_shared",
+   "paid": false,
+   "created": "2026-02-01T08:00:00Z",
+   "payment": "sh_p",
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false
+  },
+  "sh2": {
+   "id": "a1000000-0000-4000-8000-000000610145",
+   "course": "yoga",
+   "subscription": "d_shared",
+   "paid": false,
+   "created": "2026-02-01T08:00:00Z",
+   "payment": "sh_p",
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false
+  },
+  "shs": {
+   "id": "a1000000-0000-4000-8000-000000610148",
+   "course": "yoga",
+   "subscription": "d_shared_sub",
+   "paid": false,
+   "created": "2026-02-01T08:00:00Z",
+   "payment": "shs_p",
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false
+  },
+  "shi": {
+   "id": "a1000000-0000-4000-8000-000000610151",
+   "course": "yoga",
+   "subscription": "d_shared_inst",
+   "paid": false,
+   "created": "2026-02-01T08:00:00Z",
+   "payment": "shi_p",
+   "multi_payments": true,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false
   }
  },
  "installments": {
@@ -1436,6 +1885,17 @@
    "number": 0,
    "amount": "5.00",
    "payment": "dciip",
+   "group": null,
+   "deleted": false,
+   "payment_date": "2026-03-01T00:00:00Z",
+   "archived": false
+  },
+  "shi_i": {
+   "id": "a1000000-0000-4000-8000-000000610152",
+   "cs": "shi",
+   "number": 0,
+   "amount": "5.00",
+   "payment": "shi_p",
    "group": null,
    "deleted": false,
    "payment_date": "2026-03-01T00:00:00Z",
@@ -1808,7 +2268,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-accepted-clears-acceptance",
@@ -1870,7 +2331,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-again-denied",
@@ -1882,7 +2344,8 @@
    "response": {
     "detail": "User cannot change the status of the subscription."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-fills-dates",
@@ -1950,7 +2413,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-other-group-not-found",
@@ -1964,7 +2428,8 @@
    "response": {
     "msg": "Subscription not found."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-group-full-collaborator",
@@ -2024,7 +2489,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-soft-deleted-row",
@@ -2082,7 +2548,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-admin-impersonating-owner",
@@ -2143,7 +2610,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-foreign-denied",
@@ -2155,7 +2623,8 @@
    "response": {
     "detail": "User not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-missing",
@@ -2167,7 +2636,8 @@
    "response": {
     "msg": "Subscription not found."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-malformed",
@@ -2179,7 +2649,8 @@
    "response": [
     "badly formed hexadecimal UUID string"
    ],
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-athlete-server-error",
@@ -2189,7 +2660,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-owner-without-association-server-error",
@@ -2199,7 +2671,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-owner-scoped-athlete-denied",
@@ -2214,7 +2687,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-restricted-missing-permission",
@@ -2226,7 +2700,8 @@
    "response": {
     "detail": "Missing permission: association.members.update"
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-admin-without-session",
@@ -2238,7 +2713,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-anonymous",
@@ -2250,7 +2726,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-wrong-method",
@@ -2262,7 +2739,8 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-reject-options",
@@ -2283,7 +2761,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-athlete-denied",
@@ -2295,7 +2774,8 @@
    "response": {
     "detail": "You do not have permission to perform this action."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-owner-without-association-server-error",
@@ -2305,7 +2785,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-malformed",
@@ -2319,7 +2800,8 @@
      "“abc” is not a valid UUID."
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-missing",
@@ -2331,7 +2813,8 @@
    "response": {
     "exception": "Subscription not found"
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-foreign-denied",
@@ -2343,7 +2826,8 @@
    "response": {
     "exception": "User not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-other-group-not-found",
@@ -2357,7 +2841,8 @@
    "response": {
     "exception": "Subscription not found"
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-plain",
@@ -2414,7 +2899,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-admin-unarchives",
@@ -2474,7 +2960,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-unarchives-stored",
@@ -2531,7 +3018,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-cascade",
@@ -2776,7 +3264,8 @@
      },
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-group-scoped",
@@ -2898,7 +3387,8 @@
      },
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-owner-scoped-athlete-denied",
@@ -2913,7 +3403,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-restricted-missing-permission",
@@ -2925,7 +3416,8 @@
    "response": {
     "detail": "Missing permission: association.members.archive.update"
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-admin-without-session",
@@ -2937,7 +3429,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-anonymous",
@@ -2949,7 +3442,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-wrong-method",
@@ -2961,7 +3455,8 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-options",
@@ -2982,7 +3477,8 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-athlete-server-error",
@@ -2992,7 +3488,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-owner-without-association-server-error",
@@ -3002,7 +3499,8 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-malformed",
@@ -3016,7 +3514,8 @@
      "“abc” is not a valid UUID."
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-missing",
@@ -3028,7 +3527,8 @@
    "response": {
     "msg": "Subscription not found."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-foreign-denied",
@@ -3040,7 +3540,8 @@
    "response": {
     "exception": "User not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-other-group-not-found",
@@ -3054,7 +3555,8 @@
    "response": {
     "msg": "Subscription not found."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-with-tags",
@@ -3126,7 +3628,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-payments",
@@ -3229,7 +3732,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-course-subscriptions",
@@ -3544,7 +4048,8 @@
       "do1"
      ]
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-membership-and-deleted-rows",
@@ -3705,7 +4210,8 @@
       "dmi_old"
      ]
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-soft-deleted-payment",
@@ -3784,7 +4290,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-invoiced-course-payment-server-error",
@@ -3847,7 +4354,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-invoiced-installment-payment",
@@ -3982,7 +4490,8 @@
      },
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-invoiced-subscription-payment-server-error",
@@ -4053,7 +4562,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-invoiced-subscription-payment",
@@ -4170,7 +4680,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-invoiced-course-payments",
@@ -4384,7 +4895,8 @@
       "dcii"
      ]
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-related-rows",
@@ -4574,7 +5086,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-signed-a",
@@ -4646,7 +5159,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-signed-b",
@@ -4720,7 +5234,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-signed-own",
@@ -4794,7 +5309,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-signed-missing",
@@ -4866,7 +5382,8 @@
      "changed": {},
      "deleted": []
     }
-   }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-owner-scoped-athlete-denied",
@@ -4881,7 +5398,8 @@
    "response": {
     "detail": "Operazione non disponibile nel contesto dell’associazione."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-restricted-missing-permission",
@@ -4893,7 +5411,8 @@
    "response": {
     "detail": "Missing permission: association.members.delete"
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-admin-without-session",
@@ -4905,7 +5424,8 @@
    "response": {
     "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-anonymous",
@@ -4917,7 +5437,8 @@
    "response": {
     "detail": "Authentication credentials were not provided."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-wrong-method",
@@ -4929,7 +5450,8 @@
    "response": {
     "detail": "Method \"GET\" not allowed."
    },
-   "effect": null
+   "effect": null,
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-delete-options",
@@ -4950,7 +5472,660 @@
      "multipart/form-data"
     ]
    },
-   "effect": null
+   "effect": null,
+   "setup": null
+  },
+  {
+   "name": "subscription-lifecycle-archive-empty-dates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610127/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription archival completed."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "subscription",
+      "label": "a_nodate",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {
+      "a_nodate": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "payments": {
+     "changed": {},
+     "deleted": []
+    },
+    "cs": {
+     "changed": {},
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": {
+    "owner": {
+     "subscription_duration": 0
+    }
+   }
+  },
+  {
+   "name": "subscription-lifecycle-delete-empty-dates-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610131/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "dnd_sp",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "subscription",
+      "label": "d_nodate",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {
+      "d_nodate": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "payments": {
+     "changed": {},
+     "deleted": [
+      "dnd_sp"
+     ]
+    },
+    "cs": {
+     "changed": {},
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": {
+    "owner": {
+     "subscription_duration": 0
+    }
+   }
+  },
+  {
+   "name": "subscription-lifecycle-archive-payment-without-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610133/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription archival completed."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "orph",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "subscription",
+      "label": "a_orphan",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {
+      "a_orphan": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "payments": {
+     "changed": {
+      "orph": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "cs": {
+     "changed": {},
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-lifecycle-archive-payment-save-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610136/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "bad_cp",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "label": "bad_cs",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610137'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610136'), 'payment_id': UUID('a1000000-0000-4000-8000-000000610134'), 'multi_payments': False, 'one_fee_payment': False, 'archived': True, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {},
+     "deleted": []
+    },
+    "payments": {
+     "changed": {
+      "bad_cp": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "cs": {
+     "changed": {
+      "bad_cs": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-lifecycle-archive-period-payment-save-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610141/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "subscription",
+      "label": "a_badrange",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "label": "rng_ok",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {
+      "a_badrange": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "payments": {
+     "changed": {
+      "rng_ok": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "cs": {
+     "changed": {},
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-lifecycle-delete-payment-on-two-course-subscriptions-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610143/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "sh_p",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "label": "sh1",
+      "action": 1,
+      "changes": {
+       "deleted": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610144'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610143'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {},
+     "deleted": []
+    },
+    "payments": {
+     "changed": {},
+     "deleted": [
+      "sh_p"
+     ]
+    },
+    "cs": {
+     "changed": {
+      "sh1": {
+       "deleted": true
+      }
+     },
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-lifecycle-delete-payment-shared-with-subscription-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610147/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "shs_p",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "label": "shs",
+      "action": 1,
+      "changes": {
+       "deleted": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610148'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610147'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {},
+     "deleted": []
+    },
+    "payments": {
+     "changed": {},
+     "deleted": [
+      "shs_p"
+     ]
+    },
+    "cs": {
+     "changed": {
+      "shs": {
+       "deleted": true
+      }
+     },
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-lifecycle-delete-payment-shared-with-installment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610150/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription delete."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "shi_p",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "shi_i",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "label": "shi_p",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "label": "shi",
+      "action": 1,
+      "changes": {
+       "deleted": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610151'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610150'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     },
+     {
+      "model": "subscription",
+      "label": "d_shared_inst",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "subscription",
+      "label": "d_shared_inst",
+      "action": 2,
+      "changes": null,
+      "overrides": {
+       "archived": [
+        "True",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "label": "shi",
+      "action": 2,
+      "changes": null,
+      "overrides": {
+       "deleted": [
+        "True",
+        "None"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000610151'), 'course_id': UUID('a1000000-0000-4000-8000-000000610009'), 'paid': False, 'creation_date': datetime.datetime(2026, 2, 1, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000610150'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {},
+     "deleted": [
+      "d_shared_inst"
+     ]
+    },
+    "payments": {
+     "changed": {},
+     "deleted": [
+      "shi_p"
+     ]
+    },
+    "cs": {
+     "changed": {},
+     "deleted": [
+      "shi"
+     ]
+    },
+    "installments": {
+     "changed": {},
+     "deleted": [
+      "shi_i"
+     ]
+    }
+   },
+   "setup": null
   }
  ]
 }

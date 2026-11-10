@@ -66,11 +66,12 @@ Django remains the production execution owner.
 
 Go answers HTTP 500 (`domain.ErrSMTPVerifyNotPorted`, logged) for these verify inputs:
 
-- Before connecting: a falsy or out-of-range port with a plain host (smtplib's
-  default port), a missing user or password, a user or owner email outside
-  `smtpsend.CheckEnvelope`, a sender name with characters other than letters,
-  digits, spaces and `. - _ &` (what `email.utils.parseaddr` reads differently),
-  and hosts whose port suffix contains non-ASCII characters.
+- Before connecting: a port outside 1-65535 and the host texts `smtplib` cannot split.
+  Ported (restb2, `verify-port-in-host*`, `verify-missing-*`, `verify-cram-md5*`, `verify-login-*`, `verify-sender-*`):
+  a falsy port with the number after the host's only colon (Unicode digits, signs and spaces as `int()` reads them), a
+  missing user or password (formatted as the text `None` by AUTH PLAIN, a failure text from CRAM-MD5 or LOGIN),
+  servers that challenge (CRAM-MD5 first, LOGIN with one challenge per value), and sender names that
+  `smtplib.quoteaddr` reads as a second address or a comment.
 - After a failed connection whose Python text depends on the platform
   libraries, other than the two cases under "Platform texts" below: other TLS
   handshake errors, temporary resolver failures, connect timeouts, resets and
@@ -116,7 +117,7 @@ Go stores the validated password value exactly as the model column holds it
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/communications_smtp_http.json` (generator alongside) authors 83
+`TESTS/fixtures/communications_smtp_http.json` (generator alongside) authors 107
 cases: identity, dispatch and scope for the three routes (anonymous, admin
 without session, restricted collaborator, owner scoped to an athlete, athlete,
 owner without association, soft-deleted association, wrong method, OPTIONS),

@@ -244,6 +244,9 @@ HOLDINGS = {
     'h_disabled': {'id': next(ids), 'carnet': 'dieci', 'cs': ['cs_carnet'], 'disabled': True, 'meta': None, 'created': '2026-09-16T08:00:00Z'},
     'h_plain': {'id': next(ids), 'carnet': 'dieci', 'cs': ['cs_carnet'], 'disabled': False, 'meta': None, 'created': '2026-09-17T08:00:00Z'},
     'h_zero': {'id': next(ids), 'carnet': 'zero', 'cs': ['cs_carnet'], 'disabled': False, 'meta': {}, 'created': '2026-09-18T08:00:00Z'},
+    # Half a lesson left: the list and the exports show the float as Python writes it.
+    'h_half': {'id': next(ids), 'carnet': 'dieci', 'cs': ['cs_invoiced'], 'disabled': False, 'meta': {'lessons_left': 2.5},
+               'created': '2026-09-19T08:00:00Z'},
 }
 # Tags of the excel export, with ids of their own (the shared iterator stays as it was). Tags and their through rows are
 # seeded in this order; the export reads them without ORDER BY (course-subscriptions.md, "Excel export").
@@ -1027,6 +1030,19 @@ del STATE['installments']['ev2_only']
 add('update-events-empty', 'full_collaborator', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH', body={'events': []},
     effect={'kind': 'update', 'actor': 'full_collaborator', 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': ['ev2_only'],
             'payments_deleted': [], 'payments_changed': {}, 'audit': audit})
+# `events` sent as an object or as text: the loops walk its keys or its characters. With installments the id
+# comparison fails (500); without, a key or character is validated as an event (400) unless it holds the
+# installment id key's name, which leaves it out.
+NOT_A_DICT = {'non_field_errors': ['Invalid data. Expected a dictionary, but got str.']}
+UNCHANGED = {'kind': 'update', 'actor': 'owner', 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': [], 'payments_deleted': [],
+             'payments_changed': {}, 'audit': []}
+add('update-events-object-key-invalid', 'owner', one('cs_ev2', 'update'), 400, NOT_A_DICT, method='PATCH', body={'events': {'rata': 1}})
+add('update-events-text-invalid', 'owner', one('cs_ev2', 'update'), 400, NOT_A_DICT, method='PATCH', body={'events': 'ab'})
+add('update-events-object-installment-key-left-out', 'owner', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH',
+    body={'events': {'old_course_subscription_installment_id': 1}}, effect=copy.deepcopy(UNCHANGED))
+add('update-events-object-with-installments-server-error', 'owner', one('cs_ev', 'update'), 500, SERVER, method='PATCH',
+    body={'events': {'rata': 1}})
+add('update-events-text-with-installments-server-error', 'owner', one('cs_ev', 'update'), 500, SERVER, method='PATCH', body={'events': 'x'})
 
 # --- delete ----------------------------------------------------------------
 add('delete-anonymous', 'anonymous', one('cs_del', 'delete'), 401, ANONYMOUS, method='DELETE')

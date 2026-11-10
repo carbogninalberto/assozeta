@@ -149,6 +149,14 @@
    "email": null,
    "user": null
   },
+  "formminor": {
+   "id": "a1000000-0000-4000-8000-000000984059",
+   "association": "form",
+   "first": "Leo",
+   "last": "Piccolo",
+   "email": null,
+   "user": null
+  },
   "newline": {
    "id": "a1000000-0000-4000-8000-000000984094",
    "association": "own",
@@ -345,6 +353,14 @@
    "id": "a1000000-0000-4000-8000-000000984058",
    "association": "form",
    "associate": null,
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formminor": {
+   "id": "a1000000-0000-4000-8000-000000984120",
+   "association": "form",
+   "associate": "formminor",
    "user": "owner",
    "group": null,
    "document": null
@@ -910,6 +926,13 @@
    "date": "2026-05-13",
    "document": null
   },
+  "biella_minor": {
+   "id": "a1000000-0000-4000-8000-000000984121",
+   "subscription": "formminor",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-15",
+   "document": null
+  },
   "lombardia": {
    "id": "a1000000-0000-4000-8000-000000984109",
    "subscription": "plain",
@@ -923,6 +946,16 @@
    "associate": "formfull",
    "tutor": "formtutor",
    "primary": true
+  },
+  {
+   "associate": "formminor",
+   "tutor": "formtutor",
+   "primary": false
+  },
+  {
+   "associate": "formminor",
+   "tutor": "formbare",
+   "primary": false
   }
  ],
  "location": "document-render",
@@ -1096,7 +1129,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1131,7 +1165,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione None  Neri.pdf"
   },
@@ -1166,7 +1201,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
   },
@@ -1201,7 +1237,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads foreign] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1239,7 +1276,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1276,7 +1314,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1313,7 +1352,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1351,7 +1391,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
   },
@@ -1386,7 +1427,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Società Sportiva Ècole] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1421,7 +1463,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Club – Roma] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1456,7 +1499,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Club – Roma] Modulo di Iscrizione Δημήτρης Παπαδόπουλος.pdf"
   },
@@ -1491,7 +1535,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "ignored": true
@@ -1529,7 +1574,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1564,7 +1610,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -1596,7 +1643,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -1700,7 +1748,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
   },
@@ -1826,7 +1875,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -1857,7 +1907,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -1888,7 +1939,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -1919,7 +1971,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -1950,7 +2003,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -1984,7 +2038,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
   },
@@ -2116,7 +2171,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -2155,7 +2211,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -2194,7 +2251,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "attachment; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -2229,7 +2287,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -2268,7 +2327,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "send_receipt_email=1",
    "content_type": "application/x-www-form-urlencoded",
@@ -2309,7 +2369,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "send_receipt_email=true",
    "content_type": "application/x-www-form-urlencoded",
@@ -2346,7 +2407,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "send_receipt_email=true",
    "content_type": "application/x-www-form-urlencoded",
@@ -2383,7 +2445,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "send_receipt_email": "true"
@@ -2421,7 +2484,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-05.pdf"
   },
@@ -2456,7 +2520,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-06.pdf"
   },
@@ -2495,7 +2560,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 30,00 € del 31/12/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nSocietà Sportiva Ècole",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Società Sportiva Ècole] Ricevuta 2026-12-31.pdf"
   },
@@ -2536,7 +2602,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
   },
@@ -2639,7 +2706,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-12.pdf"
   },
@@ -2691,7 +2759,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 16,00 € del 13/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-13.pdf"
   },
@@ -2728,7 +2797,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-10.pdf"
   },
@@ -2766,7 +2836,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
   },
@@ -2801,7 +2872,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
   },
@@ -2836,7 +2908,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "send_receipt_email=0",
    "content_type": "application/x-www-form-urlencoded",
@@ -3127,7 +3200,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -3258,7 +3332,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Fattura FPR 7/2026.pdf"
   },
@@ -3295,7 +3370,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Fattura None None/None.pdf"
   },
@@ -3330,7 +3406,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads foreign] Fattura B 12/2025.pdf"
   },
@@ -3367,7 +3444,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Fattura FPR 7/2026.pdf"
   },
@@ -3454,7 +3532,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Fattura T 3/2026.pdf"
   },
@@ -3580,7 +3659,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -3715,7 +3795,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf"
   },
@@ -3745,7 +3826,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "attachment; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-06.pdf"
   },
@@ -3780,7 +3862,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads foreign] Compenso per Paolo Gialli del 2026-04-09.pdf"
   },
@@ -3815,7 +3898,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-10.pdf"
   },
@@ -3893,7 +3977,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf"
   },
@@ -4096,7 +4181,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -4224,7 +4310,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -4264,7 +4351,8 @@
      }
     ],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4306,7 +4394,8 @@
      }
     ],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4342,7 +4431,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4379,7 +4469,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4415,7 +4506,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4451,7 +4543,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4487,7 +4580,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4523,7 +4617,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4564,7 +4659,8 @@
      }
     ],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4621,7 +4717,8 @@
      }
     ],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "body": {
     "additionalData": {
@@ -4850,7 +4947,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-06.pdf"
   },
@@ -4885,7 +4983,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Società Sportiva Ècole] Visita Non Agonistica del 2026-05-07.pdf"
   },
@@ -4920,7 +5019,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Visita Agonistica del None.pdf"
   },
@@ -4955,7 +5055,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads foreign] Visita Non Agonistica del 2026-05-09.pdf"
   },
@@ -4990,7 +5091,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-11.pdf"
   },
@@ -5025,7 +5127,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-10.pdf"
   },
@@ -5215,7 +5318,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -5239,7 +5343,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": true
+    "stored": true,
+    "promoted": []
    },
    "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
    "form": {
@@ -5290,7 +5395,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": true
+    "stored": true,
+    "promoted": []
    },
    "disposition": "attachment; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
    "form": {
@@ -5341,7 +5447,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": true
+    "stored": true,
+    "promoted": []
    },
    "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del None.pdf",
    "form": {
@@ -5357,6 +5464,97 @@
     "sport_association.stamp": "  data:image/png;base64,AAAA",
     "other.today_datetime": "  02/01/2026 03:04",
     "associate.first_name": "  ZOE"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-promotes-tutor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984121",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-15.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_minor"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": [
+     [
+      "formminor",
+      "formtutor"
+     ]
+    ]
+   },
+   "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-15.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.first_name": "  LEO",
+    "associate.last_name": "  PICCOLO",
+    "main_tutor.phone": "  +39 0151234567",
+    "main_tutor.email": "  TUTOR@EXAMPLE.TEST"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-promoted-tutor-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984121",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-15.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_minor"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-15.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.first_name": "  LEO",
+    "associate.last_name": "  PICCOLO",
+    "main_tutor.phone": "  +39 0151234567",
+    "main_tutor.email": "  TUTOR@EXAMPLE.TEST"
    }
   },
   {
@@ -5377,7 +5575,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -5398,7 +5597,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -5442,7 +5642,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -5473,7 +5674,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -5504,7 +5706,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -5535,7 +5738,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    }
   },
   {
@@ -5573,7 +5777,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "inline; filename=[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf"
   },
@@ -5612,7 +5817,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "disposition": "attachment; filename=[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf"
   },
@@ -5644,7 +5850,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "[1, \"parent\", {\"additionalData\": 1}]",
    "content_type": "application/json"
@@ -5667,7 +5874,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "[\"x\", \"additionalData\"]",
    "content_type": "application/json"
@@ -5700,7 +5908,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "\"additional data\"",
    "content_type": "application/json"
@@ -5723,7 +5932,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "\"the additionalData key\"",
    "content_type": "application/json"
@@ -5746,7 +5956,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "null",
    "content_type": "application/json"
@@ -5769,7 +5980,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "7",
    "content_type": "application/json"
@@ -5792,7 +6004,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "1.5",
    "content_type": "application/json"
@@ -5815,7 +6028,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "true",
    "content_type": "application/json"
@@ -5838,7 +6052,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": ",
    "content_type": "application/json"
@@ -5861,7 +6076,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "additionalData=1",
    "content_type": "text/plain"
@@ -5884,7 +6100,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": null}",
    "content_type": "application/json"
@@ -5907,7 +6124,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": 3}",
    "content_type": "application/json"
@@ -5930,7 +6148,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": false}",
    "content_type": "application/json"
@@ -5953,7 +6172,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": 2.50}",
    "content_type": "application/json"
@@ -5986,7 +6206,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": \"nothing\"}",
    "content_type": "application/json"
@@ -6009,7 +6230,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": \"a parent b\"}",
    "content_type": "application/json"
@@ -6032,7 +6254,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": \"subscriptions\"}",
    "content_type": "application/json"
@@ -6065,7 +6288,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": [1, \"x\", [\"parent\"]]}",
    "content_type": "application/json"
@@ -6088,7 +6312,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": [\"subscription\", \"parent\"]}",
    "content_type": "application/json"
@@ -6111,7 +6336,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": [\"subscription\"]}",
    "content_type": "application/json"
@@ -6144,7 +6370,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": {\"subscription\": 1.50}}",
    "content_type": "application/json"
@@ -6177,7 +6404,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": {\"subscription\": 1e3}}",
    "content_type": "application/json"
@@ -6210,7 +6438,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": {\"subscription\": [1, \"a\", null, true, 2.0]}}",
    "content_type": "application/json"
@@ -6243,7 +6472,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "{\"additionalData\": {\"subscription\": {\"a\": \"b c\"}}}",
    "content_type": "application/json"
@@ -6276,7 +6506,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "additionalData=nothing&other=1",
    "content_type": "application/x-www-form-urlencoded"
@@ -6299,7 +6530,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "additionalData=parent",
    "content_type": "application/x-www-form-urlencoded"
@@ -6332,7 +6564,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"\r\n\r\nparent\r\n--fixture-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=fixture-boundary"
@@ -6355,7 +6588,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"additionalData\"\r\n\r\nsubscription\r\n--fixture-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=fixture-boundary"
@@ -6378,7 +6612,8 @@
     "links": [],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"additionalData\"\r\n\r\nx\r\n--fixture-boundary--\r\n",
    "content_type": "multipart/form-data"
@@ -6418,7 +6653,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"send_receipt_email\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=fixture-boundary",
@@ -6455,7 +6691,8 @@
     ],
     "creates": [],
     "mail": null,
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
    "content_type": "multipart/form-data; boundary=fixture-boundary",
@@ -6496,7 +6733,8 @@
      "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
      "recipient": "mario.rossi@example.test"
     },
-    "stored": false
+    "stored": false,
+    "promoted": []
    },
    "raw_body": "send_receipt_email=1",
    "content_type": "text/plain",
