@@ -74,3 +74,7 @@ var (
 	// ErrGoogleServer is an exception the view does not handle (the 500 page).
 	ErrGoogleServer = errors.New("google calendar view exception")
 )
+
+// SessionSavedContextKey marks, on the request context, that the handler saved a
+// session: the session middleware then keeps the cookie of that session.
+const SessionSavedContextKey = "django_session_saved"

@@ -6,14 +6,14 @@ import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.m
 const reviewed = {
   "BE/application/management/commands/seed_selfhost.py": "de0393c2d68e684dc715c729036104822ea7edc625274f42fccf39e80b0e663b",
   "BE/application/views/billing_views.py": "28ee7ec15b5bc759546d5df4aaaf4558fe577cbedc8ab60a5256f7dcda06a4c8",
-  "BE/application/views/payment_views.py": "cc31d3e1d74244930b6929fd2bf9b2d2e6a90a7b915e0edf73000f468d58573d",
+  "BE/application/views/payment_views.py": "eb2a9bc1bbb5caf2a0fe8261aa898e85e046d96d47417f2c155e7b9c136f277c",
   "BE/core/authentication.py": "4ea4b9041f1c19aef3105fa9518edb3fb880d1deddef46be7dff701c7a3da3d2",
   "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3",
   "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
   // Reviewed: tutor conflict details remain in the owner-only, no-store report;
   // public previews expose counts only. Restore authorization is unchanged.
   "BE/instance/restore/views.py": "279a0a03b75681534b84944c09a684fa14402ff3b6e57da222e6619f70da6c0a",
-  "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
+  "BE/application/views/auth_views.py": "f2c585dd36d636ab89cfcd49fb3af048bf61036e93e9924b5808d87be7bf6eb3",
   "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
   "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
   // Reviewed: download, restore, delete, un-keep and remote copy changes on the
@@ -36,7 +36,8 @@ const contracts = [
   ["BE/application/signals.py","def create_audit_log_index(",37],
   ["BE/instance/backups.py","class BackupItemView(APIView):",34],
   ["BE/instance/backups.py","def password_refusal(actor, password):",30],
-  ["BE/instance/remote_backups.py","class RemoteBackupSettingsView(APIView):",90]
+  ["BE/instance/remote_backups.py","class RemoteBackupSettingsView(APIView):",90],
+  ["BE/application/views/auth_views.py","def _existing_account_signin(candidates, data):",26]
 ];
 const sections = [
   {
@@ -156,7 +157,8 @@ const sections = [
       6,
       8,
       10,
-      11
+      11,
+      15
     ]
   },
   {
@@ -315,7 +317,8 @@ const references = [
       6,
       8,
       10,
-      11
+      11,
+      15
     ]
   },
   {

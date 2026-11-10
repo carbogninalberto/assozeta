@@ -14,14 +14,14 @@ const reviewed = {
   "UI/src/components/signature/SmoothSignature.svelte": "c451cf360e2c9bc68340407e1169ce3b6f91d07ae364932e7fe5253c354e4ff6",
   "UI/src/routes/association/Members/add/sections/Section4.svelte": "645c70a5c555ba94b378df755549fa8455d6e4ee64fbb1cb108a3ffad3da5863",
   "UI/src/routes/association/Members/add/sections/Section6.svelte": "97c429b3fe14f919e8c877251eb7bd9d794afdf0da88b61c74758ddace4d5a46",
-  "BE/application/views/subscriptions_views.py": "5b7de613eec3deb9e154352eb900ba7ef791d03a56d206c01a96281ab153e8f5",
-  "BE/application/utils/subscriptions_utils.py": "01555509691b282190e09a21771aa920c19a677c63823a01ab7a73602273554e",
+  "BE/application/views/subscriptions_views.py": "9e564ffd44c50aad0e53977412a51c6e396f5f8baadb6321e8268d18a7a058ac",
+  "BE/application/utils/subscriptions_utils.py": "3895fa4e252283a50692d41bf2568c306abfd7b3b8dcef0057c534aaf4d654b5",
   "BE/application/serializers/subscriptions_serializers.py": "dcad47643b654acc19e687561f1231b63392bf4315e74110b69a75e20f9d0edc",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/components/buttons/ApproveButton.svelte": "4531bd12ab2764ec6069c516c8797660122deea749f26516ea0851dad58f4f0f",
   "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
-  "BE/application/views/payment_views.py": "cc31d3e1d74244930b6929fd2bf9b2d2e6a90a7b915e0edf73000f468d58573d",
+  "BE/application/views/payment_views.py": "eb2a9bc1bbb5caf2a0fe8261aa898e85e046d96d47417f2c155e7b9c136f277c",
   "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1"
 };
 const contracts = [

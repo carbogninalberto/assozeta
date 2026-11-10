@@ -21,7 +21,7 @@ const reviewed = {
   "UI/src/routes/forms/CampsAndRetreatsForm.svelte": "967c5b4bbc5ac737350f4e9ad281249aaed8b8f060a118ad6fed60c16da2254d",
   "BE/application/views/camp_and_retreats_views.py": "9cceb73c7d4587564b990fb95ac8c038ac32a828527e9b6c3479903e9fff10f2",
   "BE/application/serializers/camps_and_retreats_serializers.py": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2",
-  "BE/application/utils/camps_and_retreats_utils.py": "1ecc605be1970691270a2f296f7b6185cf31258f09630244db83352362c04ce1",
+  "BE/application/utils/camps_and_retreats_utils.py": "2e1cbaf150b0fcf4a87c60ff8b41e0bf43f999f2159960d6c4e8eb6e6391db61",
   "BE/application/models/courses_models.py": "6a9cd0b923ab5b6a9dd120bcb7f81c1dac30914657fcd14b3fdb9e9c427d78c6",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/routes/calendar/Calendar.svelte": "4ba491bb4384adef00abe3c50996f8eac3302a43e64ad07df8d3c3977ebba63e",
