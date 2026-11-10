@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -175,37 +176,18 @@ func (r *BalanceAccounts) BeginBalanceAccountDelete(ctx context.Context) (domain
 	return &balanceAccountDeleteTransaction{&balanceAccountWriteTransaction{paymentCategoryTransaction: &paymentCategoryTransaction{ownedTransaction: tx}}}, nil
 }
 
-func (t *balanceAccountDeleteTransaction) AccountHasPayments(ctx context.Context, id string) (bool, error) {
-	var found bool
-	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_payment WHERE custom_accounts_id=$1)`, id)
-	return found, err
-}
-
-// DeleteAccount follows the deletion collector: the cascaded transfers first,
-// then the account, each with auditlog's post_delete entry (indexed through
-// changes_json, the row being gone).
-func (t *balanceAccountDeleteTransaction) DeleteAccount(ctx context.Context, id string, audit domain.LoginAuditContext, at time.Time) error {
-	transfers := []string{}
-	if err := t.tx.SelectContext(ctx, &transfers, `SELECT custom_account_transfer_id FROM application_customaccountstransfer
- WHERE custom_account_from_id=$1 OR custom_account_to_id=$1 ORDER BY custom_account_transfer_id FOR UPDATE`, id); err != nil {
-		return err
+// DeleteAccount is CustomAccounts.delete() through the shared collector.
+func (t *balanceAccountDeleteTransaction) DeleteAccount(ctx context.Context, id string, audit domain.LoginAuditContext, at time.Time,
+	group *string) error {
+	const label = "application.CustomAccounts"
+	model := collaboratorDeleteGraphLoaded.Models[label]
+	if model == nil {
+		return fmt.Errorf("%w: %s is not in the model graph", ErrCollaboratorDeleteUnsupported, label)
 	}
-	for _, transfer := range transfers {
-		if err := t.DeleteTransfer(ctx, transfer, audit, at); err != nil {
-			return err
-		}
-	}
-	manager := "application.CustomAccountsTransfer.None"
-	changes, _, err := deleteModelWithAuditReverse(ctx, t.tx, "application_customaccounts", "custom_account_id", id,
-		map[string]string{"custom_account_from": manager, "custom_account_to": manager})
+	run := &collaboratorDeleteRun{tx: t.tx, graph: collaboratorDeleteGraphLoaded, audit: audit, group: group, now: func() time.Time { return at }}
+	rows, err := run.load(ctx, model, `t.custom_account_id = $1::uuid`, id)
 	if err != nil {
 		return err
 	}
-	var association *string
-	if value := changes["sport_association"][0]; value != "" && value != "None" {
-		association = &value
-	}
-	path := "changes_json.sport_association"
-	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "customaccounts", Key: id, Representation: "CustomAccounts object (" + id + ")",
-		Action: 2, Changes: changes, Context: audit, At: at, AssociationID: association, ResolutionPath: &path})
+	return run.Delete(ctx, label, rows)
 }

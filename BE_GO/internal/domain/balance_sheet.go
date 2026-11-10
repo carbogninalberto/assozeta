@@ -76,12 +76,11 @@ type BalanceSheetWriteStore interface {
 type BalanceAccountDeleteTransaction interface {
 	OwnerAssociation(ctx context.Context, owner string) (string, error)
 	AccountForUpdate(ctx context.Context, id, association string) (*BalanceAccountRow, error)
-	// AccountHasPayments reports any payment row referencing the account
-	// (the deletion collector uses the base manager).
-	AccountHasPayments(ctx context.Context, id string) (bool, error)
-	// DeleteAccount deletes the account's transfers, then the account, each
-	// with its auditlog delete entry.
-	DeleteAccount(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
+	// DeleteAccount is CustomAccounts.delete(): the deletion collector over
+	// the account, its transfers and its payments (base managers), with the
+	// payments' delete receivers and every auditlog delete entry. group is the
+	// request's X-Group-Id, read by the receivers' group-aware managers.
+	DeleteAccount(ctx context.Context, id string, audit LoginAuditContext, at time.Time, group *string) error
 	Commit() error
 	Rollback() error
 }

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -19,6 +21,15 @@ type DocmanagerReadsHandler struct {
 	documents  *service.DocmanagerReads
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
+	audit      LoginAuditReader
+	operations *paymentcategorylifecycle.Lifecycle
+}
+
+// WithWrites installs the audit reader and the operation tracker the delete
+// route writes under.
+func (h *DocmanagerReadsHandler) WithWrites(audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *DocmanagerReadsHandler {
+	h.audit, h.operations = audit, operations
+	return h
 }
 
 func NewDocmanagerReadsHandler(documents *service.DocmanagerReads, actors *service.ActorAuthentication,
@@ -78,7 +89,7 @@ func (h *DocmanagerReadsHandler) Retrieve(c echo.Context) error {
 	return docmanagerRespond(c, reply, err)
 }
 
-// Delete mirrors delete_document up to the ownership walk.
+// Delete mirrors delete_document. The view never reads the request body.
 func (h *DocmanagerReadsHandler) Delete(c echo.Context) error {
 	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodDelete, "delete_document")
 	if identity == nil {
@@ -91,6 +102,22 @@ func (h *DocmanagerReadsHandler) Delete(c echo.Context) error {
 	if request.Method != http.MethodDelete {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
-	reply, err := h.documents.Delete(request.Context(), *identity, c.Param("uid"))
+	if h.audit == nil || h.operations == nil {
+		return docmanagerRespond(c, nil, domain.ErrDocmanagerNotPorted)
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	auditContext, err := h.audit(request)
+	if err != nil {
+		return restError(c, err)
+	}
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	reply, err := h.documents.Delete(ctx, *identity, c.Param("uid"), auditContext, request.Header.Get("X-Group-Id"))
 	return docmanagerRespond(c, reply, err)
 }

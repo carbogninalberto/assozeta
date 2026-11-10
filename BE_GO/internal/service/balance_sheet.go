@@ -22,10 +22,6 @@ var (
 	ErrBalanceSheetExportNotPorted = refusal.New("balance sheet export is not ported")
 	// ErrBalanceAccountNotDeletable is {'msg': 'This account is not deletable.'} (403).
 	ErrBalanceAccountNotDeletable = errors.New("custom account is not deletable")
-	// ErrBalanceAccountPaymentsNotPorted refuses deleting an account that
-	// payments reference: the cascade deletes them with their own signals
-	// (not ported).
-	ErrBalanceAccountPaymentsNotPorted = refusal.New("deleting an account with payments is not ported")
 	// errBalanceSheetExportFailed is export_balance_sheet raising after the
 	// sheet was saved (500; the request is not atomic).
 	errBalanceSheetExportFailed = errors.New("balance sheet export failed after the save")
@@ -450,8 +446,11 @@ func NewBalanceAccountDeletes(store domain.BalanceAccountDeleteStore, accounts *
 	return &BalanceAccountDeletes{store: store, accounts: accounts, now: now}
 }
 
-// Delete follows balance_sheet_accounts_delete.
-func (s *BalanceAccountDeletes) Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error {
+// Delete follows balance_sheet_accounts_delete: custom_account.delete() is
+// Django's collector over the account, its transfers and every payment of the
+// account, with the payments' delete receivers.
+func (s *BalanceAccountDeletes) Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext,
+	groupHeader string) error {
 	if _, err := s.accounts.association(ctx, identity); err != nil {
 		return err
 	}
@@ -478,14 +477,8 @@ func (s *BalanceAccountDeletes) Delete(ctx context.Context, identity domain.Reso
 	if !row.Editable {
 		return ErrBalanceAccountNotDeletable
 	}
-	paid, err := tx.AccountHasPayments(ctx, row.ID)
-	if err != nil {
-		return err
-	}
-	if paid {
-		return ErrBalanceAccountPaymentsNotPorted
-	}
-	if err = tx.DeleteAccount(ctx, row.ID, paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond)); err != nil {
+	if err = tx.DeleteAccount(ctx, row.ID, paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond),
+		supplierGroup(groupHeader)); err != nil {
 		return err
 	}
 	return tx.Commit()
