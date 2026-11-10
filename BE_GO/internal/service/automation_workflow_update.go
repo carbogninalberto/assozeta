@@ -7,8 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/google/uuid"
 )
 
 // automationWorkflowUpdateValues renders auditlog's update strings of the
@@ -43,34 +45,59 @@ const (
 	automationWorkflowTriggerNone automationWorkflowTriggerOutcome = iota
 	automationWorkflowTriggerError
 	automationWorkflowTriggerNotPorted
+	// automationWorkflowTriggerSchedule is a future cron time: trigger() sends
+	// check_workflows_trigger_cron with the countdown to it.
+	automationWorkflowTriggerSchedule
 )
 
+// automationWorkflowPytzLastTransition is the last Europe/Rome transition in
+// pytz's table (2037-10-25 01:00 UTC); pytz keeps that offset (+01:00) after it.
+var automationWorkflowPytzLastTransition = time.Date(2037, 10, 25, 1, 0, 0, 0, time.UTC)
+
+// automationWorkflowRomeLocalize is pytz's Europe/Rome localize(naive) with
+// is_dst=False: the offset whose UTC instant reads back as the same wall
+// time; an ambiguous or skipped wall time takes the standard offset (+01:00).
+func automationWorkflowRomeLocalize(year, month, day, hour, minute, second, nanosecond int, rome *time.Location) time.Time {
+	wall := time.Date(year, time.Month(month), day, hour, minute, second, nanosecond, time.UTC)
+	offsetAt := func(instant time.Time) time.Duration {
+		if !instant.Before(automationWorkflowPytzLastTransition) {
+			return time.Hour
+		}
+		_, offset := instant.In(rome).Zone()
+		return time.Duration(offset) * time.Second
+	}
+	standard, summer := wall.Add(-time.Hour), wall.Add(-2*time.Hour)
+	if offsetAt(summer) == 2*time.Hour && offsetAt(standard) != time.Hour {
+		return summer
+	}
+	return standard
+}
+
 var (
-	automationWorkflowCronTime = regexp.MustCompile(`^([0-9]{4})-([0-9]{2})-([0-9]{2})(?:[T ]([0-9]{2}):([0-9]{2})(?::([0-9]{2})(?:\.[0-9]{1,6})?)?(Z|[+-][0-9]{2}:[0-9]{2})?)?$`)
+	automationWorkflowCronTime = regexp.MustCompile(`^([0-9]{4})-([0-9]{2})-([0-9]{2})(?:[T ]([0-9]{2}):([0-9]{2})(?::([0-9]{2})(?:\.([0-9]{1,6}))?)?(Z|[+-][0-9]{2}:[0-9]{2})?)?$`)
 	automationWorkflowYear     = regexp.MustCompile(`^[0-9]{4}`)
 )
 
 // automationWorkflowEnablePlan follows the view when a save turns a workflow
 // on: whether the try block resets a cron trigger's 'triggered' flag (a second
 // save), and what trigger() then does with the tree. trigger() errors are a
-// 500 after the saves; a cron time that is not clearly in the past (Celery
-// countdown) or not classified here is not ported.
-func automationWorkflowEnablePlan(tree any, now time.Time, rome *time.Location) (bool, automationWorkflowTriggerOutcome) {
+// 500 after the saves; a future cron time is scheduled (at is the localized
+// time); a time text not classified here is not ported.
+func automationWorkflowEnablePlan(tree any, now time.Time, rome *time.Location) (reset bool, outcome automationWorkflowTriggerOutcome, at time.Time) {
 	nodes, isList := tree.([]any)
 	if !isList || len(nodes) == 0 {
-		return false, automationWorkflowTriggerError
+		return false, automationWorkflowTriggerError, at
 	}
 	first, isObject := nodes[0].(domain.RequestObject)
 	if !isObject {
-		return false, automationWorkflowTriggerError
+		return false, automationWorkflowTriggerError, at
 	}
 	value, present := first.Lookup("value")
 	if !present {
-		return false, automationWorkflowTriggerError
+		return false, automationWorkflowTriggerError, at
 	}
 	data, hasData := first.Lookup("data")
 	object, dataObject := data.(domain.RequestObject)
-	reset := false
 	if value == "cron" && hasData && dataObject {
 		if triggered, found := object.Lookup("triggered"); found && triggered == true {
 			reset = true
@@ -79,23 +106,23 @@ func automationWorkflowEnablePlan(tree any, now time.Time, rome *time.Location) 
 	switch {
 	case value == nil:
 		if len(nodes) > 1 {
-			return reset, automationWorkflowTriggerError
+			return reset, automationWorkflowTriggerError, at
 		}
-		return reset, automationWorkflowTriggerNone
+		return reset, automationWorkflowTriggerNone, at
 	case value != "cron":
-		return reset, automationWorkflowTriggerNone
+		return reset, automationWorkflowTriggerNone, at
 	}
 	if !dataObject {
-		return reset, automationWorkflowTriggerError
+		return reset, automationWorkflowTriggerError, at
 	}
 	raw, found := object.Lookup("time")
 	text, isString := raw.(string)
 	if !found || !isString || !automationWorkflowYear.MatchString(text) {
-		return reset, automationWorkflowTriggerError
+		return reset, automationWorkflowTriggerError, at
 	}
 	match := automationWorkflowCronTime.FindStringSubmatch(text)
 	if match == nil {
-		return reset, automationWorkflowTriggerNotPorted
+		return reset, automationWorkflowTriggerNotPorted, at
 	}
 	number := func(index int) int {
 		parsed, _ := strconv.Atoi(match[index])
@@ -105,18 +132,23 @@ func automationWorkflowEnablePlan(tree any, now time.Time, rome *time.Location) 
 	hour, minute, second := number(4), number(5), number(6)
 	if month < 1 || month > 12 || day < 1 || day > time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day() ||
 		year < 1 || hour > 23 || minute > 59 || second > 59 {
-		return reset, automationWorkflowTriggerError
+		return reset, automationWorkflowTriggerError, at
 	}
-	if match[7] != "" {
+	if match[8] != "" {
 		// pytz localize() rejects an aware datetime.
-		return reset, automationWorkflowTriggerError
+		return reset, automationWorkflowTriggerError, at
 	}
-	at := time.Date(year, time.Month(month), day, hour, minute, second, 0, rome)
-	// Past times return without effect; keep clear of DST and clock differences.
-	if at.Before(now.Add(-2 * time.Hour)) {
-		return reset, automationWorkflowTriggerNone
+	nanosecond := 0
+	if fraction := match[7]; fraction != "" {
+		nanosecond, _ = strconv.Atoi((fraction + "000000")[:6])
+		nanosecond *= 1000
 	}
-	return reset, automationWorkflowTriggerNotPorted
+	at = automationWorkflowRomeLocalize(year, month, day, hour, minute, second, nanosecond, rome)
+	// time_secs < 0: "Time is in the past", nothing scheduled.
+	if at.Before(now) {
+		return reset, automationWorkflowTriggerNone, at
+	}
+	return reset, automationWorkflowTriggerSchedule, at
 }
 
 // Update ports communication_workflows_update: lookup (404), partial
@@ -189,13 +221,16 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	if patch.Enabled != nil {
 		row.Enabled = *patch.Enabled
 	}
-	reset, outcome := false, automationWorkflowTriggerNone
+	reset, outcome, scheduleAt := false, automationWorkflowTriggerNone, time.Time{}
 	if !old.Enabled && row.Enabled {
 		rome, err := time.LoadLocation("Europe/Rome")
 		if err != nil {
 			return err
 		}
-		reset, outcome = automationWorkflowEnablePlan(tree, s.now(), rome)
+		reset, outcome, scheduleAt = automationWorkflowEnablePlan(tree, s.now(), rome)
+		if outcome == automationWorkflowTriggerSchedule && s.tasks == nil {
+			return domain.ErrAutomationWorkflowUpdateNotPorted
+		}
 		if outcome == automationWorkflowTriggerNotPorted {
 			return domain.ErrAutomationWorkflowUpdateNotPorted
 		}
@@ -231,6 +266,23 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	}
 	if outcome == automationWorkflowTriggerError {
 		return domain.ErrAutomationWorkflowTrigger
+	}
+	if outcome == automationWorkflowTriggerSchedule {
+		// trigger(): time - now_rome as the countdown; Celery's eta is
+		// app.now() + countdown.
+		now := s.now()
+		if !scheduleAt.After(now) {
+			return nil
+		}
+		eta := now.UTC().Add(scheduleAt.Sub(now)).Truncate(time.Microsecond)
+		id, err := uuid.Parse(row.ID)
+		if err != nil {
+			return err
+		}
+		if _, err := s.tasks.Publish(ctx, celery.Task{Name: "check_workflows_trigger_cron", Args: []any{id}, ArgsList: true,
+			ETA: &eta}); err != nil {
+			return err
+		}
 	}
 	return nil
 }

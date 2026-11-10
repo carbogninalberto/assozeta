@@ -44,12 +44,14 @@
   - Season/fiscal values that are not JSON integers or ASCII integer strings within 0..32767. This covers floats, booleans, `null`, containers and out-of-range values, all of which Django turns into IntegrityError/DataError text or truncates.
   - Fee values whose `float()` repr would use an exponent.
   - Lead values that are containers or exceed the column length.
-  - `onboarding_data` carrying `users_onboarding_id` or `user`. The serializer would move the row or relate another user.
+  - `onboarding_data` carrying a `users_onboarding_id` or `user` other than the row's own (the serializer would move the row or relate another user). The row's own values, which the onboarding checklist always sends back (`components/onboarding/onboarding-checklist.svelte:95-100`), are accepted in any `uuid.UUID` text form and only the flags are saved and audited.
 
   Inside the atomic block a refusal rolls back like Django's exception.
 
 ## Evidence
 
-`TESTS/fixtures/profile_misc_http.json` has 93 cases: 22 course, 16 sport-association, 12 image and 43 onboarding. The adapter seeds associates, subscriptions with creation dates relative to the current balance year, courses, course subscriptions, the owner's avatar and onboarding row, and a fresh `InstanceConfiguration` for the foreign association. Read cases must leave all 128 models unchanged. Onboarding cases check the six association fields, the nine user fields, the onboarding flags, the instance completion, and the ordered audit entries with their index rows. Every other row and field must stay unchanged.
+`TESTS/fixtures/profile_misc_http.json` has 101 cases: 22 course, 16 sport-association, 12 image and 51 onboarding. The adapter seeds associates, subscriptions with creation dates relative to the current balance year, courses, course subscriptions, the owner's avatar and onboarding row, and a fresh `InstanceConfiguration` for the foreign association. Read cases must leave all 128 models unchanged. Onboarding cases check the six association fields, the nine user fields, the onboarding flags, the instance completion, and the ordered audit entries with their index rows. Every other row and field must stay unchanged.
 
 RED: Django 93/93, Go 404 (`native-r1`). GREEN: 93/93 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects. Mutation control: counting deleted course subscriptions as subscribed fails `profile-misc-course-athlete` on Go.
+
+API v2 (v2-misc): the checklist's whole-row `onboarding_data` (own `users_onboarding_id` and `user`, also upper case, with changed, unchanged and invalid flags) is ported. RED `v2misc-red-r1`: Django 101/101, Go 500. GREEN `v2misc-green-r1`: 101/101 on the four transports. Mutation `v2misc-mutation-r2` (ids compared as raw strings) fails `profile-misc-onboarding-flags-ui-row-uppercase-ids` on Go.

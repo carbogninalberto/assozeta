@@ -423,19 +423,11 @@ func (s *ModulesResponses) detach(ctx context.Context, tx domain.ModulesResponse
 
 // attachmentNamePorted reports the filenames whose storage path is ported:
 // a plain file name (no path separators, not ”, '.' or '..', no NUL) of
-// at most 255 characters without an encoding suffix mimetypes would report.
+// at most 255 characters. Compression suffixes are stored with mimetypes'
+// encoding as ContentEncoding (S3Storage._get_write_parameters).
 func attachmentNamePorted(name string) bool {
-	if name == "" || name == "." || name == ".." || strings.ContainsAny(name, "/\\\x00") || !utf8.ValidString(name) ||
-		utf8.RuneCountInString(name) > 255 {
-		return false
-	}
-	lower := strings.ToLower(name)
-	for _, suffix := range []string{".gz", ".z", ".bz2", ".xz", ".br", ".svgz", ".tgz", ".taz", ".tz", ".tbz2", ".txz"} {
-		if strings.HasSuffix(lower, suffix) {
-			return false
-		}
-	}
-	return true
+	return name != "" && name != "." && name != ".." && !strings.ContainsAny(name, "/\\\x00") && utf8.ValidString(name) &&
+		utf8.RuneCountInString(name) <= 255
 }
 
 func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponsesTransaction, response string, exists bool, body any,
@@ -481,7 +473,7 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 	if err != nil {
 		return "", err
 	}
-	kind, known, err := pymime.Guess(stored)
+	kind, known, encoding, err := pymime.GuessType(stored)
 	if err != nil {
 		return "", err
 	}
@@ -498,8 +490,8 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 			return "", domain.ErrModuleResponsesNotPorted
 		}
 	}
-	if err = s.storage.Save(ctx, stored, content, instancelogo.WriteParameters{ContentType: kind, CacheControl: s.settings.CacheControl,
-		ACL: s.settings.DefaultACL}); err != nil {
+	if err = s.storage.Save(ctx, stored, content, instancelogo.WriteParameters{ContentType: kind, ContentEncoding: encoding,
+		CacheControl: s.settings.CacheControl, ACL: s.settings.DefaultACL}); err != nil {
 		return "", err
 	}
 	if !exists {

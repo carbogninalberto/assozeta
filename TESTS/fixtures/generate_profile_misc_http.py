@@ -427,6 +427,29 @@ add('onboarding-flags-saved', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
     effect=effect(flags_save({'create_membership': True, 'view_settings': True}, 'owner')))
 add('onboarding-flags-collaborator', 'full_collaborator', ONBOARD, 200, UPDATED, method='PATCH',
     body={'onboarding_data': {'show': 'false'}}, effect=effect(flags_save({'show': False}, 'full_collaborator')))
+# The checklist sends the whole stored row back (onboarding-checklist.svelte): the row's own
+# users_onboarding_id and user validate (UUIDField, UniqueValidator excluding the instance,
+# PrimaryKeyRelatedField) and the save keeps both, so only the flags are audited.
+def ui_flags(**changes):
+    row = {'users_onboarding_id': ONBOARDING, 'user': IDS['owner']}
+    row.update(FLAGS)
+    row.update(changes)
+    return row
+
+
+add('onboarding-flags-ui-row', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': ui_flags(view_membership=True)}, effect=effect(flags_save({'view_membership': True}, 'owner')))
+add('onboarding-flags-ui-row-collaborator', 'full_collaborator', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': ui_flags(approve_payment=True, download_invoice=True)},
+    effect=effect(flags_save({'approve_payment': True, 'download_invoice': True}, 'full_collaborator')))
+add('onboarding-flags-ui-row-unchanged', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': ui_flags()}, effect=effect())
+add('onboarding-flags-ui-row-uppercase-ids', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'onboarding_data': ui_flags(users_onboarding_id=ONBOARDING.upper(), user=IDS['owner'].upper(), view_collaborators=True)},
+    effect=effect(flags_save({'view_collaborators': True}, 'owner')))
+add('onboarding-flags-ui-row-invalid-flag', 'owner', ONBOARD, 400, {'error': repr_errors({
+    'show': [('Must be a valid boolean.', 'invalid')]})}, method='PATCH', body={'onboarding_data': ui_flags(show='maybe')},
+    effect=effect())
 add('onboarding-flags-invalid', 'owner', ONBOARD, 400, {'error': repr_errors({
     'show': [('Must be a valid boolean.', 'invalid')], 'approve_payment': [('This field may not be null.', 'null')]})},
     method='PATCH', body={'onboarding_data': {'approve_payment': None, 'show': 'maybe'}}, effect=effect())

@@ -41,19 +41,25 @@ Django remains the production execution owner.
 
 ## Not ported (refused with 500 before any write)
 
-- Enabling a cron workflow whose time is in the future or within two hours of
-  now: Django sends the Celery task `check_workflows_trigger_cron` with a
-  countdown. The same refusal covers times the Go classifier does not parse
+- Enabling a cron workflow whose time the Go classifier does not parse
   (anything beyond `YYYY-MM-DD[(T| )HH:MM[:SS[.ffffff]]][Z|±HH:MM]`, such as
   `20200101` or hour-only times, which Python's `fromisoformat` accepts). A string
   that does not start with four ASCII digits, or a classified time with an
   out-of-range field, is the 500 after the saves.
+
+A future cron time is ported (API v2, v2-misc): after the saves Go publishes
+`check_workflows_trigger_cron` with `args=[UUID]` (list repr) and the eta Celery
+derives from the countdown (`app.now() + (time - now_rome)`). The time is
+localized like pytz's `localize(is_dst=False)` for Europe/Rome: the standard
+offset (+01:00) for ambiguous and skipped wall times, and +01:00 after pytz's
+last table transition (2037-10-25), where the system zone would apply summer
+time. A past time publishes nothing.
 - A new `automation_workflow_id` that no row uses: `save()` would insert a copy
   of the workflow under the new key (audited as a create).
 - A form-encoded `automation_tree` (DRF parses the HTML value with Python's
   `json.loads`).
 
-These are covered by `TestAutomationWorkflowEnablePlan` and
+These are covered by `TestAutomationWorkflowEnablePlan`, `TestAutomationWorkflowRomeLocalize` and
 `TestAutomationWorkflowPatchFormTreeRefused`, not by the HTTP sequence.
 
 ## Evidence (TDD)
@@ -74,3 +80,14 @@ the relation accepts a soft-deleted association of another tenant (403, not 400)
 and auditlog never lists `updated_at`, so unchanged saves have no entry.
 RED: Django 57/57; Go 404 on the first case before any Go code.
 GREEN: 57/57 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+
+API v2 (v2-misc): six enable cases with a future cron time (winter, summer with
+a fraction, the ambiguous and the skipped October/March hours, a 2038 time after
+pytz's table, a date only; owner, collaborator and impersonating administrator),
+63 cases. The adapter now owns the Celery broker (`with_celery_broker`) and checks
+every case's messages; `family_harness.check_celery_message` accepts an
+`eta_from` (the eta must be that time plus at most 5 s, in isoformat).
+RED `v2misc-red-r3`: Django 63/63, Go 500. GREEN `v2misc-green-r1`: 63/63 on the
+four transports. Mutation `v2misc-mutation-r1` (an ambiguous wall time takes the
+summer offset) fails `enable-cron-future-ambiguous-standard-offset` on Go.
+workflow-writes 27/27 and communications-send-email 55/55 re-run green natively.

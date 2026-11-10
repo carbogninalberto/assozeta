@@ -231,12 +231,20 @@ SESSION_PREFIX = b':1:django.contrib.sessions.cache'
 
 def check_session(case, context):
     """The cache session backend's cache.add of {'state': state} (django_redis pickle, the default protocol: 4) for
-    SESSION_COOKIE_AGE; removed afterwards so the cache baseline holds."""
+    SESSION_COOKIE_AGE; removed afterwards so the cache baseline holds. A 'keep' session stays until the later
+    case that sends it back (that case's cache.set of the same key, then removed); any other session cookie the
+    case sent must not have created or changed an entry."""
     import pickle
     raw = context['fixture']['google_raw']
-    key = SESSION_PREFIX + base_contract.SESSIONS.pop(case['name']).encode()
+    spec = case.get('session_cookie') or {}
+    name = base_contract.SESSIONS[case['name']] if spec.get('keep') else base_contract.SESSIONS.pop(case['name'])
+    key = SESSION_PREFIX + name.encode()
     stored, ttl = raw.get(key), raw.ttl(key)
-    raw.delete(key)
+    if not spec.get('keep'):
+        raw.delete(key)
+    if 'cookie' in spec:
+        sent = spec['cookie'].rpartition('sessionid=')[2].split(';')[0]
+        contract.require(sent and raw.exists(SESSION_PREFIX + sent.encode()) == 0, 'session.sent-key')
     contract.require(stored == pickle.dumps({'state': base_contract.STATES[case['state_for']]}, pickle.DEFAULT_PROTOCOL), 'session.value')
     contract.require(1209600 - 120 <= ttl <= 1209600, 'session.ttl')
 

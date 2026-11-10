@@ -47,7 +47,9 @@ func DjangoSessionAudit(resolver SessionAuditResolver) echo.MiddlewareFunc {
 			identity, err := resolver.Resolve(r.Context(), key)
 			c.Response().Writer = &sessionHeaderWriter{ResponseWriter: c.Response().Writer, before: func() {
 				varySessionCookie(c.Response().Header())
-				if supplied && identity.Empty {
+				// A handler that saved a session (google/calendar/config) set its
+				// non-empty sessionid cookie: SessionMiddleware keeps it.
+				if supplied && identity.Empty && !sessionCookieWritten(c.Response().Header()) {
 					header := c.Response().Header()
 					cookies := header.Values("Set-Cookie")
 					header.Del("Set-Cookie")
@@ -200,6 +202,17 @@ func varyHeader(header http.Header, name string) {
 		values = append(values, name)
 	}
 	header.Set("Vary", strings.Join(values, ", "))
+}
+
+// sessionCookieWritten reports a Set-Cookie of a non-empty sessionid.
+func sessionCookieWritten(header http.Header) bool {
+	for _, cookie := range header.Values("Set-Cookie") {
+		name, value, _ := strings.Cut(cookie, "=")
+		if strings.TrimSpace(name) == "sessionid" && !strings.HasPrefix(value, `""`) && !strings.HasPrefix(value, ";") && value != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func sessionCookie(raw string) (string, bool) {

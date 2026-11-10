@@ -10,7 +10,10 @@ The checks are http_family's, plus:
 - a config GET answer (SessionMiddleware saves the new session holding the
   state) carries Django's session cookie: a new 32-character key, the
   14-day expiry and its attributes (Secure only when the run's Django
-  setting is on); SESSIONS[case] keeps the key for the adapter.
+  setting is on); SESSIONS[case] keeps the key for the adapter. A
+  'session_cookie' sends a Cookie header: the literal 'cookie', or the
+  session of the earlier case 'cookie_from'; 'reused' requires that same key
+  back, otherwise the key must be a new one.
 """
 from pathlib import Path
 import re
@@ -65,6 +68,16 @@ def assert_session(case, base_url, *, token, sessions):
     import json
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'],
                **substitute(case['headers'], sessions)}
+    spec, sent = case.get('session_cookie') or {}, None
+    if 'cookie_from' in spec:
+        sent = SESSIONS.get(spec['cookie_from'])
+        if not sent:
+            raise ResponseFailure('request.session-cookie', 0)
+        headers['Cookie'] = 'sessionid=' + sent
+    elif 'cookie' in spec:
+        if not spec['cookie']:
+            raise ResponseFailure('request.session-cookie', 0)
+        headers['Cookie'] = spec['cookie']
     status, raw, received = Client(base_url, token).request(case['method'], case['path'], None, headers, raw=True, include_headers=True)
 
     def check(condition, code):
@@ -75,6 +88,7 @@ def assert_session(case, base_url, *, token, sessions):
     check(received.get('Content-Language') == 'en' and received.get('WWW-Authenticate') is None, 'response.headers')
     match = cookie_pattern(case['secure_cookie']).match(received.get('Set-Cookie') or '')
     check(match is not None, 'response.session-cookie')
+    check((match.group(1) == sent) if spec.get('reused') else (match.group(1) != sent), 'response.session-key')
     SESSIONS[case['name']] = match.group(1)
     check(received.get('Content-Type') == 'application/json', 'response.type')
     try:

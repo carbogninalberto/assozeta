@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/google/uuid"
@@ -19,6 +20,14 @@ var ErrAutomationWorkflowMissing = errors.New("workflow delete target does not e
 type AutomationWorkflowWrites struct {
 	store domain.AutomationWorkflowStore
 	now   func() time.Time
+	tasks celery.Publisher
+}
+
+// WithTasks lets update schedule check_workflows_trigger_cron for a future
+// cron trigger (without it that path is refused).
+func (s *AutomationWorkflowWrites) WithTasks(tasks celery.Publisher) *AutomationWorkflowWrites {
+	s.tasks = tasks
+	return s
 }
 
 func NewAutomationWorkflowWrites(store domain.AutomationWorkflowStore, now func() time.Time) *AutomationWorkflowWrites {

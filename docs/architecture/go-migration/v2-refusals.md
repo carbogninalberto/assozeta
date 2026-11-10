@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2 and 5 in v2-documents, below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments and 6 in v2-misc, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -71,6 +71,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2sub-*`; each family d
 | subscription-lifecycle | `POST subscription/<uid>/delete` | signed subscription; rows of other models referencing it; unpaid invoiced payment | same run |
 | subscription-reads | `GET`/`POST subscription/list` (athlete) | every athlete request | 261 cases; RED `v2sub-red-r2` Django 261/261, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (ascending order) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | subscription without `document_pdf` (now publishes `print_document_subscription`) | same run |
+| camps-subscriptions | `GET camps-and-retreats/<uid>/subscriptions/list` | period payment with an invoice (or an instructor, B) | 111 cases; RED `v2misc-red-r3` Django 111/111, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (nested instructor dropped) CAUGHT |
 | subscription-renew | `POST subscription/renew` | payment clean-up meets an unpaid invoiced payment | 55 cases; RED `v2sub-red-r1` Django 55/55, Go 500; GREEN `v2sub-versioned-r1` 4 transports; mutation `v2sub-mutation-r1` (invoiced payments excluded) CAUGHT |
 | subscription-create | `POST subscription/add?m=only_associate`, `POST subscription/add` with an owner's `sport_association` | quick re-subscription; the wizard in a modal (v2-sub-create) | 55 cases; RED `v2create-red-r5` Django 55/55, Go 500; GREEN `v2create-versioned-r1` 4 transports; mutation `v2create-mutation-r1` (fallback plan data) CAUGHT; subscription-renew re-run 62/62 |
 | subscription-create | `POST subscription/add` | owner wizard: signature upload; "new member" account and welcome e-mail (v2-sub-create) | 62 cases; RED `v2create-red-r12` Django 62/62, Go 500; GREEN `v2create-versioned-r2` 4 transports; mutation `v2create-mutation-r3` (signature user) CAUGHT; subscription-renew 62/62, subscription-sign 47/47 re-run |
@@ -105,6 +106,18 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc-*`; each family d
 | document-views | `GET document/subscription/preview/`, `document/subscription/<uid>/view/` | header or footer with a `<pre>` block (TipTap code block) | 114 cases + 516 mentions golden inputs; RED `v2doc-red-r1` Django 114/114, Go 500; GREEN `v2doc-versioned-r1` 4 transports; mutation `v2doc-mutation-r1` (direct children only) CAUGHT; invoice-views re-run 76/76 |
 | invoice-parties | `GET invoice-customers/list` | any customer invoice without a PDF (now regenerates its XML, saves it and runs the eager `print_document_customer_invoice`) | 138 cases; RED `v2doc-red-r1` Django 138/138, Go 500; GREEN `v2doc-versioned-r1` 4 transports; mutation `v2doc-mutation-r1` (no auditlog entry) CAUGHT; invoice-sync-print re-run 70/70 |
 | instructor-hours | `GET instructor/<uid>/hours/list` | a page row with a payment and no document (now runs the eager `print_document_compensation`) | 135 cases; RED `v2doc-red-r1` Django 135/135, Go 500; GREEN `v2doc-versioned-r2` 4 transports; mutation `v2doc-mutation-r1` (paid rows only) CAUGHT |
+
+### Ported in the v2-misc change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| profile-misc | `PATCH onboarding/update` | `onboarding_data` carrying the row's own `users_onboarding_id` and `user` (every checklist step) | 101 cases; RED `v2misc-red-r1` Django 101/101, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r2` (ids compared as raw strings) CAUGHT |
+| google-calendar | `GET google/calendar/config` | request carrying a `sessionid` cookie (a second "Connetti a Google" in the same browser) | 89 cases; RED `v2misc-red-r2` Django 89/89, Go 500; GREEN `v2misc-green-r2` 4 transports; mutation `v2misc-mutation-r1` (session saved with SET NX) CAUGHT |
+| modules-responses | `POST modules/response/<id>/add-attachment` | filename with a compression suffix (`archive.tar.gz`, ...) | 145 cases; RED `v2misc-red-r1` Django 145/145, Go 500; GREEN `v2misc-green-r3` 4 transports; mutation `v2misc-mutation-r1` (encoding guessed on the lower-cased name) CAUGHT |
+| workflow-update | `PATCH communications/workflows/<id>/update` | `enabled: true` with a future cron time (`check_workflows_trigger_cron` with a countdown) | 63 cases; RED `v2misc-red-r3` Django 63/63, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (ambiguous wall time on the summer offset) CAUGHT |
+| subscription-reads | `GET subscription/<uid>/info` | course subscription with a membership payment that has an invoice (or an instructor, B) | 261 cases; RED `v2misc-red-r1` Django 261/261, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (nested invoice not loaded) CAUGHT |
 
 ## Remaining A items, per family
 
@@ -198,15 +211,18 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| PATCH communications/workflows/<id>/update | `enabled: true` with a future cron trigger (editor default) | `communication/automation/Automation.svelte:271-281` | `service/automation_workflow_update.go:98,119,200` | cheap-medium |
 | GET communications/settings/smtp/verify | a real SMTP host | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go:224` | medium |
-| GET camps-and-retreats/<uid>/subscriptions/list | camp payment with an invoice | `CampsAndRetreatsOverview.svelte:308` | `service/camps_subscriptions.go:143` | medium |
 | PATCH camps-and-retreats/periods/services/<uid>/update | walks a soft-deleted/other-group unpaid payment | `EditServiceModal.svelte:29-35` | `service/camps_periods.go:755` | medium |
-| POST onboarding/update | `onboarding_data` carries `users_onboarding_id`, `user` (always) | `components/onboarding/onboarding-checklist.svelte:95-100` | `service/profile_misc.go:666` | cheap |
 | personas add/update | `picture_path` data URL (photo) | `preview-blocks/image-upload.svelte:35-38` | `service/personas_writes.go:270-288` | medium |
-| modules add-attachment | compressed-suffix filename (`.gz`, `.tgz`, ...) | `routes/forms/PublicModule.svelte:60-73` | `service/modules_responses.go:466` | cheap-medium |
 | oauth2/signup | Google/Apple configured | `routes/login/Login.svelte:425-447` | `service/oauth_accounts.go:448` | medium-expensive |
-| GET google/calendar/config | browser already has a `sessionid` cookie | `Integrations.svelte:187` | `handler/google_calendar.go:114-116` | cheap-medium |
+
+Why these stay (v2-misc):
+- smtp/verify: needs a fake SMTP server in the communications-smtp adapter (STARTTLS/SSL/login answers); not reached.
+- camps service update on a soft-deleted or other-group payment: Django saves it and auditlog, reading the old row through the
+  soft-delete manager, writes an update entry diffed against None; that entry and its index row need their own characterization.
+- personas photo: the data URL is stored under a timestamped key with a `put_object_acl` and a CDN URL; needs a MinIO in the
+  personas-writes adapter.
+- oauth2/signup with providers: needs stubbed Google/Apple token verification in the oauth-accounts adapter.
 
 Not HTTP (websocket, Django today): agent exports to XLSX/PDF (`service/business_mcp_query.go:290`).
 
@@ -274,7 +290,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 | POST .../subscriptions/add, PATCH .../subscriptions/update | form/multipart body with file parts; update form carrying `periods` | dto/camps_subscriptions.go:42; service/camps_subscriptions.go:758,763 (`ErrCampsFormNotPorted`) | B | All UI calls send JSON: `overview/modals/AddSubscriptionModal.svelte:31-32`, `EditSubscriptionModal.svelte:31-32`, `src/routes/forms/CampsAndRetreatsForm.svelte:38-39`. Cost: cheap-medium. |
 | POST add, PATCH update (payment creation) | `X-Group-Id` not an existing group | service/camps_subscriptions.go:438,445 (`ErrCampsPaymentNotPorted`) | B | UI sends `X-Group-ID` from the stored selection (`src/utils/ApiMiddleware.js:141`); only a group deleted while still selected. Cost: cheap. |
 | POST add, PATCH update | generated amount over `numeric(9,2)`/negative, or notes > 5120 chars | service/camps_subscriptions.go:450 | B | Needs fees >= 10M or a very large number of periods/services. Cost: cheap (reproduce the DB error). |
-| GET camps-and-retreats/<uid>/subscriptions/list | a subscription period's payment has an `instructor` or an `invoice` | service/camps_subscriptions.go:143 (`ErrCampsPaymentNotPorted`) | A | List called by `overview/CampsAndRetreatsOverview.svelte:308`. Generating a receipt for the camp payment from the payment UI (`src/routes/accounting/payment/partials/payment-overview.svelte:212`, `modals/AddEditModal.svelte:276` -> `payment/<uid>/generate-invoice`, which sets `payment.invoice`, `views/payment_views.py:2035`) makes the list fail. Instructor link: B (camp payments are created without one). |
+| GET camps-and-retreats/<uid>/subscriptions/list | a subscription period's payment has an `instructor` or an `invoice` | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
 
 ### camps-core.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -318,7 +334,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### automation-workflows.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH communications/workflows/<uid>/update | enabling (disabled -> enabled) a workflow whose trigger is `cron` with a future time, or a time text outside the parsed form | service/automation_workflow_update.go:200 (`ErrAutomationWorkflowUpdateNotPorted`) | A | `association/communication/automation/Automation.svelte:271-281` sends `{"enabled": true}`; the editor's default trigger is `cron` (`automation/editor/AutomationEditor.svelte:35`) with a `datetime-local` time (:368-369), i.e. a future date. |
+| PATCH communications/workflows/<uid>/update | enabling a cron workflow whose time text is outside the parsed form (`20200101`, hour-only) | service/automation_workflow_update.go (`automationWorkflowEnablePlan`) | B | Future times ported in v2-misc (Celery eta). The editor's `datetime-local` gives `YYYY-MM-DDTHH:MM`, a parsed form. |
 | PATCH communications/workflows/<uid>/update | body with a new `automation_workflow_id` not yet used | service/automation_workflow_update.go:169 | B | UI update bodies carry only `automation_tree`/`name` (`AutomationEditor.svelte:148-155`), `automation_tree` (`components/inputs/email-builder/EmailBuilder.svelte:32-36`) or `enabled`. Cost: medium. |
 | PATCH communications/workflows/<uid>/update | form-encoded `automation_tree` | dto/automation_workflow_write.go:145 (`ErrAutomationWorkflowFormTreeNotPorted`) | B | UI sends JSON. Cost: cheap. |
 
@@ -530,7 +546,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### google-calendar.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET google/calendar/config | request carries a `sessionid` cookie | `BE_GO/internal/handler/google_calendar.go:114-116`, `ErrGoogleServer` | **A** | `routes/profile/sections/Integrations.svelte:187` (same-origin `fetch`, cookies sent). The first config GET itself sets `sessionid` (Path=/, 14 days; `handler/google_calendar.go:124`), so a second "Connetti a Google" (after cancelling consent or after disconnecting) in the same browser is refused. |
+| GET google/calendar/config | `sessionid` of a cache session holding more than a state; several `Cookie` headers with a `sessionid`; odd characters | `handler/google_calendar.go` (`googleCalendarSessionCookie`), `service/google_calendar.go` (`ConfigGet`) | B | Ported in v2-misc for the sessions the UI produces: the first config GET's own session (state only), expired or short keys. A Django admin login on the same host would leave a richer session. |
 | config/export/list | stored credentials or client-secret file of other shapes, non-default universe domain | `service/google_calendar.go:55-56,167,186` | B | Written by the OAuth flow / operator file. legacy: possible (older google-auth fields); medium. |
 | POST google/calendar/<id>/export | colour not `#rrggbb`, event dates outside subset, Rome years outside 1000–9998, odd instructor labels | `googleapi.ErrNotPorted` via `service/google_calendar.go:55` | B | `google_background_color` defaults to `random_color()` (7 chars, `BE/application/models/course_models.py:88`); events written by the UI calendar in ISO. legacy: yes (imported events); medium. UI call: `course/overview/OverviewCourse.svelte:160`. |
 | all | unusual Google answers / redirects | googleapi | B | Provider behaviour. |
@@ -662,7 +678,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### modules-responses.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST modules/response/<id>/add-attachment | filename with a compression suffix (`.gz .tgz .bz2 .xz .z .br .svgz .taz .tz .tbz2 .txz`), longer than 255 chars, or containing `/`, `\` or NUL | `service/modules_responses.go:466` (rule at `:441-456`) | A | `routes/forms/PublicModule.svelte:60-73` sends `{filename: file.name, base64}` from an `<input type=file>` with no `accept` (`:170-174`). A user picking `archive.tar.gz` triggers it. Cost: cheap–medium (mimetypes encoding → ContentEncoding on the S3 put). |
+| POST modules/response/<id>/add-attachment | filename longer than 255 chars, or containing `/`, `\` or NUL | `service/modules_responses.go` (`attachmentNamePorted`) | B | Compression suffixes ported in v2-misc (`ContentEncoding` from `mimetypes`). A browser's `file.name` has no separators; 255+ character names are unusual. |
 | same | storage name already taken with `AWS_S3_FILE_OVERWRITE` off | `service/modules_responses.go:498` | C | The path includes the timestamp and a new document UUID, so it cannot collide. Note: this check runs after the Document commit (`:470-474`), not before any write as the doc says. |
 | POST add-attachment / response/add | form or multipart body | `service/modules_responses.go:213,370` | B | The UI sends JSON (`PublicModule.svelte:47-50,67-73`). |
 | POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go:466` | B | The UI sends strings. |
@@ -705,7 +721,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH onboarding/update | `onboarding_data` containing `users_onboarding_id` or `user` | `service/profile_misc.go:666`, check at `dto/profile_misc.go:170` | **A** | `components/onboarding/onboarding-checklist.svelte:95-100` sends `onboarding_data: $userData.onboarding` on every checklist step (`:137-157`). That object is `UsersOnboardingSerializer(fields='__all__')` (`BE/application/serializers/auth_serializers.py:325-328,402-408`), so it always includes `users_onboarding_id` and `user`. Django accepts the same values. Cost: cheap (accept equal values, refuse only real changes). |
+| PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | B | Ported in v2-misc for the row's own values, which the checklist always sends (`components/onboarding/onboarding-checklist.svelte:95-100`); other values never come from the UI. |
 | PATCH onboarding/update | multipart | `service/profile_misc.go:298` | B | The UI sends JSON. |
 | same | soft-deleted owner association | `service/profile_misc.go:350` | B | legacy: low. |
 | same | season/fiscal not int 0..32767; fee repr with exponent; lead containers/too long | `service/profile_misc.go:521,556,588,592` | B | The UI sends ints from selects and `parseFloat` fees (`routes/onboarding/partials/step1.svelte:59-75`). An exponent needs an extreme fee. Lead values are select strings. |
@@ -901,6 +917,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST subscription/list (current-view export, `format` pdf/excel) | any POST | `:345` | **A** | The "Vista corrente" button (`MembersList.svelte:2335`, `MembersBook.svelte:1801`) opens `components/modals/CurrentViewPrintingModal.svelte:41-42` and POSTs with `format` `pdf` (default, `:31`) or `excel`. Django `subscriptions_views.py:1087` |
 | GET subscription/<uid>/info | subscription without `document_pdf` | `:855` | **ported** (v2-subscriptions, Celery producer) | Member detail calls info (`Members/detail/Detail.svelte:95`, `EditSubscription.svelte:23`, `course-selection.svelte:17`, used by renewal). `document_pdf` is filled asynchronously by the `print_document_subscription` worker after create/renew, so it is empty until the print finishes or if it failed. Django prints it on demand at `:1787` |
 | same | course-subscription membership payments with an instructor or an invoice | `:994` | **A** (invoice) / B (instructor) (both ported in v2-documents) | Paying a membership installment with invoice generation (default `generate_invoice` True, `payment_views.py:1761`), or cancelling it, leaves an invoice on the payment. Instructor on a membership payment: legacy: yes, medium |
+| same | course-subscription membership payments with an instructor or an invoice | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
 | GET list / list/all / info / calendar | association-scoped athlete session (athlete impersonation with association scope) | `:252`, `:547`, `:800`, `:1054` | **A** (impersonation only) | Reached when staff impersonate an athlete and open the athlete pages (`SubscriptionList.svelte:40`, `EditSubscription.svelte:23`, `Calendar.svelte:92`). Not reached in normal athlete or owner use |
 | GET subscription/list | orderings compiled with rows / relation paths / transforms / `?` | `:166` (lazy), `repository/subscription_reads.go:252` | B | UI sort fields are `associate`, `age`, `creation_date`, `status_flag` (`MembersList.svelte:191-356`), all handled (`service/subscription_reads.go:525-539`), plus `sort_lastname_*` flags. legacy: no |
 | GET subscription/list | search terms with chars ≥ U+0250 or U+0130 | `:141` | B | Exotic Unicode (Greek, Cyrillic, CJK, Turkish dotted I). legacy: no. medium |
@@ -948,7 +965,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### workflow-update.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH communications/workflows/<id>/update | enabling a cron workflow whose time is in the future or within 2 h, or a time Go does not classify | `service/automation_workflow_update.go:98,119` → `:199-200`, `ErrAutomationWorkflowUpdateNotPorted` | **A** | The editor offers a cron trigger "Data e ora specifica" as `datetime-local` (`automation/editor/AutomationEditor.svelte:349-369`, `YYYY-MM-DDTHH:MM`, a classified format). Activating sends `{enabled: true}` (`automation/Automation.svelte:271-279`). A future time is the normal case. Django `communications/views.py:331` sends `check_workflows_trigger_cron` with a countdown |
+| PATCH communications/workflows/<id>/update | a cron time Go does not classify | `service/automation_workflow_update.go` | B | Future times ported in v2-misc (see workflow-update.md). |
 | same | time string not starting with 4 ASCII digits / out-of-range field | (500 after saves, Django too) | — | parity, not a refusal |
 | same | new `automation_workflow_id` | `:169` | B | UI PATCH bodies carry only `enabled`, or `automation_tree` and `name` (`AutomationEditor.svelte:145-156`, `EmailBuilder.svelte:32`). legacy: no |
 | same | form-encoded `automation_tree` | `dto/automation_workflow_write.go:145` | B | UI sends JSON |

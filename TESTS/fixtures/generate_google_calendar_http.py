@@ -138,7 +138,7 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='GET', headers=None, google=(), users=None, courses=None, audit=(),
-        html=None, state_for=None):
+        html=None, state_for=None, session=None):
     """users: {label: {field: value}} after the case ('$state' = the state answered by this or an earlier
     config case, a dict with '$expiry' = credentials JSON whose expiry is checked by kind)."""
     case = {'name': f'google-calendar-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
@@ -149,6 +149,10 @@ def add(name, actor, path, status, response, *, method='GET', headers=None, goog
     if state_for is not None:
         # A config GET: the state is also stored in a new Django session (cookie and cache entry).
         case['state_for'], case['session'] = state_for, True
+    if session:
+        # keep: the session stays in the cache for a later case; cookie_from: send that case's session cookie
+        # (reused: the same key is saved again); cookie: a literal Cookie header (a new session is created).
+        case['session_cookie'] = session
     cases.append(case)
 
 
@@ -355,6 +359,28 @@ add('list-athlete-in-memory-refresh', 'athlete', LIST, 200, {'data': {'calendars
 # --- config GET and the callback -------------------------------------------------------
 add('config-get-owner', 'owner', CONFIG, 200, {'authorization_url': AUTH_URL}, state_for='owner',
     users=set_user('owner', state='$state'), audit=[user_audit('owner', ['integration_google_state'], 'owner')])
+# "Connetti a Google" again in the same browser: the request carries the sessionid cookie set by the first
+# config GET. SessionMiddleware loads that cache session, the view stores the new state in it and the
+# session is saved again under the same key (cache.set, SESSION_COOKIE_AGE). A key the cache does not hold
+# (expired, or shorter than 8 characters) loads an empty session and a new key is created.
+add('config-get-owner-keeps-session', 'owner', CONFIG, 200, {'authorization_url': AUTH_URL}, state_for='owner',
+    session={'keep': True}, users=set_user('owner', state='$state'), audit=[user_audit('owner', ['integration_google_state'], 'owner')])
+add('config-get-owner-existing-session', 'owner', CONFIG, 200, {'authorization_url': AUTH_URL}, state_for='owner',
+    session={'cookie_from': 'google-calendar-config-get-owner-keeps-session', 'reused': True},
+    users=set_user('owner', state='$state'), audit=[user_audit('owner', ['integration_google_state'], 'owner')])
+add('config-get-owner-expired-session-cookie', 'owner', CONFIG, 200, {'authorization_url': AUTH_URL}, state_for='owner',
+    session={'cookie': 'sessionid=0123456789abcdefghijklmnopqrstuv'},
+    users=set_user('owner', state='$state'), audit=[user_audit('owner', ['integration_google_state'], 'owner')])
+add('config-get-owner-short-session-cookie', 'owner', CONFIG, 200, {'authorization_url': AUTH_URL}, state_for='owner',
+    session={'cookie': 'theme=dark; sessionid=abc'},
+    users=set_user('owner', state='$state'), audit=[user_audit('owner', ['integration_google_state'], 'owner')])
+add('config-get-collaborator-keeps-session', 'full_collaborator', CONFIG, 200, {'authorization_url': AUTH_URL},
+    state_for='full_collaborator', session={'keep': True}, users=set_user('full_collaborator', state='$state'),
+    audit=[user_audit('full_collaborator', ['integration_google_state'], 'full_collaborator')])
+add('config-get-collaborator-existing-session', 'full_collaborator', CONFIG, 200, {'authorization_url': AUTH_URL},
+    state_for='full_collaborator', session={'cookie_from': 'google-calendar-config-get-collaborator-keeps-session', 'reused': True},
+    users=set_user('full_collaborator', state='$state'),
+    audit=[user_audit('full_collaborator', ['integration_google_state'], 'full_collaborator')])
 add('callback-options', 'anonymous', CALLBACK, 200, options('Google Oauth2Callback'), method='OPTIONS')
 add('callback-wrong-method', 'anonymous', CALLBACK, 405, method_not_allowed('POST'), method='POST')
 add('callback-restricted-collaborator-denied', 'restricted_collaborator', CALLBACK + '?error=access_denied', 403,

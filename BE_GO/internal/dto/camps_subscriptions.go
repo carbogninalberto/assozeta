@@ -191,6 +191,6 @@ func CampsTypeName(value any) string { return pythonTypeName(value) }
 
 // CampsListPayment is PaymentSerializer for a subscription period's payment
 // (the service refuses instructors and invoices).
-func CampsListPayment(row domain.CourseSubscriptionPayment) map[string]any {
-	return courseSubscriptionPayment(row)
+func CampsListPayment(row domain.CourseSubscriptionPayment) (map[string]any, error) {
+	return PaymentStateItem(domain.PaymentStateRender{Payment: row, Instructor: row.Instructor, Invoice: row.Invoice})
 }

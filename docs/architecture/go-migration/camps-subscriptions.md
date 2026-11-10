@@ -60,7 +60,6 @@ remains the execution owner.
 - HTML form input with file parts (add and update) and update forms carrying a `periods` key (`QueryDict.get` of repeated keys).
 - Payment creation with an `X-Group-Id` that is not an existing group, an amount the
   `numeric(9,2)` column or the non-negative constraint would reject, or notes over 5120 characters.
-- List rows whose payment has an instructor or an invoice (their serializers are not ported).
 
 ## Evidence
 
@@ -70,3 +69,8 @@ subscription period, payment, link, audit and index effects and the response key
 (`versioned-r1`). Mutation control: rendering a deleted subscription period's entry from the stored row (after the shared
 payment's SET_NULL) instead of the instance as loaded fails `update-owner-replace-periods` (`mutation-r1`, audit.changes).
 `camps-core` and `camps-periods` stay green after the route block was added to `main.go` (`rerun-subscriptions-r1`).
+
+API v2 (v2-misc): list rows whose period payment has an invoice (a receipt generated from the payment page) or an instructor
+render PaymentSerializer's nested invoice and instructor. The fixture seeds both on a listed paid payment; 111 cases. RED
+`v2misc-red-r3`: Django 111/111, Go 500. GREEN `v2misc-green-r1`: 111/111 on the four transports. Mutation `v2misc-mutation-r1`
+(the nested instructor dropped) fails `list-owner` on Go.
