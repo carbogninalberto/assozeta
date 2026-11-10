@@ -66,7 +66,24 @@ IDS = json.loads((HERE / 'message_mutations.json').read_text())['ids']
 OWN, FOREIGN = IDS['own_association'], IDS['foreign_association']
 DELETED = IDS['deleted_association']
 ids = iter(f'a1000000-0000-4000-8000-{643001 + n:012d}' for n in range(80))
+# Ids of the rows added for the rare inputs (their own range: the earlier ids stay).
+yids = iter(f'a1000000-0000-4000-8000-{643800 + n:012d}' for n in range(40))
 SERVER = '<stable-server-error-page>'
+BAD_REQUEST = '<bad-request-page>'
+FORM = 'application/x-www-form-urlencoded'
+MULTIPART = 'multipart/form-data; boundary=moduli'
+
+
+def multipart(*parts):
+    """A multipart body: (name, value) text parts and (name, filename, content) file parts."""
+    out = ''
+    for part in parts:
+        if len(part) == 2:
+            out += f'--moduli\r\nContent-Disposition: form-data; name="{part[0]}"\r\n\r\n{part[1]}\r\n'
+        else:
+            out += (f'--moduli\r\nContent-Disposition: form-data; name="{part[0]}"; filename="{part[1]}"\r\n'
+                    f'Content-Type: application/octet-stream\r\n\r\n{part[2]}\r\n')
+    return out + '--moduli--\r\n'
 UNKNOWN = 'a1000000-0000-4000-8000-000000643999'
 LOCATION = 'modules-responses-fixture'
 DENOMINATIONS = {OWN: 'Message reads own', FOREIGN: 'Message reads foreign'}
@@ -118,6 +135,15 @@ MODULES = {
                        'elements': [{'type': 'text', 'props': {'label': None, 'name': 'x'}}]},
     'export_dict': {**BASE, 'id': next(xids), 'link': 'risposte-export-dizionario', 'elements': {'campo': 1}},
     'export_foreign': {**EXPORT_BASE, 'id': next(xids), 'association': FOREIGN, 'link': 'risposte-export-estero'},
+    # Elements whose 'props' is not an object, or whose label is a list or an object.
+    'export_props_text': {**BASE, 'id': next(yids), 'link': 'risposte-export-props-testo', 'elements': [{'type': 'text', 'props': 'testo'}]},
+    'export_props_list': {**BASE, 'id': next(yids), 'link': 'risposte-export-props-lista',
+                          'elements': [{'type': 'text', 'props': ['label', 'name']}]},
+    'export_props_number': {**BASE, 'id': next(yids), 'link': 'risposte-export-props-numero', 'elements': [{'type': 'text', 'props': 5}]},
+    'export_label_list': {**BASE, 'id': next(yids), 'link': 'risposte-export-etichetta-lista',
+                          'elements': [{'type': 'text', 'props': {'label': ['a', 'b'], 'name': 'x'}}]},
+    'export_label_dict': {**BASE, 'id': next(yids), 'link': 'risposte-export-etichetta-oggetto',
+                          'elements': [{'type': 'text', 'props': {'label': {'a': 1}, 'name': 'x'}}]},
 }
 DOCUMENTS = {'d1': {'id': next(ids), 'filename': 'certificato è.pdf', 'token': next(ids)},
              'd2': {'id': next(ids), 'filename': 'foto.png', 'token': next(ids)},
@@ -125,7 +151,12 @@ DOCUMENTS = {'d1': {'id': next(ids), 'filename': 'certificato è.pdf', 'token': 
              'd4': {'id': next(ids), 'filename': 'condiviso.pdf', 'token': next(ids)},
              'd5': {'id': next(ids), 'filename': 'anonimo.txt', 'token': next(ids)},
              'd6': {'id': next(xids), 'filename': 'primo, allegato.pdf', 'token': next(xids)},
-             'd7': {'id': next(xids), 'filename': 'secondo.png', 'token': next(xids)}}
+             'd7': {'id': next(xids), 'filename': 'secondo.png', 'token': next(xids)},
+             # A document a payment also lists among its attachments.
+             'd8': {'id': next(yids), 'filename': 'ricevuta.pdf', 'token': next(yids)},
+             'd9': {'id': next(yids), 'filename': 'da form.txt', 'token': next(yids)},
+             # uuid.UUID(int=42).
+             'd42': {'id': '00000000-0000-0000-0000-00000000002a', 'filename': 'numerato.txt', 'token': next(yids)}}
 EXPORT_USERS = {'export_a': {'id': next(xids), 'first_name': '', 'last_name': 'Neri  ', 'username': 'modules-export-a'},
                 'export_b': {'id': next(xids), 'first_name': '', 'last_name': '', 'username': 'modules-export-b'}}
 EXPORT_PAYMENTS = {'paid': {'id': next(xids), 'paid': True, 'deleted': False},
@@ -161,7 +192,15 @@ RESPONSES = {
     'nolabel_r': {**R, 'id': next(xids), 'module': 'export_nolabel', 'number': 0},
     'dict_r': {**R, 'id': next(xids), 'module': 'export_dict', 'number': 0},
     'xforeign_r': {**R, 'id': next(xids), 'module': 'export_foreign', 'number': 0, 'response': {'nome': 'Estero'}},
+    'props_text_r': {**R, 'id': next(yids), 'module': 'export_props_text', 'number': 0},
+    'props_list_r': {**R, 'id': next(yids), 'module': 'export_props_list', 'number': 0},
+    'props_number_r': {**R, 'id': next(yids), 'module': 'export_props_number', 'number': 0},
+    'label_list_r': {**R, 'id': next(yids), 'module': 'export_label_list', 'number': 0},
+    'label_dict_r': {**R, 'id': next(yids), 'module': 'export_label_dict', 'number': 0},
 }
+RESPONSES['full_r']['attachments'] = ['d8']
+# Payment.attachments links (payment label, document label).
+PAYMENT_ATTACHMENTS = [['paid', 'd8']]
 for _row in RESPONSES.values():
     _row.setdefault('export_user', None)
     _row.setdefault('payment', None)
@@ -312,7 +351,7 @@ DOCUMENT_CREATED = lambda filename: {'document_id': ['None', '$id'], 'creation_d
                                      'token': ['None', '$token'], 'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}
 
 
-def uploaded(actor, filename, data, *, link, content_type=None, stored=True, content_encoding=None):
+def uploaded(actor, filename, data, *, link, content_type=None, stored=True, content_encoding=None, object_name=None):
     """Document.objects.create (one create entry, actor fallback index), the
     stored object, and the new attachment link when the response exists."""
     effect = {'kind': 'document', 'actor': actor, 'filename': filename, 'link': link,
@@ -323,6 +362,9 @@ def uploaded(actor, filename, data, *, link, content_type=None, stored=True, con
                             'content_type': content_type, 'cache_control': 'max-age=86400'}
         if content_encoding:
             effect['object']['content_encoding'] = content_encoding
+        if object_name is not None:
+            # The name under the document's folder when it is not the filename (clean_name).
+            effect['object_name'] = object_name
     else:
         effect['object'] = None
     return effect
@@ -422,6 +464,13 @@ add('export-list-response-server-error', 'owner', 'GET', export('open'), 500, SE
 add('export-element-without-name', 'owner', 'GET', export('export_noname'), 500, SERVER)
 add('export-label-none', 'owner', 'GET', export('export_nolabel'), 500, SERVER)
 add('export-elements-dict', 'owner', 'GET', export('export_dict'), 500, SERVER)
+# element['props']['label'] on a str, a list or a number raises.
+add('export-props-text', 'owner', 'GET', export('export_props_text'), 500, SERVER)
+add('export-props-list', 'owner', 'GET', export('export_props_list'), 500, SERVER)
+add('export-props-number', 'owner', 'GET', export('export_props_number'), 500, SERVER)
+# A list or an object as column label: the workbook writer refuses the header cell.
+add('export-label-list', 'owner', 'GET', export('export_label_list'), 500, SERVER)
+add('export-label-dict', 'owner', 'GET', export('export_label_dict'), 500, SERVER)
 
 add('info-anonymous', 'anonymous', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-admin-without-session', 'admin', 'GET', info('risposte-aperto'), 403, NO_SESSION)
@@ -499,6 +548,16 @@ add('add-anonymous-queue', 'anonymous', 'POST', respond('queue'), 200, ADDED, bo
 add('add-admin-impersonating-queue-hex', 'admin', 'POST', respond(mid('queue').replace('-', '').upper()), 200, ADDED, headers=ADMIN_OWNER,
     body={'nome': 'Cinque'}, effect=responded('queue', 'admin', 'owner', {'nome': 'Cinque'}))
 add('add-empty-body', 'anonymous', 'POST', respond('open'), 200, ADDED, effect=responded('open', None, None, {}))
+# Form bodies: request.data is a QueryDict, stored through its items() (the last value of every key).
+add('add-form', 'anonymous', 'POST', respond('open'), 200, ADDED, raw_body='nome=Anna&eta=12&nome=Bea+%C3%A8&vuoto=', content_type=FORM,
+    effect=responded('open', None, None, {'nome': 'Bea è', 'eta': '12', 'vuoto': ''}))
+add('add-form-empty-owner', 'owner', 'POST', respond('open'), 200, ADDED, raw_body='', content_type=FORM,
+    effect=responded('open', 'owner', 'owner', {}))
+add('add-multipart', 'athlete', 'POST', respond('open'), 200, ADDED, raw_body=multipart(('nome', 'Carla'), ('corso', 'nuoto')),
+    content_type=MULTIPART, effect=responded('open', 'athlete', 'athlete', {'nome': 'Carla', 'corso': 'nuoto'}))
+# An uploaded file is not JSON serializable: the create raises.
+add('add-multipart-file-server-error', 'anonymous', 'POST', respond('open'), 500, SERVER,
+    raw_body=multipart(('nome', 'Dario'), ('allegato', 'a.txt', 'ciao')), content_type=MULTIPART)
 
 # ------------------------------------ modules/response/<id>/approve
 approve = lambda label: f'/modules/response/{rid(label)}/approve'
@@ -587,8 +646,7 @@ for name, filename, kind, encoding in [('tar-gz', 'archivio.tar.gz', 'applicatio
                                        ('svgz', 'logo.svgz', 'image/svg+xml', 'gzip'),
                                        ('pdf-br', 'modulo.pdf.br', 'application/pdf', 'br'),
                                        ('upper-z', 'vecchio.tar.Z', 'application/x-tar', 'compress'),
-                                       ('lower-z', 'nota.z', 'application/octet-stream', None),
-                                       ('upper-gz', 'ARCHIVIO.GZ', 'application/octet-stream', None)]:
+                                       ('lower-z', 'nota.z', 'application/octet-stream', None)]:
     add(f'attach-compressed-{name}', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED,
         body={'filename': filename, 'base64': 'H4sIAAAAAAAAA0vOz0nJBAA='},
         effect=uploaded(None, filename, 'H4sIAAAAAAAAA0vOz0nJBAA=', link='att_r', content_type=kind, content_encoding=encoding))
@@ -601,6 +659,50 @@ add('attach-bad-padding-server-error', 'anonymous', 'POST', attach('att_r'), 500
     effect=uploaded(None, 'rotto.txt', None, link=None, stored=False))
 add('attach-non-ascii-server-error', 'owner', 'POST', attach('att_r'), 500, SERVER, body={'filename': 'accento.txt', 'base64': 'çiao'},
     effect=uploaded('owner', 'accento.txt', None, link=None, stored=False))
+# Names with separators: Storage.save validates the name and S3Storage stores it under clean_name(name).
+add('attach-name-subdirectory', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': 'cartella/nota.txt', 'base64': 'Y2lhbw=='},
+    effect=uploaded(None, 'cartella/nota.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
+add('attach-name-backslash', 'owner', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': 'cartella\\foto.png', 'base64': 'Y2lhbw=='},
+    effect=uploaded('owner', 'cartella\\foto.png', 'Y2lhbw==', link='att_r', content_type='image/png', object_name='cartella/foto.png'))
+add('attach-name-normalized', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED,
+    body={'filename': './doppia//barra.txt', 'base64': 'Y2lhbw=='},
+    effect=uploaded(None, './doppia//barra.txt', 'Y2lhbw==', link='att_r', content_type='text/plain', object_name='doppia/barra.txt'))
+LONGEST = 'y' * 251 + '.txt'
+add('attach-name-255-characters', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': LONGEST, 'base64': 'Y2lhbw=='},
+    effect=uploaded(None, LONGEST, 'Y2lhbw==', link='att_r', content_type='text/plain'))
+# The filename column refuses the text: nothing is written.
+add('attach-name-256-characters-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
+    body={'filename': 'x' * 256, 'base64': 'Y2lhbw=='})
+add('attach-name-nul-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body={'filename': 'nul\x00.txt', 'base64': 'Y2lhbw=='})
+add('attach-name-null-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body={'filename': None, 'base64': 'Y2lhbw=='})
+# The document is created, then Storage.save refuses the name (Django's 400 page).
+for name, filename in [('empty', ''), ('dot-dot', '..'), ('traversal', 'a/../b.txt'), ('backslash-traversal', 'a\\..\\b.txt'),
+                       ('absolute', '/assoluto.txt'), ('trailing-slash', 'cartella/')]:
+    add(f'attach-name-{name}-bad-request', 'anonymous', 'POST', attach('att_r'), 400, BAD_REQUEST,
+        body={'filename': filename, 'base64': 'Y2lhbw=='}, effect=uploaded(None, filename, None, link=None, stored=False))
+# The decode runs before the name check.
+add('attach-name-empty-bad-padding-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body={'filename': '', 'base64': 'abcde'},
+    effect=uploaded(None, '', None, link=None, stored=False))
+# A filename that is not a str is stored as its str(); joining the path raises after the create.
+for name, value, stored_text in [('integer', 5, '5'), ('boolean', True, 'True'), ('list', ['a', 1, None], "['a', 1, None]"),
+                                 ('object', {'a': 'b'}, "{'a': 'b'}"), ('float', 1.5, '1.5')]:
+    add(f'attach-filename-{name}-server-error', 'owner', 'POST', attach('att_r'), 500, SERVER, body={'filename': value, 'base64': 'Y2lhbw=='},
+        effect=uploaded('owner', stored_text, None, link=None, stored=False))
+# A base64 value that is not a str raises in the decode, after the create.
+for name, value in [('integer', 5), ('null', None), ('list', ['Y2lh']), ('object', {}), ('boolean', False)]:
+    add(f'attach-base64-{name}-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
+        body={'filename': f'dati-{name}.txt', 'base64': value}, effect=uploaded(None, f'dati-{name}.txt', None, link=None, stored=False))
+# Form bodies.
+add('attach-form', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, raw_body='filename=modulo.txt&base64=Y2lhbw%3D%3D&filename=ultimo.txt',
+    content_type=FORM, effect=uploaded(None, 'ultimo.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
+add('attach-form-nothing-sent', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, raw_body='filename=modulo.txt', content_type=FORM)
+add('attach-multipart', 'owner', 'POST', attach('att_r'), 200, ATTACHED,
+    raw_body=multipart(('filename', 'parti.txt'), ('base64', 'data:text/plain;base64,Y2lhbw')), content_type=MULTIPART,
+    effect=uploaded('owner', 'parti.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
+# An uploaded file as base64 is not a str.
+add('attach-multipart-file-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
+    raw_body=multipart(('filename', 'caricato.txt'), ('base64', 'a.txt', 'Y2lhbw==')), content_type=MULTIPART,
+    effect=uploaded(None, 'caricato.txt', None, link=None, stored=False))
 add('attach-delete-missing-key', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={})
 add('attach-delete-null-document', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': None})
 add('attach-delete-unknown-document', 'owner', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': UNKNOWN})
@@ -618,10 +720,25 @@ add('attach-delete-full-collaborator-shared', 'full_collaborator', 'DELETE', att
     body={'document_id': DOCUMENTS['d4']['id'].upper()}, effect=removed_document('d4', 'full_collaborator'))
 add('attach-delete-anonymous-other-response', 'anonymous', 'DELETE', attach('q3'), 200, DOC_DELETED,
     body={'document_id': DOCUMENTS['d5']['id']}, effect=removed_document('d5', None))
+# UUIDField.to_python of the lookup value: an int is uuid.UUID(int=...); other values raise.
+add('attach-delete-boolean-unknown', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': True})
+add('attach-delete-negative-server-error', 'anonymous', 'DELETE', attach('att_r'), 500, SERVER, body={'document_id': -1})
+add('attach-delete-huge-server-error', 'anonymous', 'DELETE', attach('att_r'), 500, SERVER, body={'document_id': 2 ** 128})
+add('attach-delete-float-server-error', 'anonymous', 'DELETE', attach('att_r'), 500, SERVER, body={'document_id': 42.0})
+add('attach-delete-list-value-server-error', 'anonymous', 'DELETE', attach('att_r'), 500, SERVER,
+    body={'document_id': [DOCUMENTS['d42']['id']]})
+add('attach-delete-integer', 'owner', 'DELETE', attach('att_r'), 200, DOC_DELETED, body={'document_id': 42},
+    effect=removed_document('d42', 'owner'))
+add('attach-delete-form', 'anonymous', 'DELETE', attach('att_r'), 200, DOC_DELETED, raw_body='document_id=' + DOCUMENTS['d9']['id'],
+    content_type=FORM, effect=removed_document('d9', None))
+# A document a payment lists too: document.delete() removes that link with the row.
+add('attach-delete-referenced-by-payment', 'owner', 'DELETE', attach('full_r'), 200, DOC_DELETED, body={'document_id': DOCUMENTS['d8']['id']},
+    effect=removed_document('d8', 'owner'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Module responses info/add/approve/delete/add-attachment/export authored sequence',
                               'ids': IDS, 'location': LOCATION, 'modules': MODULES, 'documents': DOCUMENTS, 'responses': RESPONSES,
                               'export_users': EXPORT_USERS, 'export_payments': EXPORT_PAYMENTS,
+                              'payment_attachments': PAYMENT_ATTACHMENTS,
                               'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

@@ -348,6 +348,43 @@ add('update-form-invalid-json', 'owner', 'PATCH', update('edit'), 400,
 add('update-other-module-after', 'owner', 'PATCH', update('taken'), 200, None, body={'custom_link': 'Occupato', 'elements': {'b': {'c': []}}},
     effect=changed('taken', 'owner', link='Occupato', elements={'b': {'c': []}}))
 cases[-1]['response'] = updated('taken', enabled=False)
+# Keys the nested serializer has no field for: the validated value is the empty dict, which the update refuses.
+add('update-nested-association-unknown-keys', 'owner', 'PATCH', update('edit'), 500, error(NESTED),
+    body={'title': 'Mai salvato', 'sport_association': {'sconosciuto': 1, 'altro': [None]}})
+
+
+def created_audit(row, ident):
+    """auditlog's diff of a module against nothing: None-valued fields are kept only for the association and the JSON fields."""
+    changes = {'module_id': ['None', ident]}
+    for key, value in row.items():
+        if key == 'id':
+            continue
+        name = 'sport_association' if key == 'association' else FIELD_NAMES.get(key, key)
+        if value is None and key != 'association':
+            continue
+        changes[name] = ['None', audit_text(key, value)]
+    return changes
+
+
+# A module_id no row has: Model.save() inserts a copy with the validated values and the module of the path stays.
+# auditlog logs the row twice under the new key: the update of its pre_save (indexed from its changes), then the create.
+assert STATE['edit']['link'] is None and STATE['taken']['link'] == 'Occupato'
+COPY = 'a1000000-0000-4000-8000-000000642901'
+COPIED = {**STATE['edit'], 'id': COPY, 'title': 'Copia con nuova chiave', 'queue_mode': False}
+add('update-new-key-copies', 'owner', 'PATCH', update('edit'), 200,
+    {'message': UPDATED, 'camp_and_retreat': serialized(COPIED, enabled=True)},
+    body={'module_id': COPY.upper(), 'title': 'Copia con nuova chiave', 'queue_mode': False},
+    effect={'kind': 'copy', 'actor': 'owner', 'fixed_id': COPY, 'stored': stored(COPIED), 'created': COPIED['created']})
+add('update-new-key-source-unchanged', 'owner', 'PATCH', update('edit'), 200, None, effect=changed('edit', 'owner'))
+cases[-1]['response'] = updated('edit', enabled=True)
+# The copy repeats the custom link: the database refuses the insert, the view answers its text and the first entry stays.
+REFUSED = 'a1000000-0000-4000-8000-000000642902'
+add('update-new-key-link-taken', 'full_collaborator', 'PATCH', update('taken'), 500,
+    error('duplicate key value violates unique constraint "application_module_custom_link_key"\n'
+          'DETAIL:  Key (custom_link)=(Occupato) already exists.\n'),
+    body={'module_id': REFUSED, 'title': 'Mai copiato'},
+    effect={'kind': 'copy-refused', 'actor': 'full_collaborator', 'fixed_id': REFUSED, 'association': OWN,
+            'changes': created_audit({**STATE['taken'], 'title': 'Mai copiato'}, REFUSED)})
 
 # --------------------------------------------------- modules/<id>/duplicate
 duplicate = lambda label: f'/modules/{mid(label)}/duplicate'

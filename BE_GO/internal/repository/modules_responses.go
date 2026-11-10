@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/jmoiron/sqlx"
@@ -335,6 +336,27 @@ func (t *modulesResponsesTransaction) DeleteDocument(ctx context.Context, respon
 		return err
 	}
 	return t.appendResponseAudit(ctx, "docmanager", "document", document, 2, changes, nil, audit)
+}
+
+// DeleteReferencedDocument is module_response.attachments.remove(document) and
+// document.delete() for a document rows of other tables reference: Django's
+// collector deletes it with the rows that cascade from it, clears the
+// nullable references and logs each deleted row.
+func (t *modulesResponsesTransaction) DeleteReferencedDocument(ctx context.Context, response, document string, audit domain.ModuleResponseAudit) error {
+	graph, err := documentDeleteGraph()
+	if err != nil {
+		return err
+	}
+	if _, err = t.tx.ExecContext(ctx, `DELETE FROM application_moduleresponses_attachments WHERE moduleresponses_id=$1 AND document_id=$2`,
+		response, document); err != nil {
+		return err
+	}
+	run := &collaboratorDeleteRun{tx: t.tx, graph: graph, audit: audit.Context, now: func() time.Time { return audit.At }}
+	rows, err := run.load(ctx, graph.Models[documentDeleteLabel], `t.document_id = $1::uuid FOR UPDATE`, document)
+	if err != nil {
+		return err
+	}
+	return run.Delete(ctx, documentDeleteLabel, rows)
 }
 
 // CreateDocument is Document.objects.create(filename=...) and its create

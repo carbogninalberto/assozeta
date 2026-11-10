@@ -135,10 +135,11 @@ def assert_effect(case, before, after, source, context):
     events = {}
     for event in added:
         events.setdefault(event['object_pk'], []).append(event)
-    contract.require(all(len(items) == 1 for items in events.values()), 'audit.one-per-row')
+    pairs = {k: sorted(v, key=lambda event: event['id']) for k, v in events.items()}
+    contract.require(all(len(items) == (2 if effect['kind'] == 'copy' else 1) for items in events.values()), 'audit.one-per-row')
     events = {k: v[0] for k, v in events.items()}
     common = dict(before=before, ids=ids, actor=effect['actor'], context=context)
-    if effect['kind'] in ('create', 'update'):
+    if effect['kind'] in ('create', 'update', 'copy', 'copy-refused'):
         contract.require(before[RESPONSE] == after[RESPONSE] and before[LINK] == after[LINK], 'state.responses')
     if effect['kind'] == 'create':
         keys = set(new_m) - set(old_m)
@@ -155,6 +156,25 @@ def assert_effect(case, before, after, source, context):
         contract.require(set(events) == {key}, 'audit.count')
         check_event(case, events[key], indexes, model='Module', key=key, action=0, changes=created_changes(module_model(), row),
                     association=expected['association'], path='direct', **common)
+    elif effect['kind'] == 'copy':
+        # Model.save() under a key no row has: the copy is inserted, every other module stays; auditlog logs the
+        # whole row as an update (indexed from its changes), then the create (indexed directly).
+        key = effect['fixed_id']
+        contract.require(set(new_m) - set(old_m) == {key} and all(new_m[k] == old_m[k] for k in old_m), 'state.copied')
+        row = module_model()._base_manager.get(pk=key)
+        contract.require(stored_values(row) == effect['stored'], 'state.module')
+        check_created_at(row, effect['created'])
+        contract.require(set(pairs) == {key}, 'audit.count')
+        for event, action, path in zip(pairs[key], (1, 0), ('changes_json.sport_association', 'direct')):
+            check_event(case, event, indexes, model='Module', key=key, action=action, changes=created_changes(module_model(), row),
+                        association=effect['stored']['association'], path=path, **common)
+    elif effect['kind'] == 'copy-refused':
+        # The database refuses the insert: no module changes and the pre_save entry stays.
+        key = effect['fixed_id']
+        contract.require(before[MODULE] == after[MODULE], 'state.modules')
+        contract.require(set(events) == {key}, 'audit.count')
+        check_event(case, events[key], indexes, model='Module', key=key, action=1, changes=effect['changes'],
+                    association=effect['association'], path='changes_json.sport_association', **common)
     elif effect['kind'] == 'update':
         key = source['modules'][effect['label']]['id']
         contract.require(set(new_m) == set(old_m) and all(new_m[k] == old_m[k] for k in old_m if k != key), 'state.others')

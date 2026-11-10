@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -192,8 +193,24 @@ func (s *ModulesResponses) Add(ctx context.Context, identity domain.ResolvedIden
 		return "", err
 	}
 	if form {
-		// A QueryDict (and uploaded files) as JSONField value is not ported.
-		return "", domain.ErrModuleResponsesNotPorted
+		// request.data is a QueryDict: json.dumps reads it through items(), the
+		// last value of every key. An uploaded file is not JSON serializable:
+		// the create raises before anything is written.
+		object, _ := value.(domain.RequestObject)
+		last := domain.RequestObject{}
+		positions := map[string]int{}
+		for _, field := range object {
+			if _, text := field.Value.(string); !text {
+				return "", errors.New("module response form value is not JSON serializable")
+			}
+			if at, seen := positions[field.Name]; seen {
+				last[at].Value = field.Value
+				continue
+			}
+			positions[field.Name] = len(last)
+			last = append(last, field)
+		}
+		value = last
 	}
 	if value == nil {
 		// JSON null: the NOT NULL response column rejects the create.
@@ -348,10 +365,8 @@ func (s *ModulesResponses) Attachment(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return "", err
 	}
-	if form {
-		// QueryDict bodies are not ported.
-		return "", domain.ErrModuleResponsesNotPorted
-	}
+	// A QueryDict body answers 'in' and [] like a dict of its last values.
+	_ = form
 	record := domain.ModuleResponseAudit{Context: subscriptionMiscAudit(identity, audit), At: s.at()}
 	if method == "DELETE" {
 		return s.detach(ctx, tx, id.String(), exists, value, record)
@@ -368,14 +383,8 @@ func (s *ModulesResponses) detach(ctx context.Context, tx domain.ModulesResponse
 	if !present || value == nil {
 		return "", domain.ErrModuleDocumentNotFound
 	}
-	text, ok := value.(string)
+	document, ok := moduleDocumentKey(value)
 	if !ok {
-		// UUIDField.to_python of other values (UUID(int=...) for ints and
-		// booleans) is not ported.
-		return "", domain.ErrModuleResponsesNotPorted
-	}
-	document, err := paymentInfoParseUUID(text)
-	if err != nil {
 		// The lookup's ValidationError is not handled by DRF.
 		return "", errors.New("module attachment document_id is not a UUID")
 	}
@@ -395,8 +404,11 @@ func (s *ModulesResponses) detach(ctx context.Context, tx domain.ModulesResponse
 		return "", err
 	}
 	if elsewhere {
-		// document.delete() would cascade to (or set null on) other rows.
-		return "", domain.ErrModuleResponsesNotPorted
+		// document.delete() collects the rows of other tables that reference it.
+		if err = tx.DeleteReferencedDocument(ctx, response, document.String(), record); err != nil {
+			return "", err
+		}
+		return AttachmentDeleted, tx.Commit()
 	}
 	if err = tx.DeleteDocument(ctx, response, document.String(), record); err != nil {
 		return "", err
@@ -404,13 +416,30 @@ func (s *ModulesResponses) detach(ctx context.Context, tx domain.ModulesResponse
 	return AttachmentDeleted, tx.Commit()
 }
 
-// attachmentNamePorted reports the filenames whose storage path is ported:
-// a plain file name (no path separators, not ”, '.' or '..', no NUL) of
-// at most 255 characters. Compression suffixes are stored with mimetypes'
-// encoding as ContentEncoding (S3Storage._get_write_parameters).
-func attachmentNamePorted(name string) bool {
-	return name != "" && name != "." && name != ".." && !strings.ContainsAny(name, "/\\\x00") && utf8.ValidString(name) &&
-		utf8.RuneCountInString(name) <= 255
+// moduleDocumentKey is UUIDField.to_python of the lookup value: a str through
+// uuid.UUID(hex=...), an int (a bool included) through uuid.UUID(int=...),
+// which accepts 0 <= value < 2**128; any other value is refused.
+func moduleDocumentKey(value any) (uuid.UUID, bool) {
+	switch v := value.(type) {
+	case string:
+		id, err := paymentInfoParseUUID(v)
+		return id, err == nil
+	case bool:
+		id := uuid.UUID{}
+		if v {
+			id[15] = 1
+		}
+		return id, true
+	case json.Number:
+		number, ok := new(big.Int).SetString(string(v), 10)
+		if !ok || number.Sign() < 0 || number.BitLen() > 128 {
+			return uuid.UUID{}, false
+		}
+		id := uuid.UUID{}
+		number.FillBytes(id[:])
+		return id, true
+	}
+	return uuid.UUID{}, false
 }
 
 func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponsesTransaction, response string, exists bool, body any,
@@ -435,10 +464,23 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 	}
 	_, name, _ := moduleContains(body, "filename")
 	_, data, _ := moduleContains(body, "base64")
-	filename, ok := name.(string)
-	encoded, textual := data.(string)
-	if !ok || !textual || !attachmentNamePorted(filename) {
+	if _, upload := name.(domain.RequestUpload); upload {
+		// str(UploadedFile) is the name the multipart parser sanitized (not ported).
 		return "", domain.ErrModuleResponsesNotPorted
+	}
+	if name == nil {
+		// The NOT NULL filename column rejects the create.
+		return "", errors.New("module attachment filename is null")
+	}
+	// CharField stores str() of the value; the instance keeps the value itself.
+	_, named := name.(string)
+	filename := dto.PythonStr(name)
+	if !utf8.ValidString(filename) {
+		return "", domain.ErrModuleResponsesNotPorted
+	}
+	if strings.ContainsRune(filename, 0) || utf8.RuneCountInString(filename) > 255 {
+		// The database refuses the text: nothing is written.
+		return "", errors.New("module attachment filename is not storable")
 	}
 	document := domain.ModuleDocumentCreate{ID: s.ids(), Filename: filename, Token: s.ids(), CreationDate: record.At}
 	if err := tx.CreateDocument(ctx, document, record); err != nil {
@@ -448,11 +490,22 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 	if err := tx.Commit(); err != nil {
 		return "", err
 	}
+	if !named {
+		// os.path.join(storing_path, document.filename) on a value that is not a str.
+		return "", errors.New("module attachment filename is not a str")
+	}
+	encoded, textual := data.(string)
+	if !textual {
+		// decode_base64 of a value that is not a str (an uploaded file included).
+		return "", errors.New("module attachment base64 is not a str")
+	}
 	content, err := pythonB64Decode(encoded)
 	if err != nil {
 		return "", err
 	}
-	stored, err := documentkey.StoredName(document.CreationDate, uuid.MustParse(document.ID), filename, nil)
+	// Storage.save validates the name (SuspiciousFileOperation: the 400 page)
+	// and S3Storage stores it under clean_name(name).
+	stored, err := documentkey.UploadName(document.CreationDate, uuid.MustParse(document.ID), filename)
 	if err != nil {
 		return "", err
 	}
