@@ -25,9 +25,9 @@ export function remoteToggleBody(enabled, password) {
     return {enabled: !!enabled, password};
 }
 
-// The connection test never carries the password.
-export function remoteTestBody(draft) {
-    return draft ? remoteSettings(draft) : {};
+// The connection test (proposed or saved settings) carries the owner password too.
+export function remoteTestBody(draft, password) {
+    return {...(draft ? remoteSettings(draft) : {}), password};
 }
 
 export function keyBody(password) {

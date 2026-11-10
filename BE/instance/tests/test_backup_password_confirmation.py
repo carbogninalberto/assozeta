@@ -85,6 +85,26 @@ class BackupPasswordConfirmationTests(TestCase):
         self.assertEqual(self.audited('backup_remote_settings'), 1)
         self.assertNotIn(PASSWORD, repr(list(LogEntry.objects.values_list('changes', 'additional_data'))))
 
+    @patch('instance.remote_backups.call_runner', return_value={'ok': True, 'message': 'Connessione riuscita.'})
+    def test_connection_test_needs_the_owner_password(self, runner):
+        def send(body):
+            return self.client.post('/instance/admin/backups/remote/test', body, format='json')
+        # The saved settings (no body) and proposed ones alike.
+        self.refused_without_runner(runner, send, {})
+        response = send({'password': PASSWORD})
+        self.assertEqual(response.status_code, 200)
+        runner.assert_called_once_with('POST', '/backups/remote/test', {}, timeout=30)
+        runner.reset_mock()
+        response = send({'bucket': 'altro', 'secret_key': 'segreto', 'enabled': True, 'password': PASSWORD})
+        self.assertEqual(response.status_code, 200)
+        runner.assert_called_once_with('POST', '/backups/remote/test', {'bucket': 'altro', 'secret_key': 'segreto'}, timeout=30)
+        entries = list(LogEntry.objects.filter(changes__icontains='backup_remote_test').values_list('changes', flat=True))
+        self.assertEqual(len(entries), 2)
+        changes = sorted(entry['backup_remote_test'][1] for entry in entries)
+        self.assertEqual(changes, ['{"bucket": "altro", "secret_key": "provided"}', '{}'])
+        self.assertNotIn('segreto', repr(entries))
+        self.assertNotIn(PASSWORD, repr(entries))
+
     @patch('instance.remote_backups.call_runner', return_value={'key_id': 'a1b2c3d4', 'recovery_key': 'AGE-SECRET-KEY-1X'})
     def test_key_generation_needs_the_owner_password(self, runner):
         def send(body):
@@ -242,14 +262,16 @@ class RemoteEndpointViewTests(TestCase):
 
     @patch('instance.remote_backups.call_runner', return_value={'ok': True, 'message': 'Connessione riuscita.'})
     def test_test_and_save_check_the_endpoint_before_the_runner(self, runner):
-        response = self.client.post('/instance/admin/backups/remote/test', {'endpoint': 'http://169.254.169.254'}, format='json')
+        response = self.client.post('/instance/admin/backups/remote/test', {'endpoint': 'http://169.254.169.254', 'password': 'x'},
+                                    format='json')
         self.assertEqual((response.status_code, response.data), (400, {'endpoint': [BLOCKED_ENDPOINT]}))
         response = self.client.put('/instance/admin/backups/remote',
                                    {'endpoint': 'http://minio.lan:9000', 'password': PASSWORD}, format='json')
         self.assertEqual((response.status_code, response.data), (400, {'endpoint': [HTTPS_ENDPOINT]}))
         runner.assert_not_called()
         self.assertIsNone(cache.get(ATTEMPTS.format(self.owner.pk)))
-        response = self.client.post('/instance/admin/backups/remote/test', {'endpoint': ' https://192.168.1.20:9000 '}, format='json')
+        response = self.client.post('/instance/admin/backups/remote/test', {'endpoint': ' https://192.168.1.20:9000 ', 'password': PASSWORD},
+                                    format='json')
         self.assertEqual(response.status_code, 200)
         runner.assert_called_once_with('POST', '/backups/remote/test', {'endpoint': 'https://192.168.1.20:9000'}, timeout=30)
 
