@@ -110,7 +110,8 @@ Enrolment owner checks (113 cases; fixture regenerated from Django):
 
 - RED (`secaw-red`): Django 113/113; Go answers 200 on `make-payment-athlete-other-subscription`.
 - GREEN (`secaw-green`): 113/113 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
-- Mutations: the athlete check removed from the installment payment (`secaw-mutation-payment`) fails
-  `make-payment-athlete-other-subscription`; the athlete check removed from course-overview add (`secaw-mutation-add`) fails
-  `overview-add-athlete-other-subscription` (both CAUGHT).
+- Mutations (all CAUGHT): the installment payment without the athlete check (`secaw-mutation`) fails
+  `make-payment-athlete-other-subscription`; without the course association check (`secaw-mutation-association`) it fails
+  `make-payment-other-association-course`; course-overview add without the athlete check (`secaw-mutation-add`) fails
+  `overview-add-athlete-other-subscription`.
 - `router-course-subscriptions-create` and `course-subscriptions` stay green natively.
